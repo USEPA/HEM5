@@ -58,7 +58,7 @@ class Process_outputs():
                  , names=("pollutant","epa_woe","resp","liver","neuro","dev","reprod","kidney","ocular","endoc"
                           ,"hemato","immune","skeletal","spleen","thyroid","wholebody")
                  , converters={"pollutant":str,"epa_woe":str,"resp":float,"liver":float,"neuro":float,"dev":float
-                               ,"reprod":float,"kidney":float,"ocular":float,"endo":float,"hemato":float,"immune":float
+                               ,"reprod":float,"kidney":float,"ocular":float,"endoc":float,"hemato":float,"immune":float
                                ,"skeletal":float,"spleen":float,"thyroid":float,"wholebody":float})
 
         
@@ -103,7 +103,7 @@ class Process_outputs():
         innerrisk_df.loc[:,'skel_hi'] = np.divide(innerrisk_df["skeletal"] * innerrisk_df["conc"], innerrisk_df["rfc"], out=np.zeros_like(innerrisk_df["skeletal"]), where=innerrisk_df["rfc"]!=0)
         innerrisk_df.loc[:,'sple_hi'] = np.divide(innerrisk_df["spleen"] * innerrisk_df["conc"], innerrisk_df["rfc"], out=np.zeros_like(innerrisk_df["spleen"]), where=innerrisk_df["rfc"]!=0)
         innerrisk_df.loc[:,'thyr_hi'] = np.divide(innerrisk_df["thyroid"] * innerrisk_df["conc"], innerrisk_df["rfc"], out=np.zeros_like(innerrisk_df["thyroid"]), where=innerrisk_df["rfc"]!=0)
-        innerrisk_df.loc[:,'whol_hi'] = np.divide(innerrisk_df["wholebod"] * innerrisk_df["conc"], innerrisk_df["rfc"], out=np.zeros_like(innerrisk_df["wholebod"]), where=innerrisk_df["rfc"]!=0)
+        innerrisk_df.loc[:,'whol_hi'] = np.divide(innerrisk_df["wholebody"] * innerrisk_df["conc"], innerrisk_df["rfc"], out=np.zeros_like(innerrisk_df["wholebody"]), where=innerrisk_df["rfc"]!=0)
 
         
         #-------- Maximum Individual Risk and HI Summary -----------------
