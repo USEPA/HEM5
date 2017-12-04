@@ -56,10 +56,10 @@ class Process_outputs():
         #get target organ endpoint dataframe
         targetendpt_df = pd.read_excel(r"resources/target_organ_endpoints.xlsx"
                  , names=("pollutant","epa_woe","resp","liver","neuro","dev","reprod","kidney","ocular","endoc"
-                          ,"hemato","immune","skeletal","spleen","thyroid","wholebody")
+                          ,"hemato","immune","skeletal","spleen","thyroid","wholebod")
                  , converters={"pollutant":str,"epa_woe":str,"resp":float,"liver":float,"neuro":float,"dev":float
                                ,"reprod":float,"kidney":float,"ocular":float,"endoc":float,"hemato":float,"immune":float
-                               ,"skeletal":float,"spleen":float,"thyroid":float,"wholebody":float})
+                               ,"skeletal":float,"spleen":float,"thyroid":float,"wholebod":float})
 
         
         
@@ -87,8 +87,8 @@ class Process_outputs():
     
         # Compute risk
         innerrisk0_df = pd.merge(innerconc_df, self.haplib_df[['pollutant', 'ure', 'rfc']], on="pollutant", how="inner")
-        innerrisk_df = pd.merge(innerrisk0_df, targetendpt_df[['pollutant', 'resp', 'neuro', 'liver', 'dev', 'reprod', 'kidney', 'ocular', 'endoc', 'hemato', 'immune', 'skeletal', 'spleen', 'thyroid', 'wholebody']], on="pollutant", how="inner")
-
+        innerrisk_df = pd.merge(innerrisk0_df, targetendpt_df[['pollutant', 'resp', 'neuro', 'liver', 'dev', 'reprod', 'kidney', 'ocular', 'endoc', 'hemato', 'immune', 'skeletal', 'spleen', 'thyroid', 'wholebod']], on="pollutant", how="inner")
+        print(innerrisk_df)
         innerrisk_df.loc[:, 'risk'] = innerrisk_df.conc * innerrisk_df.ure
         innerrisk_df.loc[:,'resp_hi'] = np.divide(innerrisk_df["resp"] * innerrisk_df["conc"], innerrisk_df["rfc"], out=np.zeros_like(innerrisk_df["resp"]), where=innerrisk_df["rfc"]!=0)
         innerrisk_df.loc[:,'live_hi'] = np.divide(innerrisk_df["liver"] * innerrisk_df["conc"], innerrisk_df["rfc"], out=np.zeros_like(innerrisk_df["liver"]), where=innerrisk_df["rfc"]!=0)
@@ -103,15 +103,15 @@ class Process_outputs():
         innerrisk_df.loc[:,'skel_hi'] = np.divide(innerrisk_df["skeletal"] * innerrisk_df["conc"], innerrisk_df["rfc"], out=np.zeros_like(innerrisk_df["skeletal"]), where=innerrisk_df["rfc"]!=0)
         innerrisk_df.loc[:,'sple_hi'] = np.divide(innerrisk_df["spleen"] * innerrisk_df["conc"], innerrisk_df["rfc"], out=np.zeros_like(innerrisk_df["spleen"]), where=innerrisk_df["rfc"]!=0)
         innerrisk_df.loc[:,'thyr_hi'] = np.divide(innerrisk_df["thyroid"] * innerrisk_df["conc"], innerrisk_df["rfc"], out=np.zeros_like(innerrisk_df["thyroid"]), where=innerrisk_df["rfc"]!=0)
-        innerrisk_df.loc[:,'whol_hi'] = np.divide(innerrisk_df["wholebody"] * innerrisk_df["conc"], innerrisk_df["rfc"], out=np.zeros_like(innerrisk_df["wholebody"]), where=innerrisk_df["rfc"]!=0)
+        innerrisk_df.loc[:,'whol_hi'] = np.divide(innerrisk_df["wholebod"] * innerrisk_df["conc"], innerrisk_df["rfc"], out=np.zeros_like(innerrisk_df["wholebod"]), where=innerrisk_df["rfc"]!=0)
 
         
         #-------- Maximum Individual Risk and HI Summary -----------------
-        
-        indivrisk1 = innerrisk_df[["fac_id","distance","angle","elev","hill","idmarplot","utme","utmn","lat","lon",
+        #no angle or distance in the dataframe is it required for these computations?
+        indivrisk1 = innerrisk_df[["fac_id","elev","hill","IDMARPLOT","utme","utmn","LAT","LON",
                                    "risk","resp_hi","live_hi","neur_hi","deve_hi","repr_hi","kidn_hi","ocul_hi","endo_hi",
                                    "hema_hi","immu_hi","skel_hi","sple_hi","thyr_hi","whol_hi"]].copy()
-        indivrisk2 = indivrisk1.groupby(["fac_id","distance","angle","elev","hill","idmarplot","utme","utmn","lat","lon"], as_index=False).sum()
+        indivrisk2 = indivrisk1.groupby(["fac_id","elev","hill","IDMARPLOT","utme","utmn","LAT","LON"], as_index=False).sum()
         
         
         maxrisk = indivrisk2.loc[[indivrisk2.risk.idxmax()]].drop(["resp_hi","live_hi","neur_hi","deve_hi","repr_hi","kidn_hi","ocul_hi","endo_hi",
