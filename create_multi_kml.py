@@ -7,6 +7,8 @@ Created on Wed Nov  1 13:56:59 2017
 
 import pandas as pd
 import numpy as np
+#import os
+from shutil import copyfile
 import ll2utm
 import utm2ll
 
@@ -139,9 +141,10 @@ class multi_kml():
     def write_kml_emis_loc(self, srcmap):
         
         kmlfilename = "category_source_loc.kml"
-        facidfilename = "facid_kml_source_loc.kml"
+        facidfilename = "facid_kml_source_loc.txt"
+        headerfilename = "working_kml/Header_kml_file.kml"
         inp_file = open(r"kml_source_loc.txt","w")
-        fac_file = open(r"facid_kml_source_loc.txt","w")
+#        fac_file = open(r"facid_kml_source_loc.txt","w")
         
         k01 = "<?xml version='1.0' encoding='UTF-8'?>  \n"
         k02 = '<kml xmlns="http://earth.google.com/kml/2.2" xmlns:gx="http://www.google.com/kml/ext/2.2"> \n'
@@ -149,10 +152,6 @@ class multi_kml():
         inp_file.write(k01)
         inp_file.write(k02)
         inp_file.write(k03)
-        
-        fac_file.write(k01)
-        fac_file.write(k02)
-        fac_file.write(k03)
         
     # Documents section
         k01 = "  " + "<name><![CDATA[srcmap]]></name>  \n"
@@ -166,11 +165,11 @@ class multi_kml():
         inp_file.write(k04)
         inp_file.write(k05)
         
-        fac_file.write(k01)
-        fac_file.write(k02)
-        fac_file.write(k03)
-        fac_file.write(k04)
-        fac_file.write(k05)
+#        fac_file.write(k01)
+#        fac_file.write(k02)
+#        fac_file.write(k03)
+#        fac_file.write(k04)
+#        fac_file.write(k05)
         
         k01 = "    " + "<SimpleField type='string' name='Source_id'>  \n"
         k02 = "      " + "<displayName><![CDATA[Sourceid]]></displayName>  \n"
@@ -181,10 +180,10 @@ class multi_kml():
         inp_file.write(k03)
         inp_file.write(k04)
         
-        fac_file.write(k01)
-        fac_file.write(k02)
-        fac_file.write(k03)
-        fac_file.write(k04)
+#        fac_file.write(k01)
+#        fac_file.write(k02)
+#        fac_file.write(k03)
+#        fac_file.write(k04)
         
         
         k01 = " \n"
@@ -200,13 +199,6 @@ class multi_kml():
         inp_file.write(k05)
         inp_file.write(k06)
         
-        fac_file.write(k01)
-        fac_file.write(k02)
-        fac_file.write(k03)
-        fac_file.write(k04)
-        fac_file.write(k05)
-        fac_file.write(k06)
-        
         k01 = "    " + "<PolyStyle> \n"
         k02 = "      " + "<outline>1</outline>  \n"
         k03 = "      " + "<fill>1</fill>  \n"
@@ -218,11 +210,11 @@ class multi_kml():
         inp_file.write(k04)
         inp_file.write(k05)
         
-        fac_file.write(k01)
-        fac_file.write(k02)
-        fac_file.write(k03)
-        fac_file.write(k04)
-        fac_file.write(k05)
+#        fac_file.write(k01)
+#        fac_file.write(k02)
+#        fac_file.write(k03)
+#        fac_file.write(k04)
+#        fac_file.write(k05)
         
         k01 = "    " + "<BalloonStyle> \n"
         k02 = "      " + "<bgColor>ffffffff</bgColor>  \n"
@@ -237,12 +229,12 @@ class multi_kml():
         inp_file.write(k05)
         inp_file.write(k06)
         
-        fac_file.write(k01)
-        fac_file.write(k02)
-        fac_file.write(k03)
-        fac_file.write(k04)
-        fac_file.write(k05)
-        fac_file.write(k06)
+#        fac_file.write(k01)
+#        fac_file.write(k02)
+#        fac_file.write(k03)
+#        fac_file.write(k04)
+#        fac_file.write(k05)
+#        fac_file.write(k06)
         
         k01 = "<Style id='Ptsrc'> \n"
         k02 = "  " + "<IconStyle> \n"
@@ -259,13 +251,13 @@ class multi_kml():
         inp_file.write(k06)
         inp_file.write(k07)
         
-        fac_file.write(k01)
-        fac_file.write(k02)
-        fac_file.write(k03)
-        fac_file.write(k04)
-        fac_file.write(k05)
-        fac_file.write(k06)
-        fac_file.write(k07)
+#        fac_file.write(k01)
+#        fac_file.write(k02)
+#        fac_file.write(k03)
+#        fac_file.write(k04)
+#        fac_file.write(k05)
+#        fac_file.write(k06)
+#        fac_file.write(k07)
         
         k01 = "  " + "<LabelStyle> \n"
         k02 = "    " + "<color>00000000</color> \n"
@@ -284,14 +276,14 @@ class multi_kml():
         inp_file.write(k07)
         inp_file.write(k08) 
         
-        fac_file.write(k01)
-        fac_file.write(k02)
-        fac_file.write(k03)
-        fac_file.write(k04)
-        fac_file.write(k05)
-        fac_file.write(k06)
-        fac_file.write(k07)
-        fac_file.write(k08)
+#        fac_file.write(k01)
+#        fac_file.write(k02)
+#        fac_file.write(k03)
+#        fac_file.write(k04)
+#        fac_file.write(k05)
+#        fac_file.write(k06)
+#        fac_file.write(k07)
+#        fac_file.write(k08)
         
         # s20
         k01 = " \n"
@@ -311,14 +303,14 @@ class multi_kml():
         inp_file.write(k07)
         inp_file.write(k08)
         
-        fac_file.write(k01)
-        fac_file.write(k02)
-        fac_file.write(k03)
-        fac_file.write(k04)
-        fac_file.write(k05)
-        fac_file.write(k06)
-        fac_file.write(k07)
-        fac_file.write(k08)
+#        fac_file.write(k01)
+#        fac_file.write(k02)
+#        fac_file.write(k03)
+#        fac_file.write(k04)
+#        fac_file.write(k05)
+#        fac_file.write(k06)
+#        fac_file.write(k07)
+#        fac_file.write(k08)
         
         k01 = "  " + "<LabelStyle> \n"
         k02 = "    " + "<color>00000000</color> \n"
@@ -337,14 +329,14 @@ class multi_kml():
         inp_file.write(k07)
         inp_file.write(k08)
         
-        fac_file.write(k01)
-        fac_file.write(k02)
-        fac_file.write(k03)
-        fac_file.write(k04)
-        fac_file.write(k05)
-        fac_file.write(k06)
-        fac_file.write(k07)
-        fac_file.write(k08)
+#        fac_file.write(k01)
+#        fac_file.write(k02)
+#        fac_file.write(k03)
+#        fac_file.write(k04)
+#        fac_file.write(k05)
+#        fac_file.write(k06)
+#        fac_file.write(k07)
+#        fac_file.write(k08)
         
         # b20
         k01 = " \n"
@@ -364,15 +356,6 @@ class multi_kml():
         inp_file.write(k07)
         inp_file.write(k08)
         
-        fac_file.write(k01)
-        fac_file.write(k02)
-        fac_file.write(k03)
-        fac_file.write(k04)
-        fac_file.write(k05)
-        fac_file.write(k06)
-        fac_file.write(k07)
-        fac_file.write(k08)
-        
         k01 = "  " + "<LabelStyle> \n"
         k02 = "    " + "<color>00000000</color> \n"
         k03 = "  " + "</LabelStyle>  \n"
@@ -390,19 +373,51 @@ class multi_kml():
         inp_file.write(k07)
         inp_file.write(k08)
         
-        fac_file.write(k01)
-        fac_file.write(k02)
-        fac_file.write(k03)
-        fac_file.write(k04)
-        fac_file.write(k05)
-        fac_file.write(k06)
-        fac_file.write(k07)
-        fac_file.write(k08)
+#  u20 - user receptor style
+        k01 = " \n"
+        k02 = "<Style id='u20'> \n"
+        k03 = "  " + "<IconStyle> \n"
+        k04 = "    " + "<color>ff00ff00</color>  \n"
+        k05 = "    " + "<Icon>  \n"
+        k06 = "      " + "<href>drawRectangle_ur.png</href>  \n"
+        k07 = "    " + "</Icon>  \n"
+        k08 = "  " + "</IconStyle> \n"
         
+#        fac_file.write(k01)
+#        fac_file.write(k02)
+#        fac_file.write(k03)
+#        fac_file.write(k04)
+#        fac_file.write(k05)
+#        fac_file.write(k06)
+#        fac_file.write(k07)
+#        fac_file.write(k08)
+        
+        k01 = "  " + "<LabelStyle> \n"
+        k02 = "    " + "<color>00000000</color> \n"
+        k03 = "  " + "</LabelStyle>  \n"
+        k04 = "  " + "<BalloonStyle> \n"
+        k05 = "    " + "<bgColor>ffffffff</bgColor>  \n"
+        k06 = "    " + "<text>$[description]</text>  \n"
+        k07 = "  " + "</BalloonStyle>  \n"
+        k08 = "</Style> \n" 
+        
+#        fac_file.write(k01)
+#        fac_file.write(k02)
+#        fac_file.write(k03)
+#        fac_file.write(k04)
+#        fac_file.write(k05)
+#        fac_file.write(k06)
+#        fac_file.write(k07)
+#        fac_file.write(k08)
+                
+
+# Fac_id - create source file for each facility         
         # Read array to get facility id, source ids, source type and location parameters
         for facid, group in srcmap.groupby(["fac_id"]):
             fname = facid
-            singlefacidfilename = fname + "_kml_source_loc.txt"
+            singlefacidfilename = "working_kml/fac_" + fname + "_source.kml"
+            copyfile(headerfilename,singlefacidfilename)
+            fac_file = open(singlefacidfilename,"a")
             
             # Facility ID
             k01 = " \n"
@@ -416,11 +431,17 @@ class multi_kml():
             inp_file.write(k04)
             inp_file.write(k05)
             
-            fac_file.write(k01)
-            fac_file.write(k02)
-            fac_file.write(k03)
-            fac_file.write(k04)
-            fac_file.write(k05)
+        # Emission sources for single facility kmz files
+            f01 = " \n"
+            f02 = "  " + "<Folder> \n"
+            f03 = "    " + "<name>Emission sources</name> \n"
+            f04 = "    " + "<open>0</open> \n"
+            f05 = " \n"
+            fac_file.write(f01)
+            fac_file.write(f02)
+            fac_file.write(f03)
+            fac_file.write(f04)
+            fac_file.write(f05)
             
         # create groups by source id and source type
         #src_df = srcmap.groupby(['source_id','src_type'])
@@ -430,18 +451,7 @@ class multi_kml():
                 sname = name[0]
                 stype = name[1]
      
-                    # Emission sources
-    #                k01 = " \n"
-    #                k02 = "  " + "<Folder> \n"
-    #                k03 = "    " + "<name>Emission sources</name> \n"
-    #                k04 = "    " + "<open>0</open> \n"
-    #                k05 = " \n"
-    #                inp_file.write(k01)
-    #                inp_file.write(k02)
-    #                inp_file.write(k03)
-    #                inp_file.write(k04)
-    #                inp_file.write(k05)
-                    
+                     
         # Emission sources  Point, Capped, Horizontal 
         #        sstyle = "Ptsrc"     
                 if stype == 'P' or stype == 'C' or stype == 'H':
@@ -636,21 +646,31 @@ class multi_kml():
                     
             k01 = "  " + "</Folder> \n"
             inp_file.write(k01)
-    
-    # Rename single facility source locations to have facid as prefix for name        
             
-    
+            fac_file.write(k01)
             
+          
      # end of file - close folder and document            
+            k03 = "</Document> \n" 
+            k04 = "</kml> \n"      
+#            inp_file.write(k03)
+#            inp_file.write(k04)
+
+# rename kml with single facility and place in working folder
+        
+            fac_file.write(k03)
+            fac_file.write(k04)
+ 
+# example of assigning a directory to a file
+#  singlefacidfilename = os.path.join("working_kml", "fac1_source_loc.kml")        
+#        os.rename(facidfilename,singlefacidfilename)
+# change save       
+            fac_file.close()  
+#        close() 
+
         k03 = "</Document> \n" 
         k04 = "</kml> \n"      
         inp_file.write(k03)
         inp_file.write(k04)
-        
-    #    fac_file.write(k03)
-    #    fac_file.write(k04)
-    #    
-    #    fac_file.rename(singlefacidfilename)  
-    #    close() 
         
         return kmlfilename, facidfilename    
