@@ -15,6 +15,7 @@ import numpy as np
 import time
 import sys
 import json
+import dict_query as dq
 
 
 def ll2utm(lat,lon,zone):
@@ -251,14 +252,15 @@ def in_box(modelblks, sourcelocs, modeldist, maxdist):
     ptsources = sourcelocs.query("source_type in ('P','C','H','V','N','B')")
     for index, row in ptsources.iterrows():
         src_x = row["utme"]
+        print(src_x)
         src_y = row["utmn"]
         indist = outerblks.query('sqrt((@src_x - utme)**2 + (@src_y - utmn)**2) <= @modeldist')
-        
+        print(indist)
         
         if len(indist) > 0:
             innerblks = innerblks.append(indist).reset_index(drop=True)
             innerblks = innerblks[~innerblks['IDMARPLOT'].apply(tuple).duplicated()]
-            print(innerblks)
+            #print(innerblks)
             
             outerblks = outerblks[~outerblks['IDMARPLOT'].isin(innerblks['IDMARPLOT'])]
 
@@ -366,12 +368,13 @@ def getblocks(cenx, ceny, cenlon, cenlat, utmzone, maxdist, modeldist, sourceloc
     ##%% census key look-up
 
     #load in json data
-    ck_data = pd.read_json("census/census_key.json")
-    ck_data
+    #ck_data = pd.read_json("census/census_key.json")
+    ck_data = state_data = read_json_file("census/census_key.json")
 
     #convert each row from json string to columns and sort by index
-    census_key = pd.read_json( ck_data['data'].to_json(), orient='index' ).sort_index(axis=0)
-
+    #census_key = pd.read_json( ck_data['data'].to_json(), orient='index' ).sort_index(axis=0)
+    census_key = pd.DataFrame.from_dict(ck_data['data'], orient='columns')
+    census_key[['LAT_MAX', 'LON_MAX', 'LAT_MIN', 'LON_MIN']] = census_key[['LAT_MAX', 'LON_MAX', 'LAT_MIN', 'LON_MIN']].apply(pd.to_numeric)
     #find counties in the "inzone"
 
     census_key.columns = ['cyear', 'elevmax','file_name', 'fips', 'lat_max','lat_min','lon_max','lon_min','minrec', 'num']
@@ -389,7 +392,7 @@ def getblocks(cenx, ceny, cenlon, cenlat, utmzone, maxdist, modeldist, sourceloc
 
     for index, row in cntyinzone_df.iterrows():
         #print("starting loop")
-        #print(row)
+        
         state = "census/" + row['file_name'] + ".json"
         # Query state census file
         if state in censusfile2use:
@@ -399,11 +402,15 @@ def getblocks(cenx, ceny, cenlon, cenlat, utmzone, maxdist, modeldist, sourceloc
             #print("done!")
        
     for state, fips in censusfile2use.items():
-        #print(locations)
+        print(state)
         locations = fips
+        print(locations)
+        
         state_data = read_json_file(state)
+        
         state_pd = pd.DataFrame.from_dict(state_data['data'], orient='columns')
-   
+        
+        
         check = state_pd[state_pd['FIPS'].isin(locations)]
         frames.append(check)
 
