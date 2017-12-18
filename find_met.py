@@ -37,8 +37,9 @@ def find_met(ylat, xlon):
 
     surf_file = met_st['surffile'][index]
     upper_file = met_st['upperfile'][index]
-    surfdata_str = str(met_st['surfwban'][index]) + " " + str(met_st['surfyear'][index]) + " " + str(met_st['surfcity'][index])
-    uairdata_str = str(met_st['uawban'][index]) + " " + str(met_st['surfyear'][index]) + " " + str(met_st['uacity'][index])
+    # Note: remove white space from surfcity and uacity, Aermod will not allow spaces in the city name
+    surfdata_str = str(met_st['surfwban'][index]) + " " + str(met_st['surfyear'][index]) + " " + str(met_st['surfcity'][index]).replace(" ","")
+    uairdata_str = str(met_st['uawban'][index]) + " " + str(met_st['surfyear'][index]) + " " + str(met_st['uacity'][index]).replace(" ","")
     prof_base = str(met_st['elev'][index])
         
     return surf_file, upper_file, surfdata_str, uairdata_str, prof_base
