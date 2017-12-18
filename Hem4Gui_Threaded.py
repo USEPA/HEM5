@@ -18,6 +18,7 @@ import Hem4_Input_Processing as prepare
 from threading import Thread
 import create_multi_kml as cmk
 import sys
+import queue
 
 #%% excel file extension list to check
 
@@ -45,17 +46,24 @@ class Hem4():
         self.win.title("HEM4")
         self.win.maxsize(1000, 1000)
         self.createWidgets()
+        self.running = False
         
 
 
 
 #%% Quit Function    
     def quit_gui(self):
-        self.win.quit()
-        self.win.destroy()
-        exit()
-
-
+        if self.running == False:
+            self.win.quit()
+            self.win.destroy()
+            exit()
+        else:
+             override = messagebox.askokcancel("Confirm HEM4 Quit", "Are you sure? Hem4 is currently running. Clicking 'OK' will stop HEM4.")
+             if override == True:
+                self.win.quit()
+                self.win.destroy()
+                exit()
+            
 #%%Create Widgets
     
     def createWidgets(self):
@@ -337,7 +345,7 @@ class Hem4():
             self.faclist_df["max_dist"] = pd.to_numeric(self.faclist_df["max_dist"],errors="coerce")
         
         
-            print(self.faclist_df)
+            #print(self.faclist_df)
             
     #%%handle upload for hap emissions file
     def upload_hap(self):
@@ -374,7 +382,7 @@ class Hem4():
             file_path = os.path.abspath(filename)
             self.emisloc_list.set(file_path)
             self.emisloc_path = file_path
-            
+            #print(file_path)
             
             #EMISSIONS LOCATION excel to dataframe
 
@@ -501,16 +509,22 @@ class Hem4():
             #check for unassigned user receptors
             
             check_receptor_assignment = self.ureceptr_df["fac_id"]
+            
             receptor_unassigned = []     
             for receptor in check_receptor_assignment:
+                #print(receptor)
                 row = self.faclist_df.loc[self.faclist_df['fac_id'] == receptor]
+                #print(row)
                 check = row['user_rcpt'] == 'Y'
+                #print(check)
             
-                if False in check:   
+                if check is False:   
                     receptor_unassigned.append(str(receptor))
             
-            facilities = set(receptor_unassigned)
-            messagebox.showinfo("Unassigned User Receptors", "Receptors for " + ", ".join(facilities) + " have not been assigned. Please edit the 'user_rcpt' column in the facility options file.")
+            
+            if len(receptor_unassigned) > 0:
+                facilities = set(receptor_unassigned)
+                messagebox.showinfo("Unassigned User Receptors", "Receptors for " + ", ".join(facilities) + " have not been assigned. Please edit the 'user_rcpt' column in the facility options file.")
             
         
     #%% handle building downwash    
@@ -839,8 +853,9 @@ class Hem4():
            
            
            messagebox.askokcancel("Confirm HEM4 Run", "Clicking 'OK' will start HEM4.")
+           
            #create object for prepare inputs
-        
+           self.running = True
            #create a Google Earth KML of all sources to be modeled
            createkml = cmk.multi_kml(self.emisloc_df, self.multipoly_df, self.multibuoy_df)
            source_map = createkml.create_sourcemap()
@@ -848,11 +863,19 @@ class Hem4():
 
 
            pass_ob = prepare.Prepare_Inputs( self.faclist_df, self.emisloc_df, self.hapemis_df, self.multipoly_df, self.multibuoy_df, self.ureceptr_df)
-           #print(run)
+           the_queue.put(pass_ob.message)
+           
+
+    # let's tell after_callback that this completed
+           #print('thread_target puts None to the queue')
+          
+           the_queue.put(pass_ob.message)
            prep = pass_ob.run_facilities()
-                 
+           
+           
+      
             
-        
+           self.running = False
         
         
 #%% Create Thread for Threaded Process   
@@ -864,11 +887,29 @@ class Hem4():
         runT.start()
         
         
-                    
+    def after_callback(self):
+        try:
+            message = the_queue.get(block=False)
+        except queue.Empty:
+            # let's try again later
+            hem4.win.after(50, self.after_callback)
+            return
+
+        print('after_callback got', message)
+        if message is not None:
+            # we're not done yet, let's do something with the message and
+            # come back ater
+            #tk.label['text'] = message
+            hem4.win.after(50, self.after_callback)   
+         
         
         
 
 #%% Start GUI
-hem4 = Hem4()
 
+the_queue = queue.Queue()
+
+
+hem4 = Hem4()
+hem4.win.after(50, hem4.after_callback)
 hem4.win.mainloop()

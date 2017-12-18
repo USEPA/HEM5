@@ -28,6 +28,10 @@ import HEM4_Runstream as rs
 import subprocess
 import Hem4_Output_Processing as po 
 import math
+import shutil
+import queue
+
+
 
 ##REFORMATTED TO MOVE THE DATA FRAME CREATION TO THE GUI 
 class Prepare_Inputs():
@@ -41,6 +45,7 @@ class Prepare_Inputs():
         self.multipoly_df = multipoly_df
         self.multibuoy_df = multibuoy_df
         self.ureceptr_df = ureceptr_df
+        self.message = "Hem 4 starting"
         
         #self.loc = loc
 #%% HAP DOSAGE LIBRARY
@@ -97,7 +102,7 @@ class Prepare_Inputs():
         
         facops = facops.reset_index(drop = True)
         
-        print(facops)
+        #print(facops)
      #----- Default missing or out of range facility options --------
  
     #  Maximum Distance
@@ -204,6 +209,8 @@ class Prepare_Inputs():
         if facops['user_rcpt'][0] == "Y":
         #swap above out for if hasattr(self, "ureceptor_df")
             user_recs = self.ureceptr_df.loc[self.ureceptr_df.fac_id == facid].copy()
+            user_recs.reset_index(inplace=True)
+            #print(user_recs)
             slat = user_recs["lat"]
             slon = user_recs["lon"]
             szone = user_recs["utmzone"]
@@ -311,6 +318,7 @@ class Prepare_Inputs():
          
     # Compute the coordinates of the facililty center
         cenx, ceny, cenlon, cenlat = fc.center(sourcelocs, facutmzone)
+        #print("cenlon")
         #print(cenlon)
         #print(cenlat)
         #print(cenx)
@@ -318,8 +326,9 @@ class Prepare_Inputs():
     
     #%%........ Get census block receptors ...........................................
         maxdist = facops.get_value(0,"max_dist")
-        print(maxdist)
-        modeldist = facops.get_value(0,"model_dist") 
+        #print(maxdist)
+        modeldist = facops.get_value(0,"model_dist")
+        #print(modeldist)
         self.innerblks, self.outerblks = cbr.getblocks(cenx, ceny, cenlon, cenlat, facutmzone, maxdist, modeldist, sourcelocs)
     
         # export innerblks to an Excel file in the Working directory
@@ -375,7 +384,8 @@ class Prepare_Inputs():
         polardf_con = pd.ExcelWriter(polardf_path)
         polar_df.to_excel(polardf_con,'Sheet1')
         polardf_con.save()
-    
+        
+        self.message = "building runstream for " + str(facid)   
     
     #%% result ##needs to create a new object to be passed...
         #return facops, emislocs, hapemis, innerblks, outerblks, sourcelocs, user_recs, buoyant_df, polyver_df
@@ -400,11 +410,12 @@ class Prepare_Inputs():
                 
             #self.loc["textvariable"]="Building Runstream File for " + facid
             #messagebox.showinfo("", "Building Runstream File for " + facid)
-                
+            
+             
             result.build()
               
-            fac_folder = "output/"+ facid + "/"
-                
+            fac_folder = "output/"+ str(facid) + "/"
+            self.message = "starting aermod"    
             #run aermod
             #self.loc["textvariable"] =  "Starting Aermod for " + facid
                 
@@ -412,14 +423,36 @@ class Prepare_Inputs():
             subprocess.call(args, shell=False)
                 
             #self.loc["textvariable"] = "Aermod complete for " + facid
+            
+            ## Check for successful aermod run:
+            check = open('aermod.out','r')
+            message = check.read()
+            if 'UNSUCCESSFUL' in message:
+                success = False
+            else:
+                success = True
+            
+            check.close()    
                 
+            if success == True:
+                
+            #move aermod.out to the fac output folder 
+            #replace if one is already in there othewrwise will throw error
+            
+                if os.path.isfile(fac_folder + 'aermod.out'):
+                    os.remove(fac_folder + 'aermod.out')
+                    shutil.move('aermod.out', fac_folder)
+                
+                else:    
+                    shutil.move('aermod.out', fac_folder)
+            
             #process outputs
-            process = po.Process_outputs(facid, self.haplib_df, result.hapemis, fac_folder, self.innerblks, result.polar_df)
-            process.process()
+                process = po.Process_outputs(facid, self.haplib_df, result.hapemis, fac_folder, self.innerblks, result.polar_df)
+                process.process()
                 
             #self.loc["textvariable"] = "Analysis Complete"
                 
-        messagebox.showinfo("", "HEM4 finished processing all facilities")
+                messagebox.showinfo("", "HEM4 finished processing all facilities")
 #%% Testing the prepare inpusts object
 
 #fac_path = "C:\HEM3_V153\INPUTS_MULTI\TEMPLATE_MULTI_FACILITY_LIST_OPTIONS.XLSX"

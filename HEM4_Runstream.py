@@ -49,7 +49,7 @@ class Runstream():
         
     def build(self):
         
-        print(str(self.facoptn_df['fac_id'][0]) + " starting in runstream")
+        #print(str(self.facoptn_df['fac_id'][0]) + " starting in runstream")
      # %% Set variable emission factor yes/no variable to no. This will come from the GUI.
     
         varemis = 0

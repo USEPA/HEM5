@@ -74,6 +74,7 @@ class Process_outputs():
         ## 'angle', 'distance' need to be added back into innerblks_df - should be computed in get census blocks file
         inner_df = pd.merge(plot_df, self.innerblks_df[['IDMARPLOT', 'utme', 'utmn', 'LAT', 'LON', 'POPULATION']], on=["utme", "utmn"], how="inner")
         
+        
         # Compute pollutant specific air concentrations 
         innerconc_df = pd.merge(inner_df, self.hapemis_df[['fac_id','source_id','pollutant','emis_tpy']], on="source_id", how="inner")
         innerconc_df.loc[:, 'conc'] = innerconc_df.result * innerconc_df.emis_tpy * cf
@@ -88,7 +89,10 @@ class Process_outputs():
         # Compute risk
         innerrisk0_df = pd.merge(innerconc_df, self.haplib_df[['pollutant', 'ure', 'rfc']], on="pollutant", how="inner")
         innerrisk_df = pd.merge(innerrisk0_df, targetendpt_df[['pollutant', 'resp', 'neuro', 'liver', 'dev', 'reprod', 'kidney', 'ocular', 'endoc', 'hemato', 'immune', 'skeletal', 'spleen', 'thyroid', 'wholebod']], on="pollutant", how="inner")
-        print(innerrisk_df)
+        #print("inner risk df")
+        #print(innerrisk_df)
+        
+        
         innerrisk_df.loc[:, 'risk'] = innerrisk_df.conc * innerrisk_df.ure
         innerrisk_df.loc[:,'resp_hi'] = np.divide(innerrisk_df["resp"] * innerrisk_df["conc"], innerrisk_df["rfc"], out=np.zeros_like(innerrisk_df["resp"]), where=innerrisk_df["rfc"]!=0)
         innerrisk_df.loc[:,'live_hi'] = np.divide(innerrisk_df["liver"] * innerrisk_df["conc"], innerrisk_df["rfc"], out=np.zeros_like(innerrisk_df["liver"]), where=innerrisk_df["rfc"]!=0)
