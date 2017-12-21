@@ -19,6 +19,11 @@ from threading import Thread
 import create_multi_kml as cmk
 import sys
 import queue
+import HEM4_Runstream as rs
+import subprocess
+import Hem4_Output_Processing as po 
+import math
+import shutil
 
 #%% excel file extension list to check
 
@@ -114,7 +119,7 @@ class Hem4():
         self.log = ttk.LabelFrame(tab2, text=' Hem4 Progress Log ')
         self.log.grid(column=0, row=0)
         # Adding a Textbox Entry widget
-        scrolW  = 30; scrolH  =  3
+        scrolW  = 65; scrolH  =  40
         self.scr = scrolledtext.ScrolledText(self.log, width=scrolW, height=scrolH, wrap=tk.WORD)
         self.scr.grid(column=0, row=3, sticky='WE', columnspan=3)
         
@@ -296,12 +301,12 @@ class Hem4():
         #building downwash
         self.building= tk.BooleanVar()
         self.building.set(False)
-        self.downwash_op = ttk.Checkbutton(self.s9, text="Include building downwash for any facilities, as indicated in the Facilities List Options file.?", variable=self.building, command=self.add_downwash).grid(row=3, column=1, sticky="w")
+        self.downwash_op = ttk.Checkbutton(self.s9, text="Include building downwash for any facilities, as indicated in the Facilities List Options file?", variable=self.building, command=self.add_downwash).grid(row=3, column=1, sticky="w")
         
         #deposition/depletion
         self.depdep= tk.BooleanVar()
         self.depdep.set(False)
-        self.dep_op = ttk.Checkbutton(self.s9,  text="Include deposition or depletion for any facilities, as indicated in the Facilities List Options file.?", variable=self.depdep).grid(row=5, column=1, sticky="W")
+        self.dep_op = ttk.Checkbutton(self.s9,  text="Include deposition or depletion for any facilities, as indicated in the Facilities List Options file?", variable=self.depdep).grid(row=5, column=1, sticky="W")
         
         #%% Specific upload functions for selecting each file, once selected convert excel file to dataframe
    
@@ -344,7 +349,10 @@ class Hem4():
             self.faclist_df["urban_pop"] = pd.to_numeric(self.faclist_df["urban_pop"],errors="coerce")
             self.faclist_df["max_dist"] = pd.to_numeric(self.faclist_df["max_dist"],errors="coerce")
         
-        
+            #record upload in log
+            fac_num = self.faclist_df['fac_id'].count()
+            self.scr.insert(tk.INSERT, "Uploaded facilities options list file for " + str(fac_num) + " facilities" )
+            self.scr.insert(tk.INSERT, "\n")
             #print(self.faclist_df)
             
     #%%handle upload for hap emissions file
@@ -366,7 +374,10 @@ class Hem4():
                 , names=("fac_id","source_id","pollutant","emis_tpy","part_frac")
                 , converters={"fac_id":str,"source_id":str,"pollutant":str,"emis_tpy":float,"part_frac":float})
             
-            
+            #record upload in log
+            hap_num = set(self.hapemis_df['fac_id'])
+            self.scr.insert(tk.INSERT, "Uploaded HAP emissions file for " + str(len(hap_num)) + " facilities" )
+            self.scr.insert(tk.INSERT, "\n")
             
             
     # %%handle upload for emissions location file
@@ -394,7 +405,11 @@ class Hem4():
                   ,"utmzone":float,"source_type":str,"lengthx":float,"lengthy":float,"angle":float
                   ,"horzdim":float,"vertdim":float,"areavolrelhgt":float,"stkht":float,"stkdia":float
                   ,"stkvel":float,"stktemp":float,"elev":float,"x2":float,"y2":float})
-                
+            
+            #record upload in log
+            emis_num = set(self.emisloc_df['fac_id'])
+            self.scr.insert(tk.INSERT, "Uploaded emissions location file for " + str(len(emis_num)) + " facilities" )
+            self.scr.insert(tk.INSERT, "\n")
             
     #%%handle upload for polygon sources file
     def upload_poly(self):
@@ -421,16 +436,11 @@ class Hem4():
                   , converters={"fac_id":str,"source_id":str,"location_type":str,"lon":float
                                 ,"lat":float,"utmzone":str,"numvert":float,"area":float})
             
-    
-    
-    
-            #get polyvertex facility list
+            #get polyvertex facility list for check
             find_is = self.emisloc_df[self.emisloc_df['source_type'] == "I"]
             fis = find_is['fac_id']
-            
-    
-            #check for unassigned polyvertex
-            
+                
+            #check for unassigned polyvertex            
             check_poly_assignment = set(self.multipoly_df["fac_id"])
             poly_unassigned = []             
             
@@ -440,6 +450,9 @@ class Hem4():
             
             if len(poly_unassigned) > 0:
                 messagebox.showinfo("Unassigned Polygon Sources", "Polygon Sources for " + ", ".join(poly_unassigned) + " have not been assigned. Please edit the 'source_type' column in the Emissions Locations file.")
+                #clear box and empty data frame
+            else:
+                
             
     #%%handle upload for buoyant line file
     def upload_bouyant(self):
@@ -843,6 +856,13 @@ class Hem4():
             ready = False
         
         
+        
+        
+        
+        
+        
+        
+        
        #%%if the object is ready
         if ready == True:
            
@@ -862,26 +882,79 @@ class Hem4():
            kmlfiles = createkml.write_kml_emis_loc(source_map)
 
 
+           the_queue.put("Preparing Inputs")
            pass_ob = prepare.Prepare_Inputs( self.faclist_df, self.emisloc_df, self.hapemis_df, self.multipoly_df, self.multibuoy_df, self.ureceptr_df)
-           the_queue.put(pass_ob.message)
            
-
-    # let's tell after_callback that this completed
+           # let's tell after_callback that this completed
            #print('thread_target puts None to the queue')
-          
-           the_queue.put(pass_ob.message)
-           prep = pass_ob.run_facilities()
            
            
+           fac_list = []
+           for index, row in pass_ob.faclist_df.iterrows():
+            
+               facid = row[0]
+               fac_list.append(facid)
+       
+        
+           for fac in fac_list:
+                facid = fac
+                
+                result = pass_ob.prep_facility(facid)
+                
+                the_queue.put("Building Runstream File for " + str(facid))
+
+                result.build()
+              
+                fac_folder = "output/"+ str(facid) + "/"
+                 
+                #run aermod
+                the_queue.put("Running Aermod for " + str(facid))
+                args = "aermod.exe aermod.inp" 
+                subprocess.call(args, shell=False)
+                
+            #self.loc["textvariable"] = "Aermod complete for " + facid
+            
+            ## Check for successful aermod run:
+                check = open('aermod.out','r')
+                message = check.read()
+                if 'UNSUCCESSFUL' in message:
+                    success = False
+                    the_queue.put("Aermod ran unsuccessfully. Please check the error section of the aermod.out file.")
+                else:
+                    success = True
+                    the_queue.put("Aermod ran successfully.")
+                check.close()    
+                
+                if success == True:
+                    
+                
+            #move aermod.out to the fac output folder 
+            #replace if one is already in there othewrwise will throw error
+            
+                    if os.path.isfile(fac_folder + 'aermod.out'):
+                        os.remove(fac_folder + 'aermod.out')
+                        shutil.move('aermod.out', fac_folder)
+                
+                    else:    
+                        shutil.move('aermod.out', fac_folder)
+            
+            #process outputs
+                    the_queue.put("Processing Outputs for " + str(facid))
+                    process = po.Process_outputs(facid, pass_ob.haplib_df, result.hapemis, fac_folder, pass_ob.innerblks, result.polar_df)
+                    process.process()
+                    the_queue.put("Finished calculations for " + str(facid + "\n"))
+                #self.loc["textvariable"] = "Analysis Complete"
+           
+                
       
             
-           self.running = False
+        self.running = False
         
         
 #%% Create Thread for Threaded Process   
     def runThread(self):
         global instruction_instance
-        instruction_instance.set("Hem-4 Running, check the progress/log tab for updates")
+        instruction_instance.set("Hem4 Running, check the progress/log tab for updates")
         runT = Thread(target=self.run)
         runT.daemon = True
         runT.start()
@@ -892,15 +965,14 @@ class Hem4():
             message = the_queue.get(block=False)
         except queue.Empty:
             # let's try again later
-            hem4.win.after(50, self.after_callback)
+            hem4.win.after(25, self.after_callback)
             return
 
         print('after_callback got', message)
         if message is not None:
-            # we're not done yet, let's do something with the message and
-            # come back ater
-            #tk.label['text'] = message
-            hem4.win.after(50, self.after_callback)   
+            self.scr.insert(tk.INSERT, message)
+            self.scr.insert(tk.INSERT, "\n")
+            hem4.win.after(25, self.after_callback)   
          
         
         
@@ -911,5 +983,5 @@ the_queue = queue.Queue()
 
 
 hem4 = Hem4()
-hem4.win.after(50, hem4.after_callback)
+hem4.win.after(25, hem4.after_callback)
 hem4.win.mainloop()
