@@ -348,8 +348,13 @@ class Hem4():
             self.faclist_df["ring1"] = pd.to_numeric(self.faclist_df["ring1"],errors="coerce")
             self.faclist_df["urban_pop"] = pd.to_numeric(self.faclist_df["urban_pop"],errors="coerce")
             self.faclist_df["max_dist"] = pd.to_numeric(self.faclist_df["max_dist"],errors="coerce")
-        
+            
+            #grab facility ideas for comparison with hap emission and emission location files
+            self.facids = self.faclist_df['fac_id']
+            
+            
             #record upload in log
+            global fac_num
             fac_num = self.faclist_df['fac_id'].count()
             self.scr.insert(tk.INSERT, "Uploaded facilities options list file for " + str(fac_num) + " facilities" )
             self.scr.insert(tk.INSERT, "\n")
@@ -451,7 +456,10 @@ class Hem4():
             if len(poly_unassigned) > 0:
                 messagebox.showinfo("Unassigned Polygon Sources", "Polygon Sources for " + ", ".join(poly_unassigned) + " have not been assigned. Please edit the 'source_type' column in the Emissions Locations file.")
                 #clear box and empty data frame
-            
+            else:
+                #record upload in log
+                self.scr.insert(tk.INSERT, "Uploaded polygon sources for " + " ".join(check_poly_assignment))
+                self.scr.insert(tk.INSERT, "\n")
             
     #%%handle upload for buoyant line file
     def upload_bouyant(self):
@@ -495,7 +503,10 @@ class Hem4():
             
             if len(bouyant_unassigned) > 0:
                 messagebox.showinfo("Unassigned Bouyant Line parameters", "Bouyant Line parameters for " + ", ".join(bouyant_unassigned) + " have not been assigned. Please edit the 'source_type' column in the Emissions Locations file.")
-            
+            else:
+                #record upload in log
+                self.scr.insert(tk.INSERT, "Uploaded bouyant line parameters for " + " ".join(check_bouyant_assignment))
+                self.scr.insert(tk.INSERT, "\n")
       #%%handle user receptors
     def upload_urep(self):
          #get file name from open dialogue
@@ -537,7 +548,10 @@ class Hem4():
             if len(receptor_unassigned) > 0:
                 facilities = set(receptor_unassigned)
                 messagebox.showinfo("Unassigned User Receptors", "Receptors for " + ", ".join(facilities) + " have not been assigned. Please edit the 'user_rcpt' column in the facility options file.")
-            
+            #else:
+                #record upload in log
+                #self.scr.insert(tk.INSERT, "Uploaded user receptors for " + " ".join(check_receptor_assignment))
+                #self.scr.insert(tk.INSERT, "\n")
         
     #%% handle building downwash    
     def upload_bd(self):
@@ -552,7 +566,11 @@ class Hem4():
         elif is_excel(filename) == True:
             file_path = os.path.abspath(filename)
             self.bd_list.set(file_path)
-            self.bd_path = file_path     
+            self.bd_path = file_path
+            
+             #record upload in log
+            self.scr.insert(tk.INSERT, "Uploaded building downwash for...")
+            self.scr.insert(tk.INSERT, "\n")
         
  #%% Event handlers for porting instructions
 
@@ -730,7 +748,7 @@ class Hem4():
 
     def run(self):
         
-# check file dataframes
+#%% check file dataframes
         
         ready = False
         
@@ -770,6 +788,29 @@ class Hem4():
             ready = False
             messagebox.showinfo("Error","There was an error uploading HAP Emissions File, please try again")
         
+        
+        #check for all three facility id lists to be the same between fac list options, hap emissions, and emissions locations. 
+        if hasattr(self, "faclist_df") & hasattr(self, "emisloc_df") & hasattr(self, "hapemis_df"):
+            fids = set(self.faclist_df['fac_id'])
+            efids = set(self.emisloc_df['fac_id'])
+            hfids = set(self.hapemis_df['fac_id'])
+            
+            if fids in efids and fids in hfids and efids in efids:
+                ready = True
+            elif fids in efids and fids not in hfids:
+                ready = False
+                messagebox.showinfo("The facilities in the list options file do not match 1 or more facilities in Hap Emission file. Please check the Hap Emission file for the same facilities.")
+            elif fids in hfids and fids not in efids:
+                ready = False
+                messagebox.showinfo("The facilities in list options file do not match 1 or more facilities in the Emissions location file. Please check the Hap Emission file for the same facilities. ")
+            elif fids not in efids and fids not in hfids:
+                ready = False
+                messagebox.showinfo("The facilities in list options file do not match 1 or more facilities in the Emissions Location and Hap Emissions file. Please check the required input files for the same facilities. ")
+            elif efids not in hfids:
+                ready = False
+                messagebox.showinfo("1 or more facilities in the Hap Emissions file do not match 1 or more facilities in the Emissions location file. Please use the facilities in the options list file for reference.")
+        
+        #check source ids in emissions locations and hap emissions so that they match
         
         
         #if there isnt a file for poly vertex
@@ -880,8 +921,8 @@ class Hem4():
            source_map = createkml.create_sourcemap()
            kmlfiles = createkml.write_kml_emis_loc(source_map)
 
-
-           the_queue.put("Preparing Inputs")
+           
+           the_queue.put("\nPreparing Inputs for " + str(fac_num) + " facilities")
            pass_ob = prepare.Prepare_Inputs( self.faclist_df, self.emisloc_df, self.hapemis_df, self.multipoly_df, self.multibuoy_df, self.ureceptr_df)
            
            # let's tell after_callback that this completed
