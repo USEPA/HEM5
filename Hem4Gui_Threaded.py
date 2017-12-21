@@ -451,8 +451,7 @@ class Hem4():
             if len(poly_unassigned) > 0:
                 messagebox.showinfo("Unassigned Polygon Sources", "Polygon Sources for " + ", ".join(poly_unassigned) + " have not been assigned. Please edit the 'source_type' column in the Emissions Locations file.")
                 #clear box and empty data frame
-            else:
-                
+            
             
     #%%handle upload for buoyant line file
     def upload_bouyant(self):
