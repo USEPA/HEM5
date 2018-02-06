@@ -5,27 +5,101 @@ Created on Mon Oct 23 12:43:52 2017
 @author: dlindsey
 """
 
-import os
 import pandas as pd
 import numpy as np
 import inspect
+import math
+import sys
 
 
 class Process_outputs():
     
-    def __init__(self, facid, haplib_df, hapemis, outdir, innerblks, polar):
+    def __init__(self, facid, haplib_df, hapemis, outdir, innerblks, outerblks, polar):
         self.facid = facid
         self.haplib_df = haplib_df
         self.hapemis_df = hapemis
         self.outdir = outdir
         self.innerblks_df = innerblks
+        self.outerblks_df = outerblks
         self.polar_df = polar
         
-        #first check for facilities folder, if not create as output directory
-        if not os.path.exists(self.outdir):
-            os.makedirs(self.outdir)
+#        #first check for facilities folder, if not create as output directory
+#        if not os.path.exists(self.outdir):
+#            os.makedirs(self.outdir)
             
-            
+    
+    def get_sr(self, row, numsectors, numrings):
+        s = ((row["ANGLE"] * numsectors)/360.0 % numsectors) + 1
+        if int(s) == numsectors:
+            s1 = numsectors
+            s2 = 1
+        else:
+            s1 = int(s)
+            s2 = int(s) + 1
+        r1 = int(row["ring_loc"])
+        if r1 == numrings:
+            r1 = r1 - 1
+        r2 = int(row["ring_loc"]) + 1
+        if r2 > numrings:
+           r2 = numrings
+        return s, s1, s2, r1, r2
+    
+    
+#    def outerinterp(self, ring_loc, s, s1, s2, r1, r2, polarconc):
+    def outerinterp(self, s, ring_loc, conc_s1r1, conc_s1r2, conc_s2r1, conc_s2r2):
+        intconc = []
+        for cs, cringloc, cs1r1, cs1r2, cs2r1, cs2r2 in zip(s, ring_loc, conc_s1r1, conc_s1r2, conc_s2r1, conc_s2r2):
+            if cs1r1 == 0 or cs1r2 == 0:
+                R_s12 = max(cs1r1, cs1r2)
+            else:
+                Lnr_s12 = (math.log(cs1r1) * (int(cringloc)+1-cringloc)) + (math.log(cs1r2) * (cringloc-int(cringloc)))
+                R_s12 = math.exp(Lnr_s12)
+
+            if cs2r1 == 0 or cs2r2 == 0:
+                R_s34 = max(cs2r1, cs2r2)
+            else:
+                Lnr_s34 = (math.log(cs2r1) * (int(cringloc)+1-cringloc)) + (math.log(cs2r2) * (cringloc-int(cringloc)))
+                R_s34 = math.exp(Lnr_s34)
+            cintconc = R_s12*(int(cs)+1-cs) + R_s34*(cs-int(cs))
+            intconc.append(cintconc)
+        
+#        qry_polar_s1r1 = polarconc[["source_id","pollutant","conc","sector","ring"]].query("sector==@s1 and ring==@r1").reset_index(drop=True)
+#        qry_polar_s1r1.rename(columns={'conc':'conc_s1r1'},inplace=True)
+#        qry_polar_s1r1.drop(["sector","ring"],axis=1,inplace=True)
+#        qry_polar_s1r2 =polarconc[["source_id","pollutant","conc","sector","ring"]].query("sector==@s1 and ring==@r2").reset_index(drop=True)
+#        qry_polar_s1r2.rename(columns={'conc':'conc_s1r2'},inplace=True)
+#        qry_polar_s1r2.drop(["sector","ring"],axis=1,inplace=True)
+#        qry_polar_s2r1 = polarconc[["source_id","pollutant","conc","sector","ring"]].query("sector==@s2 and ring==@r1").reset_index(drop=True)
+#        qry_polar_s2r1.rename(columns={'conc':'conc_s2r1'},inplace=True)
+#        qry_polar_s2r1.drop(["sector","ring"],axis=1,inplace=True)
+#        qry_polar_s2r2 = polarconc[["source_id","pollutant","conc","sector","ring"]].query("sector==@s2 and ring==@r2").reset_index(drop=True)
+#        qry_polar_s2r2.rename(columns={'conc':'conc_s2r2'},inplace=True)
+#        qry_polar_s2r2.drop(["sector","ring"],axis=1,inplace=True)
+#
+#        merge1 = pd.merge(qry_polar_s1r1, qry_polar_s1r2, how='inner', on=['source_id','pollutant'])
+#        merge2 = pd.merge(merge1, qry_polar_s2r1, how='inner', on=['source_id','pollutant'])
+#        merge3 = pd.merge(merge2, qry_polar_s2r2, how='inner', on=['source_id','pollutant'])
+#       
+#        if merge3.at[0,"conc_s1r1"] == 0 or merge3.at[0,"conc_s1r2"] ==0:
+#            R_s12 = max(merge3.at[0,"conc_s1r1"],merge3.at[0,"conc_s1r2"])
+#        else:
+#            Lnr_s12 = (math.log(merge3.at[0,"conc_s1r1"]) * (int(ring_loc)+1-ring_loc)) + (math.log(merge3.at[0,"conc_s1r2"]) * (ring_loc-int(ring_loc)))
+#            R_s12 = math.exp(Lnr_s12)
+#
+#        if merge3.at[0,"conc_s2r1"] == 0 or merge3.at[0,"conc_s2r2"] ==0:
+#            R_s34 = max(merge3.at[0,"conc_s2r1"],merge3.at[0,"conc_s2r2"])
+#        else:
+#            Lnr_s34 = (math.log(merge3.at[0,"conc_s2r1"]) * (int(ring_loc)+1-ring_loc)) + (math.log(merge3.at[0,"conc_s2r2"]) * (ring_loc-int(ring_loc)))
+#            R_s34 = math.exp(Lnr_s34)
+#        
+#        intconc = R_s12*(int(s)+1-s) + R_s34*(s-int(s))
+#        source_id = merge3.at[0,"source_id"]
+#        pollutant = merge3.at[0,"pollutant"]
+        
+        return intconc
+      
+        
+        
             
     def process(self):
 
@@ -68,7 +142,7 @@ class Process_outputs():
         #hapemis_df = rei.multihapemis_df.loc[rei.multihapemis_df.fac_id == facil_id]
 
 
-        #------------------ Inner Receptors --------------------------------------
+        #------------------ Inner Receptor Processing --------------------------------------
     
         # Pull out inner receptors and merge Inner Block blockid, angle, distance, lat, lon, and population
         ## 'angle', 'distance' need to be added back into innerblks_df - should be computed in get census blocks file
@@ -110,6 +184,98 @@ class Process_outputs():
         innerrisk_df.loc[:,'whol_hi'] = np.divide(innerrisk_df["wholebod"] * innerrisk_df["conc"], innerrisk_df["rfc"], out=np.zeros_like(innerrisk_df["wholebod"]), where=innerrisk_df["rfc"]!=0)
 
         
+
+
+        #------------------ Polar Receptor Processing --------------------------------------
+
+        polgrid_df = plot_df.query("net_id == 'POLGRID1'").copy()
+        
+        # round the utme and utmn columns
+        polgrid_df.utme = polgrid_df.utme.round()
+        polgrid_df.utmn = polgrid_df.utmn.round()
+        
+        # Merge other polar parameters
+        polgridmore_df = pd.merge(polgrid_df, self.polar_df[['utme','utmn','distance','angle','sector','ring','lat','lon','utmz']], on=["utme","utmn"], how="inner")
+ 
+        #write to excel
+        out_path = self.outdir + "polgridmore_df.xlsx"
+        out_excel = pd.ExcelWriter(out_path)
+        polgridmore_df.to_excel(out_excel,'Sheet1')
+        out_excel.save()
+       
+        # Compute pollutant specific air concentrations 
+        polarconc_df = pd.merge(polgridmore_df, self.hapemis_df[['fac_id','source_id','pollutant','emis_tpy']], on="source_id", how="inner")
+        polarconc_df.loc[:, 'conc'] = polarconc_df.result * polarconc_df.emis_tpy * cf
+        
+        #write to excel
+        polar_con_path = self.outdir + "polar_pollutant_concentration.xlsx"
+        polar_con = pd.ExcelWriter(polar_con_path)
+        polarconc_df.to_excel(polar_con,'Sheet1')
+        polar_con.save()
+        
+        # Compute risk
+        polarrisk_df = pd.merge(polarconc_df, self.haplib_df[['pollutant', 'ure', 'rfc']], on="pollutant", how="inner")
+        polarrisk_df.loc[:, 'resp'] = targetendpt_df['resp']
+        polarrisk_df.loc[:, 'neuro'] = targetendpt_df['neuro']
+        polarrisk_df.loc[:, 'risk'] = polarrisk_df.conc * polarrisk_df.ure
+        polarrisk_df.loc[:,'resp_hi'] = np.divide(polarrisk_df["resp"] * polarrisk_df["conc"], polarrisk_df["rfc"], out=np.zeros_like(polarrisk_df["resp"]), where=polarrisk_df["rfc"]!=0)
+        polarrisk_df.loc[:,'neur_hi'] = np.divide(polarrisk_df["neuro"] * polarrisk_df["conc"], polarrisk_df["rfc"], out=np.zeros_like(polarrisk_df["neuro"]), where=polarrisk_df["rfc"]!=0)
+
+        #write to excel
+        polarrisk_path = self.outdir + "polar_risk.xlsx"
+        polarrisk = pd.ExcelWriter(polarrisk_path)
+        polarrisk_df.to_excel(polarrisk,'Sheet1')
+        polarrisk.save()
+
+
+        #------------------ Outer Receptor Processing --------------------------------------
+
+        numsectors = polarrisk_df["sector"].max()
+        numrings = polarrisk_df["ring"].max()
+        
+        # find 4 nearest polar receptors to each outer block (sector1ring1, sector1ring2, sector2ring1, sector2ring2)
+        outerblksplus_df = self.outerblks_df.copy()
+        outerblksplus_df["block"] = outerblksplus_df.apply(lambda row: row.IDMARPLOT[6:], axis=1)       
+        outerblksplus_df["s"], outerblksplus_df["s1"], outerblksplus_df["s2"], outerblksplus_df["r1"], outerblksplus_df["r2"] = zip(*outerblksplus_df.apply(lambda row: self.get_sr(row,numsectors,numrings), axis=1)) 
+
+        # merge 4 surrounding polar concs on sector and ring
+        polarconc_sub = polarconc_df[['sector','ring','source_id','pollutant','conc']]
+        outer1 = pd.merge(outerblksplus_df, polarconc_sub, how='left', left_on=['s1','r1'], right_on=['sector','ring']) 
+        outer1.rename(columns={'conc':'conc_s1r1'},inplace=True)
+        outer1.drop(["sector","ring"],axis=1,inplace=True)
+        outer2 = pd.merge(outer1, polarconc_sub, how='left', left_on=['s1','r2','source_id','pollutant'], right_on=['sector','ring','source_id','pollutant']) 
+        outer2.rename(columns={'conc':'conc_s1r2'},inplace=True)
+        outer2.drop(["sector","ring"],axis=1,inplace=True)
+        outer3 = pd.merge(outer2, polarconc_sub, how='left', left_on=['s2','r1','source_id','pollutant'], right_on=['sector','ring','source_id','pollutant']) 
+        outer3.rename(columns={'conc':'conc_s2r1'},inplace=True)
+        outer3.drop(["sector","ring"],axis=1,inplace=True)
+        outer4 = pd.merge(outer3, polarconc_sub, how='left', left_on=['s2','r2','source_id','pollutant'], right_on=['sector','ring','source_id','pollutant']) 
+        outer4.rename(columns={'conc':'conc_s2r2'},inplace=True)
+        outer4.drop(["sector","ring"],axis=1,inplace=True)
+
+        # interpolate
+        outer4['conc_ug_m3'] = self.outerinterp(outer4.s, outer4.ring_loc, outer4.conc_s1r1, outer4.conc_s1r2, outer4.conc_s2r1, outer4.conc_s2r2)
+        
+        outfile_path = self.outdir + "outer4.xlsx"
+        outexcel = pd.ExcelWriter(outfile_path)
+        outer4.to_excel(outexcel,'Sheet1')
+        outexcel.save()
+        print("Wrote outer4")
+        
+        # Create the All Outer Receptors dataframe
+        all_outer_receptors = outer4[["LAT","LON","conc_ug_m3","source_id","pollutant","POPULATION","FIPS","block","ELEV"]]
+        
+
+        #write to excel
+        outerconc_path = self.outdir + "all_outer_receptors.xlsx"
+        outerconc = pd.ExcelWriter(outerconc_path)
+        all_outer_receptors.to_excel(outerconc,'Sheet1')
+        outerconc.save()
+        print("wrote all_outer_receptors")
+            
+                
+                
+
         #-------- Maximum Individual Risk and HI Summary -----------------
         #no angle or distance in the dataframe is it required for these computations?
         indivrisk1 = innerrisk_df[["fac_id","elev","hill","IDMARPLOT","utme","utmn","LAT","LON",
@@ -183,35 +349,6 @@ class Process_outputs():
         innerrisk_df.to_excel(risk,'Sheet1')
         risk.save()
         
-
-        #------------------ Polar Receptors --------------------------------------
-
-        polar_df = plot_df.query("net_id == 'POLGRID1'")
-
-        # Compute pollutant specific air concentrations 
-        polarconc_df = pd.merge(polar_df, self.hapemis_df[['fac_id','source_id','pollutant','emis_tpy']], on="source_id", how="inner")
-        polarconc_df.loc[:, 'conc'] = polarconc_df.result * polarconc_df.emis_tpy * cf
-        
-        #write to excel
-        polar_con_path = self.outdir + "polar_pollutant_concentration.xlsx"
-        polar_con = pd.ExcelWriter(polar_con_path)
-        polarconc_df.to_excel(polar_con,'Sheet1')
-        polar_con.save()
-        
-        # Compute risk
-        polarrisk_df = pd.merge(polarconc_df, self.haplib_df[['pollutant', 'ure', 'rfc']], on="pollutant", how="inner")
-        polarrisk_df.loc[:, 'resp'] = targetendpt_df['resp']
-        polarrisk_df.loc[:, 'neuro'] = targetendpt_df['neuro']
-        polarrisk_df.loc[:, 'risk'] = polarrisk_df.conc * polarrisk_df.ure
-        polarrisk_df.loc[:,'resp_hi'] = np.divide(polarrisk_df["resp"] * polarrisk_df["conc"], polarrisk_df["rfc"], out=np.zeros_like(polarrisk_df["resp"]), where=polarrisk_df["rfc"]!=0)
-        polarrisk_df.loc[:,'neur_hi'] = np.divide(polarrisk_df["neuro"] * polarrisk_df["conc"], polarrisk_df["rfc"], out=np.zeros_like(polarrisk_df["neuro"]), where=polarrisk_df["rfc"]!=0)
-
-        #write to excel
-        polarrisk_path = self.outdir + "polar_risk.xlsx"
-        polarrisk = pd.ExcelWriter(polarrisk_path)
-        polarrisk_df.to_excel(polarrisk,'Sheet1')
-        polarrisk.save()
-    
     
         local_vars = inspect.currentframe().f_locals    
     
