@@ -58,7 +58,45 @@ class Prepare_Inputs():
             ,"aegl_2_1h":float,"aegl_2_8h":float,"erpg_1":float,"erpg_2":float,"mrl":float,"rel":float,"idlh_10":float
             ,"teel_0":float,"teel_1":float,"comments":str,"drvalues":float,"group_ure":float,"tef":float,"acute_con":float})
 
-       
+    
+#%% Calculate ring and sector of block receptors 
+    
+    def calc_ring_sector(self, ring_distances, block_distance, block_angle, num_sectors):
+        
+        # compute fractional sector number
+        s = (block_angle * num_sectors)/360.0 % num_sectors
+        
+        # compute integer sector number
+        sector_int = int(((block_angle * num_sectors)/360.0) + 0.5) % num_sectors
+        
+        #initialize previous, ring_loc, and i
+        previous = ring_distances[0]
+        ring_loc = 1
+        i = 0
+    
+        # Compute ring_loc. loop through ring distances in pairs of previous and current
+        for ring in ring_distances[1:]:
+            i = i + 1
+            current = ring
+            #check to see if block is between rings then interpolate distance
+            if block_distance >= previous and block_distance <= current:
+                ring_loc = i + (np.log(block_distance) - np.log(previous)) / (np.log(current) - np.log(previous))        
+                break 
+            previous = ring
+
+        # Compute integer ring number
+        ring_int = int(ring_loc + 0.5)
+         
+        return sector_int, s, ring_int, ring_loc
+
+#%% Define polar receptor dataframe index
+    
+    def define_polar_idx(self, s, r):
+        return "S" + str(s) + "R" + str(r)
+    
+
+
+      
 #%% Zone to use function
 
     def zone2use(self, el_df):
@@ -317,40 +355,86 @@ class Prepare_Inputs():
    
          
     # Compute the coordinates of the facililty center
-        cenx, ceny, cenlon, cenlat = fc.center(sourcelocs, facutmzone)
-        #print("cenlon")
-        #print(cenlon)
-        #print(cenlat)
-        #print(cenx)
-        #print(ceny)
+        cenx, ceny, cenlon, cenlat, max_srcdist, vertx_a, verty_a = fc.center(sourcelocs, facutmzone)
+        
+        
+    #%%........ Census block receptors ...........................................
     
-    #%%........ Get census block receptors ...........................................
         maxdist = facops.get_value(0,"max_dist")
-        #print(maxdist)
         modeldist = facops.get_value(0,"model_dist")
-        #print(modeldist)
         self.innerblks, self.outerblks = cbr.getblocks(cenx, ceny, cenlon, cenlat, facutmzone, maxdist, modeldist, sourcelocs)
-    
-        # export innerblks to an Excel file in the Working directory
-        innerblks_path = "working/innerblk_receptors.xlsx"
-        innerblks_con = pd.ExcelWriter(innerblks_path)
-        self.innerblks.to_excel(innerblks_con,'Sheet1')
-        innerblks_con.save()
 
-        # export outerblks to an Excel file in the Working directory
-        outerblks_path = "working/outerblk_receptors.xlsx"
-        outerblks_con = pd.ExcelWriter(outerblks_path)
-        self.outerblks.to_excel(outerblks_con,'Sheet1')
-        outerblks_con.save()
+
     
     #%%----- Polar receptors ----------
-        polar_dist = np.linspace(op_maxdist/op_circles,op_maxdist,op_circles).tolist()
+    
+        # compute inner polar radius
+        # If there is a polygon, find smallest circle fitting inside it and then move out almost to modeling distance
+        if any(sourcelocs.source_type == "I") == True:
+            inrad = max_srcdist/2
+            for i in range(0, len(vertx_a)-1):
+                for j in range(0, len(verty_a)-1):
+                    dist_cen = math.sqrt((vertx_a[i] - cenx)**2 + (verty_a[j] - ceny)**2)
+                    inrad = min(inrad, dist_cen)
+            inrad = max(inrad+modeldist-10, 100)
+        else:
+            inrad = 0
+            for i in range(0, len(vertx_a)-1):
+                for j in range(0, len(verty_a)-1):
+                    dist_cen = math.sqrt((vertx_a[i] - cenx)**2 + (verty_a[j] - ceny)**2)
+                    inrad = max(inrad, dist_cen)
+        
+        # set the first polar ring distance (list item 0), do not override if user selected first ring > 100m
+        if facops["ring1"][0] <= 100:
+            ring1a = max(inrad+facops["overlap_dist"][0], 100)
+            ring1b = min(ring1a, op_maxdist)
+            firstring = round(max(ring1b, 100))
+        else:
+            firstring = facops["ring1"][0]
+        polar_dist = []
+        polar_dist.append(firstring)
+
+        # compute the rest of the polar ring distances (logarithmically spaced)
+        
+        # first handle ring distances inside the modeling distance
+        k = 1
+        if op_modeldist <= polar_dist[0]:
+            N_in = 0
+            N_out = op_circles
+            D_st2 = polar_dist[0]
+        else:
+            N_in = round(math.log(op_modeldist/polar_dist[0])/math.log(op_maxdist/polar_dist[0]) * (op_circles - 1))
+            while k < N_in:
+                next_dist = round(polar_dist[k-1] * ((op_modeldist/polar_dist[0])**(1/N_in)), -1)
+# Add code to check if next_dist is the same as the previous distance?  Code is in input_ringdist
+                polar_dist.append(next_dist)
+                k = k + 1
+            next_dist = op_modeldist
+            polar_dist.append(next_dist)
+            k = k + 1
+            N_out = op_circles - 1 - N_in
+            D_st2 = op_modeldist
+
+        # next, handle ring distances outside the modeling distance
+        while k < op_circles - 1:
+            next_dist = round(polar_dist[k-1] * ((op_maxdist/D_st2)**(1/N_out)), -2)
+            polar_dist.append(next_dist)
+            k = k + 1
+            
+        # set the last distance to the modeling distance
+        polar_dist.append(op_maxdist)
+        
+        # equally spaced - polar_dist = np.linspace(op_maxdist/op_circles,op_maxdist,op_circles).tolist()
+        
+        # setup list of polar angles
         start = 0.
         stop = 360. - (360./op_radial)
         polar_angl = np.linspace(start,stop,op_radial).tolist()
+        
+        # create lists of other polar receptor parameters
         polar_id = ["polgrid1"] * (len(polar_dist) * len(polar_angl))
-        polar_utme = [cenx + pd * math.sin(math.radians(pa)) for pd in polar_dist for pa in polar_angl]
-        polar_utmn = [ceny + pd * math.cos(math.radians(pa)) for pd in polar_dist for pa in polar_angl]
+        polar_utme = [round(cenx + pd * math.sin(math.radians(pa))) for pd in polar_dist for pa in polar_angl]
+        polar_utmn = [round(ceny + pd * math.cos(math.radians(pa))) for pd in polar_dist for pa in polar_angl]
         polar_utmz = [facutmzone] * (len(polar_dist) * len(polar_angl))    
         polar_lat, polar_lon = utm2ll.utm2ll(polar_utmn, polar_utme, polar_utmz)
     
@@ -360,7 +444,6 @@ class Prepare_Inputs():
 
         # sector and ring lists
         polar_sect = [(int((a*op_radial/360)+0.5 % op_radial)) + 1 for a in polar_angl2]
-        
         polar_ring = []
         remring = polar_dist2[0]
         ringcount = 1
@@ -378,17 +461,45 @@ class Prepare_Inputs():
                ("sector",polar_sect), ("ring",polar_ring)]
         polar_df = pd.DataFrame.from_items(dfitems)
 
+        # define the index of polar_df as concatenation of sector and ring
+        polar_idx = polar_df.apply(lambda row: self.define_polar_idx(row['sector'], row['ring']), axis=1)
+        polar_df.set_index(polar_idx, inplace=True)
+
     
         # export polar_df to an Excel file in the Working directory
-        polardf_path = "working/polar_receptors.xlsx"
+        polardf_path = "working/" + facid + "_polar_receptors.xlsx"
         polardf_con = pd.ExcelWriter(polardf_path)
         polar_df.to_excel(polardf_con,'Sheet1')
         polardf_con.save()
-        
-        self.message = "building runstream for " + str(facid)   
+
+
     
+    #%%----- Add sector and ring to inner and outer receptors ----------
+
+        # assign sector and ring number (integers) to each inner receptor and compute fractional sector (s) and ring_loc (log weighted) numbers
+        self.innerblks["sector"], self.innerblks["s"], self.innerblks["ring"], self.innerblks["ring_loc"] = zip(*self.innerblks.apply(lambda row: self.calc_ring_sector(polar_dist,row["DISTANCE"],row["ANGLE"],op_radial), axis=1))
+
+        # assign sector and ring number (integers) to each outer receptor and compute fractional sector (s) and ring_loc (log weighted) numbers
+        self.outerblks["sector"], self.outerblks["s"], self.outerblks["ring"], self.outerblks["ring_loc"] = zip(*self.outerblks.apply(lambda row: self.calc_ring_sector(polar_dist,row["DISTANCE"],row["ANGLE"],op_radial), axis=1))
+        
+    
+        # export innerblks to an Excel file in the Working directory
+        innerblks_path = "working/innerblk_receptors.xlsx"
+        innerblks_con = pd.ExcelWriter(innerblks_path)
+        self.innerblks.to_excel(innerblks_con,'Sheet1')
+        innerblks_con.save()
+
+        # export outerblks to an Excel file in the Working directory
+        outerblks_path = "working/outerblk_receptors.xlsx"
+        outerblks_con = pd.ExcelWriter(outerblks_path)
+        self.outerblks.to_excel(outerblks_con,'Sheet1')
+        outerblks_con.save()
+
+
+
     #%% result ##needs to create a new object to be passed...
         #return facops, emislocs, hapemis, innerblks, outerblks, sourcelocs, user_recs, buoyant_df, polyver_df
+        self.message = "building runstream for " + str(facid)   
         return rs.Runstream(facops, emislocs, hapemis, cenlat, cenlon, cenx, ceny, self.innerblks, user_recs, buoyant_df, polyver_df, polar_df)
 
 
@@ -447,7 +558,8 @@ class Prepare_Inputs():
                     shutil.move('aermod.out', fac_folder)
             
             #process outputs
-                process = po.Process_outputs(facid, self.haplib_df, result.hapemis, fac_folder, self.innerblks, result.polar_df)
+                        
+                process = po.Process_outputs(facid, self.haplib_df, result.hapemis, fac_folder, self.innerblks, self.polar_df)
                 process.process()
                 
             #self.loc["textvariable"] = "Analysis Complete"
