@@ -2,7 +2,7 @@
 """
 Created on Thu Nov 30 10:26:13 2017
 
-@author: jbaker
+@author: dlindsey
 """
 #%% Imports
 
@@ -158,7 +158,7 @@ class Hem4():
         self.fac_up["text"] = "Browse"
         self.fac_up["command"] = self.upload_fac
         self.fac_up.grid(row=2, column=0, sticky="W")
-        self.fac_up.bind('<Enter>', lambda e:self.fac_browse())
+        self.fac_up.bind('<Enter>', lambda e:self.browse("instructions/fac_browse.txt"))
        
         
         
@@ -169,7 +169,7 @@ class Hem4():
         self.fac_list_man["textvariable"]= self.fac_list
         self.fac_list_man.grid(row=2, column=0, sticky='E', padx=85)
         #event handler for instructions (Button 1 is the left mouse click)
-        self.fac_list_man.bind('<Button-1>', lambda e:self.fac_man())
+        self.fac_list_man.bind('<Button-1>', lambda e:self.manual("instructions/fac_man.txt"))
         
         
         
@@ -183,7 +183,7 @@ class Hem4():
         self.hap_up["command"] = self.upload_hap
         self.hap_up.grid(row=2, column=0, sticky='W')
         #event handler for instructions (Button 1 is the left mouse click)
-        self.hap_up.bind('<Enter>', lambda e:self.hap_browse())
+        self.hap_up.bind('<Enter>', lambda e:self.browse("instructions/hap_browse.txt"))
         
         
         #hap emission text entry
@@ -193,7 +193,7 @@ class Hem4():
         self.hap_list_man["textvariable"]= self.hap_list
         self.hap_list_man.grid(row=2, column=0, sticky='E', padx=85)
         #event handler for instructions (Button 1 is the left mouse click)
-        self.hap_list_man.bind('<Button-1>', lambda e:self.hap_man())
+        self.hap_list_man.bind('<Button-1>', lambda e:self.manual("instructions/hap_man.txt"))
         
         
         #Emissions location label
@@ -206,7 +206,7 @@ class Hem4():
         self.emisloc_up["command"] = self.upload_emisloc
         self.emisloc_up.grid(row=2, column=0, sticky='W')
         #event handler for instructions (Button 1 is the left mouse click)
-        self.emisloc_up.bind('<Enter>', lambda e:self.emisloc_browse())
+        self.emisloc_up.bind('<Enter>', lambda e:self.browse("instructions/emis_browse.txt"))
       
         #emission loccation file text entry
         self.emisloc_list = tk.StringVar(self.s5)
@@ -215,7 +215,7 @@ class Hem4():
         self.emisloc_list_man["textvariable"]= self.emisloc_list
         self.emisloc_list_man.grid(row=2, column=0, sticky='E', padx=85)
         #event handler for instructions (Button 1 is the left mouse click)
-        self.emisloc_list_man.bind('<Button-1>', lambda e:self.emisloc_man())
+        self.emisloc_list_man.bind('<Button-1>', lambda e:self.manual("instructions/emis_man.txt"))
         
         
         #Polygon sources label
@@ -228,7 +228,7 @@ class Hem4():
         self.poly_up["command"] = self.upload_poly
         self.poly_up.grid(row=2, column=0, sticky="W")
         #event handler for instructions (Button 1 is the left mouse click)
-        self.poly_up.bind('<Enter>', lambda e:self.poly_browse())
+        self.poly_up.bind('<Enter>', lambda e:self.browse("instructions/poly_inst.txt"))
        
         #polygon sources loccation file text entry
         self.poly_list = tk.StringVar(self.s6)
@@ -237,7 +237,7 @@ class Hem4():
         self.poly_list_man["textvariable"]= self.poly_list
         self.poly_list_man.grid(row=2, column=0, sticky='E', padx=85)
         #event handler for instructions (Button 1 is the left mouse click)
-        self.poly_list_man.bind('<Button-1>', lambda e:self.poly_man())
+        self.poly_list_man.bind('<Button-1>', lambda e:self.manual("instructions/poly_inst.txt"))
         
         
         #Buoyant Line  label
@@ -250,7 +250,7 @@ class Hem4():
         self.bouyant_up["command"] = self.upload_bouyant
         self.bouyant_up.grid(row=2, column=0, sticky='W')
         #event handler for instructions (Button 1 is the left mouse click)
-        self.bouyant_up.bind('<Enter>', lambda e:self.bouyant_browse())
+        self.bouyant_up.bind('<Enter>', lambda e:self.browse("instructions/bouyant_inst.txt"))
         
         
         #bouyant line file text entry
@@ -260,7 +260,7 @@ class Hem4():
         self.bouyant_list_man["textvariable"]= self.bouyant_list
         self.bouyant_list_man.grid(row=2, column=0, sticky='E', padx=85)
         #event handler for instructions (Button 1 is the left mouse click)
-        self.bouyant_list_man.bind('<Button-1>', lambda e:self.bouyant_man())
+        self.bouyant_list_man.bind('<Button-1>', lambda e:self.manual("instructions/bouyant_inst.txt"))
         
         
         #census year label
@@ -313,6 +313,11 @@ class Hem4():
         self.emis_var.set(False)
         self.emis_var_op = ttk.Checkbutton(self.s9, text="Vary the emission inputs for one or more facilities.", variable=self.emis_var, command=self.add_emis_var).grid(row=7, column=1, sticky="w")        
         
+        
+        #temporal variations for ambient conentration
+        self.temp_var = tk.BooleanVar()
+        self.temp_var.set(False)
+        self.temp_var_op = ttk.Checkbutton(self.s9, text='Generate output file showing temporal variations in ambient concentration results.', variable=self.temp_var, command=self.add_temp_var).grid(row=9, column=1, sticky="w")
         
         #%% Specific upload functions for selecting each file, once selected convert excel file to dataframe
    
@@ -385,10 +390,52 @@ class Hem4():
                 , names=("fac_id","source_id","pollutant","emis_tpy","part_frac")
                 , converters={"fac_id":str,"source_id":str,"pollutant":str,"emis_tpy":float,"part_frac":float})
             
-            #record upload in log
-            hap_num = set(self.hapemis_df['fac_id'])
-            self.scr.insert(tk.INSERT, "Uploaded HAP emissions file for " + str(len(hap_num)) + " facilities" )
-            self.scr.insert(tk.INSERT, "\n")
+            #fill Nan with 0
+            self.hapemis_df.fillna(0)
+            
+            #turn part_frac into a decimal
+            self.hapemis_df['part_frac'] = self.hapemis_df['part_frac'] / 100
+
+            #create additional columns, one for particle mass and the other for gas/vapor mass...
+            self.hapemis_df['particle'] = self.hapemis_df['emis_tpy'] * self.hapemis_df['part_frac']
+            self.hapemis_df['gas'] = self.hapemis_df['emis_tpy'] * (1 - self.hapemis_df['part_frac'])
+
+
+            #get unique list of polutants from input
+            pollutants = set(self.hapemis_df['pollutant'])
+
+            #get list of pollutants from dose library
+            dose = pd.read_excel(open('Dose_Response_Library.xlsx', 'rb'))
+            master_list = set(dose['Pollutant'])
+
+            #check pollutants against pollutants in dose library
+            missing_pollutants = []
+            for pollutant in pollutants:
+                if pollutant not in master_list:
+                    missing_pollutants.append(pollutant)
+            
+            #if there are any missing pollutants
+            if len(missing_pollutants) > 0:
+                fix_pollutants = messagebox.askyesno("Unassigned Missing Pollutants in dose response library", "The following pollutants were not found in HEM4's Dose Response Library: " + ", ".join(poly_unassigned) + "\n. have not been assigned. Would you like to continue with a generic value or go to the resources folder and add missing pollutants?")
+                #if yes, clear box and empty dataframe
+                if fix_pollutants == 'yes':
+                    pass
+                
+                    
+                #if no, assign generic value and continue 
+                elif fix_pollutants == 'no':
+                    pass
+                    #record upload in log
+                    #add another essage to say the following pollutants were assigned a generic value...
+                
+            else:
+                #record upload in log
+                hap_num = set(self.hapemis_df['fac_id'])
+                self.scr.insert(tk.INSERT, "Uploaded HAP emissions file for " + str(len(hap_num)) + " facilities" )
+                self.scr.insert(tk.INSERT, "\n")
+            
+            
+            
             
             
     # %%handle upload for emissions location file
@@ -574,6 +621,9 @@ class Hem4():
             self.bd_list.set(file_path)
             self.bd_path = file_path
             
+            #building downwash dataframe
+            self.bd_df = pd.read_csv(open(bd_path ,"rb"))
+            
              #record upload in log
             self.scr.insert(tk.INSERT, "Uploaded building downwash for...")
             self.scr.insert(tk.INSERT, "\n")
@@ -592,9 +642,16 @@ class Hem4():
         elif is_excel(filename) == False:
             messagebox.showinfo("Invalid file format", "Not a valid file format, please upload an excel file for particle depletion.")
         elif is_excel(filename) == True:
+            
+            ## everything above is generic
+            
             file_path = os.path.abspath(filename)
             self.dep_part.set(file_path)
             self.dep_part_path = file_path
+            
+            #particle dataframe
+            self.particle_df = pd.read_excel(open(self.dep_part_path, "rb")
+                  , names=("fac_id", "source_id", "diameter", "mass", "density"))
             
              #record upload in log
             self.scr.insert(tk.INSERT, "Uploaded particle depletion for...")
@@ -615,6 +672,9 @@ class Hem4():
             self.dep_land.set(file_path)
             self.dep_land_path = file_path
             
+            self.land_df = pd.read_excel(open(self.dep_land_path, "rb"))
+            self.land_df.rename({"Facility ID " : "fac_id"})
+            
              #record upload in log
             self.scr.insert(tk.INSERT, "Uploaded land use description for...")
             self.scr.insert(tk.INSERT, "\n")
@@ -633,6 +693,8 @@ class Hem4():
             self.dep_veg.set(file_path)
             self.dep_veg_path = file_path
             
+            self.veg_df = pd.read_csv(open(self.dep_veg_path, "rb"))
+            self.veg_df.rename({"Facility ID": "fac_id"})
              #record upload in log
             self.scr.insert(tk.INSERT, "Uploaded season vegetation for...")
             self.scr.insert(tk.INSERT, "\n")
@@ -661,146 +723,28 @@ class Hem4():
     def reset_instructions(self):
         global instruction_instance
         instruction_instance.set(" ")
-
-    #facilities instructions
-    def fac_browse(self):
-        global instruction_instance
-        read_inst = open("instructions/fac_browse.txt", 'r')
-        instruction_instance.set(read_inst.read())
-  
-    def fac_man(self):
-        global instruction_instance
-        read_inst = open("instructions/fac_man.txt", 'r')
-        instruction_instance.set(read_inst.read())
-
-    #hap emissions instructions
-    def hap_browse(self):
-        global instruction_instance
-        read_inst = open("instructions/hap_browse.txt", 'r')
-        instruction_instance.set(read_inst.read())
-   
-    def hap_man(self):
-        global instruction_instance
-        read_inst = open("instructions/hap_man.txt", 'r')
-        instruction_instance.set(read_inst.read())
-    
-    
-    #emissions location instructions    
-    def emisloc_browse(self):
-        global instruction_instance
-        read_inst = open("instructions/emis_browse.txt", 'r')
-        instruction_instance.set(read_inst.read())
-   
-    def emisloc_man(self):
-        global instruction_instance
-        read_inst = open("instructions/emis_man.txt", 'r')
-        instruction_instance.set(read_inst.read())
-
-                
-      #poly vertex location instructions    
-    def poly_browse(self):
-        global instruction_instance
-        read_inst = open("instructions/poly_inst.txt", 'r')
-        instruction_instance.set(read_inst.read())
-   
-    def poly_man(self):
-        global instruction_instance
-        read_inst = open("instructions/poly_inst.txt", 'r')
-        instruction_instance.set(read_inst.read())      
-    
-    #bouyant line instructions    
-    def bouyant_browse(self):
-        global instruction_instance
-        read_inst = open("instructions/bouyant_inst.txt", 'r')
-        instruction_instance.set(read_inst.read())
-   
-    def bouyant_man(self):
-        global instruction_instance
-        read_inst = open("instructions/bouyant_inst.txt", 'r')
-        instruction_instance.set(read_inst.read()) 
-  
-    #census list instructions should new census data become available
-    #def census_sel(self):
-        #global instruction_instance
-        #read_inst = open("instructions/census_inst.txt", 'r')
-        #instruction_instance.set(read_inst.read())
         
         
-        #if self.twok.get() == True:
-           # print("2000")
-           # self.twok10.set(False)
-           # self.census = "2000"
-            
-        #elif self.twok10.get() == True:
-         #   print("2010")
-         #   self.twok.set(False)
-         #   self.census = "2010"
-            
-            
-
+    #general function for browsing instructions
+    def browse(self, location):
+        global instruction_instance
+        read_inst = open(location, 'r')
+        instruction_instance.set(read_inst.read())
+        
+    #general function for manual uploads    
+    def manual(self, location):
+        global instruction_instance
+        read_inst = open(location, 'r')
+        instruction_instance.set(read_inst.read())
+        
+        
+    
     #csv option instructions
     def csv_sel(self):
         global instruction_instance
         read_inst = open("instructions/csv_inst.txt", 'r')
         instruction_instance.set(read_inst.read())
-                    
-    #user receptor instructions
-    def urep_browse(self):
-        global instruction_instance
-        read_inst = open("instructions/urep_browse.txt", 'r')
-        instruction_instance.set(read_inst.read())
-  
-    def urep_man(self):
-        global instruction_instance
-        read_inst = open("instructions/urep_man.txt", 'r')
-        instruction_instance.set(read_inst.read())        
             
-    #building downwash instructions
-    def bd_browse(self):
-        global instruction_instance
-        read_inst = open("instructions/bd_browse.txt", 'r')
-        instruction_instance.set(read_inst.read())
-  
-    def bd_man(self):
-        global instruction_instance
-        read_inst = open("instructions/bd_man.txt", 'r')
-        instruction_instance.set(read_inst.read())        
-      
-    #depletion partical instructions
-    
-    def dep_part_browse(self):
-        global instruction_instance
-        read_inst = open("instructions/dep_part_browse.txt", 'r')
-        instruction_instance.set(read_inst.read())
-  
-    def dep_part_man_inst(self):
-        global instruction_instance
-        read_inst = open("instructions/dep_part_man.txt", 'r')
-        instruction_instance.set(read_inst.read())        
-    
-    #depletion land use instructions
-    
-    def land_browse(self):
-        global instruction_instance
-        read_inst = open("instructions/dep_land_browse.txt", 'r')
-        instruction_instance.set(read_inst.read())
-  
-    def dep_land_man_inst(self):
-        global instruction_instance
-        read_inst = open("instructions/dep_land_man.txt", 'r')
-        instruction_instance.set(read_inst.read())
-        
-    #depletion seasonal vegetation instructions
-    
-    def veg_browse(self):
-        global instruction_instance
-        read_inst = open("instructions/dep_veg_browse.txt", 'r')
-        instruction_instance.set(read_inst.read())
-  
-    def dep_veg_man_inst(self):
-        global instruction_instance
-        read_inst = open("instructions/dep_veg_man.txt", 'r')
-        instruction_instance.set(read_inst.read())        
         
         
   #%% Dynamic inputs for adding options
@@ -815,7 +759,7 @@ class Hem4():
             self.bd["text"] = "Browse"
             self.bd["command"] = self.upload_bd
             self.bd.grid(row=4, column=1, sticky="W")
-            self.bd.bind('<Enter>', lambda e:self.bd_browse())
+            self.bd.bind('<Enter>', lambda e:self.browse("instructions/bd_browse.txt"))
             
             #user receptor text entry
             self.bd_list = tk.StringVar(self.s9)
@@ -824,7 +768,7 @@ class Hem4():
             self.bd_list_man["textvariable"]= self.bd_list
             self.bd_list_man.grid(row=4, column=1, sticky='E', padx =10)
             #event handler for instructions (Button 1 is the left mouse click)
-            self.bd_list_man.bind('<Button-1>', lambda e:self.bd_man())
+            self.bd_list_man.bind('<Button-1>', lambda e:self.manual("instructions/bd_man.txt"))
             
             
         if self.building.get() == False:
@@ -841,7 +785,7 @@ class Hem4():
             self.urep["text"] = "Browse"
             self.urep["command"] = self.upload_urep
             self.urep.grid(row=2, column=1, sticky="W", padx=10)
-            self.urep.bind('<Enter>', lambda e:self.urep_browse())
+            self.urep.bind('<Enter>', lambda e:self.browse("instructions/urep_browse.txt"))
             
             #user receptor text entry
             self.urep_list = tk.StringVar(self.s9)
@@ -850,7 +794,7 @@ class Hem4():
             self.urep_list_man["textvariable"]= self.urep_list
             self.urep_list_man.grid(row=2, column=1, sticky='E', padx=85)
             #event handler for instructions (Button 1 is the left mouse click)
-            self.urep_list_man.bind('<Button-1>', lambda e:self.urep_man())
+            self.urep_list_man.bind('<Button-1>', lambda e:self.manual("instructions/urep_man.txt"))
             
             
         if self.u_receptors.get() == False:
@@ -871,22 +815,16 @@ class Hem4():
             self.s14 = tk.Frame(self.main, width=250, height=100, pady=10, padx=10)
             self.s15 = tk.Frame(self.main, width=250, height=100, pady=10, padx=10)
            
-            if self.emis_var.get() == False:
+           
             
-                #arrange on grid if emissions varation has not been selected           
-                self.s11.grid(row=2, column=1, sticky="nsew")
-                self.s12.grid(row=3, column=1, columnspan=2, sticky="nsew")
-                self.s13.grid(row=4, column=1, columnspan=2, sticky="nsew")
-                self.s14.grid(row=5, column=1, columnspan=2, sticky="nsew")
-          
-            elif self.emis_var.get() == True:
+            if self.temp_var.get() == False and self.emis_var.get() == False:
                 
-                #arrange on grid if emissions varaiont has been selected           
-                self.s11.grid(row=4, column=1, sticky="nsew")
-                self.s12.grid(row=5, column=1, columnspan=2, sticky="nsew")
-                self.s13.grid(row=6, column=1, columnspan=2, sticky="nsew")
-                self.s14.grid(row=7, column=1, columnspan=2, sticky="nsew")
-            
+                self.s11.grid(row=1, column=1, sticky="nsew")
+                self.s12.grid(row=2, column=1, columnspan=2, sticky="nsew")
+                self.s13.grid(row=3, column=1, columnspan=2, sticky="nsew")
+                self.s14.grid(row=4, column=1, columnspan=2, sticky="nsew")
+          
+           
             
             #optional input file upload
                 
@@ -899,7 +837,7 @@ class Hem4():
             self.dep_part_up["text"] = "Browse"
             self.dep_part_up["command"] = self.upload_part_dep
             self.dep_part_up.grid(row=2, column=0, sticky="W")
-            self.dep_part_up.bind('<Enter>', lambda e:self.dep_part_browse())
+            self.dep_part_up.bind('<Enter>', lambda e:self.browse("instructions/dep_part_browse.txt"))
        
         
         
@@ -910,7 +848,7 @@ class Hem4():
             self.dep_part_man["textvariable"]= self.dep_part
             self.dep_part_man.grid(row=2, column=0, sticky='E', padx=85)
             #event handler for instructions (Button 1 is the left mouse click)
-            self.dep_part_man.bind('<Button-1>', lambda e:self.dep_part_man_inst())
+            self.dep_part_man.bind('<Button-1>', lambda e:self.manual("instructions/dep_part_man.txt"))
         
         
         
@@ -924,7 +862,7 @@ class Hem4():
             self.dep_land_up["command"] = self.upload_land
             self.dep_land_up.grid(row=2, column=0, sticky='W')
             #event handler for instructions (Button 1 is the left mouse click)
-            self.dep_land_up.bind('<Enter>', lambda e:self.land_browse())
+            self.dep_land_up.bind('<Enter>', lambda e:self.browse("instructions/dep_land_browse.txt"))
         
         
             #land use description text entry
@@ -934,7 +872,7 @@ class Hem4():
             self.dep_land_man["textvariable"]= self.dep_land
             self.dep_land_man.grid(row=2, column=0, sticky='E', padx=85)
             #event handler for instructions (Button 1 is the left mouse click)
-            self.dep_land_man.bind('<Button-1>', lambda e:self.dep_land_man_inst())
+            self.dep_land_man.bind('<Button-1>', lambda e:self.manual("instructions/dep_land_man.txt"))
         
         
             #seasonal vegetation label
@@ -947,7 +885,7 @@ class Hem4():
             self.dep_veg_up["command"] = self.upload_veg
             self.dep_veg_up.grid(row=2, column=0, sticky='W')
             #event handler for instructions (Button 1 is the left mouse click)
-            self.dep_veg_up.bind('<Enter>', lambda e:self.veg_browse())
+            self.dep_veg_up.bind('<Enter>', lambda e:self.browse("instructions/dep_veg_browse.txt"))
       
             #seasonal vegetation file text entry
             self.dep_veg = tk.StringVar(self.s14)
@@ -956,7 +894,7 @@ class Hem4():
             self.dep_veg_man["textvariable"]= self.dep_veg
             self.dep_veg_man.grid(row=2, column=0, sticky='E', padx=85)
             #event handler for instructions (Button 1 is the left mouse click)
-            self.dep_veg_man.bind('<Button-1>', lambda e:self.dep_veg_man_inst())
+            self.dep_veg_man.bind('<Button-1>', lambda e:self.manual("instructions/dep_veg_man.txt"))
                  
         if self.depdep.get() == False:
             self.s11.destroy()
@@ -969,20 +907,29 @@ class Hem4():
         #when box is checked add row with input
         if self.emis_var.get() == True:
             
+             
+          
             
             self.s16 = tk.Label(self.main, text='Emissions Variation Options')
             self.s17 = tk.Frame(self.main, width=250, height=100, pady=10, padx=10)
-                     
-            if self.depdep.get() == True:
+            #self.s16.grid(row=0, column=1, sticky="nsew")
+            #self.s17.grid(row=1, column=1, columnspan=2, sticky="nsew")
+           
+           
+          #  if self.temp_var == True:
+          #      
+          #      self.s16.grid(row=6, column=1, sticky="nsew")
+          #      self.s17.grid(row=7, column=1, columnspan=2, sticky="nsew")
                 
-                self.s16.grid(row=6, column=1, sticky="nsew")
-                self.s17.grid(row=7, column=1, columnspan=2, sticky="nsew")
-                print(self.s17.grid)
+               
                 
-            elif self.depdep.get() == False:
-                
-                self.s16.grid(row=2, column=1, sticky="nsew")
-                self.s17.grid(row=3, column=1, columnspan=2, sticky="nsew")
+            if self.temp_var.get() == False and self.depdep.get() == False:
+          #      
+                self.s16.grid(row=1, column=1, sticky="nsew")
+                self.s17.grid(row=2, column=1, columnspan=2, sticky="nsew")
+               
+               
+             
             
             
             #emissions variation label
@@ -1007,10 +954,54 @@ class Hem4():
             #self.evar_list_man.bind('<Button-1>', lambda e:self.emis_var_man())
             
             
+            
+            
+            
+            
         if self.emis_var.get() == False:
             self.s16.destroy()
             self.s17.destroy()
+            
+        
+    def add_temp_var(self):
+        
+        if self.temp_var.get() == True:
+            print('triggered')
+            
+            self.s18 = tk.Label(self.main, font="-size 10", text='What diurnal resolution would you like in the output file')
+            self.s19 = tk.Frame(self.main, width=250, height=100, pady=10, padx=10)
+            #self.s18.grid(row=6, column=1, sticky="nsew")
+            #self.s19.grid(row=7, column=1, columnspan=2, sticky="nsew")
+            
+            
+            
+           # if  self.emis_var == True:
+           #     
+           #     self.s18.grid(row=6, column=1, sticky="nsew")
+           #     self.s19.grid(row=7, column=1, columnspan=2, sticky="nsew")
                 
+               
+                
+            if self.emis_var.get() == False and self.depdep.get() == False:
+                
+                
+                self.s18.grid(row=1, column=1, sticky="nsew")
+                self.s19.grid(row=2, column=1, columnspan=2, sticky="nsew")
+               
+            
+            
+            
+            #hourlist= ('1 hr', '2 hrs', '3 hrs', '4 hrs', '6 hrs', '8 hrs', '12 hrs', '24 hrs' )
+            #hours = tk.StringVar(value=hourlist)
+            #listbox of diurnal resolutions
+            #lbox = tk.Listbox(self.s19, listvariable=hours, height=3)
+            #lbox.grid(row=1, column=1)
+             
+            
+        if self.temp_var.get() == False:
+            self.s18.destroy()
+            self.s19.destroy()
+        
 
 #%% Run function with checks if somethign is missing raise the error here and create an additional dialogue before trying to run the file
 
@@ -1117,7 +1108,30 @@ class Hem4():
         
         #if depletion calculation
         if self.depdep ==True:
-            print("Include depletion calculation")
+                        
+        
+        
+        
+            pass
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
         else:
             self.depdep = None
         
@@ -1173,6 +1187,20 @@ class Hem4():
             ready = False
         
         
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
         if check1 == True & check2 == True & check3 == True:
             ready = True
         
@@ -1221,7 +1249,10 @@ class Hem4():
 
                 result.build()
               
+                #create fac folder
                 fac_folder = "output/"+ str(facid) + "/"
+                if not os.path.exists(fac_folder):
+                    os.makedirs(fac_folder)
                  
                 #run aermod
                 the_queue.put("Running Aermod for " + str(facid))
