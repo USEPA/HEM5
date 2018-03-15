@@ -45,16 +45,11 @@ class Hem4():
         #create window instance
         self.win = tk.Tk()
     
-        #maybe add a tooltip?
-    
         #title
         self.win.title("HEM4")
         self.win.maxsize(1000, 1000)
         self.createWidgets()
         self.running = False
-        
-
-
 
 #%% Quit Function    
     def quit_gui(self):
@@ -96,8 +91,8 @@ class Hem4():
         self.s6 = tk.Frame(self.main, width=250, height=100, pady=10, padx=10)
         self.s7 = tk.Frame(self.main, width=250, height=100, pady=10, padx=10)
         self.s8 = tk.Frame(self.main, width=250, height=200)
-        self.s9 = tk.Frame(self.main, width=250, height=200)
-        self.s10 = tk.Frame(self.main, width=250, height=200)
+        self.s9 = tk.Frame(self.main, width=250)
+        #self.s10 = tk.Frame(self.main, width=250, height=200)
 
         self.s1.grid(row=0)
         self.s2.grid(row=1, column=0, sticky="nsew")
@@ -108,9 +103,9 @@ class Hem4():
         self.s7.grid(row=6, column=0, columnspan=2, sticky="nsew")
         self.s8.grid(row=7, column=0, sticky="nsew")
         self.s9.grid(row=8, column=0, sticky="nsew")
-        self.s10.grid(row=9, column=0, sticky="nsew")
+        #self.s10.grid(row=9, column=0, sticky="nsew")
 
-        self.main.grid_rowconfigure(10, weight=1)
+        self.main.grid_rowconfigure(9, weight=4)
         self.main.grid_columnconfigure(2, weight=1)
         self.s2.grid_propagate(0)
         #self.s1.grid_propagate(0)
@@ -124,17 +119,14 @@ class Hem4():
         self.scr.grid(column=0, row=3, sticky='WE', columnspan=3)
         
 #%% Set Quit and Run buttons        
-        self.quit = tk.Button(self.s10, text="QUIT", fg="red",
+        self.quit = tk.Button(self.main, text="QUIT", fg="red",
                               command=self.quit_gui)
-        self.quit.grid(row=0, column=2, sticky="E")
+        self.quit.grid(row=9, column=0, sticky="W")
         
         #run only appears once the required files have been set
-        self.run_button = tk.Button(self.s10, text='RUN', fg="green", command=self.runThread).grid(row=0, column=1)
+        self.run_button = tk.Button(self.main, text='RUN', fg="green", command=self.runThread).grid(row=9, column=1, sticky="E")
         
 #%% Setting up  directions text space
-        #Instructions title
-        #instructions = tk.Label(self.s2, text = "Instructions:", padx=80)
-        #instructions.grid(row = 0, sticky="W")
 
         #Dynamic instructions place holder
         global instruction_instance
@@ -154,14 +146,11 @@ class Hem4():
         fac_label.grid(row=1, sticky="W")
         
         #facilities upload button
-        self.fac_up = ttk.Button(self.s3)
+        self.fac_up = ttk.Button(self.s3, command = lambda: self.upload("facilities options list"))
         self.fac_up["text"] = "Browse"
-        self.fac_up["command"] = self.upload_fac
         self.fac_up.grid(row=2, column=0, sticky="W")
         self.fac_up.bind('<Enter>', lambda e:self.browse("instructions/fac_browse.txt"))
        
-        
-        
         #facilities text entry
         self.fac_list = tk.StringVar(self.s3)
         self.fac_list_man = ttk.Entry(self.s3)
@@ -171,21 +160,18 @@ class Hem4():
         #event handler for instructions (Button 1 is the left mouse click)
         self.fac_list_man.bind('<Button-1>', lambda e:self.manual("instructions/fac_man.txt"))
         
-        
-        
+                
         #Hap emissions label
         hap_label = tk.Label(self.s4, font="-size 10",  text="Please select a HAP Emissions file(required):                                                  ")
         hap_label.grid(row=1, sticky="W")
         
         #hap emissions upload button
-        self.hap_up = ttk.Button(self.s4)
+        self.hap_up = ttk.Button(self.s4, command = lambda: self.upload("hap emissions"))
         self.hap_up["text"] = "Browse"
-        self.hap_up["command"] = self.upload_hap
         self.hap_up.grid(row=2, column=0, sticky='W')
         #event handler for instructions (Button 1 is the left mouse click)
         self.hap_up.bind('<Enter>', lambda e:self.browse("instructions/hap_browse.txt"))
-        
-        
+                
         #hap emission text entry
         self.hap_list = tk.StringVar(self.s4)
         self.hap_list_man = ttk.Entry(self.s4)
@@ -201,9 +187,8 @@ class Hem4():
         emisloc_label.grid(row=1, sticky="W")
         
         #emissions location upload button
-        self.emisloc_up = ttk.Button(self.s5)
+        self.emisloc_up = ttk.Button(self.s5, command= lambda: self.upload("emissions locations"))
         self.emisloc_up["text"] = "Browse"
-        self.emisloc_up["command"] = self.upload_emisloc
         self.emisloc_up.grid(row=2, column=0, sticky='W')
         #event handler for instructions (Button 1 is the left mouse click)
         self.emisloc_up.bind('<Enter>', lambda e:self.browse("instructions/emis_browse.txt"))
@@ -223,9 +208,8 @@ class Hem4():
         poly_label.grid(row=1, sticky="W")
         
         #polygon sources upload button
-        self.poly_up = ttk.Button(self.s6)
+        self.poly_up = ttk.Button(self.s6, command=lambda: self.upload("polyvertex") )
         self.poly_up["text"] = "Browse"
-        self.poly_up["command"] = self.upload_poly
         self.poly_up.grid(row=2, column=0, sticky="W")
         #event handler for instructions (Button 1 is the left mouse click)
         self.poly_up.bind('<Enter>', lambda e:self.browse("instructions/poly_inst.txt"))
@@ -245,14 +229,12 @@ class Hem4():
         bouyant_label.grid(row=1, sticky="W")
         
         #bouyant line file upload button
-        self.bouyant_up = ttk.Button(self.s7)
+        self.bouyant_up = ttk.Button(self.s7, command= lambda: self.upload("bouyant line"))
         self.bouyant_up["text"] = "Browse"
-        self.bouyant_up["command"] = self.upload_bouyant
         self.bouyant_up.grid(row=2, column=0, sticky='W')
         #event handler for instructions (Button 1 is the left mouse click)
         self.bouyant_up.bind('<Enter>', lambda e:self.browse("instructions/bouyant_inst.txt"))
-        
-        
+                
         #bouyant line file text entry
         self.bouyant_list = tk.StringVar(self.s7)
         self.bouyant_list_man = ttk.Entry(self.s7)
@@ -263,491 +245,48 @@ class Hem4():
         self.bouyant_list_man.bind('<Button-1>', lambda e:self.manual("instructions/bouyant_inst.txt"))
         
         
-        #census year label
-        #self.census_label = tk.Label(self.s8, text="Select the census year used for modeling:")
-        #self.census_label.grid(row=1, column=0, sticky="W")
-        
-        #census year 2000
-        #self.twok = tk.BooleanVar()
-        #self.twok.set(False)
-        #self.census_2000 = ttk.Checkbutton(self.s8, text="2000", variable=self.twok, command=self.census_sel).grid(row=1, column=1)
-        
-        #census year 2010
-        #self.twok10 = tk.BooleanVar()
-        #self.twok10.set(False)
-        #self.census_2010 = ttk.Checkbutton(self.s8, text="2010", variable=self.twok10, command=self.census_sel).grid(row=1, column=2)
-        
-        
         #csv output label
-        self.csv_label = tk.Label(self.s8, font="-size 10",  text="Select to output DBF files in CSV format")
-        self.csv_label.grid(row=2, column=0, sticky="W")
+        #self.csv_label = tk.Label(self.s8, font="-size 10",  text="Select to output DBF files in CSV format")
+        #self.csv_label.grid(row=2, column=0, sticky="W")
         
         #csv output
-        self.csv= tk.BooleanVar()
-        self.csv.set(False)
-        self.csv_output = ttk.Checkbutton(self.s8, variable=self.csv, command=self.csv_sel).grid(row=2, column=1, sticky="w")
+        #self.csv= tk.BooleanVar()
+        #self.csv.set(False)
+        #self.csv_output = ttk.Checkbutton(self.s8, variable=self.csv, command=self.csv_sel).grid(row=2, column=1, sticky="w")
         
         
         #optional input labels
-        self.optional_label = tk.Label(self.s9, font="-size 10",  text="OPTIONAL Input Files", pady=10)
+        self.optional_label = tk.Label(self.s8, font="-size 10",  text="OPTIONAL Input Files", pady=10)
         self.optional_label.grid(row=0, column=1, sticky="W")
         
         #user receptors
-        #self.receptors_label = tk.Label(self.s9, text="Include user receptors for facilities, as indicated in the Facilities List Options file.").grid(row=1)
         self.u_receptors= tk.BooleanVar()
         self.u_receptors.set(False)
-        self.ur_op = ttk.Checkbutton(self.s9, text="Include user receptors for any facilities, as indicated in the Facilities List Options file.", variable=self.u_receptors, command=self.add_ur).grid(row=1, column=1, sticky="w")
+        self.ur_op = ttk.Checkbutton(self.s8, text="Include user receptors for any facilities, as indicated in the Facilities List Options file.", variable=self.u_receptors, command=self.add_ur).grid(row=1, column=1, sticky="w")
         
         #building downwash
         self.building= tk.BooleanVar()
         self.building.set(False)
-        self.downwash_op = ttk.Checkbutton(self.s9, text="Include building downwash for any facilities, as indicated in the Facilities List Options file.", variable=self.building, command=self.add_downwash).grid(row=3, column=1, sticky="w")
+        self.downwash_op = ttk.Checkbutton(self.s8, text="Include building downwash for any facilities, as indicated in the Facilities List Options file.", variable=self.building, command=self.add_downwash).grid(row=3, column=1, sticky="w")
         
         #deposition/depletion
         self.depdep= tk.BooleanVar()
         self.depdep.set(False)
-        self.dep_op = ttk.Checkbutton(self.s9,  text="Include deposition or depletion for any facilities, as indicated in the Facilities List Options file.", variable=self.depdep, command=self.add_dep).grid(row=5, column=1, sticky="W")
+        self.dep_op = ttk.Checkbutton(self.s8,  text="Include deposition or depletion for any facilities, as indicated in the Facilities List Options file.", variable=self.depdep, command=self.add_dep).grid(row=5, column=1, sticky="W")
         
         #emission variation
         self.emis_var = tk.BooleanVar()
         self.emis_var.set(False)
-        self.emis_var_op = ttk.Checkbutton(self.s9, text="Vary the emission inputs for one or more facilities.", variable=self.emis_var, command=self.add_emis_var).grid(row=7, column=1, sticky="w")        
+        self.emis_var_op = ttk.Checkbutton(self.s8, text="Vary the emission inputs for one or more facilities.", variable=self.emis_var, command=self.add_emis_var).grid(row=7, column=1, sticky="w")        
         
         
         #temporal variations for ambient conentration
         self.temp_var = tk.BooleanVar()
         self.temp_var.set(False)
-        self.temp_var_op = ttk.Checkbutton(self.s9, text='Generate output file showing temporal variations in ambient concentration results.', variable=self.temp_var, command=self.add_temp_var).grid(row=9, column=1, sticky="w")
-        
-        #%% Specific upload functions for selecting each file, once selected convert excel file to dataframe
-   
-    #handle upload for facilities file
-    def upload_fac(self):
-       #get file name from open dialogue
-        filename = askopenfilename()
-        #if the upload is canceled 
-        if not filename:
-            messagebox.showinfo("Required Input Missing", "A facilities option file is required to run HEM4.")
-        elif is_excel(filename) == False:
-            messagebox.showinfo("Invalid file format", "Not a valid file format, please upload an excel file for facility options.")
-        elif is_excel(filename) == True:
-            file_path = os.path.abspath(filename)
-            self.fac_list.set(file_path)
-            self.fac_path = file_path
-            
-            #   FACILITIES LIST excel to dataframe
-
-            self.faclist_df = pd.read_excel(open(self.fac_path,'rb')
-           , names=("fac_id","met_station","rural_urban","max_dist","model_dist"
-                        ,"radial","circles","overlap_dist","acute","hours"
-                        ,"elev","multiplier","ring1","dep","depl","phase"
-                        ,"pdep","pdepl","vdep","vdepl","all_rcpts","user_rcpt"
-                        ,"bldg_dw","urban_pop","fastall")
-           , converters={"fac_id":str,"met_station":str,"rural_urban":str
-                        ,"acute":str
-                        ,"elev":str,"dep":str,"depl":str,"phase":str
-                        ,"pdep":str,"pdepl":str,"vdep":str,"vdepl":str,"all_rcpts":str,"user_rcpt":str
-                        ,"bldg_dw":str,"fastall":str})
-    
-            #manually convert fac_list to numeric
-            self.faclist_df["model_dist"] = pd.to_numeric(self.faclist_df["model_dist"],errors="coerce")
-            self.faclist_df["radial"] = pd.to_numeric(self.faclist_df["radial"],errors="coerce")
-            self.faclist_df["circles"] = pd.to_numeric(self.faclist_df["circles"],errors="coerce")
-            self.faclist_df["overlap_dist"] = pd.to_numeric(self.faclist_df["overlap_dist"],errors="coerce")
-            self.faclist_df["hours"] = pd.to_numeric(self.faclist_df["hours"],errors="coerce")
-            self.faclist_df["multiplier"] = pd.to_numeric(self.faclist_df["multiplier"],errors="coerce")
-            self.faclist_df["ring1"] = pd.to_numeric(self.faclist_df["ring1"],errors="coerce")
-            self.faclist_df["urban_pop"] = pd.to_numeric(self.faclist_df["urban_pop"],errors="coerce")
-            self.faclist_df["max_dist"] = pd.to_numeric(self.faclist_df["max_dist"],errors="coerce")
-            
-            #grab facility ideas for comparison with hap emission and emission location files
-            self.facids = self.faclist_df['fac_id']
-            
-            
-            #record upload in log
-            global fac_num
-            fac_num = self.faclist_df['fac_id'].count()
-            self.scr.insert(tk.INSERT, "Uploaded facilities options list file for " + str(fac_num) + " facilities" )
-            self.scr.insert(tk.INSERT, "\n")
-            #print(self.faclist_df)
-            
-    #%%handle upload for hap emissions file
-    def upload_hap(self):
-       #get file name from open dialogue
-        filename = askopenfilename()
-        #if the upload is canceled 
-        if not filename:
-            messagebox.showinfo("Required Input Missing", "A hap emissions file is required to run HEM4.") 
-        elif is_excel(filename) == False:
-            messagebox.showinfo("Invalid file format", "Not a valid file format, please upload an excel file for hap emissions.")
-        elif is_excel(filename) == True:
-            file_path = os.path.abspath(filename)
-            self.hap_list.set(file_path)
-            self.hap_path = file_path
-            
-            #HAP EMISSIONS excel to dataframe    
-            self.hapemis_df = pd.read_excel(open(self.hap_path, "rb")
-                , names=("fac_id","source_id","pollutant","emis_tpy","part_frac")
-                , converters={"fac_id":str,"source_id":str,"pollutant":str,"emis_tpy":float,"part_frac":float})
-            
-            #fill Nan with 0
-            self.hapemis_df.fillna(0)
-            
-            #turn part_frac into a decimal
-            self.hapemis_df['part_frac'] = self.hapemis_df['part_frac'] / 100
-
-            #create additional columns, one for particle mass and the other for gas/vapor mass...
-            self.hapemis_df['particle'] = self.hapemis_df['emis_tpy'] * self.hapemis_df['part_frac']
-            self.hapemis_df['gas'] = self.hapemis_df['emis_tpy'] * (1 - self.hapemis_df['part_frac'])
-
-
-            #get unique list of polutants from input
-            pollutants = set(self.hapemis_df['pollutant'])
-
-            #get list of pollutants from dose library
-            dose = pd.read_excel(open('Dose_Response_Library.xlsx', 'rb'))
-            master_list = set(dose['Pollutant'])
-
-            #check pollutants against pollutants in dose library
-            missing_pollutants = []
-            for pollutant in pollutants:
-                if pollutant not in master_list:
-                    missing_pollutants.append(pollutant)
-            
-            #if there are any missing pollutants
-            if len(missing_pollutants) > 0:
-                fix_pollutants = messagebox.askyesno("Unassigned Missing Pollutants in dose response library", "The following pollutants were not found in HEM4's Dose Response Library: " + ", ".join(poly_unassigned) + "\n. have not been assigned. Would you like to continue with a generic value or go to the resources folder and add missing pollutants?")
-                #if yes, clear box and empty dataframe
-                if fix_pollutants == 'yes':
-                    pass
-                
-                    
-                #if no, assign generic value and continue 
-                elif fix_pollutants == 'no':
-                    pass
-                    #record upload in log
-                    #add another essage to say the following pollutants were assigned a generic value...
-                
-            else:
-                #record upload in log
-                hap_num = set(self.hapemis_df['fac_id'])
-                self.scr.insert(tk.INSERT, "Uploaded HAP emissions file for " + str(len(hap_num)) + " facilities" )
-                self.scr.insert(tk.INSERT, "\n")
-            
-            
-            
-            
-            
-    # %%handle upload for emissions location file
-    def upload_emisloc(self):
-       #get file name from open dialogue
-        filename = askopenfilename()
-        #if the upload is canceled 
-        if filename == None:
-            messagebox.showinfo("Required Input Missing", "An emissions locations file is required to run HEM4.") 
-        elif is_excel(filename) == False:
-            messagebox.showinfo("Invalid file format", "Not a valid file format, please upload an excel file for emissions locations.")
-        elif is_excel(filename) == True:
-            file_path = os.path.abspath(filename)
-            self.emisloc_list.set(file_path)
-            self.emisloc_path = file_path
-            #print(file_path)
-            
-            #EMISSIONS LOCATION excel to dataframe
-
-            self.emisloc_df = pd.read_excel(open(self.emisloc_path, "rb")
-                  , names=("fac_id","source_id","location_type","lon","lat","utmzone","source_type"
-                           ,"lengthx","lengthy","angle","horzdim","vertdim","areavolrelhgt","stkht"
-                           ,"stkdia","stkvel","stktemp","elev","x2","y2")
-                  , converters={"fac_id":str,"source_id":str,"location_type":str,"lon":float,"lat":float
-                  ,"utmzone":float,"source_type":str,"lengthx":float,"lengthy":float,"angle":float
-                  ,"horzdim":float,"vertdim":float,"areavolrelhgt":float,"stkht":float,"stkdia":float
-                  ,"stkvel":float,"stktemp":float,"elev":float,"x2":float,"y2":float})
-            
-            #record upload in log
-            emis_num = set(self.emisloc_df['fac_id'])
-            self.scr.insert(tk.INSERT, "Uploaded emissions location file for " + str(len(emis_num)) + " facilities" )
-            self.scr.insert(tk.INSERT, "\n")
-            
-    #%%handle upload for polygon sources file
-    def upload_poly(self):
-        if hasattr(self, "emisloc_df"): 
-            filename = askopenfilename()
-        else:
-            messagebox.showinfo("Emissions Locations File Missing", "Please upload an Emissions Locations file before adding a Polyvertex file.")
-        
-        #if the upload is canceled 
-        if filename == None:
-            print("Canceled!")
-            
-        elif is_excel(filename) == False:
-            messagebox.showinfo("Invalid file format", "Not a valid file format, please upload an excel file for polygon sources.")
-        elif is_excel(filename) == True:
-            file_path = os.path.abspath(filename)
-            self.poly_list.set(file_path)
-            self.poly_path = file_path
-            
-            #POLYVERTEX excel to dataframe
-            self.multipoly_df = pd.read_excel(open(self.poly_path, "rb")
-                  , names=("fac_id","source_id","location_type","lon","lat","utmzone"
-                           ,"numvert","area")
-                  , converters={"fac_id":str,"source_id":str,"location_type":str,"lon":float
-                                ,"lat":float,"utmzone":str,"numvert":float,"area":float})
-            
-            #get polyvertex facility list for check
-            find_is = self.emisloc_df[self.emisloc_df['source_type'] == "I"]
-            fis = find_is['fac_id']
-                
-            #check for unassigned polyvertex            
-            check_poly_assignment = set(self.multipoly_df["fac_id"])
-            poly_unassigned = []             
-            
-            for fac in fis:
-                if fac not in check_poly_assignment:   
-                    poly_unassigned.append(fac)
-            
-            if len(poly_unassigned) > 0:
-                messagebox.showinfo("Unassigned Polygon Sources", "Polygon Sources for " + ", ".join(poly_unassigned) + " have not been assigned. Please edit the 'source_type' column in the Emissions Locations file.")
-                #clear box and empty data frame
-            else:
-                #record upload in log
-                self.scr.insert(tk.INSERT, "Uploaded polygon sources for " + " ".join(check_poly_assignment))
-                self.scr.insert(tk.INSERT, "\n")
-            
-    #%%handle upload for buoyant line file
-    def upload_bouyant(self):
-        
-        if hasattr(self, "emisloc_df"): 
-            filename = askopenfilename()
-        else:
-            messagebox.showinfo("Emissions Locations File Missing", "Please upload an Emissions Locations file before adding a Bouyant line file.")
-        
-        #if the upload is canceled 
-        if filename == None:
-            print("Canceled!")
-           
-        elif is_excel(filename) == False:
-            messagebox.showinfo("Invalid file format", "Not a valid file format, please upload an excel file for bouyant line.")
-        elif is_excel(filename) == True:
-            file_path = os.path.abspath(filename)
-            self.bouyant_list.set(file_path)
-            self.bouyant_path = file_path
-            
-            #BOUYANT LINE excel to dataframe
-            self.multibuoy_df = pd.read_excel(open(self.bouyant_path, "rb")
-                  , names=("fac_id", "avgbld_len", "avgbld_hgt", "avgbld_wid", "avglin_wid", "avgbld_sep", "avgbuoy"))
-        
-            
-            #get bouyant line facility list
-            self.emisloc_df['source_type'].str.upper()
-            find_bs = self.emisloc_df[self.emisloc_df['source_type'] == "B"]
-            
-            fbs = find_bs['fac_id'].unique()
-            
-            #check for unassigned buoyants
-             
-            check_bouyant_assignment = set(self.multibuoy_df["fac_id"])
-            
-            bouyant_unassigned = []     
-            for fac in fbs:
-
-                if fac not in check_bouyant_assignment: 
-                    bouyant_unassigned.append(fac)
-            
-            if len(bouyant_unassigned) > 0:
-                messagebox.showinfo("Unassigned Bouyant Line parameters", "Bouyant Line parameters for " + ", ".join(bouyant_unassigned) + " have not been assigned. Please edit the 'source_type' column in the Emissions Locations file.")
-            else:
-                #record upload in log
-                self.scr.insert(tk.INSERT, "Uploaded bouyant line parameters for " + " ".join(check_bouyant_assignment))
-                self.scr.insert(tk.INSERT, "\n")
-      #%%handle user receptors
-    def upload_urep(self):
-         #get file name from open dialogue
-        if hasattr(self, "faclist_df"): 
-            filename = askopenfilename()
-        else:
-            messagebox.showinfo("Facilities List Option File Missing", "Please upload a Facilities List Options file before selecting a User Receptors file.")
-            
-        #if the upload is canceled 
-        if filename == None:
-           pass 
-        elif is_excel(filename) == False:
-            messagebox.showinfo("Invalid file format", "Not a valid file format, please upload an excel file for user receptors.")
-        elif is_excel(filename) == True:
-            file_path = os.path.abspath(filename)
-            self.urep_list.set(file_path)
-            self.urep_path = file_path
-            
-            #USER RECEPTOR dataframe
-            self.ureceptr_df = pd.read_excel(open(self.urep_path, "rb")
-                  , names=("fac_id", "loc_type", "lon", "lat", "utmzone", "elev", "rec_type", "rec_id"))
-            
-            #check for unassigned user receptors
-            
-            check_receptor_assignment = self.ureceptr_df["fac_id"]
-            
-            receptor_unassigned = []     
-            for receptor in check_receptor_assignment:
-                #print(receptor)
-                row = self.faclist_df.loc[self.faclist_df['fac_id'] == receptor]
-                #print(row)
-                check = row['user_rcpt'] == 'Y'
-                #print(check)
-            
-                if check is False:   
-                    receptor_unassigned.append(str(receptor))
-            
-            
-            if len(receptor_unassigned) > 0:
-                facilities = set(receptor_unassigned)
-                messagebox.showinfo("Unassigned User Receptors", "Receptors for " + ", ".join(facilities) + " have not been assigned. Please edit the 'user_rcpt' column in the facility options file.")
-            #else:
-                #record upload in log
-                #self.scr.insert(tk.INSERT, "Uploaded user receptors for " + " ".join(check_receptor_assignment))
-                #self.scr.insert(tk.INSERT, "\n")
-        
-    #%% handle building downwash    
-    def upload_bd(self):
-         #get file name from open dialogue
-        filename = askopenfilename()
-        #if the upload is canceled 
-        if filename == None:
-            print("Canceled!")
-            #eventually open box or some notification to say this is required 
-        elif is_excel(filename) == False:
-            messagebox.showinfo("Invalid file format", "Not a valid file format, please upload an excel file for building downwash.")
-        elif is_excel(filename) == True:
-            file_path = os.path.abspath(filename)
-            self.bd_list.set(file_path)
-            self.bd_path = file_path
-            
-            #building downwash dataframe
-            self.bd_df = pd.read_csv(open(bd_path ,"rb"))
-            
-             #record upload in log
-            self.scr.insert(tk.INSERT, "Uploaded building downwash for...")
-            self.scr.insert(tk.INSERT, "\n")
-            
-            
-  #%% Handle depletion and deposition
-  
-     #particle depletion
-    def upload_part_dep(self):
-        #get file name from open dialogue
-        filename = askopenfilename()
-        #if the upload is canceled 
-        if filename == None:
-            print("Canceled!")
-            #eventually open box or some notification to say this is required 
-        elif is_excel(filename) == False:
-            messagebox.showinfo("Invalid file format", "Not a valid file format, please upload an excel file for particle depletion.")
-        elif is_excel(filename) == True:
-            
-            ## everything above is generic
-            
-            file_path = os.path.abspath(filename)
-            self.dep_part.set(file_path)
-            self.dep_part_path = file_path
-            
-            #particle dataframe
-            self.particle_df = pd.read_excel(open(self.dep_part_path, "rb")
-                  , names=("fac_id", "source_id", "diameter", "mass", "density"))
-            
-             #record upload in log
-            self.scr.insert(tk.INSERT, "Uploaded particle depletion for...")
-            self.scr.insert(tk.INSERT, "\n")
-    
-    #land use description        
-    def upload_land(self):
-        #get file name from open dialogue
-        filename = askopenfilename()
-        #if the upload is canceled 
-        if filename == None:
-            print("Canceled!")
-            #eventually open box or some notification to say this is required 
-        elif is_excel(filename) == False:
-            messagebox.showinfo("Invalid file format", "Not a valid file format, please upload an excel file for land use description.")
-        elif is_excel(filename) == True:
-            file_path = os.path.abspath(filename)
-            self.dep_land.set(file_path)
-            self.dep_land_path = file_path
-            
-            self.land_df = pd.read_excel(open(self.dep_land_path, "rb"))
-            self.land_df.rename({"Facility ID " : "fac_id"})
-            
-             #record upload in log
-            self.scr.insert(tk.INSERT, "Uploaded land use description for...")
-            self.scr.insert(tk.INSERT, "\n")
-  
-    def upload_veg(self):
-        #get file name from open dialogue
-        filename = askopenfilename()
-        #if the upload is canceled 
-        if filename == None:
-            print("Canceled!")
-            #eventually open box or some notification to say this is required 
-        elif is_excel(filename) == False:
-            messagebox.showinfo("Invalid file format", "Not a valid file format, please upload an excel file for seasonal vegetation.")
-        elif is_excel(filename) == True:
-            file_path = os.path.abspath(filename)
-            self.dep_veg.set(file_path)
-            self.dep_veg_path = file_path
-            
-            self.veg_df = pd.read_csv(open(self.dep_veg_path, "rb"))
-            self.veg_df.rename({"Facility ID": "fac_id"})
-             #record upload in log
-            self.scr.insert(tk.INSERT, "Uploaded season vegetation for...")
-            self.scr.insert(tk.INSERT, "\n")
-  
-    def upload_evar(self):
-        #get file name from open dialogue
-        filename = askopenfilename()
-        #if the upload is canceled 
-        if filename == None:
-            print("Canceled!")
-            #eventually open box or some notification to say this is required 
-        elif is_excel(filename) == False:
-            messagebox.showinfo("Invalid file format", "Not a valid file format, please upload an excel file for emissions variance.")
-        elif is_excel(filename) == True:
-            file_path = os.path.abspath(filename)
-            self.evar_list.set(file_path)
-            self.evar_list_path = file_path
-            
-             #record upload in log
-            self.scr.insert(tk.INSERT, "Uploaded emissions variance for...")
-            self.scr.insert(tk.INSERT, "\n")
-        
- #%% Event handlers for porting instructions
-
-    #reset instructions space
-    def reset_instructions(self):
-        global instruction_instance
-        instruction_instance.set(" ")
+        self.temp_var_op = ttk.Checkbutton(self.s8, text='Generate output file showing temporal variations in ambient concentration results.', variable=self.temp_var, command=self.add_temp_var).grid(row=9, column=1, sticky="w")
         
         
-    #general function for browsing instructions
-    def browse(self, location):
-        global instruction_instance
-        read_inst = open(location, 'r')
-        instruction_instance.set(read_inst.read())
-        
-    #general function for manual uploads    
-    def manual(self, location):
-        global instruction_instance
-        read_inst = open(location, 'r')
-        instruction_instance.set(read_inst.read())
-        
-        
-    
-    #csv option instructions
-    def csv_sel(self):
-        global instruction_instance
-        read_inst = open("instructions/csv_inst.txt", 'r')
-        instruction_instance.set(read_inst.read())
-            
-        
-        
-  #%% Dynamic inputs for adding options
+         #%% Dynamic inputs for adding options
 
     def add_downwash(self):
         
@@ -755,15 +294,14 @@ class Hem4():
         if self.building.get() == True:
             
             #user recptors upload button
-            self.bd = ttk.Button(self.s9)
+            self.bd = ttk.Button(self.s8, command= lambda: self.upload("building downwash"))
             self.bd["text"] = "Browse"
-            self.bd["command"] = self.upload_bd
             self.bd.grid(row=4, column=1, sticky="W")
             self.bd.bind('<Enter>', lambda e:self.browse("instructions/bd_browse.txt"))
             
             #user receptor text entry
-            self.bd_list = tk.StringVar(self.s9)
-            self.bd_list_man = ttk.Entry(self.s9)
+            self.bd_list = tk.StringVar(self.s8)
+            self.bd_list_man = ttk.Entry(self.s8)
             self.bd_list_man["width"] = 55
             self.bd_list_man["textvariable"]= self.bd_list
             self.bd_list_man.grid(row=4, column=1, sticky='E', padx =10)
@@ -781,15 +319,14 @@ class Hem4():
         if self.u_receptors.get() == True:
             
             #user recptors upload button
-            self.urep = ttk.Button(self.s9)
+            self.urep = ttk.Button(self.s8, command = lambda: self.upload("user receptors"))
             self.urep["text"] = "Browse"
-            self.urep["command"] = self.upload_urep
             self.urep.grid(row=2, column=1, sticky="W", padx=10)
             self.urep.bind('<Enter>', lambda e:self.browse("instructions/urep_browse.txt"))
             
             #user receptor text entry
-            self.urep_list = tk.StringVar(self.s9)
-            self.urep_list_man = ttk.Entry(self.s9)
+            self.urep_list = tk.StringVar(self.s8)
+            self.urep_list_man = ttk.Entry(self.s8)
             self.urep_list_man["width"] = 55
             self.urep_list_man["textvariable"]= self.urep_list
             self.urep_list_man.grid(row=2, column=1, sticky='E', padx=85)
@@ -814,18 +351,24 @@ class Hem4():
             self.s13 = tk.Frame(self.main, width=250, height=100, pady=10, padx=10)
             self.s14 = tk.Frame(self.main, width=250, height=100, pady=10, padx=10)
             self.s15 = tk.Frame(self.main, width=250, height=100, pady=10, padx=10)
-           
-           
             
-            if self.temp_var.get() == False and self.emis_var.get() == False:
+            
+            if self.emis_var.get() == False:
                 
                 self.s11.grid(row=1, column=1, sticky="nsew")
                 self.s12.grid(row=2, column=1, columnspan=2, sticky="nsew")
                 self.s13.grid(row=3, column=1, columnspan=2, sticky="nsew")
                 self.s14.grid(row=4, column=1, columnspan=2, sticky="nsew")
-          
-           
-            
+                
+            elif self.emis_var.get() == True:
+                if self.s16.grid_info()['row'] == 1:
+                
+                    self.s11.grid(row=3, column=1, sticky="nsew")
+                    self.s12.grid(row=4, column=1, columnspan=2, sticky="nsew")
+                    self.s13.grid(row=5, column=1, columnspan=2, sticky="nsew")
+                    self.s14.grid(row=6, column=1, columnspan=2, sticky="nsew")
+                
+ 
             #optional input file upload
                 
             #particle deposition label
@@ -833,14 +376,11 @@ class Hem4():
             part_label.grid(row=1, sticky="W")
         
             #particle deposition upload button
-            self.dep_part_up = ttk.Button(self.s12)
+            self.dep_part_up = ttk.Button(self.s12, command= lambda: self.upload("particle depletion"))
             self.dep_part_up["text"] = "Browse"
-            self.dep_part_up["command"] = self.upload_part_dep
             self.dep_part_up.grid(row=2, column=0, sticky="W")
             self.dep_part_up.bind('<Enter>', lambda e:self.browse("instructions/dep_part_browse.txt"))
-       
-        
-        
+             
             #particle deposition  text entry
             self.dep_part = tk.StringVar(self.s12)
             self.dep_part_man = ttk.Entry(self.s12)
@@ -849,17 +389,15 @@ class Hem4():
             self.dep_part_man.grid(row=2, column=0, sticky='E', padx=85)
             #event handler for instructions (Button 1 is the left mouse click)
             self.dep_part_man.bind('<Button-1>', lambda e:self.manual("instructions/dep_part_man.txt"))
-        
-        
+              
         
             #land use description label
             land_label = tk.Label(self.s13, font="-size 10",  text="Upload the file containing land use descriptions:")
             land_label.grid(row=1, sticky="W")
         
             #land use description upload button
-            self.dep_land_up = ttk.Button(self.s13)
+            self.dep_land_up = ttk.Button(self.s13, command= lambda: self.upload("land use description"))
             self.dep_land_up["text"] = "Browse"
-            self.dep_land_up["command"] = self.upload_land
             self.dep_land_up.grid(row=2, column=0, sticky='W')
             #event handler for instructions (Button 1 is the left mouse click)
             self.dep_land_up.bind('<Enter>', lambda e:self.browse("instructions/dep_land_browse.txt"))
@@ -880,9 +418,8 @@ class Hem4():
             veg_label.grid(row=1, sticky="W")
         
              #seasonal vegetation location upload button
-            self.dep_veg_up = ttk.Button(self.s14)
+            self.dep_veg_up = ttk.Button(self.s14, command= lambda: self.upload("season vegetation") )
             self.dep_veg_up["text"] = "Browse"
-            self.dep_veg_up["command"] = self.upload_veg
             self.dep_veg_up.grid(row=2, column=0, sticky='W')
             #event handler for instructions (Button 1 is the left mouse click)
             self.dep_veg_up.bind('<Enter>', lambda e:self.browse("instructions/dep_veg_browse.txt"))
@@ -907,29 +444,23 @@ class Hem4():
         #when box is checked add row with input
         if self.emis_var.get() == True:
             
-             
-          
-            
+     
             self.s16 = tk.Label(self.main, text='Emissions Variation Options')
             self.s17 = tk.Frame(self.main, width=250, height=100, pady=10, padx=10)
-            #self.s16.grid(row=0, column=1, sticky="nsew")
-            #self.s17.grid(row=1, column=1, columnspan=2, sticky="nsew")
-           
-           
-          #  if self.temp_var == True:
-          #      
-          #      self.s16.grid(row=6, column=1, sticky="nsew")
-          #      self.s17.grid(row=7, column=1, columnspan=2, sticky="nsew")
-                
                
                 
-            if self.temp_var.get() == False and self.depdep.get() == False:
-          #      
+            if self.depdep.get() == False:
+                
                 self.s16.grid(row=1, column=1, sticky="nsew")
                 self.s17.grid(row=2, column=1, columnspan=2, sticky="nsew")
                
                
-             
+            elif self.depdep.get() == True:
+            
+                if self.s11.grid_info()['row'] == 1: 
+                 
+                    self.s16.grid(row=5, column=1, sticky="nsew")
+                    self.s17.grid(row=6, column=1, columnspan=2, sticky="nsew")
             
             
             #emissions variation label
@@ -940,7 +471,7 @@ class Hem4():
             #emissions variation upload button
             self.evar = ttk.Button(self.s17)
             self.evar["text"] = "Browse"
-            self.evar["command"] = self.upload_evar
+            #self.evar["command"] = self.upload_evar
             self.evar.grid(row=2, column=0, sticky="W")
             #self.urep.bind('<Enter>', lambda e:self.emis_var_browse())
             
@@ -952,11 +483,7 @@ class Hem4():
             self.evar_list_man.grid(row=2, column=0, sticky='E', padx=85)
             #event handler for instructions (Button 1 is the left mouse click)
             #self.evar_list_man.bind('<Button-1>', lambda e:self.emis_var_man())
-            
-            
-            
-            
-            
+             
             
         if self.emis_var.get() == False:
             self.s16.destroy()
@@ -966,36 +493,19 @@ class Hem4():
     def add_temp_var(self):
         
         if self.temp_var.get() == True:
-            print('triggered')
-            
-            self.s18 = tk.Label(self.main, font="-size 10", text='What diurnal resolution would you like in the output file')
-            self.s19 = tk.Frame(self.main, width=250, height=100, pady=10, padx=10)
-            #self.s18.grid(row=6, column=1, sticky="nsew")
-            #self.s19.grid(row=7, column=1, columnspan=2, sticky="nsew")
             
             
+            #
+            #self.s19 = tk.Frame(self.main, width=250, height=100, padx=20, pady=50)
+            #self.s18.grid(row=7, column=1, sticky="nsew")
+            #self.s19.grid(row=7, column=2, columnspan=2, sticky="nsew")
             
-           # if  self.emis_var == True:
-           #     
-           #     self.s18.grid(row=6, column=1, sticky="nsew")
-           #     self.s19.grid(row=7, column=1, columnspan=2, sticky="nsew")
-                
-               
-                
-            if self.emis_var.get() == False and self.depdep.get() == False:
-                
-                
-                self.s18.grid(row=1, column=1, sticky="nsew")
-                self.s19.grid(row=2, column=1, columnspan=2, sticky="nsew")
-               
-            
-            
-            
-            #hourlist= ('1 hr', '2 hrs', '3 hrs', '4 hrs', '6 hrs', '8 hrs', '12 hrs', '24 hrs' )
-            #hours = tk.StringVar(value=hourlist)
+            diurnal = tk.Label(self.s9, text='Diurnal resolution for the output file (scroll):').grid(row=1, column=1)
+            hourlist= ('1 hr', '2 hrs', '3 hrs', '4 hrs', '6 hrs', '8 hrs', '12 hrs', '24 hrs' )
+            hours = tk.StringVar(value=hourlist)
             #listbox of diurnal resolutions
-            #lbox = tk.Listbox(self.s19, listvariable=hours, height=3)
-            #lbox.grid(row=1, column=1)
+            lbox = tk.Listbox(self.s9, listvariable=hours, height=3)
+            lbox.grid(row=1, column=2)
              
             
         if self.temp_var.get() == False:
@@ -1003,6 +513,953 @@ class Hem4():
             self.s19.destroy()
         
 
+        
+        #%% Specific upload functions for selecting each file, once selected convert excel file to dataframe
+   
+    def upload(self, file):
+        """ The upload funtion takes a file string triggered by a button in the GUI, it then uses that to determine which type of file to unload """
+    
+        #checks
+        if file == "polyvertex":
+        
+            if hasattr(self, "emisloc_df"): 
+                filename = askopenfilename()
+            else:
+                messagebox.showinfo("Emissions Locations File Missing", "Please upload an Emissions Locations file before adding a Polyvertex file.")
+        
+        elif file == "bouyant":
+           
+            if hasattr(self, "emisloc_df"): 
+                filename = askopenfilename()
+            else:
+                messagebox.showinfo("Emissions Locations File Missing", "Please upload an Emissions Locations file before adding a Bouyant line file.")
+        
+    
+        elif file == "user receptors":
+            
+            if hasattr(self, "faclist_df"): 
+                filename = askopenfilename()
+            else:
+                messagebox.showinfo("Facilities List Option File Missing", "Please upload a Facilities List Options file before selecting a User Receptors file.")
+        
+        else:
+            #get file name from open dialogue
+            filename = askopenfilename()
+        
+        #if the upload is canceled 
+        if filename == None:
+            print("Canceled!")
+            #eventually open box or some notification to say this is required 
+        elif is_excel(filename) == False:
+            messagebox.showinfo("Invalid file format", "Not a valid file format, please upload an excel file for " + file +".")
+        elif is_excel(filename) == True:
+            file_path = os.path.abspath(filename)
+                          
+            if file == "facilities options list":
+                
+                self.fac_list.set(file_path)
+                self.fac_path = file_path
+                
+                #   FACILITIES LIST excel to dataframe
+    
+                self.faclist_df = pd.read_excel(open(self.fac_path,'rb')
+                    , names=("fac_id","met_station","rural_urban","max_dist","model_dist"
+                            ,"radial","circles","overlap_dist","acute","hours"
+                            ,"elev","multiplier","ring1","dep","depl","phase"
+                            ,"pdep","pdepl","vdep","vdepl","all_rcpts","user_rcpt"
+                            ,"bldg_dw","urban_pop","fastall")
+                    , converters={"fac_id":str,"met_station":str,"rural_urban":str
+                            ,"acute":str
+                            ,"elev":str,"dep":str,"depl":str,"phase":str
+                            ,"pdep":str,"pdepl":str,"vdep":str,"vdepl":str,"all_rcpts":str,"user_rcpt":str
+                            ,"bldg_dw":str,"fastall":str})
+        
+                #manually convert fac_list to numeric
+                self.faclist_df["model_dist"] = pd.to_numeric(self.faclist_df["model_dist"],errors="coerce")
+                self.faclist_df["radial"] = pd.to_numeric(self.faclist_df["radial"],errors="coerce")
+                self.faclist_df["circles"] = pd.to_numeric(self.faclist_df["circles"],errors="coerce")
+                self.faclist_df["overlap_dist"] = pd.to_numeric(self.faclist_df["overlap_dist"],errors="coerce")
+                self.faclist_df["hours"] = pd.to_numeric(self.faclist_df["hours"],errors="coerce")
+                self.faclist_df["multiplier"] = pd.to_numeric(self.faclist_df["multiplier"],errors="coerce")
+                self.faclist_df["ring1"] = pd.to_numeric(self.faclist_df["ring1"],errors="coerce")
+                self.faclist_df["urban_pop"] = pd.to_numeric(self.faclist_df["urban_pop"],errors="coerce")
+                self.faclist_df["max_dist"] = pd.to_numeric(self.faclist_df["max_dist"],errors="coerce")
+                
+                #grab facility ideas for comparison with hap emission and emission location files
+                self.facids = self.faclist_df['fac_id']
+                    
+                self.scr.insert(tk.INSERT, "Uploaded facilities options list file for " + str(self.facids.count()) + " facilities" )
+                self.scr.insert(tk.INSERT, "\n")
+                
+            elif file == "hap emissions":
+                    
+                self.hap_list.set(file_path)
+                self.hap_path = file_path
+                
+                #HAP EMISSIONS excel to dataframe    
+                self.hapemis_df = pd.read_excel(open(self.hap_path, "rb")
+                    , names=("fac_id","source_id","pollutant","emis_tpy","part_frac")
+                    , converters={"fac_id":str,"source_id":str,"pollutant":str,"emis_tpy":float,"part_frac":float})
+                
+                #fill Nan with 0
+                self.hapemis_df.fillna(0)
+                
+                #turn part_frac into a decimal
+                self.hapemis_df['part_frac'] = self.hapemis_df['part_frac'] / 100
+    
+                #create additional columns, one for particle mass and the other for gas/vapor mass...
+                self.hapemis_df['particle'] = self.hapemis_df['emis_tpy'] * self.hapemis_df['part_frac']
+                self.hapemis_df['gas'] = self.hapemis_df['emis_tpy'] * (1 - self.hapemis_df['part_frac'])
+    
+    
+                #get unique list of polutants from input
+                pollutants = set(self.hapemis_df['pollutant'])
+    
+                #get list of pollutants from dose library
+                dose = pd.read_excel(open('Dose_Response_Library.xlsx', 'rb'))
+                master_list = set(dose['Pollutant'])
+    
+                #check pollutants against pollutants in dose library
+                missing_pollutants = []
+                for pollutant in pollutants:
+                    if pollutant not in master_list:
+                        missing_pollutants.append(pollutant)
+                
+                #if there are any missing pollutants
+                if len(missing_pollutants) > 0:
+                    fix_pollutants = messagebox.askyesno("Unassigned Missing Pollutants in dose response library", "The following pollutants were not found in HEM4's Dose Response Library: " + ", ".join(missing_pollutants) + "\n. have not been assigned. Would you like to continue with a generic value or go to the resources folder and add missing pollutants?")
+                    #if yes, clear box and empty dataframe
+                    if fix_pollutants == 'yes':
+                        pass
+                    
+                        
+                    #if no, assign generic value and continue 
+                    elif fix_pollutants == 'no':
+                        pass
+                            #record upload in log
+                            #add another essage to say the following pollutants were assigned a generic value...
+                    
+                else:
+                        #record upload in log
+                    hap_num = set(self.hapemis_df['fac_id'])
+                    self.scr.insert(tk.INSERT, "Uploaded HAP emissions file for " + str(len(hap_num)) + " facilities" )
+                    self.scr.insert(tk.INSERT, "\n")
+                
+                
+            elif file == "emissions locations":
+                    
+                self.emisloc_list.set(file_path)
+                self.emisloc_path = file_path
+                  
+                    #EMISSIONS LOCATION excel to dataframe
+                self.emisloc_df = pd.read_excel(open(self.emisloc_path, "rb")
+                , names=("fac_id","source_id","location_type","lon","lat","utmzone","source_type"
+                         ,"lengthx","lengthy","angle","horzdim","vertdim","areavolrelhgt","stkht"
+                         ,"stkdia","stkvel","stktemp","elev","x2","y2")
+                , converters={"fac_id":str,"source_id":str,"location_type":str,"lon":float,"lat":float
+                        ,"utmzone":float,"source_type":str,"lengthx":float,"lengthy":float,"angle":float
+                        ,"horzdim":float,"vertdim":float,"areavolrelhgt":float,"stkht":float,"stkdia":float
+                        ,"stkvel":float,"stktemp":float,"elev":float,"x2":float,"y2":float})
+                
+                    #record upload in log
+                emis_num = set(self.emisloc_df['fac_id'])
+                self.scr.insert(tk.INSERT, "Uploaded emissions location file for " + str(len(emis_num)) + " facilities" )
+                self.scr.insert(tk.INSERT, "\n")
+                
+                
+            elif file == "polyvertex":
+                
+                self.poly_list.set(file_path)
+                self.poly_path = file_path
+                
+                #POLYVERTEX excel to dataframe
+                self.multipoly_df = pd.read_excel(open(self.poly_path, "rb")
+                      , names=("fac_id","source_id","location_type","lon","lat","utmzone"
+                               ,"numvert","area")
+                      , converters={"fac_id":str,"source_id":str,"location_type":str,"lon":float
+                                    ,"lat":float,"utmzone":str,"numvert":float,"area":float})
+                
+                #get polyvertex facility list for check
+                find_is = self.emisloc_df[self.emisloc_df['source_type'] == "I"]
+                fis = find_is['fac_id']
+                    
+                #check for unassigned polyvertex            
+                check_poly_assignment = set(self.multipoly_df["fac_id"])
+                poly_unassigned = []             
+                
+                for fac in fis:
+                    if fac not in check_poly_assignment:   
+                        poly_unassigned.append(fac)
+                
+                if len(poly_unassigned) > 0:
+                    messagebox.showinfo("Unassigned Polygon Sources", "Polygon Sources for " + ", ".join(poly_unassigned) + " have not been assigned. Please edit the 'source_type' column in the Emissions Locations file.")
+                    #clear box and empty data frame
+                else:
+                    #record upload in log
+                    self.scr.insert(tk.INSERT, "Uploaded polygon sources for " + " ".join(check_poly_assignment))
+                    self.scr.insert(tk.INSERT, "\n")
+                
+            
+            elif file == "bouyant line":
+                
+                self.bouyant_list.set(file_path)
+                self.bouyant_path = file_path
+                
+                #BOUYANT LINE excel to dataframe
+                self.multibuoy_df = pd.read_excel(open(self.bouyant_path, "rb")
+                      , names=("fac_id", "avgbld_len", "avgbld_hgt", "avgbld_wid", "avglin_wid", "avgbld_sep", "avgbuoy"))
+            
+                
+                #get bouyant line facility list
+                self.emisloc_df['source_type'].str.upper()
+                find_bs = self.emisloc_df[self.emisloc_df['source_type'] == "B"]
+                
+                fbs = find_bs['fac_id'].unique()
+                
+                #check for unassigned buoyants
+                 
+                check_bouyant_assignment = set(self.multibuoy_df["fac_id"])
+                
+                bouyant_unassigned = []     
+                for fac in fbs:
+    
+                    if fac not in check_bouyant_assignment: 
+                        bouyant_unassigned.append(fac)
+                
+                if len(bouyant_unassigned) > 0:
+                    messagebox.showinfo("Unassigned Bouyant Line parameters", "Bouyant Line parameters for " + ", ".join(bouyant_unassigned) + " have not been assigned. Please edit the 'source_type' column in the Emissions Locations file.")
+                else:
+                    #record upload in log
+                    self.scr.insert(tk.INSERT, "Uploaded bouyant line parameters for " + " ".join(check_bouyant_assignment))
+                    self.scr.insert(tk.INSERT, "\n")
+                    
+            
+            elif file == "user receptors":
+                
+                file_path = os.path.abspath(filename)
+                self.urep_list.set(file_path)
+                self.urep_path = file_path
+                
+                #USER RECEPTOR dataframe
+                self.ureceptr_df = pd.read_excel(open(self.urep_path, "rb")
+                      , names=("fac_id", "loc_type", "lon", "lat", "utmzone", "elev", "rec_type", "rec_id"))
+                
+                #check for unassigned user receptors
+                
+                check_receptor_assignment = self.ureceptr_df["fac_id"]
+                
+                receptor_unassigned = []     
+                for receptor in check_receptor_assignment:
+                    #print(receptor)
+                    row = self.faclist_df.loc[self.faclist_df['fac_id'] == receptor]
+                    #print(row)
+                    check = row['user_rcpt'] == 'Y'
+                    #print(check)
+                
+                    if check is False:   
+                        receptor_unassigned.append(str(receptor))
+                
+                
+                if len(receptor_unassigned) > 0:
+                    facilities = set(receptor_unassigned)
+                    messagebox.showinfo("Unassigned User Receptors", "Receptors for " + ", ".join(facilities) + " have not been assigned. Please edit the 'user_rcpt' column in the facility options file.")
+                #else:
+                    #record upload in log
+                    #self.scr.insert(tk.INSERT, "Uploaded user receptors for " + " ".join(check_receptor_assignment))
+                    #self.scr.insert(tk.INSERT, "\n")
+            
+            
+            elif file == "building downwash":
+                
+                file_path = os.path.abspath(filename)
+                self.bd_list.set(file_path)
+                self.bd_path = file_path
+                
+                #building downwash dataframe
+                self.bd_df = pd.read_csv(open(self.bd_path ,"rb"))
+                
+                 #record upload in log
+                self.scr.insert(tk.INSERT, "Uploaded building downwash for...")
+                self.scr.insert(tk.INSERT, "\n")
+                
+                
+            elif file == "particle depletion":
+                    
+                file_path = os.path.abspath(filename)
+                self.dep_part.set(file_path)
+                self.dep_part_path = file_path
+                
+                #particle dataframe
+                self.particle_df = pd.read_excel(open(self.dep_part_path, "rb")
+                      , names=("fac_id", "source_id", "diameter", "mass", "density"))
+                
+                 #record upload in log
+                self.scr.insert(tk.INSERT, "Uploaded particle depletion for...")
+                self.scr.insert(tk.INSERT, "\n")
+                
+            elif file == "land use description":
+                
+                file_path = os.path.abspath(filename)
+                self.dep_land.set(file_path)
+                self.dep_land_path = file_path
+                
+                self.land_df = pd.read_excel(open(self.dep_land_path, "rb"))
+                self.land_df.rename({"Facility ID " : "fac_id"})
+                
+                 #record upload in log
+                self.scr.insert(tk.INSERT, "Uploaded land use description for...")
+                self.scr.insert(tk.INSERT, "\n")
+                
+                
+            elif file == "season vegetation":
+                
+                file_path = os.path.abspath(filename)
+                self.dep_veg.set(file_path)
+                self.dep_veg_path = file_path
+                
+                self.veg_df = pd.read_csv(open(self.dep_veg_path, "rb"))
+                self.veg_df.rename({"Facility ID": "fac_id"})
+                 #record upload in log
+                self.scr.insert(tk.INSERT, "Uploaded season vegetation for...")
+                self.scr.insert(tk.INSERT, "\n")
+      
+        
+            elif file == "emissions variation":
+                
+                file_path = os.path.abspath(filename)
+                self.evar_list.set(file_path)
+                self.evar_list_path = file_path
+                
+                 #record upload in log
+                self.scr.insert(tk.INSERT, "Uploaded emissions variance for...")
+                self.scr.insert(tk.INSERT, "\n")
+                
+            
+        
+ #%% Event handlers for porting instructions
+
+    #reset instructions space
+    def reset_instructions(self):
+        global instruction_instance
+        instruction_instance.set(" ")    
+        
+    #general function for browsing instructions
+    def browse(self, location):
+        global instruction_instance
+        read_inst = open(location, 'r')
+        instruction_instance.set(read_inst.read())
+        
+    #general function for manual uploads    
+    def manual(self, location):
+        global instruction_instance
+        read_inst = open(location, 'r')
+        instruction_instance.set(read_inst.read())
+    
+    #csv option instructions
+    def csv_sel(self):
+        global instruction_instance
+        read_inst = open("instructions/csv_inst.txt", 'r')
+        instruction_instance.set(read_inst.read())
+        
+#%% check deposition and depletion settings function
+    def check_dep(self):
+ #%% Particle ONLY
+     #needs to be applied in a for loop or as an "apply + lambda function"
+        dep_dplt = False
+        
+        if self.faclist['phase'] == 'P': #particle
+            
+            #deposition only
+            if self.faclist['dep'] == 'Y' and self.faclist['depl'] == 'nan':  #wet particle depostion only
+                
+                if self.faclist['pdep'] == 'WO':
+                    
+                    #check for particle size file
+                    if  hasattr(self, 'particle_df'):
+                        dep_dplt = True
+                        keyword = ['WDEP NOWETDPLT']
+                    else:
+                         messagebox.showinfo("To run wet particle deposition only for facility id: " + fac + " a particle size file is required.")
+                        
+                
+                elif self.self.faclist['pdep'] == 'DO': #dry particle deposition only
+                    
+                    #check for particle size file, land_use file, and seasons file
+                    if  hasattr(self, 'particle_df') and hasattr(self, 'land_df') and hasattr(self, 'veg_df'):
+                        dep_dplt = True
+                        keyword = ['DDEP NODRYDPLT']
+                    else:
+                         messagebox.showinfo("To run dry particle deposition only for facility id: " + fac + " particle size, land_use, and season files are required.")
+                    
+                elif self.faclist['pdep'] == 'WD': #wet and dry particle deposition
+                    
+                    #check for particle size file, land_use file, and seasons file
+                    if  hasattr(self, 'particle_df') and hasattr(self, 'land_df') and hasattr(self, 'veg_df'):
+                        dep_dplt = True
+                        keyword = ['WDEP DDEP NOWETDPLT NODRYDPLT']
+                    else:
+                         messagebox.showinfo("To run wet and dry particle deposition for facility id: " + fac + " particle size, land use, and season files are required.")
+            
+            #depletion only
+            elif self.faclist['depl'] == 'Y' and self.faclist['dep'] == 'nan':
+            
+                if self.faclist['pdepl'] == 'WO': #wet particle depletion only
+                #check for particle size file
+                    if  hasattr(self, 'particle_df'):
+                        dep_dplt = True
+                        keyword = ['WETDPLT']
+                    else:
+                         messagebox.showinfo("To run wet particle depletion only for facility id: " + fac + " a particle size file is required.")
+                    
+                    
+                elif self.faclist['pdepl'] == 'DO': #dry particle depletion only
+                #check for particle size file
+                    if  hasattr(self, 'particle_df'):
+                        dep_dplt = True
+                        keyword = ['DRYDPLT']
+                    else:
+                         messagebox.showinfo("To run dry particle depletion only for facility id:" + fac + " a particle size file is required.")
+                    
+            
+                elif self.faclist['pdepl'] == 'WD': #wet and dry particle depletion
+                #check for particle size file
+                    if  hasattr(self, 'particle_df'):
+                        dep_dplt = True
+                        keyword = ['WETDPLT DRYDPLT']
+                    else:
+                         messagebox.showinfo("To run wet and dry particle depletion for facility id:" + fac + "a particle size file is required.")
+                     
+            #deposion with depletion
+            elif self.faclist['dep'] == 'Y' and self.faclist['depl'] == 'Y':  
+            
+                if self.faclist['pdep'] == 'WO' and self.faclist['pdepl'] == 'WO': #wet particle only deposition and depletion
+                
+                #check for particle size file
+                    if  hasattr(self, 'particle_df'):
+                        dep_dplt = True
+                        keyword = 'WDEP'
+                    else:
+                         messagebox.showinfo("To run wet particle only deposition and depletion for facility id:" + fac + "a particle size file is required.")
+                    
+                elif self.faclist['pdep'] == 'DO' and self.faclist['pdepl'] == 'DO': #dry particle only deposition and depletion
+                
+                    #check for particle size file, land_use file, and seasons file
+                    if  hasattr(self, 'particle_df') and hasattr(self, 'land_df') and hasattr(self, 'veg_df'):
+                        dep_dplt = True
+                        keyword = ['DDEP']
+                    else:
+                         messagebox.showinfo("To run dry particle only deposition and depletion for facility id: " + fac + " particle size, land use, and season files are required.")
+            
+                elif self.faclist['pdep'] == 'WD' and self.faclist['pdepl'] == 'WD': #wet and dry particle deposition and depletion
+                
+                    #check for particle size file, land_use file, and seasons file
+                    if  hasattr(self, 'particle_df') and hasattr(self, 'land_df') and hasattr(self, 'veg_df'):
+                        dep_dplt = True
+                        keyword = ['WDEP DDEP']
+                    else:
+                         messagebox.showinfo("To run wet and dry particle deposition and depletion for facility id: " + fac + " particle size, land use, and season files are required.")
+            
+    #%% Vapor ONLY            
+        elif self.faclist['phase'] == 'V':
+            
+            #deposition only
+            if self.faclist['dep'] == 'Y' and self.faclist['depl'] == 'nan': 
+                
+                if self.faclist['vdep'] == 'WO': #wet vapor deposition only
+                    keyword = ['WDEP NOWETDPLT']
+                    #nothing?
+                    
+                elif self.faclist['vdep'] == 'DO': #dry vapor deposition only
+          
+                    #check for land_use file, and seasons file
+                    if  hasattr(self, 'land_df') and hasattr(self, 'veg_df'):
+                        dep_dplt = True
+                        keyword = ['DDEP NODRYDPLT']
+                    else:
+                         messagebox.showinfo("To run dry vapor deposition only for facility id: " + fac + " land use and season files are required.")
+                
+                
+                elif self.faclist['vdep'] == 'WD': #wet and dry vapor deposition only
+                    
+                    #check for land_use file, and seasons file
+                    if  hasattr(self, 'land_df') and hasattr(self, 'veg_df'):
+                        dep_dplt = True
+                        keyword = ['WDEP DDEP NOWETDPLT NODRYDPLT']
+                    else:
+                         messagebox.showinfo("To run wet and dry vapor deposition only for facility id: " + fac + " a particle size file is required.")
+                    
+            #depletion only
+            elif self.faclist['depl'] == 'Y' and self.faclist['dep'] == 'nan':
+                
+                if self.faclist['vdepl'] == 'WO': #wet vapor depletion only
+                #nothing?
+                    keyword = ['WETDPLT']
+                
+                elif self.faclist['vdepl'] == 'DO': #dry vapor depletion only
+                #nothing?
+                   keyword = ['DRYDPLT']
+                
+                elif self.faclist['vdepl'] == 'WD': #wet and dry vapor depletion only
+                #nothing?
+                    keyword = ['WETDPLT DRYDPLT']
+            
+            #deposion with depletion
+            elif self.faclist['dep'] == 'Y' and self.faclist['depl'] == 'Y':
+                
+                if self.faclist['vdep'] == 'WO'  and self.faclist['vdepl'] == 'WO': #vapor only deposition and depletion
+                #nothing
+                    keyword = ['WDEP']
+                
+                elif self.faclist['vdep'] == 'DO' and self.faclist['vdepl'] == 'DO':
+                    
+                    #check for land_use file, and seasons file
+                    if  hasattr(self, 'land_df') and hasattr(self, 'veg_df'): #dry vapor depositon and depletion
+                        dep_dplt = True
+                        keyword = ['DDEP']
+                    else:
+                        messagebox.showinfo("To run dry vapor deposition and depletion for facility id: " + fac + " land use and season files are required.")
+            
+                
+                elif self.faclist['vdep'] == 'WD' and self.faclist['vdepl'] == 'WD': #wet and dry vapor deposition and depletion
+                    
+                    #check for particle size file, land_use file, and seasons file
+                    if  hasattr(self, 'land_df') and hasattr(self, 'veg_df'):
+                        dep_dplt = True
+                        keyword = ['WDEP DDEP']
+                    else:
+                         messagebox.showinfo("To run wet and dry vapor deposition and depletion for facility id: " + fac + " land use and season files are required.")
+            
+                
+    #%% Particle and Vapor
+        #deposition with depletion    
+        elif self.faclist['phase'] == 'B':
+            
+            #deposition only
+            if self.faclist['dep'] == 'Y' and self.faclist['depl'] == 'nan': 
+                
+                if self.faclist['pdep'] == 'WD' and self.faclist['vdep'] == 'WD': #wet and dry particle, wet and dry vapor deposition only
+                    
+                #check for particle size file, land_use file, and seasons file
+                    if  hasattr(self, 'particle_df') and hasattr(self, 'land_df') and hasattr(self, 'veg_df'):
+                        dep_dplt = True
+                        keyword = ['WDEP DDEP NOWETDPLT NODRYDPLT', 'WDEP DDEP NOWETDPLT NODRYDPLT']
+                    else:
+                         messagebox.showinfo("To run wet and dry particle and wey and dry vapor deposition only for facility id: " + fac + " particle size, land use, and seasons files are required.")
+            
+                
+                elif self.faclist['pdep'] == 'WO' and self.faclist['vdep'] == 'WO': #wet particle and wet vapor deposition only
+                    
+                #check for particle size file
+                    if  hasattr(self, 'particle_df'):
+                        dep_dplt = True
+                        keyword = ['WDEP NOWETDPLT', 'WDEP NOWETDPLT']
+                    else:
+                         messagebox.showinfo("To run wet particle and wet vapor deposition only for facility id: " + fac + " a particle size file is required.")
+                
+                elif self.faclist['pdep'] == 'DO' and self.faclist['vdep'] == 'DO': #dry particle and dry vapor deposition only
+                    
+                #check for particle size file, land_use file, and seasons file
+                    if  hasattr(self, 'particle_df') and hasattr(self, 'land_df') and hasattr(self, 'veg_df'):
+                        dep_dplt = True
+                        keyword = ['DDEP NODRYDPLT', 'DDEP NODRYDPLT' ]
+                    else:
+                         messagebox.showinfo("To run dry particle and dry vapor deposition only for facility id: " + fac + " particle size, land use, and seasons files are required.")
+            
+                
+                elif self.faclist['pdep'] == 'WO' and self.faclist['vdep'] == 'DO': #wet particle and dry vapor deposition only
+                    
+                #check for particle size file, land_use file, and seasons file
+                    if  hasattr(self, 'particle_df') and hasattr(self, 'land_df') and hasattr(self, 'veg_df'):
+                        dep_dplt = True
+                        keyword = ['WDEP NOWETDPLT', 'DDEP NOWETDPLT']
+                    else:
+                         messagebox.showinfo("To run wet particle ad dry vapor deposition only for facility id: " + fac + " particle size, land use, and seasons files are required.")
+            
+                
+                elif self.faclist['pdep'] == 'DO' and self.faclist['vdep'] == 'WO': #dry particle and wet vapor deposition only
+                    
+                    #check for particle size file
+                    if  hasattr(self, 'particle_df'):
+                        dep_dplt = True
+                        keyword = ['DDEP NODRYDPLT', 'WDEP NOWETDPLT']
+                    else:
+                         messagebox.showinfo("To run dry particle and wet vapor depostion only for facility id: " + fac + " a particle size file is required.")
+            
+                elif self.faclist['pdep'] == 'WD' and self.faclist['vdep'] == 'WO': #wet and dry particle and wet vapor deposition only
+                    
+                    #check for particle size file
+                    if  hasattr(self, 'particle_df'):
+                        dep_dplt = True
+                        keyword = ['WDEP DDEP NOWETDPLT NODRYDPLT', 'WDEP NOWETDPLT']
+                    else:
+                         messagebox.showinfo("To run wet and dry particle and wet vapor deposition only for facility id: " + fac + " a particle size file is required.")
+            
+                elif self.faclist['pdep'] == 'WD' and self.faclist['vdep'] == 'DO': #wet and dry particle and dry vapor deposition only
+                    
+                #check for particle size file, land_use file, and seasons file
+                    if  hasattr(self, 'particle_df') and hasattr(self, 'land_df') and hasattr(self, 'veg_df'):
+                        dep_dplt = True
+                        keyword = ['WDEP DDEP NOWETDPLT NODRYDPLT', 'DDEP NODRYDEPLT']
+                    else:
+                         messagebox.showinfo("To run wet and dry particle and wet vapor deposition only for facility id: " + fac + " particle size, land use, and seasons files are required.")
+            
+                
+                elif self.faclist['pdep'] == 'WO' and self.faclist['vdep'] == 'WD': #wet particle and wet and dry vapor deposition only
+                    
+                #check for particle size file, land_use file, and seasons file
+                    if  hasattr(self, 'particle_df') and hasattr(self, 'land_df') and hasattr(self, 'veg_df'):
+                        dep_dplt = True
+                        keyword = ['WDEP NOWETDPLT', 'WDEP DDEP NOWETDPLT NODRYDPLT']
+                    else:
+                         messagebox.showinfo("To run wet particle and wet and dry vapor deposition only for facility id: " + fac + " particle size, land use, and seasons files are required.")
+            
+            
+                elif self.faclist['pdep'] == 'DO' and self.faclist['vdep'] == 'WD': #dry particle and wet and dry vapor deposition only
+                    
+                #check for particle size file, land_use file, and seasons file
+                    if  hasattr(self, 'particle_df') and hasattr(self, 'land_df') and hasattr(self, 'veg_df'):
+                        dep_dplt = True
+                        keyword = ['DDEP NODRYDPLT', 'WDEP DDEP NOWETDPLT NODRYDPLT']
+                    else:
+                         messagebox.showinfo("To run dry particle and wet and dry vapor deposition only for facility id: " + fac + " particle size, land use, and seasons files are required.")
+            
+            
+                elif self.faclist['pdep'] == 'WO' and self.faclist['vdep'] == 'NO': #wet particle no vapor
+                    
+                 #check for particle size file
+                    if  hasattr(self, 'particle_df'):
+                        dep_dplt = True
+                        keyword = ['WDEP NOWETDPLT', 'None']
+                    else:
+                         messagebox.showinfo("To run wet particle deposition (no vapor) for facility id: " + fac + " a particle size file is required.")
+                 
+                elif self.faclist['pdep'] == 'DO' and self.faclist['vdep'] == 'NO': #dry particle no vapor
+                    
+                #check for particle size file
+                    if  hasattr(self, 'particle_df'):
+                        dep_dplt = True
+                        keyword = ['DDEP NODRYDPLT', None]
+                    else:
+                         messagebox.showinfo("To run dry particle deposition (no vapor) for facility id: " + fac + " a particle size file is required.")
+        
+                elif self.faclist['pdep'] == 'WD' and self.faclist['vdep'] == 'NO': #wet and dry particle no vapor
+                    
+                #check for particle size file
+                    if  hasattr(self, 'particle_df'):
+                        dep_dplt = True
+                        keyword = ['WDEP DDEP NOWETDPLT NODRYDPLT', None]
+                    else:
+                         messagebox.showinfo("To run wet and dry particle deposition (no vapor) for facility id: " + fac + " a particle size file is required.")
+    
+                elif self.faclist['pdep'] == 'NO' and self.faclist['vdep'] == 'WO': #no particle, wet vapor
+                    keyword = [None, 'WDEP NOWETDPLT']
+                #nothing
+    
+                elif self.faclist['pdep'] == 'NO' and self.faclist['vdep'] == 'DO': #no particle, dry vapor
+                    keyword = [None, 'DDEP NODRYDPLT']
+                #land use, season
+    
+                elif self.faclist['pdep'] == 'NO' and self.faclist['vdep'] == 'WD': #no particle, wet and dry vapor
+                    keyword = [None, 'WDEP DDEP NOWETDPLT NODRYDPLT']
+                #land use, season
+    
+                elif self.faclist['pdep'] == 'NO' and self.faclist['vdep'] == 'NO': #no particle, no vapor (set to phase B)
+                    keyword = [None, None]
+                #nothing
+            
+                 
+            #depletion only
+            
+            elif self.faclist['depl'] == 'Y' and self.faclist['dep'] == 'nan': 
+               
+                if self.faclist['pdepl'] == 'WD' and self.faclist['vdepl'] == 'WD': #wet and dry particle and wet and dry vapor depletion only
+                    
+                #check for particle size file
+                    if  hasattr(self, 'particle_df'):
+                        dep_dplt = True
+                        keyword = ['WETDPLT DRYDPLT', 'WETDPLT DRYDPLT']
+                    else:
+                         messagebox.showinfo("To run wet and dry particle and wet and dry vapor depletion only for facility id: " + fac + " a particle size file is required.")
+        
+                elif self.faclist['pdepl'] == 'WO' and self.faclist['vdepl'] == 'WO': #wet particle and wet vapor depletion only
+                    
+                #check for particle size file
+                    if  hasattr(self, 'particle_df'):
+                        dep_dplt = True
+                        keyword = ['WETDPLT', 'WETDPLT']
+                    else:
+                         messagebox.showinfo("To run wet particle and wet vapor depletion only for facility id: " + fac + " a particle size file is required.")
+            
+                elif self.faclist['pdepl'] == 'DO' and self.faclist['vdepl'] == 'DO': #dry particle and dry vapor depletion only
+                    
+                #check for particle size file
+                    if  hasattr(self, 'particle_df'):
+                        dep_dplt = True
+                        keyword = ['DRYDPLT', 'DRYDPLT']
+                    else:
+                         messagebox.showinfo("To run dry particle and dry vapor depletion only for facility id: " + fac + " a particle size file is required.")
+        
+                elif self.faclist['pdepl'] == 'WO' and self.faclist['vdepl'] == 'DO': #wet particle and dry vapor depletion only
+                    
+                #check for particle size file
+                    if  hasattr(self, 'particle_df'):
+                        dep_dplt = True
+                        keyword = ['WETDPLT', 'DRYDPLT']
+                    else:
+                         messagebox.showinfo("To run wet particle and dry vapor depletion only for facility id: " + fac + " a particle size file is required.")
+        
+                
+                elif self.faclist['pdepl'] == 'DO' and self.faclist['vdepl'] == 'WO': #dry particle, wet vapor depletion only
+                
+                #check for particle size file
+                    if  hasattr(self, 'particle_df'):
+                        dep_dplt = True
+                        keyword = ['DRYDPLT', 'WETDPLT']
+                    else:
+                         messagebox.showinfo("To run dry particle and wet vapor depletion only for facility id: " + fac + " a particle size file is required.")
+                
+                
+                elif self.faclist['pdepl'] == 'WD' and self.faclist['vdepl'] == 'WO': #wet and dry particle and wet vapor depletion only
+                   
+                #check for particle size file
+                    if  hasattr(self, 'particle_df'):
+                        dep_dplt = True
+                        keyword = ['WETDPLT DRYDPLT', 'WETDPLT']
+                    else:
+                         messagebox.showinfo("To run wet and dry particle and wet vapor depletion only for facility id: " + fac + " a particle size file is required.")
+        
+                elif self.faclist['pdepl'] == 'WD' and self.faclist['vdepl'] == 'DO': #wet and dry particle and dry vapor depletion only
+                    
+                #check for particle size file
+                    if  hasattr(self, 'particle_df'):
+                        dep_dplt = True
+                        keyword = ['WETDPLT DRYDPLT', 'DRYDPLT']
+                    else:
+                         messagebox.showinfo("To run wet and dry particle and dry vapor depletion only for facility id: " + fac + " a particle size file is required.")
+    
+                elif self.faclist['pdepl'] == 'WO' and self.faclist['vdepl'] == 'WD': #wet particle and wet and dry vapor depletion only
+                   
+                #check for particle size file
+                    if  hasattr(self, 'particle_df'):
+                        dep_dplt = True
+                        keyword = ['WETDPLT', 'WETDPLT DRYDPLT']
+                    else:
+                         messagebox.showinfo("To run wet particle and wet and dry vapor depletion only for facility id: " + fac + " a particle size file is required.")
+        
+                elif self.faclist['pdepl'] == 'DO' and self.faclist['vdepl'] == 'WD': #dry particle and wet and dry vapor depletion only
+                   
+                #check for particle size file
+                    if  hasattr(self, 'particle_df'):
+                        dep_dplt = True
+                        keyword = ['DRYDPLT', 'WETDPLT DRYDPLT']
+                    else:
+                         messagebox.showinfo("To run dry particle and wet and dry vapor depletion only for facility id: " + fac + " a particle size file is required.")
+            
+                elif self.faclist['pdepl'] == 'WO' and self.faclist['vdepl'] == 'NO': #wet particle no vapor depletion
+                    
+                #check for particle size file
+                    if  hasattr(self, 'particle_df'):
+                        dep_dplt = True
+                        keyword = ['WETDPLT', None]
+                    else:
+                         messagebox.showinfo("To run wet particle (no vapor) depletion for facility id: " + fac + " a particle size file is required.")
+        
+                elif self.faclist['pdepl'] == 'DO' and self.faclist['vdepl'] == 'NO': #dry particle no vapor depletion
+                    
+                #check for particle size file
+                    if  hasattr(self, 'particle_df'):
+                        dep_dplt = True
+                        keyword = ['DRYDPLT', None]
+                    else:
+                         messagebox.showinfo("To run dry particle (no vapor) depletion for facility id: " + fac + " a particle size file is required.")
+        
+                elif self.faclist['pdepl'] == 'WD' and self.faclist['vdepl'] == 'NO': #wet and dry particle no vapor depletion
+                    
+                #check for particle size file
+                    if  hasattr(self, 'particle_df'):
+                        dep_dplt = True
+                        keyword = ['WETDPLT DRYDPLT', None]
+                    else:
+                         messagebox.showinfo("To run wet and dry particle (no vapor) depletion for facility id: " + fac + " a particle size file is required.")
+            
+                elif self.faclist['pdepl'] == 'NO' and self.faclist['vdepl'] == 'WO': #no particle wet vapor depletion only
+                    keyword = [None, 'WETDPLT']
+                #nothing
+            
+                elif self.faclist['pdepl'] == 'NO' and self.faclist['vdepl'] == 'DO': #no particle dry vapor depletion
+                    
+                #check for particle size file, land_use file, and seasons file
+                    if  hasattr(self, 'land_df') and hasattr(self, 'veg_df'):
+                        dep_dplt = True
+                        keyword = [None, 'DRYDPLT']
+                    else:
+                         messagebox.showinfo("To no particle dry vapor depletion only for facility id: " + fac + " land use and season files are required.")
+            
+        
+                elif self.faclist['pdepl'] == 'NO' and self.faclist['vdepl'] == 'WD': #no particle wet and dry vapor depletion only
+                    
+                #check for particle size file, land_use file, and seasons file
+                    if  hasattr(self, 'particle_df') and hasattr(self, 'land_df') and hasattr(self, 'veg_df'):
+                        dep_dplt = True
+                        keyword = [None, 'WETPLT DRYDPLT']
+                    else:
+                         messagebox.showinfo("To run no particle wet and dry vapor depletion only for facility id: " + fac + " land use and season files are required.")
+            
+        
+                elif self.faclist['pdepl'] == 'NO' and self.faclist['vdepl'] == 'NO': #no vapor, no particle
+                    
+                #check for particle size file
+                    if  hasattr(self, 'particle_df'):
+                        dep_dplt = True
+                        keyword = [None, None]
+                    else:
+                         messagebox.showinfo("To run no particle and no vapor depletion for facility id: " + fac + " a particle size file is required.")
+            
+            #both desposition and depletion 
+           
+            elif self.faclist['dep'] == 'Y' and self.faclist['depl'] == 'Y':
+        
+                if self.faclist['pdep'] == 'WD' and self.faclist['vdep'] == 'WD' and self.faclist['pdepl'] == 'WD' and self.faclist['vdepl'] == 'WD': #wet and dry particle and wet and dry vapor deposition and depletion
+                   
+                    #check for particle size file, land_use file, and seasons file
+                    if  hasattr(self, 'particle_df') and hasattr(self, 'land_df') and hasattr(self, 'veg_df'):
+                        dep_dplt = True
+                        keyword = ['WDEP DDEP', 'WDEP DDEP']
+                    else:
+                         messagebox.showinfo("To run wet and dry particle and wet and dry vapor deposition and depletion for facility id: " + fac + " particle size, land use, and season files are required.")
+            
+        
+                elif self.faclist['pdep'] == 'WO' and self.faclist['vdep'] == 'WO' and self.faclist['pdepl'] == 'WO' and self.faclist['vdepl'] == 'WO': #wet particle and wet vapor deposition and depletion
+                   
+                    #check for particle size file
+                    if  hasattr(self, 'particle_df'):
+                        dep_dplt = True
+                        keyword = ['WDEP', 'WDEP']
+                    else:
+                         messagebox.showinfo("To run wet particle and wet vapor deposition and depletion for facility id: " + fac + " a particle size file is required.")
+            
+                elif self.faclist['pdep'] == 'DO' and self.faclist['vdep'] == 'DO' and self.faclist['pdepl'] == 'DO' and self.faclist['vdepl'] == 'DO': #dry particle and dry vapor deposition and depletion
+                    
+                    #check for particle size file, land_use file, and seasons file
+                    if  hasattr(self, 'particle_df') and hasattr(self, 'land_df') and hasattr(self, 'veg_df'):
+                        dep_dplt = True
+                        keyword = ['DDEP', 'DDEP']
+                    else:
+                         messagebox.showinfo("To run dry particle and dry vapor deposition and depletion for facility id: " + fac + " particle size, land use, and season files are required.")
+        
+                elif self.faclist['pdep'] == 'WO' and self.faclist['vdep'] == 'DO' and self.faclist['pdepl'] == 'WO' and self.faclist['vdepl'] == 'DO': #wet particle and dry vapor deposition and depletion
+                   
+                    #check for particle size file, land_use file, and seasons file
+                    if  hasattr(self, 'particle_df') and hasattr(self, 'land_df') and hasattr(self, 'veg_df'):
+                        dep_dplt = True
+                        keyword = ['WDEP', 'DDEP']
+                    else:
+                         messagebox.showinfo("To run wet particle and dry vapor deposition and depletion for facility id: " + fac + " particle size, land use, and season files are required.")
+        
+                elif self.faclist['pdep'] == 'DO' and self.faclist['vdep'] == 'WO' and self.faclist['pdepl'] == 'DO' and self.faclist['vdepl'] == 'WO': #dry particle and wet vapor depostion and depletion
+                    
+                    #check for particle size file
+                    if  hasattr(self, 'particle_df'):
+                        dep_dplt = True
+                        keyword = ['DDEP', 'WDEP']
+                    else:
+                         messagebox.showinfo("To run dry particle and wet vapor deposition and depletion for facility id: " + fac + " a particle size file is required.")
+            
+                elif self.faclist['pdep'] == 'WD' and self.faclist['vdep'] == 'WO' and self.faclist['pdepl'] == 'WD' and self.faclist['vdepl'] == 'WO': #wet and dry particle and wet vapor deposition and depletion
+                    
+                    #check for particle size file
+                    if  hasattr(self, 'particle_df'):
+                        dep_dplt = True
+                        keyword = ['WDEP DDEP', 'WDEP']
+                    else:
+                         messagebox.showinfo("To run wet and dry particle and wet vapor deposition and depletion for facility id: " + fac + " a particle size file is required.")
+        
+                elif self.faclist['pdep'] == 'WD' and self.faclist['vdep'] == 'DO' and self.faclist['pdepl'] == 'WD' and self.faclist['vdepl'] == 'DO': #wet and dry particle and dry vapor deposition and depletion
+                    
+                    #check for particle size file, land_use file, and seasons file
+                    if  hasattr(self, 'particle_df') and hasattr(self, 'land_df') and hasattr(self, 'veg_df'):
+                        dep_dplt = True
+                        keyword = ['WDEP DDEP', 'DDEP']
+                    else:
+                         messagebox.showinfo("To run wet and dry particle and dry vapor deposition and depletion for facility id: " + fac + " particle size, land use, and season files are required.")
+                
+                elif self.faclist['pdep'] == 'WO' and self.faclist['vdep'] == 'WD' and self.faclist['pdepl'] == 'WO' and self.faclist['vdepl'] == 'WD': #wet particle and wet and dry vapor
+                    
+                    #check for particle size file, land_use file, and seasons file
+                    if  hasattr(self, 'particle_df') and hasattr(self, 'land_df') and hasattr(self, 'veg_df'):
+                        dep_dplt = True
+                        keyword = ['WDEP', 'WDEP DDEP']
+                    else:
+                         messagebox.showinfo("To run wet particle and wet and dry vapor deposition and depletion for facility id: " + fac + " particle size, land use, and season files are required.")
+            
+                elif self.faclist['pdep'] == 'DO' and self.faclist['vdep'] == 'WD' and self.faclist['pdepl'] == 'DO' and self.faclist['vdepl'] == 'WD': #dry particle and wet and dry vapor deposition and depletion
+                    
+                    #check for particle size file, land_use file, and seasons file
+                    if  hasattr(self, 'particle_df') and hasattr(self, 'land_df') and hasattr(self, 'veg_df'):
+                        dep_dplt = True
+                        keyword = ['DDEP', 'WDEP DDEP']
+                    else:
+                         messagebox.showinfo("To run dry particle and wet and dry deposition and depletion for facility id: " + fac + " particle size, land use, and season files are required.")
+            
+                elif self.faclist['pdep'] == 'WO' and self.faclist['vdep'] == 'NO' and self.faclist['pdepl'] == 'WO' and self.faclist['vdepl'] == 'NO': #wet particle, no vapor
+                    
+                    #check for particle size file
+                    if  hasattr(self, 'particle_df'):
+                        dep_dplt = True
+                        keyword = ['WDEP', None]
+                    else:
+                         messagebox.showinfo("To run wet particle (no vapor) deposition and depletion for facility id: " + fac + " a particle size file is required.")
+        
+                elif self.faclist['pdep'] == 'DO' and self.faclist['vdep'] == 'NO' and self.faclist['pdepl'] == 'DO' and self.faclist['vdepl'] == 'NO': #dry particle no vapor
+                    
+                    #check for particle size file
+                    if  hasattr(self, 'particle_df'):
+                        dep_dplt = True
+                        keyword = ['DDEP', None]
+                    else:
+                         messagebox.showinfo("To run dry particle (no vapor) deposition and depletion for facility id: " + fac + " a particle size file is required.")
+            
+                elif self.faclist['pdep'] == 'WD' and self.faclist['vdep'] == 'NO' and self.faclist['pdepl'] == 'WD' and self.faclist['vdepl'] == 'NO': #wet and dry particle no vapor
+                    
+                    #check for particle size file
+                    if  hasattr(self, 'particle_df'):
+                        dep_dplt = True
+                        keyword = ['WDEP DDEP', None]
+                    else:
+                         messagebox.showinfo("To run wet and dry particle (no vapor ) deposition and depletion for facility id: " + fac + " a particle size file is required.")
+        
+                elif self.faclist['pdep'] == 'NO' and self.faclist['vdep'] == 'WO' and self.faclist['pdepl'] == 'NO' and self.faclist['vdepl'] == 'WO': #no particle and wet vapor deposition and depletion
+                    keyword = [None, 'WDEP']
+                    #nothing
+        
+                elif self.faclist['pdep'] == 'NO' and self.faclist['vdep'] == 'DO' and self.faclist['pdepl'] == 'NO' and self.faclist['vdepl'] == 'DO': #no particle and dry vapor deposition and depletion
+                    
+                    #check for land_use file, and seasons file
+                    if hasattr(self, 'land_df') and hasattr(self, 'veg_df'):
+                        dep_dplt = True
+                        keyword = [None, 'DDEP']
+                    else:
+                         messagebox.showinfo("To run no particle and dry vapor deposition and depletion for facility id: " + fac + " land use, and season files are required.")
+        
+                elif self.faclist['pdep'] == 'NO' and self.faclist['vdep'] == 'WD' and self.faclist['pdepl'] == 'NO' and self.faclist['vdepl'] == 'WD': #no particle and wet and dry vapor deposition and depletion
+                    
+                    #check for land_use file, and seasons file
+                    if hasattr(self, 'land_df') and hasattr(self, 'veg_df'):
+                        dep_dplt = True
+                        keyword = [None, 'WDEP DDEP']
+                    else:
+                         messagebox.showinfo("To run no particle and wet and dry vapor deposition and depletion for facility id: " + fac + " land use, and season files are required.")
+        
+                elif self.faclist['pdep'] == 'NO' and self.faclist['vdep'] == 'NO' and self.faclist['pdepl'] == 'NO' and self.faclist['vdepl'] == 'NO':
+                    keyword = [None, None]
+                    #nothing
+            
+            return keyword
+             
+            
+            
+        
+             
 #%% Run function with checks if somethign is missing raise the error here and create an additional dialogue before trying to run the file
 
     def run(self):
@@ -1109,28 +1566,13 @@ class Hem4():
         #if depletion calculation
         if self.depdep ==True:
                         
+            #call function to check
         
-        
-        
-            pass
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
+            self.keyword = self.check_dep()
+            if len(self.keyword) == 0:
+                print("Make this check stop everything!!")
+            
+              
         
         else:
             self.depdep = None
@@ -1185,25 +1627,10 @@ class Hem4():
         if len(poly_checklist) > 0:
             messagebox.showinfo("Missing polyvertex", "Please upload polyvertex line file for " + ", ".join(pfacilities))
             ready = False
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
+
         
         if check1 == True & check2 == True & check3 == True:
             ready = True
-        
         
         
         
