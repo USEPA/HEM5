@@ -500,17 +500,17 @@ class Hem4():
             #self.s18.grid(row=7, column=1, sticky="nsew")
             #self.s19.grid(row=7, column=2, columnspan=2, sticky="nsew")
             
-            diurnal = tk.Label(self.s9, text='Diurnal resolution for the output file (scroll):').grid(row=1, column=1)
+            self.diurnal = tk.Label(self.s9, text='Diurnal resolution for the output file (scroll):').grid(row=1, column=1)
             hourlist= ('1 hr', '2 hrs', '3 hrs', '4 hrs', '6 hrs', '8 hrs', '12 hrs', '24 hrs' )
             hours = tk.StringVar(value=hourlist)
             #listbox of diurnal resolutions
-            lbox = tk.Listbox(self.s9, listvariable=hours, height=3)
-            lbox.grid(row=1, column=2)
+            self.lbox = tk.Listbox(self.s9, listvariable=hours, height=3)
+            self.lbox.grid(row=1, column=2)
              
             
         if self.temp_var.get() == False:
-            self.s18.destroy()
-            self.s19.destroy()
+            diurnal.destroy()
+            lbox.s19.destroy()
         
 
         
@@ -616,7 +616,7 @@ class Hem4():
                 pollutants = set(self.hapemis_df['pollutant'])
     
                 #get list of pollutants from dose library
-                dose = pd.read_excel(open('Dose_Response_Library.xlsx', 'rb'))
+                dose = pd.read_excel(open('resources/Dose_Response_Library.xlsx', 'rb'))
                 master_list = set(dose['Pollutant'])
     
                 #check pollutants against pollutants in dose library
@@ -1578,10 +1578,10 @@ class Hem4():
             self.depdep = None
         
         #if they want output as csv 
-        if self.csv == True:
-            print("Output in CSV as well")
-        else:
-            self.csv == False
+        #if self.csv == True:
+        #    print("Output in CSV as well")
+       # else:
+        #    self.csv == False
      
         
        #check user receptors in facility
@@ -1653,7 +1653,7 @@ class Hem4():
            kmlfiles = createkml.write_kml_emis_loc(source_map)
 
            
-           the_queue.put("\nPreparing Inputs for " + str(fac_num) + " facilities")
+           the_queue.put("\nPreparing Inputs for " + str(self.facids.count()) + " facilities")
            pass_ob = prepare.Prepare_Inputs( self.faclist_df, self.emisloc_df, self.hapemis_df, self.multipoly_df, self.multibuoy_df, self.ureceptr_df)
            
            # let's tell after_callback that this completed
