@@ -1061,11 +1061,14 @@ class Runstream():
         rech = list(self.discrecs_df['HILL'][:]) ############################# Hill height
 
         for i in np.arange(len(recx)):
-            redec = "RE DISCCART  " + str(recx[i]) + " " + str(recy[i]) + " " + str(int(round(rece[i]))) + " " + str(int(round(rech[i]))) + "\n"
+            if eleva == "Y":
+                redec = "RE DISCCART  " + str(recx[i]) + " " + str(recy[i]) + " " + str(int(round(rece[i]))) + " " + str(int(round(rech[i]))) + "\n"
+            else:
+                redec = "RE DISCCART  " + str(recx[i]) + " " + str(recy[i])
             inp_f.write(redec)
 
             
-            ## Polar Recptors
+    ## Polar Recptors
     
         rep = "RE GRIDPOLR polgrid1 STA" + "\n"
         repo = "RE GRIDPOLR polgrid1 ORIG " + str(self.cenx) + " " + str(self.ceny) + "\n"
@@ -1076,7 +1079,8 @@ class Runstream():
         inp_f.write(repd)
 
         recep_dis = self.polar_df["distance"].unique()
-        for i in np.arange(len(recep_dis)):
+        num_rings = len(recep_dis)
+        for i in np.arange(num_rings):
             repdis = str(recep_dis[i]) + " "
             inp_f.write(repdis)
 
@@ -1086,12 +1090,35 @@ class Runstream():
         inp_f.write(repi)
 
         recep_dir = self.polar_df["angle"].unique()
-        for i in np.arange(len(recep_dir)):
+        num_sectors = len(recep_dir)
+        for i in np.arange(num_sectors):
             repdir = str(recep_dir[i]) + " "
             inp_f.write(repdir)
 
         inp_f.write(newline)
     
+        #add elevations and hill height if user selected it
+        if eleva == "Y":
+            for i in range(1, num_sectors+1):
+                indexStr = "S" + str(i) + "R1"
+                repelev0 = "RE GRIDPOLR polgrid1 ELEV " + str(self.polar_df["angle"].loc[indexStr]) + " "
+                inp_f.write(repelev0)
+                for j in range(1, num_rings+1):
+                    indexStr = "S" + str(i) + "R" + str(j)
+                    repelev1 = str(self.polar_df["elev"].loc[indexStr]) + " "
+                    inp_f.write(repelev1)
+
+                inp_f.write(newline)
+
+                rephill0 = "RE GRIDPOLR polgrid1 HILL " + str(self.polar_df["angle"].loc[indexStr]) + " "
+                inp_f.write(rephill0)
+                for j in range(1, num_rings+1):
+                    indexStr = "S" + str(i) + "R" + str(j)
+                    rephill1 = str(self.polar_df["hill"].loc[indexStr]) + " "
+                    inp_f.write(rephill1)
+                
+                inp_f.write(newline)
+        
         repe = "RE GRIDPOLR polgrid1 END" + "\n"
         inp_f.write(repe)
     

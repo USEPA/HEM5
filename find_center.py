@@ -21,6 +21,7 @@ def center(sourcelocs, utmz):
     vertx_l = []
     verty_l = []
     for index, row in sourcelocs.iterrows():
+        
         vertx_l.append(row["utme"])
         verty_l.append(row["utmn"])
         
@@ -75,36 +76,54 @@ def center(sourcelocs, utmz):
     # Find the two vertices that are the farthest apart
     # Also find the corners of the modeling domain
     vertx_a = np.array(vertx_l)
+    
     verty_a = np.array(verty_l)
+   
     max_dist = 0
     max_x = min_x = vertx_a[0]
     max_y = min_y = verty_a[0]
-    for i in range(0, len(vertx_a)-1):
-        for j in range(0, len(verty_a)-1):
-            dist = (vertx_a[i] - vertx_a[i+1])**2 + (verty_a[j] - verty_a[j+1])**2
-            if dist > max_dist:
-                max_x = max(max_x,vertx_a[i+1])
-                max_y = max(max_y,verty_a[i+1])
-                min_x = min(min_x,vertx_a[i+1])
-                min_y = min(min_y,verty_a[i+1])
-                max_dist = math.sqrt(dist)
-                xmax1 = vertx_a[i]
-                ymax1 = verty_a[i]
-                xmax2 = vertx_a[i+1]
-                ymax2 = verty_a[i+1]
     
-    # Calculate the center of the facility in utm coordinates
-    cenx = (xmax1 + xmax2) / 2
-    ceny = (ymax1 + ymax2) / 2
+    if len(vertx_a) > 1: #if not a point source
+        for i in range(0, len(vertx_a)-1):
+            for j in range(0, len(verty_a)-1):
+                dist = (vertx_a[i] - vertx_a[i+1])**2 + (verty_a[j] - verty_a[j+1])**2
+                if dist > max_dist:
+                    max_x = max(max_x,vertx_a[i+1])
+                    max_y = max(max_y,verty_a[i+1])
+                    min_x = min(min_x,vertx_a[i+1])
+                    min_y = min(min_y,verty_a[i+1])
+                    max_dist = math.sqrt(dist)
+                    xmax1 = vertx_a[i]
+                    ymax1 = verty_a[i]
+                    xmax2 = vertx_a[i+1]
+                    ymax2 = verty_a[i+1]
     
-    # Compute the lat/lon of the center
-    sceny = pd.Series([ceny])
-    scenx = pd.Series([cenx])
-    sutmz = pd.Series([utmz])
-    acenlat, acenlon = utm2ll.utm2ll(sceny, scenx, sutmz)
+        # Calculate the center of the facility in utm coordinates
+        cenx = (xmax1 + xmax2) / 2
+        ceny = (ymax1 + ymax2) / 2
     
-    cenlon = acenlon[0]
-    cenlat = acenlat[0]
-      
+        # Compute the lat/lon of the center
+        sceny = pd.Series([ceny])
+        scenx = pd.Series([cenx])
+        sutmz = pd.Series([utmz])
+        acenlat, acenlon = utm2ll.utm2ll(sceny, scenx, sutmz)
+    
+        cenlon = acenlon[0]
+        cenlat = acenlat[0]
+        
+    else: #if a point source
+        
+       # Calculate the center of the facility in utm coordinates
+        cenx = max_x
+        ceny = max_y
+    
+        # Compute the lat/lon of the center
+        sceny = pd.Series([ceny])
+        scenx = pd.Series([cenx])
+        sutmz = pd.Series([utmz])
+        acenlat, acenlon = utm2ll.utm2ll(sceny, scenx, sutmz)
+    
+        cenlon = acenlon[0]
+        cenlat = acenlat[0]
 
-    return cenx, ceny, cenlon, cenlat
+    return cenx, ceny, cenlon, cenlat, max_dist, vertx_a, verty_a

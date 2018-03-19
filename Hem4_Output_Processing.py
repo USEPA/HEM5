@@ -9,7 +9,7 @@ import pandas as pd
 import numpy as np
 import inspect
 import math
-import sys
+import os
 
 
 class Process_outputs():
@@ -105,8 +105,7 @@ class Process_outputs():
 
         # Units conversion factor
         cf = 2000*0.4536/3600/8760
-    
-    
+            
         # Read plotfile and put into dataframe
         pfile = open("resources/plotfile.plt", "r")
         plot_df = pd.read_table(pfile, delim_whitespace=True, header=None, 
@@ -242,16 +241,16 @@ class Process_outputs():
         polarconc_sub = polarconc_df[['sector','ring','source_id','pollutant','conc']]
         outer1 = pd.merge(outerblksplus_df, polarconc_sub, how='left', left_on=['s1','r1'], right_on=['sector','ring']) 
         outer1.rename(columns={'conc':'conc_s1r1'},inplace=True)
-        outer1.drop(["sector","ring"],axis=1,inplace=True)
+        #outer1.drop(["sector","ring"],axis=1,inplace=True)
         outer2 = pd.merge(outer1, polarconc_sub, how='left', left_on=['s1','r2','source_id','pollutant'], right_on=['sector','ring','source_id','pollutant']) 
         outer2.rename(columns={'conc':'conc_s1r2'},inplace=True)
-        outer2.drop(["sector","ring"],axis=1,inplace=True)
+        #outer2.drop(["sector","ring"],axis=1,inplace=True)
         outer3 = pd.merge(outer2, polarconc_sub, how='left', left_on=['s2','r1','source_id','pollutant'], right_on=['sector','ring','source_id','pollutant']) 
         outer3.rename(columns={'conc':'conc_s2r1'},inplace=True)
-        outer3.drop(["sector","ring"],axis=1,inplace=True)
+        #outer3.drop(["sector","ring"],axis=1,inplace=True)
         outer4 = pd.merge(outer3, polarconc_sub, how='left', left_on=['s2','r2','source_id','pollutant'], right_on=['sector','ring','source_id','pollutant']) 
         outer4.rename(columns={'conc':'conc_s2r2'},inplace=True)
-        outer4.drop(["sector","ring"],axis=1,inplace=True)
+        #outer4.drop(["sector","ring"],axis=1,inplace=True)
 
         # interpolate
         outer4['conc_ug_m3'] = self.outerinterp(outer4.s, outer4.ring_loc, outer4.conc_s1r1, outer4.conc_s1r2, outer4.conc_s2r1, outer4.conc_s2r2)
