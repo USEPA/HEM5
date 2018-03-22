@@ -547,15 +547,16 @@ class Hem4():
             filename = askopenfilename()
         
         #if the upload is canceled 
-        if filename == None:
+        if filename is None:
             print("Canceled!")
             #eventually open box or some notification to say this is required 
-        elif is_excel(filename) == False:
+        elif is_excel(filename) is False:
             messagebox.showinfo("Invalid file format", "Not a valid file format, please upload an excel file for " + file +".")
-        elif is_excel(filename) == True:
+        elif is_excel(filename) is True:
             file_path = os.path.abspath(filename)
                           
             if file == "facilities options list":
+                #make sure its a facilities list option file
                 
                 self.fac_list.set(file_path)
                 self.fac_path = file_path
@@ -610,35 +611,56 @@ class Hem4():
                 #create additional columns, one for particle mass and the other for gas/vapor mass...
                 self.hapemis_df['particle'] = self.hapemis_df['emis_tpy'] * self.hapemis_df['part_frac']
                 self.hapemis_df['gas'] = self.hapemis_df['emis_tpy'] * (1 - self.hapemis_df['part_frac'])
-    
-    
-                #get unique list of polutants from input
-                pollutants = set(self.hapemis_df['pollutant'])
+
     
                 #get list of pollutants from dose library
                 dose = pd.read_excel(open('resources/Dose_Response_Library.xlsx', 'rb'))
-                master_list = set(dose['Pollutant'])
-    
-                #check pollutants against pollutants in dose library
-                missing_pollutants = []
-                for pollutant in pollutants:
-                    if pollutant not in master_list:
-                        missing_pollutants.append(pollutant)
+                master_list = list(dose['Pollutant'])
+                 
+                missing_pollutants = {}
+                for row in self.hapemis_df.itertuples():
+                    
+                    if row[3] not in master_list:
+                        
+                        if row[1] in missing_pollutants.keys():
+                            
+                            missing_pollutants[row[1]].append(row[3])
+                            
+                        else:
+                            missing_pollutants[row[1]] = [row[3]]
+                
+                for key in missing_pollutants.keys():
+                    missing_pollutants[key] = ', '.join(missing_pollutants[key])
+                    
                 
                 #if there are any missing pollutants
                 if len(missing_pollutants) > 0:
-                    fix_pollutants = messagebox.askyesno("Unassigned Missing Pollutants in dose response library", "The following pollutants were not found in HEM4's Dose Response Library: " + ", ".join(missing_pollutants) + "\n. have not been assigned. Would you like to continue with a generic value or go to the resources folder and add missing pollutants?")
+                    fix_pollutants = messagebox.askyesno("Unassigned Missing Pollutants in dose response library", "The following pollutants were not found in HEM4's Dose Response Library: " + str(missing_pollutants) + "\n have not been assigned. Would you like to skip them in aermod or go to the resources folder and add the missing pollutants?")
                     #if yes, clear box and empty dataframe
-                    if fix_pollutants == 'yes':
+                   
+                    
+                    if fix_pollutants is True:
                         pass
                     
                         
-                    #if no, assign generic value and continue 
-                    elif fix_pollutants == 'no':
-                        pass
+                    #if no, remove them from dataframe 
+                    elif fix_pollutants is False:
+                        missing = list(missing_pollutants.values())
+                        remove = set(missing[0].split(', '))
+                        
+    
+                        #remove them from data frame
+                        
+                        for p in remove:
+                            
+                            self.hapemis_df = self.hapemis_df[self.hapemis_df.pollutant != str(p)]
+                            
                             #record upload in log
                             #add another essage to say the following pollutants were assigned a generic value...
-                    
+                            self.scr.insert(tk.INSERT, "Removed " + p + " from hap emissions file" )
+                            self.scr.insert(tk.INSERT, "\n")
+                        
+                        
                 else:
                         #record upload in log
                     hap_num = set(self.hapemis_df['fac_id'])
