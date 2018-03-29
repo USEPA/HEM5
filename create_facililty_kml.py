@@ -5,6 +5,7 @@ Spyder Editor
 Create text file to be used to create kml file.
 """
 import pandas as pd
+import numpy as np
 from operator import itemgetter
 from collections import OrderedDict
 from shutil import copyfile
@@ -12,14 +13,56 @@ from shutil import copyfile
 
 class facility_kml():
     
-    def __init__(self, facid, faccen_lat, faccen_lon, outdir, allpolar, allinner):
+    def __init__(self, facid, faccen_lat, faccen_lon, outdir):
         
         self.facid = facid
         self.faccen_lat = faccen_lat
         self.faccen_lon = faccen_lon
         self.outdir = outdir
-        self.allpolar = allpolar
-        self.allinner = allinner
+        
+#        self.srcmap = pd.read_excel(r"C:\python\HEM4\KML\Inputs\source_map_w_line.xlsx"
+#                       , names=("utm_e","area","point","census","lat","lon","distance","min_dist"
+#                               ,"bearing","elev","population","source_id","src_height","src_type","lat2","lon2")
+#                       , converters={"utm_e":float,"area":float,"point":float,"census":float,"lat":float,"lon":float
+#                               ,"distance":float,"min_dist":float,"bearing":float,"elev":float,"population":float
+#                               ,"source_id":str,"src_height":float,"src_type":str,"lat2":float,"lon2":float})
+    
+        pxl = pd.ExcelFile(self.outdir + "polar_risk.xlsx") 
+        self.allpolar = pd.read_excel(pxl)
+#                               , names=("source_id", "risk","pollutant","distance","angle","sector","ring","lat","lon"
+#                                        ,"toshi","total_hi","poll_hi")
+#                               , converters={"source_id":str,"risk":float,"pollutant":str,"distance":float,"angle":float
+#                                       ,"sector":float,"ring":float,"lat":float,"lon":float,"toshi":str
+#                                       ,"total_hi":float,"poll_hi":float})
+#            
+        self.allpolar['toshi'] = np.nan
+        self.allpolar['total_hi'] = np.nan
+        self.allpolar['pll_hi'] = np.nan
+        
+        #access innersik.xlxs for facility
+        inxl = pd.ExcelFile(self.outdir + "inner_risk.xlsx")
+        self.allinner = pd.read_excel(inxl)
+        self.allinner['block'] = self.allinner['IDMARPLOT'][5:]
+#                               , names=("utme","utmn","result","elev","hill","flag","avg_time","source_id","num_yrs","net_id"
+#                                        ,"block","lat","lon","population","fac_id","pollutant","emis_tpy","conc","ure","rfc"
+#                                        ,"resp","neuro","risk","resp_hi","neur_hi")
+#                               , converters={"utme":float,"utmn":float,"result":float,"elev":float,"hill":float,"flag":float
+#                                       ,"avg_time":str,"source_id":str,"num_yrs":float,"net_id":str,"block":str,"lat":float,"lon":float      
+#                                       ,"population":float,"fac_id":str,"pollutant":str,"emis_tpy":float,"conc":float
+#                                       ,"ure":float,"rfc":float,"resp":float,"neuro":float,"risk":float
+#                                       ,"resp_hi":float,"neur_hi":float})    
+#            
+           
+        
+#        self.mir = pd.read_excel(r"C:\python\HEM4\KML\Inputs\maximum_indiv_risks.xlsx"
+#                           , names=("parameter","value","population","distance","angle","elevation"
+#                                   ,"fips","block","lat","lon","rec_type")
+#                           , converters={"parameter":str,"value":float,"population":float,"distance":float,"angle":float
+#                                   ,"elevation":float,"fips":str,"block":str,"lat":float,"lon":float,"rec_type":str})
+#                                   
+
+        #removed mir for now
+        kmlfilename = self.write_kml()
 
 
 #%%Create the KML file for a given facility
@@ -27,700 +70,64 @@ class facility_kml():
     def write_kml(self):
 
         # Get the source KML file for this facility and copy it to the output folder as the facility KML        
-        srckml_fname = "working_kml/fac_" + self.facid + "_source.kml"
-        fackml_fname = self.outdir + "fac_" + self.facid + "_srcrec.kml"
+        srckml_fname = "working_kml/fac_" + str(self.facid) + "_source.kml"
+        fackml_fname = self.outdir + "fac_" + str(self.facid) + "_srcrec.kml"
         copyfile(srckml_fname, fackml_fname)
         
         kmlfilename = "kml_file.txt"
         
         inp_file = open(r"kml_file.txt","w")
     
-        k01 = "<?xml version='1.0' encoding='UTF-8'?>  \n"
-        k02 = '<kml xmlns="http://earth.google.com/kml/2.2" xmlns:gx="http://www.google.com/kml/ext/2.2"> \n'
-        k03 = "<Document> /n"
-        
-        inp_file.write(k01)
-        inp_file.write(k02)
-        inp_file.write(k03)
-        
-    # Documents section
+          
     
-        k01 = "  " + "<name><![CDATA[srcmap]]></name>  \n"
-        k02 = "  " + "<open>1</open>  \n"
-        k03 = "  " + "<Snippet maxLines='2'></Snippet> \n"
-        k04 = "  " + "<description><![CDATA[Exported from HEM4]]></description> \n"
-        k05 = "  " + "<Schema name='srcmap' id='srcmap_schema'> \n"
-        
-        inp_file.write(k01)
-        inp_file.write(k02)
-        inp_file.write(k03)
-        inp_file.write(k04)
-        inp_file.write(k05)
-        
-        k01 = "    " + "<SimpleField type='string' name='Source_id'>  \n"
-        k02 = "      " + "<displayName><![CDATA[Sourceid]]></displayName>  \n"
-        k03 = "    " + "</SimpleField> \n"
-        k04 = "  " + "</Schema> \n"
-        
-        inp_file.write(k01)
-        inp_file.write(k02)
-        inp_file.write(k03)
-        inp_file.write(k04)
-        
-        k01 = " \n"
-        k02 = "  " + "<Style id='Areasrc'> \n"
-        k03 = "    " + "<LineStyle> \n"
-        k04 = "      " + "<color>ff000000</color>  \n"
-        k05 = "      " + "<width>1</width>  \n" 
-        k06 = "    " + "</LineStyle> \n"
-        
-        inp_file.write(k01)
-        inp_file.write(k02)
-        inp_file.write(k03)
-        inp_file.write(k04)
-        inp_file.write(k05)
-        inp_file.write(k06)
-        
-        k01 = "    " + "<PolyStyle> \n"
-        k02 = "      " + "<outline>1</outline>  \n"
-        k03 = "      " + "<fill>1</fill>  \n"
-        k04 = "      " + "<color>7c8080ff</color>  \n"
-        k05 = "    " + "</PolyStyle> \n"
-        
-        inp_file.write(k01)
-        inp_file.write(k02)
-        inp_file.write(k03)
-        inp_file.write(k04)
-        inp_file.write(k05)
-        
-        k01 = "    " + "<BalloonStyle> \n"
-        k02 = "      " + "<bgColor>ffffffff</bgColor>  \n"
-        k03 = "      " + "<text>$[description]</text>  \n"
-        k04 = "    " + "</BalloonStyle> \n"
-        k05 = "  " + "</Style> \n"
-        k06 = " \n"
-         
-        inp_file.write(k01)
-        inp_file.write(k02)
-        inp_file.write(k03)
-        inp_file.write(k04)
-        inp_file.write(k05)
-        inp_file.write(k06)
-        
-        k01 = "<Style id='Ptsrc'> \n"
-        k02 = "  " + "<IconStyle> \n"
-        k03 = "    " + "<color>ff8080ff</color>  \n"
-        k04 = "    " + "<Icon>  \n"
-        k05 = "      " + "<href>drawCircle.png</href>  \n"
-        k06 = "    " + "</Icon>  \n"
-        k07 = "  " + "</IconStyle> \n"
-        
-        inp_file.write(k01)
-        inp_file.write(k02)
-        inp_file.write(k03)
-        inp_file.write(k04)
-        inp_file.write(k05)
-        inp_file.write(k06)
-        inp_file.write(k07)
-        
-        k01 = "  " + "<LabelStyle> \n"
-        k02 = "    " + "<color>00000000</color> \n"
-        k03 = "  " + "</LabelStyle>  \n"
-        k04 = "  " + "<BalloonStyle> \n"
-        k05 = "    " + "<bgColor>ffffffff</bgColor>  \n"
-        k06 = "    " + "<text>$[description]</text>  \n"
-        k07 = "  " + "</BalloonStyle>  \n"
-        k08 = "</Style> \n" 
-        
-        inp_file.write(k01)
-        inp_file.write(k02)
-        inp_file.write(k03)
-        inp_file.write(k04)
-        inp_file.write(k05)
-        inp_file.write(k06)
-        inp_file.write(k07)
-        inp_file.write(k08) 
-        
-        # s20
-        k01 = " \n"
-        k02 = "<Style id='s20'> \n"
-        k03 = "  " + "<IconStyle> \n"
-        k04 = "    " + "<color>ff00ff00</color>  \n"
-        k05 = "    " + "<Icon>  \n"
-        k06 = "      " + "<href>drawCircle.png</href>  \n"
-        k07 = "    " + "</Icon>  \n"
-        k08 = "  " + "</IconStyle> \n"
-        
-        inp_file.write(k01)
-        inp_file.write(k02)
-        inp_file.write(k03)
-        inp_file.write(k04)
-        inp_file.write(k05)
-        inp_file.write(k06)
-        inp_file.write(k07)
-        inp_file.write(k08)
-        
-        k01 = "  " + "<LabelStyle> \n"
-        k02 = "    " + "<color>00000000</color> \n"
-        k03 = "  " + "</LabelStyle>  \n"
-        k04 = "  " + "<BalloonStyle> \n"
-        k05 = "    " + "<bgColor>ffffffff</bgColor>  \n"
-        k06 = "    " + "<text>$[description]</text>  \n"
-        k07 = "  " + "</BalloonStyle>  \n"
-        k08 = "</Style> \n" 
-        
-        inp_file.write(k01)
-        inp_file.write(k02)
-        inp_file.write(k03)
-        inp_file.write(k04)
-        inp_file.write(k05)
-        inp_file.write(k06)
-        inp_file.write(k07)
-        inp_file.write(k08)
-        
-        # s20 to 100
-        k01 = " \n"
-        k02 = "<Style id='s20to100'> \n"
-        k03 = "  " + "<IconStyle> \n"
-        k04 = "    " + "<color>ff00ffff</color>  \n"
-        k05 = "    " + "<Icon>  \n"
-        k06 = "      " + "<href>drawCircle.png</href>  \n"
-        k07 = "    " + "</Icon>  \n"
-        k08 = "  " + "</IconStyle> \n"
-        
-        inp_file.write(k01)
-        inp_file.write(k02)
-        inp_file.write(k03)
-        inp_file.write(k04)
-        inp_file.write(k05)
-        inp_file.write(k06)
-        inp_file.write(k07)
-        inp_file.write(k08)
-        
-        k01 = "  " + "<LabelStyle> \n"
-        k02 = "    " + "<color>00000000</color> \n"
-        k03 = "  " + "</LabelStyle>  \n"
-        k04 = "  " + "<BalloonStyle> \n"
-        k05 = "    " + "<bgColor>ffffffff</bgColor>  \n"
-        k06 = "    " + "<text>$[description]</text>  \n"
-        k07 = "  " + "</BalloonStyle>  \n"
-        k08 = "</Style> \n" 
-        
-        inp_file.write(k01)
-        inp_file.write(k02)
-        inp_file.write(k03)
-        inp_file.write(k04)
-        inp_file.write(k05)
-        inp_file.write(k06)
-        inp_file.write(k07)
-        inp_file.write(k08)
-        
-        # s100
-        k01 = " \n"
-        k02 = "<Style id='s100'> \n"
-        k03 = "  " + "<IconStyle> \n"
-        k04 = "    " + "<color>ff0000ff</color>  \n"
-        k05 = "    " + "<Icon>  \n"
-        k06 = "      " + "<href>drawCircle.png</href>  \n"
-        k07 = "    " + "</Icon>  \n"
-        k08 = "  " + "</IconStyle> \n"
-        
-        inp_file.write(k01)
-        inp_file.write(k02)
-        inp_file.write(k03)
-        inp_file.write(k04)
-        inp_file.write(k05)
-        inp_file.write(k06)
-        inp_file.write(k07)
-        inp_file.write(k08)
-        
-        k01 = "  " + "<LabelStyle> \n"
-        k02 = "    " + "<color>00000000</color> \n"
-        k03 = "  " + "</LabelStyle>  \n"
-        k04 = "  " + "<BalloonStyle> \n"
-        k05 = "    " + "<bgColor>ffffffff</bgColor>  \n"
-        k06 = "    " + "<text>$[description]</text>  \n"
-        k07 = "  " + "</BalloonStyle>  \n"
-        k08 = "</Style> \n" 
-        
-        inp_file.write(k01)
-        inp_file.write(k02)
-        inp_file.write(k03)
-        inp_file.write(k04)
-        inp_file.write(k05)
-        inp_file.write(k06)
-        inp_file.write(k07)
-        inp_file.write(k08)
-        
-        # b20
-        k01 = " \n"
-        k02 = "<Style id='b20'> \n"
-        k03 = "  " + "<IconStyle> \n"
-        k04 = "    " + "<color>ff00ff00</color>  \n"
-        k05 = "    " + "<Icon>  \n"
-        k06 = "      " + "<href>drawRectangle.png</href>  \n"
-        k07 = "    " + "</Icon>  \n"
-        k08 = "  " + "</IconStyle> \n"
-        
-        inp_file.write(k01)
-        inp_file.write(k02)
-        inp_file.write(k03)
-        inp_file.write(k04)
-        inp_file.write(k05)
-        inp_file.write(k06)
-        inp_file.write(k07)
-        inp_file.write(k08)
-        
-        k01 = "  " + "<LabelStyle> \n"
-        k02 = "    " + "<color>00000000</color> \n"
-        k03 = "  " + "</LabelStyle>  \n"
-        k04 = "  " + "<BalloonStyle> \n"
-        k05 = "    " + "<bgColor>ffffffff</bgColor>  \n"
-        k06 = "    " + "<text>$[description]</text>  \n"
-        k07 = "  " + "</BalloonStyle>  \n"
-        k08 = "</Style> \n" 
-        
-        inp_file.write(k01)
-        inp_file.write(k02)
-        inp_file.write(k03)
-        inp_file.write(k04)
-        inp_file.write(k05)
-        inp_file.write(k06)
-        inp_file.write(k07)
-        inp_file.write(k08)
-        
-        # b20 to 100
-        k01 = " \n"
-        k02 = "<Style id='b20to100'> \n"
-        k03 = "  " + "<IconStyle> \n"
-        k04 = "    " + "<color>ff00ffff</color>  \n"
-        k05 = "    " + "<Icon>  \n"
-        k06 = "      " + "<href>drawRectangle.png</href>  \n"
-        k07 = "    " + "</Icon>  \n"
-        k08 = "  " + "</IconStyle> \n"
-        
-        inp_file.write(k01)
-        inp_file.write(k02)
-        inp_file.write(k03)
-        inp_file.write(k04)
-        inp_file.write(k05)
-        inp_file.write(k06)
-        inp_file.write(k07)
-        inp_file.write(k08)
-        
-        k01 = "  " + "<LabelStyle> \n"
-        k02 = "    " + "<color>00000000</color> \n"
-        k03 = "  " + "</LabelStyle>  \n"
-        k04 = "  " + "<BalloonStyle> \n"
-        k05 = "    " + "<bgColor>ffffffff</bgColor>  \n"
-        k06 = "    " + "<text>$[description]</text>  \n"
-        k07 = "  " + "</BalloonStyle>  \n"
-        k08 = "</Style> \n" 
-        
-        inp_file.write(k01)
-        inp_file.write(k02)
-        inp_file.write(k03)
-        inp_file.write(k04)
-        inp_file.write(k05)
-        inp_file.write(k06)
-        inp_file.write(k07)
-        inp_file.write(k08)
-        
-        # b100
-        k01 = " \n"
-        k02 = "<Style id='b100'> \n"
-        k03 = "  " + "<IconStyle> \n"
-        k04 = "    " + "<color>ff0000ff</color>  \n"
-        k05 = "    " + "<Icon>  \n"
-        k06 = "      " + "<href>drawRectangle.png</href>  \n"
-        k07 = "    " + "</Icon>  \n"
-        k08 = "  " + "</IconStyle> \n"
-        
-        inp_file.write(k01)
-        inp_file.write(k02)
-        inp_file.write(k03)
-        inp_file.write(k04)
-        inp_file.write(k05)
-        inp_file.write(k06)
-        inp_file.write(k07)
-        inp_file.write(k08)
-        
-        k01 = "  " + "<LabelStyle> \n"
-        k02 = "    " + "<color>00000000</color> \n"
-        k03 = "  " + "</LabelStyle>  \n"
-        k04 = "  " + "<BalloonStyle> \n"
-        k05 = "    " + "<bgColor>ffffffff</bgColor>  \n"
-        k06 = "    " + "<text>$[description]</text>  \n"
-        k07 = "  " + "</BalloonStyle>  \n"
-        k08 = "</Style> \n" 
-        
-        inp_file.write(k01)
-        inp_file.write(k02)
-        inp_file.write(k03)
-        inp_file.write(k04)
-        inp_file.write(k05)
-        inp_file.write(k06)
-        inp_file.write(k07)
-        inp_file.write(k08)
-    
-        # u20 - user receptor style
-        k01 = " \n"
-        k02 = "<Style id='u20'> \n"
-        k03 = "  " + "<IconStyle> \n"
-        k04 = "    " + "<color>ff00ff00</color>  \n"
-        k05 = "    " + "<Icon>  \n"
-        k06 = "      " + "<href>drawRectangle_ur.png</href>  \n"
-        k07 = "    " + "</Icon>  \n"
-        k08 = "  " + "</IconStyle> \n"
-        
-        inp_file.write(k01)
-        inp_file.write(k02)
-        inp_file.write(k03)
-        inp_file.write(k04)
-        inp_file.write(k05)
-        inp_file.write(k06)
-        inp_file.write(k07)
-        inp_file.write(k08)
-        
-        k01 = "  " + "<LabelStyle> \n"
-        k02 = "    " + "<color>00000000</color> \n"
-        k03 = "  " + "</LabelStyle>  \n"
-        k04 = "  " + "<BalloonStyle> \n"
-        k05 = "    " + "<bgColor>ffffffff</bgColor>  \n"
-        k06 = "    " + "<text>$[description]</text>  \n"
-        k07 = "  " + "</BalloonStyle>  \n"
-        k08 = "</Style> \n" 
-        
-        inp_file.write(k01)
-        inp_file.write(k02)
-        inp_file.write(k03)
-        inp_file.write(k04)
-        inp_file.write(k05)
-        inp_file.write(k06)
-        inp_file.write(k07)
-        inp_file.write(k08)
-        
-        # u20 to 100
-        k01 = " \n"
-        k02 = "<Style id='u20to100'> \n"
-        k03 = "  " + "<IconStyle> \n"
-        k04 = "    " + "<color>ff00ffff</color>  \n"
-        k05 = "    " + "<Icon>  \n"
-        k06 = "      " + "<href>drawRectangle_ur.png</href>  \n"
-        k07 = "    " + "</Icon>  \n"
-        k08 = "  " + "</IconStyle> \n"
-        
-        inp_file.write(k01)
-        inp_file.write(k02)
-        inp_file.write(k03)
-        inp_file.write(k04)
-        inp_file.write(k05)
-        inp_file.write(k06)
-        inp_file.write(k07)
-        inp_file.write(k08)
-        
-        k01 = "  " + "<LabelStyle> \n"
-        k02 = "    " + "<color>00000000</color> \n"
-        k03 = "  " + "</LabelStyle>  \n"
-        k04 = "  " + "<BalloonStyle> \n"
-        k05 = "    " + "<bgColor>ffffffff</bgColor>  \n"
-        k06 = "    " + "<text>$[description]</text>  \n"
-        k07 = "  " + "</BalloonStyle>  \n"
-        k08 = "</Style> \n" 
-        
-        inp_file.write(k01)
-        inp_file.write(k02)
-        inp_file.write(k03)
-        inp_file.write(k04)
-        inp_file.write(k05)
-        inp_file.write(k06)
-        inp_file.write(k07)
-        inp_file.write(k08)
-        
-        # u100
-        k01 = " \n"
-        k02 = "<Style id='u100'> \n"
-        k03 = "  " + "<IconStyle> \n"
-        k04 = "    " + "<color>ff0000ff</color>  \n"
-        k05 = "    " + "<Icon>  \n"
-        k06 = "      " + "<href>drawRectangle_ur.png</href>  \n"
-        k07 = "    " + "</Icon>  \n"
-        k08 = "  " + "</IconStyle> \n"
-        
-        inp_file.write(k01)
-        inp_file.write(k02)
-        inp_file.write(k03)
-        inp_file.write(k04)
-        inp_file.write(k05)
-        inp_file.write(k06)
-        inp_file.write(k07)
-        inp_file.write(k08)
-        
-        k01 = "  " + "<LabelStyle> \n"
-        k02 = "    " + "<color>00000000</color> \n"
-        k03 = "  " + "</LabelStyle>  \n"
-        k04 = "  " + "<BalloonStyle> \n"
-        k05 = "    " + "<bgColor>ffffffff</bgColor>  \n"
-        k06 = "    " + "<text>$[description]</text>  \n"
-        k07 = "  " + "</BalloonStyle>  \n"
-        k08 = "</Style> \n" 
-        
-        inp_file.write(k01)
-        inp_file.write(k02)
-        inp_file.write(k03)
-        inp_file.write(k04)
-        inp_file.write(k05)
-        inp_file.write(k06)
-        inp_file.write(k07)
-        inp_file.write(k08)
-        
-        # MIR
-        k01 = " \n"
-        k02 = "<Style id='mir'> \n"
-        k03 = "  " + "<IconStyle> \n"
-        k04 = "    " + "<color></color>  \n"
-        k05 = "    " + "<Icon>  \n"
-        k06 = "      " + "<href>cross.png</href>  \n"
-        k07 = "    " + "</Icon>  \n"
-        k08 = "  " + "</IconStyle> \n"
-        
-        inp_file.write(k01)
-        inp_file.write(k02)
-        inp_file.write(k03)
-        inp_file.write(k04)
-        inp_file.write(k05)
-        inp_file.write(k06)
-        inp_file.write(k07)
-        inp_file.write(k08)
-        
-        k01 = "  " + "<LabelStyle> \n"
-        k02 = "    " + "<color>00000000</color> \n"
-        k03 = "  " + "</LabelStyle>  \n"
-        k04 = "  " + "<BalloonStyle> \n"
-        k05 = "    " + "<bgColor>ffffffff</bgColor>  \n"
-        k06 = "    " + "<text>$[description]</text>  \n"
-        k07 = "  " + "</BalloonStyle>  \n"
-        k08 = "</Style> \n" 
-        
-        inp_file.write(k01)
-        inp_file.write(k02)
-        inp_file.write(k03)
-        inp_file.write(k04)
-        inp_file.write(k05)
-        inp_file.write(k06)
-        inp_file.write(k07)
-        inp_file.write(k08)
-        
-        
-        # Emission sources
-        k01 = " \n"
-        k02 = "  " + "<Folder> \n"
-        k03 = "    " + "<name>Emission sources</name> \n"
-        k04 = "    " + "<open>0</open> \n"
-        k05 = " \n"
-        
-        inp_file.write(k01)
-        inp_file.write(k02)
-        inp_file.write(k03)
-        inp_file.write(k04)
-        inp_file.write(k05)
-        
-        
         # Read source map file to get source ids, source type and location parameters
         
         # create groups by source id and source type
         #src_df = srcmap.groupby(['source_id','src_type'])
         
-        for name, group in srcmap.groupby(["source_id","src_type"]):
-            sname = name[0]
-            stype = name[1]
-       
-        # Emission sources  Point, Capped, Horizontal 
-        #        sstyle = "Ptsrc"     
-            if stype == 'P' or stype == 'C' or stype == 'H':
-    
-                k01 = "  " + "<Placemark> \n"
-                k02 = "    " + "<name><![CDATA[" + sname + "]]></name> \n"
-                k03 = "    " + "<snippet></snippet> \n"   
-                k04 = "    " + "<description><![CDATA[<div align='center'>" + sname + "</div>]]></description> \n"
-                k05 = "    " + "<styleUrl>#Ptsrc</styleUrl> \n"
-                k06 = "    " + "<Point><altitudeMode>relativeToGround</altitudeMode> \n"
-                k07 = "      " + "<coordinates>" + str(group.iloc[0]['lon']) + "," + str(group.iloc[0]['lat']) + ",0.0</coordinates></Point> \n"
-                k08 = "  " + "</Placemark> \n"
-                k09 = " \n"
-                
-                inp_file.write(k01)
-                inp_file.write(k02)
-                inp_file.write(k03)
-                inp_file.write(k04)
-                inp_file.write(k05)
-                inp_file.write(k06)
-                inp_file.write(k07)
-                inp_file.write(k08)
-                inp_file.write(k09)
+   
+         
+    # facility center defined 
+        
             
-            # Area, Volume or Polygon 
-            #   sstyle = "Areasrc"                
-            elif stype == 'A' or stype == 'V' or stype == 'I':
-                
-                k01 = "  " + "<Placemark> \n"
-                k02 = "    " + "<name><![CDATA[" + sname + "]]></name> \n"
-                k03 = "    " + "<snippet maxLines='2'></snippet> \n"   
-                k04 = "    " + "<description><![CDATA[<div align='center'>" + sname + "</div>]]></description> \n"        
-                k05 = "    " + "<styleUrl>#Areasrc</styleUrl> \n"
-                k06 = "      " + "<ExtendedData> \n"
-                k07 = "      " + "<SchemaData schemaUrl='#Source_map_schema'> \n"
-                k08 = "        " + "<SimpleData name='Sourceid'><![CDATA[" + sname + "]]></SimpleData> \n"
-                k09 = "      " + "</SchemaData> \n"
-                k10 = "      " + "</ExtendedData> \n"
-                
-                inp_file.write(k01)
-                inp_file.write(k02)
-                inp_file.write(k03)
-                inp_file.write(k04)
-                inp_file.write(k05)
-                inp_file.write(k06)
-                inp_file.write(k07)
-                inp_file.write(k08)
-                inp_file.write(k09)
-                inp_file.write(k10)
-                
-                # Polygon
-                k01 = "    " + "<Polygon> \n"
-                k02 = "      " + "<extrude>0</extrude> \n"
-                k03 = "      " + "<altitudeMode>clampedToGround</altitudeMode> \n"
-                k04 = "      " + "<outerBoundaryIs> \n"
-                k05 = "      " + "<LinearRing> \n"
-                k06 = "        " + "<altitudeMode>clampedToGround</altitudeMode> \n"
-                k07 = "        " + "<tessellate>1</tessellate> \n"
-                k08 = "        " + "<coordinates> \n"
-                inp_file.write(k01)
-                inp_file.write(k02)
-                inp_file.write(k03)
-                inp_file.write(k04)
-                inp_file.write(k05)
-                inp_file.write(k06)
-                inp_file.write(k07)
-                inp_file.write(k08)
-                
-                # lon, lat loop
-                # for sname == row["source_id"]
-                # print("source_id")
-     # Write area source coordinates 
-     #          sname = name
-      
-                for index, row in group.iterrows():    
-                    
-                    co1 = "          " + str(row["lon"]) + "," + str(row["lat"]) + ",0.0 \n"
-                    inp_file.write(co1)
-                    # go to next record
-               
-                k01 = "        " + "</coordinates> \n"
-                k02 = "      " + "</LinearRing> \n"
-                k03 = "      " + "</outerBoundaryIs> \n"
-                k04 = "    " + "</Polygon> \n"
-                k05 = "  " + "</Placemark> \n"
-                k06 = " \n"
-                inp_file.write(k01)
-                inp_file.write(k02)
-                inp_file.write(k03)
-                inp_file.write(k04)
-                inp_file.write(k05)
-                inp_file.write(k06)
-                
-            # Line or Bouyant Line                
-            elif stype == 'N' or stype == 'B':
-                
-                k01 = "  " + "<Placemark> \n"
-                k02 = "    " + "<name><![CDATA[" + sname + "]]></name> \n"
-                k03 = "    " + "<snippet></snippet> \n"   
-                k04 = "    " + "<description><![CDATA[<div align='center'>" + sname + "</div>]]></description> \n"        
-                k05 = "    " + "<styleUrl>#Linesrc</styleUrl> \n"
-                k06 = "    " + "<Style> \n"
-                k07 = "      " + "<LineStyle> \n"
-            # Find correct column for length of line - area 8/23/17   
-                k08 = "        " + "<gx:physicalWidth>" + str(group.iloc[0]['area']) + "</gx:physicalWidth> \n"
-                k09 = "      " + "<outline>1</outline> \n"
-                inp_file.write(k01)
-                inp_file.write(k02)
-                inp_file.write(k03)
-                inp_file.write(k04)
-                inp_file.write(k05)
-                inp_file.write(k06)
-                inp_file.write(k07)
-                inp_file.write(k08)
-                inp_file.write(k09)
-                
-                k01 = "      " + "<fill>1</fill> \n" 
-                k02 = "      " + "<color>7c8080ff</color> \n" 
-                k03 = "      " + "</LineStyle> \n" 
-                k04 = "    " + "</Style> \n"
-                k05 = "    " + "<LineString> \n"
-                k06 = "      " + "<altitudeMode>clampedToGround</altitudeMode> \n"
-                k07 = "        " + "<coordinates>" + str(group.iloc[0]['lon']) + "," + str(group.iloc[0]['lat']) + str(group.iloc[0]['lon2']) + "," + str(group.iloc[0]['lat2']) + "</coordinates> \n"
-                k08 = "    " + "</LineString> \n"
-                k09 = "  " + "</Placemark> \n"
-                k10 = " \n"
-                inp_file.write(k01)
-                inp_file.write(k02)
-                inp_file.write(k03)
-                inp_file.write(k04)
-                inp_file.write(k05)
-                inp_file.write(k06)
-                inp_file.write(k07)
-                inp_file.write(k08)
-                inp_file.write(k09)
-                inp_file.write(k10)
-                
-    # end emission sources
-        k01 = " \n"
-        k02 = "  " + "</Folder> \n"  
-        k03 = " \n" 
+        k01 = "<Folder> \n"
+        k02 = "  " + "<name>Domain center</name> \n"
+        k03 = "  " + "<open>0</open> \n"
+        k04 = "  " + "<Placemark> \n"
+        k05 = "    " + "<name>Domain center</name> \n"
+        k06 = "    " + "<snippet></snippet> \n" 
+        k07 = "    " + "<description><![CDATA[<div align='center'>Plant center</div> ]]></description> \n" 
+        k08 = "    " + "<styleUrl>#s100</styleUrl> \n"
+        k09 = "    " + "<Point><altitudeMode>relativeToGround</altitudeMode> \n"
+        k10 = "      " + "<coordinates>" + str(self.faccen_lon) + "," + str(self.faccen_lat) + ",0</coordinates></Point> \n"
+        
         inp_file.write(k01)
         inp_file.write(k02)
         inp_file.write(k03)
-         
-    # facility center defined 
-        for index, row in fac_center.iterrows(): 
-            
-            k01 = "<Folder> \n"
-            k02 = "  " + "<name>Domain center</name> \n"
-            k03 = "  " + "<open>0</open> \n"
-            k04 = "  " + "<Placemark> \n"
-            k05 = "    " + "<name>Domain center</name> \n"
-            k06 = "    " + "<snippet></snippet> \n" 
-            k07 = "    " + "<description><![CDATA[<div align='center'>Plant center</div> ]]></description> \n" 
-            k08 = "    " + "<styleUrl>#s100</styleUrl> \n"
-            k09 = "    " + "<Point><altitudeMode>relativeToGround</altitudeMode> \n"
-            k10 = "      " + "<coordinates>" + str(row["lon"]) + "," + str(row["lat"]) + ",0</coordinates></Point> \n"
-            
-            inp_file.write(k01)
-            inp_file.write(k02)
-            inp_file.write(k03)
-            inp_file.write(k04)
-            inp_file.write(k05)
-            inp_file.write(k06)
-            inp_file.write(k07)
-            inp_file.write(k08)
-            inp_file.write(k09)
-            inp_file.write(k10)
-            
+        inp_file.write(k04)
+        inp_file.write(k05)
+        inp_file.write(k06)
+        inp_file.write(k07)
+        inp_file.write(k08)
+        inp_file.write(k09)
+        inp_file.write(k10)
+        
         k01 = "  " + "</Placemark> \n"
         k02 = "</Folder> \n"
         k03 = " \n"
-        
+    
         inp_file.write(k01)
         inp_file.write(k02)
         inp_file.write(k03)
-        
+#        
     # end write facility center
     
     # Determine if there are any user receptors
-        for block, group in allinner.groupby(["block"]):
-            user_rcpt = block[0]
+        for block, group in self.allinner.groupby(["block"]):
+            user_rcpt = block
             ublock = group.iloc[0]['block']
-            ulat = group.iloc[0]['lat']
-            ulon = group.iloc[0]['lon']
+            ulat = group.iloc[0]['LAT']
+            ulon = group.iloc[0]['LON']
             u = 0
             if user_rcpt == 'U' and u == 0:
                 k01 = "<Folder> \n" 
@@ -810,13 +217,13 @@ class facility_kml():
         inp_file.write(k03)
         inp_file.write(k04)
     
-        for loc, group in allinner.groupby(["lat","lon"]):
+        for loc, group in self.allinner.groupby(["LAT","LON"]):
             slat = loc[0]
             slon = loc[1]
             sBlock = group.iloc[0]['block']
     #        sFips = group.iloc[0]['block':5]
             k01 = "  " + "<Placemark> \n"
-            k02 = "    " + "<name>Block Receptor " + sBlock + " </name> \n"
+            k02 = "    " + "<name>Block Receptor " + str(sBlock) + " </name> \n"
             k03 = "    " + "<snippet></snippet> \n" 
             k04 = "    " + "<description><![CDATA[<div align='center'><B> Census Block Receptor</B> <br /> \n"
     #        k05 = "    " + "<B> FIPS: " + sFips + " Block: " + str(group.iloc[0]['block']) + "</B> <br /> \n"
@@ -890,13 +297,13 @@ class facility_kml():
         inp_file.write(k03)
         inp_file.write(k04)
     
-        for loc, group in allinner.groupby(["lat","lon"]):
+        for loc, group in self.allinner.groupby(["LAT","LON"]):
             slat = loc[0]
             slon = loc[1]
             sBlock = group.iloc[0]['block']
     
             k00 = "  " + "<Placemark> \n"
-            k01 = "    " + "<name>Block Receptor " + sBlock + " </name> \n"
+            k01 = "    " + "<name>Block Receptor " + str(sBlock) + " </name> \n"
             k02 = "    " + "<visibility>0</visibility> \n"
             k03 = "    " + "<snippet></snippet> \n" 
             k04 = "    " + "<description><![CDATA[<div align='center'><B> Census Block Receptor</B> <br /> \n"
@@ -976,7 +383,7 @@ class facility_kml():
     # Write polar grid rings for cancer risk
     #for name, group in srcmap.groupby(["source_id","src_type"]):
     
-        for loc, group in allpolar.groupby(["lat","lon"]):
+        for loc, group in self.allpolar.groupby(["lat","lon"]):
             slat = loc[0]
             slon = loc[1]
             pg_dist = str(round(group.iloc[0]['distance'],0))
@@ -1057,7 +464,7 @@ class facility_kml():
         inp_file.write(k03)
         inp_file.write(k04)
         
-        for loc, group in allpolar.groupby(["lat","lon"]):
+        for loc, group in self.allpolar.groupby(["lat","lon"]):
             slat = loc[0]
             slon = loc[1]
             pg_dist = str(round(group.iloc[0]['distance'],0))
@@ -1070,7 +477,7 @@ class facility_kml():
             k05 = "    " + "<description><![CDATA[<div align='center'><B> Polar Receptor</B> <br /> \n"
             k06 = "    " + "<B> Distance: " + pg_dist + " Angle: " + pg_angle + "</B> <br /> \n"
     # May need to change with David's polar_risk.xlsx file inputs. Change 'toshi' to Respiratory?        
-            k07 = "    " + "<B> HEM4 Estimated Max TOSHI (" + group.iloc[0]['toshi'] + ") </B> <br /> \n"
+            k07 = "    " + "<B> HEM4 Estimated Max TOSHI (" + str(group.iloc[0]['toshi']) + ") </B> <br /> \n"
             
             inp_file.write(k01)
             inp_file.write(k02)
@@ -1132,61 +539,61 @@ class facility_kml():
     # end polar grid TOSHI folder outputs 
     
     # Write MIR location
-        for index, row in mir.iterrows():
-            slon = row["lon"]
-            slat = row["lat"]
-            stype = row["parameter"]
-            svalue = row["value"]  
-              
-            if stype == 'Cancer risk':
-                if svalue > 0:
-                    k01 = "<Folder> \n"    
-                    k02 = "  " + "<name>MIR</name> \n"
-                    k03 = "  " + "<open>0</open> \n" 
-                    k04 = "  " + "<Placemark> \n"
-                    k05 = "    " + "<name> MIR receptor </name> \n"
-                    k06 = "    " + "<snippet></snippet> \n"
-                    k07 = "    " + "<description><![CDATA[<div align='center'><B> MIR Receptor</B> <br /> \n"
-                    k08 = "    " + "<B> Receptor type: " + row["rec_type"] + "</B> <br /> \n"
-                    k09 = "    " + "<B> Distance from facility (m): " + str(round(row["distance"],0)) + "</B> <br /> \n"
-                    k10 = "    " + "MIR (in a million) =  " + str(round(row["value"],2)) + "<br /><br /> \n"
-        
-                    inp_file.write(k01)
-                    inp_file.write(k02)
-                    inp_file.write(k03)
-                    inp_file.write(k04)
-                    inp_file.write(k05)
-                    inp_file.write(k06)
-                    inp_file.write(k07)
-                    inp_file.write(k08)
-                    inp_file.write(k09)
-                    inp_file.write(k10)
-                    
-                    k01 = "    " + "</div> ]]> </description> \n"    
-                    k02 = "    " + "<styleUrl>#mir</styleUrl> \n"
-                    k03 = "    " + "<Point><altitudeMode>relativeToGround</altitudeMode><coordinates>" + str(slon) + "," + str(slat) + ",100.0000</coordinates></Point> \n"    
-                    k04 = "  " + "</Placemark> \n"
-                    k05 = "</Folder> \n"
-            
-                    inp_file.write(k01)
-                    inp_file.write(k02)
-                    inp_file.write(k03)
-                    inp_file.write(k04)
-                    inp_file.write(k05)
-    
-                else:
-                    k01 = "<Folder> \n"    
-                    k02 = "  " + "<name>MIR is 0</name> \n"
-                    k03 = "  " + "<open>0</open> \n" 
-                    k04 = "  " + "<visibility>0</visibility> \n"
-                    k05 = "</Folder> \n"
-                    
-                    inp_file.write(k01)
-                    inp_file.write(k02)
-                    inp_file.write(k03)
-                    inp_file.write(k04)
-                    inp_file.write(k05)
-                    
+#        for index, row in self.mir.iterrows():
+#            slon = row["lon"]
+#            slat = row["lat"]
+#            stype = row["parameter"]
+#            svalue = row["value"]  
+#              
+#            if stype == 'Cancer risk':
+#                if svalue > 0:
+#                    k01 = "<Folder> \n"    
+#                    k02 = "  " + "<name>MIR</name> \n"
+#                    k03 = "  " + "<open>0</open> \n" 
+#                    k04 = "  " + "<Placemark> \n"
+#                    k05 = "    " + "<name> MIR receptor </name> \n"
+#                    k06 = "    " + "<snippet></snippet> \n"
+#                    k07 = "    " + "<description><![CDATA[<div align='center'><B> MIR Receptor</B> <br /> \n"
+#                    k08 = "    " + "<B> Receptor type: " + row["rec_type"] + "</B> <br /> \n"
+#                    k09 = "    " + "<B> Distance from facility (m): " + str(round(row["distance"],0)) + "</B> <br /> \n"
+#                    k10 = "    " + "MIR (in a million) =  " + str(round(row["value"],2)) + "<br /><br /> \n"
+#        
+#                    inp_file.write(k01)
+#                    inp_file.write(k02)
+#                    inp_file.write(k03)
+#                    inp_file.write(k04)
+#                    inp_file.write(k05)
+#                    inp_file.write(k06)
+#                    inp_file.write(k07)
+#                    inp_file.write(k08)
+#                    inp_file.write(k09)
+#                    inp_file.write(k10)
+#                    
+#                    k01 = "    " + "</div> ]]> </description> \n"    
+#                    k02 = "    " + "<styleUrl>#mir</styleUrl> \n"
+#                    k03 = "    " + "<Point><altitudeMode>relativeToGround</altitudeMode><coordinates>" + str(slon) + "," + str(slat) + ",100.0000</coordinates></Point> \n"    
+#                    k04 = "  " + "</Placemark> \n"
+#                    k05 = "</Folder> \n"
+#            
+#                    inp_file.write(k01)
+#                    inp_file.write(k02)
+#                    inp_file.write(k03)
+#                    inp_file.write(k04)
+#                    inp_file.write(k05)
+#    
+#                else:
+#                    k01 = "<Folder> \n"    
+#                    k02 = "  " + "<name>MIR is 0</name> \n"
+#                    k03 = "  " + "<open>0</open> \n" 
+#                    k04 = "  " + "<visibility>0</visibility> \n"
+#                    k05 = "</Folder> \n"
+#                    
+#                    inp_file.write(k01)
+#                    inp_file.write(k02)
+#                    inp_file.write(k03)
+#                    inp_file.write(k04)
+#                    inp_file.write(k05)
+#                    
     # end of MIR                
                     
     # end of file - close folder and document            
@@ -1219,65 +626,8 @@ class facility_kml():
     # use excel file to subsitute for dbf file created from emislocs and other input files
     #######################################################################################################
     
-    srcmap = pd.read_excel(r"C:\python\HEM4\KML\Inputs\source_map_w_line.xlsx"
-                       , names=("utm_e","area","point","census","lat","lon","distance","min_dist"
-                               ,"bearing","elev","population","source_id","src_height","src_type","lat2","lon2")
-                       , converters={"utm_e":float,"area":float,"point":float,"census":float,"lat":float,"lon":float
-                               ,"distance":float,"min_dist":float,"bearing":float,"elev":float,"population":float
-                               ,"source_id":str,"src_height":float,"src_type":str,"lat2":float,"lon2":float})
     
-         
-    fac_center = pd.read_excel(r"C:\python\HEM4\KML\Inputs\plant_cen.xlsx"
-                           , names=("lat","lon")
-                           , converters={"lat":float,"lon":float})
-                           
     
-    #ringdist = pd.read_excel(r"C:\python\HEM4\Inputs\ringdist.xlsx"
-    #                       , names=("distance","angle","lat","lon","conc_tot","pollutant","poll_conc")
-    #                       , converters={"distance":float,"angle":float,"lat":float,"lon":float
-    #                                ,"conc_tot":float,"pollutant":str,"poll_conc":float})
-    
-    allpolar = pd.read_excel(r"C:\python\HEM4\KML\Inputs\all_polar_receptors2.xlsx"
-                           , names=("source_id", "risk","pollutant","distance","angle","sector","ring","lat","lon"
-                                    ,"toshi","total_hi","poll_hi")
-                           , converters={"source_id":str,"risk":float,"pollutant":str,"distance":float,"angle":float
-                                   ,"sector":float,"ring":float,"lat":float,"lon":float,"toshi":str
-                                   ,"total_hi":float,"poll_hi":float})
-        
-    #allinner = pd.read_excel(r"C:\python\HEM4\KML\Inputs\all_inner_receptors.xlsx"
-    #                       , names=("lat","lon","source_id", "risk","pollutant","population","fips","block","block_risk"
-    #                                ,"toshi","total_hi","poll_hi")
-    #                       , converters={"lat":float,"lon":float,"source_id":str,"risk":float,"pollutant":str
-    #                               ,"population":float,"fips":str,"block":str,"block_risk":float,"toshi":str
-    #                               ,"total_hi":float,"poll_hi":float})
-    allinner = pd.read_excel(r"C:\python\HEM4\KML\Inputs\inner_risk.xlsx"
-                           , names=("utme","utmn","result","elev","hill","flag","avg_time","source_id","num_yrs","net_id"
-                                    ,"block","lat","lon","population","fac_id","pollutant","emis_tpy","conc","ure","rfc"
-                                    ,"resp","neuro","risk","resp_hi","neur_hi")
-                           , converters={"utme":float,"utmn":float,"result":float,"elev":float,"hill":float,"flag":float
-                                   ,"avg_time":str,"source_id":str,"num_yrs":float,"net_id":str,"block":str,"lat":float,"lon":float      
-                                   ,"population":float,"fac_id":str,"pollutant":str,"emis_tpy":float,"conc":float
-                                   ,"ure":float,"rfc":float,"resp":float,"neuro":float,"risk":float
-                                   ,"resp_hi":float,"neur_hi":float})    
-        
-    #allpolar = pd.read_excel(r"C:\python\HEM4\KML\Inputs\polar_risk.xlsx"
-    #                       , names=("utme","utmn","result","elev","hill","flag","avg_time","source_id","num_yrs","net_id"
-    #                                ,"fac_id","pollutant","emis_tpy","conc","ure","rfc"
-    #                                ,"resp","neuro","risk","resp_hi","neur_hi")
-    #                       , converters={"utme":float,"utmn":float,"result":float,"elev":float,"hill":float,"flag":float
-    #                               ,"avg_time":str,"source_id":str,"num_yrs":float,"net_id":str     
-    #                               ,"fac_id":str,"pollutant":str,"emis_tpy":float,"conc":float
-    #                               ,"ure":float,"rfc":float,"resp":float,"neuro":float,"risk":float
-    #                               ,"resp_hi":float,"neur_hi":float})        
-    
-    mir = pd.read_excel(r"C:\python\HEM4\KML\Inputs\maximum_indiv_risks.xlsx"
-                       , names=("parameter","value","population","distance","angle","elevation"
-                               ,"fips","block","lat","lon","rec_type")
-                       , converters={"parameter":str,"value":float,"population":float,"distance":float,"angle":float
-                               ,"elevation":float,"fips":str,"block":str,"lat":float,"lon":float,"rec_type":str})
-                               
-    kmlfilename = write_kml(srcmap,fac_center,allpolar,allinner,mir)
-
 
 
 
