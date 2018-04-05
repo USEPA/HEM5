@@ -1570,10 +1570,13 @@ class Hem4():
         
         if check1 == True & check2 == True & check3 == True:
             print('essentially ready')
-            
             self.ready = True
             
-#            #check user receptors in facility
+            if hasattr(self, 'ureceptr_df'):
+                pass
+            else:
+                self.ureceptr_df = None
+            #check user receptors in facility
 #            user_rec_check = self.faclist_df['user_rcpt'] == 'Y'  
 #                
 #            if True in user_rec_check.values:
@@ -1626,7 +1629,7 @@ class Hem4():
                     pfacilities = set(poly_checklist)            
                     if len(poly_checklist) > 0:
                         messagebox.showinfo("Missing polyvertex", "Please upload polyvertex line file for " + ", ".join(pfacilities))
-                        ready = False
+                        self.ready = False
                 
                 else:
                     messagebox.showinfo("Missing polygon vertex file ", "Please upload a polygon vertex file.")
@@ -1658,7 +1661,7 @@ class Hem4():
                     bfacilities = set(bouyant_checklist)            
                     if len(bouyant_checklist) > 0:
                         messagebox.showinfo("Missing bouyant line", "Please upload buoyant line file for " + ", ".join(bfacilities))
-                        ready = False
+                        self.ready = False
                     
                 else:
                     messagebox.showinfo("Missing bouyant line file ", "Please upload a bouyant line file.")
@@ -1693,7 +1696,7 @@ class Hem4():
 #                self.ready = True
 #                print("Ready to run!")
         
-        
+            
         
                #%%if the object is ready
             if self.ready == True:
