@@ -509,8 +509,8 @@ class Hem4():
              
             
         if self.temp_var.get() == False:
-            diurnal.destroy()
-            lbox.s19.destroy()
+            self.diurnal.destroy()
+            self.lbox.s19.destroy()
         
 
         
@@ -613,14 +613,23 @@ class Hem4():
                 self.hapemis_df['gas'] = self.hapemis_df['emis_tpy'] * (1 - self.hapemis_df['part_frac'])
 
     
-                #get list of pollutants from dose library
+               #get list of pollutants from dose library
                 dose = pd.read_excel(open('resources/Dose_Response_Library.xlsx', 'rb'))
                 master_list = list(dose['Pollutant'])
+                lower = [x.lower() for x in master_list]
+                
+#                user_haps = set(self.hapemis_df['pollutant'])
+#                
+#                for hap in user_haps:
+#                    if hap.lower() not in lower:
+#                        print(hap)
+                
+          
                  
                 missing_pollutants = {}
                 for row in self.hapemis_df.itertuples():
-                    
-                    if row[3] not in master_list:
+                 
+                    if row[3].lower() not in lower:
                         
                         if row[1] in missing_pollutants.keys():
                             
@@ -635,12 +644,14 @@ class Hem4():
                 
                 #if there are any missing pollutants
                 if len(missing_pollutants) > 0:
-                    fix_pollutants = messagebox.askyesno("Unassigned Missing Pollutants in dose response library", "The following pollutants were not found in HEM4's Dose Response Library: " + str(missing_pollutants) + "\n have not been assigned. Would you like to skip them in aermod or go to the resources folder and add the missing pollutants?")
+                    fix_pollutants = messagebox.askyesno("Missing Pollutants in dose response library", "The following pollutants were not found in HEM4's Dose Response Library: " + str(missing_pollutants) + ".\n Would you like to add them to the dose response library in the resources folder (they will be removed oherwise). ")
                     #if yes, clear box and empty dataframe
                    
                     
                     if fix_pollutants is True:
-                        pass
+                        #clear hap emis upload area
+                         self.hap_list.set('')
+                         self.hap_path = file_path
                     
                         
                     #if no, remove them from dataframe 
@@ -659,7 +670,6 @@ class Hem4():
                             #add another essage to say the following pollutants were assigned a generic value...
                             self.scr.insert(tk.INSERT, "Removed " + p + " from hap emissions file" )
                             self.scr.insert(tk.INSERT, "\n")
-                        
                         
                 else:
                         #record upload in log
@@ -697,7 +707,7 @@ class Hem4():
                 #POLYVERTEX excel to dataframe
                 self.multipoly_df = pd.read_excel(open(self.poly_path, "rb")
                       , names=("fac_id","source_id","location_type","lon","lat","utmzone"
-                               ,"numvert","area")
+                               ,"numvert","area", "fipstct")
                       , converters={"fac_id":str,"source_id":str,"location_type":str,"lon":float
                                     ,"lat":float,"utmzone":str,"numvert":float,"area":float})
                 
@@ -785,10 +795,10 @@ class Hem4():
                 if len(receptor_unassigned) > 0:
                     facilities = set(receptor_unassigned)
                     messagebox.showinfo("Unassigned User Receptors", "Receptors for " + ", ".join(facilities) + " have not been assigned. Please edit the 'user_rcpt' column in the facility options file.")
-                #else:
+                else:
                     #record upload in log
-                    #self.scr.insert(tk.INSERT, "Uploaded user receptors for " + " ".join(check_receptor_assignment))
-                    #self.scr.insert(tk.INSERT, "\n")
+                    self.scr.insert(tk.INSERT, "Uploaded user receptors for " + " ".join(check_receptor_assignment))
+                    self.scr.insert(tk.INSERT, "\n")
             
             
             elif file == "building downwash":
@@ -884,595 +894,595 @@ class Hem4():
         instruction_instance.set(read_inst.read())
         
 #%% check deposition and depletion settings function
-    def check_dep(self):
+    def check_dep(self, fac):
  #%% Particle ONLY
      #needs to be applied in a for loop or as an "apply + lambda function"
         dep_dplt = False
         
-        if self.faclist['phase'] == 'P': #particle
+        if fac['phase'] == 'P': #particle
             
             #deposition only
-            if self.faclist['dep'] == 'Y' and self.faclist['depl'] == 'nan':  #wet particle depostion only
+            if fac['dep'] == 'Y' and fac['depl'] == 'nan':  #wet particle depostion only
                 
-                if self.faclist['pdep'] == 'WO':
+                if fac['pdep'] == 'WO':
                     
                     #check for particle size file
                     if  hasattr(self, 'particle_df'):
                         dep_dplt = True
                         keyword = ['WDEP NOWETDPLT']
                     else:
-                         messagebox.showinfo("To run wet particle deposition only for facility id: " + fac + " a particle size file is required.")
+                         messagebox.showinfo("To run wet particle deposition only for facility id: " + fac['fac_id'] + " a particle size file is required.")
                         
                 
-                elif self.self.faclist['pdep'] == 'DO': #dry particle deposition only
+                elif self.fac['pdep'] == 'DO': #dry particle deposition only
                     
                     #check for particle size file, land_use file, and seasons file
                     if  hasattr(self, 'particle_df') and hasattr(self, 'land_df') and hasattr(self, 'veg_df'):
                         dep_dplt = True
                         keyword = ['DDEP NODRYDPLT']
                     else:
-                         messagebox.showinfo("To run dry particle deposition only for facility id: " + fac + " particle size, land_use, and season files are required.")
+                         messagebox.showinfo("To run dry particle deposition only for facility id: " + fac['fac_id'] + " particle size, land_use, and season files are required.")
                     
-                elif self.faclist['pdep'] == 'WD': #wet and dry particle deposition
+                elif fac['pdep'] == 'WD': #wet and dry particle deposition
                     
                     #check for particle size file, land_use file, and seasons file
                     if  hasattr(self, 'particle_df') and hasattr(self, 'land_df') and hasattr(self, 'veg_df'):
                         dep_dplt = True
                         keyword = ['WDEP DDEP NOWETDPLT NODRYDPLT']
                     else:
-                         messagebox.showinfo("To run wet and dry particle deposition for facility id: " + fac + " particle size, land use, and season files are required.")
+                         messagebox.showinfo("To run wet and dry particle deposition for facility id: " + fac['fac_id'] + " particle size, land use, and season files are required.")
             
             #depletion only
-            elif self.faclist['depl'] == 'Y' and self.faclist['dep'] == 'nan':
+            elif fac['depl'] == 'Y' and fac['dep'] == 'nan':
             
-                if self.faclist['pdepl'] == 'WO': #wet particle depletion only
+                if fac['pdepl'] == 'WO': #wet particle depletion only
                 #check for particle size file
                     if  hasattr(self, 'particle_df'):
                         dep_dplt = True
                         keyword = ['WETDPLT']
                     else:
-                         messagebox.showinfo("To run wet particle depletion only for facility id: " + fac + " a particle size file is required.")
+                         messagebox.showinfo("To run wet particle depletion only for facility id: " + fac['fac_id'] + " a particle size file is required.")
                     
                     
-                elif self.faclist['pdepl'] == 'DO': #dry particle depletion only
+                elif fac['pdepl'] == 'DO': #dry particle depletion only
                 #check for particle size file
                     if  hasattr(self, 'particle_df'):
                         dep_dplt = True
                         keyword = ['DRYDPLT']
                     else:
-                         messagebox.showinfo("To run dry particle depletion only for facility id:" + fac + " a particle size file is required.")
+                         messagebox.showinfo("To run dry particle depletion only for facility id:" + fac['fac_id'] + " a particle size file is required.")
                     
             
-                elif self.faclist['pdepl'] == 'WD': #wet and dry particle depletion
+                elif fac['pdepl'] == 'WD': #wet and dry particle depletion
                 #check for particle size file
                     if  hasattr(self, 'particle_df'):
                         dep_dplt = True
                         keyword = ['WETDPLT DRYDPLT']
                     else:
-                         messagebox.showinfo("To run wet and dry particle depletion for facility id:" + fac + "a particle size file is required.")
+                         messagebox.showinfo("To run wet and dry particle depletion for facility id:" + fac['fac_id'] + "a particle size file is required.")
                      
             #deposion with depletion
-            elif self.faclist['dep'] == 'Y' and self.faclist['depl'] == 'Y':  
+            elif fac['dep'] == 'Y' and fac['depl'] == 'Y':  
             
-                if self.faclist['pdep'] == 'WO' and self.faclist['pdepl'] == 'WO': #wet particle only deposition and depletion
+                if fac['pdep'] == 'WO' and fac['pdepl'] == 'WO': #wet particle only deposition and depletion
                 
                 #check for particle size file
                     if  hasattr(self, 'particle_df'):
                         dep_dplt = True
                         keyword = 'WDEP'
                     else:
-                         messagebox.showinfo("To run wet particle only deposition and depletion for facility id:" + fac + "a particle size file is required.")
+                         messagebox.showinfo("To run wet particle only deposition and depletion for facility id:" + fac['fac_id'] + "a particle size file is required.")
                     
-                elif self.faclist['pdep'] == 'DO' and self.faclist['pdepl'] == 'DO': #dry particle only deposition and depletion
+                elif fac['pdep'] == 'DO' and fac['pdepl'] == 'DO': #dry particle only deposition and depletion
                 
                     #check for particle size file, land_use file, and seasons file
                     if  hasattr(self, 'particle_df') and hasattr(self, 'land_df') and hasattr(self, 'veg_df'):
                         dep_dplt = True
                         keyword = ['DDEP']
                     else:
-                         messagebox.showinfo("To run dry particle only deposition and depletion for facility id: " + fac + " particle size, land use, and season files are required.")
+                         messagebox.showinfo("To run dry particle only deposition and depletion for facility id: " + fac['fac_id'] + " particle size, land use, and season files are required.")
             
-                elif self.faclist['pdep'] == 'WD' and self.faclist['pdepl'] == 'WD': #wet and dry particle deposition and depletion
+                elif fac['pdep'] == 'WD' and fac['pdepl'] == 'WD': #wet and dry particle deposition and depletion
                 
                     #check for particle size file, land_use file, and seasons file
                     if  hasattr(self, 'particle_df') and hasattr(self, 'land_df') and hasattr(self, 'veg_df'):
                         dep_dplt = True
                         keyword = ['WDEP DDEP']
                     else:
-                         messagebox.showinfo("To run wet and dry particle deposition and depletion for facility id: " + fac + " particle size, land use, and season files are required.")
+                         messagebox.showinfo("To run wet and dry particle deposition and depletion for facility id: " + fac['fac_id'] + " particle size, land use, and season files are required.")
             
     #%% Vapor ONLY            
-        elif self.faclist['phase'] == 'V':
+        elif fac['phase'] == 'V':
             
             #deposition only
-            if self.faclist['dep'] == 'Y' and self.faclist['depl'] == 'nan': 
+            if fac['dep'] == 'Y' and fac['depl'] == 'nan': 
                 
-                if self.faclist['vdep'] == 'WO': #wet vapor deposition only
+                if fac['vdep'] == 'WO': #wet vapor deposition only
                     keyword = ['WDEP NOWETDPLT']
                     #nothing?
                     
-                elif self.faclist['vdep'] == 'DO': #dry vapor deposition only
+                elif fac['vdep'] == 'DO': #dry vapor deposition only
           
                     #check for land_use file, and seasons file
                     if  hasattr(self, 'land_df') and hasattr(self, 'veg_df'):
                         dep_dplt = True
                         keyword = ['DDEP NODRYDPLT']
                     else:
-                         messagebox.showinfo("To run dry vapor deposition only for facility id: " + fac + " land use and season files are required.")
+                         messagebox.showinfo("To run dry vapor deposition only for facility id: " + fac['fac_id'] + " land use and season files are required.")
                 
                 
-                elif self.faclist['vdep'] == 'WD': #wet and dry vapor deposition only
+                elif fac['vdep'] == 'WD': #wet and dry vapor deposition only
                     
                     #check for land_use file, and seasons file
                     if  hasattr(self, 'land_df') and hasattr(self, 'veg_df'):
                         dep_dplt = True
                         keyword = ['WDEP DDEP NOWETDPLT NODRYDPLT']
                     else:
-                         messagebox.showinfo("To run wet and dry vapor deposition only for facility id: " + fac + " a particle size file is required.")
+                         messagebox.showinfo("To run wet and dry vapor deposition only for facility id: " + fac['fac_id'] + " a particle size file is required.")
                     
             #depletion only
-            elif self.faclist['depl'] == 'Y' and self.faclist['dep'] == 'nan':
+            elif fac['depl'] == 'Y' and fac['dep'] == 'nan':
                 
-                if self.faclist['vdepl'] == 'WO': #wet vapor depletion only
+                if fac['vdepl'] == 'WO': #wet vapor depletion only
                 #nothing?
                     keyword = ['WETDPLT']
                 
-                elif self.faclist['vdepl'] == 'DO': #dry vapor depletion only
+                elif fac['vdepl'] == 'DO': #dry vapor depletion only
                 #nothing?
                    keyword = ['DRYDPLT']
                 
-                elif self.faclist['vdepl'] == 'WD': #wet and dry vapor depletion only
+                elif fac['vdepl'] == 'WD': #wet and dry vapor depletion only
                 #nothing?
                     keyword = ['WETDPLT DRYDPLT']
             
             #deposion with depletion
-            elif self.faclist['dep'] == 'Y' and self.faclist['depl'] == 'Y':
+            elif fac['dep'] == 'Y' and fac['depl'] == 'Y':
                 
-                if self.faclist['vdep'] == 'WO'  and self.faclist['vdepl'] == 'WO': #vapor only deposition and depletion
+                if fac['vdep'] == 'WO'  and fac['vdepl'] == 'WO': #vapor only deposition and depletion
                 #nothing
                     keyword = ['WDEP']
                 
-                elif self.faclist['vdep'] == 'DO' and self.faclist['vdepl'] == 'DO':
+                elif fac['vdep'] == 'DO' and fac['vdepl'] == 'DO':
                     
                     #check for land_use file, and seasons file
                     if  hasattr(self, 'land_df') and hasattr(self, 'veg_df'): #dry vapor depositon and depletion
                         dep_dplt = True
                         keyword = ['DDEP']
                     else:
-                        messagebox.showinfo("To run dry vapor deposition and depletion for facility id: " + fac + " land use and season files are required.")
+                        messagebox.showinfo("To run dry vapor deposition and depletion for facility id: " + fac['fac_id'] + " land use and season files are required.")
             
                 
-                elif self.faclist['vdep'] == 'WD' and self.faclist['vdepl'] == 'WD': #wet and dry vapor deposition and depletion
+                elif fac['vdep'] == 'WD' and fac['vdepl'] == 'WD': #wet and dry vapor deposition and depletion
                     
                     #check for particle size file, land_use file, and seasons file
                     if  hasattr(self, 'land_df') and hasattr(self, 'veg_df'):
                         dep_dplt = True
                         keyword = ['WDEP DDEP']
                     else:
-                         messagebox.showinfo("To run wet and dry vapor deposition and depletion for facility id: " + fac + " land use and season files are required.")
+                         messagebox.showinfo("To run wet and dry vapor deposition and depletion for facility id: " + fac['fac_id'] + " land use and season files are required.")
             
                 
     #%% Particle and Vapor
         #deposition with depletion    
-        elif self.faclist['phase'] == 'B':
+        elif fac['phase'] == 'B':
             
             #deposition only
-            if self.faclist['dep'] == 'Y' and self.faclist['depl'] == 'nan': 
+            if fac['dep'] == 'Y' and fac['depl'] == 'nan': 
                 
-                if self.faclist['pdep'] == 'WD' and self.faclist['vdep'] == 'WD': #wet and dry particle, wet and dry vapor deposition only
+                if fac['pdep'] == 'WD' and fac['vdep'] == 'WD': #wet and dry particle, wet and dry vapor deposition only
                     
                 #check for particle size file, land_use file, and seasons file
                     if  hasattr(self, 'particle_df') and hasattr(self, 'land_df') and hasattr(self, 'veg_df'):
                         dep_dplt = True
                         keyword = ['WDEP DDEP NOWETDPLT NODRYDPLT', 'WDEP DDEP NOWETDPLT NODRYDPLT']
                     else:
-                         messagebox.showinfo("To run wet and dry particle and wey and dry vapor deposition only for facility id: " + fac + " particle size, land use, and seasons files are required.")
+                         messagebox.showinfo("To run wet and dry particle and wey and dry vapor deposition only for facility id: " + fac['fac_id'] + " particle size, land use, and seasons files are required.")
             
                 
-                elif self.faclist['pdep'] == 'WO' and self.faclist['vdep'] == 'WO': #wet particle and wet vapor deposition only
+                elif fac['pdep'] == 'WO' and fac['vdep'] == 'WO': #wet particle and wet vapor deposition only
                     
                 #check for particle size file
                     if  hasattr(self, 'particle_df'):
                         dep_dplt = True
                         keyword = ['WDEP NOWETDPLT', 'WDEP NOWETDPLT']
                     else:
-                         messagebox.showinfo("To run wet particle and wet vapor deposition only for facility id: " + fac + " a particle size file is required.")
+                         messagebox.showinfo("To run wet particle and wet vapor deposition only for facility id: " + fac['fac_id'] + " a particle size file is required.")
                 
-                elif self.faclist['pdep'] == 'DO' and self.faclist['vdep'] == 'DO': #dry particle and dry vapor deposition only
+                elif fac['pdep'] == 'DO' and fac['vdep'] == 'DO': #dry particle and dry vapor deposition only
                     
                 #check for particle size file, land_use file, and seasons file
                     if  hasattr(self, 'particle_df') and hasattr(self, 'land_df') and hasattr(self, 'veg_df'):
                         dep_dplt = True
                         keyword = ['DDEP NODRYDPLT', 'DDEP NODRYDPLT' ]
                     else:
-                         messagebox.showinfo("To run dry particle and dry vapor deposition only for facility id: " + fac + " particle size, land use, and seasons files are required.")
+                         messagebox.showinfo("To run dry particle and dry vapor deposition only for facility id: " + fac['fac_id'] + " particle size, land use, and seasons files are required.")
             
                 
-                elif self.faclist['pdep'] == 'WO' and self.faclist['vdep'] == 'DO': #wet particle and dry vapor deposition only
+                elif fac['pdep'] == 'WO' and fac['vdep'] == 'DO': #wet particle and dry vapor deposition only
                     
                 #check for particle size file, land_use file, and seasons file
                     if  hasattr(self, 'particle_df') and hasattr(self, 'land_df') and hasattr(self, 'veg_df'):
                         dep_dplt = True
                         keyword = ['WDEP NOWETDPLT', 'DDEP NOWETDPLT']
                     else:
-                         messagebox.showinfo("To run wet particle ad dry vapor deposition only for facility id: " + fac + " particle size, land use, and seasons files are required.")
+                         messagebox.showinfo("To run wet particle ad dry vapor deposition only for facility id: " + fac['fac_id'] + " particle size, land use, and seasons files are required.")
             
                 
-                elif self.faclist['pdep'] == 'DO' and self.faclist['vdep'] == 'WO': #dry particle and wet vapor deposition only
+                elif fac['pdep'] == 'DO' and fac['vdep'] == 'WO': #dry particle and wet vapor deposition only
                     
                     #check for particle size file
                     if  hasattr(self, 'particle_df'):
                         dep_dplt = True
                         keyword = ['DDEP NODRYDPLT', 'WDEP NOWETDPLT']
                     else:
-                         messagebox.showinfo("To run dry particle and wet vapor depostion only for facility id: " + fac + " a particle size file is required.")
+                         messagebox.showinfo("To run dry particle and wet vapor depostion only for facility id: " + fac['fac_id'] + " a particle size file is required.")
             
-                elif self.faclist['pdep'] == 'WD' and self.faclist['vdep'] == 'WO': #wet and dry particle and wet vapor deposition only
+                elif fac['pdep'] == 'WD' and fac['vdep'] == 'WO': #wet and dry particle and wet vapor deposition only
                     
                     #check for particle size file
                     if  hasattr(self, 'particle_df'):
                         dep_dplt = True
                         keyword = ['WDEP DDEP NOWETDPLT NODRYDPLT', 'WDEP NOWETDPLT']
                     else:
-                         messagebox.showinfo("To run wet and dry particle and wet vapor deposition only for facility id: " + fac + " a particle size file is required.")
+                         messagebox.showinfo("To run wet and dry particle and wet vapor deposition only for facility id: " + fac['fac_id'] + " a particle size file is required.")
             
-                elif self.faclist['pdep'] == 'WD' and self.faclist['vdep'] == 'DO': #wet and dry particle and dry vapor deposition only
+                elif fac['pdep'] == 'WD' and fac['vdep'] == 'DO': #wet and dry particle and dry vapor deposition only
                     
                 #check for particle size file, land_use file, and seasons file
                     if  hasattr(self, 'particle_df') and hasattr(self, 'land_df') and hasattr(self, 'veg_df'):
                         dep_dplt = True
                         keyword = ['WDEP DDEP NOWETDPLT NODRYDPLT', 'DDEP NODRYDEPLT']
                     else:
-                         messagebox.showinfo("To run wet and dry particle and wet vapor deposition only for facility id: " + fac + " particle size, land use, and seasons files are required.")
+                         messagebox.showinfo("To run wet and dry particle and wet vapor deposition only for facility id: " + fac['fac_id'] + " particle size, land use, and seasons files are required.")
             
                 
-                elif self.faclist['pdep'] == 'WO' and self.faclist['vdep'] == 'WD': #wet particle and wet and dry vapor deposition only
+                elif fac['pdep'] == 'WO' and fac['vdep'] == 'WD': #wet particle and wet and dry vapor deposition only
                     
                 #check for particle size file, land_use file, and seasons file
                     if  hasattr(self, 'particle_df') and hasattr(self, 'land_df') and hasattr(self, 'veg_df'):
                         dep_dplt = True
                         keyword = ['WDEP NOWETDPLT', 'WDEP DDEP NOWETDPLT NODRYDPLT']
                     else:
-                         messagebox.showinfo("To run wet particle and wet and dry vapor deposition only for facility id: " + fac + " particle size, land use, and seasons files are required.")
+                         messagebox.showinfo("To run wet particle and wet and dry vapor deposition only for facility id: " + fac['fac_id'] + " particle size, land use, and seasons files are required.")
             
             
-                elif self.faclist['pdep'] == 'DO' and self.faclist['vdep'] == 'WD': #dry particle and wet and dry vapor deposition only
+                elif fac['pdep'] == 'DO' and fac['vdep'] == 'WD': #dry particle and wet and dry vapor deposition only
                     
                 #check for particle size file, land_use file, and seasons file
                     if  hasattr(self, 'particle_df') and hasattr(self, 'land_df') and hasattr(self, 'veg_df'):
                         dep_dplt = True
                         keyword = ['DDEP NODRYDPLT', 'WDEP DDEP NOWETDPLT NODRYDPLT']
                     else:
-                         messagebox.showinfo("To run dry particle and wet and dry vapor deposition only for facility id: " + fac + " particle size, land use, and seasons files are required.")
+                         messagebox.showinfo("To run dry particle and wet and dry vapor deposition only for facility id: " + fac['fac_id'] + " particle size, land use, and seasons files are required.")
             
             
-                elif self.faclist['pdep'] == 'WO' and self.faclist['vdep'] == 'NO': #wet particle no vapor
+                elif fac['pdep'] == 'WO' and fac['vdep'] == 'NO': #wet particle no vapor
                     
                  #check for particle size file
                     if  hasattr(self, 'particle_df'):
                         dep_dplt = True
                         keyword = ['WDEP NOWETDPLT', 'None']
                     else:
-                         messagebox.showinfo("To run wet particle deposition (no vapor) for facility id: " + fac + " a particle size file is required.")
+                         messagebox.showinfo("To run wet particle deposition (no vapor) for facility id: " + fac['fac_id'] + " a particle size file is required.")
                  
-                elif self.faclist['pdep'] == 'DO' and self.faclist['vdep'] == 'NO': #dry particle no vapor
+                elif fac['pdep'] == 'DO' and fac['vdep'] == 'NO': #dry particle no vapor
                     
                 #check for particle size file
                     if  hasattr(self, 'particle_df'):
                         dep_dplt = True
                         keyword = ['DDEP NODRYDPLT', None]
                     else:
-                         messagebox.showinfo("To run dry particle deposition (no vapor) for facility id: " + fac + " a particle size file is required.")
+                         messagebox.showinfo("To run dry particle deposition (no vapor) for facility id: " + fac['fac_id'] + " a particle size file is required.")
         
-                elif self.faclist['pdep'] == 'WD' and self.faclist['vdep'] == 'NO': #wet and dry particle no vapor
+                elif fac['pdep'] == 'WD' and fac['vdep'] == 'NO': #wet and dry particle no vapor
                     
                 #check for particle size file
                     if  hasattr(self, 'particle_df'):
                         dep_dplt = True
                         keyword = ['WDEP DDEP NOWETDPLT NODRYDPLT', None]
                     else:
-                         messagebox.showinfo("To run wet and dry particle deposition (no vapor) for facility id: " + fac + " a particle size file is required.")
+                         messagebox.showinfo("To run wet and dry particle deposition (no vapor) for facility id: " + fac['fac_id'] + " a particle size file is required.")
     
-                elif self.faclist['pdep'] == 'NO' and self.faclist['vdep'] == 'WO': #no particle, wet vapor
+                elif fac['pdep'] == 'NO' and fac['vdep'] == 'WO': #no particle, wet vapor
                     keyword = [None, 'WDEP NOWETDPLT']
                 #nothing
     
-                elif self.faclist['pdep'] == 'NO' and self.faclist['vdep'] == 'DO': #no particle, dry vapor
+                elif fac['pdep'] == 'NO' and fac['vdep'] == 'DO': #no particle, dry vapor
                     keyword = [None, 'DDEP NODRYDPLT']
                 #land use, season
     
-                elif self.faclist['pdep'] == 'NO' and self.faclist['vdep'] == 'WD': #no particle, wet and dry vapor
+                elif fac['pdep'] == 'NO' and fac['vdep'] == 'WD': #no particle, wet and dry vapor
                     keyword = [None, 'WDEP DDEP NOWETDPLT NODRYDPLT']
                 #land use, season
     
-                elif self.faclist['pdep'] == 'NO' and self.faclist['vdep'] == 'NO': #no particle, no vapor (set to phase B)
+                elif fac['pdep'] == 'NO' and fac['vdep'] == 'NO': #no particle, no vapor (set to phase B)
                     keyword = [None, None]
                 #nothing
             
                  
             #depletion only
             
-            elif self.faclist['depl'] == 'Y' and self.faclist['dep'] == 'nan': 
+            elif fac['depl'] == 'Y' and fac['dep'] == 'nan': 
                
-                if self.faclist['pdepl'] == 'WD' and self.faclist['vdepl'] == 'WD': #wet and dry particle and wet and dry vapor depletion only
+                if fac['pdepl'] == 'WD' and fac['vdepl'] == 'WD': #wet and dry particle and wet and dry vapor depletion only
                     
                 #check for particle size file
                     if  hasattr(self, 'particle_df'):
                         dep_dplt = True
                         keyword = ['WETDPLT DRYDPLT', 'WETDPLT DRYDPLT']
                     else:
-                         messagebox.showinfo("To run wet and dry particle and wet and dry vapor depletion only for facility id: " + fac + " a particle size file is required.")
+                         messagebox.showinfo("To run wet and dry particle and wet and dry vapor depletion only for facility id: " + fac['fac_id'] + " a particle size file is required.")
         
-                elif self.faclist['pdepl'] == 'WO' and self.faclist['vdepl'] == 'WO': #wet particle and wet vapor depletion only
+                elif fac['pdepl'] == 'WO' and fac['vdepl'] == 'WO': #wet particle and wet vapor depletion only
                     
                 #check for particle size file
                     if  hasattr(self, 'particle_df'):
                         dep_dplt = True
                         keyword = ['WETDPLT', 'WETDPLT']
                     else:
-                         messagebox.showinfo("To run wet particle and wet vapor depletion only for facility id: " + fac + " a particle size file is required.")
+                         messagebox.showinfo("To run wet particle and wet vapor depletion only for facility id: " + fac['fac_id'] + " a particle size file is required.")
             
-                elif self.faclist['pdepl'] == 'DO' and self.faclist['vdepl'] == 'DO': #dry particle and dry vapor depletion only
+                elif fac['pdepl'] == 'DO' and fac['vdepl'] == 'DO': #dry particle and dry vapor depletion only
                     
                 #check for particle size file
                     if  hasattr(self, 'particle_df'):
                         dep_dplt = True
                         keyword = ['DRYDPLT', 'DRYDPLT']
                     else:
-                         messagebox.showinfo("To run dry particle and dry vapor depletion only for facility id: " + fac + " a particle size file is required.")
+                         messagebox.showinfo("To run dry particle and dry vapor depletion only for facility id: " + fac['fac_id'] + " a particle size file is required.")
         
-                elif self.faclist['pdepl'] == 'WO' and self.faclist['vdepl'] == 'DO': #wet particle and dry vapor depletion only
+                elif fac['pdepl'] == 'WO' and fac['vdepl'] == 'DO': #wet particle and dry vapor depletion only
                     
                 #check for particle size file
                     if  hasattr(self, 'particle_df'):
                         dep_dplt = True
                         keyword = ['WETDPLT', 'DRYDPLT']
                     else:
-                         messagebox.showinfo("To run wet particle and dry vapor depletion only for facility id: " + fac + " a particle size file is required.")
+                         messagebox.showinfo("To run wet particle and dry vapor depletion only for facility id: " + fac['fac_id'] + " a particle size file is required.")
         
                 
-                elif self.faclist['pdepl'] == 'DO' and self.faclist['vdepl'] == 'WO': #dry particle, wet vapor depletion only
+                elif fac['pdepl'] == 'DO' and fac['vdepl'] == 'WO': #dry particle, wet vapor depletion only
                 
                 #check for particle size file
                     if  hasattr(self, 'particle_df'):
                         dep_dplt = True
                         keyword = ['DRYDPLT', 'WETDPLT']
                     else:
-                         messagebox.showinfo("To run dry particle and wet vapor depletion only for facility id: " + fac + " a particle size file is required.")
+                         messagebox.showinfo("To run dry particle and wet vapor depletion only for facility id: " + fac['fac_id'] + " a particle size file is required.")
                 
                 
-                elif self.faclist['pdepl'] == 'WD' and self.faclist['vdepl'] == 'WO': #wet and dry particle and wet vapor depletion only
+                elif fac['pdepl'] == 'WD' and fac['vdepl'] == 'WO': #wet and dry particle and wet vapor depletion only
                    
                 #check for particle size file
                     if  hasattr(self, 'particle_df'):
                         dep_dplt = True
                         keyword = ['WETDPLT DRYDPLT', 'WETDPLT']
                     else:
-                         messagebox.showinfo("To run wet and dry particle and wet vapor depletion only for facility id: " + fac + " a particle size file is required.")
+                         messagebox.showinfo("To run wet and dry particle and wet vapor depletion only for facility id: " + fac['fac_id'] + " a particle size file is required.")
         
-                elif self.faclist['pdepl'] == 'WD' and self.faclist['vdepl'] == 'DO': #wet and dry particle and dry vapor depletion only
+                elif fac['pdepl'] == 'WD' and fac['vdepl'] == 'DO': #wet and dry particle and dry vapor depletion only
                     
                 #check for particle size file
                     if  hasattr(self, 'particle_df'):
                         dep_dplt = True
                         keyword = ['WETDPLT DRYDPLT', 'DRYDPLT']
                     else:
-                         messagebox.showinfo("To run wet and dry particle and dry vapor depletion only for facility id: " + fac + " a particle size file is required.")
+                         messagebox.showinfo("To run wet and dry particle and dry vapor depletion only for facility id: " + fac['fac_id'] + " a particle size file is required.")
     
-                elif self.faclist['pdepl'] == 'WO' and self.faclist['vdepl'] == 'WD': #wet particle and wet and dry vapor depletion only
+                elif fac['pdepl'] == 'WO' and fac['vdepl'] == 'WD': #wet particle and wet and dry vapor depletion only
                    
                 #check for particle size file
                     if  hasattr(self, 'particle_df'):
                         dep_dplt = True
                         keyword = ['WETDPLT', 'WETDPLT DRYDPLT']
                     else:
-                         messagebox.showinfo("To run wet particle and wet and dry vapor depletion only for facility id: " + fac + " a particle size file is required.")
+                         messagebox.showinfo("To run wet particle and wet and dry vapor depletion only for facility id: " + fac['fac_id'] + " a particle size file is required.")
         
-                elif self.faclist['pdepl'] == 'DO' and self.faclist['vdepl'] == 'WD': #dry particle and wet and dry vapor depletion only
+                elif fac['pdepl'] == 'DO' and fac['vdepl'] == 'WD': #dry particle and wet and dry vapor depletion only
                    
                 #check for particle size file
                     if  hasattr(self, 'particle_df'):
                         dep_dplt = True
                         keyword = ['DRYDPLT', 'WETDPLT DRYDPLT']
                     else:
-                         messagebox.showinfo("To run dry particle and wet and dry vapor depletion only for facility id: " + fac + " a particle size file is required.")
+                         messagebox.showinfo("To run dry particle and wet and dry vapor depletion only for facility id: " + fac['fac_id'] + " a particle size file is required.")
             
-                elif self.faclist['pdepl'] == 'WO' and self.faclist['vdepl'] == 'NO': #wet particle no vapor depletion
+                elif fac['pdepl'] == 'WO' and fac['vdepl'] == 'NO': #wet particle no vapor depletion
                     
                 #check for particle size file
                     if  hasattr(self, 'particle_df'):
                         dep_dplt = True
                         keyword = ['WETDPLT', None]
                     else:
-                         messagebox.showinfo("To run wet particle (no vapor) depletion for facility id: " + fac + " a particle size file is required.")
+                         messagebox.showinfo("To run wet particle (no vapor) depletion for facility id: " + fac['fac_id'] + " a particle size file is required.")
         
-                elif self.faclist['pdepl'] == 'DO' and self.faclist['vdepl'] == 'NO': #dry particle no vapor depletion
+                elif fac['pdepl'] == 'DO' and fac['vdepl'] == 'NO': #dry particle no vapor depletion
                     
                 #check for particle size file
                     if  hasattr(self, 'particle_df'):
                         dep_dplt = True
                         keyword = ['DRYDPLT', None]
                     else:
-                         messagebox.showinfo("To run dry particle (no vapor) depletion for facility id: " + fac + " a particle size file is required.")
+                         messagebox.showinfo("To run dry particle (no vapor) depletion for facility id: " + fac['fac_id'] + " a particle size file is required.")
         
-                elif self.faclist['pdepl'] == 'WD' and self.faclist['vdepl'] == 'NO': #wet and dry particle no vapor depletion
+                elif fac['pdepl'] == 'WD' and fac['vdepl'] == 'NO': #wet and dry particle no vapor depletion
                     
                 #check for particle size file
                     if  hasattr(self, 'particle_df'):
                         dep_dplt = True
                         keyword = ['WETDPLT DRYDPLT', None]
                     else:
-                         messagebox.showinfo("To run wet and dry particle (no vapor) depletion for facility id: " + fac + " a particle size file is required.")
+                         messagebox.showinfo("To run wet and dry particle (no vapor) depletion for facility id: " + fac['fac_id'] + " a particle size file is required.")
             
-                elif self.faclist['pdepl'] == 'NO' and self.faclist['vdepl'] == 'WO': #no particle wet vapor depletion only
+                elif fac['pdepl'] == 'NO' and fac['vdepl'] == 'WO': #no particle wet vapor depletion only
                     keyword = [None, 'WETDPLT']
                 #nothing
             
-                elif self.faclist['pdepl'] == 'NO' and self.faclist['vdepl'] == 'DO': #no particle dry vapor depletion
+                elif fac['pdepl'] == 'NO' and fac['vdepl'] == 'DO': #no particle dry vapor depletion
                     
                 #check for particle size file, land_use file, and seasons file
                     if  hasattr(self, 'land_df') and hasattr(self, 'veg_df'):
                         dep_dplt = True
                         keyword = [None, 'DRYDPLT']
                     else:
-                         messagebox.showinfo("To no particle dry vapor depletion only for facility id: " + fac + " land use and season files are required.")
+                         messagebox.showinfo("To no particle dry vapor depletion only for facility id: " + fac['fac_id'] + " land use and season files are required.")
             
         
-                elif self.faclist['pdepl'] == 'NO' and self.faclist['vdepl'] == 'WD': #no particle wet and dry vapor depletion only
+                elif fac['pdepl'] == 'NO' and fac['vdepl'] == 'WD': #no particle wet and dry vapor depletion only
                     
                 #check for particle size file, land_use file, and seasons file
                     if  hasattr(self, 'particle_df') and hasattr(self, 'land_df') and hasattr(self, 'veg_df'):
                         dep_dplt = True
                         keyword = [None, 'WETPLT DRYDPLT']
                     else:
-                         messagebox.showinfo("To run no particle wet and dry vapor depletion only for facility id: " + fac + " land use and season files are required.")
+                         messagebox.showinfo("To run no particle wet and dry vapor depletion only for facility id: " + fac['fac_id'] + " land use and season files are required.")
             
         
-                elif self.faclist['pdepl'] == 'NO' and self.faclist['vdepl'] == 'NO': #no vapor, no particle
+                elif fac['pdepl'] == 'NO' and fac['vdepl'] == 'NO': #no vapor, no particle
                     
                 #check for particle size file
                     if  hasattr(self, 'particle_df'):
                         dep_dplt = True
                         keyword = [None, None]
                     else:
-                         messagebox.showinfo("To run no particle and no vapor depletion for facility id: " + fac + " a particle size file is required.")
+                         messagebox.showinfo("To run no particle and no vapor depletion for facility id: " + fac['fac_id'] + " a particle size file is required.")
             
             #both desposition and depletion 
            
-            elif self.faclist['dep'] == 'Y' and self.faclist['depl'] == 'Y':
+            elif fac['dep'] == 'Y' and fac['depl'] == 'Y':
         
-                if self.faclist['pdep'] == 'WD' and self.faclist['vdep'] == 'WD' and self.faclist['pdepl'] == 'WD' and self.faclist['vdepl'] == 'WD': #wet and dry particle and wet and dry vapor deposition and depletion
+                if fac['pdep'] == 'WD' and fac['vdep'] == 'WD' and fac['pdepl'] == 'WD' and fac['vdepl'] == 'WD': #wet and dry particle and wet and dry vapor deposition and depletion
                    
                     #check for particle size file, land_use file, and seasons file
                     if  hasattr(self, 'particle_df') and hasattr(self, 'land_df') and hasattr(self, 'veg_df'):
                         dep_dplt = True
                         keyword = ['WDEP DDEP', 'WDEP DDEP']
                     else:
-                         messagebox.showinfo("To run wet and dry particle and wet and dry vapor deposition and depletion for facility id: " + fac + " particle size, land use, and season files are required.")
+                         messagebox.showinfo("To run wet and dry particle and wet and dry vapor deposition and depletion for facility id: " + fac['fac_id'] + " particle size, land use, and season files are required.")
             
         
-                elif self.faclist['pdep'] == 'WO' and self.faclist['vdep'] == 'WO' and self.faclist['pdepl'] == 'WO' and self.faclist['vdepl'] == 'WO': #wet particle and wet vapor deposition and depletion
+                elif fac['pdep'] == 'WO' and fac['vdep'] == 'WO' and fac['pdepl'] == 'WO' and fac['vdepl'] == 'WO': #wet particle and wet vapor deposition and depletion
                    
                     #check for particle size file
                     if  hasattr(self, 'particle_df'):
                         dep_dplt = True
                         keyword = ['WDEP', 'WDEP']
                     else:
-                         messagebox.showinfo("To run wet particle and wet vapor deposition and depletion for facility id: " + fac + " a particle size file is required.")
+                         messagebox.showinfo("To run wet particle and wet vapor deposition and depletion for facility id: " + fac['fac_id'] + " a particle size file is required.")
             
-                elif self.faclist['pdep'] == 'DO' and self.faclist['vdep'] == 'DO' and self.faclist['pdepl'] == 'DO' and self.faclist['vdepl'] == 'DO': #dry particle and dry vapor deposition and depletion
+                elif fac['pdep'] == 'DO' and fac['vdep'] == 'DO' and fac['pdepl'] == 'DO' and fac['vdepl'] == 'DO': #dry particle and dry vapor deposition and depletion
                     
                     #check for particle size file, land_use file, and seasons file
                     if  hasattr(self, 'particle_df') and hasattr(self, 'land_df') and hasattr(self, 'veg_df'):
                         dep_dplt = True
                         keyword = ['DDEP', 'DDEP']
                     else:
-                         messagebox.showinfo("To run dry particle and dry vapor deposition and depletion for facility id: " + fac + " particle size, land use, and season files are required.")
+                         messagebox.showinfo("To run dry particle and dry vapor deposition and depletion for facility id: " + fac['fac_id'] + " particle size, land use, and season files are required.")
         
-                elif self.faclist['pdep'] == 'WO' and self.faclist['vdep'] == 'DO' and self.faclist['pdepl'] == 'WO' and self.faclist['vdepl'] == 'DO': #wet particle and dry vapor deposition and depletion
+                elif fac['pdep'] == 'WO' and fac['vdep'] == 'DO' and fac['pdepl'] == 'WO' and fac['vdepl'] == 'DO': #wet particle and dry vapor deposition and depletion
                    
                     #check for particle size file, land_use file, and seasons file
                     if  hasattr(self, 'particle_df') and hasattr(self, 'land_df') and hasattr(self, 'veg_df'):
                         dep_dplt = True
                         keyword = ['WDEP', 'DDEP']
                     else:
-                         messagebox.showinfo("To run wet particle and dry vapor deposition and depletion for facility id: " + fac + " particle size, land use, and season files are required.")
+                         messagebox.showinfo("To run wet particle and dry vapor deposition and depletion for facility id: " + fac['fac_id'] + " particle size, land use, and season files are required.")
         
-                elif self.faclist['pdep'] == 'DO' and self.faclist['vdep'] == 'WO' and self.faclist['pdepl'] == 'DO' and self.faclist['vdepl'] == 'WO': #dry particle and wet vapor depostion and depletion
+                elif fac['pdep'] == 'DO' and fac['vdep'] == 'WO' and fac['pdepl'] == 'DO' and fac['vdepl'] == 'WO': #dry particle and wet vapor depostion and depletion
                     
                     #check for particle size file
                     if  hasattr(self, 'particle_df'):
                         dep_dplt = True
                         keyword = ['DDEP', 'WDEP']
                     else:
-                         messagebox.showinfo("To run dry particle and wet vapor deposition and depletion for facility id: " + fac + " a particle size file is required.")
+                         messagebox.showinfo("To run dry particle and wet vapor deposition and depletion for facility id: " + fac['fac_id'] + " a particle size file is required.")
             
-                elif self.faclist['pdep'] == 'WD' and self.faclist['vdep'] == 'WO' and self.faclist['pdepl'] == 'WD' and self.faclist['vdepl'] == 'WO': #wet and dry particle and wet vapor deposition and depletion
+                elif fac['pdep'] == 'WD' and fac['vdep'] == 'WO' and fac['pdepl'] == 'WD' and fac['vdepl'] == 'WO': #wet and dry particle and wet vapor deposition and depletion
                     
                     #check for particle size file
                     if  hasattr(self, 'particle_df'):
                         dep_dplt = True
                         keyword = ['WDEP DDEP', 'WDEP']
                     else:
-                         messagebox.showinfo("To run wet and dry particle and wet vapor deposition and depletion for facility id: " + fac + " a particle size file is required.")
+                         messagebox.showinfo("To run wet and dry particle and wet vapor deposition and depletion for facility id: " + fac['fac_id'] + " a particle size file is required.")
         
-                elif self.faclist['pdep'] == 'WD' and self.faclist['vdep'] == 'DO' and self.faclist['pdepl'] == 'WD' and self.faclist['vdepl'] == 'DO': #wet and dry particle and dry vapor deposition and depletion
+                elif fac['pdep'] == 'WD' and fac['vdep'] == 'DO' and fac['pdepl'] == 'WD' and fac['vdepl'] == 'DO': #wet and dry particle and dry vapor deposition and depletion
                     
                     #check for particle size file, land_use file, and seasons file
                     if  hasattr(self, 'particle_df') and hasattr(self, 'land_df') and hasattr(self, 'veg_df'):
                         dep_dplt = True
                         keyword = ['WDEP DDEP', 'DDEP']
                     else:
-                         messagebox.showinfo("To run wet and dry particle and dry vapor deposition and depletion for facility id: " + fac + " particle size, land use, and season files are required.")
+                         messagebox.showinfo("To run wet and dry particle and dry vapor deposition and depletion for facility id: " + fac['fac_id'] + " particle size, land use, and season files are required.")
                 
-                elif self.faclist['pdep'] == 'WO' and self.faclist['vdep'] == 'WD' and self.faclist['pdepl'] == 'WO' and self.faclist['vdepl'] == 'WD': #wet particle and wet and dry vapor
+                elif fac['pdep'] == 'WO' and fac['vdep'] == 'WD' and fac['pdepl'] == 'WO' and fac['vdepl'] == 'WD': #wet particle and wet and dry vapor
                     
                     #check for particle size file, land_use file, and seasons file
                     if  hasattr(self, 'particle_df') and hasattr(self, 'land_df') and hasattr(self, 'veg_df'):
                         dep_dplt = True
                         keyword = ['WDEP', 'WDEP DDEP']
                     else:
-                         messagebox.showinfo("To run wet particle and wet and dry vapor deposition and depletion for facility id: " + fac + " particle size, land use, and season files are required.")
+                         messagebox.showinfo("To run wet particle and wet and dry vapor deposition and depletion for facility id: " + fac['fac_id'] + " particle size, land use, and season files are required.")
             
-                elif self.faclist['pdep'] == 'DO' and self.faclist['vdep'] == 'WD' and self.faclist['pdepl'] == 'DO' and self.faclist['vdepl'] == 'WD': #dry particle and wet and dry vapor deposition and depletion
+                elif fac['pdep'] == 'DO' and fac['vdep'] == 'WD' and fac['pdepl'] == 'DO' and fac['vdepl'] == 'WD': #dry particle and wet and dry vapor deposition and depletion
                     
                     #check for particle size file, land_use file, and seasons file
                     if  hasattr(self, 'particle_df') and hasattr(self, 'land_df') and hasattr(self, 'veg_df'):
                         dep_dplt = True
                         keyword = ['DDEP', 'WDEP DDEP']
                     else:
-                         messagebox.showinfo("To run dry particle and wet and dry deposition and depletion for facility id: " + fac + " particle size, land use, and season files are required.")
+                         messagebox.showinfo("To run dry particle and wet and dry deposition and depletion for facility id: " + fac['fac_id'] + " particle size, land use, and season files are required.")
             
-                elif self.faclist['pdep'] == 'WO' and self.faclist['vdep'] == 'NO' and self.faclist['pdepl'] == 'WO' and self.faclist['vdepl'] == 'NO': #wet particle, no vapor
+                elif fac['pdep'] == 'WO' and fac['vdep'] == 'NO' and fac['pdepl'] == 'WO' and fac['vdepl'] == 'NO': #wet particle, no vapor
                     
                     #check for particle size file
                     if  hasattr(self, 'particle_df'):
                         dep_dplt = True
                         keyword = ['WDEP', None]
                     else:
-                         messagebox.showinfo("To run wet particle (no vapor) deposition and depletion for facility id: " + fac + " a particle size file is required.")
+                         messagebox.showinfo("To run wet particle (no vapor) deposition and depletion for facility id: " + fac['fac_id'] + " a particle size file is required.")
         
-                elif self.faclist['pdep'] == 'DO' and self.faclist['vdep'] == 'NO' and self.faclist['pdepl'] == 'DO' and self.faclist['vdepl'] == 'NO': #dry particle no vapor
+                elif fac['pdep'] == 'DO' and fac['vdep'] == 'NO' and fac['pdepl'] == 'DO' and fac['vdepl'] == 'NO': #dry particle no vapor
                     
                     #check for particle size file
                     if  hasattr(self, 'particle_df'):
                         dep_dplt = True
                         keyword = ['DDEP', None]
                     else:
-                         messagebox.showinfo("To run dry particle (no vapor) deposition and depletion for facility id: " + fac + " a particle size file is required.")
+                         messagebox.showinfo("To run dry particle (no vapor) deposition and depletion for facility id: " + fac['fac_id'] + " a particle size file is required.")
             
-                elif self.faclist['pdep'] == 'WD' and self.faclist['vdep'] == 'NO' and self.faclist['pdepl'] == 'WD' and self.faclist['vdepl'] == 'NO': #wet and dry particle no vapor
+                elif fac['pdep'] == 'WD' and fac['vdep'] == 'NO' and fac['pdepl'] == 'WD' and fac['vdepl'] == 'NO': #wet and dry particle no vapor
                     
                     #check for particle size file
                     if  hasattr(self, 'particle_df'):
                         dep_dplt = True
                         keyword = ['WDEP DDEP', None]
                     else:
-                         messagebox.showinfo("To run wet and dry particle (no vapor ) deposition and depletion for facility id: " + fac + " a particle size file is required.")
+                         messagebox.showinfo("To run wet and dry particle (no vapor ) deposition and depletion for facility id: " + fac['fac_id'] + " a particle size file is required.")
         
-                elif self.faclist['pdep'] == 'NO' and self.faclist['vdep'] == 'WO' and self.faclist['pdepl'] == 'NO' and self.faclist['vdepl'] == 'WO': #no particle and wet vapor deposition and depletion
+                elif fac['pdep'] == 'NO' and fac['vdep'] == 'WO' and fac['pdepl'] == 'NO' and fac['vdepl'] == 'WO': #no particle and wet vapor deposition and depletion
                     keyword = [None, 'WDEP']
                     #nothing
         
-                elif self.faclist['pdep'] == 'NO' and self.faclist['vdep'] == 'DO' and self.faclist['pdepl'] == 'NO' and self.faclist['vdepl'] == 'DO': #no particle and dry vapor deposition and depletion
+                elif fac['pdep'] == 'NO' and fac['vdep'] == 'DO' and fac['pdepl'] == 'NO' and fac['vdepl'] == 'DO': #no particle and dry vapor deposition and depletion
                     
                     #check for land_use file, and seasons file
                     if hasattr(self, 'land_df') and hasattr(self, 'veg_df'):
                         dep_dplt = True
                         keyword = [None, 'DDEP']
                     else:
-                         messagebox.showinfo("To run no particle and dry vapor deposition and depletion for facility id: " + fac + " land use, and season files are required.")
+                         messagebox.showinfo("To run no particle and dry vapor deposition and depletion for facility id: " + fac['fac_id'] + " land use, and season files are required.")
         
-                elif self.faclist['pdep'] == 'NO' and self.faclist['vdep'] == 'WD' and self.faclist['pdepl'] == 'NO' and self.faclist['vdepl'] == 'WD': #no particle and wet and dry vapor deposition and depletion
+                elif fac['pdep'] == 'NO' and fac['vdep'] == 'WD' and fac['pdepl'] == 'NO' and fac['vdepl'] == 'WD': #no particle and wet and dry vapor deposition and depletion
                     
                     #check for land_use file, and seasons file
                     if hasattr(self, 'land_df') and hasattr(self, 'veg_df'):
                         dep_dplt = True
                         keyword = [None, 'WDEP DDEP']
                     else:
-                         messagebox.showinfo("To run no particle and wet and dry vapor deposition and depletion for facility id: " + fac + " land use, and season files are required.")
+                         messagebox.showinfo("To run no particle and wet and dry vapor deposition and depletion for facility id: " + fac['fac_id'] + " land use, and season files are required.")
         
-                elif self.faclist['pdep'] == 'NO' and self.faclist['vdep'] == 'NO' and self.faclist['pdepl'] == 'NO' and self.faclist['vdepl'] == 'NO':
+                elif fac['pdep'] == 'NO' and fac['vdep'] == 'NO' and fac['pdepl'] == 'NO' and fac['vdepl'] == 'NO':
                     keyword = [None, None]
                     #nothing
             
@@ -1559,100 +1569,89 @@ class Hem4():
             check3 = False
             messagebox.showinfo("Error","There was an error uploading HAP Emissions File, please try again")
         
-        
-        #if there isnt a file for poly vertex
-        if  hasattr(self, 'multipoly_df'):
-           pass 
-        else: 
-            self.multipoly_df = None    
-       
-        #if there isnt a file for bouyant line
-        if  hasattr(self, 'multibuoy_df'):
-            pass
-        else:
-            self.multibuoy_df = None
-
-        #if there isnt a file for user receptors
-        if  hasattr(self, 'ureceptr_df'):
-            pass
-        else:
-            self.ureceptr_df = None
-        
-        #if building downwash
-        if  hasattr(self, 'bd_path'):
-            pass
-        #    print("Building downwash file path: " + self.bd_path)
-        else:
-            self.bd_path = None
-        
-        #if depletion calculation
-        if self.depdep ==True:
-                        
-            #call function to check
-        
-            self.keyword = self.check_dep()
-            if len(self.keyword) == 0:
-                print("Make this check stop everything!!")
-            
-              
-        
-        else:
-            self.depdep = None
-        
-        #if they want output as csv 
-        #if self.csv == True:
-        #    print("Output in CSV as well")
-       # else:
-        #    self.csv == False
-     
-        
-       #check user receptors in facility
-        user_rec_check = self.faclist_df['user_rcpt'] == 'Y'
-        user_rec_checklist = []
-        
-        if True in user_rec_check:
-           for facility in self.faclist_df[user_rec_check]['fac_id']:
-               
-               if self.ureceptr_df is None:
-                   
-                   user_rec_checklist.append(str(facility))
-                  
-        if len(user_rec_checklist) > 0:
-            messagebox.showinfo( "Missing user receptors", "Please upload user receptors for " + ", ".join(user_rec_checklist))
-            ready = False   
-        
-        
-        #check emissions list for bouyant line indicators   
-        bouyant_check = self.emisloc_df["source_type"].str.upper() == "B"
-        bouyant_checklist = []
-
-        if True in bouyant_check:          
-            for bfacility in self.emisloc_df[bouyant_check]['fac_id']:                
-                if self.multibuoy_df is None:                   
-                    bouyant_checklist.append(str(bfacility))
-        
-        bfacilities = set(bouyant_checklist)            
-        if len(bouyant_checklist) > 0:
-            messagebox.showinfo("Missing bouyant line", "Please upload buoyant line file for " + ", ".join(bfacilities))
-            ready = False
-        
-        #check emissions list for poly vertex indicators   
-        polyvertex_check = self.emisloc_df["source_type"].str.upper() == "I"
-        poly_checklist = []
-
-        if True in polyvertex_check:          
-            for pfacility in self.emisloc_df[polyvertex_check]['fac_id']:                
-                if self.multipoly_df is None:                   
-                    poly_checklist.append(str(pfacility))
-        
-        pfacilities = set(poly_checklist)            
-        if len(poly_checklist) > 0:
-            messagebox.showinfo("Missing polyvertex", "Please upload polyvertex line file for " + ", ".join(pfacilities))
-            ready = False
-
-        
         if check1 == True & check2 == True & check3 == True:
-            ready = True
+        
+            #if there isnt a file for poly vertex
+            if  hasattr(self, 'multipoly_df'):
+               pass 
+            else: 
+                self.multipoly_df = None    
+           
+            #if there isnt a file for bouyant line
+            if  hasattr(self, 'multibuoy_df'):
+                pass
+            else:
+                self.multibuoy_df = None
+    
+            #if there isnt a file for user receptors
+            if  hasattr(self, 'ureceptr_df'):
+                pass
+            else:
+                self.ureceptr_df = None
+            
+            #if building downwash
+            if  hasattr(self, 'bd_path'):
+                pass
+            #    print("Building downwash file path: " + self.bd_path)
+            else:
+                self.bd_path = None
+            
+            #if depletion calculation
+            if self.depdep == True:
+                self.keyword = {}
+                for row in self.fac_list.itterows():
+                    self.keyword[row['fac_id']] = self.check_dep(row['fac_id'])
+                
+            
+            
+           #check user receptors in facility
+            user_rec_check = self.faclist_df['user_rcpt'] == 'Y'
+            user_rec_checklist = []
+            
+            if True in user_rec_check:
+               for facility in self.faclist_df[user_rec_check]['fac_id']:
+                   
+                   if self.ureceptr_df is None:
+                       
+                       user_rec_checklist.append(str(facility))
+                      
+            if len(user_rec_checklist) > 0:
+                messagebox.showinfo( "Missing user receptors", "Please upload user receptors for " + ", ".join(user_rec_checklist))
+                ready = False   
+            
+            
+            #check emissions list for bouyant line indicators   
+            bouyant_check = self.emisloc_df["source_type"].str.upper() == "B"
+            bouyant_checklist = []
+    
+            if True in bouyant_check:          
+                for bfacility in self.emisloc_df[bouyant_check]['fac_id']:                
+                    if self.multibuoy_df is None:                   
+                        bouyant_checklist.append(str(bfacility))
+            
+            bfacilities = set(bouyant_checklist)            
+            if len(bouyant_checklist) > 0:
+                messagebox.showinfo("Missing bouyant line", "Please upload buoyant line file for " + ", ".join(bfacilities))
+                ready = False
+            
+            #check emissions list for poly vertex indicators   
+            polyvertex_check = self.emisloc_df["source_type"].str.upper() == "I"
+            poly_checklist = []
+    
+            if True in polyvertex_check:          
+                for pfacility in self.emisloc_df[polyvertex_check]['fac_id']:                
+                    if self.multipoly_df is None:                   
+                        poly_checklist.append(str(pfacility))
+            
+            pfacilities = set(poly_checklist)            
+            if len(poly_checklist) > 0:
+                messagebox.showinfo("Missing polyvertex", "Please upload polyvertex line file for " + ", ".join(pfacilities))
+                ready = False
+    
+            
+            if hasattr(self, 'multipoly_df') and hasattr(self, 'ureceptr_df') and hasattr(self, 'multibuoy_df'):
+                self.ready = True
+                print("Ready to run!")
         
         
         
@@ -1671,8 +1670,9 @@ class Hem4():
            self.running = True
            #create a Google Earth KML of all sources to be modeled
            createkml = cmk.multi_kml(self.emisloc_df, self.multipoly_df, self.multibuoy_df)
-           source_map = createkml.create_sourcemap()
-           kmlfiles = createkml.write_kml_emis_loc(source_map)
+           if createkml is not None:
+               source_map = createkml.create_sourcemap()
+               kmlfiles = createkml.write_kml_emis_loc(source_map)
 
            
            the_queue.put("\nPreparing Inputs for " + str(self.facids.count()) + " facilities")
@@ -1687,9 +1687,12 @@ class Hem4():
             
                facid = row[0]
                fac_list.append(facid)
-       
+               num = 1
         
            for fac in fac_list:
+                
+                the_queue.put("\nRunning facility " + str(num) + " of " + str(len(fac_list)))
+               
                 facid = fac
                 
                 result = pass_ob.prep_facility(facid)
@@ -1713,9 +1716,11 @@ class Hem4():
             ## Check for successful aermod run:
                 check = open('aermod.out','r')
                 message = check.read()
-                if 'UNSUCCESSFUL' in message:
+                if 'AERMOD Finishes UN-successfully' in message:
                     success = False
                     the_queue.put("Aermod ran unsuccessfully. Please check the error section of the aermod.out file.")
+                #increment facility count
+                    num += 1 
                 else:
                     success = True
                     the_queue.put("Aermod ran successfully.")
@@ -1736,12 +1741,13 @@ class Hem4():
             
             #process outputs
                     the_queue.put("Processing Outputs for " + str(facid))
-                    process = po.Process_outputs(facid, pass_ob.haplib_df, result.hapemis, fac_folder, pass_ob.innerblks, result.polar_df)
+                    process = po.Process_outputs(facid, pass_ob.haplib_df, result.hapemis, fac_folder, pass_ob.innerblks, pass_ob.outerblks, result.polar_df)
                     process.process()
                     the_queue.put("Finished calculations for " + str(facid) + "\n")
                 #self.loc["textvariable"] = "Analysis Complete"
            
-                
+                #increment facility count
+                    num += 1 
       
             
         self.running = False
