@@ -35,7 +35,7 @@ def center(sourcelocs, utmz):
             utmn2 = (row["utmn"] + (row["lengthy"] * math.cos(angle_rad)) -
                      (row["lengthx"] * math.sin(angle_rad)))
             utme3 = row["utme"] + row["lengthy"] * math.sin(angle_rad)
-            utmn3 = row["utmn"] - row["lengthy"] * math.cos(angle_rad)
+            utmn3 = row["utmn"] + row["lengthy"] * math.cos(angle_rad)
             vertx_l.append(utme1)
             vertx_l.append(utme2)
             vertx_l.append(utme3)
@@ -83,7 +83,7 @@ def center(sourcelocs, utmz):
     max_x = min_x = vertx_a[0]
     max_y = min_y = verty_a[0]
     
-    if len(vertx_a) > 1: #if not a point source
+    if len(vertx_a) > 1: #more than one source
         for i in range(0, len(vertx_a)-1):
             for j in range(0, len(verty_a)-1):
                 dist = (vertx_a[i] - vertx_a[i+1])**2 + (verty_a[j] - verty_a[j+1])**2
@@ -111,7 +111,7 @@ def center(sourcelocs, utmz):
         cenlon = acenlon[0]
         cenlat = acenlat[0]
         
-    else: #if a point source
+    else: #single source
         
        # Calculate the center of the facility in utm coordinates
         cenx = max_x
@@ -124,6 +124,6 @@ def center(sourcelocs, utmz):
         acenlat, acenlon = utm2ll.utm2ll(sceny, scenx, sutmz)
     
         cenlon = acenlon[0]
-        cenlat = acenlat[0]
-
+        cenlat = acenlat[0]    
+    
     return cenx, ceny, cenlon, cenlat, max_dist, vertx_a, verty_a
