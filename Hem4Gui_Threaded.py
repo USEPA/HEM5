@@ -624,8 +624,7 @@ class Hem4():
 #                    if hap.lower() not in lower:
 #                        print(hap)
                 
-          
-                 
+                  
                 missing_pollutants = {}
                 for row in self.hapemis_df.itertuples():
                  
@@ -797,7 +796,7 @@ class Hem4():
                     messagebox.showinfo("Unassigned User Receptors", "Receptors for " + ", ".join(facilities) + " have not been assigned. Please edit the 'user_rcpt' column in the facility options file.")
                 else:
                     #record upload in log
-                    self.scr.insert(tk.INSERT, "Uploaded user receptors for " + " ".join(check_receptor_assignment))
+                    self.scr.insert(tk.INSERT, "Uploaded user receptors for " + str(check_receptor_assignment))
                     self.scr.insert(tk.INSERT, "\n")
             
             
@@ -1570,188 +1569,229 @@ class Hem4():
             messagebox.showinfo("Error","There was an error uploading HAP Emissions File, please try again")
         
         if check1 == True & check2 == True & check3 == True:
-        
-            #if there isnt a file for poly vertex
-            if  hasattr(self, 'multipoly_df'):
-               pass 
-            else: 
-                self.multipoly_df = None    
-           
-            #if there isnt a file for bouyant line
-            if  hasattr(self, 'multibuoy_df'):
-                pass
-            else:
-                self.multibuoy_df = None
-    
-            #if there isnt a file for user receptors
-            if  hasattr(self, 'ureceptr_df'):
-                pass
-            else:
-                self.ureceptr_df = None
+            print('essentially ready')
             
-            #if building downwash
-            if  hasattr(self, 'bd_path'):
-                pass
-            #    print("Building downwash file path: " + self.bd_path)
-            else:
-                self.bd_path = None
+            self.ready = True
             
-            #if depletion calculation
-            if self.depdep == True:
-                self.keyword = {}
-                for row in self.fac_list.itterows():
-                    self.keyword[row['fac_id']] = self.check_dep(row['fac_id'])
+#            #check user receptors in facility
+#            user_rec_check = self.faclist_df['user_rcpt'] == 'Y'  
+#                
+#            if True in user_rec_check.values:
+#               
+#                print('true users')
+#                if hasattr(self, 'ureceptr_df'):
+#                    
+#                    
+#                    #check user receptors in facility
+#                    user_rec_check = self.faclist_df['user_rcpt'] == 'Y'
+#                    user_rec_checklist = []
+#                    
+#                    if True in user_rec_check:
+#                       for facility in self.faclist_df[user_rec_check]['fac_id']:
+#                           
+#                           if self.ureceptr_df is None:
+#                               
+#                               user_rec_checklist.append(str(facility))
+#                              
+#                    if len(user_rec_checklist) > 0:
+#                        messagebox.showinfo( "Missing user receptors", "Please upload user receptors for " + ", ".join(user_rec_checklist))
+#                        ready = False   
+#        
+#                       
+#                else:
+#                    messagebox.showinfo( "Missing user receptors", "Please upload a user receptors file.")
+#                
+#            elif True not in user_rec_check.values:
+#              
+#                self.ureceptr_df = None 
+#        
+#            #check to for polygon vertex
+            poly_check = self.emisloc_df['source_type'] == 'I'
+#            
+            if True in poly_check.values:
                 
             
-            
-           #check user receptors in facility
-            user_rec_check = self.faclist_df['user_rcpt'] == 'Y'
-            user_rec_checklist = []
-            
-            if True in user_rec_check:
-               for facility in self.faclist_df[user_rec_check]['fac_id']:
-                   
-                   if self.ureceptr_df is None:
-                       
-                       user_rec_checklist.append(str(facility))
-                      
-            if len(user_rec_checklist) > 0:
-                messagebox.showinfo( "Missing user receptors", "Please upload user receptors for " + ", ".join(user_rec_checklist))
-                ready = False   
-            
-            
-            #check emissions list for bouyant line indicators   
-            bouyant_check = self.emisloc_df["source_type"].str.upper() == "B"
-            bouyant_checklist = []
-    
-            if True in bouyant_check:          
-                for bfacility in self.emisloc_df[bouyant_check]['fac_id']:                
-                    if self.multibuoy_df is None:                   
-                        bouyant_checklist.append(str(bfacility))
-            
-            bfacilities = set(bouyant_checklist)            
-            if len(bouyant_checklist) > 0:
-                messagebox.showinfo("Missing bouyant line", "Please upload buoyant line file for " + ", ".join(bfacilities))
-                ready = False
-            
-            #check emissions list for poly vertex indicators   
-            polyvertex_check = self.emisloc_df["source_type"].str.upper() == "I"
-            poly_checklist = []
-    
-            if True in polyvertex_check:          
-                for pfacility in self.emisloc_df[polyvertex_check]['fac_id']:                
-                    if self.multipoly_df is None:                   
-                        poly_checklist.append(str(pfacility))
-            
-            pfacilities = set(poly_checklist)            
-            if len(poly_checklist) > 0:
-                messagebox.showinfo("Missing polyvertex", "Please upload polyvertex line file for " + ", ".join(pfacilities))
-                ready = False
-    
-            
-            if hasattr(self, 'multipoly_df') and hasattr(self, 'ureceptr_df') and hasattr(self, 'multibuoy_df'):
-                self.ready = True
-                print("Ready to run!")
-        
-        
-        
-       #%%if the object is ready
-        if ready == True:
-           
-            #tell user to check the Progress/Log section
-           
-            
-           #save version of this gui as is? constantly overwrite it once each facility is done?
-           
-           
-           messagebox.askokcancel("Confirm HEM4 Run", "Clicking 'OK' will start HEM4.")
-           
-           #create object for prepare inputs
-           self.running = True
-           #create a Google Earth KML of all sources to be modeled
-           createkml = cmk.multi_kml(self.emisloc_df, self.multipoly_df, self.multibuoy_df)
-           if createkml is not None:
-               source_map = createkml.create_sourcemap()
-               kmlfiles = createkml.write_kml_emis_loc(source_map)
-
-           
-           the_queue.put("\nPreparing Inputs for " + str(self.facids.count()) + " facilities")
-           pass_ob = prepare.Prepare_Inputs( self.faclist_df, self.emisloc_df, self.hapemis_df, self.multipoly_df, self.multibuoy_df, self.ureceptr_df)
-           
-           # let's tell after_callback that this completed
-           #print('thread_target puts None to the queue')
-           
-           
-           fac_list = []
-           for index, row in pass_ob.faclist_df.iterrows():
-            
-               facid = row[0]
-               fac_list.append(facid)
-               num = 1
-        
-           for fac in fac_list:
-                
-                the_queue.put("\nRunning facility " + str(num) + " of " + str(len(fac_list)))
-               
-                facid = fac
-                
-                result = pass_ob.prep_facility(facid)
-                
-                the_queue.put("Building Runstream File for " + str(facid))
-
-                result.build()
-              
-                #create fac folder
-                fac_folder = "output/"+ str(facid) + "/"
-                if not os.path.exists(fac_folder):
-                    os.makedirs(fac_folder)
-                 
-                #run aermod
-                the_queue.put("Running Aermod for " + str(facid))
-                args = "aermod.exe aermod.inp" 
-                subprocess.call(args, shell=False)
-                
-            #self.loc["textvariable"] = "Aermod complete for " + facid
-            
-            ## Check for successful aermod run:
-                check = open('aermod.out','r')
-                message = check.read()
-                if 'AERMOD Finishes UN-successfully' in message:
-                    success = False
-                    the_queue.put("Aermod ran unsuccessfully. Please check the error section of the aermod.out file.")
-                #increment facility count
-                    num += 1 
-                else:
-                    success = True
-                    the_queue.put("Aermod ran successfully.")
-                check.close()    
-                
-                if success == True:
+                #if there isnt a file for poly vertex
+                if  hasattr(self, 'multipoly_df'):
                     
+                    #check emissions list for poly vertex indicators   
+                    polyvertex_check = self.emisloc_df["source_type"].str.upper() == "I"
+                    poly_checklist = []
+            
+                    if True in polyvertex_check:          
+                        for pfacility in self.emisloc_df[polyvertex_check]['fac_id']:                
+                            if self.multipoly_df is None:                   
+                                poly_checklist.append(str(pfacility))
+                    
+                    pfacilities = set(poly_checklist)            
+                    if len(poly_checklist) > 0:
+                        messagebox.showinfo("Missing polyvertex", "Please upload polyvertex line file for " + ", ".join(pfacilities))
+                        ready = False
                 
-            #move aermod.out to the fac output folder 
-            #replace if one is already in there othewrwise will throw error
+                else:
+                    messagebox.showinfo("Missing polygon vertex file ", "Please upload a polygon vertex file.")
+                    
             
-                    if os.path.isfile(fac_folder + 'aermod.out'):
-                        os.remove(fac_folder + 'aermod.out')
-                        shutil.move('aermod.out', fac_folder)
+            elif True not in poly_check.values: 
+                self.multipoly_df = None    
+#           
+#            
+#            
+            #check for buoyant line
+            bouyant_check = self.emisloc_df['source_type'] == 'B'
+            
+            if True in bouyant_check.values:
                 
-                    else:    
-                        shutil.move('aermod.out', fac_folder)
             
-            #process outputs
-                    the_queue.put("Processing Outputs for " + str(facid))
-                    process = po.Process_outputs(facid, pass_ob.haplib_df, result.hapemis, fac_folder, pass_ob.innerblks, pass_ob.outerblks, result.polar_df)
-                    process.process()
-                    the_queue.put("Finished calculations for " + str(facid) + "\n")
-                #self.loc["textvariable"] = "Analysis Complete"
-           
-                #increment facility count
-                    num += 1 
-      
+                #if there isnt a file for bouyant line
+                if  hasattr(self, 'multibuoy_df'):
+                    
+                    #check emissions list for bouyant line indicators   
+                    bouyant_check = self.emisloc_df["source_type"].str.upper() == "B"
+                    bouyant_checklist = []
             
-        self.running = False
+                    if True in bouyant_check:          
+                        for bfacility in self.emisloc_df[bouyant_check]['fac_id']:                
+                            if self.multibuoy_df is None:                   
+                                bouyant_checklist.append(str(bfacility))
+                    
+                    bfacilities = set(bouyant_checklist)            
+                    if len(bouyant_checklist) > 0:
+                        messagebox.showinfo("Missing bouyant line", "Please upload buoyant line file for " + ", ".join(bfacilities))
+                        ready = False
+                    
+                else:
+                    messagebox.showinfo("Missing bouyant line file ", "Please upload a bouyant line file.")
         
+            elif True not in bouyant_check.values:
+                self.multibuoy_df = None
+#                
+#            
+#            building_check = self.faclist_df['bldg_dw'] == 'Y'
+#            
+#            if True in building_check.values:
+#                
+#            
+#                #if building downwash
+#                if  hasattr(self, 'bd_path'):
+#                    pass
+#                
+#                else:
+#                    messagebox.showinfo("Missing building downwash file ", "Please upload a building downwash file.")
+#            
+#            elif True not in building_check:
+#                self.bd_path = None
+#            
+#            #if depletion calculation
+#            if self.depdep == True:
+#                self.keyword = {}
+#                for row in self.fac_list.itterows():
+#                    self.keyword[row['fac_id']] = self.check_dep(row['fac_id'])
+#
+#            
+#            if hasattr(self, 'multipoly_df') and hasattr(self, 'ureceptr_df') and hasattr(self, 'multibuoy_df') and hasattr(self, 'bd_path') and self.ready is not False:
+#                self.ready = True
+#                print("Ready to run!")
+        
+        
+        
+               #%%if the object is ready
+            if self.ready == True:
+               
+                #tell user to check the Progress/Log section
+               
+                
+               #save version of this gui as is? constantly overwrite it once each facility is done?
+               
+               
+               messagebox.askokcancel("Confirm HEM4 Run", "Clicking 'OK' will start HEM4.")
+               
+               #create object for prepare inputs
+               self.running = True
+               #create a Google Earth KML of all sources to be modeled
+               createkml = cmk.multi_kml(self.emisloc_df, self.multipoly_df, self.multibuoy_df)
+               if createkml is not None:
+                   source_map = createkml.create_sourcemap()
+                   kmlfiles = createkml.write_kml_emis_loc(source_map)
+    
+               
+               the_queue.put("\nPreparing Inputs for " + str(self.facids.count()) + " facilities")
+               pass_ob = prepare.Prepare_Inputs( self.faclist_df, self.emisloc_df, self.hapemis_df, self.multipoly_df, self.multibuoy_df, self.ureceptr_df)
+               
+               # let's tell after_callback that this completed
+               #print('thread_target puts None to the queue')
+               
+               
+               fac_list = []
+               for index, row in pass_ob.faclist_df.iterrows():
+                
+                   facid = row[0]
+                   fac_list.append(facid)
+                   num = 1
+            
+               for fac in fac_list:
+                    
+                    the_queue.put("\nRunning facility " + str(num) + " of " + str(len(fac_list)))
+                   
+                    facid = fac
+                    
+                    result = pass_ob.prep_facility(facid)
+                    
+                    the_queue.put("Building Runstream File for " + str(facid))
+    
+                    result.build()
+                  
+                    #create fac folder
+                    fac_folder = "output/"+ str(facid) + "/"
+                    if not os.path.exists(fac_folder):
+                        os.makedirs(fac_folder)
+                     
+                    #run aermod
+                    the_queue.put("Running Aermod for " + str(facid))
+                    args = "aermod.exe aermod.inp" 
+                    subprocess.call(args, shell=False)
+                    
+                #self.loc["textvariable"] = "Aermod complete for " + facid
+                
+                ## Check for successful aermod run:
+                    check = open('aermod.out','r')
+                    message = check.read()
+                    if 'AERMOD Finishes UN-successfully' in message:
+                        success = False
+                        the_queue.put("Aermod ran unsuccessfully. Please check the error section of the aermod.out file.")
+                    #increment facility count
+                        num += 1 
+                    else:
+                        success = True
+                        the_queue.put("Aermod ran successfully.")
+                    check.close()    
+                    
+                    if success == True:
+                        
+                    
+                #move aermod.out to the fac output folder 
+                #replace if one is already in there othewrwise will throw error
+                
+                        if os.path.isfile(fac_folder + 'aermod.out'):
+                            os.remove(fac_folder + 'aermod.out')
+                            shutil.move('aermod.out', fac_folder)
+                    
+                        else:    
+                            shutil.move('aermod.out', fac_folder)
+                
+                #process outputs
+                        the_queue.put("Processing Outputs for " + str(facid))
+                        process = po.Process_outputs(facid, pass_ob.haplib_df, result.hapemis, fac_folder, pass_ob.innerblks, pass_ob.outerblks, result.polar_df)
+                        process.process()
+                        the_queue.put("Finished calculations for " + str(facid) + "\n")
+                    #self.loc["textvariable"] = "Analysis Complete"
+               
+                    #increment facility count
+                        num += 1 
+          
+                
+            self.running = False
+                
         
 #%% Create Thread for Threaded Process   
     def runThread(self):
