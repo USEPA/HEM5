@@ -1064,7 +1064,7 @@ class Runstream():
             if eleva == "Y":
                 redec = "RE DISCCART  " + str(recx[i]) + " " + str(recy[i]) + " " + str(int(round(rece[i]))) + " " + str(int(round(rech[i]))) + "\n"
             else:
-                redec = "RE DISCCART  " + str(recx[i]) + " " + str(recy[i])
+                redec = "RE DISCCART  " + str(recx[i]) + " " + str(recy[i]) + "\n"
             inp_f.write(redec)
 
             
