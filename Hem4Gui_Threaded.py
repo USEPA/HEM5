@@ -57,7 +57,7 @@ class Hem4():
             self.win.quit()
             self.win.destroy()
             exit()
-        else:
+        elif self.running == True:
              override = messagebox.askokcancel("Confirm HEM4 Quit", "Are you sure? Hem4 is currently running. Clicking 'OK' will stop HEM4.")
              if override == True:
                 self.win.quit()
@@ -1570,7 +1570,7 @@ class Hem4():
         
         if check1 == True & check2 == True & check3 == True:
             print('essentially ready')
-            self.ready = True
+            #self.ready = True
             
             if hasattr(self, 'ureceptr_df'):
                 pass
@@ -1669,7 +1669,7 @@ class Hem4():
             elif True not in bouyant_check.values:
                 self.multibuoy_df = None
 #                
-#            
+#
 #            building_check = self.faclist_df['bldg_dw'] == 'Y'
 #            
 #            if True in building_check.values:
@@ -1695,106 +1695,128 @@ class Hem4():
 #            if hasattr(self, 'multipoly_df') and hasattr(self, 'ureceptr_df') and hasattr(self, 'multibuoy_df') and hasattr(self, 'bd_path') and self.ready is not False:
 #                self.ready = True
 #                print("Ready to run!")
-        
+            if hasattr(self, 'multipoly_df') and hasattr(self, 'ureceptr_df') and hasattr(self, 'multibuoy_df'):
+                self.ready = True
+                print("Ready to run!")
             
         
                #%%if the object is ready
-            if self.ready == True:
-               
-                #tell user to check the Progress/Log section
-               
-                
-               #save version of this gui as is? constantly overwrite it once each facility is done?
-               
-               
-               messagebox.askokcancel("Confirm HEM4 Run", "Clicking 'OK' will start HEM4.")
-               
-               #create object for prepare inputs
-               self.running = True
-               #create a Google Earth KML of all sources to be modeled
-               createkml = cmk.multi_kml(self.emisloc_df, self.multipoly_df, self.multibuoy_df)
-               if createkml is not None:
-                   source_map = createkml.create_sourcemap()
-                   kmlfiles = createkml.write_kml_emis_loc(source_map)
-    
-               
-               the_queue.put("\nPreparing Inputs for " + str(self.facids.count()) + " facilities")
-               pass_ob = prepare.Prepare_Inputs( self.faclist_df, self.emisloc_df, self.hapemis_df, self.multipoly_df, self.multibuoy_df, self.ureceptr_df)
-               
-               # let's tell after_callback that this completed
-               #print('thread_target puts None to the queue')
-               
-               
-               fac_list = []
-               for index, row in pass_ob.faclist_df.iterrows():
-                
-                   facid = row[0]
-                   fac_list.append(facid)
-                   num = 1
-            
-               for fac in fac_list:
-                    
-                    the_queue.put("\nRunning facility " + str(num) + " of " + str(len(fac_list)))
+                if self.ready == True:
                    
-                    facid = fac
+                    #tell user to check the Progress/Log section
+                   
                     
-                    result = pass_ob.prep_facility(facid)
+                   #save version of this gui as is? constantly overwrite it once each facility is done?
+                   
+                   
+                   messagebox.askokcancel("Confirm HEM4 Run", "Clicking 'OK' will start HEM4.")
+                   
+                   #create object for prepare inputs
+                   self.running = True
+                   #create a Google Earth KML of all sources to be modeled
+                   createkml = cmk.multi_kml(self.emisloc_df, self.multipoly_df, self.multibuoy_df)
+                   if createkml is not None:
+                       source_map = createkml.create_sourcemap()
+                       kmlfiles = createkml.write_kml_emis_loc(source_map)
+        
+                   
+                   the_queue.put("\nPreparing Inputs for " + str(self.facids.count()) + " facilities")
+                   pass_ob = prepare.Prepare_Inputs( self.faclist_df, self.emisloc_df, self.hapemis_df, self.multipoly_df, self.multibuoy_df, self.ureceptr_df)
+                   
+                   # let's tell after_callback that this completed
+                   #print('thread_target puts None to the queue')
+                   
+                   
+                   fac_list = []
+                   for index, row in pass_ob.faclist_df.iterrows():
                     
-                    the_queue.put("Building Runstream File for " + str(facid))
-    
-                    result.build()
-                  
-                    #create fac folder
-                    fac_folder = "output/"+ str(facid) + "/"
-                    if not os.path.exists(fac_folder):
-                        os.makedirs(fac_folder)
-                     
-                    #run aermod
-                    the_queue.put("Running Aermod for " + str(facid))
-                    args = "aermod.exe aermod.inp" 
-                    subprocess.call(args, shell=False)
-                    
-                #self.loc["textvariable"] = "Aermod complete for " + facid
+                       facid = row[0]
+                       fac_list.append(facid)
+                       num = 1
                 
-                ## Check for successful aermod run:
-                    check = open('aermod.out','r')
-                    message = check.read()
-                    if 'AERMOD Finishes UN-successfully' in message:
-                        success = False
-                        the_queue.put("Aermod ran unsuccessfully. Please check the error section of the aermod.out file.")
-                    #increment facility count
-                        num += 1 
-                    else:
-                        success = True
-                        the_queue.put("Aermod ran successfully.")
-                    check.close()    
-                    
-                    if success == True:
+                   for fac in fac_list:
                         
+                        the_queue.put("\nRunning facility " + str(num) + " of " + str(len(fac_list)))
+                       
+                        facid = fac
+                        
+                        result = pass_ob.prep_facility(facid)
+                        
+                        the_queue.put("Building Runstream File for " + str(facid))
+        
+                        result.build()
+                      
+                        #create fac folder
+                        fac_folder = "output/"+ str(facid) + "/"
+                        if not os.path.exists(fac_folder):
+                            os.makedirs(fac_folder)
+                         
+                        #run aermod
+                        the_queue.put("Running Aermod for " + str(facid))
+                        args = "aermod.exe aermod.inp" 
+                        subprocess.call(args, shell=False)
+                        
+                    #self.loc["textvariable"] = "Aermod complete for " + facid
                     
-                #move aermod.out to the fac output folder 
-                #replace if one is already in there othewrwise will throw error
-                
-                        if os.path.isfile(fac_folder + 'aermod.out'):
-                            os.remove(fac_folder + 'aermod.out')
-                            shutil.move('aermod.out', fac_folder)
+                    ## Check for successful aermod run:
+                        check = open('aermod.out','r')
+                        message = check.read()
+                        if 'AERMOD Finishes UN-successfully' in message:
+                            success = False
+                            the_queue.put("Aermod ran unsuccessfully. Please check the error section of the aermod.out file.")
+                        #increment facility count
+                            num += 1 
+                        else:
+                            success = True
+                            the_queue.put("Aermod ran successfully.")
+                        check.close()    
+                        
+                        if success == True:
+                            
+                        
+                    #move aermod.out to the fac output folder 
+                    #replace if one is already in there othewrwise will throw error
                     
-                        else:    
-                            shutil.move('aermod.out', fac_folder)
-                
-                #process outputs
-                        the_queue.put("Processing Outputs for " + str(facid))
-                        process = po.Process_outputs(facid, pass_ob.haplib_df, result.hapemis, fac_folder, pass_ob.innerblks, pass_ob.outerblks, result.polar_df)
-                        process.process()
-                        the_queue.put("Finished calculations for " + str(facid) + "\n")
-                    #self.loc["textvariable"] = "Analysis Complete"
-               
-                    #increment facility count
-                        num += 1 
-          
-                
-            self.running = False
-                
+                            if os.path.isfile(fac_folder + 'aermod.out'):
+                                os.remove(fac_folder + 'aermod.out')
+                                shutil.move('aermod.out', fac_folder)
+                        
+                            else:    
+                                shutil.move('aermod.out', fac_folder)
+                    
+                    #process outputs
+                            the_queue.put("Processing Outputs for " + str(facid))
+                            process = po.Process_outputs(facid, pass_ob.haplib_df, result.hapemis, fac_folder, pass_ob.innerblks, pass_ob.outerblks, result.polar_df)
+                            process.process()
+                            the_queue.put("Finished calculations for " + str(facid) + "\n")
+                        #self.loc["textvariable"] = "Analysis Complete"
+                   
+                        #increment facility count
+                            num += 1 
+                            
+                   the_queue.put("\nFinished running all facilities.\n")
+                    
+                   #reset all inputs if everything finished
+                   self.fac_list.set('')
+                   self.faclist_df = self.faclist_df.empty
+                   print(self.faclist_df)
+                           
+                   self.hap_list.set('')
+                   self.hapemis_df = self.hapemis_df.empty
+                   print(self.hapemis_df)
+                    
+                   self.emisloc_list.set('')
+                   self.emisloc_df = self.emisloc_df.empty
+                   print(self.emisloc_df)
+                    
+                   if hasattr(self, 'u_receptors'):
+                        self.u_receptors.set(False)
+                        if hasattr(self, 'urep'):
+                            self.urep.destroy()
+                            self.urep_list_man.destroy()
+                        
+                   self.running = False
+                    
         
 #%% Create Thread for Threaded Process   
     def runThread(self):
