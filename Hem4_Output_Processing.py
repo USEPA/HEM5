@@ -10,6 +10,8 @@ import numpy as np
 import inspect
 import math
 import os
+import time
+from pandas import DataFrame
 
 
 class Process_outputs():
@@ -48,7 +50,9 @@ class Process_outputs():
 #    def outerinterp(self, ring_loc, s, s1, s2, r1, r2, polarconc):
     def outerinterp(self, s, ring_loc, conc_s1r1, conc_s1r2, conc_s2r1, conc_s2r2):
         intconc = []
+        
         for cs, cringloc, cs1r1, cs1r2, cs2r1, cs2r2 in zip(s, ring_loc, conc_s1r1, conc_s1r2, conc_s2r1, conc_s2r2):
+            
             if cs1r1 == 0 or cs1r2 == 0:
                 R_s12 = max(cs1r1, cs1r2)
             else:
@@ -98,8 +102,6 @@ class Process_outputs():
         
         return intconc
       
-        
-        
             
     def process(self):
 
@@ -116,8 +118,8 @@ class Process_outputs():
             comment='*')
 
     
-        print('plot file')
-        print(plot_df)
+#        print('plot file')
+#        print(plot_df)
         
          #get dose response library dataframe
         haplib_df = pd.read_excel(r"resources/Dose_response_library.xlsx"
@@ -149,15 +151,15 @@ class Process_outputs():
         # Pull out inner receptors and merge Inner Block blockid, angle, distance, lat, lon, and population
         ## 'angle', 'distance' need to be added back into innerblks_df - should be computed in get census blocks file
         inner_df = pd.merge(plot_df, self.innerblks_df[['IDMARPLOT', 'utme', 'utmn', 'LAT', 'LON', 'POPULATION']], on=["utme", "utmn"], how="inner")
-        print('inner df')
-        print(inner_df)
+#        print('inner df')
+#        print(inner_df)
         
         # Compute pollutant specific air concentrations 
         innerconc_df = pd.merge(inner_df, self.hapemis_df[['fac_id','source_id','pollutant','emis_tpy']], on="source_id", how="inner")
         innerconc_df['result'] = innerconc_df['result'].astype(float)
-        print('inner concentration')
-        print(innerconc_df)
-        
+#        print('inner concentration')
+#        print(innerconc_df)
+#        
         
         innerconc_df.loc[:, 'conc'] = innerconc_df.result * innerconc_df.emis_tpy * cf
     
@@ -171,8 +173,8 @@ class Process_outputs():
         # Compute risk
         innerrisk0_df = pd.merge(innerconc_df, self.haplib_df[['pollutant', 'ure', 'rfc']], on="pollutant", how="inner")
         innerrisk_df = pd.merge(innerrisk0_df, targetendpt_df[['pollutant', 'resp', 'neuro', 'liver', 'dev', 'reprod', 'kidney', 'ocular', 'endoc', 'hemato', 'immune', 'skeletal', 'spleen', 'thyroid', 'wholebod']], on="pollutant", how="inner")
-        print("inner risk df")
-        print(innerrisk_df)
+#        print("inner risk df")
+#        print(innerrisk_df)
         
         
         innerrisk_df.loc[:, 'risk'] = innerrisk_df.conc * innerrisk_df.ure
@@ -241,51 +243,108 @@ class Process_outputs():
 
         #------------------ Outer Receptor Processing --------------------------------------
 
-#        numsectors = polarrisk_df["sector"].max()
-#        numrings = polarrisk_df["ring"].max()
-#        
-#        # find 4 nearest polar receptors to each outer block (sector1ring1, sector1ring2, sector2ring1, sector2ring2)
-#        outerblksplus_df = self.outerblks_df.copy()
-#        outerblksplus_df["block"] = outerblksplus_df.apply(lambda row: row.IDMARPLOT[6:], axis=1)       
-#        outerblksplus_df["s"], outerblksplus_df["s1"], outerblksplus_df["s2"], outerblksplus_df["r1"], outerblksplus_df["r2"] = zip(*outerblksplus_df.apply(lambda row: self.get_sr(row,numsectors,numrings), axis=1)) 
-#
-#        # merge 4 surrounding polar concs on sector and ring
-#        polarconc_sub = polarconc_df[['sector','ring','source_id','pollutant','conc']]
-#        outer1 = pd.merge(outerblksplus_df, polarconc_sub, how='left', left_on=['s1','r1'], right_on=['sector','ring']) 
-#        outer1.rename(columns={'conc':'conc_s1r1'},inplace=True)
-#        #outer1.drop(["sector","ring"],axis=1,inplace=True)
-#        outer2 = pd.merge(outer1, polarconc_sub, how='left', left_on=['s1','r2','source_id','pollutant'], right_on=['sector','ring','source_id','pollutant']) 
-#        outer2.rename(columns={'conc':'conc_s1r2'},inplace=True)
-#        #outer2.drop(["sector","ring"],axis=1,inplace=True)
-#        outer3 = pd.merge(outer2, polarconc_sub, how='left', left_on=['s2','r1','source_id','pollutant'], right_on=['sector','ring','source_id','pollutant']) 
-#        outer3.rename(columns={'conc':'conc_s2r1'},inplace=True)
-#        #outer3.drop(["sector","ring"],axis=1,inplace=True)
-#        outer4 = pd.merge(outer3, polarconc_sub, how='left', left_on=['s2','r2','source_id','pollutant'], right_on=['sector','ring','source_id','pollutant']) 
-#        outer4.rename(columns={'conc':'conc_s2r2'},inplace=True)
-#        #outer4.drop(["sector","ring"],axis=1,inplace=True)
-#
-#        # interpolate
-#        outer4['conc_ug_m3'] = self.outerinterp(outer4.s, outer4.ring_loc, outer4.conc_s1r1, outer4.conc_s1r2, outer4.conc_s2r1, outer4.conc_s2r2)
-#        
-#        outfile_path = self.outdir + "outer4.xlsx"
-#        outexcel = pd.ExcelWriter(outfile_path)
-#        outer4.to_excel(outexcel,'Sheet1')
-#        outexcel.save()
-#        print("Wrote outer4")
-#        
-#        # Create the All Outer Receptors dataframe
-#        all_outer_receptors = outer4[["LAT","LON","conc_ug_m3","source_id","pollutant","POPULATION","FIPS","block","ELEV"]]
-#        
-#
-#        #write to excel
-#        outerconc_path = self.outdir + "all_outer_receptors.xlsx"
-#        outerconc = pd.ExcelWriter(outerconc_path)
-#        all_outer_receptors.to_excel(outerconc,'Sheet1')
-#        outerconc.save()
-#        print("wrote all_outer_receptors")
-#            
+        numsectors = polarrisk_df["sector"].max()
+        print('Num sectors', numsectors)
+        numrings = polarrisk_df["ring"].max()
+        print("num rings", numrings)
+        
+        
+        # find 4 nearest polar receptors to each outer block (sector1ring1, sector1ring2, sector2ring1, sector2ring2)
+        outerblksplus_df = self.outerblks_df.copy()
+        outerblksplus_df["block"] = outerblksplus_df.apply(lambda row: row.IDMARPLOT[6:], axis=1)       
+        outerblksplus_df["s"], outerblksplus_df["s1"], outerblksplus_df["s2"], outerblksplus_df["r1"], outerblksplus_df["r2"] = zip(*outerblksplus_df.apply(lambda row: self.get_sr(row,numsectors,numrings), axis=1)) 
+        
+        
+#        outfile_path1 = self.outdir + "outerblksplus.xlsx"
+#        outexcel1 = pd.ExcelWriter(outfile_path1)
+#        outerblksplus_df.to_excel(outexcel1,'Sheet1')
+#        outexcel1.save()
+#        print("Wrote outerblksplus")
+       
+#        polar = pd.read_excel(r'polar_pollutant_concentration.xlsx' )
+
+        #create empty dataframe
+        
+        all_outer = []
+        
+        start = time.time()
+        
+        
+        def interpolation(row):
+            
+            s1 = int(row['s1'])
+            r1 = int(row['r1'])
+                
+            s2 = int(row['s2'])
+            r2 = int(row['r2'])
+            
+            sel1 = polarconc_df['sector'] == s1
+            sel2 = polarconc_df['ring'] == r1
+            
+            sel3 = polarconc_df['sector'] == s2
+            sel4 = polarconc_df['ring'] == r2
+            
+            co1 = polarconc_df[(sel1 & sel2)] #s1r1
+            
+            co2 = polarconc_df[(sel1 & sel4)] #s1r2
+            
+            co3 = polarconc_df[(sel3 & sel2)] #s2r1
+            
+            co4 = polarconc_df[(sel3 & sel4)] #s2r2
+            
+            
+            full = pd.concat([co1, co2, co3, co4])
+            
+            source_id = full['source_id'].values[0]
+            
+            
+            pollutants = set(full['pollutant'])
+            
+            
+            #loop through found pollutants compiling the concentrations for interpolation
+            for p in pollutants:
                 
                 
+                sub = full[full['pollutant'] == p]
+                conc = sub['conc'].values
+                #print(conc)
+                
+                ringloc = row.ring_loc
+                cs = row.s
+                
+                    
+                if conc[0] == 0 or conc[1] == 0:
+                    R_s12 = max(conc[0], conc[1])
+                else:
+                    Lnr_s12 = (math.log(conc[0]) * (int(row.ring_loc)+1-row.ring_loc)) + (math.log(conc[1]) * (row.ring_loc-int(row.ring_loc)))
+                    R_s12 = math.exp(Lnr_s12)
+            
+                if conc[2] == 0 or conc[3] == 0:
+                    R_s34 = max(conc[2], conc[3] )
+                else:
+                    Lnr_s34 = (math.log(conc[2]) * (int(row.ring_loc)+1-row.ring_loc)) + (math.log(conc[3] ) * (row.ring_loc-int(row.ring_loc)))
+                    R_s34 = math.exp(Lnr_s34)
+                cintconc = R_s12*(int(row.s)+1-row.s) + R_s34*(row.s-int(row.s))
+                    
+               # print(cintconc.values) 
+                
+                
+                all_outer.append({"LAT": row.LAT,"LON": row.LON,"conc_ug_m3": cintconc,"source_id": source_id,"pollutant": p,"POPULATION": row.POPULATION,"FIPS": row.FIPS,"block":row.block,"ELEV":row.ELEV})
+                #print(time.time()-start, 'seconds.')
+        
+        
+        outerblksplus_df.apply(lambda x: interpolation(x), axis=1)
+        
+        all_outer_df = DataFrame.from_records(all_outer)
+            
+        print('It took', time.time()-start, 'seconds.')
+        
+        outfile_path2 = self.outdir + "all_outer_receptors.xlsx"
+        outexcel2 = pd.ExcelWriter(outfile_path2)
+        all_outer_df.to_excel(outexcel2,'Sheet1')
+        outexcel2.save()
+        print("Wrote all outer blocks")
+
 
         #-------- Maximum Individual Risk and HI Summary -----------------
         #no angle or distance in the dataframe is it required for these computations?
@@ -296,8 +355,8 @@ class Process_outputs():
         
         
         
-        print('individual risk')
-        print(indivrisk1)
+#        print('individual risk')
+#        print(indivrisk1)
         
         
         maxrisk = indivrisk2.loc[[indivrisk2.risk.idxmax()]].drop(["resp_hi","live_hi","neur_hi","deve_hi","repr_hi","kidn_hi","ocul_hi","endo_hi",
