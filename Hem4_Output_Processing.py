@@ -295,7 +295,7 @@ class Process_outputs():
         pol_conc = xlsxwriter.Workbook(self.outdir + 'pollutant_concentration.xlsx', {'constant_memory': True})
         w_pol_conc = pol_conc.add_worksheet()
         
-        headers_pc = ['utme','utmn','result',	'elev','hill','flag','avg_time','source_id',	'num_yrs','net_id','IDMARPLOT','LAT','LON	','POPULATION','fac_id','pollutant','emis_tpy','conc']
+        headers_pc =['utme', 'utmn', 'result', 'elev', 'hill', 'flag', 'avg_time', 'source_id', 'num_yrs', 'net_id', 'IDMARPLOT', 'LAT', 'LON', 'POPULATION', 'fac_id', 'pollutant', 'emis_tpy', 'conc']
         
         for l in range(0, len(headers_pc)):
             w_pol_conc.write(0, l, headers_pc[l]) 
@@ -313,8 +313,7 @@ class Process_outputs():
         innerrisk = xlsxwriter.Workbook(self.outdir + 'inner_risk.xlsx', {'constant_memory': True})
         ir = innerrisk.add_worksheet()
         
-        headers_ir = ['utme','utmn','result','elev','hill','flag','avg_time','source_id',	'num_yrs','net_id','IDMARPLOT','LAT','LON	','POPULATION','fac_id','pollutant','emis_tpy','conc', 'ure',	'rfc',	'resp', 'neuro',	'liver',	'dev',	'reprod',	'kidney',	'ocular',	'endoc', 'hemato', 'immune', 'skeletal',	'spleen',	'thyroid',	 'wholebod', 'risk', 'resp_hi', 'live_hi',	'neur_hi',	 'deve_hi',	'repr_hi',	 'kidn_hi',	'ocul_hi', 'endo_hi', 'hema_hi',	'immu_hi',	 'skel_hi', 'sple_hi', 'thyr_hi', 'whol_hi'
-]
+        headers_ir = ['utme', 'utmn', 'result', 'elev', 'hill', 'flag', 'avg_time', 'source_id', 'num_yrs', 'net_id', 'IDMARPLOT', 'LAT', 'LON', 'POPULATION', 'fac_id', 'pollutant', 'emis_tpy', 'conc', 'ure', 'rfc', 'resp', 'neuro', 'liver', 'dev', 'reprod', 'kidney', 'ocular', 'endoc', 'hemato', 'immune', 'skeletal', 'spleen', 'thyroid', 'wholebod', 'risk', 'resp_hi', 'live_hi', 'neur_hi', 'deve_hi', 'repr_hi', 'kidn_hi', 'ocul_hi', 'endo_hi', 'hema_hi', 'immu_hi', 'skel_hi', 'sple_hi', 'thyr_hi', 'whol_hi']
         
         for m in range(0, len(headers_ir)):
             ir.write(0, m, headers_ir[m]) 
