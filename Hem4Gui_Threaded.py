@@ -293,19 +293,17 @@ class Hem4():
                 self.fac_list.set(file_path)
                 self.fac_path = file_path
                 
-                #   FACILITIES LIST excel to dataframe
-    
-                self.faclist_df = pd.read_excel(open(self.fac_path,'rb')
-                    , names=("fac_id","met_station","rural_urban","max_dist","model_dist"
-                            ,"radial","circles","overlap_dist","acute","hours"
-                            ,"elev","multiplier","ring1","dep","depl","phase"
-                            ,"pdep","pdepl","vdep","vdepl","all_rcpts","user_rcpt"
-                            ,"bldg_dw","urban_pop","fastall")
-                    , converters={"FacilityID":str,"met_station":str,"rural_urban":str
-                            ,"acute":str
-                            ,"elev":str,"dep":str,"depl":str,"phase":str
-                            ,"pdep":str,"pdepl":str,"vdep":str,"vdepl":str,"all_rcpts":str,"user_rcpt":str
-                            ,"bldg_dw":str,"fastall":str})
+                # FACILITIES LIST excel to dataframe
+                # HEADER----------------------
+                # FacilityID|met_station|rural_urban|max_dist|model_dist|radials|circles|overlap_dist|acute|hours|elev|
+                # multiplier|ring1|dep|depl|phase|pdep|pdepl|vdep|vdepl|All_rcpts|user_rcpt|bldg_dw|urban_pop|fastall
+
+                self.faclist_df = pd.read_excel(open(self.fac_path,'rb'),
+                    names=("fac_id","met_station","rural_urban","max_dist","model_dist","radial","circles","overlap_dist",
+                       "acute","hours","elev","multiplier","ring1","dep","depl","phase","pdep","pdepl","vdep","vdepl",
+                       "all_rcpts","user_rcpt","bldg_dw","urban_pop","fastall"),
+                    converters={0:str,1:str,2:str,8:str,10:str,13:str,14:str,15:str,16:str,17:str,18:str,19:str,
+                        20:str,21:str,22:str,24:str})
         
                 #manually convert fac_list to numeric
                 self.faclist_df["model_dist"] = pd.to_numeric(self.faclist_df["model_dist"],errors="coerce")
@@ -331,10 +329,12 @@ class Hem4():
                 self.hap_list.set(file_path)
                 self.hap_path = file_path
                 
-                #HAP EMISSIONS excel to dataframe    
-                self.hapemis_df = pd.read_excel(open(self.hap_path, "rb")
-                    , names=("fac_id","source_id","pollutant","emis_tpy","part_frac")
-                    , converters={"FacilityID":str,"source_id":str,"pollutant":str,"emis_tpy":float,"part_frac":float})
+                #HAP EMISSIONS excel to dataframe
+                # HEADER------------------------
+                # FacilityID|SourceID|HEM3chem|SumEmissionTPY|FractionParticulate
+                self.hapemis_df = pd.read_excel(open(self.hap_path, "rb"),
+                    names=("fac_id","source_id","pollutant","emis_tpy","part_frac"),
+                    converters={0:str,1:str,2:str,3:float,4:float})
                 
                 #fill Nan with 0
                 self.hapemis_df.fillna(0)
@@ -418,17 +418,17 @@ class Hem4():
                 self.emisloc_list.set(file_path)
                 self.emisloc_path = file_path
                   
-                    #EMISSIONS LOCATION excel to dataframe
-                self.emisloc_df = pd.read_excel(open(self.emisloc_path, "rb")
-                , names=("fac_id","source_id","location_type","lon","lat","utmzone","source_type"
-                         ,"lengthx","lengthy","angle","horzdim","vertdim","areavolrelhgt","stkht"
-                         ,"stkdia","stkvel","stktemp","elev","x2","y2")
-                , converters={"FacilityID":str,"source_id":str,"location_type":str,"lon":float,"lat":float
-                        ,"utmzone":float,"source_type":str,"lengthx":float,"lengthy":float,"angle":float
-                        ,"horzdim":float,"vertdim":float,"areavolrelhgt":float,"stkht":float,"stkdia":float
-                        ,"stkvel":float,"stktemp":float,"elev":float,"x2":float,"y2":float})
+                #EMISSIONS LOCATION excel to dataframe
+                # HEADER------------------------
+                # FacilityID|SourceID|LocationType|Longitude|Latitude|UTMzone|SourceType|Lengthx|Lengthy|Angle|HorzDim|
+                # VertDim|AreaVolReleaseHgt|StackHgt_m|StackDiameter_m|ExitGasVel_m|ExitGasTemp_K|Elevation_m|X2|Y2
+                self.emisloc_df = pd.read_excel(open(self.emisloc_path, "rb"),
+                    names=("fac_id","source_id","location_type","lon","lat","utmzone","source_type","lengthx","lengthy",
+                       "angle","horzdim","vertdim","areavolrelhgt","stkht","stkdia","stkvel","stktemp","elev","x2","y2"),
+                    converters={0:str,1:str,2:str,3:float,4:float,5:float,6:str,7:float,8:float,9:float,10:float,
+                        11:float,12:float,13:float,14:float,15:float,16:float,17:float,18:float,19:float})
                 
-                    #record upload in log
+                #record upload in log
                 emis_num = set(self.emisloc_df['fac_id'])
                 self.scr.insert(tk.INSERT, "Uploaded emissions location file for " + str(len(emis_num)) + " facilities" )
                 self.scr.insert(tk.INSERT, "\n")
