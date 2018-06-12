@@ -4,16 +4,13 @@ Created on Mon Oct 23 12:43:52 2017
 
 @author: dlindsey
 """
-
-import pandas as pd
-import numpy as np
 import inspect
 import math
-import os
 import time
-import xlsxwriter
-from pandas import DataFrame
-import openpyxl 
+import numpy as np
+import openpyxl
+import pandas as pd
+from writer.excel.OutputWriter import OutputWriter
 
 class Process_outputs():
     
@@ -222,111 +219,48 @@ class Process_outputs():
         
         #apply polar build function and fill each matrix
         np.apply_along_axis(lambda x: self.polar_build(x), axis=1, arr=self.polgrid )
-        
-       
+
+
+        excelWriter = OutputWriter(self.outdir)
+
         #writeout polgridmore
-        polgrid = xlsxwriter.Workbook(self.outdir + 'polgridmore.xlsx', {'constant_memory': True})
-        w_polgrid = polgrid.add_worksheet()
-        
-        headers_pg = ['utme','utmn','result',	'elev','hill','flag','avg_time','source_id',	'num_yrs','net_id', 'distance', 'angle', 'utmz', 'lon', 'lat', 'sector', 'ring' ]
-        
-        for i in range(0, len(headers_pg)):
-            w_polgrid.write(0, i, headers_pg[i]) 
-        
-        # With 'constant_memory' you must write data in row by column order.
-        for row in range(0, self.polgridmore.shape[0]):
-            for col in range(0, self.polgridmore.shape[1]):
-                w_polgrid.write(row + 1, col, self.polgridmore[row][col])
-                
-        polgrid.close
-        
-        
+        headers_pg = ['utme','utmn','result','elev','hill','flag','avg_time','source_id',	'num_yrs','net_id',
+              'distance', 'angle', 'utmz', 'lon', 'lat', 'sector', 'ring' ]
+        excelWriter.write('polgridmore.xlsx', headers_pg, self.polgridmore)
         
         #write out polar pollutant concentration
-        polar_pol_con = xlsxwriter.Workbook(self.outdir + 'polar_pollutant_concentration.xlsx', {'constant_memory': True})
-        w_pol_pol = polar_pol_con.add_worksheet()
+        headers_pp = ['utme','utmn','result','elev','hill','flag','avg_time','source_id','num_yrs','net_id',
+              'distance', 'angle', 'utmz', 'lon', 'lat', 'sector', 'ring', 'fac_id', 'pollutant', 'emis_tpy', 'conc']
+        excelWriter.write('polar_pollutant_concentration.xlsx', headers_pp, self.polar_pol_con)
         
-        headers_pp = ['utme','utmn','result','elev','hill','flag','avg_time','source_id','num_yrs','net_id', 'distance', 'angle', 'utmz', 'lon', 'lat', 'sector', 'ring', 'fac_id', 'pollutant', 'emis_tpy', 'conc']        
-        
-        for j in range(0, len(headers_pp)):
-            w_pol_pol.write(0, j, headers_pp[j]) 
-        
-        # With 'constant_memory' you must write data in row by column order.
-        for row2 in range(0, self.polar_pol_con.shape[0]):
-            for col2 in range(0, self.polar_pol_con.shape[1]):
-                w_pol_pol.write(row2 + 1, col2, self.polar_pol_con[row2][col2])
-                
-        polar_pol_con.close
-        
-        
-        
-#        #write our polar risk
-        polar_risk = xlsxwriter.Workbook(self.outdir + 'polar_risk.xlsx', {'constant_memory': True})
-        w_pol_risk = polar_risk.add_worksheet()
-        
-        headers_pr = ['utme','utmn','result','elev','hill','flag','avg_time','source_id','num_yrs','net_id', 'distance', 'angle', 'utmz', 'lon', 'lat', 'sector', 'ring', 'fac_id', 'pollutant', 'emis_tpy', 'conc', 'ure', 'ufc', 'resp', 'neuro', 'risk', 'resp_hi', 'neur_hi']
-        
-        for k in range(0, len(headers_pr)):
-            w_pol_risk.write(0, k, headers_pr[k]) 
-        
-        # With 'constant_memory' you must write data in row by column order.
-        for row3 in range(0, self.polar_risk.shape[0]):
-            for col3 in range(0, self.polar_risk.shape[1]):
-                w_pol_risk.write(row3 + 1, col3, self.polar_risk[row3][col3])
-                
-        polar_risk.close
-    
-
-
+        #write our polar risk
+        headers_pr = ['utme','utmn','result','elev','hill','flag','avg_time','source_id','num_yrs','net_id',
+              'distance', 'angle', 'utmz', 'lon', 'lat', 'sector', 'ring', 'fac_id', 'pollutant', 'emis_tpy', 'conc',
+              'ure', 'ufc', 'resp', 'neuro', 'risk', 'resp_hi', 'neur_hi']
+        excelWriter.write('polar_risk.xlsx', headers_pr, self.polar_risk)
 
         # polar concentration (18 columns)
         self.pol_conc = np.empty((0,18))
-        
-        
-        #create final risk mattrix to store all risk computations
+
+        #create final risk matrix to store all risk computations
         self.finalrisk = np.empty((0, 35))
-               
-  
-        #apply innnre build function to get pollar concentrations and risk computations
+
+        #apply inner build function to get polar concentrations and risk computations
         np.apply_along_axis(self.inner_build, axis=1, arr=self.inner_m )
-        
-        
-        #write out pollutant concentration        
-        pol_conc = xlsxwriter.Workbook(self.outdir + 'pollutant_concentration.xlsx', {'constant_memory': True})
-        w_pol_conc = pol_conc.add_worksheet()
-        
-        headers_pc =['utme', 'utmn', 'result', 'elev', 'hill', 'flag', 'avg_time', 'source_id', 'num_yrs', 'net_id', 'IDMARPLOT', 'LAT', 'LON', 'POPULATION', 'fac_id', 'pollutant', 'emis_tpy', 'conc']
-        
-        for l in range(0, len(headers_pc)):
-            w_pol_conc.write(0, l, headers_pc[l]) 
-        
-        # With 'constant_memory' you must write data in row by column order.
-        for row4 in range(0, self.pol_conc.shape[0]):
-            for col4 in range(0, self.pol_conc.shape[1]):
-                w_pol_conc.write(row4 + 1, col4, self.pol_conc[row4][col4])
-                
-        pol_conc.close
-        
-        
+
+        #write out pollutant concentration
+        headers_pc =['utme', 'utmn', 'result', 'elev', 'hill', 'flag', 'avg_time', 'source_id', 'num_yrs', 'net_id',
+             'IDMARPLOT', 'LAT', 'LON', 'POPULATION', 'fac_id', 'pollutant', 'emis_tpy', 'conc']
+        excelWriter.write('pollutant_concentration.xlsx', headers_pc, self.polar_conc)
+
         #write out inner risk
-        
-        innerrisk = xlsxwriter.Workbook(self.outdir + 'inner_risk.xlsx', {'constant_memory': True})
-        ir = innerrisk.add_worksheet()
-        
-        headers_ir = ['utme', 'utmn', 'result', 'elev', 'hill', 'flag', 'avg_time', 'source_id', 'num_yrs', 'net_id', 'IDMARPLOT', 'LAT', 'LON', 'POPULATION', 'fac_id', 'pollutant', 'emis_tpy', 'conc', 'ure', 'rfc', 'resp', 'neuro', 'liver', 'dev', 'reprod', 'kidney', 'ocular', 'endoc', 'hemato', 'immune', 'skeletal', 'spleen', 'thyroid', 'wholebod', 'risk', 'resp_hi', 'live_hi', 'neur_hi', 'deve_hi', 'repr_hi', 'kidn_hi', 'ocul_hi', 'endo_hi', 'hema_hi', 'immu_hi', 'skel_hi', 'sple_hi', 'thyr_hi', 'whol_hi']
-        
-        for m in range(0, len(headers_ir)):
-            ir.write(0, m, headers_ir[m]) 
-        
-        
-        for row5 in range(0, self.finalrisk.shape[0]):
-            for col5 in range(0, self.finalrisk.shape[1]):
-                ir.write(row5 + 1, col5, self.finalrisk[row5][col5])
-                
-        innerrisk.close
-        
-        
-        
+        headers_ir = ['utme', 'utmn', 'result', 'elev', 'hill', 'flag', 'avg_time', 'source_id', 'num_yrs', 'net_id',
+              'IDMARPLOT', 'LAT', 'LON', 'POPULATION', 'fac_id', 'pollutant', 'emis_tpy', 'conc', 'ure', 'rfc', 'resp',
+              'neuro', 'liver', 'dev', 'reprod', 'kidney', 'ocular', 'endoc', 'hemato', 'immune', 'skeletal', 'spleen',
+              'thyroid', 'wholebod', 'risk', 'resp_hi', 'live_hi', 'neur_hi', 'deve_hi', 'repr_hi', 'kidn_hi', 'ocul_hi',
+              'endo_hi', 'hema_hi', 'immu_hi', 'skel_hi', 'sple_hi', 'thyr_hi', 'whol_hi']
+        excelWriter.write('inner_risk.xlsx', headers_ir, self.finalrisk)
+
 #        MAXRISK TBD
 #        #empty excel for max_individal_risk
 #        self.max_risk = openpyxl.Workbook()

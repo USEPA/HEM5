@@ -5,15 +5,6 @@ Created on Mon Oct  2 10:35:51 2017
 @author: dlindsey
 """
 
-#!/usr/bin/env python3
-# -*- coding: utf-8 -*-
-"""
-Created on Sat Sep 30 17:16:53 2017
-
-@author: d
-"""
-
-#combining both prepare inputs and required inputs to set up, maybe too 
 import os
 import pandas as pd
 import numpy as np

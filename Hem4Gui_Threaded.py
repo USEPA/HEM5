@@ -301,7 +301,7 @@ class Hem4():
                             ,"elev","multiplier","ring1","dep","depl","phase"
                             ,"pdep","pdepl","vdep","vdepl","all_rcpts","user_rcpt"
                             ,"bldg_dw","urban_pop","fastall")
-                    , converters={"fac_id":str,"met_station":str,"rural_urban":str
+                    , converters={"FacilityID":str,"met_station":str,"rural_urban":str
                             ,"acute":str
                             ,"elev":str,"dep":str,"depl":str,"phase":str
                             ,"pdep":str,"pdepl":str,"vdep":str,"vdepl":str,"all_rcpts":str,"user_rcpt":str
@@ -334,7 +334,7 @@ class Hem4():
                 #HAP EMISSIONS excel to dataframe    
                 self.hapemis_df = pd.read_excel(open(self.hap_path, "rb")
                     , names=("fac_id","source_id","pollutant","emis_tpy","part_frac")
-                    , converters={"fac_id":str,"source_id":str,"pollutant":str,"emis_tpy":float,"part_frac":float})
+                    , converters={"FacilityID":str,"source_id":str,"pollutant":str,"emis_tpy":float,"part_frac":float})
                 
                 #fill Nan with 0
                 self.hapemis_df.fillna(0)
@@ -423,7 +423,7 @@ class Hem4():
                 , names=("fac_id","source_id","location_type","lon","lat","utmzone","source_type"
                          ,"lengthx","lengthy","angle","horzdim","vertdim","areavolrelhgt","stkht"
                          ,"stkdia","stkvel","stktemp","elev","x2","y2")
-                , converters={"fac_id":str,"source_id":str,"location_type":str,"lon":float,"lat":float
+                , converters={"FacilityID":str,"source_id":str,"location_type":str,"lon":float,"lat":float
                         ,"utmzone":float,"source_type":str,"lengthx":float,"lengthy":float,"angle":float
                         ,"horzdim":float,"vertdim":float,"areavolrelhgt":float,"stkht":float,"stkdia":float
                         ,"stkvel":float,"stktemp":float,"elev":float,"x2":float,"y2":float})
@@ -443,9 +443,9 @@ class Hem4():
                 self.multipoly_df = pd.read_excel(open(self.poly_path, "rb")
                       , names=("fac_id","source_id","location_type","lon","lat","utmzone"
                                ,"numvert","area", "fipstct")
-                      , converters={"fac_id":str,"source_id":str,"location_type":str,"lon":float
+                      , converters={"FacilityID":str,"source_id":str,"location_type":str,"lon":float
                                     ,"lat":float,"utmzone":str,"numvert":float,"area":float})
-                
+
                 #get polyvertex facility list for check
                 find_is = self.emisloc_df[self.emisloc_df['source_type'] == "I"]
                 fis = find_is['fac_id']
