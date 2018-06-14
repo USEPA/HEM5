@@ -414,7 +414,7 @@ class multi_kml():
 # Fac_id - create source file for each facility         
         # Read array to get facility id, source ids, source type and location parameters
         for facid, group in srcmap.groupby(["fac_id"]):
-            fname = facid
+            fname = str(facid)
             singlefacidfilename = "working_kml/fac_" + fname + "_source.kml"
             copyfile(headerfilename,singlefacidfilename)
             fac_file = open(singlefacidfilename,"a")
