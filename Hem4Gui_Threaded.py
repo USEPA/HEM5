@@ -508,8 +508,9 @@ class Hem4():
                 self.urep_path = file_path
                 
                 #USER RECEPTOR dataframe
-                self.ureceptr_df = pd.read_excel(open(self.urep_path, "rb")
-                      , names=("fac_id", "loc_type", "lon", "lat", "utmzone", "elev", "rec_type", "rec_id"))
+                self.ureceptr_df = pd.read_excel(open(self.urep_path, "rb"),
+                     names=("fac_id", "loc_type", "lon", "lat", "utmzone", "elev", "rec_type", "rec_id"),
+                     converters={0:str})
                 
                 #check for unassigned user receptors
                 
