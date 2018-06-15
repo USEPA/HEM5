@@ -7,38 +7,24 @@ Created on Thu Nov 30 10:26:13 2017
 #%% Imports
 
 import os
+import queue
+import shutil
+import subprocess
+import time
 import tkinter as tk
-from tkinter import ttk
-from tkinter.filedialog import askopenfilename
+from threading import Thread
 from tkinter import messagebox
 from tkinter import scrolledtext
-import pandas as pd
-import numpy as np
+from tkinter import ttk
+from upload.FileUploader import FileUploader
+
 import Hem4_Input_Processing as prepare
-from threading import Thread
-import create_multi_kml as cmk
-import sys
-import queue
-import HEM4_Runstream as rs
-import subprocess
-import Hem4_Output_Processing as po 
-import math
-import shutil
+import Hem4_Output_Processing as po
 import create_facililty_kml as fkml
-import time
+import create_multi_kml as cmk
 
 
 #%% excel file extension list to check
-
-def is_excel(filepath):
-    
-    excel = [".xls", ".xlsx"]
-    
-    for extension in excel:
-        if extension in filepath:
-            return True
-        else:
-            return False
         
 
 #%% Hem4 GUI
@@ -53,6 +39,9 @@ class Hem4():
         self.win.maxsize(1000, 1000)
         self.createWidgets()
         self.running = False
+
+        # Create a file uploader
+        self.uploader = FileUploader()
 
 #%% Quit Function    
     def quit_gui(self):
@@ -149,7 +138,7 @@ class Hem4():
         fac_label.grid(row=1, sticky="W")
         
         #facilities upload button
-        self.fac_up = ttk.Button(self.s3, command = lambda: self.upload("facilities options list"))
+        self.fac_up = ttk.Button(self.s3, command = lambda: self.uploadFacilitiesList())
         self.fac_up["text"] = "Browse"
         self.fac_up.grid(row=2, column=0, sticky="W")
         self.fac_up.bind('<Enter>', lambda e:self.browse("instructions/fac_browse.txt"))
@@ -169,7 +158,7 @@ class Hem4():
         hap_label.grid(row=1, sticky="W")
         
         #hap emissions upload button
-        self.hap_up = ttk.Button(self.s4, command = lambda: self.upload("hap emissions"))
+        self.hap_up = ttk.Button(self.s4, command = lambda: self.uploadHAPEmissions())
         self.hap_up["text"] = "Browse"
         self.hap_up.grid(row=2, column=0, sticky='W')
         #event handler for instructions (Button 1 is the left mouse click)
@@ -190,7 +179,7 @@ class Hem4():
         emisloc_label.grid(row=1, sticky="W")
         
         #emissions location upload button
-        self.emisloc_up = ttk.Button(self.s5, command= lambda: self.upload("emissions locations"))
+        self.emisloc_up = ttk.Button(self.s5, command= lambda: self.uploadEmissionLocations())
         self.emisloc_up["text"] = "Browse"
         self.emisloc_up.grid(row=2, column=0, sticky='W')
         #event handler for instructions (Button 1 is the left mouse click)
@@ -214,19 +203,96 @@ class Hem4():
         #user receptors
         self.u_receptors= tk.BooleanVar()
         self.u_receptors.set(False)
-        self.ur_op = ttk.Checkbutton(self.s8, text="Include user receptors for any facilities, as indicated in the Facilities List Options file.", variable=self.u_receptors, command=self.add_ur).grid(row=1, column=1, sticky="w")
+        self.ur_op = ttk.Checkbutton(self.s8, text="Include user receptors for any facilities, as indicated in the Facilities List Options file.",
+             variable=self.u_receptors, command=self.add_ur).grid(row=1, column=1, sticky="w")
         
-        
-        
-         #%% Dynamic inputs for adding options
 
+
+    def uploadFacilitiesList(self):
+        
+        result = self.uploader.upload("facilities options list")
+
+        # Update the global model
+        self.faclist_df = result['df']
+        self.facids = self.faclist_df['fac_id']
+
+        # Update the UI
+        self.fac_list.set(result['path'])
+        [self.scr.insert(tk.INSERT, msg) for msg in result['messages']]
+
+    def uploadHAPEmissions(self):
+
+        result = self.uploader.upload("hap emissions")
+
+        # Update the global model
+        self.hapemis_df = result['df']
+
+        # Update the UI
+        self.hap_list.set(result['path'])
+        [self.scr.insert(tk.INSERT, msg) for msg in result['messages']]
+
+    def uploadEmissionLocations(self):
+
+        result = self.uploader.upload("emissions locations")
+
+        # Update the global model
+        self.emisloc_df = result['df']
+
+        # Update the UI
+        self.emisloc_list.set(result['path'])
+        [self.scr.insert(tk.INSERT, msg) for msg in result['messages']]
+
+    def uploadPolyvertex(self):
+
+        if not hasattr(self, "emisloc_df"):
+            messagebox.showinfo("Emissions Locations File Missing",
+                "Please upload an Emissions Locations file before adding a Polyvertex file.")
+
+        result = self.uploader.uploadDependent("polyvertex", self.emisloc_df)
+
+        # Update the global model
+        self.multipoly_df = result['df']
+
+        # Update the UI
+        self.poly_list.set(result['path'])
+        [self.scr.insert(tk.INSERT, msg) for msg in result['messages']]
+
+    def uploadBouyant(self):
+
+        if not hasattr(self, "emisloc_df"):
+            messagebox.showinfo("Emissions Locations File Missing",
+                "Please upload an Emissions Locations file before adding a Bouyant line file.")
+
+        result = self.uploader.uploadDependent("bouyant", self.emisloc_df)
+
+        # Update the global model
+        self.bouyant_df = result['df']
+
+        # Update the UI
+        self.poly_list.set(result['path'])
+        [self.scr.insert(tk.INSERT, msg) for msg in result['messages']]
+
+    def uploadUserReceptors(self):
+
+        if not hasattr(self, "faclist_df"):
+            messagebox.showinfo("Facilities List Option File Missing",
+                "Please upload a Facilities List Options file before selecting a User Receptors file.")
+
+        result = self.uploader.uploadDependent("user receptors", self.faclist_df)
+
+        # Update the global model
+        self.ureceptr_df = result['df']
+
+        # Update the UI
+        self.urep_list.set(result['path'])
+        [self.scr.insert(tk.INSERT, msg) for msg in result['messages']]
 
     def add_ur(self):
         #when box is checked add row with input
         if self.u_receptors.get() == True:
             
             #user recptors upload button
-            self.urep = ttk.Button(self.s8, command = lambda: self.upload("user receptors"))
+            self.urep = ttk.Button(self.s8, command = lambda: self.uploadUserReceptors())
             self.urep["text"] = "Browse"
             self.urep.grid(row=2, column=1, sticky="W")
             self.urep.bind('<Enter>', lambda e:self.browse("instructions/urep_browse.txt"))
@@ -245,365 +311,6 @@ class Hem4():
             self.urep.destroy()
             self.urep_list_man.destroy()
 
-        
-        #%% Specific upload functions for selecting each file, once selected convert excel file to dataframe
-   
-    def upload(self, file):
-        """ The upload funtion takes a file string triggered by a button in the GUI, it then uses that to determine which type of file to unload """
-    
-        #checks
-        if file == "polyvertex":
-        
-            if hasattr(self, "emisloc_df"): 
-                filename = askopenfilename()
-            else:
-                messagebox.showinfo("Emissions Locations File Missing", "Please upload an Emissions Locations file before adding a Polyvertex file.")
-        
-        elif file == "bouyant":
-           
-            if hasattr(self, "emisloc_df"): 
-                filename = askopenfilename()
-            else:
-                messagebox.showinfo("Emissions Locations File Missing", "Please upload an Emissions Locations file before adding a Bouyant line file.")
-        
-    
-        elif file == "user receptors":
-            
-            if hasattr(self, "faclist_df"): 
-                filename = askopenfilename()
-            else:
-                messagebox.showinfo("Facilities List Option File Missing", "Please upload a Facilities List Options file before selecting a User Receptors file.")
-        
-        else:
-            #get file name from open dialogue
-            filename = askopenfilename()
-        
-        #if the upload is canceled 
-        if filename is None:
-            print("Canceled!")
-            #eventually open box or some notification to say this is required 
-        elif is_excel(filename) is False:
-            messagebox.showinfo("Invalid file format", "Not a valid file format, please upload an excel file for " + file +".")
-        elif is_excel(filename) is True:
-            file_path = os.path.abspath(filename)
-                          
-            if file == "facilities options list":
-                #make sure its a facilities list option file
-                
-                self.fac_list.set(file_path)
-                self.fac_path = file_path
-                
-                # FACILITIES LIST excel to dataframe
-                # HEADER----------------------
-                # FacilityID|met_station|rural_urban|max_dist|model_dist|radials|circles|overlap_dist|acute|hours|elev|
-                # multiplier|ring1|dep|depl|phase|pdep|pdepl|vdep|vdepl|All_rcpts|user_rcpt|bldg_dw|urban_pop|fastall
-
-                self.faclist_df = pd.read_excel(open(self.fac_path,'rb'),
-                    names=("fac_id","met_station","rural_urban","max_dist","model_dist","radial","circles","overlap_dist",
-                       "acute","hours","elev","multiplier","ring1","dep","depl","phase","pdep","pdepl","vdep","vdepl",
-                       "all_rcpts","user_rcpt","bldg_dw","urban_pop","fastall"),
-                    converters={0:str,1:str,2:str,8:str,10:str,13:str,14:str,15:str,16:str,17:str,18:str,19:str,
-                        20:str,21:str,22:str,24:str})
-        
-                #manually convert fac_list to numeric
-                self.faclist_df["model_dist"] = pd.to_numeric(self.faclist_df["model_dist"],errors="coerce")
-                self.faclist_df["radial"] = pd.to_numeric(self.faclist_df["radial"],errors="coerce")
-                self.faclist_df["circles"] = pd.to_numeric(self.faclist_df["circles"],errors="coerce")
-                self.faclist_df["overlap_dist"] = pd.to_numeric(self.faclist_df["overlap_dist"],errors="coerce")
-                self.faclist_df["hours"] = pd.to_numeric(self.faclist_df["hours"],errors="coerce")
-                self.faclist_df["multiplier"] = pd.to_numeric(self.faclist_df["multiplier"],errors="coerce")
-                self.faclist_df["ring1"] = pd.to_numeric(self.faclist_df["ring1"],errors="coerce")
-                self.faclist_df["urban_pop"] = pd.to_numeric(self.faclist_df["urban_pop"],errors="coerce")
-                self.faclist_df["max_dist"] = pd.to_numeric(self.faclist_df["max_dist"],errors="coerce")
-                
-                #grab facility ideas for comparison with hap emission and emission location files
-                self.facids = self.faclist_df['fac_id']
-                    
-                self.scr.insert(tk.INSERT, "Uploaded facilities options list file for " + str(self.facids.count()) + " facilities" )
-                self.scr.insert(tk.INSERT, "\n")
-                
-                
-                
-            elif file == "hap emissions":
-                    
-                self.hap_list.set(file_path)
-                self.hap_path = file_path
-                
-                #HAP EMISSIONS excel to dataframe
-                # HEADER------------------------
-                # FacilityID|SourceID|HEM3chem|SumEmissionTPY|FractionParticulate
-                self.hapemis_df = pd.read_excel(open(self.hap_path, "rb"),
-                    names=("fac_id","source_id","pollutant","emis_tpy","part_frac"),
-                    converters={0:str,1:str,2:str,3:float,4:float})
-                
-                #fill Nan with 0
-                self.hapemis_df.fillna(0)
-                
-                #turn part_frac into a decimal
-                self.hapemis_df['part_frac'] = self.hapemis_df['part_frac'] / 100
-    
-                #create additional columns, one for particle mass and the other for gas/vapor mass...
-                self.hapemis_df['particle'] = self.hapemis_df['emis_tpy'] * self.hapemis_df['part_frac']
-                self.hapemis_df['gas'] = self.hapemis_df['emis_tpy'] * (1 - self.hapemis_df['part_frac'])
-
-    
-                #get list of pollutants from dose library
-                dose = pd.read_excel(open('resources/Dose_Response_Library.xlsx', 'rb'))
-                master_list = list(dose['Pollutant'])
-                lower = [x.lower() for x in master_list]
-                
-                user_haps = set(self.hapemis_df['pollutant'])
-                missing_pollutants = []
-                
-                for hap in user_haps:
-                    if hap.lower() not in lower:
-                        missing_pollutants.append(hap)
-                  
-                 
-#                missing_pollutants = {}
-#                for row in self.hapemis_df.itertuples():
-#                 
-#                    if row[3].lower() not in lower:
-#                        
-#                        if row[1] in missing_pollutants.keys():
-#                            
-#                            missing_pollutants[row[1]].append(row[3])
-#                            
-#                        else:
-#                            missing_pollutants[row[1]] = [row[3]]
-#                
-#                for key in missing_pollutants.keys():
-#                    missing_pollutants[key] = ', '.join(missing_pollutants[key])
-                    
-                
-                #if there are any missing pollutants
-                if len(missing_pollutants) > 0:
-                    fix_pollutants = messagebox.askyesno("Missing Pollutants in dose response library", "The following pollutants were not found in HEM4's Dose Response Library: " + ', '.join(missing_pollutants) + ".\n Would you like to add them to the dose response library in the resources folder (they will be removed oherwise). ")
-                    #if yes, clear box and empty dataframe
-                   
-                    
-                    if fix_pollutants is True:
-                        #clear hap emis upload area
-                         self.hap_list.set('')
-                         self.hap_path = file_path
-                    
-                        
-                    #if no, remove them from dataframe 
-                    elif fix_pollutants is False:
-                        missing = list(missing_pollutants.values())
-                        remove = set(missing[0].split(', '))
-                        
-    
-                        #remove them from data frame
-                        
-                        for p in remove:
-                            
-                            self.hapemis_df = self.hapemis_df[self.hapemis_df.pollutant != str(p)]
-                            
-                            #record upload in log
-                            #add another essage to say the following pollutants were assigned a generic value...
-                            self.scr.insert(tk.INSERT, "Removed " + p + " from hap emissions file" )
-                            self.scr.insert(tk.INSERT, "\n")
-                        
-                        
-                else:
-                        #record upload in log
-                    hap_num = set(self.hapemis_df['fac_id'])
-                    self.scr.insert(tk.INSERT, "Uploaded HAP emissions file for " + str(len(hap_num)) + " facilities" )
-                    self.scr.insert(tk.INSERT, "\n")
-                
-                
-            elif file == "emissions locations":
-                    
-                self.emisloc_list.set(file_path)
-                self.emisloc_path = file_path
-                  
-                #EMISSIONS LOCATION excel to dataframe
-                # HEADER------------------------
-                # FacilityID|SourceID|LocationType|Longitude|Latitude|UTMzone|SourceType|Lengthx|Lengthy|Angle|HorzDim|
-                # VertDim|AreaVolReleaseHgt|StackHgt_m|StackDiameter_m|ExitGasVel_m|ExitGasTemp_K|Elevation_m|X2|Y2
-                self.emisloc_df = pd.read_excel(open(self.emisloc_path, "rb"),
-                    names=("fac_id","source_id","location_type","lon","lat","utmzone","source_type","lengthx","lengthy",
-                       "angle","horzdim","vertdim","areavolrelhgt","stkht","stkdia","stkvel","stktemp","elev","x2","y2"),
-                    converters={0:str,1:str,2:str,3:float,4:float,5:float,6:str,7:float,8:float,9:float,10:float,
-                        11:float,12:float,13:float,14:float,15:float,16:float,17:float,18:float,19:float})
-                
-                #record upload in log
-                emis_num = set(self.emisloc_df['fac_id'])
-                self.scr.insert(tk.INSERT, "Uploaded emissions location file for " + str(len(emis_num)) + " facilities" )
-                self.scr.insert(tk.INSERT, "\n")
-                
-                
-            elif file == "polyvertex":
-                
-                self.poly_list.set(file_path)
-                self.poly_path = file_path
-                
-                #POLYVERTEX excel to dataframe
-                self.multipoly_df = pd.read_excel(open(self.poly_path, "rb")
-                      , names=("fac_id","source_id","location_type","lon","lat","utmzone"
-                               ,"numvert","area", "fipstct")
-                      , converters={"FacilityID":str,"source_id":str,"location_type":str,"lon":float
-                                    ,"lat":float,"utmzone":str,"numvert":float,"area":float})
-
-                #get polyvertex facility list for check
-                find_is = self.emisloc_df[self.emisloc_df['source_type'] == "I"]
-                fis = find_is['fac_id']
-                    
-                #check for unassigned polyvertex            
-                check_poly_assignment = set(self.multipoly_df["fac_id"])
-                poly_unassigned = []             
-                
-                for fac in fis:
-                    if fac not in check_poly_assignment:   
-                        poly_unassigned.append(fac)
-                
-                if len(poly_unassigned) > 0:
-                    messagebox.showinfo("Unassigned Polygon Sources", "Polygon Sources for " + ", ".join(poly_unassigned) + " have not been assigned. Please edit the 'source_type' column in the Emissions Locations file.")
-                    #clear box and empty data frame
-                else:
-                    #record upload in log
-                    self.scr.insert(tk.INSERT, "Uploaded polygon sources for " + " ".join(check_poly_assignment))
-                    self.scr.insert(tk.INSERT, "\n")
-                
-            
-            elif file == "bouyant line":
-                
-                self.bouyant_list.set(file_path)
-                self.bouyant_path = file_path
-                
-                #BOUYANT LINE excel to dataframe
-                self.multibuoy_df = pd.read_excel(open(self.bouyant_path, "rb")
-                      , names=("fac_id", "avgbld_len", "avgbld_hgt", "avgbld_wid", "avglin_wid", "avgbld_sep", "avgbuoy"))
-            
-                
-                #get bouyant line facility list
-                self.emisloc_df['source_type'].str.upper()
-                find_bs = self.emisloc_df[self.emisloc_df['source_type'] == "B"]
-                
-                fbs = find_bs['fac_id'].unique()
-                
-                #check for unassigned buoyants
-                 
-                check_bouyant_assignment = set(self.multibuoy_df["fac_id"])
-                
-                bouyant_unassigned = []     
-                for fac in fbs:
-    
-                    if fac not in check_bouyant_assignment: 
-                        bouyant_unassigned.append(fac)
-                
-                if len(bouyant_unassigned) > 0:
-                    messagebox.showinfo("Unassigned Bouyant Line parameters", "Bouyant Line parameters for " + ", ".join(bouyant_unassigned) + " have not been assigned. Please edit the 'source_type' column in the Emissions Locations file.")
-                else:
-                    #record upload in log
-                    self.scr.insert(tk.INSERT, "Uploaded bouyant line parameters for " + " ".join(check_bouyant_assignment))
-                    self.scr.insert(tk.INSERT, "\n")
-                    
-            
-            elif file == "user receptors":
-                
-                file_path = os.path.abspath(filename)
-                self.urep_list.set(file_path)
-                self.urep_path = file_path
-                
-                #USER RECEPTOR dataframe
-                self.ureceptr_df = pd.read_excel(open(self.urep_path, "rb"),
-                     names=("fac_id", "loc_type", "lon", "lat", "utmzone", "elev", "rec_type", "rec_id"),
-                     converters={0:str})
-                
-                #check for unassigned user receptors
-                
-                check_receptor_assignment = self.ureceptr_df["fac_id"]
-                
-                receptor_unassigned = []     
-                for receptor in check_receptor_assignment:
-                    #print(receptor)
-                    row = self.faclist_df.loc[self.faclist_df['fac_id'] == receptor]
-                    #print(row)
-                    check = row['user_rcpt'] == 'Y'
-                    #print(check)
-                
-                    if check is False:   
-                        receptor_unassigned.append(str(receptor))
-                
-                
-                if len(receptor_unassigned) > 0:
-                    facilities = set(receptor_unassigned)
-                    messagebox.showinfo("Unassigned User Receptors", "Receptors for " + ", ".join(facilities) + " have not been assigned. Please edit the 'user_rcpt' column in the facility options file.")
-                else:
-                    check_receptor_assignment = [str(facility) for facility in check_receptor_assignment]
-                    #record upload in log
-                    self.scr.insert(tk.INSERT, "Uploaded user receptors for " + " ".join(check_receptor_assignment))
-                    self.scr.insert(tk.INSERT, "\n")
-            
-            
-            elif file == "building downwash":
-                
-                file_path = os.path.abspath(filename)
-                self.bd_list.set(file_path)
-                self.bd_path = file_path
-                
-                #building downwash dataframe
-                self.bd_df = pd.read_csv(open(self.bd_path ,"rb"))
-                
-                 #record upload in log
-                self.scr.insert(tk.INSERT, "Uploaded building downwash for...")
-                self.scr.insert(tk.INSERT, "\n")
-                
-                
-            elif file == "particle depletion":
-                    
-                file_path = os.path.abspath(filename)
-                self.dep_part.set(file_path)
-                self.dep_part_path = file_path
-                
-                #particle dataframe
-                self.particle_df = pd.read_excel(open(self.dep_part_path, "rb")
-                      , names=("fac_id", "source_id", "diameter", "mass", "density"))
-                
-                 #record upload in log
-                self.scr.insert(tk.INSERT, "Uploaded particle depletion for...")
-                self.scr.insert(tk.INSERT, "\n")
-                
-            elif file == "land use description":
-                
-                file_path = os.path.abspath(filename)
-                self.dep_land.set(file_path)
-                self.dep_land_path = file_path
-                
-                self.land_df = pd.read_excel(open(self.dep_land_path, "rb"))
-                self.land_df.rename({"Facility ID " : "fac_id"})
-                
-                 #record upload in log
-                self.scr.insert(tk.INSERT, "Uploaded land use description for...")
-                self.scr.insert(tk.INSERT, "\n")
-                
-                
-            elif file == "season vegetation":
-                
-                file_path = os.path.abspath(filename)
-                self.dep_veg.set(file_path)
-                self.dep_veg_path = file_path
-                
-                self.veg_df = pd.read_csv(open(self.dep_veg_path, "rb"))
-                self.veg_df.rename({"Facility ID": "fac_id"})
-                 #record upload in log
-                self.scr.insert(tk.INSERT, "Uploaded season vegetation for...")
-                self.scr.insert(tk.INSERT, "\n")
-      
-        
-            elif file == "emissions variation":
-                
-                file_path = os.path.abspath(filename)
-                self.evar_list.set(file_path)
-                self.evar_list_path = file_path
-                
-                 #record upload in log
-                self.scr.insert(tk.INSERT, "Uploaded emissions variance for...")
-                self.scr.insert(tk.INSERT, "\n")
-                
-            
         
  #%% Event handlers for porting instructions
 
