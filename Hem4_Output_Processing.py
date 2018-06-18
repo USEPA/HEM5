@@ -251,7 +251,7 @@ class Process_outputs():
         #write out pollutant concentration
         headers_pc =['utme', 'utmn', 'result', 'elev', 'hill', 'flag', 'avg_time', 'source_id', 'num_yrs', 'net_id',
              'IDMARPLOT', 'LAT', 'LON', 'POPULATION', 'fac_id', 'pollutant', 'emis_tpy', 'conc']
-        excelWriter.write('pollutant_concentration.xlsx', headers_pc, self.polar_conc)
+        excelWriter.write('pollutant_concentration.xlsx', headers_pc, self.pol_conc)
 
         #write out inner risk
         headers_ir = ['utme', 'utmn', 'result', 'elev', 'hill', 'flag', 'avg_time', 'source_id', 'num_yrs', 'net_id',
