@@ -5,7 +5,8 @@ Created on Thu Nov 30 10:26:13 2017
 @author: dlindsey
 """
 #%% Imports
-
+import traceback
+import concurrent.futures as futures
 import os
 import queue
 import shutil
@@ -582,19 +583,28 @@ class Hem4():
                     self.urep_list_man.destroy()
                     
                 self.running = False
-                
-        
-        
-        
-#%% Create Thread for Threaded Process   
+
+
+    def workerComplete(self, future):
+        ex = future.exception()
+
+        if ex is not None:
+            # logger = logging.getLogger('workerComplete')
+            # logger.exception(ex)
+            fullStackInfo = ''.join(traceback.format_exception(etype=type(ex), value=ex, tb=ex.__traceback__))
+            the_queue.put("\nAn error ocurred while running a facility:")
+            the_queue.put("\n\n" + fullStackInfo)
+
+    #%% Create Thread for Threaded Process
     def runThread(self):
         global instruction_instance
         instruction_instance.set("Hem4 Running, check the log tab for updates")
-        runT = Thread(target=self.run)
-        runT.daemon = True
-        runT.start()
-        
-        
+
+        executor = futures.ThreadPoolExecutor(max_workers=1)
+        future = executor.submit(self.run)
+        future.add_done_callback(self.workerComplete)
+
+
     def after_callback(self):
         try:
             message = the_queue.get(block=False)
