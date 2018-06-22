@@ -4,33 +4,27 @@ Created on Thu Nov 30 10:26:13 2017
 
 @author: dlindsey
 """
-#%% Imports
-import traceback
-import concurrent.futures as futures
 import os
+import concurrent.futures as futures
 import queue
-import shutil
-import subprocess
 import time
 import tkinter as tk
-from threading import Thread
+import traceback
 from tkinter import messagebox
 from tkinter import scrolledtext
 from tkinter import ttk
-from upload.FileUploader import FileUploader
-
 import Hem4_Input_Processing as prepare
-import Hem4_Output_Processing as po
-import create_facililty_kml as fkml
 import create_multi_kml as cmk
+from model.Model import Model
+from runner.FacilityRunner import FacilityRunner
+from upload.FileUploader import FileUploader
+from tkinter.filedialog import askopenfilename
 
-
-#%% excel file extension list to check
-        
 
 #%% Hem4 GUI
 
 class Hem4():
+
     def __init__ (self):
         #create window instance
         self.win = tk.Tk()
@@ -41,8 +35,11 @@ class Hem4():
         self.createWidgets()
         self.running = False
 
+        # Create the model
+        self.model = Model()
+
         # Create a file uploader
-        self.uploader = FileUploader()
+        self.uploader = FileUploader(self.model)
 
 #%% Quit Function    
     def quit_gui(self):
@@ -206,42 +203,52 @@ class Hem4():
         self.u_receptors.set(False)
         self.ur_op = ttk.Checkbutton(self.s8, text="Include user receptors for any facilities, as indicated in the Facilities List Options file.",
              variable=self.u_receptors, command=self.add_ur).grid(row=1, column=1, sticky="w")
-        
 
+
+    def is_excel(self, filepath):
+        extensions = [".xls", ".xlsx"]
+        return any(ext in filepath for ext in extensions)
+
+    def openFile(self, filename):
+
+        if filename is None:
+            # upload was canceled
+            print("Canceled!")
+            return None
+        elif not self.is_excel(filename):
+            messagebox.showinfo("Invalid file format", "Not a valid file format, please upload an excel file.")
+            return None
+        else:
+            return os.path.abspath(filename)
 
     def uploadFacilitiesList(self):
-        
-        result = self.uploader.upload("facilities options list")
+        fullpath = self.openFile(askopenfilename())
+        if fullpath is not None:
+            self.uploader.upload("faclist", fullpath)
 
-        # Update the global model
-        self.faclist_df = result['df']
-        self.facids = self.faclist_df['fac_id']
+            self.model.facids = self.model.faclist.dataframe['fac_id']
 
-        # Update the UI
-        self.fac_list.set(result['path'])
-        [self.scr.insert(tk.INSERT, msg) for msg in result['messages']]
+            # Update the UI
+            self.fac_list.set(fullpath)
+            [self.scr.insert(tk.INSERT, msg) for msg in self.model.faclist.log]
 
     def uploadHAPEmissions(self):
+        fullpath = self.openFile(askopenfilename())
+        if fullpath is not None:
+            self.uploader.upload("hapemis", fullpath)
 
-        result = self.uploader.upload("hap emissions")
-
-        # Update the global model
-        self.hapemis_df = result['df']
-
-        # Update the UI
-        self.hap_list.set(result['path'])
-        [self.scr.insert(tk.INSERT, msg) for msg in result['messages']]
+            # Update the UI
+            self.hap_list.set(fullpath)
+            [self.scr.insert(tk.INSERT, msg) for msg in self.model.hapemis.log]
 
     def uploadEmissionLocations(self):
+        fullpath = self.openFile(askopenfilename())
+        if fullpath is not None:
+            self.uploader.upload("emisloc", fullpath)
 
-        result = self.uploader.upload("emissions locations")
-
-        # Update the global model
-        self.emisloc_df = result['df']
-
-        # Update the UI
-        self.emisloc_list.set(result['path'])
-        [self.scr.insert(tk.INSERT, msg) for msg in result['messages']]
+            # Update the UI
+            self.emisloc_list.set(fullpath)
+            [self.scr.insert(tk.INSERT, msg) for msg in self.model.emisloc.log]
 
     def uploadPolyvertex(self):
 
@@ -275,18 +282,17 @@ class Hem4():
 
     def uploadUserReceptors(self):
 
-        if not hasattr(self, "faclist_df"):
+        if self.model.faclist.dataframe is None:
             messagebox.showinfo("Facilities List Option File Missing",
                 "Please upload a Facilities List Options file before selecting a User Receptors file.")
 
-        result = self.uploader.uploadDependent("user receptors", self.faclist_df)
+        fullpath = self.openFile(askopenfilename())
+        if fullpath is not None:
+            self.uploader.uploadDependent("user receptors", fullpath, self.model.faclist.dataframe)
 
-        # Update the global model
-        self.ureceptr_df = result['df']
-
-        # Update the UI
-        self.urep_list.set(result['path'])
-        [self.scr.insert(tk.INSERT, msg) for msg in result['messages']]
+            # Update the UI
+            self.urep_list.set(fullpath)
+            [self.scr.insert(tk.INSERT, msg) for msg in self.model.ureceptr.log]
 
     def add_ur(self):
         #when box is checked add row with input
@@ -342,14 +348,14 @@ class Hem4():
         self.ready = False
         
         #make sure fac_list df was created correctly
-        if hasattr(self, "faclist_df"):
+        if self.model.faclist.dataframe is not None:
             
-            if self.faclist_df.empty:
+            if self.model.faclist.dataframe.empty:
                 messagebox.showinfo("Error","There was an error uploading Facilities List Option File, please try again")
                 check1 = False
                 
             else:
-                fids = set(self.faclist_df['fac_id'])
+                fids = set(self.model.facids)
                # print("fac_list ready")
                 check1 = True
         else:
@@ -357,15 +363,15 @@ class Hem4():
             messagebox.showinfo("Error","There was an error uploading Facilities List Option File, please try again")
        
         #make sure emis_loc df was created correctly
-        if hasattr(self, "emisloc_df"):
+        if self.model.emisloc.dataframe is not None:
             
-            if self.emisloc_df.empty:
+            if self.model.emisloc.dataframe.empty:
                 messagebox.showinfo("Error","There was an error uploading Emissions Locations File, please try again")
                 check2 = False
             else:
                 #check facility id with emis loc ids
-                efids = set(self.emisloc_df['fac_id'])
-                esource = set(self.emisloc_df['source_id'])
+                efids = set(self.model.emisloc.dataframe['fac_id'])
+                esource = set(self.model.emisloc.dataframe['source_id'])
                 if efids == fids:
                     #print("emis_locs ready")
                     check2 = True
@@ -375,17 +381,17 @@ class Hem4():
             messagebox.showinfo("Error","There was an error uploading Emissions Locations File, please try again")
 
        #make sure hap_emis  df was created correctly
-        if hasattr(self, "hapemis_df"):
+        if self.model.hapemis.dataframe is not None:
             
             
-            if self.hapemis_df.empty:
+            if self.model.hapemis.dataframe.empty:
                 messagebox.showinfo("Error","There was an error uploading HAP Emissions File, please try again")
                 check3 = False
                 #print("empty")
             else:
                 #check emis locations and source ids
-                hfids = set(self.hapemis_df['fac_id'])
-                hsource = set(self.hapemis_df['source_id'])
+                hfids = set(self.model.hapemis.dataframe['fac_id'])
+                hsource = set(self.model.hapemis.dataframe['source_id'])
                 missing_sources = []
                 
                 
@@ -418,13 +424,13 @@ class Hem4():
         
             
             #check user receptors in facility
-            user_rec_check = self.faclist_df['user_rcpt'] == 'Y'
+            user_rec_check = self.model.faclist.dataframe['user_rcpt'] == 'Y'
             user_rec_checklist = []
             
                 
             if True in user_rec_check.values:
                 
-                if hasattr(self, 'ureceptr_df'):
+                if self.model.ureceptr.dataframe is not None:
                     pass
                     
                        
@@ -448,7 +454,7 @@ class Hem4():
                 self.multibuoy_df = None
                 
                    
-            if hasattr(self, 'multipoly_df') and hasattr(self, 'ureceptr_df') and hasattr(self, 'multibuoy_df'):
+            if hasattr(self, 'multipoly_df') and hasattr(self, 'multibuoy_df') and self.model.ureceptr.dataframe is not None:
                 self.ready = True
                 print("Ready to run!")
             
@@ -457,110 +463,39 @@ class Hem4():
                 if self.ready == True:
                    
                     #tell user to check the Progress/Log section
+                    messagebox.askokcancel("Confirm HEM4 Run", "Clicking 'OK' will start HEM4.")
                    
-                    
+                    #create object for prepare inputs
+                    self.running = True
                    
-                   
-                   messagebox.askokcancel("Confirm HEM4 Run", "Clicking 'OK' will start HEM4.")
-                   
-                   #create object for prepare inputs
-                   self.running = True
-                   
-                   #create a Google Earth KML of all sources to be modeled
-                   createkml = cmk.multi_kml(self.emisloc_df, self.multipoly_df, self.multibuoy_df)
-                   if createkml is not None:
-                       source_map = createkml.create_sourcemap()
-                       kmlfiles = createkml.write_kml_emis_loc(source_map)
-        
-                   
-                   the_queue.put("\nPreparing Inputs for " + str(self.facids.count()) + " facilities")
-                   pass_ob = prepare.Prepare_Inputs( self.faclist_df, self.emisloc_df, self.hapemis_df, self.multipoly_df, self.multibuoy_df, self.ureceptr_df)
-                   
-                   # let's tell after_callback that this completed
-                   #print('thread_target puts None to the queue')
+                    #create a Google Earth KML of all sources to be modeled
+                    createkml = cmk.multi_kml(self.emisloc_df, self.multipoly_df, self.multibuoy_df)
+                    if createkml is not None:
+                        source_map = createkml.create_sourcemap()
+                        kmlfiles = createkml.write_kml_emis_loc(source_map)
+
+                    the_queue.put("\nPreparing Inputs for " + str(self.facids.count()) + " facilities")
+                    pass_ob = prepare.Prepare_Inputs( self.faclist_df, self.emisloc_df, self.hapemis_df, self.multipoly_df, self.multibuoy_df, self.ureceptr_df)
+
+                    # let's tell after_callback that this completed
+                    #print('thread_target puts None to the queue')
                    
                    
-                   fac_list = []
-                   for index, row in pass_ob.faclist_df.iterrows():
-                    
+                    fac_list = []
+                    for index, row in pass_ob.faclist_df.iterrows():
+
                        facid = row[0]
                        fac_list.append(facid)
                        num = 1
         
-                   for fac in fac_list:
+                    for facid in fac_list:
                         
-                       #save version of this gui as is? constantly overwrite it once each facility is done?
+                        #save version of this gui as is? constantly overwrite it once each facility is done?
                         start = time.time()
-                        
                         the_queue.put("\nRunning facility " + str(num) + " of " + str(len(fac_list)))
-                        
-                        facid = fac
-                        
-                        result = pass_ob.prep_facility(facid)
-                        
-                        the_queue.put("Building Runstream File for " + str(facid))
-        
-                        result.build()
-                      
-                        #create fac folder
-                        fac_folder = "output/"+ str(facid) + "/"
-                        if os.path.exists(fac_folder):
-                            pass
-                        else:
-                            os.makedirs(fac_folder)
-                         
-                        #run aermod
-                        the_queue.put("Running Aermod for " + str(facid))
-                        args = "aermod.exe aermod.inp" 
-                        subprocess.call(args, shell=False)
-                        
-                    #self.loc["textvariable"] = "Aermod complete for " + facid
-                    
-                    ## Check for successful aermod run:
-                        check = open('aermod.out','r')
-                        message = check.read()
-                        if 'AERMOD Finishes UN-successfully' in message:
-                            success = False
-                            the_queue.put("Aermod ran unsuccessfully. Please check the error section of the aermod.out file.")
-                            
-                            #increment facility count
-                            num += 1 
-                        else:
-                            success = True
-                            the_queue.put("Aermod ran successfully.")
-                        check.close()    
-                        
-                        if success == True:
-                            
-                        
-                    #move aermod.out to the fac output folder 
-                    #replace if one is already in there othewrwise will throw error
-                    
-                            if os.path.isfile(fac_folder + 'aermod.out'):
-                                os.remove(fac_folder + 'aermod.out')
-                                shutil.move('aermod.out', fac_folder)
-                        
-                            else:    
-                                shutil.move('aermod.out', fac_folder)
-                    
-                    #process outputs
-                            the_queue.put("Processing Outputs for " + str(facid))
-                            process = po.Process_outputs(facid, pass_ob.haplib_df, result.hapemis, fac_folder, pass_ob.innerblks, pass_ob.outerblks, result.polar_df)
-                            process.process()
-                            
-                            #create facility kml
-                            the_queue.put("Writing KML file for " + str(facid))
-                            facility_kml = fkml.facility_kml(facid, result.cenlat, result.cenlon, fac_folder) 
-                            
-                            pace =  str(time.time()-start) + 'seconds'
-                            
-                            the_queue.put("Finished calculations for " + str(facid) + ' after' + pace + "\n")
-                        
-                        
-                        #increment facility count
-                            num += 1 
-                            
-                            
+
+                        runner = FacilityRunner(facid)
+                        runner.run()
               
                 the_queue.put("\nFinished running all facilities.\n")
                 
