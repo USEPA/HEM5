@@ -1,0 +1,208 @@
+# -*- coding: utf-8 -*-
+"""
+Created on Thu Jun  7 13:08:48 2018
+
+@author: jbaker
+"""
+
+import os
+import pandas as pd
+from tkinter.filedialog import askopenfilename
+from tkinter import messagebox
+
+
+class InputChecker():
+    
+    def __init__(self, model):
+        """
+        The Input Checker takes the model class (with all inputs) and checks that
+        required inputs (Facilities Options List, Hap Emissions, and Emissions Locations)
+        are present and correspond to each other as well as additional optional inputs.
+        
+        There are two functions, check_required and check_dependent
+        
+        check_required returns the result dictionary with:
+        - any error messages triggered
+        - a list of dependent inputs flagged from the FOL
+        - a reset key for an incorrectly uploaded required input (if applicable) 
+        
+        check_dependent
+        
+        """ 
+        #pull in model
+        self.model = model    
+    
+       
+        
+
+    def check_required(self):
+        
+        #store result in dictionary
+        result = {'result': None, 'dependencies': [], 'reset': None  }
+        
+        #check if dataframe exists        
+        try:
+             self.model.faclist.dataframe
+        
+        #raise attribute error if it doesn't
+        except AttributeError:
+            logMsg = ("Facilities list options file uploaded incorrectly," + 
+                      " please try again")
+            
+            result['result'] =  logMsg
+            result['reset'] = 'fac'
+            return result
+        
+        else:
+            #make sure dataframe isn't empty
+            if self.model.faclist.dataframe.empty:
+                logMsg = ("There was an error uploading Facilities Options List" + 
+                          " file, please try again")
+                
+                result['result'] =  logMsg
+                return result
+        
+            
+            #extract idsand determine if there are dependent uploads .
+            else:
+                fids = set(self.model.faclist.dataframe['fac_id'])
+        
+                
+                #find dependents and return which ones need to be checked
+                #user receptors
+                if 'Y' in self.model.faclist.dataframe['user_rcpt'].tolist():
+                    result['dependencies'].append('user_rcpt')
+              
+                         
+        try:
+             self.model.hapemis.dataframe
+             
+        except AttributeError:
+            logMsg2 = "HAP Emissions file uploaded incorrectly, please try again"
+            result['result'] =  logMsg2
+            result['reset'] = 'hap'
+            return result
+        
+        
+        else:
+            
+            if self.model.hapemis.dataframe.empty:
+                logMsg2 = ("There was an error uploading HAP Emissions file," +
+                           " please try again")
+                
+                result['result'] =  logMsg2
+                return result
+        
+                
+            else:
+                #get locations and source ids
+                hfids = set(self.model.hapemis.dataframe['fac_id'])
+                hsource = set(self.model.hapemis.dataframe['source_id'])
+                
+   
+        try:
+             self.model.emisloc.dataframe
+             
+        except AttributeError:
+            logMsg3 = "Emissions Locations file uploaded incorrectly, please try again"
+            
+            result['result'] =  logMsg3
+            return result
+        
+        
+        else:
+             if self.model.emisloc.dataframe.empty:
+                logMsg3 = ("There was an error uploading Emissions Locations" + 
+                           " file, please try again")
+                
+                result['result'] =  logMsg3
+                result['reset'] = 'emis'
+                return result
+        
+                
+             else:
+                #check facility id with emis loc ids
+                efids = set(self.model.emisloc.dataframe['fac_id'])
+                esource = set(self.model.emisloc.dataframe['source_id'])
+               
+                
+                #check source types for optional inputs
+                
+                if 'I' in self.model.emisloc.dataframe['source_type'].tolist():
+                    result['dependencies'].append('polyvertex')
+                    
+                if 'B' in self.model.emisloc.dataframe['source_type'].tolist():
+                    result['dependencies'].append('bouyant')
+                    
+                #check for deposition and depletion and pass to dep_check model
+                
+                
+           
+        
+        #make sure facility id's and emis location id's match
+        if fids.intersection(efids) != fids:   
+            logMsg4 = ("The Emissions Locations file is missing one or more" + 
+                       " facilities please make sure to upload the correct" + 
+                       " Emissions Location file.")
+            
+            result['result'] =  logMsg4
+            return result
+        
+        
+        #make sure facility ids and hap emission ids match        
+        if fids.intersection(efids) != hfids:     
+            logMsg5 = ("The HAP Emissions file is missing one or more" + 
+                       " facilities please make sure to upload the correct HAP" + 
+                       " Emissions file.")
+            
+            result['result'] =  logMsg5
+            return result
+        
+        #make sure source ids match in hap emissions and emissions location
+        if hsource != esource:
+            logMsg6 = ("Source ids for Hap Emissions and Emissions Locations" + 
+                       " do not match, please upload corresponding files.")
+            result['result'] =  logMsg6
+            return result
+         
+
+
+        result['result'] =  'ready'
+        return result
+        
+
+
+        
+    def check_dependent(self, optional_list):
+        
+        #store result in dictionary
+        result = {'result': None, 'reset': None  }
+        
+        for option in optional_list:
+            
+            if option is 'user_rcpt':
+                
+                try:
+                    
+                    self.model.ureceptr.dataframe
+            
+                except AttributeError:
+                    logMsg7 = ("User receptors are specified in the Facilities" +
+                              " List Options file, please upload user recptors" + 
+                              " for " )
+                    
+                    result['result'] = logMsg7
+                    return result
+                
+            elif option is 'polyvertex':
+                pass
+                
+                
+                
+            elif option is 'bouyant_line':
+                pass
+        
+        result['result'] = 'ready'
+        return result
+    
+
