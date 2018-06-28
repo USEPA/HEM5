@@ -363,14 +363,16 @@ class Hem4():
         if 'ready' not in required['result']:
             
             messagebox.showinfo('Error', required['result'])
+            self.ready = False
             
-        if required['dependencies'] is not []:
+        elif required['dependencies'] is not []:
             
             optional = check_inputs.check_dependent(required['dependencies'])
             
             if 'ready' not in optional['result']:
                 
                 messagebox.showinfo('Error', optional['result'])
+                self.ready = False
                 
             else:
                 self.ready = True
