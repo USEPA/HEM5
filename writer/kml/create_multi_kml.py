@@ -14,13 +14,10 @@ import utm2ll
 
 class multi_kml():
     
-    def __init__(self, multiemisloc_df, multipoly_df, multibuoy_df):
+    def __init__(self, model):
         
-        self.multiemisloc_df = multiemisloc_df
-        self.multipoly_df = multipoly_df
-        self.multibuoy_df = multibuoy_df
-  
-      
+        self.model = model
+
 #%% zone2use function
 
     def zone2use(self,el_df):
@@ -58,7 +55,7 @@ class multi_kml():
     def create_sourcemap(self):
     
         # Create an array of all facility ids
-        faclist = self.multiemisloc_df.fac_id.unique()
+        faclist = self.model.emisloc.dataframe.fac_id.unique()
         
         # Loop over all facility ids and populate the sourcemap dataframe
         
@@ -67,13 +64,13 @@ class multi_kml():
         for row in faclist:
                 
             # Emission location info for one facility. Keep certain columns.
-            emislocs = self.multiemisloc_df.loc[self.multiemisloc_df.fac_id == row][["fac_id","source_id","source_type",
+            emislocs = self.model.emisloc.dataframe.loc[self.model.emisloc.dataframe.fac_id == row][["fac_id","source_id","source_type",
                                          "lon","lat","utmzone","x2","y2","location_type","lengthx"]]
              
             
             # If facility has a polygon source, get the vertices for this facility and append to emislocs
             if any(emislocs.source_type == "I") == True:        
-                polyver = self.multipoly_df.loc[self.multipoly_df.fac_id == row][["fac_id","source_id",
+                polyver = self.model.multipoly.dataframe.loc[self.model.multipoly.dataframe.fac_id == row][["fac_id","source_id",
                                          "lon","lat","utmzone","location_type"]]     
                 # Assign source_type
                 polyver["source_type"] = "I"
@@ -84,7 +81,7 @@ class multi_kml():
               
             # If facility has a buoyant line source, get the line width
             if any(emislocs.source_type == "B") == True:
-                buoy_linwid = self.multibuoy_df.loc[self.multibuoy_df.fac_id == row][["fac_id","avglin_wid"]]
+                buoy_linwid = self.model.multibuoy.dataframe.loc[self.model.multibuoy.dataframe.fac_id == row][["fac_id","avglin_wid"]]
             else:
                 buoy_linwid = pd.DataFrame()
             

@@ -7,14 +7,13 @@ Created on Thu Nov 30 10:26:13 2017
 import os
 import concurrent.futures as futures
 import queue
-import time
 import tkinter as tk
 import traceback
 from tkinter import messagebox
 from tkinter import scrolledtext
 from tkinter import ttk
 import Hem4_Input_Processing as prepare
-import create_multi_kml as cmk
+from writer.kml import create_multi_kml as cmk
 from model.Model import Model
 from runner.FacilityRunner import FacilityRunner
 from upload.FileUploader import FileUploader
@@ -344,9 +343,13 @@ class Hem4():
     def run(self):
         
 #%% check file dataframes
-        
+
         self.ready = False
-        
+
+        # Upload the Dose response library
+        fullpath = r"resources/Dose_response_library.xlsx"
+        self.uploader.upload("haplib", fullpath)
+
         #make sure fac_list df was created correctly
         if self.model.faclist.dataframe is not None:
             
@@ -469,20 +472,20 @@ class Hem4():
                     self.running = True
                    
                     #create a Google Earth KML of all sources to be modeled
-                    createkml = cmk.multi_kml(self.emisloc_df, self.multipoly_df, self.multibuoy_df)
+                    createkml = cmk.multi_kml(self.model)
                     if createkml is not None:
                         source_map = createkml.create_sourcemap()
                         kmlfiles = createkml.write_kml_emis_loc(source_map)
 
-                    the_queue.put("\nPreparing Inputs for " + str(self.facids.count()) + " facilities")
-                    pass_ob = prepare.Prepare_Inputs( self.faclist_df, self.emisloc_df, self.hapemis_df, self.multipoly_df, self.multibuoy_df, self.ureceptr_df)
+                    the_queue.put("\nPreparing Inputs for " + str(self.model.facids.count()) + " facilities")
+                    inputPrep = prepare.Prepare_Inputs(self.model)
 
                     # let's tell after_callback that this completed
                     #print('thread_target puts None to the queue')
                    
                    
                     fac_list = []
-                    for index, row in pass_ob.faclist_df.iterrows():
+                    for index, row in self.model.faclist.dataframe.iterrows():
 
                        facid = row[0]
                        fac_list.append(facid)
@@ -491,34 +494,24 @@ class Hem4():
                     for facid in fac_list:
                         
                         #save version of this gui as is? constantly overwrite it once each facility is done?
-                        start = time.time()
                         the_queue.put("\nRunning facility " + str(num) + " of " + str(len(fac_list)))
 
-                        runner = FacilityRunner(facid)
+                        runner = FacilityRunner(facid, the_queue, inputPrep)
                         runner.run()
-              
+
+                        #increment facility count
+                        num += 1
+
                 the_queue.put("\nFinished running all facilities.\n")
                 
                 #reset all inputs if everything finished
+                self.model.reset()
                 self.fac_list.set('')
-                self.faclist_df = self.faclist_df.empty
-                print(self.faclist_df)
-                       
                 self.hap_list.set('')
-                self.hapemis_df = self.hapemis_df.empty
-                print(self.hapemis_df)
-                
                 self.emisloc_list.set('')
-                self.emisloc_df = self.emisloc_df.empty
-                print(self.emisloc_df)
-                
-                if hasattr(self, 'u_receptors'):
-                    self.u_receptors.set(False)
-                    self.urep.destroy()
-                    self.urep_list_man.destroy()
-                    
-                self.running = False
+                self.urep_list.set('')
 
+                self.running = False
 
     def workerComplete(self, future):
         ex = future.exception()

@@ -1,18 +1,23 @@
 import Hem4_Output_Processing as po
-import create_facililty_kml as fkml
+from writer.kml import create_facililty_kml as fkml
 import os
+import time
+import subprocess
+import shutil
 
 class FacilityRunner():
 
-    def __init__(self, id, messageQueue):
+    def __init__(self, id, messageQueue, inputPrep):
         self.facilityId = id
         self.messageQueue = messageQueue
+        self.inputPrep = inputPrep
         
     def run(self):
 
-        self.messageQueue.put("\nRunning facility " + str(num) + " of " + str(len(fac_list)))
+        # Start the clock for benchmarking
+        start = time.time()
 
-        result = pass_ob.prep_facility(self.facilityId)
+        result = self.inputPrep.prep_facility(self.facilityId)
 
         self.messageQueue.put("Building Runstream File for " + self.facilityId)
 
@@ -30,17 +35,12 @@ class FacilityRunner():
         args = "aermod.exe aermod.inp"
         subprocess.call(args, shell=False)
 
-        #self.loc["textvariable"] = "Aermod complete for " + facid
-
         ## Check for successful aermod run:
         check = open('aermod.out','r')
         message = check.read()
         if 'AERMOD Finishes UN-successfully' in message:
             success = False
             self.messageQueue.put("Aermod ran unsuccessfully. Please check the error section of the aermod.out file.")
-
-            #increment facility count
-            num += 1
         else:
             success = True
             self.messageQueue.put("Aermod ran successfully.")
@@ -61,17 +61,13 @@ class FacilityRunner():
 
             #process outputs
             self.messageQueue.put("Processing Outputs for " + self.facilityId)
-            process = po.Process_outputs(self.facilityId, pass_ob.haplib_df, result.hapemis, fac_folder, pass_ob.innerblks, pass_ob.outerblks, result.polar_df)
-            process.process()
+            outputProcess = po.Process_outputs(self.facilityId, self.inputPrep.model.haplib.dataframe, result.hapemis, fac_folder,
+                 self.inputPrep.innerblks, self.inputPrep.outerblks, result.polar_df)
+            outputProcess.process()
 
             #create facility kml
             self.messageQueue.put("Writing KML file for " + self.facilityId)
             facility_kml = fkml.facility_kml(self.facilityId, result.cenlat, result.cenlon, fac_folder)
 
             pace =  str(time.time()-start) + 'seconds'
-
             self.messageQueue.put("Finished calculations for " + self.facilityId + ' after' + pace + "\n")
-
-
-            #increment facility count
-            num += 1

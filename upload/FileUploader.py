@@ -3,6 +3,7 @@ import pandas as pd
 from tkinter.filedialog import askopenfilename
 from tkinter import messagebox
 
+from upload.DoseResponse import DoseResponse
 from upload.EmissionsLocations import EmissionsLocations
 from upload.FacilityList import FacilityList
 from upload.HAPEmissions import HAPEmissions
@@ -21,6 +22,8 @@ class FileUploader():
                 self.model.hapemis = HAPEmissions(path)
             elif filetype == "emisloc":
                 self.model.emisloc = EmissionsLocations(path)
+            elif filetype == "haplib":
+                self.model.haplib = DoseResponse(path)
             elif filetype == "building downwash":
                 pass
                 #file_path = os.path.abspath(filename)
