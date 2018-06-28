@@ -4,16 +4,9 @@ Created on Mon Oct 16 15:07:13 2017
 
 @author: dlindsey
 """
-
-
-import os 
 import pandas as pd
 import numpy as np
 import math
-
-## User-Defined Functions/Modules
-
-import ll2utm
 import find_met as fm
 
 
@@ -48,7 +41,16 @@ class Runstream():
         
         
     def build(self):
-        
+
+        # These are being defined here as placeholders...used in code below.
+        receptr_df = None
+        landuse_df = None
+        partdia_df = None
+        gseason_df = None
+        part_met2 = None
+        poly_pos = None
+        wide = None
+
         #print(str(self.facoptn_df['fac_id'][0]) + " starting in runstream")
      # %% Set variable emission factor yes/no variable to no. This will come from the GUI.
     

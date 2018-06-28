@@ -10,7 +10,7 @@ import time
 import numpy as np
 import openpyxl
 import pandas as pd
-from writer.excel.OutputWriter import OutputWriter
+from writer.excel.ExcelWriter import ExcelWriter
 
 class Process_outputs():
     
@@ -221,7 +221,7 @@ class Process_outputs():
         np.apply_along_axis(lambda x: self.polar_build(x), axis=1, arr=self.polgrid )
 
 
-        excelWriter = OutputWriter(self.outdir)
+        excelWriter = ExcelWriter(self.outdir)
 
         #writeout polgridmore
         headers_pg = ['utme','utmn','result','elev','hill','flag','avg_time','source_id',	'num_yrs','net_id',

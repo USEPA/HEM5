@@ -1,7 +1,7 @@
 import xlsxwriter
 
 
-class OutputWriter():
+class ExcelWriter():
 
     def __init__(self, targetDir):
 
