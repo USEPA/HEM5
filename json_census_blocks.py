@@ -15,7 +15,6 @@ import numpy as np
 import time
 import sys
 import json
-import dict_query as dq
 
 
 def ll2utm(lat,lon,zone):
@@ -183,13 +182,15 @@ def polygonbox(vertex1, vertex2, blkcoor, modeldist):
 
 #%%
 
-def rotatedbox(xt, yt, box_x, box_y, len_x, len_y, angle, fringe):
+def rotatedbox(xt, yt, box_x, box_y, len_x, len_y, angle, fringe, overlap_dist):
 
-    # Determines whether a point (xt,yt) is within a fringe of width F around a box
+    # Determines whether a rececptor point (xt,yt) is within a fringe of width F around a box
     #	with origin (Box_x,Box_y), dimensions (Len_x,Len_y), and oriented at an given
     #   "Angle", measured clockwise from North.
+    # Also determine if this box overlaps the point.
 
     inbox = False
+    overlap = False
         
     A_rad = math.radians(angle)
     D_e = (yt-box_y)*math.cos(A_rad) + (xt-box_x)*math.sin(A_rad) - len_y
@@ -236,11 +237,35 @@ def rotatedbox(xt, yt, box_x, box_y, len_x, len_y, angle, fringe):
          else:
                inbox = True
 
-    return inbox
+    # Check for overlap
+    if  (xt < box_x + math.tan(A_rad)*(yt-box_y) + (len_x+overlap_dist)/math.cos(A_rad)
+	                        and xt > box_x + math.tan(A_rad)*(yt-box_y) - overlap_dist/math.cos(A_rad)
+	                        and yt < box_y - math.tan(A_rad)*(xt-box_x) + (len_y+overlap_dist)/math.cos(A_rad)
+	                        and yt > box_y - math.tan(A_rad)*(xt-box_x) - overlap_dist/math.cos(A_rad)):         
+         if ((xt < box_x + math.tan(A_rad)*(yt-box_y)
+			                   and yt < box_y - math.tan(A_rad)*(xt-box_x)
+			                   and overlap_dist < math.sqrt((box_x - xt)**2 + (box_y - yt)**2))
+		                   or (xt > box_x + math.tan(A_rad)*(yt-box_y) + len_x/math.cos(A_rad)
+			                   and yt < box_y - math.tan(A_rad)*(xt-box_x)
+			                   and overlap_dist < math.sqrt((box_x+len_x*math.cos(A_rad) - xt)*2
+				                + (box_y-len_x*math.sin(A_rad) - yt)**2))
+		                   or (xt > box_x + math.tan(A_rad)*(yt-box_y) + len_x/math.cos(A_rad)
+			                   and yt > box_y - math.tan(A_rad)*(xt-box_x) + len_y/math.cos(A_rad)
+			                   and overlap_dist < math.sqrt((box_x+len_x*math.cos(A_rad)+len_y*math.sin(A_rad) - xt)**2
+				                + (box_y+len_y*math.cos(A_rad)-len_x*math.sin(A_rad) - yt)**2))
+		                   or (xt < box_x + math.tan(A_rad)*(yt-box_y)
+			                   and yt > box_y - math.tan(A_rad)*(xt-box_x) + len_y/math.cos(A_rad)
+			                   and overlap_dist < math.sqrt((box_x+len_y*math.sin(A_rad) - xt)**2
+				                + (box_y+len_y*math.cos(A_rad) - yt)**2))):
+                   overlap = False
+         else:
+               overlap = True
+
+    return inbox, overlap
 
 #%%    
 
-def in_box(modelblks, sourcelocs, modeldist, maxdist):
+def in_box(modelblks, sourcelocs, modeldist, maxdist, overlap_dist):
 
     ## This function determines if a block within modelblks is within a fringe of any source ##
     
@@ -252,20 +277,17 @@ def in_box(modelblks, sourcelocs, modeldist, maxdist):
     ptsources = sourcelocs.query("source_type in ('P','C','H','V','N','B')")
     for index, row in ptsources.iterrows():
         src_x = row["utme"]
-        print(src_x)
         src_y = row["utmn"]
         indist = outerblks.query('sqrt((@src_x - utme)**2 + (@src_y - utmn)**2) <= @modeldist')
-        print(indist)
         
         if len(indist) > 0:
             innerblks = innerblks.append(indist).reset_index(drop=True)
             innerblks = innerblks[~innerblks['IDMARPLOT'].apply(tuple).duplicated()]
-            #print(innerblks)
-            
             outerblks = outerblks[~outerblks['IDMARPLOT'].isin(innerblks['IDMARPLOT'])]
 
-
-    
+            #Do any of these inner or outer blocks overlap this source?
+            innerblks["overlap"] = np.where(np.sqrt((innerblks["utme"]-src_x)**2 + (innerblks["utmn"]-src_y)**2) <= overlap_dist, "True", "False")
+            outerblks["overlap"] = np.where(np.sqrt((outerblks["utme"]-src_x)**2 + (outerblks["utmn"]-src_y)**2) <= overlap_dist, "True", "False")
     
     print("first innerblks size = ", innerblks.shape, " first outerblks size = ", outerblks.shape)
 
@@ -283,6 +305,14 @@ def in_box(modelblks, sourcelocs, modeldist, maxdist):
             innerblks = innerblks[~innerblks['IDMARPLOT'].apply(tuple).duplicated()]
             outerblks = outerblks[~outerblks['IDMARPLOT'].isin(innerblks['IDMARPLOT'])]
 
+            #Do any of these inner or outer blocks overlap this source?
+            sw_x = row["utme"] - overlap_dist
+            sw_y = row["utmn"] - overlap_dist
+            ne_x = row["utme"] + row["lengthx"] + overlap_dist
+            ne_y = row["utmn"] + row["lengthy"] + overlap_dist
+            innerblks["overlap"] = np.where((innerblks["utme"] >= sw_x) & (innerblks["utme"] <= ne_x) & (innerblks["utmn"] >= sw_y) & (innerblks["utmn"] <= ne_y), "True", "False")
+            outerblks["overlap"] = np.where((outerblks["utme"] >= sw_x) & (outerblks["utme"] <= ne_x) & (outerblks["utmn"] >= sw_y) & (outerblks["utmn"] <= ne_y), "True", "False")
+            
     print("second innerblks size = ", innerblks.shape, " second outerblks size = ", outerblks.shape)
 
     #....... Find blocks within modeldist of area sources with non-zero angle..........
@@ -295,8 +325,8 @@ def in_box(modelblks, sourcelocs, modeldist, maxdist):
         len_y = row["lengthy"]
         angle = row["angle"]
         fringe = modeldist
-        outerblks["inbox"] = (outerblks.apply(lambda row: rotatedbox(row['utme'], 
-                 row['utmn'], box_x, box_y, len_x, len_y, angle, fringe), axis=1))
+        outerblks["inbox"], outerblks["overlap"] = zip(*outerblks.apply(lambda row: rotatedbox(row['utme'], 
+                 row['utmn'], box_x, box_y, len_x, len_y, angle, fringe, overlap_dist), axis=1))
         indist = outerblks.query('inbox == True')
         if len(indist) > 0:
             innerblks = innerblks.append(indist).reset_index(drop=True)
@@ -346,20 +376,20 @@ def in_box(modelblks, sourcelocs, modeldist, maxdist):
     
 
 #%%
-def read_json_file(path_to_file):
+def read_json_file(path_to_file, dtype_dict):
     with open(path_to_file) as p:
-        return json.load(p)
+        return pd.read_json(p, orient="columns", dtype=eval(dtype_dict))
 
     
 #%%
 def cntyinzone(lat_min, lon_min, lat_max, lon_max, cenlat, cenlon, maxdist_deg):
     inzone = False
-    if ((cenlat - lat_max <= maxdist_deg and cenlat >= lat_min)         or (lat_min - cenlat <= maxdist_deg and cenlat <= lat_max))         and ((cenlon - lon_max <= maxdist_deg/math.cos(math.radians(cenlat)) and cenlon >= lon_min)         or (lon_min - cenlon <= maxdist_deg/math.cos(math.radians(cenlat)) and cenlon <= lon_max)):
+    if ((cenlat - lat_max <= maxdist_deg and cenlat >= lat_min) or (lat_min - cenlat <= maxdist_deg and cenlat <= lat_max)) and ((cenlon - lon_max <= maxdist_deg/math.cos(math.radians(cenlat)) and cenlon >= lon_min) or (lon_min - cenlon <= maxdist_deg/math.cos(math.radians(cenlat)) and cenlon <= lon_max)):
             inzone = True
     return inzone
 
 #%%
-def getblocks(cenx, ceny, cenlon, cenlat, utmzone, maxdist, modeldist, sourcelocs):
+def getblocks(cenx, ceny, cenlon, cenlat, utmzone, maxdist, modeldist, sourcelocs, overlap_dist):
     
 
     # convert max outer ring distance from meters to degrees latitude
@@ -367,24 +397,26 @@ def getblocks(cenx, ceny, cenlon, cenlat, utmzone, maxdist, modeldist, sourceloc
 
     ##%% census key look-up
 
-    #load in json data
-    #ck_data = pd.read_json("census/census_key.json")
-    ck_data = state_data = read_json_file("census/census_key.json")
+    #load census key into data frame
+    dtype_dict = '{"ELEV_MAX":float,"FILE_NAME":object,"FIPS":object,"LAT_MAX":float,"LAT_MIN":float,"LON_MAX":float,"LON_MIN":float,"MIN_REC":int,"NO":int,"YEAR":int}'
+    census_key = read_json_file("census/census_key.json", dtype_dict)
+    census_key.columns = [x.lower() for x in census_key.columns]
+
 
     #convert each row from json string to columns and sort by index
     #census_key = pd.read_json( ck_data['data'].to_json(), orient='index' ).sort_index(axis=0)
-    census_key = pd.DataFrame.from_dict(ck_data['data'], orient='columns')
-    census_key[['LAT_MAX', 'LON_MAX', 'LAT_MIN', 'LON_MIN']] = census_key[['LAT_MAX', 'LON_MAX', 'LAT_MIN', 'LON_MIN']].apply(pd.to_numeric)
-    #find counties in the "inzone"
-
-    census_key.columns = ['cyear', 'elevmax','file_name', 'fips', 'lat_max','lat_min','lon_max','lon_min','minrec', 'num']
+#    census_key = pd.DataFrame.from_dict(ck_data['data'], orient='columns')
+#    census_key[['LAT_MAX', 'LON_MAX', 'LAT_MIN', 'LON_MIN']] = census_key[['LAT_MAX', 'LON_MAX', 'LAT_MIN', 'LON_MIN']].apply(pd.to_numeric)
+#    #find counties in the "inzone"
+#
+#    census_key.columns = ['cyear', 'elevmax','file_name', 'fips', 'lat_max','lat_min','lon_max','lon_min','minrec', 'num']
 
 
     #create selection for "inzone" and find where true in census_key dataframe
 
     census_key["inzone"] = census_key.apply(lambda row: cntyinzone(row["lat_min"], row["lon_min"], row["lat_max"], row["lon_max"], cenlat, cenlon, maxdist_deg), axis=1)
     cntyinzone_df = census_key.query('inzone == True')
-
+    
     censusfile2use = {}    
     
     # Find all blocks within the intersecting counties that intersect the modeling zone. Store them in modelblks.
@@ -402,13 +434,11 @@ def getblocks(cenx, ceny, cenlon, cenlat, utmzone, maxdist, modeldist, sourceloc
             #print("done!")
        
     for state, fips in censusfile2use.items():
-        print(state)
-        locations = fips
-        print(locations)
+        locations = fips        
+        dtype_dict = '{"REC_NO":int, "FIPS":object, "IDMARPLOT":object, "POPULATION":int, "LAT":float, "LON":float, "ELEV":float, "HILL":float, "MOVED":object, "URBAN_POP":int}'
+        state_pd = read_json_file(state, dtype_dict)
         
-        state_data = read_json_file(state)
-        
-        state_pd = pd.DataFrame.from_dict(state_data['data'], orient='columns')
+#        state_pd = pd.DataFrame.from_dict(state_data['data'], orient='columns')
         
         
         check = state_pd[state_pd['FIPS'].isin(locations)]
@@ -439,16 +469,20 @@ def getblocks(cenx, ceny, cenlon, cenlat, utmzone, maxdist, modeldist, sourceloc
 
     #subset the censusblks dataframe to blocks that are within the modeling distance of the facility 
     modelblks = censusblks.query('DISTANCE <= @maxdist')
-    #modelblks = censusblks.query('sqrt((@cenx-utme)**2 + (@ceny-utmn)**2) <= @maxdist')
 
-
-    # Split modelblks into inner and outer data frames
-    innerblks, outerblks = in_box(modelblks, sourcelocs, modeldist, maxdist)
+    # Split modelblks into inner and outer block receptors
+    innerblks, outerblks = in_box(modelblks, sourcelocs, modeldist, maxdist, overlap_dist)
         
     
-    # convert utme and utme to integers
+    # convert utme, utmn, utmz, and population to integers
     innerblks["utme"] = innerblks["utme"].astype(int)
     innerblks["utmn"] = innerblks["utmn"].astype(int)
+    innerblks["utmz"] = innerblks["utmz"].astype(int)
+    innerblks["POPULATION"] = pd.to_numeric(innerblks["POPULATION"], errors='coerce').astype(int)
+    outerblks["utme"] = outerblks["utme"].astype(int)
+    outerblks["utmn"] = outerblks["utmn"].astype(int)
+    outerblks["utmz"] = outerblks["utmz"].astype(int)
+    outerblks["POPULATION"] = pd.to_numeric(outerblks["POPULATION"], errors='coerce').astype(int)
     
     return innerblks, outerblks
 

@@ -4,57 +4,43 @@ Created on Thu Nov 30 10:26:13 2017
 
 @author: dlindsey
 """
-#%% Imports
-
 import os
+import concurrent.futures as futures
+import queue
 import tkinter as tk
-from tkinter import ttk
-from tkinter.filedialog import askopenfilename
+import traceback
 from tkinter import messagebox
 from tkinter import scrolledtext
-import pandas as pd
-import numpy as np
+from tkinter import ttk
+
 import Hem4_Input_Processing as prepare
-from threading import Thread
-import create_multi_kml as cmk
-import sys
-import queue
-import HEM4_Runstream as rs
-import subprocess
-import Hem4_Output_Processing as po 
-import math
-import shutil
+from writer.kml import create_multi_kml as cmk
+from model.Model import Model
+from runner.FacilityRunner import FacilityRunner
+from upload.FileUploader import FileUploader
+from tkinter.filedialog import askopenfilename
+from checker.InputChecker import InputChecker
 
-#%% excel file extension list to check
-
-def is_excel(filepath):
-    
-    excel = [".xls", ".xlsx"]
-    
-    for extension in excel:
-        if extension in filepath:
-            return True
-        else:
-            return False
-        
 
 #%% Hem4 GUI
 
 class Hem4():
+
     def __init__ (self):
         #create window instance
         self.win = tk.Tk()
-    
-        #maybe add a tooltip?
     
         #title
         self.win.title("HEM4")
         self.win.maxsize(1000, 1000)
         self.createWidgets()
         self.running = False
-        
 
+        # Create the model
+        self.model = Model()
 
+        # Create a file uploader
+        self.uploader = FileUploader(self.model)
 
 #%% Quit Function    
     def quit_gui(self):
@@ -62,8 +48,11 @@ class Hem4():
             self.win.quit()
             self.win.destroy()
             exit()
-        else:
-             override = messagebox.askokcancel("Confirm HEM4 Quit", "Are you sure? Hem4 is currently running. Clicking 'OK' will stop HEM4.")
+        
+        elif self.running == True:
+             override = messagebox.askokcancel("Confirm HEM4 Quit", "Are you " + 
+              "sure? Hem4 is currently running. Clicking 'OK' will stop HEM4.")
+             
              if override == True:
                 self.win.quit()
                 self.win.destroy()
@@ -93,24 +82,24 @@ class Hem4():
         self.s3 = tk.Frame(self.main, width=250, height=100, pady=10, padx=10)
         self.s4 = tk.Frame(self.main, width=250, height=100, pady=10, padx=10)
         self.s5 = tk.Frame(self.main, width=250, height=100, pady=10, padx=10)
-        self.s6 = tk.Frame(self.main, width=250, height=100, pady=10, padx=10)
-        self.s7 = tk.Frame(self.main, width=250, height=100, pady=10, padx=10)
-        self.s8 = tk.Frame(self.main, width=250, height=200)
-        self.s9 = tk.Frame(self.main, width=250, height=200)
-        self.s10 = tk.Frame(self.main, width=250, height=200)
+        #self.s6 = tk.Frame(self.main, width=250, height=100, pady=10, padx=10)
+        #self.s7 = tk.Frame(self.main, width=250, height=100, pady=10, padx=10)
+        self.s8 = tk.Frame(self.main, width=250, height=200, pady=10, padx=10)
+        self.s9 = tk.Frame(self.main, width=250, pady=10, padx=10)
+        #self.s10 = tk.Frame(self.main, width=250, height=200)
 
         self.s1.grid(row=0)
         self.s2.grid(row=1, column=0, sticky="nsew")
         self.s3.grid(row=2, column=0, columnspan=2, sticky="nsew")
         self.s4.grid(row=3, column=0, columnspan=2, sticky="nsew")
         self.s5.grid(row=4, column=0, columnspan=2, sticky="nsew")
-        self.s6.grid(row=5, column=0, columnspan=2, sticky="nsew")
-        self.s7.grid(row=6, column=0, columnspan=2, sticky="nsew")
-        self.s8.grid(row=7, column=0, sticky="nsew")
-        self.s9.grid(row=8, column=0, sticky="nsew")
-        self.s10.grid(row=9, column=0, sticky="nsew")
+        #self.s6.grid(row=5, column=0, columnspan=2, sticky="nsew")
+        #self.s7.grid(row=6, column=0, columnspan=2, sticky="nsew")
+        self.s8.grid(row=5, column=0, sticky="nsew")
+        self.s9.grid(row=6, column=0, sticky="nsew")
+        #self.s10.grid(row=9, column=0, sticky="nsew")
 
-        self.main.grid_rowconfigure(10, weight=1)
+        self.main.grid_rowconfigure(8, weight=4)
         self.main.grid_columnconfigure(2, weight=1)
         self.s2.grid_propagate(0)
         #self.s1.grid_propagate(0)
@@ -119,22 +108,19 @@ class Hem4():
         self.log = ttk.LabelFrame(tab2, text=' Hem4 Progress Log ')
         self.log.grid(column=0, row=0)
         # Adding a Textbox Entry widget
-        scrolW  = 65; scrolH  =  40
+        scrolW  = 65; scrolH  =  25
         self.scr = scrolledtext.ScrolledText(self.log, width=scrolW, height=scrolH, wrap=tk.WORD)
         self.scr.grid(column=0, row=3, sticky='WE', columnspan=3)
         
 #%% Set Quit and Run buttons        
-        self.quit = tk.Button(self.s10, text="QUIT", fg="red",
+        self.quit = tk.Button(self.main, text="QUIT", fg="red",
                               command=self.quit_gui)
-        self.quit.grid(row=0, column=2, sticky="E")
+        self.quit.grid(row=8, column=0, sticky="W")
         
         #run only appears once the required files have been set
-        self.run_button = tk.Button(self.s10, text='RUN', fg="green", command=self.runThread).grid(row=0, column=1)
+        self.run_button = tk.Button(self.main, text='RUN', fg="green", command=self.runThread).grid(row=8, column=1, sticky="E")
         
 #%% Setting up  directions text space
-        #Instructions title
-        #instructions = tk.Label(self.s2, text = "Instructions:", padx=80)
-        #instructions.grid(row = 0, sticky="W")
 
         #Dynamic instructions place holder
         global instruction_instance
@@ -154,14 +140,11 @@ class Hem4():
         fac_label.grid(row=1, sticky="W")
         
         #facilities upload button
-        self.fac_up = ttk.Button(self.s3)
+        self.fac_up = ttk.Button(self.s3, command = lambda: self.uploadFacilitiesList())
         self.fac_up["text"] = "Browse"
-        self.fac_up["command"] = self.upload_fac
         self.fac_up.grid(row=2, column=0, sticky="W")
         self.fac_up.bind('<Enter>', lambda e:self.browse("instructions/fac_browse.txt"))
        
-        
-        
         #facilities text entry
         self.fac_list = tk.StringVar(self.s3)
         self.fac_list_man = ttk.Entry(self.s3)
@@ -171,21 +154,18 @@ class Hem4():
         #event handler for instructions (Button 1 is the left mouse click)
         self.fac_list_man.bind('<Button-1>', lambda e:self.manual("instructions/fac_man.txt"))
         
-        
-        
+                
         #Hap emissions label
         hap_label = tk.Label(self.s4, font="-size 10",  text="Please select a HAP Emissions file(required):                                                  ")
         hap_label.grid(row=1, sticky="W")
         
         #hap emissions upload button
-        self.hap_up = ttk.Button(self.s4)
+        self.hap_up = ttk.Button(self.s4, command = lambda: self.uploadHAPEmissions())
         self.hap_up["text"] = "Browse"
-        self.hap_up["command"] = self.upload_hap
         self.hap_up.grid(row=2, column=0, sticky='W')
         #event handler for instructions (Button 1 is the left mouse click)
         self.hap_up.bind('<Enter>', lambda e:self.browse("instructions/hap_browse.txt"))
-        
-        
+                
         #hap emission text entry
         self.hap_list = tk.StringVar(self.s4)
         self.hap_list_man = ttk.Entry(self.s4)
@@ -201,9 +181,8 @@ class Hem4():
         emisloc_label.grid(row=1, sticky="W")
         
         #emissions location upload button
-        self.emisloc_up = ttk.Button(self.s5)
+        self.emisloc_up = ttk.Button(self.s5, command= lambda: self.uploadEmissionLocations())
         self.emisloc_up["text"] = "Browse"
-        self.emisloc_up["command"] = self.upload_emisloc
         self.emisloc_up.grid(row=2, column=0, sticky='W')
         #event handler for instructions (Button 1 is the left mouse click)
         self.emisloc_up.bind('<Enter>', lambda e:self.browse("instructions/emis_browse.txt"))
@@ -217,513 +196,139 @@ class Hem4():
         #event handler for instructions (Button 1 is the left mouse click)
         self.emisloc_list_man.bind('<Button-1>', lambda e:self.manual("instructions/emis_man.txt"))
         
-        
-        #Polygon sources label
-        poly_label = tk.Label(self.s6, font="-size 10",  text="Please select a Polygon Vertex file (if included):")
-        poly_label.grid(row=1, sticky="W")
-        
-        #polygon sources upload button
-        self.poly_up = ttk.Button(self.s6)
-        self.poly_up["text"] = "Browse"
-        self.poly_up["command"] = self.upload_poly
-        self.poly_up.grid(row=2, column=0, sticky="W")
-        #event handler for instructions (Button 1 is the left mouse click)
-        self.poly_up.bind('<Enter>', lambda e:self.browse("instructions/poly_inst.txt"))
-       
-        #polygon sources loccation file text entry
-        self.poly_list = tk.StringVar(self.s6)
-        self.poly_list_man = ttk.Entry(self.s6)
-        self.poly_list_man["width"] = 55
-        self.poly_list_man["textvariable"]= self.poly_list
-        self.poly_list_man.grid(row=2, column=0, sticky='E', padx=85)
-        #event handler for instructions (Button 1 is the left mouse click)
-        self.poly_list_man.bind('<Button-1>', lambda e:self.manual("instructions/poly_inst.txt"))
-        
-        
-        #Buoyant Line  label
-        bouyant_label = tk.Label(self.s7, font="-size 10",  text="Please select a Bouyant Line Source Parameter file (if included):")
-        bouyant_label.grid(row=1, sticky="W")
-        
-        #bouyant line file upload button
-        self.bouyant_up = ttk.Button(self.s7)
-        self.bouyant_up["text"] = "Browse"
-        self.bouyant_up["command"] = self.upload_bouyant
-        self.bouyant_up.grid(row=2, column=0, sticky='W')
-        #event handler for instructions (Button 1 is the left mouse click)
-        self.bouyant_up.bind('<Enter>', lambda e:self.browse("instructions/bouyant_inst.txt"))
-        
-        
-        #bouyant line file text entry
-        self.bouyant_list = tk.StringVar(self.s7)
-        self.bouyant_list_man = ttk.Entry(self.s7)
-        self.bouyant_list_man["width"] = 55
-        self.bouyant_list_man["textvariable"]= self.bouyant_list
-        self.bouyant_list_man.grid(row=2, column=0, sticky='E', padx=85)
-        #event handler for instructions (Button 1 is the left mouse click)
-        self.bouyant_list_man.bind('<Button-1>', lambda e:self.manual("instructions/bouyant_inst.txt"))
-        
-        
-        #census year label
-        #self.census_label = tk.Label(self.s8, text="Select the census year used for modeling:")
-        #self.census_label.grid(row=1, column=0, sticky="W")
-        
-        #census year 2000
-        #self.twok = tk.BooleanVar()
-        #self.twok.set(False)
-        #self.census_2000 = ttk.Checkbutton(self.s8, text="2000", variable=self.twok, command=self.census_sel).grid(row=1, column=1)
-        
-        #census year 2010
-        #self.twok10 = tk.BooleanVar()
-        #self.twok10.set(False)
-        #self.census_2010 = ttk.Checkbutton(self.s8, text="2010", variable=self.twok10, command=self.census_sel).grid(row=1, column=2)
-        
-        
-        #csv output label
-        self.csv_label = tk.Label(self.s8, font="-size 10",  text="Select to output DBF files in CSV format")
-        self.csv_label.grid(row=2, column=0, sticky="W")
-        
-        #csv output
-        self.csv= tk.BooleanVar()
-        self.csv.set(False)
-        self.csv_output = ttk.Checkbutton(self.s8, variable=self.csv, command=self.csv_sel).grid(row=2, column=1, sticky="w")
-        
+  
         
         #optional input labels
-        self.optional_label = tk.Label(self.s9, font="-size 10",  text="OPTIONAL Input Files", pady=10)
+        self.optional_label = tk.Label(self.s8, font="-size 10",  text="OPTIONAL Input Files", pady=10)
         self.optional_label.grid(row=0, column=1, sticky="W")
         
         #user receptors
-        #self.receptors_label = tk.Label(self.s9, text="Include user receptors for facilities, as indicated in the Facilities List Options file.").grid(row=1)
         self.u_receptors= tk.BooleanVar()
         self.u_receptors.set(False)
-        self.ur_op = ttk.Checkbutton(self.s9, text="Include user receptors for any facilities, as indicated in the Facilities List Options file.", variable=self.u_receptors, command=self.add_ur).grid(row=1, column=1, sticky="w")
-        
-        #building downwash
-        self.building= tk.BooleanVar()
-        self.building.set(False)
-        self.downwash_op = ttk.Checkbutton(self.s9, text="Include building downwash for any facilities, as indicated in the Facilities List Options file.", variable=self.building, command=self.add_downwash).grid(row=3, column=1, sticky="w")
-        
-        #deposition/depletion
-        self.depdep= tk.BooleanVar()
-        self.depdep.set(False)
-        self.dep_op = ttk.Checkbutton(self.s9,  text="Include deposition or depletion for any facilities, as indicated in the Facilities List Options file.", variable=self.depdep, command=self.add_dep).grid(row=5, column=1, sticky="W")
-        
-        #emission variation
-        self.emis_var = tk.BooleanVar()
-        self.emis_var.set(False)
-        self.emis_var_op = ttk.Checkbutton(self.s9, text="Vary the emission inputs for one or more facilities.", variable=self.emis_var, command=self.add_emis_var).grid(row=7, column=1, sticky="w")        
-        
-        
-        #temporal variations for ambient conentration
-        self.temp_var = tk.BooleanVar()
-        self.temp_var.set(False)
-        self.temp_var_op = ttk.Checkbutton(self.s9, text='Generate output file showing temporal variations in ambient concentration results.', variable=self.temp_var, command=self.add_temp_var).grid(row=9, column=1, sticky="w")
-        
-        #%% Specific upload functions for selecting each file, once selected convert excel file to dataframe
-   
-    #handle upload for facilities file
-    def upload_fac(self):
-       #get file name from open dialogue
-        filename = askopenfilename()
-        #if the upload is canceled 
-        if not filename:
-            messagebox.showinfo("Required Input Missing", "A facilities option file is required to run HEM4.")
-        elif is_excel(filename) == False:
-            messagebox.showinfo("Invalid file format", "Not a valid file format, please upload an excel file for facility options.")
-        elif is_excel(filename) == True:
-            file_path = os.path.abspath(filename)
-            self.fac_list.set(file_path)
-            self.fac_path = file_path
-            
-            #   FACILITIES LIST excel to dataframe
-
-            self.faclist_df = pd.read_excel(open(self.fac_path,'rb')
-           , names=("fac_id","met_station","rural_urban","max_dist","model_dist"
-                        ,"radial","circles","overlap_dist","acute","hours"
-                        ,"elev","multiplier","ring1","dep","depl","phase"
-                        ,"pdep","pdepl","vdep","vdepl","all_rcpts","user_rcpt"
-                        ,"bldg_dw","urban_pop","fastall")
-           , converters={"fac_id":str,"met_station":str,"rural_urban":str
-                        ,"acute":str
-                        ,"elev":str,"dep":str,"depl":str,"phase":str
-                        ,"pdep":str,"pdepl":str,"vdep":str,"vdepl":str,"all_rcpts":str,"user_rcpt":str
-                        ,"bldg_dw":str,"fastall":str})
-    
-            #manually convert fac_list to numeric
-            self.faclist_df["model_dist"] = pd.to_numeric(self.faclist_df["model_dist"],errors="coerce")
-            self.faclist_df["radial"] = pd.to_numeric(self.faclist_df["radial"],errors="coerce")
-            self.faclist_df["circles"] = pd.to_numeric(self.faclist_df["circles"],errors="coerce")
-            self.faclist_df["overlap_dist"] = pd.to_numeric(self.faclist_df["overlap_dist"],errors="coerce")
-            self.faclist_df["hours"] = pd.to_numeric(self.faclist_df["hours"],errors="coerce")
-            self.faclist_df["multiplier"] = pd.to_numeric(self.faclist_df["multiplier"],errors="coerce")
-            self.faclist_df["ring1"] = pd.to_numeric(self.faclist_df["ring1"],errors="coerce")
-            self.faclist_df["urban_pop"] = pd.to_numeric(self.faclist_df["urban_pop"],errors="coerce")
-            self.faclist_df["max_dist"] = pd.to_numeric(self.faclist_df["max_dist"],errors="coerce")
-            
-            #grab facility ideas for comparison with hap emission and emission location files
-            self.facids = self.faclist_df['fac_id']
-            
-            
-            #record upload in log
-            global fac_num
-            fac_num = self.faclist_df['fac_id'].count()
-            self.scr.insert(tk.INSERT, "Uploaded facilities options list file for " + str(fac_num) + " facilities" )
-            self.scr.insert(tk.INSERT, "\n")
-            #print(self.faclist_df)
-            
-    #%%handle upload for hap emissions file
-    def upload_hap(self):
-       #get file name from open dialogue
-        filename = askopenfilename()
-        #if the upload is canceled 
-        if not filename:
-            messagebox.showinfo("Required Input Missing", "A hap emissions file is required to run HEM4.") 
-        elif is_excel(filename) == False:
-            messagebox.showinfo("Invalid file format", "Not a valid file format, please upload an excel file for hap emissions.")
-        elif is_excel(filename) == True:
-            file_path = os.path.abspath(filename)
-            self.hap_list.set(file_path)
-            self.hap_path = file_path
-            
-            #HAP EMISSIONS excel to dataframe    
-            self.hapemis_df = pd.read_excel(open(self.hap_path, "rb")
-                , names=("fac_id","source_id","pollutant","emis_tpy","part_frac")
-                , converters={"fac_id":str,"source_id":str,"pollutant":str,"emis_tpy":float,"part_frac":float})
-            
-            #fill Nan with 0
-            self.hapemis_df.fillna(0)
-            
-            #turn part_frac into a decimal
-            self.hapemis_df['part_frac'] = self.hapemis_df['part_frac'] / 100
-
-            #create additional columns, one for particle mass and the other for gas/vapor mass...
-            self.hapemis_df['particle'] = self.hapemis_df['emis_tpy'] * self.hapemis_df['part_frac']
-            self.hapemis_df['gas'] = self.hapemis_df['emis_tpy'] * (1 - self.hapemis_df['part_frac'])
+        self.ur_op = ttk.Checkbutton(self.s8, text="Include user receptors for any facilities, as indicated in the Facilities List Options file.",
+             variable=self.u_receptors, command=self.add_ur).grid(row=1, column=1, sticky="w")
 
 
-            #get unique list of polutants from input
-            pollutants = set(self.hapemis_df['pollutant'])
+    def is_excel(self, filepath):
+        extensions = [".xls", ".xlsx"]
+        return any(ext in filepath for ext in extensions)
 
-            #get list of pollutants from dose library
-            dose = pd.read_excel(open('Dose_Response_Library.xlsx', 'rb'))
-            master_list = set(dose['Pollutant'])
+    def openFile(self, filename):
 
-            #check pollutants against pollutants in dose library
-            missing_pollutants = []
-            for pollutant in pollutants:
-                if pollutant not in master_list:
-                    missing_pollutants.append(pollutant)
-            
-            #if there are any missing pollutants
-            if len(missing_pollutants) > 0:
-                fix_pollutants = messagebox.askyesno("Unassigned Missing Pollutants in dose response library", "The following pollutants were not found in HEM4's Dose Response Library: " + ", ".join(poly_unassigned) + "\n. have not been assigned. Would you like to continue with a generic value or go to the resources folder and add missing pollutants?")
-                #if yes, clear box and empty dataframe
-                if fix_pollutants == 'yes':
-                    pass
-                
-                    
-                #if no, assign generic value and continue 
-                elif fix_pollutants == 'no':
-                    pass
-                    #record upload in log
-                    #add another essage to say the following pollutants were assigned a generic value...
-                
-            else:
-                #record upload in log
-                hap_num = set(self.hapemis_df['fac_id'])
-                self.scr.insert(tk.INSERT, "Uploaded HAP emissions file for " + str(len(hap_num)) + " facilities" )
-                self.scr.insert(tk.INSERT, "\n")
-            
-            
-            
-            
-            
-    # %%handle upload for emissions location file
-    def upload_emisloc(self):
-       #get file name from open dialogue
-        filename = askopenfilename()
-        #if the upload is canceled 
-        if filename == None:
-            messagebox.showinfo("Required Input Missing", "An emissions locations file is required to run HEM4.") 
-        elif is_excel(filename) == False:
-            messagebox.showinfo("Invalid file format", "Not a valid file format, please upload an excel file for emissions locations.")
-        elif is_excel(filename) == True:
-            file_path = os.path.abspath(filename)
-            self.emisloc_list.set(file_path)
-            self.emisloc_path = file_path
-            #print(file_path)
-            
-            #EMISSIONS LOCATION excel to dataframe
-
-            self.emisloc_df = pd.read_excel(open(self.emisloc_path, "rb")
-                  , names=("fac_id","source_id","location_type","lon","lat","utmzone","source_type"
-                           ,"lengthx","lengthy","angle","horzdim","vertdim","areavolrelhgt","stkht"
-                           ,"stkdia","stkvel","stktemp","elev","x2","y2")
-                  , converters={"fac_id":str,"source_id":str,"location_type":str,"lon":float,"lat":float
-                  ,"utmzone":float,"source_type":str,"lengthx":float,"lengthy":float,"angle":float
-                  ,"horzdim":float,"vertdim":float,"areavolrelhgt":float,"stkht":float,"stkdia":float
-                  ,"stkvel":float,"stktemp":float,"elev":float,"x2":float,"y2":float})
-            
-            #record upload in log
-            emis_num = set(self.emisloc_df['fac_id'])
-            self.scr.insert(tk.INSERT, "Uploaded emissions location file for " + str(len(emis_num)) + " facilities" )
-            self.scr.insert(tk.INSERT, "\n")
-            
-    #%%handle upload for polygon sources file
-    def upload_poly(self):
-        if hasattr(self, "emisloc_df"): 
-            filename = askopenfilename()
+        if filename is None:
+            # upload was canceled
+            print("Canceled!")
+            return None
+        elif not self.is_excel(filename):
+            messagebox.showinfo("Invalid file format", "Not a valid file format, please upload an excel file.")
+            return None
         else:
-            messagebox.showinfo("Emissions Locations File Missing", "Please upload an Emissions Locations file before adding a Polyvertex file.")
-        
-        #if the upload is canceled 
-        if filename == None:
-            print("Canceled!")
-            
-        elif is_excel(filename) == False:
-            messagebox.showinfo("Invalid file format", "Not a valid file format, please upload an excel file for polygon sources.")
-        elif is_excel(filename) == True:
-            file_path = os.path.abspath(filename)
-            self.poly_list.set(file_path)
-            self.poly_path = file_path
-            
-            #POLYVERTEX excel to dataframe
-            self.multipoly_df = pd.read_excel(open(self.poly_path, "rb")
-                  , names=("fac_id","source_id","location_type","lon","lat","utmzone"
-                           ,"numvert","area")
-                  , converters={"fac_id":str,"source_id":str,"location_type":str,"lon":float
-                                ,"lat":float,"utmzone":str,"numvert":float,"area":float})
-            
-            #get polyvertex facility list for check
-            find_is = self.emisloc_df[self.emisloc_df['source_type'] == "I"]
-            fis = find_is['fac_id']
-                
-            #check for unassigned polyvertex            
-            check_poly_assignment = set(self.multipoly_df["fac_id"])
-            poly_unassigned = []             
-            
-            for fac in fis:
-                if fac not in check_poly_assignment:   
-                    poly_unassigned.append(fac)
-            
-            if len(poly_unassigned) > 0:
-                messagebox.showinfo("Unassigned Polygon Sources", "Polygon Sources for " + ", ".join(poly_unassigned) + " have not been assigned. Please edit the 'source_type' column in the Emissions Locations file.")
-                #clear box and empty data frame
-            else:
-                #record upload in log
-                self.scr.insert(tk.INSERT, "Uploaded polygon sources for " + " ".join(check_poly_assignment))
-                self.scr.insert(tk.INSERT, "\n")
-            
-    #%%handle upload for buoyant line file
-    def upload_bouyant(self):
-        
-        if hasattr(self, "emisloc_df"): 
-            filename = askopenfilename()
-        else:
-            messagebox.showinfo("Emissions Locations File Missing", "Please upload an Emissions Locations file before adding a Bouyant line file.")
-        
-        #if the upload is canceled 
-        if filename == None:
-            print("Canceled!")
-           
-        elif is_excel(filename) == False:
-            messagebox.showinfo("Invalid file format", "Not a valid file format, please upload an excel file for bouyant line.")
-        elif is_excel(filename) == True:
-            file_path = os.path.abspath(filename)
-            self.bouyant_list.set(file_path)
-            self.bouyant_path = file_path
-            
-            #BOUYANT LINE excel to dataframe
-            self.multibuoy_df = pd.read_excel(open(self.bouyant_path, "rb")
-                  , names=("fac_id", "avgbld_len", "avgbld_hgt", "avgbld_wid", "avglin_wid", "avgbld_sep", "avgbuoy"))
-        
-            
-            #get bouyant line facility list
-            self.emisloc_df['source_type'].str.upper()
-            find_bs = self.emisloc_df[self.emisloc_df['source_type'] == "B"]
-            
-            fbs = find_bs['fac_id'].unique()
-            
-            #check for unassigned buoyants
-             
-            check_bouyant_assignment = set(self.multibuoy_df["fac_id"])
-            
-            bouyant_unassigned = []     
-            for fac in fbs:
+            return os.path.abspath(filename)
 
-                if fac not in check_bouyant_assignment: 
-                    bouyant_unassigned.append(fac)
+    def uploadFacilitiesList(self):
+        fullpath = self.openFile(askopenfilename())
+        if fullpath is not None:
+            self.uploader.upload("faclist", fullpath)
+
+            self.model.facids = self.model.faclist.dataframe['fac_id']
+
+            # Update the UI
+            self.fac_list.set(fullpath)
+            [self.scr.insert(tk.INSERT, msg) for msg in self.model.faclist.log]
+
+    def uploadHAPEmissions(self):
+        fullpath = self.openFile(askopenfilename())
+        if fullpath is not None:
+            self.uploader.upload("hapemis", fullpath)
+
+            # Update the UI
+            self.hap_list.set(fullpath)
+            [self.scr.insert(tk.INSERT, msg) for msg in self.model.hapemis.log]
+
+    def uploadEmissionLocations(self):
+        fullpath = self.openFile(askopenfilename())
+        if fullpath is not None:
+            self.uploader.upload("emisloc", fullpath)
+
+            # Update the UI
+            self.emisloc_list.set(fullpath)
+            [self.scr.insert(tk.INSERT, msg) for msg in self.model.emisloc.log]
+
+    def uploadPolyvertex(self):
+
+        if not hasattr(self, "emisloc_df"):
+            messagebox.showinfo("Emissions Locations File Missing",
+                "Please upload an Emissions Locations file before adding a Polyvertex file.")
+
+        result = self.uploader.uploadDependent("polyvertex", self.emisloc_df)
+
+        # Update the global model
+        self.multipoly_df = result['df']
+
+        # Update the UI
+        self.poly_list.set(result['path'])
+        [self.scr.insert(tk.INSERT, msg) for msg in result['messages']]
+
+    def uploadBouyant(self):
+
+        if not hasattr(self, "emisloc_df"):
+            messagebox.showinfo("Emissions Locations File Missing",
+                "Please upload an Emissions Locations file before adding a Bouyant line file.")
+
+        result = self.uploader.uploadDependent("bouyant", self.emisloc_df)
+
+        # Update the global model
+        self.bouyant_df = result['df']
+
+        # Update the UI
+        self.poly_list.set(result['path'])
+        [self.scr.insert(tk.INSERT, msg) for msg in result['messages']]
+
+    def uploadUserReceptors(self):
+
+        if self.model.faclist.dataframe is None:
+            messagebox.showinfo("Facilities List Option File Missing",
+                "Please upload a Facilities List Options file before selecting a User Receptors file.")
+
+        fullpath = self.openFile(askopenfilename())
+        if fullpath is not None:
+            self.uploader.uploadDependent("user receptors", fullpath, self.model.faclist.dataframe)
+
+            # Update the UI
+            self.urep_list.set(fullpath)
+            [self.scr.insert(tk.INSERT, msg) for msg in self.model.ureceptr.log]
+
+    def add_ur(self):
+        #when box is checked add row with input
+        if self.u_receptors.get() == True:
             
-            if len(bouyant_unassigned) > 0:
-                messagebox.showinfo("Unassigned Bouyant Line parameters", "Bouyant Line parameters for " + ", ".join(bouyant_unassigned) + " have not been assigned. Please edit the 'source_type' column in the Emissions Locations file.")
-            else:
-                #record upload in log
-                self.scr.insert(tk.INSERT, "Uploaded bouyant line parameters for " + " ".join(check_bouyant_assignment))
-                self.scr.insert(tk.INSERT, "\n")
-      #%%handle user receptors
-    def upload_urep(self):
-         #get file name from open dialogue
-        if hasattr(self, "faclist_df"): 
-            filename = askopenfilename()
-        else:
-            messagebox.showinfo("Facilities List Option File Missing", "Please upload a Facilities List Options file before selecting a User Receptors file.")
+            #user recptors upload button
+            self.urep = ttk.Button(self.s8, command = lambda: self.uploadUserReceptors())
+            self.urep["text"] = "Browse"
+            self.urep.grid(row=2, column=1, sticky="W")
+            self.urep.bind('<Enter>', lambda e:self.browse("instructions/urep_browse.txt"))
             
-        #if the upload is canceled 
-        if filename == None:
-           pass 
-        elif is_excel(filename) == False:
-            messagebox.showinfo("Invalid file format", "Not a valid file format, please upload an excel file for user receptors.")
-        elif is_excel(filename) == True:
-            file_path = os.path.abspath(filename)
-            self.urep_list.set(file_path)
-            self.urep_path = file_path
-            
-            #USER RECEPTOR dataframe
-            self.ureceptr_df = pd.read_excel(open(self.urep_path, "rb")
-                  , names=("fac_id", "loc_type", "lon", "lat", "utmzone", "elev", "rec_type", "rec_id"))
-            
-            #check for unassigned user receptors
-            
-            check_receptor_assignment = self.ureceptr_df["fac_id"]
-            
-            receptor_unassigned = []     
-            for receptor in check_receptor_assignment:
-                #print(receptor)
-                row = self.faclist_df.loc[self.faclist_df['fac_id'] == receptor]
-                #print(row)
-                check = row['user_rcpt'] == 'Y'
-                #print(check)
-            
-                if check is False:   
-                    receptor_unassigned.append(str(receptor))
+            #user receptor text entry
+            self.urep_list = tk.StringVar(self.s8)
+            self.urep_list_man = ttk.Entry(self.s8)
+            self.urep_list_man["width"] = 55
+            self.urep_list_man["textvariable"]= self.urep_list
+            self.urep_list_man.grid(row=2, column=1, sticky='E', padx=85)
+            #event handler for instructions (Button 1 is the left mouse click)
+            self.urep_list_man.bind('<Button-1>', lambda e:self.manual("instructions/urep_man.txt"))
             
             
-            if len(receptor_unassigned) > 0:
-                facilities = set(receptor_unassigned)
-                messagebox.showinfo("Unassigned User Receptors", "Receptors for " + ", ".join(facilities) + " have not been assigned. Please edit the 'user_rcpt' column in the facility options file.")
-            #else:
-                #record upload in log
-                #self.scr.insert(tk.INSERT, "Uploaded user receptors for " + " ".join(check_receptor_assignment))
-                #self.scr.insert(tk.INSERT, "\n")
-        
-    #%% handle building downwash    
-    def upload_bd(self):
-         #get file name from open dialogue
-        filename = askopenfilename()
-        #if the upload is canceled 
-        if filename == None:
-            print("Canceled!")
-            #eventually open box or some notification to say this is required 
-        elif is_excel(filename) == False:
-            messagebox.showinfo("Invalid file format", "Not a valid file format, please upload an excel file for building downwash.")
-        elif is_excel(filename) == True:
-            file_path = os.path.abspath(filename)
-            self.bd_list.set(file_path)
-            self.bd_path = file_path
-            
-            #building downwash dataframe
-            self.bd_df = pd.read_csv(open(bd_path ,"rb"))
-            
-             #record upload in log
-            self.scr.insert(tk.INSERT, "Uploaded building downwash for...")
-            self.scr.insert(tk.INSERT, "\n")
-            
-            
-  #%% Handle depletion and deposition
-  
-     #particle depletion
-    def upload_part_dep(self):
-        #get file name from open dialogue
-        filename = askopenfilename()
-        #if the upload is canceled 
-        if filename == None:
-            print("Canceled!")
-            #eventually open box or some notification to say this is required 
-        elif is_excel(filename) == False:
-            messagebox.showinfo("Invalid file format", "Not a valid file format, please upload an excel file for particle depletion.")
-        elif is_excel(filename) == True:
-            
-            ## everything above is generic
-            
-            file_path = os.path.abspath(filename)
-            self.dep_part.set(file_path)
-            self.dep_part_path = file_path
-            
-            #particle dataframe
-            self.particle_df = pd.read_excel(open(self.dep_part_path, "rb")
-                  , names=("fac_id", "source_id", "diameter", "mass", "density"))
-            
-             #record upload in log
-            self.scr.insert(tk.INSERT, "Uploaded particle depletion for...")
-            self.scr.insert(tk.INSERT, "\n")
-    
-    #land use description        
-    def upload_land(self):
-        #get file name from open dialogue
-        filename = askopenfilename()
-        #if the upload is canceled 
-        if filename == None:
-            print("Canceled!")
-            #eventually open box or some notification to say this is required 
-        elif is_excel(filename) == False:
-            messagebox.showinfo("Invalid file format", "Not a valid file format, please upload an excel file for land use description.")
-        elif is_excel(filename) == True:
-            file_path = os.path.abspath(filename)
-            self.dep_land.set(file_path)
-            self.dep_land_path = file_path
-            
-            self.land_df = pd.read_excel(open(self.dep_land_path, "rb"))
-            self.land_df.rename({"Facility ID " : "fac_id"})
-            
-             #record upload in log
-            self.scr.insert(tk.INSERT, "Uploaded land use description for...")
-            self.scr.insert(tk.INSERT, "\n")
-  
-    def upload_veg(self):
-        #get file name from open dialogue
-        filename = askopenfilename()
-        #if the upload is canceled 
-        if filename == None:
-            print("Canceled!")
-            #eventually open box or some notification to say this is required 
-        elif is_excel(filename) == False:
-            messagebox.showinfo("Invalid file format", "Not a valid file format, please upload an excel file for seasonal vegetation.")
-        elif is_excel(filename) == True:
-            file_path = os.path.abspath(filename)
-            self.dep_veg.set(file_path)
-            self.dep_veg_path = file_path
-            
-            self.veg_df = pd.read_csv(open(self.dep_veg_path, "rb"))
-            self.veg_df.rename({"Facility ID": "fac_id"})
-             #record upload in log
-            self.scr.insert(tk.INSERT, "Uploaded season vegetation for...")
-            self.scr.insert(tk.INSERT, "\n")
-  
-    def upload_evar(self):
-        #get file name from open dialogue
-        filename = askopenfilename()
-        #if the upload is canceled 
-        if filename == None:
-            print("Canceled!")
-            #eventually open box or some notification to say this is required 
-        elif is_excel(filename) == False:
-            messagebox.showinfo("Invalid file format", "Not a valid file format, please upload an excel file for emissions variance.")
-        elif is_excel(filename) == True:
-            file_path = os.path.abspath(filename)
-            self.evar_list.set(file_path)
-            self.evar_list_path = file_path
-            
-             #record upload in log
-            self.scr.insert(tk.INSERT, "Uploaded emissions variance for...")
-            self.scr.insert(tk.INSERT, "\n")
+        if self.u_receptors.get() == False:
+            self.urep.destroy()
+            self.urep_list_man.destroy()
+
         
  #%% Event handlers for porting instructions
 
     #reset instructions space
     def reset_instructions(self):
         global instruction_instance
-        instruction_instance.set(" ")
-        
+        instruction_instance.set(" ")    
         
     #general function for browsing instructions
     def browse(self, location):
@@ -736,577 +341,119 @@ class Hem4():
         global instruction_instance
         read_inst = open(location, 'r')
         instruction_instance.set(read_inst.read())
-        
-        
     
-    #csv option instructions
-    def csv_sel(self):
-        global instruction_instance
-        read_inst = open("instructions/csv_inst.txt", 'r')
-        instruction_instance.set(read_inst.read())
-            
-        
-        
-  #%% Dynamic inputs for adding options
-
-    def add_downwash(self):
-        
-        #when box is checked add row with input
-        if self.building.get() == True:
-            
-            #user recptors upload button
-            self.bd = ttk.Button(self.s9)
-            self.bd["text"] = "Browse"
-            self.bd["command"] = self.upload_bd
-            self.bd.grid(row=4, column=1, sticky="W")
-            self.bd.bind('<Enter>', lambda e:self.browse("instructions/bd_browse.txt"))
-            
-            #user receptor text entry
-            self.bd_list = tk.StringVar(self.s9)
-            self.bd_list_man = ttk.Entry(self.s9)
-            self.bd_list_man["width"] = 55
-            self.bd_list_man["textvariable"]= self.bd_list
-            self.bd_list_man.grid(row=4, column=1, sticky='E', padx =10)
-            #event handler for instructions (Button 1 is the left mouse click)
-            self.bd_list_man.bind('<Button-1>', lambda e:self.manual("instructions/bd_man.txt"))
-            
-            
-        if self.building.get() == False:
-            self.bd.destroy()
-            self.bd_list_man.destroy()
-            
-
-    def add_ur(self):
-        #when box is checked add row with input
-        if self.u_receptors.get() == True:
-            
-            #user recptors upload button
-            self.urep = ttk.Button(self.s9)
-            self.urep["text"] = "Browse"
-            self.urep["command"] = self.upload_urep
-            self.urep.grid(row=2, column=1, sticky="W", padx=10)
-            self.urep.bind('<Enter>', lambda e:self.browse("instructions/urep_browse.txt"))
-            
-            #user receptor text entry
-            self.urep_list = tk.StringVar(self.s9)
-            self.urep_list_man = ttk.Entry(self.s9)
-            self.urep_list_man["width"] = 55
-            self.urep_list_man["textvariable"]= self.urep_list
-            self.urep_list_man.grid(row=2, column=1, sticky='E', padx=85)
-            #event handler for instructions (Button 1 is the left mouse click)
-            self.urep_list_man.bind('<Button-1>', lambda e:self.manual("instructions/urep_man.txt"))
-            
-            
-        if self.u_receptors.get() == False:
-            self.urep.destroy()
-            self.urep_list_man.destroy()
-
-    #optional depletion
-    def add_dep(self):
-       
-        
-        if self.depdep.get() == True:
-            
-            #set up input sections
-            
-            self.s11 = tk.Label(self.main, text='Deposition and Depletion Options')
-            self.s12 = tk.Frame(self.main, width=250, height=100, pady=10, padx=10)
-            self.s13 = tk.Frame(self.main, width=250, height=100, pady=10, padx=10)
-            self.s14 = tk.Frame(self.main, width=250, height=100, pady=10, padx=10)
-            self.s15 = tk.Frame(self.main, width=250, height=100, pady=10, padx=10)
-           
-           
-            
-            if self.temp_var.get() == False and self.emis_var.get() == False:
-                
-                self.s11.grid(row=1, column=1, sticky="nsew")
-                self.s12.grid(row=2, column=1, columnspan=2, sticky="nsew")
-                self.s13.grid(row=3, column=1, columnspan=2, sticky="nsew")
-                self.s14.grid(row=4, column=1, columnspan=2, sticky="nsew")
-          
-           
-            
-            #optional input file upload
-                
-            #particle deposition label
-            part_label = tk.Label(self.s12, font="-size 10", text="Upload the file containing size information for particle matter emissions:")
-            part_label.grid(row=1, sticky="W")
-        
-            #particle deposition upload button
-            self.dep_part_up = ttk.Button(self.s12)
-            self.dep_part_up["text"] = "Browse"
-            self.dep_part_up["command"] = self.upload_part_dep
-            self.dep_part_up.grid(row=2, column=0, sticky="W")
-            self.dep_part_up.bind('<Enter>', lambda e:self.browse("instructions/dep_part_browse.txt"))
-       
-        
-        
-            #particle deposition  text entry
-            self.dep_part = tk.StringVar(self.s12)
-            self.dep_part_man = ttk.Entry(self.s12)
-            self.dep_part_man["width"] = 55
-            self.dep_part_man["textvariable"]= self.dep_part
-            self.dep_part_man.grid(row=2, column=0, sticky='E', padx=85)
-            #event handler for instructions (Button 1 is the left mouse click)
-            self.dep_part_man.bind('<Button-1>', lambda e:self.manual("instructions/dep_part_man.txt"))
-        
-        
-        
-            #land use description label
-            land_label = tk.Label(self.s13, font="-size 10",  text="Upload the file containing land use descriptions:")
-            land_label.grid(row=1, sticky="W")
-        
-            #land use description upload button
-            self.dep_land_up = ttk.Button(self.s13)
-            self.dep_land_up["text"] = "Browse"
-            self.dep_land_up["command"] = self.upload_land
-            self.dep_land_up.grid(row=2, column=0, sticky='W')
-            #event handler for instructions (Button 1 is the left mouse click)
-            self.dep_land_up.bind('<Enter>', lambda e:self.browse("instructions/dep_land_browse.txt"))
-        
-        
-            #land use description text entry
-            self.dep_land = tk.StringVar(self.s13)
-            self.dep_land_man = ttk.Entry(self.s13)
-            self.dep_land_man["width"] = 55
-            self.dep_land_man["textvariable"]= self.dep_land
-            self.dep_land_man.grid(row=2, column=0, sticky='E', padx=85)
-            #event handler for instructions (Button 1 is the left mouse click)
-            self.dep_land_man.bind('<Button-1>', lambda e:self.manual("instructions/dep_land_man.txt"))
-        
-        
-            #seasonal vegetation label
-            veg_label = tk.Label(self.s14, font="-size 10",  text="Upload the file defining the seasonal vegetative cover:")
-            veg_label.grid(row=1, sticky="W")
-        
-             #seasonal vegetation location upload button
-            self.dep_veg_up = ttk.Button(self.s14)
-            self.dep_veg_up["text"] = "Browse"
-            self.dep_veg_up["command"] = self.upload_veg
-            self.dep_veg_up.grid(row=2, column=0, sticky='W')
-            #event handler for instructions (Button 1 is the left mouse click)
-            self.dep_veg_up.bind('<Enter>', lambda e:self.browse("instructions/dep_veg_browse.txt"))
-      
-            #seasonal vegetation file text entry
-            self.dep_veg = tk.StringVar(self.s14)
-            self.dep_veg_man = ttk.Entry(self.s14)
-            self.dep_veg_man["width"] = 55
-            self.dep_veg_man["textvariable"]= self.dep_veg
-            self.dep_veg_man.grid(row=2, column=0, sticky='E', padx=85)
-            #event handler for instructions (Button 1 is the left mouse click)
-            self.dep_veg_man.bind('<Button-1>', lambda e:self.manual("instructions/dep_veg_man.txt"))
-                 
-        if self.depdep.get() == False:
-            self.s11.destroy()
-            self.s12.destroy()
-            self.s13.destroy()
-            self.s14.destroy()
-            
-            
-    def add_emis_var(self):
-        #when box is checked add row with input
-        if self.emis_var.get() == True:
-            
              
-          
-            
-            self.s16 = tk.Label(self.main, text='Emissions Variation Options')
-            self.s17 = tk.Frame(self.main, width=250, height=100, pady=10, padx=10)
-            #self.s16.grid(row=0, column=1, sticky="nsew")
-            #self.s17.grid(row=1, column=1, columnspan=2, sticky="nsew")
-           
-           
-          #  if self.temp_var == True:
-          #      
-          #      self.s16.grid(row=6, column=1, sticky="nsew")
-          #      self.s17.grid(row=7, column=1, columnspan=2, sticky="nsew")
-                
-               
-                
-            if self.temp_var.get() == False and self.depdep.get() == False:
-          #      
-                self.s16.grid(row=1, column=1, sticky="nsew")
-                self.s17.grid(row=2, column=1, columnspan=2, sticky="nsew")
-               
-               
-             
-            
-            
-            #emissions variation label
-            emis_label = tk.Label(self.s17, font="-size 10", text="Upload the file containing emissions varations:")
-            emis_label.grid(row=1, sticky="W")
-        
-            
-            #emissions variation upload button
-            self.evar = ttk.Button(self.s17)
-            self.evar["text"] = "Browse"
-            self.evar["command"] = self.upload_evar
-            self.evar.grid(row=2, column=0, sticky="W")
-            #self.urep.bind('<Enter>', lambda e:self.emis_var_browse())
-            
-            #emissions varation text entry
-            self.evar_list = tk.StringVar(self.s17)
-            self.evar_list_man = ttk.Entry(self.s17)
-            self.evar_list_man["width"] = 55
-            self.evar_list_man["textvariable"]= self.evar_list
-            self.evar_list_man.grid(row=2, column=0, sticky='E', padx=85)
-            #event handler for instructions (Button 1 is the left mouse click)
-            #self.evar_list_man.bind('<Button-1>', lambda e:self.emis_var_man())
-            
-            
-            
-            
-            
-            
-        if self.emis_var.get() == False:
-            self.s16.destroy()
-            self.s17.destroy()
-            
-        
-    def add_temp_var(self):
-        
-        if self.temp_var.get() == True:
-            print('triggered')
-            
-            self.s18 = tk.Label(self.main, font="-size 10", text='What diurnal resolution would you like in the output file')
-            self.s19 = tk.Frame(self.main, width=250, height=100, pady=10, padx=10)
-            #self.s18.grid(row=6, column=1, sticky="nsew")
-            #self.s19.grid(row=7, column=1, columnspan=2, sticky="nsew")
-            
-            
-            
-           # if  self.emis_var == True:
-           #     
-           #     self.s18.grid(row=6, column=1, sticky="nsew")
-           #     self.s19.grid(row=7, column=1, columnspan=2, sticky="nsew")
-                
-               
-                
-            if self.emis_var.get() == False and self.depdep.get() == False:
-                
-                
-                self.s18.grid(row=1, column=1, sticky="nsew")
-                self.s19.grid(row=2, column=1, columnspan=2, sticky="nsew")
-               
-            
-            
-            
-            #hourlist= ('1 hr', '2 hrs', '3 hrs', '4 hrs', '6 hrs', '8 hrs', '12 hrs', '24 hrs' )
-            #hours = tk.StringVar(value=hourlist)
-            #listbox of diurnal resolutions
-            #lbox = tk.Listbox(self.s19, listvariable=hours, height=3)
-            #lbox.grid(row=1, column=1)
-             
-            
-        if self.temp_var.get() == False:
-            self.s18.destroy()
-            self.s19.destroy()
-        
-
 #%% Run function with checks if somethign is missing raise the error here and create an additional dialogue before trying to run the file
 
     def run(self):
         
 #%% check file dataframes
+
+        self.ready = False
         
-        ready = False
+
+        # Upload the Dose response library
+        fullpath = r"resources/Dose_response_library.xlsx"
+        self.uploader.upload("haplib", fullpath)
         
-        #make sure fac_list df was created correctly
-        if hasattr(self, "faclist_df"):
+        #Check inputs
+        check_inputs = InputChecker(self.model)
+        required = check_inputs.check_required()
+        
+        if 'ready' not in required['result']:
             
-            if self.faclist_df.empty:
-                messagebox.showinfo("Error","There was an error uploading Facilities List Option File, please try again")
-                check1 = False
+            messagebox.showinfo('Error', required['result'])
+            self.ready = False
+            
+        elif required['dependencies'] is not []:
+            
+            optional = check_inputs.check_dependent(required['dependencies'])
+            
+            if 'ready' not in optional['result']:
+                
+                messagebox.showinfo('Error', optional['result'])
+                self.ready = False
                 
             else:
-                fids = set(self.faclist_df['fac_id'])
-                print("fac_list ready")
-                check1 = True
+                self.ready = True
+        
         else:
-            check1 = False
-            messagebox.showinfo("Error","There was an error uploading Facilities List Option File, please try again")
-       
-        #make sure emis_loc df was created correctly
-        if hasattr(self, "emisloc_df"):
             
-            if self.emisloc_df.empty:
-                messagebox.showinfo("Error","There was an error uploading Emissions Locations File, please try again")
-                check2 = False
-            else:
-                #check facility id with emis loc ids
-                efids = set(self.emisloc_df['fac_id'])
-                esource = set(self.emisloc_df['source_id'])
-                if efids == fids:
-                    print("emis_locs ready")
-                    check2 = True
-                
-        else:
-            check2 = False
-            messagebox.showinfo("Error","There was an error uploading Emissions Locations File, please try again")
-
-       #make sure hap_emis  df was created correctly
-        if hasattr(self, "hapemis_df"):
-            print("found!")
-            
-            if self.hapemis_df.empty:
-                messagebox.showinfo("Error","There was an error uploading HAP Emissions File, please try again")
-                check3 = False
-                print("empty")
-            else:
-                #check emis locations and source ids
-                hfids = set(self.hapemis_df['fac_id'])
-                hsource = set(self.hapemis_df['source_id'])
-                missing_sources = []
-                
-                
-                if efids == hfids:
-                    print(True)
-                    
-                    for s in esource:
-                        if s not in hsource:
-                            missing_sources.append(s)
-                    
-                    if len(missing_sources) < 0:
-                        check3 = False
-                    
-                    else:
-                        check3 = True
-                        print("hap_emis ready!")
-                    
-                else:
-                    check3 = False
-                
-        else:
-            check3 = False
-            messagebox.showinfo("Error","There was an error uploading HAP Emissions File, please try again")
-        
-        
-        #if there isnt a file for poly vertex
-        if  hasattr(self, 'multipoly_df'):
-           pass 
-        else: 
-            self.multipoly_df = None    
-       
-        #if there isnt a file for bouyant line
-        if  hasattr(self, 'multibuoy_df'):
-            pass
-        else:
-            self.multibuoy_df = None
-
-        #if there isnt a file for user receptors
-        if  hasattr(self, 'ureceptr_df'):
-            pass
-        else:
-            self.ureceptr_df = None
-        
-        #if building downwash
-        if  hasattr(self, 'bd_path'):
-            pass
-        #    print("Building downwash file path: " + self.bd_path)
-        else:
-            self.bd_path = None
-        
-        #if depletion calculation
-        if self.depdep ==True:
-                        
+            self.ready = True
         
         
         
-            pass
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        else:
-            self.depdep = None
-        
-        #if they want output as csv 
-        if self.csv == True:
-            print("Output in CSV as well")
-        else:
-            self.csv == False
-     
-        
-       #check user receptors in facility
-        user_rec_check = self.faclist_df['user_rcpt'] == 'Y'
-        user_rec_checklist = []
-        
-        if True in user_rec_check:
-           for facility in self.faclist_df[user_rec_check]['fac_id']:
-               
-               if self.ureceptr_df is None:
-                   
-                   user_rec_checklist.append(str(facility))
-                  
-        if len(user_rec_checklist) > 0:
-            messagebox.showinfo( "Missing user receptors", "Please upload user receptors for " + ", ".join(user_rec_checklist))
-            ready = False   
-        
-        
-        #check emissions list for bouyant line indicators   
-        bouyant_check = self.emisloc_df["source_type"].str.upper() == "B"
-        bouyant_checklist = []
-
-        if True in bouyant_check:          
-            for bfacility in self.emisloc_df[bouyant_check]['fac_id']:                
-                if self.multibuoy_df is None:                   
-                    bouyant_checklist.append(str(bfacility))
-        
-        bfacilities = set(bouyant_checklist)            
-        if len(bouyant_checklist) > 0:
-            messagebox.showinfo("Missing bouyant line", "Please upload buoyant line file for " + ", ".join(bfacilities))
-            ready = False
-        
-        #check emissions list for poly vertex indicators   
-        polyvertex_check = self.emisloc_df["source_type"].str.upper() == "I"
-        poly_checklist = []
-
-        if True in polyvertex_check:          
-            for pfacility in self.emisloc_df[polyvertex_check]['fac_id']:                
-                if self.multipoly_df is None:                   
-                    poly_checklist.append(str(pfacility))
-        
-        pfacilities = set(poly_checklist)            
-        if len(poly_checklist) > 0:
-            messagebox.showinfo("Missing polyvertex", "Please upload polyvertex line file for " + ", ".join(pfacilities))
-            ready = False
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        if check1 == True & check2 == True & check3 == True:
-            ready = True
-        
-        
-        
-        
-       #%%if the object is ready
-        if ready == True:
+   #%%if the object is ready
+        if self.ready == True:
            
             #tell user to check the Progress/Log section
+            messagebox.askokcancel("Confirm HEM4 Run", "Clicking 'OK' will start HEM4.")
            
-            
-           #save version of this gui as is? constantly overwrite it once each facility is done?
+            #create object for prepare inputs
+            self.running = True
            
-           
-           messagebox.askokcancel("Confirm HEM4 Run", "Clicking 'OK' will start HEM4.")
-           
-           #create object for prepare inputs
-           self.running = True
-           #create a Google Earth KML of all sources to be modeled
-           createkml = cmk.multi_kml(self.emisloc_df, self.multipoly_df, self.multibuoy_df)
-           source_map = createkml.create_sourcemap()
-           kmlfiles = createkml.write_kml_emis_loc(source_map)
+            #create a Google Earth KML of all sources to be modeled
+            createkml = cmk.multi_kml(self.model)
+            if createkml is not None:
+                source_map = createkml.create_sourcemap()
+                kmlfiles = createkml.write_kml_emis_loc(source_map)
 
+            the_queue.put("\nPreparing Inputs for " + str(self.model.facids.count()) + " facilities")
+            inputPrep = prepare.Prepare_Inputs(self.model)
+
+            # let's tell after_callback that this completed
+            #print('thread_target puts None to the queue')
            
-           the_queue.put("\nPreparing Inputs for " + str(fac_num) + " facilities")
-           pass_ob = prepare.Prepare_Inputs( self.faclist_df, self.emisloc_df, self.hapemis_df, self.multipoly_df, self.multibuoy_df, self.ureceptr_df)
            
-           # let's tell after_callback that this completed
-           #print('thread_target puts None to the queue')
-           
-           
-           fac_list = []
-           for index, row in pass_ob.faclist_df.iterrows():
-            
+            fac_list = []
+            for index, row in self.model.faclist.dataframe.iterrows():
+
                facid = row[0]
                fac_list.append(facid)
-       
-        
-           for fac in fac_list:
-                facid = fac
-                
-                result = pass_ob.prep_facility(facid)
-                
-                the_queue.put("Building Runstream File for " + str(facid))
+               num = 1
 
-                result.build()
-              
-                #create fac folder
-                fac_folder = "output/"+ str(facid) + "/"
-                if not os.path.exists(fac_folder):
-                    os.makedirs(fac_folder)
-                 
-                #run aermod
-                the_queue.put("Running Aermod for " + str(facid))
-                args = "aermod.exe aermod.inp" 
-                subprocess.call(args, shell=False)
+            for facid in fac_list:
                 
-            #self.loc["textvariable"] = "Aermod complete for " + facid
-            
-            ## Check for successful aermod run:
-                check = open('aermod.out','r')
-                message = check.read()
-                if 'UNSUCCESSFUL' in message:
-                    success = False
-                    the_queue.put("Aermod ran unsuccessfully. Please check the error section of the aermod.out file.")
-                else:
-                    success = True
-                    the_queue.put("Aermod ran successfully.")
-                check.close()    
-                
-                if success == True:
-                    
-                
-            #move aermod.out to the fac output folder 
-            #replace if one is already in there othewrwise will throw error
-            
-                    if os.path.isfile(fac_folder + 'aermod.out'):
-                        os.remove(fac_folder + 'aermod.out')
-                        shutil.move('aermod.out', fac_folder)
-                
-                    else:    
-                        shutil.move('aermod.out', fac_folder)
-            
-            #process outputs
-                    the_queue.put("Processing Outputs for " + str(facid))
-                    process = po.Process_outputs(facid, pass_ob.haplib_df, result.hapemis, fac_folder, pass_ob.innerblks, result.polar_df)
-                    process.process()
-                    the_queue.put("Finished calculations for " + str(facid) + "\n")
-                #self.loc["textvariable"] = "Analysis Complete"
-           
-                
-      
-            
+                #save version of this gui as is? constantly overwrite it once each facility is done?
+                the_queue.put("\nRunning facility " + str(num) + " of " + str(len(fac_list)))
+
+                runner = FacilityRunner(facid, the_queue, inputPrep)
+                runner.run()
+
+                #increment facility count
+                num += 1
+
+        the_queue.put("\nFinished running all facilities.\n")
+        
+        #reset all inputs if everything finished
+        self.model.reset()
+        self.fac_list.set('')
+        self.hap_list.set('')
+        self.emisloc_list.set('')
+        self.urep_list.set('')
+
         self.running = False
-        
-        
-#%% Create Thread for Threaded Process   
+
+    def workerComplete(self, future):
+        ex = future.exception()
+
+        if ex is not None:
+            # logger = logging.getLogger('workerComplete')
+            # logger.exception(ex)
+            fullStackInfo = ''.join(traceback.format_exception(etype=type(ex), value=ex, tb=ex.__traceback__))
+            the_queue.put("\nAn error ocurred while running a facility:")
+            the_queue.put("\n\n" + fullStackInfo)
+
+    #%% Create Thread for Threaded Process
     def runThread(self):
         global instruction_instance
-        instruction_instance.set("Hem4 Running, check the progress/log tab for updates")
-        runT = Thread(target=self.run)
-        runT.daemon = True
-        runT.start()
-        
-        
+        instruction_instance.set("Hem4 Running, check the log tab for updates")
+
+        executor = futures.ThreadPoolExecutor(max_workers=1)
+        future = executor.submit(self.run)
+        future.add_done_callback(self.workerComplete)
+
+
     def after_callback(self):
         try:
             message = the_queue.get(block=False)
@@ -1317,8 +464,10 @@ class Hem4():
 
         print('after_callback got', message)
         if message is not None:
+            self.scr.configure(state='normal')
             self.scr.insert(tk.INSERT, message)
             self.scr.insert(tk.INSERT, "\n")
+            self.scr.configure(state='disabled')
             hem4.win.after(25, self.after_callback)   
          
         
