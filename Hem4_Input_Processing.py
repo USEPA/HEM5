@@ -220,7 +220,8 @@ class Prepare_Inputs():
         maxdist = facops.get_value(0,"max_dist")
         modeldist = facops.get_value(0,"model_dist")
         self.innerblks, self.outerblks = cbr.getblocks(cenx, ceny, cenlon, cenlat, facutmzone, maxdist, modeldist, sourcelocs, op_overlap)
-
+ 
+       
         #%%----- Polar receptors ----------
 
         # compute inner polar radius
@@ -396,11 +397,7 @@ class Prepare_Inputs():
                 ring_loc = i + (np.log(block_distance) - np.log(previous)) / (np.log(current) - np.log(previous))        
                 break 
             previous = ring
-        
-        #debug
-        if ring_loc == -999:
-            print("ring_loc is -999, block distance = ", block_distance)
-            
+                    
         # Compute integer ring number
         ring_int = math.floor(ring_loc)
          
@@ -563,18 +560,45 @@ class Prepare_Inputs():
 
     def zone2use(self, el_df):
     
-    # Set a common zone
-#    utmzone = np.nan_to_num(el_df["utmzone"].min(axis=0))
-            min_utmzu = np.nan_to_num(el_df["utmzone"].loc[el_df["location_type"] == "U"].min(axis=0))
-            utmzl_df = el_df[["lon"]].loc[el_df["location_type"] == "L"]
-            utmzl_df["z"] = ((utmzl_df["lon"]+180)/6 + 1).astype(int)
-            min_utmzl = np.nan_to_num(utmzl_df["z"].min(axis=0))
-            if min_utmzu == 0:
-                utmzone = min_utmzl
+        """
+        Create a common UTM Zone for this facility
+        
+        All emission sources input to Aermod must have UTM coordinates
+        from a single UTM zone. This function will determine the single
+        UTM zone to use.
+        
+        """
+        
+        # First, check for any utm zones provided by the user in the emission location file
+        utmzones_df = el_df["utmzone"].loc[el_df["location_type"] == "U"]
+        if utmzones_df.shape[0] > 0:
+            # there are some; find the smallest one
+            min_utmzu = int(np.nan_to_num(utmzones_df).min(axis=0))
+        else:
+            min_utmzu = 0
+        
+        # Next, compute utm zones from any user provided longitudes and find smallest            
+        lon_df = el_df[["lon"]].loc[el_df["location_type"] == "L"]
+        if lon_df.shape[0] > 0:
+            lon_df["z"] = ((lon_df["lon"]+180)/6 + 1).astype(int)
+            min_utmzl = int(np.nan_to_num(lon_df["z"]).min(axis=0))
+        else:
+            min_utmzl = 0
+        
+        if min_utmzu == 0:
+            utmzone = min_utmzl
+        else:
+            if min_utmzl == 0:
+                utmzone = min_utmzu
             else:
                 utmzone = min(min_utmzu, min_utmzl)
-
-            return utmzone
+        
+        if utmzone == 0:
+            print("Error! UTM zone is 0")
+            sys.exit()
+########### Route error to log ##################
+            
+        return utmzone
 
 
 
