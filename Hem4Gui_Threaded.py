@@ -13,7 +13,6 @@ from tkinter import messagebox
 from tkinter import scrolledtext
 from tkinter import ttk
 import Hem4_Input_Processing as prepare
-from writer.kml import create_multi_kml as cmk
 from model.Model import Model
 from runner.FacilityRunner import FacilityRunner
 from upload.FileUploader import FileUploader
@@ -21,6 +20,8 @@ from tkinter.filedialog import askopenfilename
 
 
 #%% Hem4 GUI
+from writer.kml.KMLWriter import KMLWriter
+
 
 class Hem4():
 
@@ -472,10 +473,9 @@ class Hem4():
                     self.running = True
                    
                     #create a Google Earth KML of all sources to be modeled
-                    createkml = cmk.multi_kml(self.model)
-                    if createkml is not None:
-                        source_map = createkml.create_sourcemap()
-                        kmlfiles = createkml.write_kml_emis_loc(source_map)
+                    kmlWriter = KMLWriter()
+                    if kmlWriter is not None:
+                        kmlWriter.write_kml_emis_loc(self.model)
 
                     the_queue.put("\nPreparing Inputs for " + str(self.model.facids.count()) + " facilities")
                     inputPrep = prepare.Prepare_Inputs(self.model)

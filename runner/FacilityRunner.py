@@ -1,9 +1,11 @@
 import Hem4_Output_Processing as po
-from writer.kml import create_facililty_kml as fkml
 import os
 import time
 import subprocess
 import shutil
+
+from writer.kml.KMLWriter import KMLWriter
+
 
 class FacilityRunner():
 
@@ -67,7 +69,8 @@ class FacilityRunner():
 
             #create facility kml
             self.messageQueue.put("Writing KML file for " + self.facilityId)
-            facility_kml = fkml.facility_kml(self.facilityId, result.cenlat, result.cenlon, fac_folder)
+            kmlWriter = KMLWriter()
+            kmlWriter.write_facility_kml(self.facilityId, result.cenlat, result.cenlon, fac_folder)
 
             pace =  str(time.time()-start) + 'seconds'
             self.messageQueue.put("Finished calculations for " + self.facilityId + ' after' + pace + "\n")
