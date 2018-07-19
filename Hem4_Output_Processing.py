@@ -10,20 +10,21 @@ import time
 import numpy as np
 import openpyxl
 import pandas as pd
-from writer.excel.ExcelWriter import ExcelWriter
+from writer.csv.CsvWriter import CsvWriter
+import sys
 
 class Process_outputs():
     
     def __init__(self, facid, haplib_df, hapemis, outdir, innerblks, outerblks, polar):
         self.facid = facid
         self.haplib_m = haplib_df.as_matrix()
-        self.hap_m = hapemis.as_matrix()
+        self.hapemis = hapemis
         self.outdir = outdir
         self.inner_m = innerblks.as_matrix()
         self.outerblks_df = outerblks
-        self.polar_m = polar.as_matrix()
-        self.numsectors = self.polar_m[:,8].max()
-        self.numrings = self.polar_m[:,9].max()
+        self.polar_recs = polar
+        self.numsectors = self.polar_recs["sector"].max()
+        self.numrings = self.polar_recs["ring"].max()
         
         # Units conversion factor
         self.cf = 2000*0.4536/3600/8760
@@ -31,8 +32,61 @@ class Process_outputs():
 #        if not os.path.exists(self.outdir):
 #            os.makedirs(self.outdir)
         
+    
+    def create_all_polar_receptors(self, polarplot_df):
         
-                  
+        """
+        
+        Create the facility specific All Polar Receptor output file.
+        
+        This is a CSV formatted file with the following fields:
+            source_id
+            emis_type
+            pollutant
+            conc_ug_m3
+            distance (m)
+            angle
+            sector number
+            ring number
+            elevation (m)
+            latitude
+            longitude
+            overlap (Y/N)
+            
+        """
+             
+        # array of unique source_id's
+        srcids = polarplot_df['source_id'].unique().tolist()
+    
+        # process polar concs one source_id at a time
+        for x in srcids:
+            polarplot_onesrcid = polarplot_df[["utme","utmn","source_id","result"]].loc[polarplot_df['source_id'] == x]
+            hapemis_onesrcid = self.hapemis[["source_id","pollutant","emis_tpy"]].loc[self.hapemis['source_id'] == x]
+            collist = ["source_id", "emis_type", "pollutant", "conc_ug_m3", "distance", "angle", "sector", "ring_no", "elev", "lat", "lon", "overlap"]
+            dlist = []
+            for row1 in polarplot_onesrcid.itertuples():
+                for row2 in hapemis_onesrcid.itertuples():
+                    d_sourceid = row1[3]
+                    d_emistype = "C"
+                    d_pollutant = row2[2]
+                    d_conc = row1[4] * row2[3] * self.cf
+                    d_distance = self.polar_recs.loc[(self.polar_recs["utme"] == row1[1]) & (self.polar_recs["utmn"] == row1[2]), "distance"].values[0]
+                    d_angle = self.polar_recs.loc[(self.polar_recs["utme"] == row1[1]) & (self.polar_recs["utmn"] == row1[2]), "angle"].values[0]
+                    d_sector = self.polar_recs.loc[(self.polar_recs["utme"] == row1[1]) & (self.polar_recs["utmn"] == row1[2]), "sector"].values[0]
+                    d_ring_no = self.polar_recs.loc[(self.polar_recs["utme"] == row1[1]) & (self.polar_recs["utmn"] == row1[2]), "ring"].values[0]
+                    d_elev = self.polar_recs.loc[(self.polar_recs["utme"] == row1[1]) & (self.polar_recs["utmn"] == row1[2]), "elev"].values[0]
+                    d_lat = self.polar_recs.loc[(self.polar_recs["utme"] == row1[1]) & (self.polar_recs["utmn"] == row1[2]), "lat"].values[0]
+                    d_lon = self.polar_recs.loc[(self.polar_recs["utme"] == row1[1]) & (self.polar_recs["utmn"] == row1[2]), "lon"].values[0]
+                    d_overlap = ""
+                    datalist = [d_sourceid, d_emistype, d_pollutant, d_conc, d_distance, d_angle, d_sector, d_ring_no, d_elev, d_lat, d_lon, d_overlap]
+                    dlist.append(dict(zip(collist, datalist)))
+
+        polarconc_df = pd.DataFrame(dlist, columns=collist)
+                
+        return polarconc_df
+    
+
+                 
     def polar_build(self, r):
         
 
@@ -178,14 +232,28 @@ class Process_outputs():
             comment='*')
 
         
-        #subset and round before converting to matrix
+        #----------- create All_Polar_Receptor output file -----------------
+        
+        #extract polar concs from plotfile and round the utm coordinates
         polgrid_df = plot_df.query("net_id == 'POLGRID1'").copy()
-        
-       
-        
-        # round the utme and utmn columns
         polgrid_df.utme = polgrid_df.utme.round()
         polgrid_df.utmn = polgrid_df.utmn.round()
+        
+        #call creation function
+        all_polar_receptors_df = self.create_all_polar_receptors(polgrid_df)
+        #dataframe to array
+        all_polar_receptors_m = all_polar_receptors_df.values
+        
+        #export to CSV
+        outfile = self.facid + "_all_polar_receptors.csv"
+        column_names = ["source_id", "emis_type", "pollutant", "conc_ugm3", "distance_m",
+                        "angle", "sector_num", "ring_num", "elev_m", "lat", "lon", "overlap"]
+        all_polar_receptors_obj = CsvWriter(self.outdir)
+        all_polar_receptors_obj.write(outfile, column_names, all_polar_receptors_m)
+               
+        
+        #debug
+        sys.exit()
         
         
         #convert to matrix called self.plot_m 

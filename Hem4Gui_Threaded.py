@@ -12,11 +12,13 @@ import traceback
 from tkinter import messagebox
 from tkinter import scrolledtext
 from tkinter import ttk
+
 import Hem4_Input_Processing as prepare
 from model.Model import Model
 from runner.FacilityRunner import FacilityRunner
 from upload.FileUploader import FileUploader
 from tkinter.filedialog import askopenfilename
+from checker.InputChecker import InputChecker
 
 
 #%% Hem4 GUI
@@ -47,8 +49,11 @@ class Hem4():
             self.win.quit()
             self.win.destroy()
             exit()
+        
         elif self.running == True:
-             override = messagebox.askokcancel("Confirm HEM4 Quit", "Are you sure? Hem4 is currently running. Clicking 'OK' will stop HEM4.")
+             override = messagebox.askokcancel("Confirm HEM4 Quit", "Are you " + 
+              "sure? Hem4 is currently running. Clicking 'OK' will stop HEM4.")
+             
              if override == True:
                 self.win.quit()
                 self.win.destroy()
@@ -346,172 +351,88 @@ class Hem4():
 #%% check file dataframes
 
         self.ready = False
+        
 
         # Upload the Dose response library
         fullpath = r"resources/Dose_response_library.xlsx"
         self.uploader.upload("haplib", fullpath)
-
-        #make sure fac_list df was created correctly
-        if self.model.faclist.dataframe is not None:
+        
+        #Check inputs
+        check_inputs = InputChecker(self.model)
+        required = check_inputs.check_required()
+        
+        if 'ready' not in required['result']:
             
-            if self.model.faclist.dataframe.empty:
-                messagebox.showinfo("Error","There was an error uploading Facilities List Option File, please try again")
-                check1 = False
+            messagebox.showinfo('Error', required['result'])
+            self.ready = False
+            
+        elif required['dependencies'] is not []:
+            
+            optional = check_inputs.check_dependent(required['dependencies'])
+            
+            if 'ready' not in optional['result']:
+                
+                messagebox.showinfo('Error', optional['result'])
+                self.ready = False
                 
             else:
-                fids = set(self.model.facids)
-               # print("fac_list ready")
-                check1 = True
-        else:
-            check1 = False
-            messagebox.showinfo("Error","There was an error uploading Facilities List Option File, please try again")
-       
-        #make sure emis_loc df was created correctly
-        if self.model.emisloc.dataframe is not None:
-            
-            if self.model.emisloc.dataframe.empty:
-                messagebox.showinfo("Error","There was an error uploading Emissions Locations File, please try again")
-                check2 = False
-            else:
-                #check facility id with emis loc ids
-                efids = set(self.model.emisloc.dataframe['fac_id'])
-                esource = set(self.model.emisloc.dataframe['source_id'])
-                if efids == fids:
-                    #print("emis_locs ready")
-                    check2 = True
-                
-        else:
-            check2 = False
-            messagebox.showinfo("Error","There was an error uploading Emissions Locations File, please try again")
-
-       #make sure hap_emis  df was created correctly
-        if self.model.hapemis.dataframe is not None:
-            
-            
-            if self.model.hapemis.dataframe.empty:
-                messagebox.showinfo("Error","There was an error uploading HAP Emissions File, please try again")
-                check3 = False
-                #print("empty")
-            else:
-                #check emis locations and source ids
-                hfids = set(self.model.hapemis.dataframe['fac_id'])
-                hsource = set(self.model.hapemis.dataframe['source_id'])
-                missing_sources = []
-                
-                
-                if efids == hfids:
-                    #print(True)
-                    
-                    for s in esource:
-                        if s not in hsource:
-                            missing_sources.append(s)
-                    
-                    if len(missing_sources) < 0:
-                        check3 = False
-                    
-                    else:
-                        check3 = True
-                        #print("hap_emis ready!")
-                    
-                else:
-                    check3 = False
-                
-        else:
-            check3 = False
-            messagebox.showinfo("Error","There was an error uploading HAP Emissions File, please try again")
-        
-        
-        if check1 == True & check2 == True & check3 == True:
-                
-        
-       
-        
-            
-            #check user receptors in facility
-            user_rec_check = self.model.faclist.dataframe['user_rcpt'] == 'Y'
-            user_rec_checklist = []
-            
-                
-            if True in user_rec_check.values:
-                
-                if self.model.ureceptr.dataframe is not None:
-                    pass
-                    
-                       
-                else:
-                    messagebox.showinfo( "Missing user receptors", "Please upload a user receptors file.")
-                
-            elif True not in user_rec_check.values:
-              
-                self.ureceptr_df = None 
-                
-            #if there isnt a file for poly vertex
-            if  hasattr(self, 'multipoly_df'):
-               pass 
-            else: 
-                self.multipoly_df = None    
-           
-            #if there isnt a file for bouyant line
-            if  hasattr(self, 'multibuoy_df'):
-                pass
-            else:
-                self.multibuoy_df = None
-                
-                   
-            if hasattr(self, 'multipoly_df') and hasattr(self, 'multibuoy_df') and self.model.ureceptr.dataframe is not None:
                 self.ready = True
-                print("Ready to run!")
+        
+        else:
             
+            self.ready = True
         
+
        #%%if the object is ready
-                if self.ready == True:
-                   
-                    #tell user to check the Progress/Log section
-                    messagebox.askokcancel("Confirm HEM4 Run", "Clicking 'OK' will start HEM4.")
-                   
-                    #create object for prepare inputs
-                    self.running = True
-                   
-                    #create a Google Earth KML of all sources to be modeled
-                    kmlWriter = KMLWriter()
-                    if kmlWriter is not None:
-                        kmlWriter.write_kml_emis_loc(self.model)
+        if self.ready == True:
 
-                    the_queue.put("\nPreparing Inputs for " + str(self.model.facids.count()) + " facilities")
-                    inputPrep = prepare.Prepare_Inputs(self.model)
+            #tell user to check the Progress/Log section
+            messagebox.askokcancel("Confirm HEM4 Run", "Clicking 'OK' will start HEM4.")
 
-                    # let's tell after_callback that this completed
-                    #print('thread_target puts None to the queue')
-                   
-                   
-                    fac_list = []
-                    for index, row in self.model.faclist.dataframe.iterrows():
+            #create object for prepare inputs
+            self.running = True
 
-                       facid = row[0]
-                       fac_list.append(facid)
-                       num = 1
-        
-                    for facid in fac_list:
-                        
-                        #save version of this gui as is? constantly overwrite it once each facility is done?
-                        the_queue.put("\nRunning facility " + str(num) + " of " + str(len(fac_list)))
+            #create a Google Earth KML of all sources to be modeled
+            kmlWriter = KMLWriter()
+            if kmlWriter is not None:
+                kmlWriter.write_kml_emis_loc(self.model)
 
-                        runner = FacilityRunner(facid, the_queue, inputPrep)
-                        runner.run()
+            the_queue.put("\nPreparing Inputs for " + str(self.model.facids.count()) + " facilities")
+            inputPrep = prepare.Prepare_Inputs(self.model)
 
-                        #increment facility count
-                        num += 1
+            # let's tell after_callback that this completed
+            #print('thread_target puts None to the queue')
 
-                the_queue.put("\nFinished running all facilities.\n")
-                
-                #reset all inputs if everything finished
-                self.model.reset()
-                self.fac_list.set('')
-                self.hap_list.set('')
-                self.emisloc_list.set('')
-                self.urep_list.set('')
 
-                self.running = False
+            fac_list = []
+            for index, row in self.model.faclist.dataframe.iterrows():
+
+               facid = row[0]
+               fac_list.append(facid)
+               num = 1
+
+            for facid in fac_list:
+
+                #save version of this gui as is? constantly overwrite it once each facility is done?
+                the_queue.put("\nRunning facility " + str(num) + " of " + str(len(fac_list)))
+
+                runner = FacilityRunner(facid, the_queue, inputPrep)
+                runner.run()
+
+                #increment facility count
+                num += 1
+
+        the_queue.put("\nFinished running all facilities.\n")
+
+        #reset all inputs if everything finished
+        self.model.reset()
+        self.fac_list.set('')
+        self.hap_list.set('')
+        self.emisloc_list.set('')
+        self.urep_list.set('')
+
+        self.running = False
+
 
     def workerComplete(self, future):
         ex = future.exception()
