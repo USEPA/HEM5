@@ -14,7 +14,6 @@ from tkinter import scrolledtext
 from tkinter import ttk
 
 import Hem4_Input_Processing as prepare
-from writer.kml import create_multi_kml as cmk
 from model.Model import Model
 from runner.FacilityRunner import FacilityRunner
 from upload.FileUploader import FileUploader
@@ -23,6 +22,8 @@ from checker.InputChecker import InputChecker
 
 
 #%% Hem4 GUI
+from writer.kml.KMLWriter import KMLWriter
+
 
 class Hem4():
 
@@ -381,30 +382,28 @@ class Hem4():
             
             self.ready = True
         
-        
-        
-   #%%if the object is ready
+
+       #%%if the object is ready
         if self.ready == True:
-           
+
             #tell user to check the Progress/Log section
             messagebox.askokcancel("Confirm HEM4 Run", "Clicking 'OK' will start HEM4.")
-           
+
             #create object for prepare inputs
             self.running = True
-           
+
             #create a Google Earth KML of all sources to be modeled
-            createkml = cmk.multi_kml(self.model)
-            if createkml is not None:
-                source_map = createkml.create_sourcemap()
-                kmlfiles = createkml.write_kml_emis_loc(source_map)
+            kmlWriter = KMLWriter()
+            if kmlWriter is not None:
+                kmlWriter.write_kml_emis_loc(self.model)
 
             the_queue.put("\nPreparing Inputs for " + str(self.model.facids.count()) + " facilities")
             inputPrep = prepare.Prepare_Inputs(self.model)
 
             # let's tell after_callback that this completed
             #print('thread_target puts None to the queue')
-           
-           
+
+
             fac_list = []
             for index, row in self.model.faclist.dataframe.iterrows():
 
@@ -413,7 +412,7 @@ class Hem4():
                num = 1
 
             for facid in fac_list:
-                
+
                 #save version of this gui as is? constantly overwrite it once each facility is done?
                 the_queue.put("\nRunning facility " + str(num) + " of " + str(len(fac_list)))
 
@@ -424,7 +423,7 @@ class Hem4():
                 num += 1
 
         the_queue.put("\nFinished running all facilities.\n")
-        
+
         #reset all inputs if everything finished
         self.model.reset()
         self.fac_list.set('')
@@ -433,6 +432,7 @@ class Hem4():
         self.urep_list.set('')
 
         self.running = False
+
 
     def workerComplete(self, future):
         ex = future.exception()
