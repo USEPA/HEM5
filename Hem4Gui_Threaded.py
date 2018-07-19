@@ -83,8 +83,8 @@ class Hem4():
         self.s3 = tk.Frame(self.main, width=250, height=100, pady=10, padx=10)
         self.s4 = tk.Frame(self.main, width=250, height=100, pady=10, padx=10)
         self.s5 = tk.Frame(self.main, width=250, height=100, pady=10, padx=10)
-        #self.s6 = tk.Frame(self.main, width=250, height=100, pady=10, padx=10)
-        #self.s7 = tk.Frame(self.main, width=250, height=100, pady=10, padx=10)
+        self.s6 = tk.Frame(self.main, width=250, height=100, pady=10, padx=10)
+        self.s7 = tk.Frame(self.main, width=250, height=100, pady=10, padx=10)
         self.s8 = tk.Frame(self.main, width=250, height=200, pady=10, padx=10)
         self.s9 = tk.Frame(self.main, width=250, pady=10, padx=10)
         #self.s10 = tk.Frame(self.main, width=250, height=200)
@@ -94,10 +94,10 @@ class Hem4():
         self.s3.grid(row=2, column=0, columnspan=2, sticky="nsew")
         self.s4.grid(row=3, column=0, columnspan=2, sticky="nsew")
         self.s5.grid(row=4, column=0, columnspan=2, sticky="nsew")
-        #self.s6.grid(row=5, column=0, columnspan=2, sticky="nsew")
-        #self.s7.grid(row=6, column=0, columnspan=2, sticky="nsew")
-        self.s8.grid(row=5, column=0, sticky="nsew")
-        self.s9.grid(row=6, column=0, sticky="nsew")
+        self.s6.grid(row=5, column=0, columnspan=2, sticky="nsew")
+        self.s7.grid(row=6, column=0, columnspan=2, sticky="nsew")
+        self.s8.grid(row=7, column=0, sticky="nsew")
+        self.s9.grid(row=8, column=0, sticky="nsew")
         #self.s10.grid(row=9, column=0, sticky="nsew")
 
         self.main.grid_rowconfigure(8, weight=4)
@@ -209,7 +209,50 @@ class Hem4():
         self.ur_op = ttk.Checkbutton(self.s8, text="Include user receptors for any facilities, as indicated in the Facilities List Options file.",
              variable=self.u_receptors, command=self.add_ur).grid(row=1, column=1, sticky="w")
 
-
+        
+        #Polygon sources label
+        poly_label = tk.Label(self.s6, font="-size 10",  text="Include Polyvertex Sources for any facilities, as indicated in the Facilities List Options file.")
+        poly_label.grid(row=1, sticky="W")
+        
+        #polygon sources upload button
+        self.poly_up = ttk.Button(self.s6, command = lambda: self.uploadPolyvertex())
+        self.poly_up["text"] = "Browse"
+        self.poly_up.grid(row=2, column=0, sticky="W")
+        #event handler for instructions (Button 1 is the left mouse click)
+        self.poly_up.bind('<Enter>', lambda e:self.browse("instructions/poly_browse.txt"))
+       
+        #polygon sources loccation file text entry
+        self.poly_list = tk.StringVar(self.s6)
+        self.poly_list_man = ttk.Entry(self.s6)
+        self.poly_list_man["width"] = 55
+        self.poly_list_man["textvariable"]= self.poly_list
+        self.poly_list_man.grid(row=2, column=0, sticky='E', padx=85)
+        #event handler for instructions (Button 1 is the left mouse click)
+        self.poly_list_man.bind('<Button-1>', lambda e:self.manual("instructions/poly_man.txt"))
+        
+        
+        #Buoyant Line  label
+        bouyant_label = tk.Label(self.s7, font="-size 10",  text="Please select a Bouyant Line Source Parameter file (if included):")
+        bouyant_label.grid(row=1, sticky="W")
+        
+        #bouyant line file upload button
+        self.bouyant_up = ttk.Button(self.s7, command = lambda: self.uploadBouyant())
+        self.bouyant_up["text"] = "Browse"
+        self.bouyant_up.grid(row=2, column=0, sticky='W')
+        #event handler for instructions (Button 1 is the left mouse click)
+        self.bouyant_up.bind('<Enter>', lambda e:self.bouyant_browse())
+        
+        
+        #bouyant line file text entry
+        self.bouyant_list = tk.StringVar(self.s7)
+        self.bouyant_list_man = ttk.Entry(self.s7)
+        self.bouyant_list_man["width"] = 55
+        self.bouyant_list_man["textvariable"]= self.bouyant_list
+        self.bouyant_list_man.grid(row=2, column=0, sticky='E', padx=85)
+        #event handler for instructions (Button 1 is the left mouse click)
+        self.bouyant_list_man.bind('<Button-1>', lambda e:self.bouyant_man())
+        
+        
     def is_excel(self, filepath):
         extensions = [".xls", ".xlsx"]
         return any(ext in filepath for ext in extensions)

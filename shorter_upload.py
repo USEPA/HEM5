@@ -2,7 +2,7 @@
 """
 Created on Thu Mar  8 09:46:16 2018
 
-@author: jbaker
+@author: dlindsey
 """
 
 def upload(self, file):

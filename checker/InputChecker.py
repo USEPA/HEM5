@@ -192,15 +192,47 @@ class InputChecker():
                               " for " )
                     
                     result['result'] = logMsg7
+                    result['reset'] = 'user_rcpt'
                     return result
                 
-            elif option is 'polyvertex':
-                pass
-                
-                
-                
             elif option is 'bouyant_line':
-                pass
+                
+                try:
+                    
+                    self.model.multibuoy.dataframe
+                
+                except AttributeError:
+                    logMsg8 = ("Buoyant Line parameters are specified in the " + 
+                               " Facilities List Options file, please upload " + 
+                               " buoyant line sources for " )
+                    
+                    
+                    result['result'] = logMsg8
+                    result['reset'] = 'bouyant_line'
+                    return result
+            
+            
+            
+                
+            elif option is 'polyvertex':
+                
+                try: 
+                    
+                    self.model.multipoly.dataframe
+                    
+                except AttributeError:
+                    
+                    logMsg9 = ("Polyvertex parameters are specified in the " + 
+                               " Facilities List Options file, please upload " + 
+                               " polyvertex sources for " )
+                    
+                    
+                    result['result'] = logMsg9
+                    result['reset'] = 'polyvertex'
+                    return result
+                    
+                
+                
         
         result['result'] = 'ready'
         return result
