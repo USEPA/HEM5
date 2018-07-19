@@ -34,4 +34,4 @@ class UserReceptors(DependentInputFile):
             check_receptor_assignment = [str(facility) for facility in check_receptor_assignment]
             self.log.append("Uploaded user receptors for " + " ".join(check_receptor_assignment) + "\n")
 
-        self.dataframe = ureceptor_df
+            self.dataframe = ureceptor_df ##moved this into the loop

@@ -7,7 +7,8 @@ from upload.DoseResponse import DoseResponse
 from upload.EmissionsLocations import EmissionsLocations
 from upload.FacilityList import FacilityList
 from upload.HAPEmissions import HAPEmissions
-from upload.UserReceptors import UserReceptors
+from upload.UserReceptors import UserReceptors 
+from upload.BouyantLine import BouyantLine
 
 
 class FileUploader():
@@ -93,71 +94,12 @@ class FileUploader():
     def uploadDependent(self, filetype, path, dependency):
 
         if filetype == "polyvertex":
-
-            emisloc_df = dependency;
-
-            #POLYVERTEX excel to dataframe
-            multipoly_df = pd.read_excel(open(path, "rb"),
-                 names=("fac_id","source_id","location_type","lon","lat","utmzone","numvert","area", "fipstct"),
-                 converters={"FacilityID":str,"source_id":str,"location_type":str,"lon":float,"lat":float,
-                     "utmzone":str,"numvert":float,"area":float})
-
-            #get polyvertex facility list for check
-            find_is = emisloc_df[emisloc_df['source_type'] == "I"]
-            fis = find_is['fac_id']
-
-            #check for unassigned polyvertex
-            check_poly_assignment = set(multipoly_df["fac_id"])
-            poly_unassigned = []
-            logMsg = ""
-
-            for fac in fis:
-                if fac not in check_poly_assignment:
-                    poly_unassigned.append(fac)
-
-            if len(poly_unassigned) > 0:
-                messagebox.showinfo("Unassigned Polygon Sources",
-                    "Polygon Sources for " + ", ".join(poly_unassigned) +
-                    " have not been assigned. Please edit the 'source_type' column in the Emissions Locations file.")
-                #clear box and empty data frame
-            else:
-                logMsg = "Uploaded polygon sources for " + " ".join(check_poly_assignment) + "\n"
-
-            return {'path': path, 'df': multipoly_df, 'messages': [logMsg]}
+            
+            self.model.Polyvertex(path, dependency)
 
         elif filetype == "bouyant line":
 
-            self.bouyant_list.set(path)
-            self.bouyant_path = path
-
-            #BOUYANT LINE excel to dataframe
-            self.multibuoy_df = pd.read_excel(open(self.bouyant_path, "rb")
-                                              , names=("fac_id", "avgbld_len", "avgbld_hgt", "avgbld_wid", "avglin_wid", "avgbld_sep", "avgbuoy"))
-
-
-            #get bouyant line facility list
-            self.emisloc_df['source_type'].str.upper()
-            find_bs = self.emisloc_df[self.emisloc_df['source_type'] == "B"]
-
-            fbs = find_bs['fac_id'].unique()
-
-            #check for unassigned buoyants
-
-            check_bouyant_assignment = set(self.multibuoy_df["fac_id"])
-
-            bouyant_unassigned = []
-            for fac in fbs:
-
-                if fac not in check_bouyant_assignment:
-                    bouyant_unassigned.append(fac)
-
-            if len(bouyant_unassigned) > 0:
-                messagebox.showinfo("Unassigned Bouyant Line parameters", "Bouyant Line parameters for " + ", ".join(bouyant_unassigned) + " have not been assigned. Please edit the 'source_type' column in the Emissions Locations file.")
-            else:
-                pass
-                #record upload in log
-                #self.scr.insert(tk.INSERT, "Uploaded bouyant line parameters for " + " ".join(check_bouyant_assignment))
-                #self.scr.insert(tk.INSERT, "\n")
+            self.model.BouyantLine(path, dependency)
 
 
         elif filetype == "user receptors":
