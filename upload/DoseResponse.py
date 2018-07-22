@@ -2,8 +2,8 @@ from upload.InputFile import InputFile
 
 class DoseResponse(InputFile):
 
-    def __init__(self, path):
-        InputFile.__init__(self, path)
+    def __init__(self):
+        InputFile.__init__(self, "resources/Dose_response_library.xlsx")
 
     def createDataframe(self):
 

@@ -17,14 +17,14 @@ import utm2ll
 
 
 ##REFORMATTED TO MOVE THE DATA FRAME CREATION TO THE GUI
-class Prepare_Inputs():
+class FacilityPrep():
     
     def __init__(self, model):
 
         self.message = "Hem 4 starting"
         self.model = model
 
-    def prep_facility(self, facid):
+    def createRunstream(self, facid):
 
         #%%---------- Facility Options --------------------------------------
 

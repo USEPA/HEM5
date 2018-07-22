@@ -13,7 +13,7 @@ from tkinter import messagebox
 from tkinter import scrolledtext
 from tkinter import ttk
 
-import Hem4_Input_Processing as prepare
+import FacilityPrep as prepare
 from model.Model import Model
 from runner.FacilityRunner import FacilityRunner
 from upload.FileUploader import FileUploader
@@ -396,10 +396,10 @@ class Hem4():
         self.ready = False
         
 
-        # Upload the Dose response library
-        fullpath = r"resources/Dose_response_library.xlsx"
-        self.uploader.upload("haplib", fullpath)
-        
+        # Upload the Dose response and Target Organ Endponts libraries
+        self.uploader.uploadLibrary("haplib")
+        self.uploader.uploadLibrary("organs")
+
         #Check inputs
         check_inputs = InputChecker(self.model)
         required = check_inputs.check_required()
@@ -441,7 +441,6 @@ class Hem4():
                 kmlWriter.write_kml_emis_loc(self.model)
 
             the_queue.put("\nPreparing Inputs for " + str(self.model.facids.count()) + " facilities")
-            inputPrep = prepare.Prepare_Inputs(self.model)
 
             # let's tell after_callback that this completed
             #print('thread_target puts None to the queue')
@@ -459,7 +458,7 @@ class Hem4():
                 #save version of this gui as is? constantly overwrite it once each facility is done?
                 the_queue.put("\nRunning facility " + str(num) + " of " + str(len(fac_list)))
 
-                runner = FacilityRunner(facid, the_queue, inputPrep)
+                runner = FacilityRunner(facid, the_queue, self.model)
                 runner.run()
 
                 #increment facility count
