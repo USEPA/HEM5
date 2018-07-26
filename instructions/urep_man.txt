@@ -1,0 +1,1 @@
+Enter the name and location of the spreadsheet of geographic coordinates (e.g. longitude, latitude) of a set of discrete receptors to be modeled. The file must be an MS Excel file.

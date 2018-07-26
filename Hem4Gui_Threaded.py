@@ -228,7 +228,7 @@ class Hem4():
         self.poly_list_man["textvariable"]= self.poly_list
         self.poly_list_man.grid(row=2, column=0, sticky='E', padx=85)
         #event handler for instructions (Button 1 is the left mouse click)
-        self.poly_list_man.bind('<Button-1>', lambda e:self.manual("instructions/poly_man.txt"))
+        self.poly_list_man.bind('<Button-1>', lambda e:self.manual("instructions/poly_browse.txt"))
         
         
         #Buoyant Line  label
@@ -240,7 +240,7 @@ class Hem4():
         self.bouyant_up["text"] = "Browse"
         self.bouyant_up.grid(row=2, column=0, sticky='W')
         #event handler for instructions (Button 1 is the left mouse click)
-        self.bouyant_up.bind('<Enter>', lambda e:self.bouyant_browse())
+        self.bouyant_up.bind('<Enter>', lambda e:self.browse("instructions/bouyant_browse.txt"))
         
         
         #bouyant line file text entry
@@ -250,7 +250,7 @@ class Hem4():
         self.bouyant_list_man["textvariable"]= self.bouyant_list
         self.bouyant_list_man.grid(row=2, column=0, sticky='E', padx=85)
         #event handler for instructions (Button 1 is the left mouse click)
-        self.bouyant_list_man.bind('<Button-1>', lambda e:self.bouyant_man())
+        self.bouyant_list_man.bind('<Button-1>', lambda e:self.manual("instructions/bouyant_browse.txt"))
         
         
     def is_excel(self, filepath):

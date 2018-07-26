@@ -1,0 +1,1 @@
+Enter the name and location of the spreadsheet describing the land around the facilities for which you wish to model dry vapor deposition. The file must be an MS Excel file. Vapor deposition can only be modeled for facilities which have vapor emissions listed in the HAP emissions input file and those facilities must also be listed in the landuse file.
