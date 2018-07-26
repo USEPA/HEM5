@@ -1,0 +1,1 @@
+Enter the name and location of the spreadsheet of geographic location and configuration (e.g., height, diameter) of each emission source. The file must be an MS Excel file. The source ID's in this file must match the source ID's used in your HAP emissions file. Once you have entered your data, just save your spreadsheet as an MS Excel (.xlsx) file.

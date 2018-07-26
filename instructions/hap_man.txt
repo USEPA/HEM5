@@ -1,0 +1,1 @@
+Enter the name and location of the spreadsheet of HAP emissions  for each emission source. The file must be an MS Excel file. Pollutant names used in this file must match the names in the model's pollutant list in the Dose Response Library reference file.

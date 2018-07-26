@@ -1,0 +1,1 @@
+Enter the name and location of the spreadsheet of the list of facilities and their options to be modeled by HEM-3. If you leave the columns in this file (except for the facility ID) blank, default values will be used. The file must be an MS Excel file. For more information on the spreadsheet and its contents, see the Format Guidelines.
