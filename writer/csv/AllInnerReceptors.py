@@ -9,14 +9,13 @@ class AllInnerReceptors(CsvWriter):
     """
 
     def __init__(self, targetDir, facilityId, model, plot_df):
-
         CsvWriter.__init__(self, model, plot_df)
 
         self.filename = os.path.join(targetDir, facilityId + "_all_inner_receptors.csv")
 
     def calculateOutputs(self):
         """
-        Do something with the model and plot dataframes, setting self.headers and self.data in the process.
+        Do something with the model and plot data, setting self.headers and self.data in the process.
         """
 
         self.headers = ['Lat',	'Lon', 'Overlap', 'Source_id', 'Emis_type', 'Pollutant', 'Conc_ug_m3', 'Acon_ug_m2',
