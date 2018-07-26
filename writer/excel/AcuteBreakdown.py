@@ -15,7 +15,7 @@ class AcuteBreakdown(ExcelWriter):
 
     def calculateOutputs(self):
         """
-        Do something with the model and plot file, setting self.headers and self.data in the process.
+        Do something with the model and plot data, setting self.headers and self.data in the process.
         """
         self.headers = ['pollutant', 'Source_id', 'Emis_type', 'maxcon_pop (µg/m3)', 'flag_1', 'maxcon_all (µg/m3)',
                         'Flag_2']

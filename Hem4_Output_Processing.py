@@ -292,7 +292,7 @@ class Process_outputs():
 
 
         # construct acute breakdown file object and write to file
-        acuteBkdn = AcuteBreakdown(self.outdir, self.facid, self.model, self.plotfile)
+        acuteBkdn = AcuteBreakdown(self.outdir, self.facid, self.model, plot_df)
         acuteBkdn.write()
 
         excelWriter = ExcelWriter(self.outdir)
