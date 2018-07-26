@@ -195,6 +195,25 @@ class InputChecker():
                     result['reset'] = 'user_rcpt'
                     return result
                 
+                else:
+                
+                    #check facility ids in ureceptors 
+                    uids = set(self.model.ureceptr.dataframe['fac_id'])
+                    fids = set(self.model.faclist.dataframe['fac_id'])
+                    
+                    if fids.intersection(uids) != fids:
+                        
+                        missing = fids - uids
+                        
+                        logMsg7b = ("Facilities: " + ",".join(list(missing)) + 
+                                    " are missing user receptors that were" +
+                                    " indicated in the Facilities list options file")
+            
+                        result['result'] =  logMsg7b
+                        result['reset'] = 'user_rcpt'
+                        return result
+                        
+                
             elif option is 'bouyant_line':
                 
                 try:
@@ -210,9 +229,26 @@ class InputChecker():
                     result['result'] = logMsg8
                     result['reset'] = 'bouyant_line'
                     return result
+                
+                else:
+                    
+                    #check facility ids against bouyant line ids
+                    bids = set(self.model.multibuoy.dataframe['fac_id'])
+                    fids = set(self.model.faclist.dataframe['fac_id'])
+                    
+                    if fids.intersection(bids) != fids:
+                        
+                        missing = fids - bids
+                        
+                        logMsg8b = ("Facilities: " + ",".join(list(missing)) + 
+                                    " are missing bouyant line sources that" +
+                                    " were indicated in the Facilities list" +
+                                    " options file")
             
-            
-            
+                        result['result'] =  logMsg8b
+                        result['reset'] = 'bouyant_line'
+                        return result
+                    
                 
             elif option is 'polyvertex':
                 
@@ -232,6 +268,24 @@ class InputChecker():
                     return result
                     
                 
+                else:
+                    
+                    #check facility ids against polyvertex ids
+                    pids = set(self.model.multipoly.dataframe['fac_id'])
+                    fids = set(self.model.faclist.dataframe['fac_id'])
+                    
+                    if fids.intersection(pids) != fids:
+                        
+                        missing = fids - pids
+                        
+                        logMsg9b = ("Facilities: " + ",".join(list(missing)) + 
+                                    " are missing polyvertex sources that" +
+                                    " were indicated in the Facilities list" +
+                                    " options file")
+            
+                        result['result'] =  logMsg9b
+                        result['reset'] = 'poly_vertex'
+                        return result
                 
         
         result['result'] = 'ready'
