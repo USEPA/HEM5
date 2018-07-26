@@ -6,6 +6,8 @@ class Writer(ABC):
     def __init__(self):
         self.outputs = None
         self.filename = None
+        self.headers = None
+        self.data = None
 
     def write(self):
 

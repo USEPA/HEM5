@@ -10,6 +10,8 @@ import time
 import numpy as np
 import openpyxl
 import pandas as pd
+
+from writer.csv.AllPolarReceptors import AllPolarReceptors
 from writer.csv.CsvWriter import CsvWriter
 from writer.excel.AcuteBreakdown import AcuteBreakdown
 import sys
@@ -27,7 +29,10 @@ class Process_outputs():
         self.numsectors = self.polar_recs["sector"].max()
         self.numrings = self.polar_recs["ring"].max()
         self.model = model
-        
+
+        self.model.runstream_polar_recs = runstream.polar_df
+        self.model.runstream_hapemis = runstream.hapemis
+
         # Units conversion factor
         self.cf = 2000*0.4536/3600/8760
 #        #first check for facilities folder, if not create as output directory
@@ -235,23 +240,8 @@ class Process_outputs():
 
         
         #----------- create All_Polar_Receptor output file -----------------
-        
-        #extract polar concs from plotfile and round the utm coordinates
-        polgrid_df = plot_df.query("net_id == 'POLGRID1'").copy()
-        polgrid_df.utme = polgrid_df.utme.round()
-        polgrid_df.utmn = polgrid_df.utmn.round()
-        
-        #call creation function
-        all_polar_receptors_df = self.create_all_polar_receptors(polgrid_df)
-        #dataframe to array
-        all_polar_receptors_m = all_polar_receptors_df.values
-        
-        #export to CSV
-        outfile = self.facid + "_all_polar_receptors.csv"
-        column_names = ["source_id", "emis_type", "pollutant", "conc_ugm3", "distance_m",
-                        "angle", "sector_num", "ring_num", "elev_m", "lat", "lon", "overlap"]
-        all_polar_receptors_obj = CsvWriter(self.outdir)
-        all_polar_receptors_obj.write(outfile, column_names, all_polar_receptors_m)
+        all_polar_receptors = AllPolarReceptors(self.outdir, self.facid, self.model, plot_df)
+        all_polar_receptors.write()
                
         
         #debug

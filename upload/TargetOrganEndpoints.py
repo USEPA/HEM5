@@ -13,4 +13,4 @@ class TargetOrganEndpoints(InputFile):
         # pollutant|epa_woe	|resp|liver|neuro|dev|reprod|kidney|ocular|endoc|hemato|immune|skeletal|spleen|thyroid|wholebod
         self.dataframe = self.readFromPath(
             ("pollutant","epa_woe","resp","liver","neuro","dev","reprod","kidney","ocular","endoc","hemato",
-             "immune","skeletal","spleen","thyroid","wholebod"))
+             "immune","skeletal","spleen","thyroid","wholebod"), {})
