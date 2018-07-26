@@ -1,0 +1,1 @@
+Search your computer for the name and location of the spreadsheet of geographic coordinates (e.g. latitude and longitude) of a set of descrete receptors to be included in the dispersion modeling. The file must be an MS Excel file.
