@@ -458,11 +458,16 @@ class Hem4():
                 #save version of this gui as is? constantly overwrite it once each facility is done?
                 the_queue.put("\nRunning facility " + str(num) + " of " + str(len(fac_list)))
 
-                runner = FacilityRunner(facid, the_queue, self.model)
-                runner.run()
+                try:
+                    runner = FacilityRunner(facid, the_queue, self.model)
+                    runner.run()
 
-                #increment facility count
-                num += 1
+                    # increment facility count
+                    num += 1
+                except Exception as ex:
+                    fullStackInfo = ''.join(traceback.format_exception(etype=type(ex), value=ex, tb=ex.__traceback__))
+                    the_queue.put("\nAn error ocurred while running a facility:")
+                    the_queue.put("\n\n" + fullStackInfo)
 
         the_queue.put("\nFinished running all facilities.\n")
 
