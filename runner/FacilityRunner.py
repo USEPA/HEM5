@@ -4,26 +4,27 @@ import time
 import subprocess
 import shutil
 
+from FacilityPrep import FacilityPrep
 from writer.kml.KMLWriter import KMLWriter
 
 
 class FacilityRunner():
 
-    def __init__(self, id, messageQueue, inputPrep):
+    def __init__(self, id, messageQueue, model):
         self.facilityId = id
         self.messageQueue = messageQueue
-        self.inputPrep = inputPrep
+        self.model = model
         
     def run(self):
 
         # Start the clock for benchmarking
         start = time.time()
 
-        result = self.inputPrep.prep_facility(self.facilityId)
+        prep = FacilityPrep(self.model)
+        runstream = prep.createRunstream(self.facilityId)
 
         self.messageQueue.put("Building Runstream File for " + self.facilityId)
-
-        result.build()
+        runstream.build()
 
         #create fac folder
         fac_folder = "output/"+ self.facilityId + "/"
@@ -63,14 +64,13 @@ class FacilityRunner():
 
             #process outputs
             self.messageQueue.put("Processing Outputs for " + self.facilityId)
-            outputProcess = po.Process_outputs(self.facilityId, self.inputPrep.model.haplib.dataframe, result.hapemis, fac_folder,
-                 self.inputPrep.innerblks, self.inputPrep.outerblks, result.polar_df)
+            outputProcess = po.Process_outputs(fac_folder, self.facilityId, self.model, prep, runstream)
             outputProcess.process()
 
             #create facility kml
             self.messageQueue.put("Writing KML file for " + self.facilityId)
             kmlWriter = KMLWriter()
-            kmlWriter.write_facility_kml(self.facilityId, result.cenlat, result.cenlon, fac_folder)
+            kmlWriter.write_facility_kml(self.facilityId, runstream.cenlat, runstream.cenlon, fac_folder)
 
             pace =  str(time.time()-start) + 'seconds'
             self.messageQueue.put("Finished calculations for " + self.facilityId + ' after' + pace + "\n")

@@ -10,22 +10,30 @@ import time
 import numpy as np
 import openpyxl
 import pandas as pd
-from writer.csv.CsvWriter import CsvWriter
+
+#from writer.csv.AllPolarReceptors import AllPolarReceptors
+#from writer.csv.CsvWriter import CsvWriter
+#from writer.excel.AcuteBreakdown import AcuteBreakdown
+from writer.csv import *
 import sys
 
 class Process_outputs():
     
-    def __init__(self, facid, haplib_df, hapemis, outdir, innerblks, outerblks, polar):
+    def __init__(self, outdir, facid, model, prep, runstream):
         self.facid = facid
-        self.haplib_m = haplib_df.as_matrix()
-        self.hapemis = hapemis
+        self.haplib_m = model.haplib.dataframe.as_matrix()
+        self.hapemis = runstream.hapemis
         self.outdir = outdir
-        self.inner_m = innerblks.as_matrix()
-        self.outerblks_df = outerblks
-        self.polar_recs = polar
+        self.inner_m = prep.innerblks.as_matrix()
+        self.outerblks_df = prep.outerblks
+        self.polar_recs = runstream.polar_df
         self.numsectors = self.polar_recs["sector"].max()
         self.numrings = self.polar_recs["ring"].max()
-        
+        self.model = model
+
+        self.model.runstream_polar_recs = runstream.polar_df
+        self.model.runstream_hapemis = runstream.hapemis
+
         # Units conversion factor
         self.cf = 2000*0.4536/3600/8760
 #        #first check for facilities folder, if not create as output directory
@@ -233,23 +241,8 @@ class Process_outputs():
 
         
         #----------- create All_Polar_Receptor output file -----------------
-        
-        #extract polar concs from plotfile and round the utm coordinates
-        polgrid_df = plot_df.query("net_id == 'POLGRID1'").copy()
-        polgrid_df.utme = polgrid_df.utme.round()
-        polgrid_df.utmn = polgrid_df.utmn.round()
-        
-        #call creation function
-        all_polar_receptors_df = self.create_all_polar_receptors(polgrid_df)
-        #dataframe to array
-        all_polar_receptors_m = all_polar_receptors_df.values
-        
-        #export to CSV
-        outfile = self.facid + "_all_polar_receptors.csv"
-        column_names = ["source_id", "emis_type", "pollutant", "conc_ugm3", "distance_m",
-                        "angle", "sector_num", "ring_num", "elev_m", "lat", "lon", "overlap"]
-        all_polar_receptors_obj = CsvWriter(self.outdir)
-        all_polar_receptors_obj.write(outfile, column_names, all_polar_receptors_m)
+        all_polar_receptors = AllPolarReceptors(self.outdir, self.facid, self.model, plot_df)
+        all_polar_receptors.write()
                
         
         #debug
@@ -288,6 +281,10 @@ class Process_outputs():
         #apply polar build function and fill each matrix
         np.apply_along_axis(lambda x: self.polar_build(x), axis=1, arr=self.polgrid )
 
+
+        # construct acute breakdown file object and write to file
+        # acuteBkdn = AcuteBreakdown(self.outdir, self.facid, self.model, plot_df)
+        # acuteBkdn.write()
 
         excelWriter = ExcelWriter(self.outdir)
 

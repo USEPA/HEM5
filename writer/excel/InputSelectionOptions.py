@@ -1,0 +1,31 @@
+import os
+from writer.excel import ExcelWriter
+
+class InputSelectionOptions(ExcelWriter):
+    """
+    Provides the options and input file names specified by the user at the start of the run.
+    """
+
+    def __init__(self, targetDir, facilityId, model, plot_df):
+        ExcelWriter.__init__(self, model, plot_df)
+
+        self.filename = os.path.join(targetDir, facilityId + "_input_selection_options.xlsx")
+
+    def calculateOutputs(self):
+        """
+        Do something with the model and plot data, setting self.headers and self.data in the process.
+        """
+        self.headers = ['title1', 'title2', 'inhalation', 'multi_media', 'hap_phase', 'rural_urban', 'air_conc',
+                        'dep_yn', 'depl_yn', 'part_vap', 'dep_prmt', 'dep', 'depl_prmt', 'depl', 'incl_elev',
+                        'incl_hour', 'model status', 'hr_ratio', 'incl_bldg_dw', 'incl_size', 'user_rcpt', 'new_urfs',
+                        'nurfs_file', 'rev_urfs', 'max_rad', 'min_rad', 'blk_dist', 'ovrlap_dist', 'conc_cir', 'radials',
+                        'emis_file', 'hap_emis_file', 'user_rcpt_file', 'part_size_file', 'hour_temp_file', 'bldg_file',
+                        'chronic', 'acute', 'acute hours', 'poll_type', 'done', 'nad', 'num_of_runs', 'polar_change',
+                        'mode', 'aermod', 'facil_number', 'multi_file', 'crystal_ball', 'all_receptors', 'pop_size',
+                        'first_ring', 'landuse_file', 'season_file', 'vertex_file', 'diurnal', 'time_blks', 'seas_var',
+                        'emis_var', 'emis_var_file', 'results_temporal', 'census_year', 'fastall', 'flagpole',
+                        'bldg_dw_so', 'hremis_file', 'hour_emis', 'prefix', 'prefixyn', 'm_usr_rcpt', 'm_dep_depl',
+                        'm_prt_size', 'm_season', 'm_landuse', 'blp_file', 'csv_output', 'reset']
+
+        # TODO
+        self.data = []

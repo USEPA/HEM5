@@ -1,29 +1,32 @@
 import csv
+from writer.Writer import Writer
 
+class CsvWriter(Writer):
 
-class CsvWriter():
+    def __init__(self, model, plot_df):
+        Writer.__init__(self)
 
-    def __init__(self, targetDir):
+        self.model = model
+        self.plot_df = plot_df
 
-        self.targetDir = targetDir
-
-    def write(self, name, headers, data):
-        
+    def writeToFile(self):
         """
-        
+
         Write an array to a CSV file.
-        
+
         :param str name: Name of CSV file
         :param list headers: A list of column names
         :param array data: An array of data to write
-        
+
         """
-        
-        csvfile = self.targetDir + name
-        fobj = open(csvfile, 'w')
+
+        if self.filename is None:
+            raise RuntimeError("No file name set. Cannot write to file.")
+
+        fobj = open(self.filename, 'w')
         writer = csv.writer(fobj, delimiter=',', lineterminator='\r\n', quoting=csv.QUOTE_NONNUMERIC)
-        writer.writerow(headers)
-        for row in data:
+        writer.writerow(self.headers)
+        for row in self.data:
             writer.writerow(row)
         
         fobj.close()

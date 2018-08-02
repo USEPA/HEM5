@@ -7,14 +7,22 @@ from upload.DoseResponse import DoseResponse
 from upload.EmissionsLocations import EmissionsLocations
 from upload.FacilityList import FacilityList
 from upload.HAPEmissions import HAPEmissions
-from upload.UserReceptors import UserReceptors 
-from upload.BouyantLine import BouyantLine
+from upload.TargetOrganEndpoints import TargetOrganEndpoints
+from upload.UserReceptors import UserReceptors
+from upload.Polyvertex import Polyvertex 
+from upload.BuoyantLine import BuoyantLine
 
 
 class FileUploader():
 
     def __init__(self, model):
         self.model = model
+
+    def uploadLibrary(self, filetype):
+        if filetype == "haplib":
+            self.model.haplib = DoseResponse()
+        elif filetype == "organs":
+            self.model.organs = TargetOrganEndpoints()
 
     def upload(self, filetype, path):
             if filetype == "faclist":
@@ -23,8 +31,6 @@ class FileUploader():
                 self.model.hapemis = HAPEmissions(path)
             elif filetype == "emisloc":
                 self.model.emisloc = EmissionsLocations(path)
-            elif filetype == "haplib":
-                self.model.haplib = DoseResponse(path)
             elif filetype == "building downwash":
                 pass
                 #file_path = os.path.abspath(filename)
@@ -95,11 +101,11 @@ class FileUploader():
 
         if filetype == "polyvertex":
             
-            self.model.Polyvertex(path, dependency)
+            self.model.multipoly = Polyvertex(path, dependency)
 
-        elif filetype == "bouyant line":
+        elif filetype == "buoyant line":
 
-            self.model.BouyantLine(path, dependency)
+            self.model.multibuoy = BuoyantLine(path, dependency)
 
 
         elif filetype == "user receptors":
