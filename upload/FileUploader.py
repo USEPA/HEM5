@@ -7,6 +7,7 @@ from upload.DoseResponse import DoseResponse
 from upload.EmissionsLocations import EmissionsLocations
 from upload.FacilityList import FacilityList
 from upload.HAPEmissions import HAPEmissions
+from upload.TargetOrganEndpoints import TargetOrganEndpoints
 from upload.UserReceptors import UserReceptors 
 from upload.BouyantLine import BouyantLine
 
@@ -16,6 +17,12 @@ class FileUploader():
     def __init__(self, model):
         self.model = model
 
+    def uploadLibrary(self, filetype):
+        if filetype == "haplib":
+            self.model.haplib = DoseResponse()
+        elif filetype == "organs":
+            self.model.organs = TargetOrganEndpoints()
+
     def upload(self, filetype, path):
             if filetype == "faclist":
                 self.model.faclist = FacilityList(path)
@@ -23,8 +30,6 @@ class FileUploader():
                 self.model.hapemis = HAPEmissions(path)
             elif filetype == "emisloc":
                 self.model.emisloc = EmissionsLocations(path)
-            elif filetype == "haplib":
-                self.model.haplib = DoseResponse(path)
             elif filetype == "building downwash":
                 pass
                 #file_path = os.path.abspath(filename)

@@ -1,24 +1,29 @@
 import xlsxwriter
+from writer.Writer import Writer
 
+class ExcelWriter(Writer):
 
-class ExcelWriter():
+    def __init__(self, model, plot_df):
+        Writer.__init__(self)
 
-    def __init__(self, targetDir):
+        self.model = model
+        self.plot_df = plot_df
 
-        self.targetDir = targetDir
+    def writeToFile(self):
 
-    def write(self, name, headers, data):
+        if self.filename is None:
+            raise RuntimeError("No file name set. Cannot write to file.")
 
-        workbook = xlsxwriter.Workbook(self.targetDir + name, {'constant_memory': True})
+        workbook = xlsxwriter.Workbook(self.filename, {'constant_memory': True})
 
         worksheet = workbook.add_worksheet()
 
-        self.write_header(worksheet, headers)
-        self.write_data(worksheet, data)
+        self.write_header(worksheet)
+        self.write_data(worksheet)
 
         workbook.close
 
-    def write_header(self, worksheet, headers):
+    def write_header(self, worksheet):
         """
          Write the header (column names) in the given Excel worksheet.
 
@@ -27,12 +32,12 @@ class ExcelWriter():
          :return: void
         """
 
-        for i in range(0, len(headers)):
-            worksheet.write(0, i, headers[i])
+        for i in range(0, len(self.headers)):
+            worksheet.write(0, i, self.headers[i])
 
-    def write_data(self, worksheet, data):
+    def write_data(self, worksheet):
 
         # With 'constant_memory' you must write data in row by column order.
-        for row in range(0, data.shape[0]):
-            for col in range(0, data.shape[1]):
-                worksheet.write(row + 1, col, data[row][col])
+        for row in range(0, self.data.shape[0]):
+            for col in range(0, self.data.shape[1]):
+                worksheet.write(row + 1, col, self.data[row][col])
