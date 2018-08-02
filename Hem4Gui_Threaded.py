@@ -21,13 +21,17 @@ from tkinter.filedialog import askopenfilename
 from checker.InputChecker import InputChecker
 
 
+
 #%% Hem4 GUI
 from writer.kml.KMLWriter import KMLWriter
 
 
 class Hem4():
 
-    def __init__ (self):
+    def __init__ (self):    
+        """
+        The HEM4 class object builds the GUI for the HEM4 application.
+        """
         #create window instance
         self.win = tk.Tk()
     
@@ -44,24 +48,46 @@ class Hem4():
         self.uploader = FileUploader(self.model)
 
 #%% Quit Function    
-    def quit_gui(self):
+    def quit_gui(self):    
+        """ 
+        Function handles quiting HEM4 by closing the window containing
+        the GUI and exiting all background processes & threads
+        """
+    
         if self.running == False:
             self.win.quit()
             self.win.destroy()
             exit()
         
         elif self.running == True:
-             override = messagebox.askokcancel("Confirm HEM4 Quit", "Are you " + 
+             override = messagebox.askokcancel("Confirm HEM4 Quit", "Are you "+ 
               "sure? Hem4 is currently running. Clicking 'OK' will stop HEM4.")
              
              if override == True:
                 self.win.quit()
                 self.win.destroy()
                 exit()
-            
+    
+#%% Open HEM4 User Guide
+    def user_guide(self):
+        """ 
+        Function opens the user guide for Hem4
+        *** needs new HEM4 pdf ***
+        """
+        
+        os.startfile("userguide\Multi_HEM-3_Users_Guide.pdf")
+    
+                
 #%%Create Widgets
     
     def createWidgets(self):
+        """
+        Function creates the main tab structure and required inputs,
+        referred to as widgets in tkinter.
+        
+        To create widgets, the widget must be assigned to a variable and then 
+        placed on a grid or within a 'frame'.
+        """
         # Tab Control introduced here --------------------------------------
         self.tabControl = ttk.Notebook(self.win)     # Create Tab Control
 
@@ -74,7 +100,9 @@ class Hem4():
         self.tabControl.pack(expand=1, fill="both")  # Pack to make visible
         
          # Create container frame to hold all other widgets
-        self.main = ttk.LabelFrame(tab1, text='HEM4 Upload Options ')
+        self.main = ttk.LabelFrame(tab1, text='Human Exposure Model,'+
+                                   ' open-source (HEM4), Version 1.0', 
+                                   labelanchor="n")
         self.main.grid(column=0, row=1)
         
         #create discreet sections for GUI in tab1
@@ -83,9 +111,6 @@ class Hem4():
         self.s3 = tk.Frame(self.main, width=250, height=100, pady=10, padx=10)
         self.s4 = tk.Frame(self.main, width=250, height=100, pady=10, padx=10)
         self.s5 = tk.Frame(self.main, width=250, height=100, pady=10, padx=10)
-        self.s6 = tk.Frame(self.main, width=250, height=100, pady=10, padx=10)
-        self.s7 = tk.Frame(self.main, width=250, height=100, pady=10, padx=10)
-        self.s8 = tk.Frame(self.main, width=250, height=200, pady=10, padx=10)
         self.s9 = tk.Frame(self.main, width=250, pady=10, padx=10)
         #self.s10 = tk.Frame(self.main, width=250, height=200)
 
@@ -94,9 +119,8 @@ class Hem4():
         self.s3.grid(row=2, column=0, columnspan=2, sticky="nsew")
         self.s4.grid(row=3, column=0, columnspan=2, sticky="nsew")
         self.s5.grid(row=4, column=0, columnspan=2, sticky="nsew")
-        self.s6.grid(row=5, column=0, columnspan=2, sticky="nsew")
-        self.s7.grid(row=6, column=0, columnspan=2, sticky="nsew")
-        self.s8.grid(row=7, column=0, sticky="nsew")
+
+
         self.s9.grid(row=8, column=0, sticky="nsew")
         #self.s10.grid(row=9, column=0, sticky="nsew")
 
@@ -108,19 +132,26 @@ class Hem4():
         # create container frame to hold log
         self.log = ttk.LabelFrame(tab2, text=' Hem4 Progress Log ')
         self.log.grid(column=0, row=0)
+        
         # Adding a Textbox Entry widget
         scrolW  = 65; scrolH  =  25
-        self.scr = scrolledtext.ScrolledText(self.log, width=scrolW, height=scrolH, wrap=tk.WORD)
+        self.scr = scrolledtext.ScrolledText(self.log, width=scrolW, 
+                                             height=scrolH, wrap=tk.WORD)
         self.scr.grid(column=0, row=3, sticky='WE', columnspan=3)
         
-#%% Set Quit and Run buttons        
+#%% Set Quit, Run, and User Guide buttons        
         self.quit = tk.Button(self.main, text="QUIT", fg="red",
                               command=self.quit_gui)
         self.quit.grid(row=8, column=0, sticky="W")
         
         #run only appears once the required files have been set
-        self.run_button = tk.Button(self.main, text='RUN', fg="green", command=self.runThread).grid(row=8, column=1, sticky="E")
+        self.run_button = tk.Button(self.main, text='RUN', fg="green", 
+                                    command=self.runThread).grid(row=8, 
+                                                          column=1, sticky="E")
         
+        self.guide = tk.Button(self.main, text="User Guide", 
+                               command=self.user_guide).grid(row=0, column=0, 
+                                                      sticky='W')
 #%% Setting up  directions text space
 
         #Dynamic instructions place holder
@@ -137,14 +168,17 @@ class Hem4():
 # %% Setting up each file upload space (includes browse button, and manual text entry for file path)         
         
         #facilities label
-        fac_label = tk.Label(self.s3, font="-size 10", text="Please select a Facilities List Options file (required):                                      ")
+        fac_label = tk.Label(self.s3, font="-size 10", 
+                             text="Please select a Facilities List Options file:")
         fac_label.grid(row=1, sticky="W")
         
         #facilities upload button
-        self.fac_up = ttk.Button(self.s3, command = lambda: self.uploadFacilitiesList())
+        self.fac_up = ttk.Button(self.s3, 
+                                 command = lambda: self.uploadFacilitiesList())
         self.fac_up["text"] = "Browse"
         self.fac_up.grid(row=2, column=0, sticky="W")
-        self.fac_up.bind('<Enter>', lambda e:self.browse("instructions/fac_browse.txt"))
+        self.fac_up.bind('<Enter>', 
+                         lambda e:self.browse("instructions/fac_browse.txt"))
        
         #facilities text entry
         self.fac_list = tk.StringVar(self.s3)
@@ -153,19 +187,23 @@ class Hem4():
         self.fac_list_man["textvariable"]= self.fac_list
         self.fac_list_man.grid(row=2, column=0, sticky='E', padx=85)
         #event handler for instructions (Button 1 is the left mouse click)
-        self.fac_list_man.bind('<Button-1>', lambda e:self.manual("instructions/fac_man.txt"))
+        self.fac_list_man.bind('<Button-1>', 
+                               lambda e:self.manual("instructions/fac_man.txt"))
         
                 
         #Hap emissions label
-        hap_label = tk.Label(self.s4, font="-size 10",  text="Please select a HAP Emissions file(required):                                                  ")
+        hap_label = tk.Label(self.s4, font="-size 10",  
+                             text="Please select the associated HAP Emissions file:")
         hap_label.grid(row=1, sticky="W")
         
         #hap emissions upload button
-        self.hap_up = ttk.Button(self.s4, command = lambda: self.uploadHAPEmissions())
+        self.hap_up = ttk.Button(self.s4, 
+                                 command = lambda: self.uploadHAPEmissions())
         self.hap_up["text"] = "Browse"
         self.hap_up.grid(row=2, column=0, sticky='W')
         #event handler for instructions (Button 1 is the left mouse click)
-        self.hap_up.bind('<Enter>', lambda e:self.browse("instructions/hap_browse.txt"))
+        self.hap_up.bind('<Enter>', 
+                         lambda e:self.browse("instructions/hap_browse.txt"))
                 
         #hap emission text entry
         self.hap_list = tk.StringVar(self.s4)
@@ -174,19 +212,23 @@ class Hem4():
         self.hap_list_man["textvariable"]= self.hap_list
         self.hap_list_man.grid(row=2, column=0, sticky='E', padx=85)
         #event handler for instructions (Button 1 is the left mouse click)
-        self.hap_list_man.bind('<Button-1>', lambda e:self.manual("instructions/hap_man.txt"))
+        self.hap_list_man.bind('<Button-1>', 
+                               lambda e:self.manual("instructions/hap_man.txt"))
         
         
         #Emissions location label
-        emisloc_label = tk.Label(self.s5, font="-size 10",  text="Please select an Emissions Locations file(required):                                         ")
+        emisloc_label = tk.Label(self.s5, font="-size 10",  
+                                 text="Please select the associated Emissions Locations file:")
         emisloc_label.grid(row=1, sticky="W")
         
         #emissions location upload button
-        self.emisloc_up = ttk.Button(self.s5, command= lambda: self.uploadEmissionLocations())
+        self.emisloc_up = ttk.Button(self.s5, 
+                                     command= lambda: self.uploadEmissionLocations())
         self.emisloc_up["text"] = "Browse"
         self.emisloc_up.grid(row=2, column=0, sticky='W')
         #event handler for instructions (Button 1 is the left mouse click)
-        self.emisloc_up.bind('<Enter>', lambda e:self.browse("instructions/emis_browse.txt"))
+        self.emisloc_up.bind('<Enter>', 
+                             lambda e:self.browse("instructions/emis_browse.txt"))
       
         #emission loccation file text entry
         self.emisloc_list = tk.StringVar(self.s5)
@@ -195,81 +237,42 @@ class Hem4():
         self.emisloc_list_man["textvariable"]= self.emisloc_list
         self.emisloc_list_man.grid(row=2, column=0, sticky='E', padx=85)
         #event handler for instructions (Button 1 is the left mouse click)
-        self.emisloc_list_man.bind('<Button-1>', lambda e:self.manual("instructions/emis_man.txt"))
-        
-  
-        
-        #optional input labels
-        self.optional_label = tk.Label(self.s8, font="-size 10",  text="OPTIONAL Input Files", pady=10)
-        self.optional_label.grid(row=0, column=1, sticky="W")
-        
-        #user receptors
-        self.u_receptors= tk.BooleanVar()
-        self.u_receptors.set(False)
-        self.ur_op = ttk.Checkbutton(self.s8, text="Include user receptors for any facilities, as indicated in the Facilities List Options file.",
-             variable=self.u_receptors, command=self.add_ur).grid(row=1, column=1, sticky="w")
-
-        
-        #Polygon sources label
-        poly_label = tk.Label(self.s6, font="-size 10",  text="Include Polyvertex Sources for any facilities, as indicated in the Facilities List Options file.")
-        poly_label.grid(row=1, sticky="W")
-        
-        #polygon sources upload button
-        self.poly_up = ttk.Button(self.s6, command = lambda: self.uploadPolyvertex())
-        self.poly_up["text"] = "Browse"
-        self.poly_up.grid(row=2, column=0, sticky="W")
-        #event handler for instructions (Button 1 is the left mouse click)
-        self.poly_up.bind('<Enter>', lambda e:self.browse("instructions/poly_browse.txt"))
-       
-        #polygon sources loccation file text entry
-        self.poly_list = tk.StringVar(self.s6)
-        self.poly_list_man = ttk.Entry(self.s6)
-        self.poly_list_man["width"] = 55
-        self.poly_list_man["textvariable"]= self.poly_list
-        self.poly_list_man.grid(row=2, column=0, sticky='E', padx=85)
-        #event handler for instructions (Button 1 is the left mouse click)
-        self.poly_list_man.bind('<Button-1>', lambda e:self.manual("instructions/poly_browse.txt"))
-        
-        
-        #Buoyant Line  label
-        bouyant_label = tk.Label(self.s7, font="-size 10",  text="Please select a Bouyant Line Source Parameter file (if included):")
-        bouyant_label.grid(row=1, sticky="W")
-        
-        #bouyant line file upload button
-        self.bouyant_up = ttk.Button(self.s7, command = lambda: self.uploadBouyant())
-        self.bouyant_up["text"] = "Browse"
-        self.bouyant_up.grid(row=2, column=0, sticky='W')
-        #event handler for instructions (Button 1 is the left mouse click)
-        self.bouyant_up.bind('<Enter>', lambda e:self.browse("instructions/bouyant_browse.txt"))
-        
-        
-        #bouyant line file text entry
-        self.bouyant_list = tk.StringVar(self.s7)
-        self.bouyant_list_man = ttk.Entry(self.s7)
-        self.bouyant_list_man["width"] = 55
-        self.bouyant_list_man["textvariable"]= self.bouyant_list
-        self.bouyant_list_man.grid(row=2, column=0, sticky='E', padx=85)
-        #event handler for instructions (Button 1 is the left mouse click)
-        self.bouyant_list_man.bind('<Button-1>', lambda e:self.manual("instructions/bouyant_browse.txt"))
+        self.emisloc_list_man.bind('<Button-1>', 
+                                   lambda e:self.manual("instructions/emis_man.txt"))
+         
         
         
     def is_excel(self, filepath):
+        """
+        Function checks to make sure excel files are selected for inputs
+        
+        """
         extensions = [".xls", ".xlsx"]
         return any(ext in filepath for ext in extensions)
 
     def openFile(self, filename):
+        """
+        This function opens file dialogs for uploading inputs
+        
+        """
 
         if filename is None:
             # upload was canceled
             print("Canceled!")
             return None
         elif not self.is_excel(filename):
-            messagebox.showinfo("Invalid file format", "Not a valid file format, please upload an excel file.")
+            messagebox.showinfo("Invalid file format", 
+                                "Not a valid file format, please upload an excel file.")
             return None
         else:
             return os.path.abspath(filename)
 
     def uploadFacilitiesList(self):
+        """
+        Function for uploading Facilities List option file. Also creates
+        user receptor input space if indicated
+        """
+        
         fullpath = self.openFile(askopenfilename())
         if fullpath is not None:
             self.uploader.upload("faclist", fullpath)
@@ -279,8 +282,27 @@ class Hem4():
             # Update the UI
             self.fac_list.set(fullpath)
             [self.scr.insert(tk.INSERT, msg) for msg in self.model.faclist.log]
+            
+            #trigger additional inputs fo user recptors
+            if 'Y' in self.model.faclist.dataframe['user_rcpt'].tolist():
+                #create user receptors
+                self.add_ur()
+                
+            else:
+                
+                if hasattr(self, 's6'):
+                    self.urep.destroy()
+                    self.urep_list_man.destroy()
+                    self.ur_label.destroy()
+                    self.s6.destroy()
+                    
+            
 
     def uploadHAPEmissions(self):
+        """
+        Function for uploading Hap Emissions file
+        """
+        
         fullpath = self.openFile(askopenfilename())
         if fullpath is not None:
             self.uploader.upload("hapemis", fullpath)
@@ -290,6 +312,11 @@ class Hem4():
             [self.scr.insert(tk.INSERT, msg) for msg in self.model.hapemis.log]
 
     def uploadEmissionLocations(self):
+        """
+        Function for uploading Emissions Locations file. Also creates optional 
+        input spaces if indicated in file or removes optional spaces if upload
+        is triggered again and there are no optional inputs indicated
+        """
         fullpath = self.openFile(askopenfilename())
         if fullpath is not None:
             self.uploader.upload("emisloc", fullpath)
@@ -297,12 +324,42 @@ class Hem4():
             # Update the UI
             self.emisloc_list.set(fullpath)
             [self.scr.insert(tk.INSERT, msg) for msg in self.model.emisloc.log]
+            
+            #trigger additional inputs for bouyant line and polyvertex
+            if 'I' in self.model.emisloc.dataframe['source_type'].tolist():
+                #create polyvertex upload 
+                self.add_poly()
+                
+            else:
+                #reset gui if reuploading
+                if hasattr(self, 's8'):
+                    self.poly_list_man.destroy()
+                    self.poly_up.destroy()
+                    self.poly_label.destroy()
+                    self.s8.destroy()
+                    
+                    
+            if 'B' in self.model.emisloc.dataframe['source_type'].tolist():
+                #create buoyant line upload
+                self.add_buoyant()
+                
+            else:
+                #reset gui if reuploading    
+                 if hasattr(self, 's7'):
+                    self.bouyant_list_man.destroy()
+                    self.bouyant_up.destroy()
+                    self.b_label.destroy()
+                    self.s7.destroy()
 
     def uploadPolyvertex(self):
-
+        """
+        Function for uploading polyvertex source file
+        """
+        
         if not hasattr(self, "emisloc_df"):
             messagebox.showinfo("Emissions Locations File Missing",
-                "Please upload an Emissions Locations file before adding a Polyvertex file.")
+                "Please upload an Emissions Locations file before adding" +
+                " a Polyvertex file.")
 
         result = self.uploader.uploadDependent("polyvertex", self.emisloc_df)
 
@@ -314,10 +371,14 @@ class Hem4():
         [self.scr.insert(tk.INSERT, msg) for msg in result['messages']]
 
     def uploadBouyant(self):
+        """
+        Function for uploading bouyant line parameter file
+        """
 
         if not hasattr(self, "emisloc_df"):
             messagebox.showinfo("Emissions Locations File Missing",
-                "Please upload an Emissions Locations file before adding a Bouyant line file.")
+                "Please upload an Emissions Locations file before adding"+ 
+                " a Bouyant line file.")
 
         result = self.uploader.uploadDependent("bouyant", self.emisloc_df)
 
@@ -329,59 +390,154 @@ class Hem4():
         [self.scr.insert(tk.INSERT, msg) for msg in result['messages']]
 
     def uploadUserReceptors(self):
+        """
+        Function for uploading user receptors
+        """
 
         if self.model.faclist.dataframe is None:
             messagebox.showinfo("Facilities List Option File Missing",
-                "Please upload a Facilities List Options file before selecting a User Receptors file.")
+                "Please upload a Facilities List Options file before selecting"+
+                " a User Receptors file.")
 
         fullpath = self.openFile(askopenfilename())
         if fullpath is not None:
-            self.uploader.uploadDependent("user receptors", fullpath, self.model.faclist.dataframe)
+            self.uploader.uploadDependent("user receptors", fullpath, 
+                                          self.model.faclist.dataframe)
 
             # Update the UI
             self.urep_list.set(fullpath)
             [self.scr.insert(tk.INSERT, msg) for msg in self.model.ureceptr.log]
 
     def add_ur(self):
-        #when box is checked add row with input
-        if self.u_receptors.get() == True:
+        """
+        Function for creating row and upload widgets for user receptors
+        """
+        #create row for user receptors
+        self.s6 = tk.Frame(self.main, width=250, height=100, pady=10, padx=10)
+        self.s6.grid(row=5, column=0, columnspan=2, sticky="nsew")
+        
+        #user recptors label
+        self.ur_label = tk.Label(self.s6, font="-size 10", 
+                             text="Please select an associated User Receptor"+
+                             " file:")
+        self.ur_label.grid(row=0, sticky="W")
+    
+        #user recptors upload button
+        self.urep = ttk.Button(self.s6, 
+                               command = lambda: self.uploadUserReceptors())
+        self.urep["text"] = "Browse"
+        self.urep.grid(row=1, column=0, sticky="W")
+        self.urep.bind('<Enter>', 
+                       lambda e:self.browse("instructions/urep_browse.txt"))
+        
+        #user receptor text entry
+        self.urep_list = tk.StringVar(self.s6)
+        self.urep_list_man = ttk.Entry(self.s6)
+        self.urep_list_man["width"] = 55
+        self.urep_list_man["textvariable"]= self.urep_list
+        self.urep_list_man.grid(row=1, column=0, sticky='E', padx=85)
+        #event handler for instructions (Button 1 is the left mouse click)
+        self.urep_list_man.bind('<Button-1>', 
+                                lambda e:self.manual("instructions/urep_man.txt"))
             
-            #user recptors upload button
-            self.urep = ttk.Button(self.s8, command = lambda: self.uploadUserReceptors())
-            self.urep["text"] = "Browse"
-            self.urep.grid(row=2, column=1, sticky="W")
-            self.urep.bind('<Enter>', lambda e:self.browse("instructions/urep_browse.txt"))
-            
-            #user receptor text entry
-            self.urep_list = tk.StringVar(self.s8)
-            self.urep_list_man = ttk.Entry(self.s8)
-            self.urep_list_man["width"] = 55
-            self.urep_list_man["textvariable"]= self.urep_list
-            self.urep_list_man.grid(row=2, column=1, sticky='E', padx=85)
-            #event handler for instructions (Button 1 is the left mouse click)
-            self.urep_list_man.bind('<Button-1>', lambda e:self.manual("instructions/urep_man.txt"))
-            
-            
-        if self.u_receptors.get() == False:
-            self.urep.destroy()
-            self.urep_list_man.destroy()
 
+
+    def add_buoyant(self):
+        """
+        Function for creating row and bouyant line parameter upload widgets
+        """
+         #create row for buoyant line input
+        self.s7 = tk.Frame(self.main, width=250, height=100, pady=10, padx=10)
+        self.s7.grid(row=6, column=0, columnspan=2, sticky="nsew")
+        
+        
+        #Buoyant Line  label
+        self.b_label = tk.Label(self.s7, font="-size 10",  
+                                 text="Please select associated Bouyant Line"+
+                                 " Source Parameter file:")
+        self.b_label.grid(row=1, sticky="W")
+        
+        #bouyant line file upload button
+        self.bouyant_up = ttk.Button(self.s7, 
+                                     command = lambda: self.uploadBouyant())
+        self.bouyant_up["text"] = "Browse"
+        self.bouyant_up.grid(row=2, column=0, sticky='W')
+        #event handler for instructions (Button 1 is the left mouse click)
+        self.bouyant_up.bind('<Enter>', 
+                             lambda e:self.browse("instructions/bouyant_browse.txt"))
+        
+        
+        #bouyant line file text entry
+        self.bouyant_list = tk.StringVar(self.s7)
+        self.bouyant_list_man = ttk.Entry(self.s7)
+        self.bouyant_list_man["width"] = 55
+        self.bouyant_list_man["textvariable"]= self.bouyant_list
+        self.bouyant_list_man.grid(row=2, column=0, sticky='E', padx=85)
+        #event handler for instructions (Button 1 is the left mouse click)
+        self.bouyant_list_man.bind('<Button-1>', 
+                                   lambda e:self.manual("instructions/bouyant_browse.txt"))
+        
+    
+    
+    def add_poly(self):
+        """
+        Function for creating row and polyvertex file upload widgets
+        """
+        #create row for poly
+        self.s8 = tk.Frame(self.main, width=250, height=100, pady=10, padx=10)
+        self.s8.grid(row=7, column=0, columnspan=2, sticky="nsew")
+        
+        #Polygon sources label
+        self.poly_label = tk.Label(self.s8, font="-size 10",  
+                              text="Please select associated Polyvertex file.")
+        self.poly_label.grid(row=1, sticky="W")
+        
+        #polygon sources upload button
+        self.poly_up = ttk.Button(self.s8, 
+                                  command = lambda: self.uploadPolyvertex())
+        self.poly_up["text"] = "Browse"
+        self.poly_up.grid(row=2, column=0, sticky="W")
+        #event handler for instructions (Button 1 is the left mouse click)
+        self.poly_up.bind('<Enter>', 
+                          lambda e:self.browse("instructions/poly_browse.txt"))
+       
+        #polygon sources loccation file text entry
+        self.poly_list = tk.StringVar(self.s8)
+        self.poly_list_man = ttk.Entry(self.s8)
+        self.poly_list_man["width"] = 55
+        self.poly_list_man["textvariable"]= self.poly_list
+        self.poly_list_man.grid(row=2, column=0, sticky='E', padx=85)
+        #event handler for instructions (Button 1 is the left mouse click)
+        self.poly_list_man.bind('<Button-1>', 
+                                lambda e:self.manual("instructions/poly_browse.txt"))
+    
         
  #%% Event handlers for porting instructions
 
     #reset instructions space
     def reset_instructions(self):
+        """
+        Function clears instructions from display box 
+        """
         global instruction_instance
         instruction_instance.set(" ")    
         
     #general function for browsing instructions
     def browse(self, location):
+        """
+        Function looks up text file with instructions for specified input
+        browse buttons
+        """
         global instruction_instance
         read_inst = open(location, 'r')
         instruction_instance.set(read_inst.read())
         
     #general function for manual uploads    
     def manual(self, location):
+        """
+        Function looks up text file with instructions for specified input 
+        text fields
+        """
         global instruction_instance
         read_inst = open(location, 'r')
         instruction_instance.set(read_inst.read())
@@ -390,6 +546,16 @@ class Hem4():
 #%% Run function with checks if somethign is missing raise the error here and create an additional dialogue before trying to run the file
 
     def run(self):
+        """ 
+        Function passes model class to InputChecker class, then uses returned 
+        dictionary to either run HEM4 or display user input error.
+        
+        To run each facility, function loops through facility ids and logs 
+        returned errors and messages to the log tab via the queue method
+        
+        When all facilites are done the GUI is reset and all optional inputs
+        are destroyed
+        """
         
 #%% check file dataframes
 
@@ -430,7 +596,9 @@ class Hem4():
         if self.ready == True:
 
             #tell user to check the Progress/Log section
-            messagebox.askokcancel("Confirm HEM4 Run", "Clicking 'OK' will start HEM4.")
+            messagebox.askokcancel("Confirm HEM4 Run", "Clicking 'OK'"+
+                                   " will start HEM4. Check the log tabs for" +
+                                   " updates on facility runs.")
 
             #create object for prepare inputs
             self.running = True
@@ -440,7 +608,11 @@ class Hem4():
             if kmlWriter is not None:
                 kmlWriter.write_kml_emis_loc(self.model)
 
-            the_queue.put("\nPreparing Inputs for " + str(self.model.facids.count()) + " facilities")
+
+            the_queue.put("\nPreparing Inputs for " + 
+                          str(self.model.facids.count()) + " facilities")
+            inputPrep = prepare.Prepare_Inputs(self.model)
+
 
             # let's tell after_callback that this completed
             #print('thread_target puts None to the queue')
@@ -456,7 +628,8 @@ class Hem4():
             for facid in fac_list:
 
                 #save version of this gui as is? constantly overwrite it once each facility is done?
-                the_queue.put("\nRunning facility " + str(num) + " of " + str(len(fac_list)))
+                the_queue.put("\nRunning facility " + str(num) + " of " + 
+                              str(len(fac_list)))
 
                 try:
                     runner = FacilityRunner(facid, the_queue, self.model)
@@ -470,29 +643,62 @@ class Hem4():
                     the_queue.put("\n\n" + fullStackInfo)
 
         the_queue.put("\nFinished running all facilities.\n")
+        messagebox.showinfo('HEM4 Modeling Completed', "Finished modeling all" + 
+                             " facilities. Check the log tab for error messages."+
+                             " Modeling results are located in the Output"+
+                             " subfolder of the HEM4 folder." )
 
         #reset all inputs if everything finished
         self.model.reset()
         self.fac_list.set('')
         self.hap_list.set('')
         self.emisloc_list.set('')
-        self.urep_list.set('')
+        
+        if hasattr(self, 's6'):
+            self.urep.destroy()
+            self.urep_list_man.destroy()
+            self.ur_label.destroy()
+            self.s6.destroy()
+        
+        if hasattr(self, 's7'):
+            self.bouyant_list_man.destroy()
+            self.bouyant_up.destroy()
+            self.b_label.destroy()
+            self.s7.destroy()
+            
+            
+        if hasattr(self, 's8'):
+            self.poly_list_man.destroy()
+            self.poly_up.destroy()
+            self.poly_label.destroy()
+            self.s8.destroy()
+
 
         self.running = False
 
 
     def workerComplete(self, future):
+        """
+        Function catches raised exceptions/errors on threads and logs traceback 
+        information to the log tab via queue method
+        """
         ex = future.exception()
 
         if ex is not None:
             # logger = logging.getLogger('workerComplete')
             # logger.exception(ex)
-            fullStackInfo = ''.join(traceback.format_exception(etype=type(ex), value=ex, tb=ex.__traceback__))
+            fullStackInfo = ''.join(traceback.format_exception(etype=type(ex), 
+                                                               value=ex, 
+                                                               tb=ex.__traceback__))
+            
             the_queue.put("\nAn error ocurred while running a facility:")
             the_queue.put("\n\n" + fullStackInfo)
 
     #%% Create Thread for Threaded Process
     def runThread(self):
+        """
+        Function creates thread for running HEM4 concurrently with tkinter GUI
+        """
         global instruction_instance
         instruction_instance.set("Hem4 Running, check the log tab for updates")
 
@@ -502,6 +708,10 @@ class Hem4():
 
 
     def after_callback(self):
+        """
+        Function listens on thread RUnning HEM4 for error and completion messages
+        logged via queue method
+        """
         try:
             message = the_queue.get(block=False)
         except queue.Empty:
