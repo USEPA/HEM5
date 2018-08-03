@@ -6,7 +6,7 @@ Created on Wed Nov  1 13:56:59 2017
 """
 import pandas as pd
 import numpy as np
-from fastkml import kml, SchemaData
+from fastkml import kml, SchemaData, Data
 from fastkml.geometry import Geometry, Point, Polygon
 from fastkml import ExtendedData
 from fastkml.styles import LineStyle, PolyStyle, IconStyle, LabelStyle, BalloonStyle
@@ -97,7 +97,8 @@ class KMLWriter():
                                               description=CDATA("<div align='center'>" + sname + "</div>"),
                                               styleUrl="#Areasrc")
 
-                    data = {"SourceId": sname}
+                    simpleData = Data(name="SourceId", value=sname)
+                    data = [simpleData]
                     schemaData = SchemaData(ns=self.ns, schema_url="#Source_map_schema", data=data)
                     elements = [schemaData]
                     placemark.extended_data = ExtendedData(ns=self.ns, elements=elements)
