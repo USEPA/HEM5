@@ -136,7 +136,9 @@ class FacilityPrep():
 
         #%%---------- Optional User Receptors ----------------------------------------- ## needs to be connected
 
+
         if hasattr(self.model.ureceptr, "dataframe"):
+
             user_recs = self.model.ureceptr.dataframe.loc[self.model.ureceptr.dataframe.fac_id == facid].copy()
             user_recs.reset_index(inplace=True)
 
@@ -163,6 +165,7 @@ class FacilityPrep():
         #%%---------- Optional Buoyant Line Parameters ----------------------------------------- needs to be connected
 
         if hasattr(self.model.multibuoy, "dataframe"):
+
             buoyant_df = self.model.multibuoy.dataframe.loc[ self.model.multibuoy.dataframe.fac_id == facid].copy()
 
         else:
@@ -170,6 +173,7 @@ class FacilityPrep():
             buoyant_df = pd.DataFrame()
 
         #%%---------- Optional Polygon Vertex File ----------------------------------------- neeeds to be connected
+
 
         if hasattr(self.model.multipoly, "dataframe"):
 

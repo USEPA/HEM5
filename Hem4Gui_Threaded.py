@@ -614,7 +614,6 @@ class Hem4():
                     self.model.facids.count()) + " facilities")
             
 
-
             # let's tell after_callback that this completed
             #print('thread_target puts None to the queue')
 
@@ -639,6 +638,7 @@ class Hem4():
                     # increment facility count
                     num += 1
                 except Exception as ex:
+
                     fullStackInfo=''.join(traceback.format_exception(
                             etype=type(ex), value=ex, tb=ex.__traceback__))
                     
