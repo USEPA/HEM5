@@ -325,7 +325,7 @@ class Hem4():
             self.emisloc_list.set(fullpath)
             [self.scr.insert(tk.INSERT, msg) for msg in self.model.emisloc.log]
             
-            #trigger additional inputs for bouyant line and polyvertex
+            #trigger additional inputs for buoyant line and polyvertex
             if 'I' in self.model.emisloc.dataframe['source_type'].tolist():
                 #create polyvertex upload 
                 self.add_poly()
@@ -346,8 +346,8 @@ class Hem4():
             else:
                 #reset gui if reuploading    
                  if hasattr(self, 's7'):
-                    self.bouyant_list_man.destroy()
-                    self.bouyant_up.destroy()
+                    self.buoyant_list_man.destroy()
+                    self.buoyant_up.destroy()
                     self.b_label.destroy()
                     self.s7.destroy()
 
@@ -356,38 +356,38 @@ class Hem4():
         Function for uploading polyvertex source file
         """
         
-        if not hasattr(self, "emisloc_df"):
+        if self.model.emisloc.dataframe is None:
             messagebox.showinfo("Emissions Locations File Missing",
                 "Please upload an Emissions Locations file before adding" +
                 " a Polyvertex file.")
+        fullpath = self.openFile(askopenfilename())
+        if fullpath is not None:
+            self.uploader.uploadDependent("polyvertex", fullpath, 
+                                                   self.model.emisloc.dataframe)
 
-        result = self.uploader.uploadDependent("polyvertex", self.emisloc_df)
 
-        # Update the global model
-        self.multipoly_df = result['df']
+            # Update the UI
+            self.poly_list.set(fullpath)
+            [self.scr.insert(tk.INSERT, msg) for msg in self.model.multipoly.log]
 
-        # Update the UI
-        self.poly_list.set(result['path'])
-        [self.scr.insert(tk.INSERT, msg) for msg in result['messages']]
-
-    def uploadBouyant(self):
+    def uploadbuoyant(self):
         """
-        Function for uploading bouyant line parameter file
+        Function for uploading buoyant line parameter file
         """
 
-        if not hasattr(self, "emisloc_df"):
+        if self.model.emisloc.dataframe is None:
             messagebox.showinfo("Emissions Locations File Missing",
                 "Please upload an Emissions Locations file before adding"+ 
-                " a Bouyant line file.")
+                " a buoyant line file.")
+        
+        fullpath = self.openFile(askopenfilename())
+        if fullpath is not None:
+            self.uploader.uploadDependent("buoyant line", fullpath, 
+                                                   self.model.emisloc.dataframe)
 
-        result = self.uploader.uploadDependent("bouyant", self.emisloc_df)
-
-        # Update the global model
-        self.bouyant_df = result['df']
-
-        # Update the UI
-        self.poly_list.set(result['path'])
-        [self.scr.insert(tk.INSERT, msg) for msg in result['messages']]
+            # Update the UI
+            self.buoyant_list.set(fullpath)
+            [self.scr.insert(tk.INSERT, msg) for msg in self.model.multibuoy.log]
 
     def uploadUserReceptors(self):
         """
@@ -444,7 +444,7 @@ class Hem4():
 
     def add_buoyant(self):
         """
-        Function for creating row and bouyant line parameter upload widgets
+        Function for creating row and buoyant line parameter upload widgets
         """
          #create row for buoyant line input
         self.s7 = tk.Frame(self.main, width=250, height=100, pady=10, padx=10)
@@ -453,29 +453,29 @@ class Hem4():
         
         #Buoyant Line  label
         self.b_label = tk.Label(self.s7, font="-size 10",  
-                                 text="Please select associated Bouyant Line"+
+                                 text="Please select associated Buoyant Line"+
                                  " Source Parameter file:")
         self.b_label.grid(row=1, sticky="W")
         
-        #bouyant line file upload button
-        self.bouyant_up = ttk.Button(self.s7, 
-                                     command = lambda: self.uploadBouyant())
-        self.bouyant_up["text"] = "Browse"
-        self.bouyant_up.grid(row=2, column=0, sticky='W')
+        #buoyant line file upload button
+        self.buoyant_up = ttk.Button(self.s7, 
+                                     command = lambda: self.uploadbuoyant())
+        self.buoyant_up["text"] = "Browse"
+        self.buoyant_up.grid(row=2, column=0, sticky='W')
         #event handler for instructions (Button 1 is the left mouse click)
-        self.bouyant_up.bind('<Enter>', 
-                             lambda e:self.browse("instructions/bouyant_browse.txt"))
+        self.buoyant_up.bind('<Enter>', 
+                             lambda e:self.browse("instructions/buoyant_browse.txt"))
         
         
-        #bouyant line file text entry
-        self.bouyant_list = tk.StringVar(self.s7)
-        self.bouyant_list_man = ttk.Entry(self.s7)
-        self.bouyant_list_man["width"] = 55
-        self.bouyant_list_man["textvariable"]= self.bouyant_list
-        self.bouyant_list_man.grid(row=2, column=0, sticky='E', padx=85)
+        #buoyant line file text entry
+        self.buoyant_list = tk.StringVar(self.s7)
+        self.buoyant_list_man = ttk.Entry(self.s7)
+        self.buoyant_list_man["width"] = 55
+        self.buoyant_list_man["textvariable"]= self.buoyant_list
+        self.buoyant_list_man.grid(row=2, column=0, sticky='E', padx=85)
         #event handler for instructions (Button 1 is the left mouse click)
-        self.bouyant_list_man.bind('<Button-1>', 
-                                   lambda e:self.manual("instructions/bouyant_browse.txt"))
+        self.buoyant_list_man.bind('<Button-1>', 
+                                   lambda e:self.manual("instructions/buoyant_browse.txt"))
         
     
     
@@ -543,7 +543,8 @@ class Hem4():
         instruction_instance.set(read_inst.read())
     
              
-#%% Run function with checks if somethign is missing raise the error here and create an additional dialogue before trying to run the file
+#%% Run function with checks if somethign is missing raise the error here and 
+#   create an additional dialogue before trying to run the file
 
     def run(self):
         """ 
@@ -606,13 +607,12 @@ class Hem4():
             #create a Google Earth KML of all sources to be modeled
             kmlWriter = KMLWriter()
             if kmlWriter is not None:
-                kmlWriter.write_kml_emis_loc(self.model)
+                #kmlWriter.write_kml_emis_loc(self.model)
+                pass
 
-
-            the_queue.put("\nPreparing Inputs for " + 
-                          str(self.model.facids.count()) + " facilities")
-            inputPrep = prepare.Prepare_Inputs(self.model)
-
+            the_queue.put("\nPreparing Inputs for " + str(
+                    self.model.facids.count()) + " facilities")
+            
 
             # let's tell after_callback that this completed
             #print('thread_target puts None to the queue')
@@ -638,8 +638,11 @@ class Hem4():
                     # increment facility count
                     num += 1
                 except Exception as ex:
-                    fullStackInfo = ''.join(traceback.format_exception(etype=type(ex), value=ex, tb=ex.__traceback__))
-                    the_queue.put("\nAn error ocurred while running a facility:")
+
+                    fullStackInfo=''.join(traceback.format_exception(
+                            etype=type(ex), value=ex, tb=ex.__traceback__))
+                    
+                    the_queue.put("\nAn error occurred while running a facility:")
                     the_queue.put("\n\n" + fullStackInfo)
 
         the_queue.put("\nFinished running all facilities.\n")
@@ -661,8 +664,8 @@ class Hem4():
             self.s6.destroy()
         
         if hasattr(self, 's7'):
-            self.bouyant_list_man.destroy()
-            self.bouyant_up.destroy()
+            self.buoyant_list_man.destroy()
+            self.buoyant_up.destroy()
             self.b_label.destroy()
             self.s7.destroy()
             

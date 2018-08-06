@@ -11,9 +11,12 @@ import numpy as np
 import openpyxl
 import pandas as pd
 
-from writer.csv.AllPolarReceptors import AllPolarReceptors
-from writer.csv.CsvWriter import CsvWriter
-from writer.excel.AcuteBreakdown import AcuteBreakdown
+
+#from writer.csv.AllPolarReceptors import AllPolarReceptors
+#from writer.csv.CsvWriter import CsvWriter
+#from writer.excel.AcuteBreakdown import AcuteBreakdown
+from writer.csv import *
+
 import sys
 
 class Process_outputs():

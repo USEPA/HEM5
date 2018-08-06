@@ -13,27 +13,32 @@ class Polyvertex(DependentInputFile):
 
     def __init__(self, path, dependency):
         DependentInputFile.__init__(self, path, dependency)
+        self.dependency = dependency
 
-   def createDataframe(self): 
+    def createDataframe(self): 
        
-       emisloc_df = dependency;
+        emisloc_df = self.dependency;
         
        
        
         #POLYVERTEX excel to dataframe
-        multipoly_df = self.readFromPath("fac_id","source_id","location_type",
-                                         "lon","lat","utmzone","numvert","area",
-                                         "fipstct"),{0:str, 1:str, 2:str, 5:str}
+        multipoly_df = self.readFromPath(("fac_id","source_id","location_type",
+                                         "lon","lat","utmzone","numvert","area"
+                                         ),{0:str, 1:str, 2:str, 5:str})
         
         #check for unassigned polyvertex
         check_poly_assignment = set(multipoly_df["fac_id"])
         
         #get polyvertex facility list for check
         find_p = emisloc_df[emisloc_df['source_type'] == "I"]
-        poly_fac = find_p['fac_id']
+        poly_fac = set(find_p['fac_id'])
+        
+#        print("poly assignment", check_poly_assignment)
+#        print("poly:", poly_fac)
+#        
         
         
-         if check_poly_assignment != poly_fac:
+        if check_poly_assignment != poly_fac:
             poly_unassigned = (check_poly_assignment - poly_fac).tolist()
             
             messagebox.showinfo("Unassigned polyvertex sources", "Polyvertex" + 
@@ -48,5 +53,4 @@ class Polyvertex(DependentInputFile):
                             " ".join(check_poly_assignment))
             
             self.dataframe = multipoly_df
-        
         
