@@ -8,8 +8,10 @@ from upload.EmissionsLocations import EmissionsLocations
 from upload.FacilityList import FacilityList
 from upload.HAPEmissions import HAPEmissions
 from upload.TargetOrganEndpoints import TargetOrganEndpoints
-from upload.UserReceptors import UserReceptors 
-from upload.BouyantLine import BouyantLine
+from upload.UserReceptors import UserReceptors
+from upload.Polyvertex import Polyvertex 
+from upload.BuoyantLine import BuoyantLine
+
 
 
 class FileUploader():
@@ -100,11 +102,11 @@ class FileUploader():
 
         if filetype == "polyvertex":
             
-            self.model.Polyvertex(path, dependency)
+            self.model.multipoly = Polyvertex(path, dependency)
 
-        elif filetype == "bouyant line":
+        elif filetype == "buoyant line":
 
-            self.model.BouyantLine(path, dependency)
+            self.model.multibuoy = BuoyantLine(path, dependency)
 
 
         elif filetype == "user receptors":
