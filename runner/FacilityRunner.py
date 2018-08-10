@@ -5,14 +5,12 @@ import subprocess
 import shutil
 
 from FacilityPrep import FacilityPrep
-from writer.kml.KMLWriter import KMLWriter
-
+from log.Logger import Logger
 
 class FacilityRunner():
 
-    def __init__(self, id, messageQueue, model):
+    def __init__(self, id, model):
         self.facilityId = id
-        self.messageQueue = messageQueue
         self.model = model
         
     def run(self):
@@ -21,9 +19,10 @@ class FacilityRunner():
         start = time.time()
 
         prep = FacilityPrep(self.model)
+        Logger.logMessage("Building runstream for facility " + self.facilityId)
         runstream = prep.createRunstream(self.facilityId)
 
-        self.messageQueue.put("Building Runstream File for " + self.facilityId)
+        Logger.logMessage("Building Runstream File for " + self.facilityId)
         runstream.build()
 
         #create fac folder
@@ -34,7 +33,7 @@ class FacilityRunner():
             os.makedirs(fac_folder)
 
         #run aermod
-        self.messageQueue.put("Running Aermod for " + self.facilityId)
+        Logger.logMessage("Running Aermod for " + self.facilityId)
         args = "aermod.exe aermod.inp"
         subprocess.call(args, shell=False)
 
@@ -43,10 +42,10 @@ class FacilityRunner():
         message = check.read()
         if 'AERMOD Finishes UN-successfully' in message:
             success = False
-            self.messageQueue.put("Aermod ran unsuccessfully. Please check the error section of the aermod.out file.")
+            Logger.logMessage("Aermod ran unsuccessfully. Please check the error section of the aermod.out file.")
         else:
             success = True
-            self.messageQueue.put("Aermod ran successfully.")
+            Logger.logMessage("Aermod ran successfully.")
         check.close()
 
         if success == True:
@@ -63,14 +62,9 @@ class FacilityRunner():
                 shutil.move('aermod.out', fac_folder)
 
             #process outputs
-            self.messageQueue.put("Processing Outputs for " + self.facilityId)
+            Logger.logMessage("Processing Outputs for " + self.facilityId)
             outputProcess = po.Process_outputs(fac_folder, self.facilityId, self.model, prep, runstream)
             outputProcess.process()
 
-            #create facility kml
-            self.messageQueue.put("Writing KML file for " + self.facilityId)
-            kmlWriter = KMLWriter()
-            kmlWriter.write_facility_kml(self.facilityId, runstream.cenlat, runstream.cenlon, fac_folder)
-
             pace =  str(time.time()-start) + 'seconds'
-            self.messageQueue.put("Finished calculations for " + self.facilityId + ' after' + pace + "\n")
+            Logger.logMessage("Finished calculations for " + self.facilityId + ' after' + pace + "\n")

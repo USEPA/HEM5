@@ -14,6 +14,7 @@ from tkinter import scrolledtext
 from tkinter import ttk
 
 import FacilityPrep as prepare
+from log.Logger import Logger
 from model.Model import Model
 from runner.FacilityRunner import FacilityRunner
 from upload.FileUploader import FileUploader
@@ -28,7 +29,7 @@ from writer.kml.KMLWriter import KMLWriter
 
 class Hem4():
 
-    def __init__ (self):    
+    def __init__ (self, messageQueue):
         """
         The HEM4 class object builds the GUI for the HEM4 application.
         """
@@ -46,6 +47,8 @@ class Hem4():
 
         # Create a file uploader
         self.uploader = FileUploader(self.model)
+
+        Logger.messageQueue = messageQueue
 
 #%% Quit Function    
     def quit_gui(self):    
@@ -610,7 +613,7 @@ class Hem4():
                 #kmlWriter.write_kml_emis_loc(self.model)
                 pass
 
-            the_queue.put("\nPreparing Inputs for " + str(
+            Logger.logMessage("Preparing Inputs for " + str(
                     self.model.facids.count()) + " facilities")
             
 
@@ -625,14 +628,16 @@ class Hem4():
                fac_list.append(facid)
                num = 1
 
+            Logger.log("The facilities ids being modeled:", fac_list, False)
+
             for facid in fac_list:
 
                 #save version of this gui as is? constantly overwrite it once each facility is done?
-                the_queue.put("\nRunning facility " + str(num) + " of " + 
+                Logger.logMessage("Running facility " + str(num) + " of " +
                               str(len(fac_list)))
 
                 try:
-                    runner = FacilityRunner(facid, the_queue, self.model)
+                    runner = FacilityRunner(facid, self.model)
                     runner.run()
 
                     # increment facility count
@@ -642,10 +647,11 @@ class Hem4():
                     fullStackInfo=''.join(traceback.format_exception(
                             etype=type(ex), value=ex, tb=ex.__traceback__))
                     
-                    the_queue.put("\nAn error occurred while running a facility:")
-                    the_queue.put("\n\n" + fullStackInfo)
+                    Logger.logMessage("An error occurred while running a facility:\n" + fullStackInfo)
+                    Logger.close(True)
 
-        the_queue.put("\nFinished running all facilities.\n")
+        Logger.logMessage("\nFinished running all facilities.\n")
+        Logger.close(True)
         messagebox.showinfo('HEM4 Modeling Completed', "Finished modeling all" + 
                              " facilities. Check the log tab for error messages."+
                              " Modeling results are located in the Output"+
@@ -688,14 +694,12 @@ class Hem4():
         ex = future.exception()
 
         if ex is not None:
-            # logger = logging.getLogger('workerComplete')
-            # logger.exception(ex)
             fullStackInfo = ''.join(traceback.format_exception(etype=type(ex), 
                                                                value=ex, 
                                                                tb=ex.__traceback__))
             
-            the_queue.put("\nAn error ocurred while running a facility:")
-            the_queue.put("\n\n" + fullStackInfo)
+            Logger.logMessage("An error occurred while running a facility:\n" + fullStackInfo)
+            Logger.close(True)
 
     #%% Create Thread for Threaded Process
     def runThread(self):
@@ -734,10 +738,8 @@ class Hem4():
         
 
 #%% Start GUI
-
 the_queue = queue.Queue()
+hem4 = Hem4(the_queue)
 
-
-hem4 = Hem4()
 hem4.win.after(25, hem4.after_callback)
 hem4.win.mainloop()

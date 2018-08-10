@@ -21,7 +21,6 @@ class FacilityPrep():
     
     def __init__(self, model):
 
-        self.message = "Hem 4 starting"
         self.model = model
 
     def createRunstream(self, facid):
@@ -374,7 +373,6 @@ class FacilityPrep():
 
         #%% result ##needs to create a new object to be passed...
         #return facops, emislocs, hapemis, innerblks, outerblks, sourcelocs, user_recs, buoyant_df, polyver_df
-        self.message = "building runstream for " + str(facid)
         return rs.Runstream(facops, emislocs, hapemis, cenlat, cenlon, cenx, ceny, self.innerblks, user_recs, buoyant_df, polyver_df, polar_df)
 
     #%% Calculate ring and sector of block receptors
