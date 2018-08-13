@@ -11,7 +11,7 @@ import numpy as np
 import openpyxl
 import pandas as pd
 
-
+from log.Logger import Logger
 from writer.csv.AllPolarReceptors import AllPolarReceptors
 from writer.csv.CsvWriter import CsvWriter
 from writer.excel.AcuteBreakdown import AcuteBreakdown
@@ -30,7 +30,7 @@ class Process_outputs():
         self.numsectors = self.polar_recs["sector"].max()
         self.numrings = self.polar_recs["ring"].max()
         self.model = model
-
+        self.runstream = runstream
         self.model.runstream_polar_recs = runstream.polar_df
         self.model.runstream_hapemis = runstream.hapemis
 
@@ -239,7 +239,9 @@ class Process_outputs():
                    ,'flag':np.float64,'avg_time':np.str,'source_id':np.str,'num_yrs':np.int64,'net_id':np.str},
             comment='*')
 
-        
+
+        Logger.log("plot_df:", plot_df, False)
+
         #----------- create All_Polar_Receptor output file -----------------
         all_polar_receptors = AllPolarReceptors(self.outdir, self.facid, self.model, plot_df)
         all_polar_receptors.write()
@@ -459,9 +461,13 @@ class Process_outputs():
         all_outer.save(self.outdir + "all_outer_test.xlsx")
         print("Wrote all outer blocks")
         print(time.time()-start, 'seconds.')
-        local_vars = inspect.currentframe().f_locals    
-    
-       
+        local_vars = inspect.currentframe().f_locals
+
+        #create facility kml
+        Logger.logMessage("Writing KML file for " + self.facid)
+        kmlWriter = KMLWriter()
+        kmlWriter.write_facility_kml(self.facid, self.runstream.cenlat, self.runstream.cenlon, self.outdir)
+
         return local_vars
     
     
