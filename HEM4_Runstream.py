@@ -22,7 +22,7 @@ import find_met as fm
 
 class Runstream():
     
-    def __init__(self, facops_df, emislocs_df, hapemis_df, cenlat, cenlon, cenx, ceny, innerblks_df, userrecs_df, buoyant_df, polyver_df, polar_df):
+    def __init__(self, facops_df, emislocs_df, hapemis_df, cenlat, cenlon, cenx, ceny, innerblks_df, userrecs_df, buoyant_df, polyver_df, polar_df, bldgdw_df):
         self.facoptn_df = facops_df
         self.emisloc_df = emislocs_df
         self.hapemis = hapemis_df
@@ -37,6 +37,7 @@ class Runstream():
         self.buoyant_df = buoyant_df
         self.polyver_df = polyver_df
         self.polar_df = polar_df
+        self.bldgdw_df = bldgdw_df
         
         
         
@@ -263,6 +264,7 @@ class Runstream():
             phase = "B"
     #----------------------------------------------------------------------------------------
         blddw = self.facoptn_df['bldg_dw'][0]
+        print("Building downwash", blddw)
     #---------------------------------------------------------------------------------------- 
         fasta = self.facoptn_df['fastall'][0]                     # FASTALL Model Option for AERMOD
     
@@ -400,18 +402,32 @@ class Runstream():
             # For Building Downwash
 
                 if blddw == "Y":
-                    bldgdim_df = pd.read_excel(r"C:\HEM3_V153\Inputs_multi\Template_Multi_bldg_dimensions.xlsx") ####################################
-                    bldg_srid = bldgdim_df['Source ID'][:]
-                    bldg_keyw = bldgdim_df['Keyword'][:]
-                    for i in np.arange(len(bldg_srid)):
+                    bldgdim_df = self.bldgdw_df
+                    bldg_srid = bldgdim_df['source_id'][:]
+                    bldg_keyw = bldgdim_df['keyword'][:]
+                    
+                    for i in range(len(bldg_srid)):
                         if srid[index] == bldg_srid[i]:
-                            bldgdim = "SO " + str(bldg_keyw[i]) + " " + str(bldg_srid[i]) + " "
-                            inp_f.write(bldgdim)
-                            for j in np.arange(4,len(bldgdim_df.columns[:])):
-                                str(bldgdim_df[bldgdim_df.columns[j]][i]) + " "
+                            row = bldgdim_df.loc[i,]
+                            values = row.tolist()
+                            if values[2] == 'XBADJ':     
+                                #keywords too short so adding 4 spaces to preserve columns                                
+                                bldgdim = 'SO ' + values[2] + "    " +  " ".join(str(x) for x in values[3:])
                                 inp_f.write(bldgdim)
-                            newline
-                            inp_f.write(newline)
+                                inp_f.write(newline)
+                                
+                            elif values[2] == 'YBADJ':
+                                #keywords too short so adding 4 spaces to preserve columns                               
+                                bldgdim = 'SO ' + values[2] + "    " +  " ".join(str(x) for x in values[3:])
+                                inp_f.write(bldgdim)
+                                inp_f.write(newline)
+                            
+                            else:
+                                bldgdim = (" ".join(str(x) for x in values[1:]))
+                                inp_f.write(bldgdim)
+                                inp_f.write(newline)
+                                
+                            
     
                 if ("Y" in depos) == 1:
                     sodepos = "SO GASDEPOS " + str(srid[index]) + " " + str(da) + " " + str(dw) + " " + str(rcl) + " " + str(henry)
@@ -482,19 +498,31 @@ class Runstream():
             # For Building Downwash
     
                 if blddw == "Y":
-                    bldgdim_df = pd.read_excel(r"C:\HEM3_V153\Inputs_multi\Template_Multi_bldg_dimensions.xlsx") ########### HARD CODE ##########
-                    bldg_srid = bldgdim_df['Source ID'][:]
-                    bldg_keyw = bldgdim_df['Keyword'][:]
-                    for i in np.arange(len(bldg_srid)):
+                    bldgdim_df = self.bldgdw_df
+                    bldg_srid = bldgdim_df['source_id'][:]
+                    bldg_keyw = bldgdim_df['keyword'][:]
+                    for i in range(len(bldg_srid)):
+        
                         if srid[index] == bldg_srid[i]:
-                            bldgdim = "SO " + str(bldg_keyw[i]) + " " + str(bldg_srid[i]) + " "
-                            inp_f.write(bldgdim)
-                            for j in np.arange(4,len(bldgdim_df.columns[:])):
-                                str(bldgdim_df[bldgdim_df.columns[j]][i]) + " "
+                            row = bldgdim_df.loc[i,]
+                            values = row.tolist()
+                            if values[2] == 'XBADJ':     
+                                #keywords too short so adding 4 spaces to preserve columns                               
+                                bldgdim = 'SO ' + values[2] + "    " +  " ".join(str(x) for x in values[3:])
                                 inp_f.write(bldgdim)
-                            newline
-                            inp_f.write(newline)
-    
+                                inp_f.write(newline)
+                                
+                            elif values[2] == 'YBADJ':
+                                #keywords too short so adding 4 spaces to preserve columns                               
+                                bldgdim = 'SO ' + values[2] + "    " +  " ".join(str(x) for x in values[3:])
+                                inp_f.write(bldgdim)
+                                inp_f.write(newline)
+                            
+                            else:
+                                bldgdim = (" ".join(str(x) for x in values[1:]))
+                                inp_f.write(bldgdim)
+                                inp_f.write(newline)
+                                
                 if ("Y" in depos) == 1:
                     sodepos = "SO GASDEPOS " + str(srid[index]) + " " + str(da) + " " + str(dw) + " " + str(rcl) + " " + str(henry)
                     inp_f.write(sodepos)
@@ -564,18 +592,30 @@ class Runstream():
             # For Building Downwash
     
                 if blddw == "Y":
-                    bldgdim_df = pd.read_excel(r"C:\HEM3_V153\Inputs_multi\Template_Multi_bldg_dimensions.xlsx") ####################################
-                    bldg_srid = bldgdim_df['Source ID'][:]
-                    bldg_keyw = bldgdim_df['Keyword'][:]
-                    for i in np.arange(len(bldg_srid)):
+                    bldgdim_df = self.bldgdw_df
+                    bldg_srid = bldgdim_df['source_id'][:]
+                    bldg_keyw = bldgdim_df['keyword'][:]
+                    for i in range(len(bldg_srid)):
+        
                         if srid[index] == bldg_srid[i]:
-                            bldgdim = "SO " + str(bldg_keyw[i]) + " " + str(bldg_srid[i]) + " "
-                            inp_f.write(bldgdim)
-                            for j in np.arange(4,len(bldgdim_df.columns[:])):
-                                str(bldgdim_df[bldgdim_df.columns[j]][i]) + " "
+                            row = bldgdim_df.loc[i,]
+                            values = row.tolist()
+                            if values[2] == 'XBADJ':     
+                                #keywords too short so adding 4 spaces to preserve columns                               
+                                bldgdim = 'SO ' + values[2] + "    " +  " ".join(str(x) for x in values[3:])
                                 inp_f.write(bldgdim)
-                            newline
-                            inp_f.write(newline)
+                                inp_f.write(newline)
+                                
+                            elif values[2] == 'YBADJ':
+                                #keywords too short so adding 4 spaces to preserve columns                                
+                                bldgdim = 'SO ' + values[2] + "    " +  " ".join(str(x) for x in values[3:])
+                                inp_f.write(bldgdim)
+                                inp_f.write(newline)
+                            
+                            else:
+                                bldgdim = (" ".join(str(x) for x in values[1:]))
+                                inp_f.write(bldgdim)
+                                inp_f.write(newline)
             
                 if ("Y" in depos) == 1:
                     sodepos = "SO GASDEPOS " + str(srid[index]) + " " + str(da) + " " + str(dw) + " " + str(rcl) + " " + str(henry)
@@ -644,19 +684,31 @@ class Runstream():
             # For Building Downwash
     
                 if blddw == "Y":
-                    bldgdim_df = pd.read_excel(r"C:\HEM3_V153\Inputs_multi\Template_Multi_bldg_dimensions.xlsx") ####################################
-                    bldg_srid = bldgdim_df['Source ID'][:]
-                    bldg_keyw = bldgdim_df['Keyword'][:]
-                    for i in np.arange(len(bldg_srid)):
+                    bldgdim_df = self.bldgdw_df
+                    bldg_srid = bldgdim_df['source_id'][:]
+                    bldg_keyw = bldgdim_df['keyword'][:]
+                    for i in range(len(bldg_srid)):
+        
                         if srid[index] == bldg_srid[i]:
-                            bldgdim = "SO " + str(bldg_keyw[i]) + " " + str(bldg_srid[i]) + " "
-                            inp_f.write(bldgdim)
-                            for j in np.arange(4,len(bldgdim_df.columns[:])):
-                                str(bldgdim_df[bldgdim_df.columns[j]][i]) + " "
+                            row = bldgdim_df.loc[i,]
+                            values = row.tolist()
+                            if values[2] == 'XBADJ':     
+                                #keywords too short so adding 4 spaces to preserve columns                                
+                                bldgdim = 'SO ' + values[2] + "    " +  " ".join(str(x) for x in values[3:])
                                 inp_f.write(bldgdim)
-                            newline
-                            inp_f.write(newline)
-            
+                                inp_f.write(newline)
+                                
+                            elif values[2] == 'YBADJ':
+                                #keywords too short so adding 4 spaces to preserve columns                                
+                                bldgdim = 'SO ' + values[2] + "    " +  " ".join(str(x) for x in values[3:])
+                                inp_f.write(bldgdim)
+                                inp_f.write(newline)
+                            
+                            else:
+                                bldgdim = (" ".join(str(x) for x in values[1:]))
+                                inp_f.write(bldgdim)
+                                inp_f.write(newline)
+                            
                 if ("Y" in depos) == 1:
                     sodepos = "SO GASDEPOS " + str(srid[index]) + " " + str(da) + " " + str(dw) + " " + str(rcl) + " " + str(henry)
                     inp_f.write(sodepos)
@@ -724,18 +776,30 @@ class Runstream():
             # For Building Downwash
     
                 if blddw == "Y":
-                    bldgdim_df = pd.read_excel(r"C:\HEM3_V153\Inputs_multi\Template_Multi_bldg_dimensions.xlsx") ####################################
-                    bldg_srid = bldgdim_df['Source ID'][:]
-                    bldg_keyw = bldgdim_df['Keyword'][:]
-                    for i in np.arange(len(bldg_srid)):
+                    bldgdim_df = self.bldgdw_df
+                    bldg_srid = bldgdim_df['source_id'][:]
+                    bldg_keyw = bldgdim_df['keyword'][:]
+                    for i in range(len(bldg_srid)):
+        
                         if srid[index] == bldg_srid[i]:
-                            bldgdim = "SO " + str(bldg_keyw[i]) + " " + str(bldg_srid[i]) + " "
-                            inp_f.write(bldgdim)
-                            for j in np.arange(4,len(bldgdim_df.columns[:])):
-                                str(bldgdim_df[bldgdim_df.columns[j]][i]) + " "
+                            row = bldgdim_df.loc[i,]
+                            values = row.tolist()
+                            if values[2] == 'XBADJ':     
+                                #keywords too short so adding 4 spaces to preserve columns                                
+                                bldgdim = 'SO ' + values[2] + "    " +  " ".join(str(x) for x in values[3:])
                                 inp_f.write(bldgdim)
-                            newline
-                            inp_f.write(newline)
+                                inp_f.write(newline)
+                                
+                            elif values[2] == 'YBADJ':
+                                #keywords too short so adding 4 spaces to preserve columns                                
+                                bldgdim = 'SO ' + values[2] + "    " +  " ".join(str(x) for x in values[3:])
+                                inp_f.write(bldgdim)
+                                inp_f.write(newline)
+                            
+                            else:
+                                bldgdim = (" ".join(str(x) for x in values[1:]))
+                                inp_f.write(bldgdim)
+                                inp_f.write(newline)
             
                 if ("Y" in depos) == 1:
                     sodepos = "SO GASDEPOS " + str(srid[index]) + " " + str(da) + " " + str(dw) + " " + str(rcl) + " " + str(henry)
@@ -828,18 +892,30 @@ class Runstream():
             # For Building Downwash
     
                 if blddw == "Y":
-                    bldgdim_df = pd.read_excel(r"C:\HEM3_V153\Inputs_multi\Template_Multi_bldg_dimensions.xlsx") ####################################
-                    bldg_srid = bldgdim_df['Source ID'][:]
-                    bldg_keyw = bldgdim_df['Keyword'][:]
-                    for i in np.arange(len(bldg_srid)):
+                    bldgdim_df = self.bldgdw_df
+                    bldg_srid = bldgdim_df['source_id'][:]
+                    bldg_keyw = bldgdim_df['keyword'][:]
+                    for i in range(len(bldg_srid)):
+        
                         if srid[index] == bldg_srid[i]:
-                            bldgdim = "SO " + str(bldg_keyw[i]) + " " + str(bldg_srid[i]) + " "
-                            inp_f.write(bldgdim)
-                            for j in np.arange(4,len(bldgdim_df.columns[:])):
-                                str(bldgdim_df[bldgdim_df.columns[j]][i]) + " "
+                            row = bldgdim_df.loc[i,]
+                            values = row.tolist()
+                            if values[2] == 'XBADJ':     
+                                #keywords too short so adding 4 spaces to preserve columns                                
+                                bldgdim = 'SO ' + values[2] + "    " +  " ".join(str(x) for x in values[3:])
                                 inp_f.write(bldgdim)
-                            newline
-                            inp_f.write(newline)
+                                inp_f.write(newline)
+                                
+                            elif values[2] == 'YBADJ':
+                                #keywords too short so adding 4 spaces to preserve columns                                
+                                bldgdim = 'SO ' + values[2] + "    " +  " ".join(str(x) for x in values[3:])
+                                inp_f.write(bldgdim)
+                                inp_f.write(newline)
+                            
+                            else:
+                                bldgdim = (" ".join(str(x) for x in values[1:]))
+                                inp_f.write(bldgdim)
+                                inp_f.write(newline)
             
                 if ("Y" in depos) == 1:
                     sodepos = "SO GASDEPOS " + str(srid[index]) + " " + str(da) + " " + str(dw) + " " + str(rcl) + " " + str(henry)
@@ -910,18 +986,30 @@ class Runstream():
             # For Building Downwash
     
                 if blddw == "Y":
-                    bldgdim_df = pd.read_excel(r"C:\HEM3_V153\Inputs_multi\Template_Multi_bldg_dimensions.xlsx") ####################################
-                    bldg_srid = bldgdim_df['Source ID'][:]
-                    bldg_keyw = bldgdim_df['Keyword'][:]
-                    for i in np.arange(len(bldg_srid)):
+                    bldgdim_df = self.bldgdw_df
+                    bldg_srid = bldgdim_df['source_id'][:]
+                    bldg_keyw = bldgdim_df['keyword'][:]
+                    for i in range(len(bldg_srid)):
+        
                         if srid[index] == bldg_srid[i]:
-                            bldgdim = "SO " + str(bldg_keyw[i]) + " " + str(bldg_srid[i]) + " "
-                            inp_f.write(bldgdim)
-                            for j in np.arange(4,len(bldgdim_df.columns[:])):
-                                str(bldgdim_df[bldgdim_df.columns[j]][i]) + " "
+                            row = bldgdim_df.loc[i,]
+                            values = row.tolist()
+                            if values[2] == 'XBADJ':     
+                                #keywords too short so adding 4 spaces to preserve columns                              
+                                bldgdim = 'SO ' + values[2] + "    " +  " ".join(str(x) for x in values[3:])
                                 inp_f.write(bldgdim)
-                            newline
-                            inp_f.write(newline)
+                                inp_f.write(newline)
+                                
+                            elif values[2] == 'YBADJ':
+                                #keywords too short so adding 4 spaces to preserve columns                                
+                                bldgdim = 'SO ' + values[2] + "    " +  " ".join(str(x) for x in values[3:])
+                                inp_f.write(bldgdim)
+                                inp_f.write(newline)
+                            
+                            else:
+                                bldgdim = (" ".join(str(x) for x in values[1:]))
+                                inp_f.write(bldgdim)
+                                inp_f.write(newline)
             
                 if ("Y" in depos) == 1:
                     sodepos = "SO GASDEPOS " + str(srid[index]) + " " + str(da) + " " + str(dw) + " " + str(rcl) + " " + str(henry)
@@ -948,7 +1036,7 @@ class Runstream():
             elif srct[index] == 'B':
                 soloc = "SO LOCATION " + str(srid[index]) + " BUOYLINE " + str(xco1[index]) + " " + str(yco1[index]) + " " + str(xco2[index]) + " " + \
                     str(yco2[index]) + " " + str(elev[index]) + "\n"
-                blemis = 1000 / (self.buoyant_df['avglin_wid'][0] * math.sqrt((xco1[index] - xco2[index])**2 + (yco1[index] - yco2[index])**2))
+                blemis = 1000 
                 soparam = "SO SRCPARAM " + str(srid[index]) + " " + str(blemis) + " " + str(relh[index]) + "\n"
 
                 if first_buoyant == 0:
@@ -999,19 +1087,32 @@ class Runstream():
             # For Building Downwash
     
                 if blddw == "Y":
-                    bldgdim_df = pd.read_excel(r"C:\HEM3_V153\Inputs_multi\Template_Multi_bldg_dimensions.xlsx") ####################################
-                    bldg_srid = bldgdim_df['Source ID'][:]
-                    bldg_keyw = bldgdim_df['Keyword'][:]
-                    for i in np.arange(len(bldg_srid)):
+                    bldgdim_df = self.bldgdw_df
+                    bldg_srid = bldgdim_df['source_id'][:]
+                    bldg_keyw = bldgdim_df['keyword'][:]
+                    for i in range(len(bldg_srid)):
+        
                         if srid[index] == bldg_srid[i]:
-                            bldgdim = "SO " + str(bldg_keyw[i]) + " " + str(bldg_srid[i]) + " "
-                            inp_f.write(bldgdim)
-                            for j in np.arange(4,len(bldgdim_df.columns[:])):
-                                str(bldgdim_df[bldgdim_df.columns[j]][i]) + " "
+                            row = bldgdim_df.loc[i,]
+                            values = row.tolist()
+                            if values[2] == 'XBADJ':     
+                                #keywords too short so adding 4 spaces to preserve columns                                
+                                bldgdim = 'SO ' + values[2] + "    " +  " ".join(str(x) for x in values[3:])
                                 inp_f.write(bldgdim)
-                            newline
-                            inp_f.write(newline)
-            
+                                inp_f.write(newline)
+                                
+                            elif values[2] == 'YBADJ':
+                                #keywords too short so adding 4 spaces to preserve columns                                
+                                bldgdim = 'SO ' + values[2] + "    " +  " ".join(str(x) for x in values[3:])
+                                inp_f.write(bldgdim)
+                                inp_f.write(newline)
+                            
+                            else:
+                                bldgdim = (" ".join(str(x) for x in values[1:]))
+                                inp_f.write(bldgdim)
+                                inp_f.write(newline)
+                                
+                                
                 if ("Y" in depos) == 1:
                     sodepos = "SO GASDEPOS " + str(srid[index]) + " " + str(da) + " " + str(dw) + " " + str(rcl) + " " + str(henry)
                     inp_f.write(sodepos)
