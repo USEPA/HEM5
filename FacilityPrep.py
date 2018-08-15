@@ -12,11 +12,12 @@ import pandas as pd
 import HEM4_Runstream as rs
 import find_center as fc
 import json_census_blocks as cbr
-import ll2utm
-import utm2ll
-
+from support.UTM import UTM
 
 ##REFORMATTED TO MOVE THE DATA FRAME CREATION TO THE GUI
+
+
+
 class FacilityPrep():
     
     def __init__(self, model):
@@ -91,7 +92,7 @@ class FacilityPrep():
         emislocs = emislocs.reset_index(drop = True)
 
         # Determine the utm zone to use for this facility
-        facutmzone = self.zone2use(emislocs)
+        facutmzone = UTM.zone2use(emislocs)
 
         # Convert all lat/lon coordinates to UTM and UTM coordinates to lat/lon
         slat = emislocs["lat"]
@@ -99,13 +100,13 @@ class FacilityPrep():
         sutmzone = emislocs["utmzone"]
 
         # First compute lat/lon coors using whatever zone was provided
-        alat, alon = utm2ll.utm2ll(slat, slon, sutmzone)
+        alat, alon = UTM.utm2ll(slat, slon, sutmzone)
         emislocs["lat"] = alat.tolist()
         emislocs["lon"] = alon.tolist()
 
         # Next compute UTM coors using the common zone
         sutmzone = facutmzone*np.ones(len(emislocs["lat"]))
-        autmn, autme, autmz = ll2utm.ll2utm(slat, slon, sutmzone)
+        autmn, autme, autmz = UTM.ll2utm(slat, slon, sutmzone)
         emislocs["utme"] = autme.tolist()
         emislocs["utmn"] = autmn.tolist()
         emislocs["utmzone"] = autmz.tolist()
@@ -115,12 +116,12 @@ class FacilityPrep():
         slon = emislocs["x2"]
         sutmzone = emislocs["utmzone"]
 
-        alat, alon = utm2ll.utm2ll(slat, slon, sutmzone)
+        alat, alon = UTM.utm2ll(slat, slon, sutmzone)
         emislocs["lat_y2"] = alat.tolist()
         emislocs["lon_x2"] = alon.tolist()
 
         sutmzone = facutmzone*np.ones(len(emislocs["lat"]))
-        autmn, autme, autmz = ll2utm.ll2utm(slat, slon, sutmzone)
+        autmn, autme, autmz = UTM.ll2utm(slat, slon, sutmzone)
         emislocs["utme_x2"] = autme.tolist()
         emislocs["utmn_y2"] = autmn.tolist()
 
@@ -146,13 +147,13 @@ class FacilityPrep():
             szone = user_recs["utmzone"]
 
             # First compute lat/lon coors using whatever zone was provided
-            alat, alon = utm2ll.utm2ll(slat, slon, szone)
+            alat, alon = UTM.utm2ll(slat, slon, szone)
             user_recs["lat"] = alat.tolist()
             user_recs["lon"] = alon.tolist()
 
             # Next compute UTM coors using the common zone
             sutmzone = facutmzone*np.ones(len(user_recs["lat"]))
-            autmn, autme, autmz = ll2utm.ll2utm(slat, slon, sutmzone)
+            autmn, autme, autmz = UTM.ll2utm(slat, slon, sutmzone)
             user_recs["utme"] = autme.tolist()
             user_recs["utmn"] = autmn.tolist()
             user_recs["utmzone"] = autmz.tolist()
@@ -182,13 +183,13 @@ class FacilityPrep():
             szone = polyver_df["utmzone"]
 
             # First compute lat/lon coors using whatever zone was provided
-            alat, alon = utm2ll.utm2ll(slat, slon, szone)
+            alat, alon = UTM.utm2ll(slat, slon, szone)
             polyver_df["lat"] = alat.tolist()
             polyver_df["lon"] = alon.tolist()
 
             # Next compute UTM coors using the common zone
             sutmzone = facutmzone*np.ones(len(polyver_df["lat"]))
-            autmn, autme, autmz = ll2utm.ll2utm(slat, slon, sutmzone)
+            autmn, autme, autmz = UTM.ll2utm(slat, slon, sutmzone)
             polyver_df["utme"] = autme.tolist()
             polyver_df["utmn"] = autmn.tolist()
             polyver_df["utmzone"] = autmz.tolist()
@@ -305,7 +306,7 @@ class FacilityPrep():
         polar_utme = [round(cenx + polardist * math.sin(math.radians(pa))) for polardist in polar_dist for pa in polar_angl]
         polar_utmn = [round(ceny + polardist * math.cos(math.radians(pa))) for polardist in polar_dist for pa in polar_angl]
         polar_utmz = [facutmzone] * (len(polar_dist) * len(polar_angl))
-        polar_lat, polar_lon = utm2ll.utm2ll(polar_utmn, polar_utme, polar_utmz)
+        polar_lat, polar_lon = UTM.utm2ll(polar_utmn, polar_utme, polar_utmz)
 
         # create dist and angl lists of length op_circle*op_radial
         polar_dist2 = [i for i in polar_dist for j in polar_angl]
@@ -566,52 +567,6 @@ class FacilityPrep():
     
     def define_polar_idx(self, s, r):
         return "S" + str(s) + "R" + str(r)
-
-      
-#%% Zone to use function
-
-    def zone2use(self, el_df):
-    
-        """
-        Create a common UTM Zone for this facility
-        
-        All emission sources input to Aermod must have UTM coordinates
-        from a single UTM zone. This function will determine the single
-        UTM zone to use.
-        
-        """
-        
-        # First, check for any utm zones provided by the user in the emission location file
-        utmzones_df = el_df["utmzone"].loc[el_df["location_type"] == "U"]
-        if utmzones_df.shape[0] > 0:
-            # there are some; find the smallest one
-            min_utmzu = int(np.nan_to_num(utmzones_df).min(axis=0))
-        else:
-            min_utmzu = 0
-        
-        # Next, compute utm zones from any user provided longitudes and find smallest            
-        lon_df = el_df[["lon"]].loc[el_df["location_type"] == "L"]
-        if lon_df.shape[0] > 0:
-            lon_df["z"] = ((lon_df["lon"]+180)/6 + 1).astype(int)
-            min_utmzl = int(np.nan_to_num(lon_df["z"]).min(axis=0))
-        else:
-            min_utmzl = 0
-        
-        if min_utmzu == 0:
-            utmzone = min_utmzl
-        else:
-            if min_utmzl == 0:
-                utmzone = min_utmzu
-            else:
-                utmzone = min(min_utmzu, min_utmzl)
-        
-        if utmzone == 0:
-            print("Error! UTM zone is 0")
-            sys.exit()
-########### Route error to log ##################
-            
-        return utmzone
-
 
 
 #%% moved start_here to inside the prepare inputs object -- will be called seperately from another object but by moving it inside the other object which will take what was HEM 3 and pass facid  
