@@ -14,7 +14,6 @@ from tkinter import scrolledtext
 from tkinter import ttk
 
 import FacilityPrep as prepare
-from log.Logger import Logger
 from model.Model import Model
 from runner.FacilityRunner import FacilityRunner
 from upload.FileUploader import FileUploader
@@ -29,7 +28,7 @@ from writer.kml.KMLWriter import KMLWriter
 
 class Hem4():
 
-    def __init__ (self, messageQueue):
+    def __init__ (self):    
         """
         The HEM4 class object builds the GUI for the HEM4 application.
         """
@@ -47,8 +46,6 @@ class Hem4():
 
         # Create a file uploader
         self.uploader = FileUploader(self.model)
-
-        Logger.messageQueue = messageQueue
 
 #%% Quit Function    
     def quit_gui(self):    
@@ -114,7 +111,7 @@ class Hem4():
         self.s3 = tk.Frame(self.main, width=250, height=100, pady=10, padx=10)
         self.s4 = tk.Frame(self.main, width=250, height=100, pady=10, padx=10)
         self.s5 = tk.Frame(self.main, width=250, height=100, pady=10, padx=10)
-        self.s9 = tk.Frame(self.main, width=250, pady=10, padx=10)
+        #self.s9 = tk.Frame(self.main, width=250, pady=10, padx=10)
         #self.s10 = tk.Frame(self.main, width=250, height=200)
 
         self.s1.grid(row=0)
@@ -124,7 +121,7 @@ class Hem4():
         self.s5.grid(row=4, column=0, columnspan=2, sticky="nsew")
 
 
-        self.s9.grid(row=8, column=0, sticky="nsew")
+        #self.s9.grid(row=8, column=0, sticky="nsew")
         #self.s10.grid(row=9, column=0, sticky="nsew")
 
         self.main.grid_rowconfigure(8, weight=4)
@@ -145,11 +142,11 @@ class Hem4():
 #%% Set Quit, Run, and User Guide buttons        
         self.quit = tk.Button(self.main, text="QUIT", fg="red",
                               command=self.quit_gui)
-        self.quit.grid(row=8, column=0, sticky="W")
+        self.quit.grid(row=10, column=0, sticky="W")
         
         #run only appears once the required files have been set
         self.run_button = tk.Button(self.main, text='RUN', fg="green", 
-                                    command=self.runThread).grid(row=8, 
+                                    command=self.runThread).grid(row=10, 
                                                           column=1, sticky="E")
         
         self.guide = tk.Button(self.main, text="User Guide", 
@@ -298,9 +295,37 @@ class Hem4():
                     self.urep_list_man.destroy()
                     self.ur_label.destroy()
                     self.s6.destroy()
-                    
             
-
+            #trigger additional inputs for building downwash
+            if 'Y' in self.model.faclist.dataframe['bldg_dw'].tolist():
+                #create building downwash input
+                self.add_bldgdw()
+            
+            else:
+                if hasattr(self, 's9'):
+                    self.bldgdw_up.destroy()
+                    self.bldgdw_list_man.destroy()
+                    self.bldgdw_label.destroy()
+                    self.s9.destroy()
+              
+            
+#            #trigger additional inputs for deposition and depletion
+#            if ('Y' in self.model.faclist.dataframe['dep'] or 
+#                self.model.faclist.dataframe['depl'] ):
+#                
+#                dep_options = check_dep(self.model.faclist.dataframe)
+#                
+#                #return hash with keywords, optional inputs, second run boolean
+#                
+#                
+#                
+#                
+#            else:
+#                #get rid of any optional inputs that shouldnt be there
+#                pass
+#            
+#            
+            
     def uploadHAPEmissions(self):
         """
         Function for uploading Hap Emissions file
@@ -410,6 +435,27 @@ class Hem4():
             # Update the UI
             self.urep_list.set(fullpath)
             [self.scr.insert(tk.INSERT, msg) for msg in self.model.ureceptr.log]
+            
+            
+    def uploadBuildingDownwash(self):
+        """ 
+        Function for uploading building downwash
+        """
+        if self.model.faclist.dataframe is None:
+            messagebox.showinfo("Facilities List Option File Missing",
+                "Please upload a Facilities List Options file before selecting"+
+                " a building downwash file.")
+
+        fullpath = self.openFile(askopenfilename())
+        if fullpath is not None: 
+            self.uploader.uploadDependent("building downwash", fullpath, 
+                                          self.model.faclist.dataframe)
+
+            # Update the UI
+            self.bldgdw_list.set(fullpath)
+            [self.scr.insert(tk.INSERT, msg) for msg in self.model.bldgdw.log]
+            
+
 
     def add_ur(self):
         """
@@ -513,6 +559,42 @@ class Hem4():
         #event handler for instructions (Button 1 is the left mouse click)
         self.poly_list_man.bind('<Button-1>', 
                                 lambda e:self.manual("instructions/poly_browse.txt"))
+        
+        
+    def add_bldgdw(self):
+        """ 
+        Function for creating row and building downwash file upload widgets
+        """
+        #create row for building downwash
+        self.s9 = tk.Frame(self.main, width=250, height=100, padx=10)
+        self.s9.grid(row=8, column=0, columnspan=2, sticky="nsew")
+        
+        # building dw labels
+        self.bldgdw_label = tk.Label(self.s9,
+                                     text="Please select associated Building" + 
+                                     " Downwash file")
+        self.bldgdw_label.grid(row=1, sticky="W")
+        
+        #building dw upload button
+        self.bldgdw_up = ttk.Button(self.s9, 
+                                    command = lambda: self.uploadBuildingDownwash())
+        self.bldgdw_up["text"] = "Browse"
+        self.bldgdw_up.grid(row=2, column=0, sticky="W")
+        #event handler for instructions (Button 1 is the left mouse click)
+        self.bldgdw_up.bind('<Enter>', 
+                          lambda e:self.browse("instructions/bd_browse.txt"))
+        
+        #polygon sources loccation file text entry
+        self.bldgdw_list = tk.StringVar(self.s9)
+        self.bldgdw_list_man = ttk.Entry(self.s9)
+        self.bldgdw_list_man["width"] = 55
+        self.bldgdw_list_man["textvariable"]= self.bldgdw_list
+        self.bldgdw_list_man.grid(row=2, column=0, sticky='E', padx=85)
+        #event handler for instructions (Button 1 is the left mouse click)
+        self.bldgdw_list_man.bind('<Button-1>', 
+                                lambda e:self.manual("instructions/bd_man.txt"))
+       
+    
     
         
  #%% Event handlers for porting instructions
@@ -613,7 +695,7 @@ class Hem4():
                 #kmlWriter.write_kml_emis_loc(self.model)
                 pass
 
-            Logger.logMessage("Preparing Inputs for " + str(
+            the_queue.put("\nPreparing Inputs for " + str(
                     self.model.facids.count()) + " facilities")
             
 
@@ -628,16 +710,14 @@ class Hem4():
                fac_list.append(facid)
                num = 1
 
-            Logger.log("The facilities ids being modeled:", fac_list, False)
-
             for facid in fac_list:
 
                 #save version of this gui as is? constantly overwrite it once each facility is done?
-                Logger.logMessage("Running facility " + str(num) + " of " +
+                the_queue.put("\nRunning facility " + str(num) + " of " + 
                               str(len(fac_list)))
 
                 try:
-                    runner = FacilityRunner(facid, self.model)
+                    runner = FacilityRunner(facid, the_queue, self.model)
                     runner.run()
 
                     # increment facility count
@@ -647,11 +727,10 @@ class Hem4():
                     fullStackInfo=''.join(traceback.format_exception(
                             etype=type(ex), value=ex, tb=ex.__traceback__))
                     
-                    Logger.logMessage("An error occurred while running a facility:\n" + fullStackInfo)
-                    Logger.close(True)
+                    the_queue.put("\nAn error occurred while running a facility:")
+                    the_queue.put("\n\n" + fullStackInfo)
 
-        Logger.logMessage("\nFinished running all facilities.\n")
-        Logger.close(True)
+        the_queue.put("\nFinished running all facilities.\n")
         messagebox.showinfo('HEM4 Modeling Completed', "Finished modeling all" + 
                              " facilities. Check the log tab for error messages."+
                              " Modeling results are located in the Output"+
@@ -694,12 +773,14 @@ class Hem4():
         ex = future.exception()
 
         if ex is not None:
+            # logger = logging.getLogger('workerComplete')
+            # logger.exception(ex)
             fullStackInfo = ''.join(traceback.format_exception(etype=type(ex), 
                                                                value=ex, 
                                                                tb=ex.__traceback__))
             
-            Logger.logMessage("An error occurred while running a facility:\n" + fullStackInfo)
-            Logger.close(True)
+            the_queue.put("\nAn error ocurred while running a facility:")
+            the_queue.put("\n\n" + fullStackInfo)
 
     #%% Create Thread for Threaded Process
     def runThread(self):
@@ -738,8 +819,10 @@ class Hem4():
         
 
 #%% Start GUI
-the_queue = queue.Queue()
-hem4 = Hem4(the_queue)
 
+the_queue = queue.Queue()
+
+
+hem4 = Hem4()
 hem4.win.after(25, hem4.after_callback)
 hem4.win.mainloop()
