@@ -13,11 +13,12 @@ from fastkml.styles import LineStyle, PolyStyle, IconStyle, LabelStyle, BalloonS
 from lxml.etree import CDATA
 from pygeoif import LinearRing, LineString
 from xml.sax.saxutils import unescape
-import ll2utm
-import utm2ll
 from operator import itemgetter
 from collections import OrderedDict
 from shutil import copyfile
+
+from support.UTM import UTM
+
 
 class KMLWriter():
     """
@@ -480,23 +481,6 @@ class KMLWriter():
         file.write(unescape(kml.to_string(prettyprint=True)))
         file.close()
 
-    def zone2use(self,el_df):
-        """
-        Select the right time zone.
-        :param el_df:
-        :return:
-        """
-        min_utmzu = np.nan_to_num(el_df["utmzone"].loc[el_df["location_type"] == "U"].min(axis=0))
-        utmzl_df = el_df[["lon"]].loc[el_df["location_type"] == "L"]
-        utmzl_df["z"] = ((utmzl_df["lon"]+180)/6 + 1).astype(int)
-        min_utmzl = np.nan_to_num(utmzl_df["z"].min(axis=0))
-        if min_utmzu == 0:
-            utmzone = min_utmzl
-        else:
-            utmzone = min(min_utmzu, min_utmzl)
-
-        return utmzone
-
     def set_width(self, row, buoy_linwid):
         """
         Set the width of a line or buoyant line source.
@@ -557,7 +541,7 @@ class KMLWriter():
             emislocs = emislocs.fillna({"utmzone":0, "source_type":"", "x2":0, "y2":0})
 
             # Determine the common utm zone to use for this facility
-            facutmzone = self.zone2use(emislocs)
+            facutmzone = UTM.zone2use(emislocs)
 
             # Convert all lat/lon coordinates to UTM and UTM coordinates to lat/lon
 
@@ -566,13 +550,13 @@ class KMLWriter():
             sutmzone = emislocs["utmzone"].values
 
             # First compute lat/lon coors using whatever zone was provided
-            alat, alon = utm2ll.utm2ll(slat, slon, sutmzone)
+            alat, alon = UTM.utm2ll(slat, slon, sutmzone)
             emislocs["lat"] = alat.tolist()
             emislocs["lon"] = alon.tolist()
 
             # Next compute UTM coors using the common zone
             sutmzone = facutmzone*np.ones(len(emislocs["lat"]))
-            autmn, autme, autmz = ll2utm.ll2utm(slat, slon, sutmzone)
+            autmn, autme, autmz = UTM.ll2utm(slat, slon, sutmzone)
             emislocs["utme"] = autme.tolist()
             emislocs["utmn"] = autmn.tolist()
             emislocs["utmzone"] = autmz.tolist()
@@ -582,12 +566,12 @@ class KMLWriter():
             slon = emislocs["x2"].values
             sutmzone = emislocs["utmzone"].values
 
-            alat, alon = utm2ll.utm2ll(slat, slon, sutmzone)
+            alat, alon = UTM.utm2ll(slat, slon, sutmzone)
             emislocs["lat_y2"] = alat.tolist()
             emislocs["lon_x2"] = alon.tolist()
 
             sutmzone = facutmzone*np.ones(len(emislocs["lat"]))
-            autmn, autme, autmz = ll2utm.ll2utm(slat, slon, sutmzone)
+            autmn, autme, autmz = UTM.ll2utm(slat, slon, sutmzone)
             emislocs["utme_x2"] = autme.tolist()
             emislocs["utmn_y2"] = autmn.tolist()
 

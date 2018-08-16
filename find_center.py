@@ -7,13 +7,13 @@ Created on Wed Jun 21 12:57:56 2017
 
 import math
 import numpy as np
-import utm2ll
 import pandas as pd
-import sys
 
 #import pandas as pd
 #import warnings
 #warnings.simplefilter("error", pd.core.common.SettingWithCopyWarning)
+from support.UTM import UTM
+
 
 def center(sourcelocs, utmz):
       
@@ -106,7 +106,7 @@ def center(sourcelocs, utmz):
         sceny = pd.Series([ceny])
         scenx = pd.Series([cenx])
         sutmz = pd.Series([utmz])
-        acenlat, acenlon = utm2ll.utm2ll(sceny, scenx, sutmz)
+        acenlat, acenlon = UTM.utm2ll(sceny, scenx, sutmz)
     
         cenlon = acenlon[0]
         cenlat = acenlat[0]
@@ -121,7 +121,7 @@ def center(sourcelocs, utmz):
         sceny = pd.Series([ceny])
         scenx = pd.Series([cenx])
         sutmz = pd.Series([utmz])
-        acenlat, acenlon = utm2ll.utm2ll(sceny, scenx, sutmz)
+        acenlat, acenlon = UTM.utm2ll(sceny, scenx, sutmz)
     
         cenlon = acenlon[0]
         cenlat = acenlat[0]    

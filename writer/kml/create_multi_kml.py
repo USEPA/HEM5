@@ -9,32 +9,14 @@ import pandas as pd
 import numpy as np
 #import os
 from shutil import copyfile
-import ll2utm
-import utm2ll
+from support.UTM import UTM
+
 
 class multi_kml():
     
     def __init__(self, model):
         
         self.model = model
-
-#%% zone2use function
-
-    def zone2use(self,el_df):
-    
-    # Set a common zone
-    #    utmzone = np.nan_to_num(el_df["utmzone"].min(axis=0))
-        min_utmzu = np.nan_to_num(el_df["utmzone"].loc[el_df["location_type"] == "U"].min(axis=0))
-        utmzl_df = el_df[["lon"]].loc[el_df["location_type"] == "L"]
-        utmzl_df["z"] = ((utmzl_df["lon"]+180)/6 + 1).astype(int)
-        min_utmzl = np.nan_to_num(utmzl_df["z"].min(axis=0))
-        if min_utmzu == 0:
-            utmzone = min_utmzl
-        else:
-            utmzone = min(min_utmzu, min_utmzl)
-    
-        return utmzone
-
 
 #%% function to set the width of a line or buoyant line source
 
@@ -93,7 +75,7 @@ class multi_kml():
             emislocs = emislocs.fillna({"utmzone":0, "source_type":"", "x2":0, "y2":0})
         
             # Determine the common utm zone to use for this facility
-            facutmzone = self.zone2use(emislocs)
+            facutmzone = UTM.zone2use(emislocs)
             
             # Convert all lat/lon coordinates to UTM and UTM coordinates to lat/lon
         
@@ -102,13 +84,13 @@ class multi_kml():
             sutmzone = emislocs["utmzone"].values
          
             # First compute lat/lon coors using whatever zone was provided
-            alat, alon = utm2ll.utm2ll(slat, slon, sutmzone)
+            alat, alon = UTM.utm2ll(slat, slon, sutmzone)
             emislocs["lat"] = alat.tolist()
             emislocs["lon"] = alon.tolist()
         
             # Next compute UTM coors using the common zone
             sutmzone = facutmzone*np.ones(len(emislocs["lat"]))
-            autmn, autme, autmz = ll2utm.ll2utm(slat, slon, sutmzone)
+            autmn, autme, autmz = UTM.ll2utm(slat, slon, sutmzone)
             emislocs["utme"] = autme.tolist()
             emislocs["utmn"] = autmn.tolist()
             emislocs["utmzone"] = autmz.tolist()
@@ -119,12 +101,12 @@ class multi_kml():
             slon = emislocs["x2"].values
             sutmzone = emislocs["utmzone"].values
         
-            alat, alon = utm2ll.utm2ll(slat, slon, sutmzone)
+            alat, alon = UTM.utm2ll(slat, slon, sutmzone)
             emislocs["lat_y2"] = alat.tolist()
             emislocs["lon_x2"] = alon.tolist()
             
             sutmzone = facutmzone*np.ones(len(emislocs["lat"]))
-            autmn, autme, autmz = ll2utm.ll2utm(slat, slon, sutmzone)
+            autmn, autme, autmz = UTM.ll2utm(slat, slon, sutmzone)
             emislocs["utme_x2"] = autme.tolist()
             emislocs["utmn_y2"] = autmn.tolist()
             
