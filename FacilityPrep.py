@@ -200,9 +200,6 @@ class FacilityPrep():
             # No polygon sources. Empty dataframe.
             polyver_df = pd.DataFrame()
 
-
-
-
         #%%---------- Optional Building Downwash -------------------------------------
         
         if hasattr(self.model.bldgdw, "dataframe"):
@@ -212,6 +209,8 @@ class FacilityPrep():
         else:
             bldgdw_df = pd.DataFrame()
         
+
+
         #%%---------- Get Census Block Receptors -------------------------------------- needs to be connected
 
         # Keep necessary source location columns

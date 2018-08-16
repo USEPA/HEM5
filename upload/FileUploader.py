@@ -11,7 +11,6 @@ from upload.TargetOrganEndpoints import TargetOrganEndpoints
 from upload.UserReceptors import UserReceptors
 from upload.Polyvertex import Polyvertex 
 from upload.BuoyantLine import BuoyantLine
-from upload.Downwash import Downwash
 
 
 
@@ -33,6 +32,20 @@ class FileUploader():
                 self.model.hapemis = HAPEmissions(path)
             elif filetype == "emisloc":
                 self.model.emisloc = EmissionsLocations(path)
+            elif filetype == "building downwash":
+                pass
+                #file_path = os.path.abspath(filename)
+                # self.bd_list.set(file_path)
+                # self.bd_path = file_path
+                #
+                # #building downwash dataframe
+                # self.bd_df = pd.read_csv(open(self.bd_path ,"rb"))
+                #
+                # #record upload in log
+                # self.scr.insert(tk.INSERT, "Uploaded building downwash for...")
+                # self.scr.insert(tk.INSERT, "\n")
+
+
             elif filetype == "particle depletion":
                 pass
                 #file_path = os.path.abspath(filename)
@@ -98,8 +111,5 @@ class FileUploader():
 
         elif filetype == "user receptors":
             self.model.ureceptr = UserReceptors(path, dependency)
-            
-        elif filetype ==  "building downwash":
-            self.model.bldgdw = Downwash(path, dependency)
 
 

@@ -14,6 +14,7 @@ from tkinter import scrolledtext
 from tkinter import ttk
 
 import FacilityPrep as prepare
+from log.Logger import Logger
 from model.Model import Model
 from runner.FacilityRunner import FacilityRunner
 from upload.FileUploader import FileUploader
@@ -28,7 +29,7 @@ from writer.kml.KMLWriter import KMLWriter
 
 class Hem4():
 
-    def __init__ (self):    
+    def __init__ (self, messageQueue):
         """
         The HEM4 class object builds the GUI for the HEM4 application.
         """
@@ -46,6 +47,8 @@ class Hem4():
 
         # Create a file uploader
         self.uploader = FileUploader(self.model)
+
+        Logger.messageQueue = messageQueue
 
 #%% Quit Function    
     def quit_gui(self):    
@@ -295,7 +298,7 @@ class Hem4():
                     self.urep_list_man.destroy()
                     self.ur_label.destroy()
                     self.s6.destroy()
-            
+                    
             #trigger additional inputs for building downwash
             if 'Y' in self.model.faclist.dataframe['bldg_dw'].tolist():
                 #create building downwash input
@@ -306,26 +309,8 @@ class Hem4():
                     self.bldgdw_up.destroy()
                     self.bldgdw_list_man.destroy()
                     self.bldgdw_label.destroy()
-                    self.s9.destroy()
-              
-            
-#            #trigger additional inputs for deposition and depletion
-#            if ('Y' in self.model.faclist.dataframe['dep'] or 
-#                self.model.faclist.dataframe['depl'] ):
-#                
-#                dep_options = check_dep(self.model.faclist.dataframe)
-#                
-#                #return hash with keywords, optional inputs, second run boolean
-#                
-#                
-#                
-#                
-#            else:
-#                #get rid of any optional inputs that shouldnt be there
-#                pass
-#            
-#            
-            
+                    self.s9.destroy()        
+
     def uploadHAPEmissions(self):
         """
         Function for uploading Hap Emissions file
@@ -435,7 +420,7 @@ class Hem4():
             # Update the UI
             self.urep_list.set(fullpath)
             [self.scr.insert(tk.INSERT, msg) for msg in self.model.ureceptr.log]
-            
+                            
             
     def uploadBuildingDownwash(self):
         """ 
@@ -454,8 +439,7 @@ class Hem4():
             # Update the UI
             self.bldgdw_list.set(fullpath)
             [self.scr.insert(tk.INSERT, msg) for msg in self.model.bldgdw.log]
-            
-
+    
 
     def add_ur(self):
         """
@@ -559,8 +543,8 @@ class Hem4():
         #event handler for instructions (Button 1 is the left mouse click)
         self.poly_list_man.bind('<Button-1>', 
                                 lambda e:self.manual("instructions/poly_browse.txt"))
-        
-        
+    
+    
     def add_bldgdw(self):
         """ 
         Function for creating row and building downwash file upload widgets
@@ -593,9 +577,6 @@ class Hem4():
         #event handler for instructions (Button 1 is the left mouse click)
         self.bldgdw_list_man.bind('<Button-1>', 
                                 lambda e:self.manual("instructions/bd_man.txt"))
-       
-    
-    
         
  #%% Event handlers for porting instructions
 
@@ -695,7 +676,7 @@ class Hem4():
                 #kmlWriter.write_kml_emis_loc(self.model)
                 pass
 
-            the_queue.put("\nPreparing Inputs for " + str(
+            Logger.logMessage("Preparing Inputs for " + str(
                     self.model.facids.count()) + " facilities")
             
 
@@ -710,14 +691,16 @@ class Hem4():
                fac_list.append(facid)
                num = 1
 
+            Logger.log("The facilities ids being modeled:", fac_list, False)
+
             for facid in fac_list:
 
                 #save version of this gui as is? constantly overwrite it once each facility is done?
-                the_queue.put("\nRunning facility " + str(num) + " of " + 
+                Logger.logMessage("Running facility " + str(num) + " of " +
                               str(len(fac_list)))
 
                 try:
-                    runner = FacilityRunner(facid, the_queue, self.model)
+                    runner = FacilityRunner(facid, self.model)
                     runner.run()
 
                     # increment facility count
@@ -727,10 +710,11 @@ class Hem4():
                     fullStackInfo=''.join(traceback.format_exception(
                             etype=type(ex), value=ex, tb=ex.__traceback__))
                     
-                    the_queue.put("\nAn error occurred while running a facility:")
-                    the_queue.put("\n\n" + fullStackInfo)
+                    Logger.logMessage("An error occurred while running a facility:\n" + fullStackInfo)
+                    Logger.close(True)
 
-        the_queue.put("\nFinished running all facilities.\n")
+        Logger.logMessage("\nFinished running all facilities.\n")
+        Logger.close(True)
         messagebox.showinfo('HEM4 Modeling Completed', "Finished modeling all" + 
                              " facilities. Check the log tab for error messages."+
                              " Modeling results are located in the Output"+
@@ -773,14 +757,12 @@ class Hem4():
         ex = future.exception()
 
         if ex is not None:
-            # logger = logging.getLogger('workerComplete')
-            # logger.exception(ex)
             fullStackInfo = ''.join(traceback.format_exception(etype=type(ex), 
                                                                value=ex, 
                                                                tb=ex.__traceback__))
             
-            the_queue.put("\nAn error ocurred while running a facility:")
-            the_queue.put("\n\n" + fullStackInfo)
+            Logger.logMessage("An error occurred while running a facility:\n" + fullStackInfo)
+            Logger.close(True)
 
     #%% Create Thread for Threaded Process
     def runThread(self):
@@ -819,10 +801,8 @@ class Hem4():
         
 
 #%% Start GUI
-
 the_queue = queue.Queue()
+hem4 = Hem4(the_queue)
 
-
-hem4 = Hem4()
 hem4.win.after(25, hem4.after_callback)
 hem4.win.mainloop()
