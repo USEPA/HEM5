@@ -6,6 +6,7 @@ class Logger:
     """
     Used to log messages (with optional data) in the HEM4 log file as well as
     the UI component that displays messages to the user.
+    
     """
 
     logfile = open('output/hem4.log', 'w')
