@@ -199,9 +199,10 @@ class InputChecker():
                 
                     #check facility ids in ureceptors 
                     uids = set(self.model.ureceptr.dataframe['fac_id'])
-                    fids = set(self.model.faclist.dataframe['fac_id'])
+                    get_fids= self.model.faclist.dataframe[self.model.faclist.dataframe['user_rcpt'] == 'Y']
+                    fids = set(get_fids['fac_id'])
                     
-                    if fids.intersection(uids) != fids:
+                    if fids.intersection(uids) != uids:
                         
                         missing = fids - uids
                         
@@ -221,8 +222,8 @@ class InputChecker():
                     self.model.multibuoy.dataframe
                 
                 except AttributeError:
-                    logMsg8 = ("Buoyant Line parameters are specified in the " + 
-                               " Facilities List Options file, please upload " + 
+                    logMsg8 = ("Buoyant Line parameters are specified in the" + 
+                               " Facilities List Options file, please upload" + 
                                " buoyant line sources for " )
                     
                     
@@ -234,9 +235,10 @@ class InputChecker():
                     
                     #check facility ids against bouyant line ids
                     bids = set(self.model.multibuoy.dataframe['fac_id'])
-                    fids = set(self.model.faclist.dataframe['fac_id'])
+                    get_fids = self.model.emisloc.dataframe[self.model.emisloc.dataframe['source_type'] == 'B']
+                    fids = set(get_fids['fac_id'])
                     
-                    if fids.intersection(bids) != fids:
+                    if fids.intersection(bids) != bids:
                         
                         missing = fids - bids
                         
@@ -258,8 +260,8 @@ class InputChecker():
                     
                 except AttributeError:
                     
-                    logMsg9 = ("Polyvertex parameters are specified in the " + 
-                               " Facilities List Options file, please upload " + 
+                    logMsg9 = ("Polyvertex parameters are specified in the" + 
+                               " Facilities List Options file, please upload" + 
                                " polyvertex sources for " )
                     
                     
@@ -272,9 +274,10 @@ class InputChecker():
                     
                     #check facility ids against polyvertex ids
                     pids = set(self.model.multipoly.dataframe['fac_id'])
-                    fids = set(self.model.faclist.dataframe['fac_id'])
+                    get_fids = self.model.emisloc.dataframe[self.model.emisloc.dataframe['source_type'] == 'I']
+                    fids = set(get_fids['fac_id'])
                     
-                    if fids.intersection(pids) != fids:
+                    if fids.intersection(pids) != pids:
                         
                         missing = fids - pids
                         
@@ -286,6 +289,47 @@ class InputChecker():
                         result['result'] =  logMsg9b
                         result['reset'] = 'poly_vertex'
                         return result
+                    
+            
+            elif option is 'building downwash':
+                
+                try:
+                    self.model.bldgdw.dataframe
+                    
+                except AttributeError:
+                    
+                    logMsg10 = ("Building downwash parameters are specified" + 
+                               " in the Facilities List Options file, please" + 
+                               " upload polyvertex sources for " )
+                    
+                    
+                    result['result'] = logMsg10
+                    result['reset'] = 'building downwash'
+                    return result
+                    
+                else:
+                    
+                    #check faility ids agains building downwash
+                    bdids = set(self.model.bldgdw.dataframe['fac_id'])
+                    get_fids = self.model.faclist.dataframe[self.model.faclist.dataframe['bldg_dw'] == 'Y']
+                    fids = set(get_fids['fac_id'])
+                    
+                    if fids.intersection(bdids) != bdids:
+                        
+                        missing = fids - bdids 
+                        
+                        logMsg10b = ("Facilities: " + ",".join(list(missing)) + 
+                                    " are missing polyvertex sources that" +
+                                    " were indicated in the Facilities list" +
+                                    " options file")
+            
+                        result['result'] =  logMsg10b
+                        result['reset'] = 'building downwash'
+                        return result
+                        
+                        
+        
+                
                 
         
         result['result'] = 'ready'
