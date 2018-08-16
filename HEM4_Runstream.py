@@ -264,7 +264,6 @@ class Runstream():
             phase = "B"
     #----------------------------------------------------------------------------------------
         blddw = self.facoptn_df['bldg_dw'][0]
-        print("Building downwash", blddw)
     #---------------------------------------------------------------------------------------- 
         fasta = self.facoptn_df['fastall'][0]                     # FASTALL Model Option for AERMOD
     
