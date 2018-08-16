@@ -200,6 +200,18 @@ class FacilityPrep():
             # No polygon sources. Empty dataframe.
             polyver_df = pd.DataFrame()
 
+
+
+
+        #%%---------- Optional Building Downwash -------------------------------------
+        
+        if hasattr(self.model.bldgdw, "dataframe"):
+            
+            bldgdw_df = self.model.bldgdw.dataframe.loc[self.model.bldgdw.dataframe.fac_id==facid].copy()
+            
+        else:
+            bldgdw_df = pd.DataFrame()
+        
         #%%---------- Get Census Block Receptors -------------------------------------- needs to be connected
 
         # Keep necessary source location columns
@@ -373,7 +385,7 @@ class FacilityPrep():
 
         #%% result ##needs to create a new object to be passed...
         #return facops, emislocs, hapemis, innerblks, outerblks, sourcelocs, user_recs, buoyant_df, polyver_df
-        return rs.Runstream(facops, emislocs, hapemis, cenlat, cenlon, cenx, ceny, self.innerblks, user_recs, buoyant_df, polyver_df, polar_df)
+        return rs.Runstream(facops, emislocs, hapemis, cenlat, cenlon, cenx, ceny, self.innerblks, user_recs, buoyant_df, polyver_df, polar_df, bldgdw_df)
 
     #%% Calculate ring and sector of block receptors
     
