@@ -9,6 +9,7 @@ class Model():
         self.multibuoy = None
         self.ureceptr = None
         self.haplib = None
+	self.bldgdw = None
 
         self.facids = None
 
@@ -25,5 +26,5 @@ class Model():
         self.multibuoy = None
         self.ureceptr = None
         self.haplib = None
-
+	self.bldgdw = None
         self.facids = None
