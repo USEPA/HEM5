@@ -6,21 +6,18 @@ Created on Thu Nov 30 10:26:13 2017
 """
 import os
 import concurrent.futures as futures
-import queue
 import tkinter as tk
 import traceback
 from tkinter import messagebox
 from tkinter import scrolledtext
 from tkinter import ttk
-
-import FacilityPrep as prepare
 from log.Logger import Logger
 from model.Model import Model
 from runner.FacilityRunner import FacilityRunner
 from upload.FileUploader import FileUploader
 from tkinter.filedialog import askopenfilename
 from checker.InputChecker import InputChecker
-
+import queue
 
 
 #%% Hem4 GUI
@@ -31,15 +28,9 @@ class Hem4():
 
     def __init__ (self, messageQueue):
         """
-        The HEM4 class object builds the GUI for the HEM4 application.
+        The HEM4 class represents the HEM4 application in total, including
+        the GUI and processing functionality.
         """
-        #create window instance
-        self.win = tk.Tk()
-    
-        #title
-        self.win.title("HEM4")
-        self.win.maxsize(1000, 1000)
-        self.createWidgets()
         self.running = False
 
         # Create the model
@@ -47,8 +38,24 @@ class Hem4():
 
         # Create a file uploader
         self.uploader = FileUploader(self.model)
+        self.messageQueue = messageQueue
+        self.lastException = None
 
         Logger.messageQueue = messageQueue
+
+    def start_gui(self):
+
+        #create window instance
+        self.win = tk.Tk()
+
+        #title
+        self.win.title("HEM4")
+        self.win.maxsize(1000, 1000)
+
+        self.createWidgets()
+
+        self.win.after(25, self.after_callback)
+        self.win.mainloop()
 
 #%% Quit Function    
     def quit_gui(self):    
@@ -56,10 +63,10 @@ class Hem4():
         Function handles quiting HEM4 by closing the window containing
         the GUI and exiting all background processes & threads
         """
-    
         if self.running == False:
             self.win.quit()
             self.win.destroy()
+            self.close()
             exit()
         
         elif self.running == True:
@@ -69,8 +76,12 @@ class Hem4():
              if override == True:
                 self.win.quit()
                 self.win.destroy()
+                self.close()
                 exit()
-    
+
+    def close(self):
+        Logger.close(True)
+
 #%% Open HEM4 User Guide
     def user_guide(self):
         """ 
@@ -670,51 +681,8 @@ class Hem4():
             #create object for prepare inputs
             self.running = True
 
-            #create a Google Earth KML of all sources to be modeled
-            kmlWriter = KMLWriter()
-            if kmlWriter is not None:
-                #kmlWriter.write_kml_emis_loc(self.model)
-                pass
+            self.process()
 
-            Logger.logMessage("Preparing Inputs for " + str(
-                    self.model.facids.count()) + " facilities")
-            
-
-            # let's tell after_callback that this completed
-            #print('thread_target puts None to the queue')
-
-
-            fac_list = []
-            for index, row in self.model.faclist.dataframe.iterrows():
-
-               facid = row[0]
-               fac_list.append(facid)
-               num = 1
-
-            Logger.log("The facilities ids being modeled:", fac_list, False)
-
-            for facid in fac_list:
-
-                #save version of this gui as is? constantly overwrite it once each facility is done?
-                Logger.logMessage("Running facility " + str(num) + " of " +
-                              str(len(fac_list)))
-
-                try:
-                    runner = FacilityRunner(facid, self.model)
-                    runner.run()
-
-                    # increment facility count
-                    num += 1
-                except Exception as ex:
-
-                    fullStackInfo=''.join(traceback.format_exception(
-                            etype=type(ex), value=ex, tb=ex.__traceback__))
-                    
-                    Logger.logMessage("An error occurred while running a facility:\n" + fullStackInfo)
-                    Logger.close(True)
-
-        Logger.logMessage("\nFinished running all facilities.\n")
-        Logger.close(True)
         messagebox.showinfo('HEM4 Modeling Completed', "Finished modeling all" + 
                              " facilities. Check the log tab for error messages."+
                              " Modeling results are located in the Output"+
@@ -749,6 +717,50 @@ class Hem4():
         self.running = False
 
 
+    def process(self):
+
+        #create a Google Earth KML of all sources to be modeled
+        kmlWriter = KMLWriter()
+        if kmlWriter is not None:
+            #kmlWriter.write_kml_emis_loc(self.model)
+            pass
+
+        Logger.logMessage("Preparing Inputs for " + str(
+            self.model.facids.count()) + " facilities")
+
+        # let's tell after_callback that this completed
+        #print('thread_target puts None to the queue')
+
+        fac_list = []
+        for index, row in self.model.faclist.dataframe.iterrows():
+
+            facid = row[0]
+            fac_list.append(facid)
+            num = 1
+
+        Logger.log("The facilities ids being modeled:", fac_list, False)
+
+        for facid in fac_list:
+
+            #save version of this gui as is? constantly overwrite it once each facility is done?
+            Logger.logMessage("Running facility " + str(num) + " of " +
+                              str(len(fac_list)))
+
+            try:
+                runner = FacilityRunner(facid, self.model)
+                runner.run()
+
+                # increment facility count
+                num += 1
+            except Exception as ex:
+                self.lastException = ex
+                fullStackInfo=''.join(traceback.format_exception(
+                    etype=type(ex), value=ex, tb=ex.__traceback__))
+
+                Logger.logMessage("An error occurred while running a facility:\n" + fullStackInfo)
+
+        Logger.logMessage("\nFinished running all facilities.\n")
+
     def workerComplete(self, future):
         """
         Function catches raised exceptions/errors on threads and logs traceback 
@@ -762,7 +774,6 @@ class Hem4():
                                                                tb=ex.__traceback__))
             
             Logger.logMessage("An error occurred while running a facility:\n" + fullStackInfo)
-            Logger.close(True)
 
     #%% Create Thread for Threaded Process
     def runThread(self):
@@ -783,10 +794,10 @@ class Hem4():
         logged via queue method
         """
         try:
-            message = the_queue.get(block=False)
+            message = self.messageQueue.get(block=False)
         except queue.Empty:
             # let's try again later
-            hem4.win.after(25, self.after_callback)
+            self.win.after(25, self.after_callback)
             return
 
         print('after_callback got', message)
@@ -795,14 +806,5 @@ class Hem4():
             self.scr.insert(tk.INSERT, message)
             self.scr.insert(tk.INSERT, "\n")
             self.scr.configure(state='disabled')
-            hem4.win.after(25, self.after_callback)   
-         
-        
-        
+            self.win.after(25, self.after_callback)
 
-#%% Start GUI
-the_queue = queue.Queue()
-hem4 = Hem4(the_queue)
-
-hem4.win.after(25, hem4.after_callback)
-hem4.win.mainloop()
