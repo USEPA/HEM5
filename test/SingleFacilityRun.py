@@ -1,36 +1,79 @@
+import hashlib
 import queue
-import sys
-import traceback
 import unittest
 from Hem4Gui_Threaded import Hem4
+from writer.csv.AllPolarReceptors import AllPolarReceptors
+
 
 class SingleFacilityRun(unittest.TestCase):
+    """
+    Process the facility and test the consistency of the various output files etc.
+    """
 
-    def setUp(self):
+    @classmethod
+    def setUpClass(cls):
         messageQueue = queue.Queue()
-        self.hem4 = Hem4(messageQueue)
+        cls.hem4 = Hem4(messageQueue)
 
         # set up the test fixture files...
-        self.hem4.uploader.uploadLibrary("haplib")
-        self.hem4.uploader.uploadLibrary("organs")
+        cls.hem4.uploader.uploadLibrary("haplib")
+        cls.hem4.uploader.uploadLibrary("organs")
 
-        self.hem4.uploader.upload("faclist", "fixtures/faclist.xlsx")
-        self.hem4.model.facids = self.hem4.model.faclist.dataframe['fac_id']
-        self.hem4.uploader.upload("hapemis", "fixtures/hapemis.xlsx")
-        self.hem4.uploader.upload("emisloc", "fixtures/emisloc.xlsx")
-        self.hem4.uploader.uploadDependent("user receptors", "fixtures/urec.xlsx",
-                                      self.hem4.model.faclist.dataframe)
+        cls.hem4.uploader.upload("faclist", "fixtures/input/faclist.xlsx")
+        cls.hem4.model.facids = cls.hem4.model.faclist.dataframe['fac_id']
+        cls.hem4.uploader.upload("hapemis", "fixtures/input/hapemis.xlsx")
+        cls.hem4.uploader.upload("emisloc", "fixtures/input/emisloc.xlsx")
+        cls.hem4.uploader.uploadDependent("user receptors", "fixtures/input/urec.xlsx",
+                                      cls.hem4.model.faclist.dataframe)
 
-    def tearDown(self):
-        self.hem4.close()
+        cls.hem4.process()
 
-    def test_hem4(self):
+    @classmethod
+    def tearDownClass(cls):
+        cls.hem4.close()
 
-        self.hem4.process()
+    def test_all_ploar_receptors_output(self):
+        """
+        Verify that the all polar receptors output file is identical to the test fixture.
+        """
+        for facid in self.hem4.model.facids:
+            all_polar_fixture = AllPolarReceptors("fixtures/output", facid, None, None)
+            checksum_expected = self.hashFile(all_polar_fixture.filename)
 
-        # assert various stuff
-        # ex = self.hem4.lastException
-        # self.assertEqual(ex, None, "The last exception was not None")
+            print("Expected checksum for AllPolarReceptors: " + checksum_expected)
+            all_polar_generated = AllPolarReceptors("output/"+facid, facid, None, None)
+            checksum_generated = self.hashFile(all_polar_generated.filename)
+            self.assertEqual(checksum_expected, checksum_generated,
+                 "The contents of the AllPolarReceptors output file are inconsistent with the test fixture:" +
+                 checksum_expected + " != " + checksum_generated)
+
+    def test_aermod_output(self):
+        """
+        The aermod output files should be identical, except for the timestamp!
+        """
+
+        for facid in self.hem4.model.facids:
+            checksum_expected = self.hashFile("fixtures/output/aermod.out")
+            print("Expected checksum for aermod.out: " + checksum_expected)
+
+            checksum_generated = self.hashFile("output/" + facid + "/aermod.out")
+            self.assertNotEqual(checksum_expected, checksum_generated,
+                 "The contents of the aermod output file should have a different date than the test fixture:" +
+                 checksum_expected + " != " + checksum_generated)
+
+    def hashFile(self, filename):
+        """
+        Calculate the md5 checksum for a given file and return the result.
+        """
+
+        BLOCKSIZE = 65536
+        hasher = hashlib.md5()
+        with open(filename, 'rb') as afile:
+            buf = afile.read(BLOCKSIZE)
+            while len(buf) > 0:
+                hasher.update(buf)
+                buf = afile.read(BLOCKSIZE)
+        return hasher.hexdigest()
 
 if __name__ == '__main__':
     unittest.main()
