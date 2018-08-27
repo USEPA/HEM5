@@ -1,9 +1,13 @@
 import hashlib
 import queue
 import unittest
+
 from Hem4Gui_Threaded import Hem4
+from writer.csv.AllInnerReceptors import AllInnerReceptors
+from writer.csv.AllOuterReceptors import AllOuterReceptors
 from writer.csv.AllPolarReceptors import AllPolarReceptors
 
+fixturePresent = {}
 
 class SingleFacilityRun(unittest.TestCase):
     """
@@ -20,7 +24,7 @@ class SingleFacilityRun(unittest.TestCase):
         cls.hem4.uploader.uploadLibrary("organs")
 
         cls.hem4.uploader.upload("faclist", "fixtures/input/faclist.xlsx")
-        cls.hem4.model.facids = cls.hem4.model.faclist.dataframe['fac_id']
+        cls.hem4.model.facids = cls.hem4.model.faclist.dataframe["fac_id"]
         cls.hem4.uploader.upload("hapemis", "fixtures/input/hapemis.xlsx")
         cls.hem4.uploader.upload("emisloc", "fixtures/input/emisloc.xlsx")
         cls.hem4.uploader.uploadDependent("user receptors", "fixtures/input/urec.xlsx",
@@ -32,30 +36,57 @@ class SingleFacilityRun(unittest.TestCase):
     def tearDownClass(cls):
         cls.hem4.close()
 
-    def test_all_ploar_receptors_output(self):
+    def test_all_polar_receptors(self):
         """
         Verify that the all polar receptors output file is identical to the test fixture.
         """
         for facid in self.hem4.model.facids:
-            all_polar_fixture = AllPolarReceptors("fixtures/output", facid, None, None)
-            checksum_expected = self.hashFile(all_polar_fixture.filename)
+            fixture = AllPolarReceptors("fixtures/output", facid, None, None)
+            checksum_expected = self.hashFile(fixture.filename)
 
-            print("Expected checksum for AllPolarReceptors: " + checksum_expected)
-            all_polar_generated = AllPolarReceptors("output/"+facid, facid, None, None)
-            checksum_generated = self.hashFile(all_polar_generated.filename)
+            generated = AllPolarReceptors("output/"+facid, facid, None, None)
+            checksum_generated = self.hashFile(generated.filename)
             self.assertEqual(checksum_expected, checksum_generated,
                  "The contents of the AllPolarReceptors output file are inconsistent with the test fixture:" +
                  checksum_expected + " != " + checksum_generated)
 
-    def test_aermod_output(self):
+    @unittest.skip("All inner receptors test fixture not present.")
+    def test_all_inner_receptors(self):
+        """
+        Verify that the all inner receptors output file is identical to the test fixture.
+        """
+        for facid in self.hem4.model.facids:
+            fixture = AllInnerReceptors("fixtures/output", facid, None, None)
+            checksum_expected = self.hashFile(fixture.filename)
+
+            generated = AllInnerReceptors("output/"+facid, facid, None, None)
+            checksum_generated = self.hashFile(generated.filename)
+            self.assertEqual(checksum_expected, checksum_generated,
+                             "The contents of the output file are inconsistent with the test fixture:" +
+                             checksum_expected + " != " + checksum_generated)
+
+    @unittest.skip("All outer receptors test fixture not present.")
+    def test_all_outer_receptors(self):
+        """
+        Verify that the all outer receptors output file is identical to the test fixture.
+        """
+        for facid in self.hem4.model.facids:
+            fixture = AllOuterReceptors("fixtures/output", facid, None, None)
+            checksum_expected = self.hashFile(fixture.filename)
+
+            generated = AllOuterReceptors("output/"+facid, facid, None, None)
+            checksum_generated = self.hashFile(generated.filename)
+            self.assertEqual(checksum_expected, checksum_generated,
+                             "The contents of the output file are inconsistent with the test fixture:" +
+                             checksum_expected + " != " + checksum_generated)
+            
+    def test_aermod(self):
         """
         The aermod output files should be identical, except for the timestamp!
         """
 
         for facid in self.hem4.model.facids:
             checksum_expected = self.hashFile("fixtures/output/aermod.out")
-            print("Expected checksum for aermod.out: " + checksum_expected)
-
             checksum_generated = self.hashFile("output/" + facid + "/aermod.out")
             self.assertNotEqual(checksum_expected, checksum_generated,
                  "The contents of the aermod output file should have a different date than the test fixture:" +
