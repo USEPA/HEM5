@@ -15,10 +15,12 @@ class InputFile(ABC):
         return
 
     def readFromPath(self, colnames, typeconverters):
-        return pd.read_excel(open(self.path, "rb"), names=colnames, converters=typeconverters)
+        with open(self.path, "rb") as f:
+            return pd.read_excel(f, names=colnames, converters=typeconverters)
 
     def read(self, path):
-        return pd.read_excel(open(path, "rb"))
+        with open(path, "rb") as f:
+            return pd.read_excel(f)
 
     def to_numeric(self, slice):
         return pd.to_numeric(slice,errors="coerce")

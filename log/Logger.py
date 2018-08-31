@@ -1,3 +1,4 @@
+import os
 import pprint
 from datetime import datetime
 import pandas as pd
@@ -9,7 +10,9 @@ class Logger:
     
     """
 
-    logfile = open('output/hem4.log', 'w')
+    fileDir = os.path.dirname(os.path.realpath('__file__'))
+    filename = os.path.join(fileDir, 'output/hem4.log')
+    logfile = open(filename, 'w')
     messageQueue = None
 
     @staticmethod
