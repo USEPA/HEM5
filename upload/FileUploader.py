@@ -12,7 +12,9 @@ from upload.UserReceptors import UserReceptors
 from upload.Polyvertex import Polyvertex 
 from upload.BuoyantLine import BuoyantLine
 from upload.Downwash import Downwash
-
+from upload.Particle import Particle
+from upload.LandUse import LandUse
+from upload.Vegetation import Vegetation
 
 
 class FileUploader():
@@ -33,45 +35,6 @@ class FileUploader():
                 self.model.hapemis = HAPEmissions(path)
             elif filetype == "emisloc":
                 self.model.emisloc = EmissionsLocations(path)
-            elif filetype == "particle depletion":
-                pass
-                #file_path = os.path.abspath(filename)
-                # self.dep_part.set(file_path)
-                # self.dep_part_path = file_path
-                #
-                # #particle dataframe
-                # self.particle_df = pd.read_excel(open(self.dep_part_path, "rb")
-                #                                  , names=("fac_id", "source_id", "diameter", "mass", "density"))
-                #
-                # #record upload in log
-                # self.scr.insert(tk.INSERT, "Uploaded particle depletion for...")
-                # self.scr.insert(tk.INSERT, "\n")
-
-            elif filetype == "land use description":
-                pass
-                #file_path = os.path.abspath(filename)
-                # self.dep_land.set(file_path)
-                # self.dep_land_path = file_path
-                #
-                # self.land_df = pd.read_excel(open(self.dep_land_path, "rb"))
-                # self.land_df.rename({"Facility ID " : "fac_id"})
-                #
-                # #record upload in log
-                # self.scr.insert(tk.INSERT, "Uploaded land use description for...")
-                # self.scr.insert(tk.INSERT, "\n")
-
-
-            elif filetype == "season vegetation":
-                pass
-                #file_path = os.path.abspath(filename)
-                # self.dep_veg.set(file_path)
-                # self.dep_veg_path = file_path
-                #
-                # self.veg_df = pd.read_csv(open(self.dep_veg_path, "rb"))
-                # self.veg_df.rename({"Facility ID": "fac_id"})
-                # #record upload in log
-                # self.scr.insert(tk.INSERT, "Uploaded season vegetation for...")
-                # self.scr.insert(tk.INSERT, "\n")
 
 
             elif filetype == "emissions variation":
@@ -102,4 +65,40 @@ class FileUploader():
         elif filetype ==  "building downwash":
             self.model.bldgdw = Downwash(path, dependency)
 
-
+        elif filetype == "particle depletion":
+            self.model.partdep = Particle(path, dependency)
+                #file_path = os.path.abspath(filename)
+                # self.dep_part.set(file_path)
+                # self.dep_part_path = file_path
+                #
+                # #particle dataframe
+                # self.particle_df = pd.read_excel(open(self.dep_part_path, "rb")
+                #                                  , names=("fac_id", "source_id", "diameter", "mass", "density"))
+                #
+                # #record upload in log
+                # self.scr.insert(tk.INSERT, "Uploaded particle depletion for...")
+                # self.scr.insert(tk.INSERT, "\n")
+        elif filetype == "land use":
+                self.model.landuse = LandUse(path, dependency)
+                #file_path = os.path.abspath(filename)
+                # self.dep_land.set(file_path)
+                # self.dep_land_path = file_path
+                #
+                # self.land_df = pd.read_excel(open(self.dep_land_path, "rb"))
+                # self.land_df.rename({"Facility ID " : "fac_id"})
+                #
+                # #record upload in log
+                # self.scr.insert(tk.INSERT, "Uploaded land use description for...")
+                # self.scr.insert(tk.INSERT, "\n")
+                
+        elif filetype == "vegetation":
+                self.model.vegetation = Vegetation(path, dependency)
+                #file_path = os.path.abspath(filename)
+                # self.dep_veg.set(file_path)
+                # self.dep_veg_path = file_path
+                #
+                # self.veg_df = pd.read_csv(open(self.dep_veg_path, "rb"))
+                # self.veg_df.rename({"Facility ID": "fac_id"})
+                # #record upload in log
+                # self.scr.insert(tk.INSERT, "Uploaded season vegetation for...")
+                # self.scr.insert(tk.INSERT, "\n")

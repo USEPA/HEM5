@@ -9,7 +9,10 @@ class Model():
         self.multibuoy = None
         self.ureceptr = None
         self.haplib = None
-
+        self.bldgdw = None
+        self.partdep = None
+        self.landuse = None
+        self.vegetation = None
         self.facids = None
 
     @property
@@ -25,5 +28,8 @@ class Model():
         self.multibuoy = None
         self.ureceptr = None
         self.haplib = None
-
+        self.bldgdw = None
+        self.partdep = None
+        self.landuse = None
+        self.vegetation = None
         self.facids = None
