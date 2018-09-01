@@ -6,18 +6,22 @@ Created on Thu Nov 30 10:26:13 2017
 """
 import os
 import concurrent.futures as futures
+import queue
 import tkinter as tk
 import traceback
 from tkinter import messagebox
 from tkinter import scrolledtext
 from tkinter import ttk
+
+import FacilityPrep as prepare
 from log.Logger import Logger
 from model.Model import Model
 from runner.FacilityRunner import FacilityRunner
 from upload.FileUploader import FileUploader
 from tkinter.filedialog import askopenfilename
 from checker.InputChecker import InputChecker
-import queue
+from check_dep import check_dep
+
 
 
 #%% Hem4 GUI
@@ -28,9 +32,15 @@ class Hem4():
 
     def __init__ (self, messageQueue):
         """
-        The HEM4 class represents the HEM4 application in total, including
-        the GUI and processing functionality.
+        The HEM4 class object builds the GUI for the HEM4 application.
         """
+        #create window instance
+        self.win = tk.Tk()
+    
+        #title
+        self.win.title("HEM4")
+        self.win.maxsize(1000, 1000)
+        self.createWidgets()
         self.running = False
 
         # Create the model
@@ -38,24 +48,8 @@ class Hem4():
 
         # Create a file uploader
         self.uploader = FileUploader(self.model)
-        self.messageQueue = messageQueue
-        self.lastException = None
 
         Logger.messageQueue = messageQueue
-
-    def start_gui(self):
-
-        #create window instance
-        self.win = tk.Tk()
-
-        #title
-        self.win.title("HEM4")
-        self.win.maxsize(1000, 1000)
-
-        self.createWidgets()
-
-        self.win.after(25, self.after_callback)
-        self.win.mainloop()
 
 #%% Quit Function    
     def quit_gui(self):    
@@ -63,10 +57,10 @@ class Hem4():
         Function handles quiting HEM4 by closing the window containing
         the GUI and exiting all background processes & threads
         """
+    
         if self.running == False:
             self.win.quit()
             self.win.destroy()
-            self.close()
             exit()
         
         elif self.running == True:
@@ -76,12 +70,8 @@ class Hem4():
              if override == True:
                 self.win.quit()
                 self.win.destroy()
-                self.close()
                 exit()
-
-    def close(self):
-        Logger.close(True)
-
+    
 #%% Open HEM4 User Guide
     def user_guide(self):
         """ 
@@ -261,7 +251,7 @@ class Hem4():
         Function checks to make sure excel files are selected for inputs
         
         """
-        extensions = [".xls", ".xlsx"]
+        extensions = [".xls", ".xlsx", ".XLS"]
         return any(ext in filepath for ext in extensions)
 
     def openFile(self, filename):
@@ -320,7 +310,25 @@ class Hem4():
                     self.bldgdw_up.destroy()
                     self.bldgdw_list_man.destroy()
                     self.bldgdw_label.destroy()
-                    self.s9.destroy()        
+                    self.s9.destroy()
+                    
+            #check depostion and depletion        
+            deposition_depletion = check_dep(self.model.faclist.dataframe)
+            
+            if deposition_depletion is not None:
+                print(deposition_depletion)
+                for required in deposition_depletion:
+                    print(required)
+                    if required == 'particle size':
+                        self.add_particle()
+                        
+                    
+                    elif required == 'land use':
+                        self.add_land()
+                    
+                    elif required == 'vegetation':
+                        self.add_veg()
+            
 
     def uploadHAPEmissions(self):
         """
@@ -450,6 +458,66 @@ class Hem4():
             # Update the UI
             self.bldgdw_list.set(fullpath)
             [self.scr.insert(tk.INSERT, msg) for msg in self.model.bldgdw.log]
+    
+
+
+
+    def uploadParticle(self):
+        """ 
+        Function for uploading particle size
+        """
+        if self.model.faclist.dataframe is None:
+            messagebox.showinfo("Facilities List Option File Missing",
+                "Please upload a Facilities List Options file before selecting"+
+                " a particle file.")
+
+        fullpath = self.openFile(askopenfilename())
+        if fullpath is not None: 
+            self.uploader.uploadDependent("particle depletion", fullpath, 
+                                          self.model.faclist.dataframe)
+
+            # Update the UI
+            self.dep_part.set(fullpath)
+            [self.scr.insert(tk.INSERT, msg) for msg in self.model.partdep.log]
+    
+    
+    def uploadLandUse(self):
+        """ 
+        Function for uploading land use information
+        """
+        if self.model.faclist.dataframe is None:
+            messagebox.showinfo("Facilities List Option File Missing",
+                "Please upload a Facilities List Options file before selecting"+
+                " a particle file.")
+
+        fullpath = self.openFile(askopenfilename())
+        if fullpath is not None: 
+            self.uploader.uploadDependent("land use", fullpath, 
+                                          self.model.faclist.dataframe)
+
+            # Update the UI
+            self.dep_land.set(fullpath)
+            [self.scr.insert(tk.INSERT, msg) for msg in self.model.landuse.log]
+            
+    
+    def uploadVegetation(self):
+        """ 
+        Function for uploading season vegetation information
+        """
+        if self.model.faclist.dataframe is None:
+            messagebox.showinfo("Facilities List Option File Missing",
+                "Please upload a Facilities List Options file before selecting"+
+                " a particle file.")
+
+        fullpath = self.openFile(askopenfilename())
+        if fullpath is not None: 
+            self.uploader.uploadDependent("vegetation", fullpath, 
+                                          self.model.faclist.dataframe)
+
+            # Update the UI
+            self.dep_land.set(fullpath)
+            [self.scr.insert(tk.INSERT, msg) for msg in self.model.vegetation.log]
+    
     
 
     def add_ur(self):
@@ -589,6 +657,108 @@ class Hem4():
         self.bldgdw_list_man.bind('<Button-1>', 
                                 lambda e:self.manual("instructions/bd_man.txt"))
         
+        
+        
+    def add_particle(self):
+        """
+        Function for creating column for particle size file upload widgets
+        """
+        
+        #create column for particle size file
+        self.s12 = tk.Frame(self.main, width=250, height=100, pady=10, padx=10)
+        self.s12.grid(row=2, column=2, columnspan=2, sticky="nsew")
+        
+        #particle size label
+        part_label = tk.Label(self.s12, font="-size 10", 
+                              text="Upload the file containing size information for particle matter emissions:")
+        part_label.grid(row=1, sticky="W")
+    
+        #particle depositionsize file upload button
+        self.dep_part_up = ttk.Button(self.s12, 
+                                      command = lambda: self.uploadParticle())
+        self.dep_part_up["text"] = "Browse"
+        self.dep_part_up.grid(row=2, column=0, sticky="W")
+        self.dep_part_up.bind('<Enter>', 
+                              lambda e:self.browse("instructions/dep_part_browse.txt"))
+         
+        #particle size file text entry
+        self.dep_part = tk.StringVar(self.s12)
+        self.dep_part_man = ttk.Entry(self.s12)
+        self.dep_part_man["width"] = 55
+        self.dep_part_man["textvariable"]= self.dep_part
+        self.dep_part_man.grid(row=2, column=0, sticky='E', padx=85)
+        #event handler for instructions (Button 1 is the left mouse click)
+        self.dep_part_man.bind('<Button-1>', 
+                               lambda e:self.manual("instructions/dep_part_man.txt"))
+              
+        
+    def add_land(self):
+        
+        """
+        Function for creating column for land use upload widgets
+        """
+        
+        #create column for land use file
+        self.s12 = tk.Frame(self.main, width=250, height=100, pady=10, padx=10)
+        self.s12.grid(row=3, column=2, columnspan=2, sticky="nsew")
+        
+        #land use size label
+        land_label = tk.Label(self.s12, font="-size 10", 
+                              text="Upload the file containing land use information:")
+        land_label.grid(row=1, sticky="W")
+    
+        #laand use file upload button
+        self.dep_land_up = ttk.Button(self.s12, 
+                                      command = lambda: self.uploadLandUse())
+        self.dep_land_up["text"] = "Browse"
+        self.dep_land_up.grid(row=2, column=0, sticky="W")
+        self.dep_land_up.bind('<Enter>', 
+                              lambda e:self.browse("instructions/dep_land_browse.txt"))
+         
+        #land use file text entry
+        self.dep_land = tk.StringVar(self.s12)
+        self.dep_land_man = ttk.Entry(self.s12)
+        self.dep_land_man["width"] = 55
+        self.dep_land_man["textvariable"]= self.dep_land
+        self.dep_land_man.grid(row=2, column=0, sticky='E', padx=85)
+        #event handler for instructions (Button 1 is the left mouse click)
+        self.dep_land_man.bind('<Button-1>', 
+                               lambda e:self.manual("instructions/dep_land_man.txt"))
+        
+        
+    def add_veg(self):
+        """
+        Function for creating column for seasonal vegetation upload widgets
+        """
+        
+        #create column for land use file
+        self.s12 = tk.Frame(self.main, width=250, height=100, pady=10, padx=10)
+        self.s12.grid(row=4, column=2, columnspan=2, sticky="nsew")
+        
+        #land use size label
+        veg_label = tk.Label(self.s12, font="-size 10", 
+                             text="Upload the file containing seasonal vegetation information:")
+        veg_label.grid(row=1, sticky="W")
+    
+        #laand use file upload button
+        self.dep_veg_up = ttk.Button(self.s12, 
+                                     command = lambda: self.uploadVegetation())
+        self.dep_veg_up["text"] = "Browse"
+        self.dep_veg_up.grid(row=2, column=0, sticky="W")
+        self.dep_veg_up.bind('<Enter>', 
+                             lambda e:self.browse("instructions/dep_veg_browse.txt"))
+         
+        #land use file text entry
+        self.dep_veg = tk.StringVar(self.s12)
+        self.dep_veg_man = ttk.Entry(self.s12)
+        self.dep_veg_man["width"] = 55
+        self.dep_veg_man["textvariable"]= self.dep_veg
+        self.dep_veg_man.grid(row=2, column=0, sticky='E', padx=85)
+        #event handler for instructions (Button 1 is the left mouse click)
+        self.dep_veg_man.bind('<Button-1>', 
+                              lambda e:self.manual("instructions/dep_veg_man.txt"))
+        
+        
  #%% Event handlers for porting instructions
 
     #reset instructions space
@@ -681,8 +851,51 @@ class Hem4():
             #create object for prepare inputs
             self.running = True
 
-            self.process()
+            #create a Google Earth KML of all sources to be modeled
+            kmlWriter = KMLWriter()
+            if kmlWriter is not None:
+                #kmlWriter.write_kml_emis_loc(self.model)
+                pass
 
+            Logger.logMessage("Preparing Inputs for " + str(
+                    self.model.facids.count()) + " facilities")
+            
+
+            # let's tell after_callback that this completed
+            #print('thread_target puts None to the queue')
+
+
+            fac_list = []
+            for index, row in self.model.faclist.dataframe.iterrows():
+
+               facid = row[0]
+               fac_list.append(facid)
+               num = 1
+
+            Logger.log("The facilities ids being modeled:", fac_list, False)
+
+            for facid in fac_list:
+
+                #save version of this gui as is? constantly overwrite it once each facility is done?
+                Logger.logMessage("Running facility " + str(num) + " of " +
+                              str(len(fac_list)))
+
+                try:
+                    runner = FacilityRunner(facid, self.model)
+                    runner.run()
+
+                    # increment facility count
+                    num += 1
+                except Exception as ex:
+
+                    fullStackInfo=''.join(traceback.format_exception(
+                            etype=type(ex), value=ex, tb=ex.__traceback__))
+                    
+                    Logger.logMessage("An error occurred while running a facility:\n" + fullStackInfo)
+                    Logger.close(True)
+
+        Logger.logMessage("\nFinished running all facilities.\n")
+        Logger.close(True)
         messagebox.showinfo('HEM4 Modeling Completed', "Finished modeling all" + 
                              " facilities. Check the log tab for error messages."+
                              " Modeling results are located in the Output"+
@@ -717,50 +930,6 @@ class Hem4():
         self.running = False
 
 
-    def process(self):
-
-        #create a Google Earth KML of all sources to be modeled
-        kmlWriter = KMLWriter()
-        if kmlWriter is not None:
-            #kmlWriter.write_kml_emis_loc(self.model)
-            pass
-
-        Logger.logMessage("Preparing Inputs for " + str(
-            self.model.facids.count()) + " facilities")
-
-        # let's tell after_callback that this completed
-        #print('thread_target puts None to the queue')
-
-        fac_list = []
-        for index, row in self.model.faclist.dataframe.iterrows():
-
-            facid = row[0]
-            fac_list.append(facid)
-            num = 1
-
-        Logger.log("The facilities ids being modeled:", fac_list, False)
-
-        for facid in fac_list:
-
-            #save version of this gui as is? constantly overwrite it once each facility is done?
-            Logger.logMessage("Running facility " + str(num) + " of " +
-                              str(len(fac_list)))
-
-            try:
-                runner = FacilityRunner(facid, self.model)
-                runner.run()
-
-                # increment facility count
-                num += 1
-            except Exception as ex:
-                self.lastException = ex
-                fullStackInfo=''.join(traceback.format_exception(
-                    etype=type(ex), value=ex, tb=ex.__traceback__))
-
-                Logger.logMessage("An error occurred while running a facility:\n" + fullStackInfo)
-
-        Logger.logMessage("\nFinished running all facilities.\n")
-
     def workerComplete(self, future):
         """
         Function catches raised exceptions/errors on threads and logs traceback 
@@ -774,6 +943,7 @@ class Hem4():
                                                                tb=ex.__traceback__))
             
             Logger.logMessage("An error occurred while running a facility:\n" + fullStackInfo)
+            Logger.close(True)
 
     #%% Create Thread for Threaded Process
     def runThread(self):
@@ -794,10 +964,10 @@ class Hem4():
         logged via queue method
         """
         try:
-            message = self.messageQueue.get(block=False)
+            message = the_queue.get(block=False)
         except queue.Empty:
             # let's try again later
-            self.win.after(25, self.after_callback)
+            hem4.win.after(25, self.after_callback)
             return
 
         print('after_callback got', message)
@@ -806,5 +976,15 @@ class Hem4():
             self.scr.insert(tk.INSERT, message)
             self.scr.insert(tk.INSERT, "\n")
             self.scr.configure(state='disabled')
-            self.win.after(25, self.after_callback)
+            hem4.win.after(25, self.after_callback)   
+         
+        
+        
+
+#%% Start GUI
+the_queue = queue.Queue()
+hem4 = Hem4(the_queue)
+
+hem4.win.after(25, hem4.after_callback)
+hem4.win.mainloop()
 

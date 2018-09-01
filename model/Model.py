@@ -1,4 +1,5 @@
 
+
 class Model():
 
     def __init__(self):
@@ -10,7 +11,9 @@ class Model():
         self.ureceptr = None
         self.haplib = None
         self.bldgdw = None
-
+        self.partdep = None
+        self.landuse = None
+        self.vegetation = None
         self.facids = None
 
     @property
@@ -27,4 +30,7 @@ class Model():
         self.ureceptr = None
         self.haplib = None
         self.bldgdw = None
+        self.partdep = None
+        self.landuse = None
+        self.vegetation = None
         self.facids = None
