@@ -10,12 +10,8 @@ import time
 import numpy as np
 import openpyxl
 import pandas as pd
-
 from log.Logger import Logger
 from writer.csv.AllPolarReceptors import AllPolarReceptors
-from writer.csv.CsvWriter import CsvWriter
-from writer.excel.AcuteBreakdown import AcuteBreakdown
-import sys
 
 class Process_outputs():
     
@@ -231,13 +227,13 @@ class Process_outputs():
         start = time.time()
     
         # Read plotfile and put into dataframe
-        pfile = open("resources/plotfile.plt", "r")
-        plot_df = pd.read_table(pfile, delim_whitespace=True, header=None, 
-            names=['utme','utmn','result','elev','hill','flag','avg_time','source_id','num_yrs','net_id'],
-            usecols=[0,1,2,3,4,5,6,7,8,9], 
-            converters={'utme':np.float64,'utmn':np.float64,'result':np.float64,'elev':np.float64,'hill':np.float64
-                   ,'flag':np.float64,'avg_time':np.str,'source_id':np.str,'num_yrs':np.int64,'net_id':np.str},
-            comment='*')
+        with open("resources/plotfile.plt", "r") as pfile:
+            plot_df = pd.read_table(pfile, delim_whitespace=True, header=None,
+                names=['utme','utmn','result','elev','hill','flag','avg_time','source_id','num_yrs','net_id'],
+                usecols=[0,1,2,3,4,5,6,7,8,9],
+                converters={'utme':np.float64,'utmn':np.float64,'result':np.float64,'elev':np.float64,'hill':np.float64
+                       ,'flag':np.float64,'avg_time':np.str,'source_id':np.str,'num_yrs':np.int64,'net_id':np.str},
+                comment='*')
 
 
         Logger.log("plot_df:", plot_df, False)
@@ -248,7 +244,8 @@ class Process_outputs():
                
         
         #debug
-        sys.exit()
+        return
+        #sys.exit()
         
         
         #convert to matrix called self.plot_m 

@@ -987,3 +987,4 @@ hem4 = Hem4(the_queue)
 
 hem4.win.after(25, hem4.after_callback)
 hem4.win.mainloop()
+

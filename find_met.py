@@ -12,13 +12,12 @@ import pandas as pd
 from math import cos, radians
 
 def find_met(ylat, xlon):
+    with open("resources/metlib_aermod.xlsx", "rb") as metfile:
+        met_st = pd.read_excel(metfile
+                      , names=('surfcity','surffile','surfwban','surfyear','surflat',
+                         'surflon','uacity','uawban','ualat','ualon','elev','anemhgt','commkey',
+                         'comment','desc','usdist2fac','surfdist2f','upperfile'))
 
-    met_st = pd.read_excel(open("resources/metlib_aermod.xlsx", "rb")
-                  , names=('surfcity','surffile','surfwban','surfyear','surflat',
-                     'surflon','uacity','uawban','ualat','ualon','elev','anemhgt','commkey',
-                     'comment','desc','usdist2fac','surfdist2f','upperfile'))
-       
-    
     # Incorporating census block center; if I remember correctly, there is only one census block passed each time
     # if len(lat) == 1:
 #        lat = census block center (and then extract that value)
