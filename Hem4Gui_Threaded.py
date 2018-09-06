@@ -115,8 +115,7 @@ class Hem4():
         self.s3 = tk.Frame(self.main, width=250, height=100, pady=10, padx=10)
         self.s4 = tk.Frame(self.main, width=250, height=100, pady=10, padx=10)
         self.s5 = tk.Frame(self.main, width=250, height=100, pady=10, padx=10)
-        #self.s9 = tk.Frame(self.main, width=250, pady=10, padx=10)
-        #self.s10 = tk.Frame(self.main, width=250, height=200)
+        
 
         self.s1.grid(row=0)
         self.s2.grid(row=1, column=0, sticky="nsew")
@@ -125,8 +124,7 @@ class Hem4():
         self.s5.grid(row=4, column=0, columnspan=2, sticky="nsew")
 
 
-        #self.s9.grid(row=8, column=0, sticky="nsew")
-        #self.s10.grid(row=9, column=0, sticky="nsew")
+       
 
         self.main.grid_rowconfigure(8, weight=4)
         self.main.grid_columnconfigure(2, weight=1)
@@ -315,9 +313,17 @@ class Hem4():
             #check depostion and depletion        
             deposition_depletion = check_dep(self.model.faclist.dataframe)
             
-            if deposition_depletion is not None:
-                print(deposition_depletion)
-                for required in deposition_depletion:
+            #pull out facilities using depdeplt 
+            self.model.depdeplt = [x[0] for x in deposition_depletion]
+           # print(self.model.depdeplt)
+            
+            #pull out conditional inputs
+            conditional = set([y for x in deposition_depletion for y in x[1:]])
+            
+            
+            if conditional is not None:
+                #print(conditional)
+                for required in conditional:
                     print(required)
                     if required == 'particle size':
                         self.add_particle()
@@ -327,7 +333,33 @@ class Hem4():
                         self.add_land()
                     
                     elif required == 'vegetation':
+                        
+                        
                         self.add_veg()
+                        
+            else:
+                #clear on new input without dep/deplt
+                if hasattr(self, 's12'):
+                    #clear particle
+                    if hasattr(self, 'dep_part'):
+                        self.dep_part_up.destroy()
+                        self.dep_part_man.destroy()
+                        self.dep_part.destroy()
+                    #clear land
+                    if hasattr(self, 'dep_land'):
+                        self.dep_land_up.destroy()
+                        self.dep_land_man.destroy()
+                        self.dep_land.destroy()
+
+                    #clear vegetation
+                    if hasattr(self, 'dep_veg'):
+                        self.dep_veg_up.destroy()
+                        self.dep_veg_man.destroy()
+                        self.dep_veg.destroy()
+
+
+                    self.s12.destroy()                        
+                    
             
 
     def uploadHAPEmissions(self):
@@ -462,7 +494,7 @@ class Hem4():
 
 
 
-    def uploadParticle(self):
+    def uploadParticle(self, facilities):
         """ 
         Function for uploading particle size
         """
@@ -474,7 +506,7 @@ class Hem4():
         fullpath = self.openFile(askopenfilename())
         if fullpath is not None: 
             self.uploader.uploadDependent("particle depletion", fullpath, 
-                                          self.model.faclist.dataframe)
+                                           self.model.faclist.dataframe, facilities)
 
             # Update the UI
             self.dep_part.set(fullpath)
@@ -675,7 +707,7 @@ class Hem4():
     
         #particle depositionsize file upload button
         self.dep_part_up = ttk.Button(self.s12, 
-                                      command = lambda: self.uploadParticle())
+                                      command = lambda: self.uploadParticle(self.model.depdeplt))
         self.dep_part_up["text"] = "Browse"
         self.dep_part_up.grid(row=2, column=0, sticky="W")
         self.dep_part_up.bind('<Enter>', 
@@ -925,6 +957,36 @@ class Hem4():
             self.poly_up.destroy()
             self.poly_label.destroy()
             self.s8.destroy()
+            
+            
+        if hasattr(self, 's9'):
+            self.bldgdw_up.destroy()
+            self.bldgdw_list_man.destroy()
+            self.bldgdw_label.destroy()
+            self.s9.destroy()
+            
+            
+        if hasattr(self, 's12'):
+            #clear particle
+            if hasattr(self, 'dep_part'):
+                self.dep_part_up.destroy()
+                self.dep_part_man.destroy()
+                self.dep_part.destroy()
+            #clear land
+            if hasattr(self, 'dep_land'):
+                self.dep_land_up.destroy()
+                self.dep_land_man.destroy()
+                self.dep_land.destroy()
+        
+            #clear vegetation
+            if hasattr(self, 'dep_veg'):
+                self.dep_veg_up.destroy()
+                self.dep_veg_man.destroy()
+                self.dep_veg.destroy()
+        
+        
+            self.s12.destroy()                        
+            
 
 
         self.running = False

@@ -15,6 +15,7 @@ class Model():
         self.landuse = None
         self.vegetation = None
         self.facids = None
+        self.depdeplt = None
 
     @property
     def fac_ids(self):
@@ -34,3 +35,4 @@ class Model():
         self.landuse = None
         self.vegetation = None
         self.facids = None
+        self.depdeplt = None
