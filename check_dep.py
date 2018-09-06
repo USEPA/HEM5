@@ -7,9 +7,9 @@ Created on Mon Aug 13 15:21:42 2018
 import pandas as pd
 import math
 
-
-
-
+#for testing
+#facops = pd.read_excel("Template_Multi_Facility_List_Options_dep_deplt_test.xlsx")
+#facops.rename(columns={'FacilityID':'fac_id'}, inplace=True)
 
 def check_dep(dataframe):
     """
@@ -21,7 +21,8 @@ def check_dep(dataframe):
     inputs = []
     
     
-    phase = dataframe['phase'].tolist()
+    phase = dataframe[['fac_id', 'phase']].values
+
     
     deposition = dataframe['dep'].tolist()
     vapor_depo = dataframe['vdep'].tolist()
@@ -43,99 +44,116 @@ def check_dep(dataframe):
     print("particle depletion", part_depl)
     
     #loop through each positionally
-    
-    for i in range(len(phase)):
+    i = 0
+    for fac_id, p in phase:
         
-        if phase[i] == 'P':
+        
+        if p == 'P':
+            #add facid
+            options = [fac_id]
             
-            if deposition[i] == 'Y' and depletion[i] == 'N':
+            if (deposition[i] == 'Y' and depletion != 'Y'):
                 
                 #all particle deposition uses particle size file
-                inputs.append('particle size')
+                options.append('particle size')
                 
                 if 'DO' or 'WD' in part_depo[i]:
-                    inputs.append('land use')
-                    inputs.append('vegetation')
+                    options.append('land use')
+                    options.append('vegetation')
                                 
-            elif deposition[i] == 'N' and depletion[i] == 'Y':
-                inputs.append('particle size')
+            elif (deposition[i] != 'Y' and depletion[i] == 'Y'):
+                options.append('particle size')
                                 
             elif deposition[i] == 'Y' and depletion[i] == 'Y':
-                inputs.append('particle size')
+                options.append('particle size')
                 
                 if 'DO' in part_depo[i] and 'DO' in part_depl[i]:
-                    inputs.append('land use')
-                    inputs.append('vegetation')
+                    options.append('land use')
+                    options.append('vegetation')
                     
                 elif 'WD' in part_depo[i] and 'WD' in part_depl[i]:
-                    inputs.append('land use')
-                    inputs.append('vegetation')
+                    options.append('land use')
+                    options.append('vegetation')
+                    
+            inputs.append(options)
                             
-        elif phase[i] == 'V':
+        elif p == 'V':
+            #add facid
+            options = [fac_id]
             
-            if deposition[i] == 'Y' and depletion[i] == 'N':
+            if (deposition[i] == 'Y' and depletion[i] != 'Y'):
+                
                 if 'DO' or 'WD' in vapor_depo[i]:
-                    inputs.append('land use')
-                    inputs.append('vegetation')
+                    options.append('land use')
+                    options.append('vegetation')
                     
             elif deposition[i] == 'Y' and depletion[i] == 'Y':
                 if 'DO' in vapor_depo[i] and 'DO' in vapor_depl[i]:
-                    inputs.append('land use')
-                    inputs.append('vegetation')
+                    options.append('land use')
+                    options.append('vegetation')
             
             
                 elif 'WD' in vapor_depo[i] and 'WD' in vapor_depl[i]:
-                    inputs.append('land use')
-                    inputs.append('vegetation')
+                    options.append('land use')
+                    options.append('vegetation')
+            
+            inputs.append(options)
       
-        elif phase[i] == 'B':
-               
-            if deposition[i] == 'Y' and depletion[i] == 'N': 
+        elif p == 'B':
+            #add facid
+            options = [fac_id]
+            
+            if (deposition[i] == 'Y' and depletion[i] != 'Y'): 
             
                 if 'DO' or 'WO' or 'WD' in part_depo[i]:
-                    inputs.append('particle size')
+                    options.append('particle size')
                 
                     if 'WD' or 'DO' in vapor_depo[i]:
-                        inputs.append('land use')
-                        inputs.append('vegetation')
+                        options.append('land use')
+                        options.append('vegetation')
             
                 elif 'NO' in part_depo[i] and 'WD' or 'DO' in vapor_depo[i]:
-                     inputs.append('land use')
-                     inputs.append('vegetation')
+                     options.append('land use')
+                     options.append('vegetation')
                 
-            elif depletion[i] == 'Y' and deposition[i] == 'N':
+            elif (depletion[i] == 'Y' and deposition[i] != 'Y'):
                 
                 if 'DO' or 'WO' or 'WD' in part_depl[i]:
-                    inputs.append('particle size')
+                    options.append('particle size')
                 
                 elif 'NO' in part_depl[i] and 'WD' or 'DO' in vapor_depl[i]:
-                    inputs.append('land use')
-                    inputs.append('vegetation')
+                    options.append('land use')
+                    options.append('vegetation')
                     
                 elif 'NO' in part_depl[i] and 'NO' in vapor_depl[i]:
-                    inputs.append('particle size')
+                    options.append('particle size')
     
     
             elif deposition == 'Y' and depletion == 'Y':
                 
                 if ('DO' or 'WO' or 'WD' in part_depo[i] and 
                     'DO' or 'WO' or 'WD' in part_depl[i]):
-                    inputs.append('particle size')
+                    options.append('particle size')
                     
                     if ('WD' or 'DO' in vapor_depo[i] and 
                         'WD' or 'DO' in vapor_depl[i]):
-                        inputs.append('land use')
-                        inputs.append('vegetation')
+                        options.append('land use')
+                        options.append('vegetation')
                     
                 elif 'NO' in part_depo[i] and 'NO' in part_depl[i]:
                     if ('WD' or 'DO' in vapor_depo[i] and 
                         'WD' or 'DO' in vapor_depl[i]):
-                        inputs.append('land use')
-                        inputs.append('vegetation')
+                        options.append('land use')
+                        options.append('vegetation')
                     
-                    
-    
-    return(set(inputs))
+         
+            inputs.append(options)
+        i += 1
+     
+    #print(inputs)  
+     
+    return(inputs)
     
     
 
+#dep_test = check_dep(facops)

@@ -48,7 +48,7 @@ class FileUploader():
                 # self.scr.insert(tk.INSERT, "\n")
 
 
-    def uploadDependent(self, filetype, path, dependency):
+    def uploadDependent(self, filetype, path, dependency, facilities=None):
 
         if filetype == "polyvertex":
             
@@ -66,7 +66,7 @@ class FileUploader():
             self.model.bldgdw = Downwash(path, dependency)
 
         elif filetype == "particle depletion":
-            self.model.partdep = Particle(path, dependency)
+            self.model.partdep = Particle(path, dependency, facilities)
                 #file_path = os.path.abspath(filename)
                 # self.dep_part.set(file_path)
                 # self.dep_part_path = file_path
