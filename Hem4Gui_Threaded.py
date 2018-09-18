@@ -895,8 +895,58 @@ class Hem4():
 
             #create object for prepare inputs
             self.running = True
-
             self.process()
+
+            #reset all inputs if everything finished
+            self.model.reset()
+            self.fac_list.set('')
+            self.hap_list.set('')
+            self.emisloc_list.set('')
+
+            if hasattr(self, 's6'):
+                self.urep.destroy()
+                self.urep_list_man.destroy()
+                self.ur_label.destroy()
+                self.s6.destroy()
+
+            if hasattr(self, 's7'):
+                self.buoyant_list_man.destroy()
+                self.buoyant_up.destroy()
+                self.b_label.destroy()
+                self.s7.destroy()
+
+            if hasattr(self, 's8'):
+                self.poly_list_man.destroy()
+                self.poly_up.destroy()
+                self.poly_label.destroy()
+                self.s8.destroy()
+
+            if hasattr(self, 's9'):
+                self.bldgdw_up.destroy()
+                self.bldgdw_list_man.destroy()
+                self.bldgdw_label.destroy()
+                self.s9.destroy()
+
+            if hasattr(self, 's12'):
+                #clear particle
+                if hasattr(self, 'dep_part'):
+                    self.dep_part_up.destroy()
+                    self.dep_part_man.destroy()
+                    self.dep_part.destroy()
+                #clear land
+                if hasattr(self, 'dep_land'):
+                    self.dep_land_up.destroy()
+                    self.dep_land_man.destroy()
+                    self.dep_land.destroy()
+
+                #clear vegetation
+                if hasattr(self, 'dep_veg'):
+                    self.dep_veg_up.destroy()
+                    self.dep_veg_man.destroy()
+                    self.dep_veg.destroy()
+
+
+                self.s12.destroy()
 
     def process(self):
         #create a Google Earth KML of all sources to be modeled
@@ -940,74 +990,12 @@ class Hem4():
                         etype=type(ex), value=ex, tb=ex.__traceback__))
 
                 Logger.logMessage("An error occurred while running a facility:\n" + fullStackInfo)
-                Logger.close(True)
 
-        Logger.logMessage("\nFinished running all facilities.\n")
-
-        Logger.close(True)
-        messagebox.showinfo('HEM4 Modeling Completed', "Finished modeling all" + 
+        Logger.logMessage("HEM4 Modeling Completed. Finished modeling all" +
                              " facilities. Check the log tab for error messages."+
                              " Modeling results are located in the Output"+
-                             " subfolder of the HEM4 folder." )
-
-        #reset all inputs if everything finished
-        self.model.reset()
-        self.fac_list.set('')
-        self.hap_list.set('')
-        self.emisloc_list.set('')
-        
-        if hasattr(self, 's6'):
-            self.urep.destroy()
-            self.urep_list_man.destroy()
-            self.ur_label.destroy()
-            self.s6.destroy()
-        
-        if hasattr(self, 's7'):
-            self.buoyant_list_man.destroy()
-            self.buoyant_up.destroy()
-            self.b_label.destroy()
-            self.s7.destroy()
-            
-            
-        if hasattr(self, 's8'):
-            self.poly_list_man.destroy()
-            self.poly_up.destroy()
-            self.poly_label.destroy()
-            self.s8.destroy()
-            
-            
-        if hasattr(self, 's9'):
-            self.bldgdw_up.destroy()
-            self.bldgdw_list_man.destroy()
-            self.bldgdw_label.destroy()
-            self.s9.destroy()
-            
-            
-        if hasattr(self, 's12'):
-            #clear particle
-            if hasattr(self, 'dep_part'):
-                self.dep_part_up.destroy()
-                self.dep_part_man.destroy()
-                self.dep_part.destroy()
-            #clear land
-            if hasattr(self, 'dep_land'):
-                self.dep_land_up.destroy()
-                self.dep_land_man.destroy()
-                self.dep_land.destroy()
-        
-            #clear vegetation
-            if hasattr(self, 'dep_veg'):
-                self.dep_veg_up.destroy()
-                self.dep_veg_man.destroy()
-                self.dep_veg.destroy()
-        
-        
-            self.s12.destroy()                        
-            
-
-
+                             " subfolder of the HEM4 folder.")
         self.running = False
-
 
     def workerComplete(self, future):
         """
@@ -1022,7 +1010,6 @@ class Hem4():
                                                                tb=ex.__traceback__))
             
             Logger.logMessage("An error occurred while running a facility:\n" + fullStackInfo)
-            Logger.close(True)
 
     #%% Create Thread for Threaded Process
     def runThread(self):
