@@ -238,25 +238,18 @@ class Process_outputs():
         self.model.max_indiv_risk_df = pd.DataFrame(data=max_indiv_risk.data, columns=max_indiv_risk.headers)
         
         
-        #----------- create Risk Breakdown output file ------------------------
-        risk_breakdown = RiskBreakdown(self.outdir, self.facid, self.model, plot_df)
-        risk_breakdown.write()
- 
-        #debug
-        import pdb; pdb.set_trace()
-       
-        #debug
-        sys.exit()
-  
-      
+#        #----------- create Risk Breakdown output file ------------------------
+#        risk_breakdown = RiskBreakdown(self.outdir, self.facid, self.model, plot_df)
+#        risk_breakdown.write()
+     
         
 
-        #create facility kml
-        Logger.logMessage("Writing KML file for " + self.facid)
-        kmlWriter = KMLWriter()
-        kmlWriter.write_facility_kml(self.facid, self.runstream.cenlat, self.runstream.cenlon, self.outdir)
+#        #create facility kml
+#        Logger.logMessage("Writing KML file for " + self.facid)
+#        kmlWriter = KMLWriter()
+#        kmlWriter.write_facility_kml(self.facid, self.runstream.cenlat, self.runstream.cenlon, self.outdir)
 
-        return local_vars
+#        return local_vars
     
     
     
