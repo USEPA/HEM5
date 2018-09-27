@@ -22,7 +22,7 @@ import find_met as fm
 
 class Runstream():
     
-    def __init__(self, facops_df, emislocs_df, hapemis_df, cenlat, cenlon, cenx, ceny, innerblks_df, userrecs_df, buoyant_df, polyver_df, polar_df, bldgdw_df):
+    def __init__(self, facops_df, emislocs_df, hapemis_df, cenlat, cenlon, cenx, ceny, innerblks_df, userrecs_df, buoyant_df, polyver_df, bldgdw_df):
         self.facoptn_df = facops_df
         self.emisloc_df = emislocs_df
         self.hapemis = hapemis_df
@@ -36,7 +36,6 @@ class Runstream():
         self.user_recs = userrecs_df
         self.buoyant_df = buoyant_df
         self.polyver_df = polyver_df
-        self.polar_df = polar_df
         self.bldgdw_df = bldgdw_df
         
         
@@ -1180,7 +1179,7 @@ class Runstream():
         inp_f.write(repo)
         inp_f.write(repd)
 
-        recep_dis = self.polar_df["distance"].unique()
+        recep_dis = self.model.polargrid["distance"].unique()
         num_rings = len(recep_dis)
         for i in np.arange(num_rings):
             repdis = str(recep_dis[i]) + " "
@@ -1191,7 +1190,7 @@ class Runstream():
         repi = "RE GRIDPOLR polgrid1 DDIR "
         inp_f.write(repi)
 
-        recep_dir = self.polar_df["angle"].unique()
+        recep_dir = self.model.polargrid["angle"].unique()
         num_sectors = len(recep_dir)
         for i in np.arange(num_sectors):
             repdir = str(recep_dir[i]) + " "
@@ -1203,20 +1202,20 @@ class Runstream():
         if eleva == "Y":
             for i in range(1, num_sectors+1):
                 indexStr = "S" + str(i) + "R1"
-                repelev0 = "RE GRIDPOLR polgrid1 ELEV " + str(self.polar_df["angle"].loc[indexStr]) + " "
+                repelev0 = "RE GRIDPOLR polgrid1 ELEV " + str(self.model.polargrid["angle"].loc[indexStr]) + " "
                 inp_f.write(repelev0)
                 for j in range(1, num_rings+1):
                     indexStr = "S" + str(i) + "R" + str(j)
-                    repelev1 = str(self.polar_df["elev"].loc[indexStr]) + " "
+                    repelev1 = str(self.model.polargrid["elev"].loc[indexStr]) + " "
                     inp_f.write(repelev1)
 
                 inp_f.write(newline)
 
-                rephill0 = "RE GRIDPOLR polgrid1 HILL " + str(self.polar_df["angle"].loc[indexStr]) + " "
+                rephill0 = "RE GRIDPOLR polgrid1 HILL " + str(self.model.polargrid["angle"].loc[indexStr]) + " "
                 inp_f.write(rephill0)
                 for j in range(1, num_rings+1):
                     indexStr = "S" + str(i) + "R" + str(j)
-                    rephill1 = str(self.polar_df["hill"].loc[indexStr]) + " "
+                    rephill1 = str(self.model.polargrid["hill"].loc[indexStr]) + " "
                     inp_f.write(rephill1)
                 
                 inp_f.write(newline)

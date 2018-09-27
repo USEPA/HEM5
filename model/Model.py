@@ -17,6 +17,10 @@ class Model():
         self.facids = None
         self.depdeplt = None
 
+        # A Dataframe containing the details of the polar receptor locations
+        # (sector, ring, distance, lat, lon, etc.)
+        self.polargrid = None
+
     @property
     def fac_ids(self):
         """Read-only array of facility ids"""
@@ -36,3 +40,4 @@ class Model():
         self.vegetation = None
         self.facids = None
         self.depdeplt = None
+        self.polargrid = None

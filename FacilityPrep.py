@@ -335,7 +335,7 @@ class FacilityPrep():
         polar_idx = polar_df.apply(lambda row: self.define_polar_idx(row['sector'], row['ring']), axis=1)
         polar_df.set_index(polar_idx, inplace=True)
 
-
+        self.model.polargrid = polar_df
 
         #%%----- Add sector and ring to inner and outer receptors ----------
 
@@ -385,7 +385,7 @@ class FacilityPrep():
 
         #%% result ##needs to create a new object to be passed...
         #return facops, emislocs, hapemis, innerblks, outerblks, sourcelocs, user_recs, buoyant_df, polyver_df
-        return rs.Runstream(facops, emislocs, hapemis, cenlat, cenlon, cenx, ceny, self.innerblks, user_recs, buoyant_df, polyver_df, polar_df, bldgdw_df)
+        return rs.Runstream(facops, emislocs, hapemis, cenlat, cenlon, cenx, ceny, self.innerblks, user_recs, buoyant_df, polyver_df, bldgdw_df)
 
     #%% Calculate ring and sector of block receptors
     

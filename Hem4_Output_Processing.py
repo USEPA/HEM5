@@ -12,6 +12,8 @@ import openpyxl
 import pandas as pd
 from log.Logger import Logger
 from writer.csv.AllPolarReceptors import AllPolarReceptors
+from writer.csv.RingSummaryChronic import RingSummaryChronic
+
 
 class Process_outputs():
     
@@ -22,12 +24,10 @@ class Process_outputs():
         self.outdir = outdir
         self.inner_m = prep.innerblks.as_matrix()
         self.outerblks_df = prep.outerblks
-        self.polar_recs = runstream.polar_df
-        self.numsectors = self.polar_recs["sector"].max()
-        self.numrings = self.polar_recs["ring"].max()
+        self.numsectors = self.model.polargrid["sector"].max()
+        self.numrings = self.model.polargrid["ring"].max()
         self.model = model
         self.runstream = runstream
-        self.model.runstream_polar_recs = runstream.polar_df
         self.model.runstream_hapemis = runstream.hapemis
 
         # Units conversion factor
@@ -74,13 +74,13 @@ class Process_outputs():
                     d_emistype = "C"
                     d_pollutant = row2[2]
                     d_conc = row1[4] * row2[3] * self.cf
-                    d_distance = self.polar_recs.loc[(self.polar_recs["utme"] == row1[1]) & (self.polar_recs["utmn"] == row1[2]), "distance"].values[0]
-                    d_angle = self.polar_recs.loc[(self.polar_recs["utme"] == row1[1]) & (self.polar_recs["utmn"] == row1[2]), "angle"].values[0]
-                    d_sector = self.polar_recs.loc[(self.polar_recs["utme"] == row1[1]) & (self.polar_recs["utmn"] == row1[2]), "sector"].values[0]
-                    d_ring_no = self.polar_recs.loc[(self.polar_recs["utme"] == row1[1]) & (self.polar_recs["utmn"] == row1[2]), "ring"].values[0]
-                    d_elev = self.polar_recs.loc[(self.polar_recs["utme"] == row1[1]) & (self.polar_recs["utmn"] == row1[2]), "elev"].values[0]
-                    d_lat = self.polar_recs.loc[(self.polar_recs["utme"] == row1[1]) & (self.polar_recs["utmn"] == row1[2]), "lat"].values[0]
-                    d_lon = self.polar_recs.loc[(self.polar_recs["utme"] == row1[1]) & (self.polar_recs["utmn"] == row1[2]), "lon"].values[0]
+                    d_distance = self.model.polargrid.loc[(self.model.polargrid["utme"] == row1[1]) & (self.model.polargrid["utmn"] == row1[2]), "distance"].values[0]
+                    d_angle = self.model.polargrid.loc[(self.model.polargrid["utme"] == row1[1]) & (self.model.polargrid["utmn"] == row1[2]), "angle"].values[0]
+                    d_sector = self.model.polargrid.loc[(self.model.polargrid["utme"] == row1[1]) & (self.model.polargrid["utmn"] == row1[2]), "sector"].values[0]
+                    d_ring_no = self.model.polargrid.loc[(self.model.polargrid["utme"] == row1[1]) & (self.model.polargrid["utmn"] == row1[2]), "ring"].values[0]
+                    d_elev = self.model.polargrid.loc[(self.model.polargrid["utme"] == row1[1]) & (self.model.polargrid["utmn"] == row1[2]), "elev"].values[0]
+                    d_lat = self.model.polargrid.loc[(self.model.polargrid["utme"] == row1[1]) & (self.model.polargrid["utmn"] == row1[2]), "lat"].values[0]
+                    d_lon = self.model.polargrid.loc[(self.model.polargrid["utme"] == row1[1]) & (self.model.polargrid["utmn"] == row1[2]), "lon"].values[0]
                     d_overlap = ""
                     datalist = [d_sourceid, d_emistype, d_pollutant, d_conc, d_distance, d_angle, d_sector, d_ring_no, d_elev, d_lat, d_lon, d_overlap]
                     dlist.append(dict(zip(collist, datalist)))
@@ -241,8 +241,10 @@ class Process_outputs():
         #----------- create All_Polar_Receptor output file -----------------
         all_polar_receptors = AllPolarReceptors(self.outdir, self.facid, self.model, plot_df)
         all_polar_receptors.write()
-               
-        
+
+        ring_summary_chronic = RingSummaryChronic(self.outdir, self.facid, self.model, plot_df)
+        ring_summary_chronic.write()
+
         #debug
         return
         #sys.exit()
