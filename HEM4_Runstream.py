@@ -22,7 +22,8 @@ import find_met as fm
 
 class Runstream():
     
-    def __init__(self, facops_df, emislocs_df, hapemis_df, cenlat, cenlon, cenx, ceny, innerblks_df, userrecs_df, buoyant_df, polyver_df, bldgdw_df):
+    def __init__(self, facops_df, emislocs_df, hapemis_df, model, cenlat, cenlon, cenx, ceny, innerblks_df, userrecs_df,
+                 buoyant_df, polyver_df, bldgdw_df):
         self.facoptn_df = facops_df
         self.emisloc_df = emislocs_df
         self.hapemis = hapemis_df
@@ -30,6 +31,7 @@ class Runstream():
         self.cenlon = cenlon
         self.cenx = cenx
         self.ceny = ceny
+        self.model = model
         self.discrecs_df = innerblks_df
         #self.outerblks = outerblks_df
         #self.sourcelocs = sourcelocs

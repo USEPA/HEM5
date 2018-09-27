@@ -24,11 +24,12 @@ class Process_outputs():
         self.outdir = outdir
         self.inner_m = prep.innerblks.as_matrix()
         self.outerblks_df = prep.outerblks
+        self.model = model
+        self.model.runstream_hapemis = runstream.hapemis
         self.numsectors = self.model.polargrid["sector"].max()
         self.numrings = self.model.polargrid["ring"].max()
-        self.model = model
         self.runstream = runstream
-        self.model.runstream_hapemis = runstream.hapemis
+
 
         # Units conversion factor
         self.cf = 2000*0.4536/3600/8760

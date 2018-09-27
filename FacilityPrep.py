@@ -385,7 +385,7 @@ class FacilityPrep():
 
         #%% result ##needs to create a new object to be passed...
         #return facops, emislocs, hapemis, innerblks, outerblks, sourcelocs, user_recs, buoyant_df, polyver_df
-        return rs.Runstream(facops, emislocs, hapemis, cenlat, cenlon, cenx, ceny, self.innerblks, user_recs, buoyant_df, polyver_df, bldgdw_df)
+        return rs.Runstream(facops, emislocs, hapemis, self.model, cenlat, cenlon, cenx, ceny, self.innerblks, user_recs, buoyant_df, polyver_df, bldgdw_df)
 
     #%% Calculate ring and sector of block receptors
     
