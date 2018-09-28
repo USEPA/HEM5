@@ -12,12 +12,11 @@ import pandas as pd
 import HEM4_Runstream as rs
 import find_center as fc
 import json_census_blocks as cbr
-from support.UTM import UTM
+import ll2utm
+import utm2ll
+
 
 ##REFORMATTED TO MOVE THE DATA FRAME CREATION TO THE GUI
-
-
-
 class FacilityPrep():
     
     def __init__(self, model):
@@ -92,7 +91,7 @@ class FacilityPrep():
         emislocs = emislocs.reset_index(drop = True)
 
         # Determine the utm zone to use for this facility
-        facutmzone = UTM.zone2use(emislocs)
+        facutmzone = self.zone2use(emislocs)
 
         # Convert all lat/lon coordinates to UTM and UTM coordinates to lat/lon
         slat = emislocs["lat"]
@@ -100,13 +99,13 @@ class FacilityPrep():
         sutmzone = emislocs["utmzone"]
 
         # First compute lat/lon coors using whatever zone was provided
-        alat, alon = UTM.utm2ll(slat, slon, sutmzone)
+        alat, alon = utm2ll.utm2ll(slat, slon, sutmzone)
         emislocs["lat"] = alat.tolist()
         emislocs["lon"] = alon.tolist()
 
         # Next compute UTM coors using the common zone
         sutmzone = facutmzone*np.ones(len(emislocs["lat"]))
-        autmn, autme, autmz = UTM.ll2utm(slat, slon, sutmzone)
+        autmn, autme, autmz = ll2utm.ll2utm(slat, slon, sutmzone)
         emislocs["utme"] = autme.tolist()
         emislocs["utmn"] = autmn.tolist()
         emislocs["utmzone"] = autmz.tolist()
@@ -116,12 +115,12 @@ class FacilityPrep():
         slon = emislocs["x2"]
         sutmzone = emislocs["utmzone"]
 
-        alat, alon = UTM.utm2ll(slat, slon, sutmzone)
+        alat, alon = utm2ll.utm2ll(slat, slon, sutmzone)
         emislocs["lat_y2"] = alat.tolist()
         emislocs["lon_x2"] = alon.tolist()
 
         sutmzone = facutmzone*np.ones(len(emislocs["lat"]))
-        autmn, autme, autmz = UTM.ll2utm(slat, slon, sutmzone)
+        autmn, autme, autmz = ll2utm.ll2utm(slat, slon, sutmzone)
         emislocs["utme_x2"] = autme.tolist()
         emislocs["utmn_y2"] = autmn.tolist()
 
@@ -147,13 +146,13 @@ class FacilityPrep():
             szone = user_recs["utmzone"]
 
             # First compute lat/lon coors using whatever zone was provided
-            alat, alon = UTM.utm2ll(slat, slon, szone)
+            alat, alon = utm2ll.utm2ll(slat, slon, szone)
             user_recs["lat"] = alat.tolist()
             user_recs["lon"] = alon.tolist()
 
             # Next compute UTM coors using the common zone
             sutmzone = facutmzone*np.ones(len(user_recs["lat"]))
-            autmn, autme, autmz = UTM.ll2utm(slat, slon, sutmzone)
+            autmn, autme, autmz = ll2utm.ll2utm(slat, slon, sutmzone)
             user_recs["utme"] = autme.tolist()
             user_recs["utmn"] = autmn.tolist()
             user_recs["utmzone"] = autmz.tolist()
@@ -183,13 +182,13 @@ class FacilityPrep():
             szone = polyver_df["utmzone"]
 
             # First compute lat/lon coors using whatever zone was provided
-            alat, alon = UTM.utm2ll(slat, slon, szone)
+            alat, alon = utm2ll.utm2ll(slat, slon, szone)
             polyver_df["lat"] = alat.tolist()
             polyver_df["lon"] = alon.tolist()
 
             # Next compute UTM coors using the common zone
             sutmzone = facutmzone*np.ones(len(polyver_df["lat"]))
-            autmn, autme, autmz = UTM.ll2utm(slat, slon, sutmzone)
+            autmn, autme, autmz = ll2utm.ll2utm(slat, slon, sutmzone)
             polyver_df["utme"] = autme.tolist()
             polyver_df["utmn"] = autmn.tolist()
             polyver_df["utmzone"] = autmz.tolist()
@@ -306,7 +305,7 @@ class FacilityPrep():
         polar_utme = [round(cenx + polardist * math.sin(math.radians(pa))) for polardist in polar_dist for pa in polar_angl]
         polar_utmn = [round(ceny + polardist * math.cos(math.radians(pa))) for polardist in polar_dist for pa in polar_angl]
         polar_utmz = [facutmzone] * (len(polar_dist) * len(polar_angl))
-        polar_lat, polar_lon = UTM.utm2ll(polar_utmn, polar_utme, polar_utmz)
+        polar_lat, polar_lon = utm2ll.utm2ll(polar_utmn, polar_utme, polar_utmz)
 
         # create dist and angl lists of length op_circle*op_radial
         polar_dist2 = [i for i in polar_dist for j in polar_angl]
@@ -335,8 +334,11 @@ class FacilityPrep():
         polar_idx = polar_df.apply(lambda row: self.define_polar_idx(row['sector'], row['ring']), axis=1)
         polar_df.set_index(polar_idx, inplace=True)
 
-        self.model.polargrid = polar_df
+        # determine if polar receptors overlap any emission sources
+        polar_df["overlap"] = polar_df.apply(lambda row: self.polar_overlap(row["utme"], row["utmn"], sourcelocs, op_overlap), axis=1)
 
+        self.model.polargrid = polar_df
+        
         #%%----- Add sector and ring to inner and outer receptors ----------
 
         # assign sector and ring number (integers) to each inner receptor and compute fractional sector (s) and ring_loc (log weighted) numbers
@@ -368,6 +370,11 @@ class FacilityPrep():
                 emislocs["elev"] = self.compute_emisloc_elev(polar_df,op_circles)
             # if polar receptor still has missing elevation, fill it in
             polar_df["elev"], polar_df["hill"] = zip(*polar_df.apply(lambda row: self.assign_polar_elev_step2(row,self.innerblks,self.outerblks,emislocs), axis=1))
+        else:
+            polar_df["elev"] = 0
+            polar_df["hill"] = 0
+            emislocs["elev"] = 0
+            emislocs["hill"] = 0
 
 
         # export polar_df to an Excel file in the Working directory
@@ -567,6 +574,137 @@ class FacilityPrep():
     
     def define_polar_idx(self, s, r):
         return "S" + str(s) + "R" + str(r)
+
+      
+#%% Zone to use function
+
+    def zone2use(self, el_df):
+    
+        """
+        Create a common UTM Zone for this facility
+        
+        All emission sources input to Aermod must have UTM coordinates
+        from a single UTM zone. This function will determine the single
+        UTM zone to use.
+        
+        """
+        
+        # First, check for any utm zones provided by the user in the emission location file
+        utmzones_df = el_df["utmzone"].loc[el_df["location_type"] == "U"]
+        if utmzones_df.shape[0] > 0:
+            # there are some; find the smallest one
+            min_utmzu = int(np.nan_to_num(utmzones_df).min(axis=0))
+        else:
+            min_utmzu = 0
+        
+        # Next, compute utm zones from any user provided longitudes and find smallest            
+        lon_df = el_df[["lon"]].loc[el_df["location_type"] == "L"]
+        if lon_df.shape[0] > 0:
+            lon_df["z"] = ((lon_df["lon"]+180)/6 + 1).astype(int)
+            min_utmzl = int(np.nan_to_num(lon_df["z"]).min(axis=0))
+        else:
+            min_utmzl = 0
+        
+        if min_utmzu == 0:
+            utmzone = min_utmzl
+        else:
+            if min_utmzl == 0:
+                utmzone = min_utmzu
+            else:
+                utmzone = min(min_utmzu, min_utmzl)
+        
+        if utmzone == 0:
+            print("Error! UTM zone is 0")
+            sys.exit()
+########### Route error to log ##################
+            
+        return utmzone
+
+
+#%% Check for polar receptors overlapping emission sources
+        
+    def polar_overlap(self, polar_utme, polar_utmn, sourcelocs_df, overlap_dist):
+        
+        """
+        
+        Determine if the given polar coordinate (polar_utme, polar_utmn) overlap any emission source
+        
+        """
+        overlap = "N"
+        
+        for index, row in sourcelocs_df.iterrows():
+           if row["lengthx"] > 0 or row["lengthy"] > 0:
+               # area source       
+               inside_box = inbox(polar_utme, polar_utmn, row["utme"], row["utmn"],
+                                  row["lengthx"], row["lengthy"], row["angle"], overlap_dist)
+               if inside_box == True:
+                   overlap = "Y"
+           else:
+               # point source
+               if math.sqrt((row["utme"]-polar_utme)**2 + (row["utmn"]-polar_utmn)**2) <= overlap_dist:
+                   overlap = "Y"
+               
+        return overlap
+
+
+#%% See if point is within a box
+        
+def inbox(xt, yt, box_x, box_y, len_x, len_y, angle, df):
+
+    """
+    Determines whether a point (xt,yt) is within a fringe of df around a box
+    with origin (box_x,box_y), dimensions (Len_x,Len_y), and oriented at an given
+    "angle", measured clockwise from North.
+    """
+
+    inbox = False
+        
+    A_rad = math.radians(angle)
+    D_e = (yt-box_y)*math.cos(A_rad) + (xt-box_x)*math.sin(A_rad) - len_y
+    D_w = (box_y-yt)*math.cos(A_rad) + (box_x-xt)*math.sin(A_rad)
+    D_n = (xt-box_x)*math.cos(A_rad) + (yt-box_y)*math.sin(A_rad) - len_x
+    D_s = (box_x-xt)*math.cos(A_rad) + (box_y-yt)*math.sin(A_rad)
+    D_sw = math.sqrt((xt-box_x)**2 + (yt-box_y)**2)
+    D_se = (math.sqrt((box_x+len_x*math.cos(A_rad) - xt)**2 
+                    + (box_y-len_x*math.sin(A_rad) - yt)**2))
+    D_ne = (math.sqrt((box_x+len_x*math.cos(A_rad)+len_y*math.sin(A_rad) - xt)**2
+				                    + (box_y+len_y*math.cos(A_rad)-len_x*math.sin(A_rad) - yt)**2))
+    D_nw = (math.sqrt((box_x+len_y*math.sin(A_rad) - xt)**2
+				                    + (box_y+len_y*math.cos(A_rad) - yt)**2))
+    if D_e <= 0 and D_w <= 0:
+        D_test = max(D_e, D_w, D_n, D_s)
+    elif D_n <= 0 and D_s <= 0:
+        D_test = max(D_e, D_w, D_n, D_s)
+    else:
+        D_test = min(D_ne, D_nw, D_se, D_sw)
+           
+    # First see if the point is in the rectangle
+    if  (xt < box_x + math.tan(A_rad)*(yt-box_y) + (len_x+fringe)/math.cos(A_rad)
+	                        and xt > box_x + math.tan(A_rad)*(yt-box_y) - fringe/math.cos(A_rad)
+	                        and yt < box_y - math.tan(A_rad)*(xt-box_x) + (len_y+fringe)/math.cos(A_rad)
+	                        and yt > box_y - math.tan(A_rad)*(xt-box_x) - fringe/math.cos(A_rad)):
+         
+         # Now check the corners
+         if ((xt < box_x + math.tan(A_rad)*(yt-box_y)
+			                   and yt < box_y - math.tan(A_rad)*(xt-box_x)
+			                   and fringe < math.sqrt((box_x - xt)**2 + (box_y - yt)**2))
+		                   or (xt > box_x + math.tan(A_rad)*(yt-box_y) + len_x/math.cos(A_rad)
+			                   and yt < box_y - math.tan(A_rad)*(xt-box_x)
+			                   and fringe < math.sqrt((box_x+len_x*math.cos(A_rad) - xt)*2
+				                + (box_y-len_x*math.sin(A_rad) - yt)**2))
+		                   or (xt > box_x + math.tan(A_rad)*(yt-box_y) + len_x/math.cos(A_rad)
+			                   and yt > box_y - math.tan(A_rad)*(xt-box_x) + len_y/math.cos(A_rad)
+			                   and fringe < math.sqrt((box_x+len_x*math.cos(A_rad)+len_y*math.sin(A_rad) - xt)**2
+				                + (box_y+len_y*math.cos(A_rad)-len_x*math.sin(A_rad) - yt)**2))
+		                   or (xt < box_x + math.tan(A_rad)*(yt-box_y)
+			                   and yt > box_y - math.tan(A_rad)*(xt-box_x) + len_y/math.cos(A_rad)
+			                   and fringe < math.sqrt((box_x+len_y*math.sin(A_rad) - xt)**2
+				                + (box_y+len_y*math.cos(A_rad) - yt)**2))):
+                   inbox = False
+         else:
+               inbox = True
+
+    return inbox
 
 
 #%% moved start_here to inside the prepare inputs object -- will be called seperately from another object but by moving it inside the other object which will take what was HEM 3 and pass facid  
