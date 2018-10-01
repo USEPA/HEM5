@@ -1,4 +1,5 @@
 import os
+import pandas as pd
 from writer.csv.CsvWriter import CsvWriter
 
 class AllInnerReceptors(CsvWriter):
@@ -13,13 +14,54 @@ class AllInnerReceptors(CsvWriter):
 
         self.filename = os.path.join(targetDir, facilityId + "_all_inner_receptors.csv")
 
+        
     def calculateOutputs(self):
         """
-        Do something with the model and plot data, setting self.headers and self.data in the process.
+        Compute source and pollutant specific air concentrations at inner receptors.
         """
 
-        self.headers = ['Lat',	'Lon', 'Overlap', 'Source_id', 'Emis_type', 'Pollutant', 'Conc_ug_m3', 'Acon_ug_m2',
-                        'Elevation', 'Ddp_g_m2', 'Wdp_g_m2', 'Population', 'Fips', 'Block']
+        self.headers = ['Fips', 'Block', 'Lat', 'Lon', 'Source_id', 'Emis_type', 'Pollutant', 'Conc_ug_m3', 'Acon_ug_m2',
+                        'Elevation', 'Ddp_g_m2', 'Wdp_g_m2', 'Population', 'Overlap']
 
-        # TODO
-        self.data = []
+        # Units conversion factor
+        self.cf = 2000*0.4536/3600/8760
+
+        #extract inner concs from plotfile and round the utm coordinates
+        innerplot_df = self.plot_df.query("net_id != 'POLGRID1'").copy()
+        innerplot_df.utme = innerplot_df.utme.round()
+        innerplot_df.utmn = innerplot_df.utmn.round()
+
+        # create array of unique source_id's
+        srcids = innerplot_df['source_id'].unique().tolist()
+
+        dlist = []
+
+        # process inner concs one source_id at a time
+        for x in srcids:
+            innerplot_onesrcid = innerplot_df[["utme","utmn","source_id","result"]].loc[innerplot_df['source_id'] == x]
+            hapemis_onesrcid = self.model.runstream_hapemis[["source_id","pollutant","emis_tpy"]].loc[self.model.runstream_hapemis['source_id'] == x]
+            for row1 in innerplot_onesrcid.itertuples():
+                for row2 in hapemis_onesrcid.itertuples():
+                    d_fips = self.model.innerblks_df.loc[(self.model.innerblks_df["utme"] == row1[1]) & (self.model.innerblks_df["utmn"] == row1[2]), "FIPS"].values[0]
+                    idmarplot = self.model.innerblks_df.loc[(self.model.innerblks_df["utme"] == row1[1]) & (self.model.innerblks_df["utmn"] == row1[2]), "IDMARPLOT"].values[0]
+                    d_block = idmarplot[-10:]
+                    d_lat = self.model.innerblks_df.loc[(self.model.innerblks_df["utme"] == row1[1]) & (self.model.innerblks_df["utmn"] == row1[2]), "LAT"].values[0]
+                    d_lon = self.model.innerblks_df.loc[(self.model.innerblks_df["utme"] == row1[1]) & (self.model.innerblks_df["utmn"] == row1[2]), "LON"].values[0]
+                    d_sourceid = row1[3]
+                    d_emistype = "C"
+                    d_pollutant = row2[2]
+                    d_conc = row1[4] * row2[3] * self.cf
+                    d_aconc = ""
+                    d_elev = self.model.innerblks_df.loc[(self.model.innerblks_df["utme"] == row1[1]) & (self.model.innerblks_df["utmn"] == row1[2]), "ELEV"].values[0]
+                    d_drydep = ""
+                    d_wetdep = ""
+                    d_population = self.model.innerblks_df.loc[(self.model.innerblks_df["utme"] == row1[1]) & (self.model.innerblks_df["utmn"] == row1[2]), "POPULATION"].values[0]
+                    d_overlap = self.model.innerblks_df.loc[(self.model.innerblks_df["utme"] == row1[1]) & (self.model.innerblks_df["utmn"] == row1[2]), "overlap"].values[0]
+                    datalist = [d_fips, d_block, d_lat, d_lon, d_sourceid, d_emistype, d_pollutant, d_conc, 
+                                d_aconc, d_elev, d_drydep, d_wetdep, d_population, d_overlap]
+                    dlist.append(dict(zip(self.headers, datalist)))
+                    
+        innerconc_df = pd.DataFrame(dlist, columns=self.headers)
+
+        # dataframe to array
+        self.data = innerconc_df.values

@@ -199,7 +199,7 @@ class Process_outputs():
     def process(self):
 
         
-        start = time.time()
+#        start = time.time()
     
         # Read plotfile and put into dataframe
         pfile = open("resources/plotfile.plt", "r")
@@ -212,13 +212,13 @@ class Process_outputs():
 
 
         #----------- create All_Polar_Receptor output file -----------------
-        all_polar_receptors = AllPolarReceptors(self.cf, self.outdir, self.facid, self.model, plot_df)
+        all_polar_receptors = AllPolarReceptors(self.outdir, self.facid, self.model, plot_df)
         all_polar_receptors.write()
         self.model.all_polar_receptors_df = pd.DataFrame(data=all_polar_receptors.data, columns=all_polar_receptors.headers)
 
  
         #----------- create All_Inner_Receptor output file -----------------
-        all_inner_receptors = AllInnerReceptors(self.cf, self.outdir, self.facid, self.model, plot_df)
+        all_inner_receptors = AllInnerReceptors(self.outdir, self.facid, self.model, plot_df)
         all_inner_receptors.write()
         self.model.all_inner_receptors_df = pd.DataFrame(data=all_inner_receptors.data, columns=all_inner_receptors.headers)
         
@@ -232,10 +232,10 @@ class Process_outputs():
         self.model.risk_by_latlon = self.compute_risk_by_latlon(self. model)
         
         
-        #----------- create Maximum_Individual_Risk output file ---------------
-        max_indiv_risk = MaximumIndividualRisks(self.outdir, self.facid, self.model, plot_df)
-        max_indiv_risk.write()
-        self.model.max_indiv_risk_df = pd.DataFrame(data=max_indiv_risk.data, columns=max_indiv_risk.headers)
+#        #----------- create Maximum_Individual_Risk output file ---------------
+#        max_indiv_risk = MaximumIndividualRisks(self.outdir, self.facid, self.model, plot_df)
+#        max_indiv_risk.write()
+#        self.model.max_indiv_risk_df = pd.DataFrame(data=max_indiv_risk.data, columns=max_indiv_risk.headers)
         
         
 #        #----------- create Risk Breakdown output file ------------------------

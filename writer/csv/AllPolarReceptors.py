@@ -11,11 +11,10 @@ class AllPolarReceptors(CsvWriter):
     wet and dry deposition flux (if modeled).
     """
 
-    def __init__(self, cf, targetDir, facilityId, model, plot_df):
+    def __init__(self, targetDir, facilityId, model, plot_df):
         CsvWriter.__init__(self, model, plot_df)
 
         self.filename = os.path.join(targetDir, facilityId + "_all_polar_receptors.csv")
-        self.cf = cf
 
     def calculateOutputs(self):
         """
@@ -39,6 +38,9 @@ class AllPolarReceptors(CsvWriter):
         self.headers = ["Source_id", "Emis_type", "Pollutant", "Conc_ug_m3",
                          "Distance_m", "Angle", "Sector_num", "Ring_num", "Elev_m", 
                          "Lat", "Lon", "Overlap", "Wdp_g_m2_y", "Ddp_g_m2_y",]
+
+        # Units conversion factor
+        self.cf = 2000*0.4536/3600/8760
 
         #extract polar concs from plotfile and round the utm coordinates
         polarplot_df = self.plot_df.query("net_id == 'POLGRID1'").copy()

@@ -12,8 +12,7 @@ import pandas as pd
 import HEM4_Runstream as rs
 import find_center as fc
 import json_census_blocks as cbr
-import ll2utm
-import utm2ll
+from support.UTM import UTM
 
 
 ##REFORMATTED TO MOVE THE DATA FRAME CREATION TO THE GUI
@@ -99,13 +98,13 @@ class FacilityPrep():
         sutmzone = emislocs["utmzone"]
 
         # First compute lat/lon coors using whatever zone was provided
-        alat, alon = utm2ll.utm2ll(slat, slon, sutmzone)
+        alat, alon = UTM.utm2ll(slat, slon, sutmzone)
         emislocs["lat"] = alat.tolist()
         emislocs["lon"] = alon.tolist()
 
         # Next compute UTM coors using the common zone
         sutmzone = facutmzone*np.ones(len(emislocs["lat"]))
-        autmn, autme, autmz = ll2utm.ll2utm(slat, slon, sutmzone)
+        autmn, autme, autmz = UTM.ll2utm(slat, slon, sutmzone)
         emislocs["utme"] = autme.tolist()
         emislocs["utmn"] = autmn.tolist()
         emislocs["utmzone"] = autmz.tolist()
@@ -115,12 +114,12 @@ class FacilityPrep():
         slon = emislocs["x2"]
         sutmzone = emislocs["utmzone"]
 
-        alat, alon = utm2ll.utm2ll(slat, slon, sutmzone)
+        alat, alon = UTM.utm2ll(slat, slon, sutmzone)
         emislocs["lat_y2"] = alat.tolist()
         emislocs["lon_x2"] = alon.tolist()
 
         sutmzone = facutmzone*np.ones(len(emislocs["lat"]))
-        autmn, autme, autmz = ll2utm.ll2utm(slat, slon, sutmzone)
+        autmn, autme, autmz = UTM.ll2utm(slat, slon, sutmzone)
         emislocs["utme_x2"] = autme.tolist()
         emislocs["utmn_y2"] = autmn.tolist()
 
@@ -146,13 +145,13 @@ class FacilityPrep():
             szone = user_recs["utmzone"]
 
             # First compute lat/lon coors using whatever zone was provided
-            alat, alon = utm2ll.utm2ll(slat, slon, szone)
+            alat, alon = UTM.utm2ll(slat, slon, szone)
             user_recs["lat"] = alat.tolist()
             user_recs["lon"] = alon.tolist()
 
             # Next compute UTM coors using the common zone
             sutmzone = facutmzone*np.ones(len(user_recs["lat"]))
-            autmn, autme, autmz = ll2utm.ll2utm(slat, slon, sutmzone)
+            autmn, autme, autmz = UTM.ll2utm(slat, slon, sutmzone)
             user_recs["utme"] = autme.tolist()
             user_recs["utmn"] = autmn.tolist()
             user_recs["utmzone"] = autmz.tolist()
@@ -182,13 +181,13 @@ class FacilityPrep():
             szone = polyver_df["utmzone"]
 
             # First compute lat/lon coors using whatever zone was provided
-            alat, alon = utm2ll.utm2ll(slat, slon, szone)
+            alat, alon = UTM.utm2ll(slat, slon, szone)
             polyver_df["lat"] = alat.tolist()
             polyver_df["lon"] = alon.tolist()
 
             # Next compute UTM coors using the common zone
             sutmzone = facutmzone*np.ones(len(polyver_df["lat"]))
-            autmn, autme, autmz = ll2utm.ll2utm(slat, slon, sutmzone)
+            autmn, autme, autmz = UTM.ll2utm(slat, slon, sutmzone)
             polyver_df["utme"] = autme.tolist()
             polyver_df["utmn"] = autmn.tolist()
             polyver_df["utmzone"] = autmz.tolist()
@@ -305,7 +304,7 @@ class FacilityPrep():
         polar_utme = [round(cenx + polardist * math.sin(math.radians(pa))) for polardist in polar_dist for pa in polar_angl]
         polar_utmn = [round(ceny + polardist * math.cos(math.radians(pa))) for polardist in polar_dist for pa in polar_angl]
         polar_utmz = [facutmzone] * (len(polar_dist) * len(polar_angl))
-        polar_lat, polar_lon = utm2ll.utm2ll(polar_utmn, polar_utme, polar_utmz)
+        polar_lat, polar_lon = UTM.utm2ll(polar_utmn, polar_utme, polar_utmz)
 
         # create dist and angl lists of length op_circle*op_radial
         polar_dist2 = [i for i in polar_dist for j in polar_angl]
@@ -678,26 +677,26 @@ def inbox(xt, yt, box_x, box_y, len_x, len_y, angle, df):
         D_test = min(D_ne, D_nw, D_se, D_sw)
            
     # First see if the point is in the rectangle
-    if  (xt < box_x + math.tan(A_rad)*(yt-box_y) + (len_x+fringe)/math.cos(A_rad)
-	                        and xt > box_x + math.tan(A_rad)*(yt-box_y) - fringe/math.cos(A_rad)
-	                        and yt < box_y - math.tan(A_rad)*(xt-box_x) + (len_y+fringe)/math.cos(A_rad)
-	                        and yt > box_y - math.tan(A_rad)*(xt-box_x) - fringe/math.cos(A_rad)):
+    if  (xt < box_x + math.tan(A_rad)*(yt-box_y) + (len_x+df)/math.cos(A_rad)
+	                        and xt > box_x + math.tan(A_rad)*(yt-box_y) - df/math.cos(A_rad)
+	                        and yt < box_y - math.tan(A_rad)*(xt-box_x) + (len_y+df)/math.cos(A_rad)
+	                        and yt > box_y - math.tan(A_rad)*(xt-box_x) - df/math.cos(A_rad)):
          
          # Now check the corners
          if ((xt < box_x + math.tan(A_rad)*(yt-box_y)
 			                   and yt < box_y - math.tan(A_rad)*(xt-box_x)
-			                   and fringe < math.sqrt((box_x - xt)**2 + (box_y - yt)**2))
+			                   and df < math.sqrt((box_x - xt)**2 + (box_y - yt)**2))
 		                   or (xt > box_x + math.tan(A_rad)*(yt-box_y) + len_x/math.cos(A_rad)
 			                   and yt < box_y - math.tan(A_rad)*(xt-box_x)
-			                   and fringe < math.sqrt((box_x+len_x*math.cos(A_rad) - xt)*2
+			                   and df < math.sqrt((box_x+len_x*math.cos(A_rad) - xt)*2
 				                + (box_y-len_x*math.sin(A_rad) - yt)**2))
 		                   or (xt > box_x + math.tan(A_rad)*(yt-box_y) + len_x/math.cos(A_rad)
 			                   and yt > box_y - math.tan(A_rad)*(xt-box_x) + len_y/math.cos(A_rad)
-			                   and fringe < math.sqrt((box_x+len_x*math.cos(A_rad)+len_y*math.sin(A_rad) - xt)**2
+			                   and df < math.sqrt((box_x+len_x*math.cos(A_rad)+len_y*math.sin(A_rad) - xt)**2
 				                + (box_y+len_y*math.cos(A_rad)-len_x*math.sin(A_rad) - yt)**2))
 		                   or (xt < box_x + math.tan(A_rad)*(yt-box_y)
 			                   and yt > box_y - math.tan(A_rad)*(xt-box_x) + len_y/math.cos(A_rad)
-			                   and fringe < math.sqrt((box_x+len_y*math.sin(A_rad) - xt)**2
+			                   and df < math.sqrt((box_x+len_y*math.sin(A_rad) - xt)**2
 				                + (box_y+len_y*math.cos(A_rad) - yt)**2))):
                    inbox = False
          else:

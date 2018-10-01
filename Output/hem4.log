@@ -1,0 +1,1942 @@
+2018-09-28 16:28:54.909196:    Preparing Inputs for 125 facilities
+2018-09-28 16:28:54.909196:    The facilities ids being modeled:
+[   '01043110000366247', '01033110025357744', '01121110012234251', '06059110000481103', '06113110000485895', '08001110000466656', '09001110000317700', '12086110017407812', '13045110015714388', '17045110012153677', '17113110000438223', '17121110001816492', '18001110000400343', '18001110000592412', '18003110000401299', '18031110031113202', '18033110000403199', '18039110000398702', '18039110000398882', '18039110000398971', '18039110000398980', '18039110000399033', '18039110000399239', '18039110000399257', '18039110000399426', '18039110001236822', '18039110002445435', '18039110012697215', '18051110007363129', '18071110000402449', '18075110000402886', '18079110000402396', '18085110000592341', '18099110000398560', '18099110000399523', '18099110000592225', '18099110021008274', '18099110021292206', '18133110000396483', '18133110000396492', '18141110000399346', '18155110000592555', '18157110000404205', '18163110000403938', '19039110000412802', '19081110000833162', '19089110000414702',
+    '19103110000593787', '19111110000742545', '19189110013394674', '20173110000446367', '21113110000378984', '21205110000378911', '21209110000378840', '21211110000377887', '25013110000307953', '26045110000408176', '26081110000593313', '26081110017435104', '26093110024524665', '26099110000742322', '26099110017436390', '26123110017413850', '26133110000412036', '26161110000592993', '26163110000405696', '27025110000423998', '27045110000594633', '27091110000594704', '27109110000426575', '27111110008867645', '28081110043311626', '28089110011073435', '28141110016787477', '29031110000596052', '29143110012609178', '29157110000442502', '37021110000351459', '37023110000351119', '37159110021335919', '39007110000385128', '39007110000385379', '39007110000385565', '39029110000389801', '39035110015686710', '39037110000394083', '39043110000741902', '39049110000381863', '39049110000382684', '39061110000393716', '39091110000382979', '39097110000382121', '39113110000393976', '39135110000394029',
+    '39143110000493396', '39151110000741831', '39159110009427584', '39159110043812158', '39171110038095290', '39171110041071611', '39173110000384398', '39173110000395849', '39175110000605382', '42009110002440261', '42049110010986647', '44007110021104598', '44007110043693679', '45007110002235741', '45021110013339627', '45049110012208422', '45059110001137715', '45071110000352056', '47009110005008883', '47045110017278710', '47059110031019396', '47117110000370330', '47149110000370688', '48029110041474570', '48097110001879860', '51021110008189655', '55055110000416327', '55075110002458037', '55083110000420928', '55101110000417335', '55135110005478848']
+2018-09-28 16:28:54.909196:    Running facility 1 of 125
+2018-09-28 16:28:54.909196:    Building runstream for facility 01043110000366247
+2018-09-28 16:28:54.971710:    An error occurred while running a facility:
+Traceback (most recent call last):
+  File "F:\HEM4Python\hem4_git\Hem4Gui_Threaded.py", line 983, in process
+    runner.run()
+  File "F:\HEM4Python\hem4_git\runner\FacilityRunner.py", line 23, in run
+    runstream = prep.createRunstream(self.facilityId)
+  File "F:\HEM4Python\hem4_git\FacilityPrep.py", line 234, in createRunstream
+    self.innerblks, self.outerblks = cbr.getblocks(cenx, ceny, cenlon, cenlat, facutmzone, maxdist, modeldist, sourcelocs, op_overlap)
+  File "F:\HEM4Python\hem4_git\json_census_blocks.py", line 262, in getblocks
+    census_key = read_json_file("census/census_key.json", dtype_dict)
+  File "F:\HEM4Python\hem4_git\json_census_blocks.py", line 240, in read_json_file
+    with open(path_to_file) as p:
+FileNotFoundError: [Errno 2] No such file or directory: 'census/census_key.json'
+
+2018-09-28 16:28:54.971710:    Running facility 1 of 125
+2018-09-28 16:28:54.971710:    Building runstream for facility 01033110025357744
+2018-09-28 16:28:55.018568:    An error occurred while running a facility:
+Traceback (most recent call last):
+  File "F:\HEM4Python\hem4_git\Hem4Gui_Threaded.py", line 983, in process
+    runner.run()
+  File "F:\HEM4Python\hem4_git\runner\FacilityRunner.py", line 23, in run
+    runstream = prep.createRunstream(self.facilityId)
+  File "F:\HEM4Python\hem4_git\FacilityPrep.py", line 234, in createRunstream
+    self.innerblks, self.outerblks = cbr.getblocks(cenx, ceny, cenlon, cenlat, facutmzone, maxdist, modeldist, sourcelocs, op_overlap)
+  File "F:\HEM4Python\hem4_git\json_census_blocks.py", line 262, in getblocks
+    census_key = read_json_file("census/census_key.json", dtype_dict)
+  File "F:\HEM4Python\hem4_git\json_census_blocks.py", line 240, in read_json_file
+    with open(path_to_file) as p:
+FileNotFoundError: [Errno 2] No such file or directory: 'census/census_key.json'
+
+2018-09-28 16:28:55.018568:    Running facility 1 of 125
+2018-09-28 16:28:55.018568:    Building runstream for facility 01121110012234251
+2018-09-28 16:28:55.081081:    An error occurred while running a facility:
+Traceback (most recent call last):
+  File "F:\HEM4Python\hem4_git\Hem4Gui_Threaded.py", line 983, in process
+    runner.run()
+  File "F:\HEM4Python\hem4_git\runner\FacilityRunner.py", line 23, in run
+    runstream = prep.createRunstream(self.facilityId)
+  File "F:\HEM4Python\hem4_git\FacilityPrep.py", line 234, in createRunstream
+    self.innerblks, self.outerblks = cbr.getblocks(cenx, ceny, cenlon, cenlat, facutmzone, maxdist, modeldist, sourcelocs, op_overlap)
+  File "F:\HEM4Python\hem4_git\json_census_blocks.py", line 262, in getblocks
+    census_key = read_json_file("census/census_key.json", dtype_dict)
+  File "F:\HEM4Python\hem4_git\json_census_blocks.py", line 240, in read_json_file
+    with open(path_to_file) as p:
+FileNotFoundError: [Errno 2] No such file or directory: 'census/census_key.json'
+
+2018-09-28 16:28:55.081081:    Running facility 1 of 125
+2018-09-28 16:28:55.081081:    Building runstream for facility 06059110000481103
+2018-09-28 16:28:55.143580:    An error occurred while running a facility:
+Traceback (most recent call last):
+  File "F:\HEM4Python\hem4_git\Hem4Gui_Threaded.py", line 983, in process
+    runner.run()
+  File "F:\HEM4Python\hem4_git\runner\FacilityRunner.py", line 23, in run
+    runstream = prep.createRunstream(self.facilityId)
+  File "F:\HEM4Python\hem4_git\FacilityPrep.py", line 234, in createRunstream
+    self.innerblks, self.outerblks = cbr.getblocks(cenx, ceny, cenlon, cenlat, facutmzone, maxdist, modeldist, sourcelocs, op_overlap)
+  File "F:\HEM4Python\hem4_git\json_census_blocks.py", line 262, in getblocks
+    census_key = read_json_file("census/census_key.json", dtype_dict)
+  File "F:\HEM4Python\hem4_git\json_census_blocks.py", line 240, in read_json_file
+    with open(path_to_file) as p:
+FileNotFoundError: [Errno 2] No such file or directory: 'census/census_key.json'
+
+2018-09-28 16:28:55.143580:    Running facility 1 of 125
+2018-09-28 16:28:55.143580:    Building runstream for facility 06113110000485895
+2018-09-28 16:28:55.190460:    An error occurred while running a facility:
+Traceback (most recent call last):
+  File "F:\HEM4Python\hem4_git\Hem4Gui_Threaded.py", line 983, in process
+    runner.run()
+  File "F:\HEM4Python\hem4_git\runner\FacilityRunner.py", line 23, in run
+    runstream = prep.createRunstream(self.facilityId)
+  File "F:\HEM4Python\hem4_git\FacilityPrep.py", line 234, in createRunstream
+    self.innerblks, self.outerblks = cbr.getblocks(cenx, ceny, cenlon, cenlat, facutmzone, maxdist, modeldist, sourcelocs, op_overlap)
+  File "F:\HEM4Python\hem4_git\json_census_blocks.py", line 262, in getblocks
+    census_key = read_json_file("census/census_key.json", dtype_dict)
+  File "F:\HEM4Python\hem4_git\json_census_blocks.py", line 240, in read_json_file
+    with open(path_to_file) as p:
+FileNotFoundError: [Errno 2] No such file or directory: 'census/census_key.json'
+
+2018-09-28 16:28:55.190460:    Running facility 1 of 125
+2018-09-28 16:28:55.190460:    Building runstream for facility 08001110000466656
+2018-09-28 16:28:55.237335:    An error occurred while running a facility:
+Traceback (most recent call last):
+  File "F:\HEM4Python\hem4_git\Hem4Gui_Threaded.py", line 983, in process
+    runner.run()
+  File "F:\HEM4Python\hem4_git\runner\FacilityRunner.py", line 23, in run
+    runstream = prep.createRunstream(self.facilityId)
+  File "F:\HEM4Python\hem4_git\FacilityPrep.py", line 229, in createRunstream
+    cenx, ceny, cenlon, cenlat, max_srcdist, vertx_a, verty_a = fc.center(sourcelocs, facutmzone)
+  File "F:\HEM4Python\hem4_git\find_center.py", line 102, in center
+    cenx = (xmax1 + xmax2) / 2
+UnboundLocalError: local variable 'xmax1' referenced before assignment
+
+2018-09-28 16:28:55.237335:    Running facility 1 of 125
+2018-09-28 16:28:55.237335:    Building runstream for facility 09001110000317700
+2018-09-28 16:28:55.299834:    An error occurred while running a facility:
+Traceback (most recent call last):
+  File "F:\HEM4Python\hem4_git\Hem4Gui_Threaded.py", line 983, in process
+    runner.run()
+  File "F:\HEM4Python\hem4_git\runner\FacilityRunner.py", line 23, in run
+    runstream = prep.createRunstream(self.facilityId)
+  File "F:\HEM4Python\hem4_git\FacilityPrep.py", line 234, in createRunstream
+    self.innerblks, self.outerblks = cbr.getblocks(cenx, ceny, cenlon, cenlat, facutmzone, maxdist, modeldist, sourcelocs, op_overlap)
+  File "F:\HEM4Python\hem4_git\json_census_blocks.py", line 262, in getblocks
+    census_key = read_json_file("census/census_key.json", dtype_dict)
+  File "F:\HEM4Python\hem4_git\json_census_blocks.py", line 240, in read_json_file
+    with open(path_to_file) as p:
+FileNotFoundError: [Errno 2] No such file or directory: 'census/census_key.json'
+
+2018-09-28 16:28:55.299834:    Running facility 1 of 125
+2018-09-28 16:28:55.299834:    Building runstream for facility 12086110017407812
+2018-09-28 16:28:55.346709:    An error occurred while running a facility:
+Traceback (most recent call last):
+  File "F:\HEM4Python\hem4_git\Hem4Gui_Threaded.py", line 983, in process
+    runner.run()
+  File "F:\HEM4Python\hem4_git\runner\FacilityRunner.py", line 23, in run
+    runstream = prep.createRunstream(self.facilityId)
+  File "F:\HEM4Python\hem4_git\FacilityPrep.py", line 234, in createRunstream
+    self.innerblks, self.outerblks = cbr.getblocks(cenx, ceny, cenlon, cenlat, facutmzone, maxdist, modeldist, sourcelocs, op_overlap)
+  File "F:\HEM4Python\hem4_git\json_census_blocks.py", line 262, in getblocks
+    census_key = read_json_file("census/census_key.json", dtype_dict)
+  File "F:\HEM4Python\hem4_git\json_census_blocks.py", line 240, in read_json_file
+    with open(path_to_file) as p:
+FileNotFoundError: [Errno 2] No such file or directory: 'census/census_key.json'
+
+2018-09-28 16:28:55.346709:    Running facility 1 of 125
+2018-09-28 16:28:55.346709:    Building runstream for facility 13045110015714388
+2018-09-28 16:28:55.393590:    An error occurred while running a facility:
+Traceback (most recent call last):
+  File "F:\HEM4Python\hem4_git\Hem4Gui_Threaded.py", line 983, in process
+    runner.run()
+  File "F:\HEM4Python\hem4_git\runner\FacilityRunner.py", line 23, in run
+    runstream = prep.createRunstream(self.facilityId)
+  File "F:\HEM4Python\hem4_git\FacilityPrep.py", line 234, in createRunstream
+    self.innerblks, self.outerblks = cbr.getblocks(cenx, ceny, cenlon, cenlat, facutmzone, maxdist, modeldist, sourcelocs, op_overlap)
+  File "F:\HEM4Python\hem4_git\json_census_blocks.py", line 262, in getblocks
+    census_key = read_json_file("census/census_key.json", dtype_dict)
+  File "F:\HEM4Python\hem4_git\json_census_blocks.py", line 240, in read_json_file
+    with open(path_to_file) as p:
+FileNotFoundError: [Errno 2] No such file or directory: 'census/census_key.json'
+
+2018-09-28 16:28:55.393590:    Running facility 1 of 125
+2018-09-28 16:28:55.393590:    Building runstream for facility 17045110012153677
+2018-09-28 16:28:55.456084:    An error occurred while running a facility:
+Traceback (most recent call last):
+  File "F:\HEM4Python\hem4_git\Hem4Gui_Threaded.py", line 983, in process
+    runner.run()
+  File "F:\HEM4Python\hem4_git\runner\FacilityRunner.py", line 23, in run
+    runstream = prep.createRunstream(self.facilityId)
+  File "F:\HEM4Python\hem4_git\FacilityPrep.py", line 234, in createRunstream
+    self.innerblks, self.outerblks = cbr.getblocks(cenx, ceny, cenlon, cenlat, facutmzone, maxdist, modeldist, sourcelocs, op_overlap)
+  File "F:\HEM4Python\hem4_git\json_census_blocks.py", line 262, in getblocks
+    census_key = read_json_file("census/census_key.json", dtype_dict)
+  File "F:\HEM4Python\hem4_git\json_census_blocks.py", line 240, in read_json_file
+    with open(path_to_file) as p:
+FileNotFoundError: [Errno 2] No such file or directory: 'census/census_key.json'
+
+2018-09-28 16:28:55.456084:    Running facility 1 of 125
+2018-09-28 16:28:55.456084:    Building runstream for facility 17113110000438223
+2018-09-28 16:28:55.502958:    An error occurred while running a facility:
+Traceback (most recent call last):
+  File "F:\HEM4Python\hem4_git\Hem4Gui_Threaded.py", line 983, in process
+    runner.run()
+  File "F:\HEM4Python\hem4_git\runner\FacilityRunner.py", line 23, in run
+    runstream = prep.createRunstream(self.facilityId)
+  File "F:\HEM4Python\hem4_git\FacilityPrep.py", line 229, in createRunstream
+    cenx, ceny, cenlon, cenlat, max_srcdist, vertx_a, verty_a = fc.center(sourcelocs, facutmzone)
+  File "F:\HEM4Python\hem4_git\find_center.py", line 102, in center
+    cenx = (xmax1 + xmax2) / 2
+UnboundLocalError: local variable 'xmax1' referenced before assignment
+
+2018-09-28 16:28:55.502958:    Running facility 1 of 125
+2018-09-28 16:28:55.502958:    Building runstream for facility 17121110001816492
+2018-09-28 16:28:55.549833:    An error occurred while running a facility:
+Traceback (most recent call last):
+  File "F:\HEM4Python\hem4_git\Hem4Gui_Threaded.py", line 983, in process
+    runner.run()
+  File "F:\HEM4Python\hem4_git\runner\FacilityRunner.py", line 23, in run
+    runstream = prep.createRunstream(self.facilityId)
+  File "F:\HEM4Python\hem4_git\FacilityPrep.py", line 234, in createRunstream
+    self.innerblks, self.outerblks = cbr.getblocks(cenx, ceny, cenlon, cenlat, facutmzone, maxdist, modeldist, sourcelocs, op_overlap)
+  File "F:\HEM4Python\hem4_git\json_census_blocks.py", line 262, in getblocks
+    census_key = read_json_file("census/census_key.json", dtype_dict)
+  File "F:\HEM4Python\hem4_git\json_census_blocks.py", line 240, in read_json_file
+    with open(path_to_file) as p:
+FileNotFoundError: [Errno 2] No such file or directory: 'census/census_key.json'
+
+2018-09-28 16:28:55.549833:    Running facility 1 of 125
+2018-09-28 16:28:55.549833:    Building runstream for facility 18001110000400343
+2018-09-28 16:28:55.596708:    An error occurred while running a facility:
+Traceback (most recent call last):
+  File "F:\HEM4Python\hem4_git\Hem4Gui_Threaded.py", line 983, in process
+    runner.run()
+  File "F:\HEM4Python\hem4_git\runner\FacilityRunner.py", line 23, in run
+    runstream = prep.createRunstream(self.facilityId)
+  File "F:\HEM4Python\hem4_git\FacilityPrep.py", line 234, in createRunstream
+    self.innerblks, self.outerblks = cbr.getblocks(cenx, ceny, cenlon, cenlat, facutmzone, maxdist, modeldist, sourcelocs, op_overlap)
+  File "F:\HEM4Python\hem4_git\json_census_blocks.py", line 262, in getblocks
+    census_key = read_json_file("census/census_key.json", dtype_dict)
+  File "F:\HEM4Python\hem4_git\json_census_blocks.py", line 240, in read_json_file
+    with open(path_to_file) as p:
+FileNotFoundError: [Errno 2] No such file or directory: 'census/census_key.json'
+
+2018-09-28 16:28:55.596708:    Running facility 1 of 125
+2018-09-28 16:28:55.596708:    Building runstream for facility 18001110000592412
+2018-09-28 16:28:55.643583:    An error occurred while running a facility:
+Traceback (most recent call last):
+  File "F:\HEM4Python\hem4_git\Hem4Gui_Threaded.py", line 983, in process
+    runner.run()
+  File "F:\HEM4Python\hem4_git\runner\FacilityRunner.py", line 23, in run
+    runstream = prep.createRunstream(self.facilityId)
+  File "F:\HEM4Python\hem4_git\FacilityPrep.py", line 234, in createRunstream
+    self.innerblks, self.outerblks = cbr.getblocks(cenx, ceny, cenlon, cenlat, facutmzone, maxdist, modeldist, sourcelocs, op_overlap)
+  File "F:\HEM4Python\hem4_git\json_census_blocks.py", line 262, in getblocks
+    census_key = read_json_file("census/census_key.json", dtype_dict)
+  File "F:\HEM4Python\hem4_git\json_census_blocks.py", line 240, in read_json_file
+    with open(path_to_file) as p:
+FileNotFoundError: [Errno 2] No such file or directory: 'census/census_key.json'
+
+2018-09-28 16:28:55.643583:    Running facility 1 of 125
+2018-09-28 16:28:55.643583:    Building runstream for facility 18003110000401299
+2018-09-28 16:28:55.706083:    An error occurred while running a facility:
+Traceback (most recent call last):
+  File "F:\HEM4Python\hem4_git\Hem4Gui_Threaded.py", line 983, in process
+    runner.run()
+  File "F:\HEM4Python\hem4_git\runner\FacilityRunner.py", line 23, in run
+    runstream = prep.createRunstream(self.facilityId)
+  File "F:\HEM4Python\hem4_git\FacilityPrep.py", line 234, in createRunstream
+    self.innerblks, self.outerblks = cbr.getblocks(cenx, ceny, cenlon, cenlat, facutmzone, maxdist, modeldist, sourcelocs, op_overlap)
+  File "F:\HEM4Python\hem4_git\json_census_blocks.py", line 262, in getblocks
+    census_key = read_json_file("census/census_key.json", dtype_dict)
+  File "F:\HEM4Python\hem4_git\json_census_blocks.py", line 240, in read_json_file
+    with open(path_to_file) as p:
+FileNotFoundError: [Errno 2] No such file or directory: 'census/census_key.json'
+
+2018-09-28 16:28:55.706083:    Running facility 1 of 125
+2018-09-28 16:28:55.706083:    Building runstream for facility 18031110031113202
+2018-09-28 16:28:55.752958:    An error occurred while running a facility:
+Traceback (most recent call last):
+  File "F:\HEM4Python\hem4_git\Hem4Gui_Threaded.py", line 983, in process
+    runner.run()
+  File "F:\HEM4Python\hem4_git\runner\FacilityRunner.py", line 23, in run
+    runstream = prep.createRunstream(self.facilityId)
+  File "F:\HEM4Python\hem4_git\FacilityPrep.py", line 234, in createRunstream
+    self.innerblks, self.outerblks = cbr.getblocks(cenx, ceny, cenlon, cenlat, facutmzone, maxdist, modeldist, sourcelocs, op_overlap)
+  File "F:\HEM4Python\hem4_git\json_census_blocks.py", line 262, in getblocks
+    census_key = read_json_file("census/census_key.json", dtype_dict)
+  File "F:\HEM4Python\hem4_git\json_census_blocks.py", line 240, in read_json_file
+    with open(path_to_file) as p:
+FileNotFoundError: [Errno 2] No such file or directory: 'census/census_key.json'
+
+2018-09-28 16:28:55.752958:    Running facility 1 of 125
+2018-09-28 16:28:55.752958:    Building runstream for facility 18033110000403199
+2018-09-28 16:28:55.799832:    An error occurred while running a facility:
+Traceback (most recent call last):
+  File "F:\HEM4Python\hem4_git\Hem4Gui_Threaded.py", line 983, in process
+    runner.run()
+  File "F:\HEM4Python\hem4_git\runner\FacilityRunner.py", line 23, in run
+    runstream = prep.createRunstream(self.facilityId)
+  File "F:\HEM4Python\hem4_git\FacilityPrep.py", line 234, in createRunstream
+    self.innerblks, self.outerblks = cbr.getblocks(cenx, ceny, cenlon, cenlat, facutmzone, maxdist, modeldist, sourcelocs, op_overlap)
+  File "F:\HEM4Python\hem4_git\json_census_blocks.py", line 262, in getblocks
+    census_key = read_json_file("census/census_key.json", dtype_dict)
+  File "F:\HEM4Python\hem4_git\json_census_blocks.py", line 240, in read_json_file
+    with open(path_to_file) as p:
+FileNotFoundError: [Errno 2] No such file or directory: 'census/census_key.json'
+
+2018-09-28 16:28:55.799832:    Running facility 1 of 125
+2018-09-28 16:28:55.799832:    Building runstream for facility 18039110000398702
+2018-09-28 16:28:55.862333:    An error occurred while running a facility:
+Traceback (most recent call last):
+  File "F:\HEM4Python\hem4_git\Hem4Gui_Threaded.py", line 983, in process
+    runner.run()
+  File "F:\HEM4Python\hem4_git\runner\FacilityRunner.py", line 23, in run
+    runstream = prep.createRunstream(self.facilityId)
+  File "F:\HEM4Python\hem4_git\FacilityPrep.py", line 229, in createRunstream
+    cenx, ceny, cenlon, cenlat, max_srcdist, vertx_a, verty_a = fc.center(sourcelocs, facutmzone)
+  File "F:\HEM4Python\hem4_git\find_center.py", line 102, in center
+    cenx = (xmax1 + xmax2) / 2
+UnboundLocalError: local variable 'xmax1' referenced before assignment
+
+2018-09-28 16:28:55.862333:    Running facility 1 of 125
+2018-09-28 16:28:55.862333:    Building runstream for facility 18039110000398882
+2018-09-28 16:28:55.909208:    An error occurred while running a facility:
+Traceback (most recent call last):
+  File "F:\HEM4Python\hem4_git\Hem4Gui_Threaded.py", line 983, in process
+    runner.run()
+  File "F:\HEM4Python\hem4_git\runner\FacilityRunner.py", line 23, in run
+    runstream = prep.createRunstream(self.facilityId)
+  File "F:\HEM4Python\hem4_git\FacilityPrep.py", line 229, in createRunstream
+    cenx, ceny, cenlon, cenlat, max_srcdist, vertx_a, verty_a = fc.center(sourcelocs, facutmzone)
+  File "F:\HEM4Python\hem4_git\find_center.py", line 102, in center
+    cenx = (xmax1 + xmax2) / 2
+UnboundLocalError: local variable 'xmax1' referenced before assignment
+
+2018-09-28 16:28:55.909208:    Running facility 1 of 125
+2018-09-28 16:28:55.909208:    Building runstream for facility 18039110000398971
+2018-09-28 16:28:55.956083:    An error occurred while running a facility:
+Traceback (most recent call last):
+  File "F:\HEM4Python\hem4_git\Hem4Gui_Threaded.py", line 983, in process
+    runner.run()
+  File "F:\HEM4Python\hem4_git\runner\FacilityRunner.py", line 23, in run
+    runstream = prep.createRunstream(self.facilityId)
+  File "F:\HEM4Python\hem4_git\FacilityPrep.py", line 234, in createRunstream
+    self.innerblks, self.outerblks = cbr.getblocks(cenx, ceny, cenlon, cenlat, facutmzone, maxdist, modeldist, sourcelocs, op_overlap)
+  File "F:\HEM4Python\hem4_git\json_census_blocks.py", line 262, in getblocks
+    census_key = read_json_file("census/census_key.json", dtype_dict)
+  File "F:\HEM4Python\hem4_git\json_census_blocks.py", line 240, in read_json_file
+    with open(path_to_file) as p:
+FileNotFoundError: [Errno 2] No such file or directory: 'census/census_key.json'
+
+2018-09-28 16:28:55.956083:    Running facility 1 of 125
+2018-09-28 16:28:55.956083:    Building runstream for facility 18039110000398980
+2018-09-28 16:28:56.018577:    An error occurred while running a facility:
+Traceback (most recent call last):
+  File "F:\HEM4Python\hem4_git\Hem4Gui_Threaded.py", line 983, in process
+    runner.run()
+  File "F:\HEM4Python\hem4_git\runner\FacilityRunner.py", line 23, in run
+    runstream = prep.createRunstream(self.facilityId)
+  File "F:\HEM4Python\hem4_git\FacilityPrep.py", line 234, in createRunstream
+    self.innerblks, self.outerblks = cbr.getblocks(cenx, ceny, cenlon, cenlat, facutmzone, maxdist, modeldist, sourcelocs, op_overlap)
+  File "F:\HEM4Python\hem4_git\json_census_blocks.py", line 262, in getblocks
+    census_key = read_json_file("census/census_key.json", dtype_dict)
+  File "F:\HEM4Python\hem4_git\json_census_blocks.py", line 240, in read_json_file
+    with open(path_to_file) as p:
+FileNotFoundError: [Errno 2] No such file or directory: 'census/census_key.json'
+
+2018-09-28 16:28:56.018577:    Running facility 1 of 125
+2018-09-28 16:28:56.018577:    Building runstream for facility 18039110000399033
+2018-09-28 16:28:56.065441:    An error occurred while running a facility:
+Traceback (most recent call last):
+  File "F:\HEM4Python\hem4_git\Hem4Gui_Threaded.py", line 983, in process
+    runner.run()
+  File "F:\HEM4Python\hem4_git\runner\FacilityRunner.py", line 23, in run
+    runstream = prep.createRunstream(self.facilityId)
+  File "F:\HEM4Python\hem4_git\FacilityPrep.py", line 229, in createRunstream
+    cenx, ceny, cenlon, cenlat, max_srcdist, vertx_a, verty_a = fc.center(sourcelocs, facutmzone)
+  File "F:\HEM4Python\hem4_git\find_center.py", line 102, in center
+    cenx = (xmax1 + xmax2) / 2
+UnboundLocalError: local variable 'xmax1' referenced before assignment
+
+2018-09-28 16:28:56.065441:    Running facility 1 of 125
+2018-09-28 16:28:56.065441:    Building runstream for facility 18039110000399239
+2018-09-28 16:28:56.112335:    An error occurred while running a facility:
+Traceback (most recent call last):
+  File "F:\HEM4Python\hem4_git\Hem4Gui_Threaded.py", line 983, in process
+    runner.run()
+  File "F:\HEM4Python\hem4_git\runner\FacilityRunner.py", line 23, in run
+    runstream = prep.createRunstream(self.facilityId)
+  File "F:\HEM4Python\hem4_git\FacilityPrep.py", line 234, in createRunstream
+    self.innerblks, self.outerblks = cbr.getblocks(cenx, ceny, cenlon, cenlat, facutmzone, maxdist, modeldist, sourcelocs, op_overlap)
+  File "F:\HEM4Python\hem4_git\json_census_blocks.py", line 262, in getblocks
+    census_key = read_json_file("census/census_key.json", dtype_dict)
+  File "F:\HEM4Python\hem4_git\json_census_blocks.py", line 240, in read_json_file
+    with open(path_to_file) as p:
+FileNotFoundError: [Errno 2] No such file or directory: 'census/census_key.json'
+
+2018-09-28 16:28:56.112335:    Running facility 1 of 125
+2018-09-28 16:28:56.112335:    Building runstream for facility 18039110000399257
+2018-09-28 16:28:56.174827:    An error occurred while running a facility:
+Traceback (most recent call last):
+  File "F:\HEM4Python\hem4_git\Hem4Gui_Threaded.py", line 983, in process
+    runner.run()
+  File "F:\HEM4Python\hem4_git\runner\FacilityRunner.py", line 23, in run
+    runstream = prep.createRunstream(self.facilityId)
+  File "F:\HEM4Python\hem4_git\FacilityPrep.py", line 234, in createRunstream
+    self.innerblks, self.outerblks = cbr.getblocks(cenx, ceny, cenlon, cenlat, facutmzone, maxdist, modeldist, sourcelocs, op_overlap)
+  File "F:\HEM4Python\hem4_git\json_census_blocks.py", line 262, in getblocks
+    census_key = read_json_file("census/census_key.json", dtype_dict)
+  File "F:\HEM4Python\hem4_git\json_census_blocks.py", line 240, in read_json_file
+    with open(path_to_file) as p:
+FileNotFoundError: [Errno 2] No such file or directory: 'census/census_key.json'
+
+2018-09-28 16:28:56.174827:    Running facility 1 of 125
+2018-09-28 16:28:56.174827:    Building runstream for facility 18039110000399426
+2018-09-28 16:28:56.221706:    An error occurred while running a facility:
+Traceback (most recent call last):
+  File "F:\HEM4Python\hem4_git\Hem4Gui_Threaded.py", line 983, in process
+    runner.run()
+  File "F:\HEM4Python\hem4_git\runner\FacilityRunner.py", line 23, in run
+    runstream = prep.createRunstream(self.facilityId)
+  File "F:\HEM4Python\hem4_git\FacilityPrep.py", line 234, in createRunstream
+    self.innerblks, self.outerblks = cbr.getblocks(cenx, ceny, cenlon, cenlat, facutmzone, maxdist, modeldist, sourcelocs, op_overlap)
+  File "F:\HEM4Python\hem4_git\json_census_blocks.py", line 262, in getblocks
+    census_key = read_json_file("census/census_key.json", dtype_dict)
+  File "F:\HEM4Python\hem4_git\json_census_blocks.py", line 240, in read_json_file
+    with open(path_to_file) as p:
+FileNotFoundError: [Errno 2] No such file or directory: 'census/census_key.json'
+
+2018-09-28 16:28:56.221706:    Running facility 1 of 125
+2018-09-28 16:28:56.221706:    Building runstream for facility 18039110001236822
+2018-09-28 16:28:56.268565:    An error occurred while running a facility:
+Traceback (most recent call last):
+  File "F:\HEM4Python\hem4_git\Hem4Gui_Threaded.py", line 983, in process
+    runner.run()
+  File "F:\HEM4Python\hem4_git\runner\FacilityRunner.py", line 23, in run
+    runstream = prep.createRunstream(self.facilityId)
+  File "F:\HEM4Python\hem4_git\FacilityPrep.py", line 234, in createRunstream
+    self.innerblks, self.outerblks = cbr.getblocks(cenx, ceny, cenlon, cenlat, facutmzone, maxdist, modeldist, sourcelocs, op_overlap)
+  File "F:\HEM4Python\hem4_git\json_census_blocks.py", line 262, in getblocks
+    census_key = read_json_file("census/census_key.json", dtype_dict)
+  File "F:\HEM4Python\hem4_git\json_census_blocks.py", line 240, in read_json_file
+    with open(path_to_file) as p:
+FileNotFoundError: [Errno 2] No such file or directory: 'census/census_key.json'
+
+2018-09-28 16:28:56.268565:    Running facility 1 of 125
+2018-09-28 16:28:56.268565:    Building runstream for facility 18039110002445435
+2018-09-28 16:28:56.331076:    An error occurred while running a facility:
+Traceback (most recent call last):
+  File "F:\HEM4Python\hem4_git\Hem4Gui_Threaded.py", line 983, in process
+    runner.run()
+  File "F:\HEM4Python\hem4_git\runner\FacilityRunner.py", line 23, in run
+    runstream = prep.createRunstream(self.facilityId)
+  File "F:\HEM4Python\hem4_git\FacilityPrep.py", line 234, in createRunstream
+    self.innerblks, self.outerblks = cbr.getblocks(cenx, ceny, cenlon, cenlat, facutmzone, maxdist, modeldist, sourcelocs, op_overlap)
+  File "F:\HEM4Python\hem4_git\json_census_blocks.py", line 262, in getblocks
+    census_key = read_json_file("census/census_key.json", dtype_dict)
+  File "F:\HEM4Python\hem4_git\json_census_blocks.py", line 240, in read_json_file
+    with open(path_to_file) as p:
+FileNotFoundError: [Errno 2] No such file or directory: 'census/census_key.json'
+
+2018-09-28 16:28:56.331076:    Running facility 1 of 125
+2018-09-28 16:28:56.331076:    Building runstream for facility 18039110012697215
+2018-09-28 16:28:56.377956:    An error occurred while running a facility:
+Traceback (most recent call last):
+  File "F:\HEM4Python\hem4_git\Hem4Gui_Threaded.py", line 983, in process
+    runner.run()
+  File "F:\HEM4Python\hem4_git\runner\FacilityRunner.py", line 23, in run
+    runstream = prep.createRunstream(self.facilityId)
+  File "F:\HEM4Python\hem4_git\FacilityPrep.py", line 234, in createRunstream
+    self.innerblks, self.outerblks = cbr.getblocks(cenx, ceny, cenlon, cenlat, facutmzone, maxdist, modeldist, sourcelocs, op_overlap)
+  File "F:\HEM4Python\hem4_git\json_census_blocks.py", line 262, in getblocks
+    census_key = read_json_file("census/census_key.json", dtype_dict)
+  File "F:\HEM4Python\hem4_git\json_census_blocks.py", line 240, in read_json_file
+    with open(path_to_file) as p:
+FileNotFoundError: [Errno 2] No such file or directory: 'census/census_key.json'
+
+2018-09-28 16:28:56.377956:    Running facility 1 of 125
+2018-09-28 16:28:56.377956:    Building runstream for facility 18051110007363129
+2018-09-28 16:28:56.424831:    An error occurred while running a facility:
+Traceback (most recent call last):
+  File "F:\HEM4Python\hem4_git\Hem4Gui_Threaded.py", line 983, in process
+    runner.run()
+  File "F:\HEM4Python\hem4_git\runner\FacilityRunner.py", line 23, in run
+    runstream = prep.createRunstream(self.facilityId)
+  File "F:\HEM4Python\hem4_git\FacilityPrep.py", line 229, in createRunstream
+    cenx, ceny, cenlon, cenlat, max_srcdist, vertx_a, verty_a = fc.center(sourcelocs, facutmzone)
+  File "F:\HEM4Python\hem4_git\find_center.py", line 102, in center
+    cenx = (xmax1 + xmax2) / 2
+UnboundLocalError: local variable 'xmax1' referenced before assignment
+
+2018-09-28 16:28:56.424831:    Running facility 1 of 125
+2018-09-28 16:28:56.424831:    Building runstream for facility 18071110000402449
+2018-09-28 16:28:56.471706:    An error occurred while running a facility:
+Traceback (most recent call last):
+  File "F:\HEM4Python\hem4_git\Hem4Gui_Threaded.py", line 983, in process
+    runner.run()
+  File "F:\HEM4Python\hem4_git\runner\FacilityRunner.py", line 23, in run
+    runstream = prep.createRunstream(self.facilityId)
+  File "F:\HEM4Python\hem4_git\FacilityPrep.py", line 234, in createRunstream
+    self.innerblks, self.outerblks = cbr.getblocks(cenx, ceny, cenlon, cenlat, facutmzone, maxdist, modeldist, sourcelocs, op_overlap)
+  File "F:\HEM4Python\hem4_git\json_census_blocks.py", line 262, in getblocks
+    census_key = read_json_file("census/census_key.json", dtype_dict)
+  File "F:\HEM4Python\hem4_git\json_census_blocks.py", line 240, in read_json_file
+    with open(path_to_file) as p:
+FileNotFoundError: [Errno 2] No such file or directory: 'census/census_key.json'
+
+2018-09-28 16:28:56.471706:    Running facility 1 of 125
+2018-09-28 16:28:56.471706:    Building runstream for facility 18075110000402886
+2018-09-28 16:28:56.534201:    An error occurred while running a facility:
+Traceback (most recent call last):
+  File "F:\HEM4Python\hem4_git\Hem4Gui_Threaded.py", line 983, in process
+    runner.run()
+  File "F:\HEM4Python\hem4_git\runner\FacilityRunner.py", line 23, in run
+    runstream = prep.createRunstream(self.facilityId)
+  File "F:\HEM4Python\hem4_git\FacilityPrep.py", line 229, in createRunstream
+    cenx, ceny, cenlon, cenlat, max_srcdist, vertx_a, verty_a = fc.center(sourcelocs, facutmzone)
+  File "F:\HEM4Python\hem4_git\find_center.py", line 102, in center
+    cenx = (xmax1 + xmax2) / 2
+UnboundLocalError: local variable 'xmax1' referenced before assignment
+
+2018-09-28 16:28:56.534201:    Running facility 1 of 125
+2018-09-28 16:28:56.534201:    Building runstream for facility 18079110000402396
+2018-09-28 16:28:56.581081:    An error occurred while running a facility:
+Traceback (most recent call last):
+  File "F:\HEM4Python\hem4_git\Hem4Gui_Threaded.py", line 983, in process
+    runner.run()
+  File "F:\HEM4Python\hem4_git\runner\FacilityRunner.py", line 23, in run
+    runstream = prep.createRunstream(self.facilityId)
+  File "F:\HEM4Python\hem4_git\FacilityPrep.py", line 234, in createRunstream
+    self.innerblks, self.outerblks = cbr.getblocks(cenx, ceny, cenlon, cenlat, facutmzone, maxdist, modeldist, sourcelocs, op_overlap)
+  File "F:\HEM4Python\hem4_git\json_census_blocks.py", line 262, in getblocks
+    census_key = read_json_file("census/census_key.json", dtype_dict)
+  File "F:\HEM4Python\hem4_git\json_census_blocks.py", line 240, in read_json_file
+    with open(path_to_file) as p:
+FileNotFoundError: [Errno 2] No such file or directory: 'census/census_key.json'
+
+2018-09-28 16:28:56.581081:    Running facility 1 of 125
+2018-09-28 16:28:56.581081:    Building runstream for facility 18085110000592341
+2018-09-28 16:28:56.627956:    An error occurred while running a facility:
+Traceback (most recent call last):
+  File "F:\HEM4Python\hem4_git\Hem4Gui_Threaded.py", line 983, in process
+    runner.run()
+  File "F:\HEM4Python\hem4_git\runner\FacilityRunner.py", line 23, in run
+    runstream = prep.createRunstream(self.facilityId)
+  File "F:\HEM4Python\hem4_git\FacilityPrep.py", line 234, in createRunstream
+    self.innerblks, self.outerblks = cbr.getblocks(cenx, ceny, cenlon, cenlat, facutmzone, maxdist, modeldist, sourcelocs, op_overlap)
+  File "F:\HEM4Python\hem4_git\json_census_blocks.py", line 262, in getblocks
+    census_key = read_json_file("census/census_key.json", dtype_dict)
+  File "F:\HEM4Python\hem4_git\json_census_blocks.py", line 240, in read_json_file
+    with open(path_to_file) as p:
+FileNotFoundError: [Errno 2] No such file or directory: 'census/census_key.json'
+
+2018-09-28 16:28:56.627956:    Running facility 1 of 125
+2018-09-28 16:28:56.627956:    Building runstream for facility 18099110000398560
+2018-09-28 16:28:56.690452:    An error occurred while running a facility:
+Traceback (most recent call last):
+  File "F:\HEM4Python\hem4_git\Hem4Gui_Threaded.py", line 983, in process
+    runner.run()
+  File "F:\HEM4Python\hem4_git\runner\FacilityRunner.py", line 23, in run
+    runstream = prep.createRunstream(self.facilityId)
+  File "F:\HEM4Python\hem4_git\FacilityPrep.py", line 234, in createRunstream
+    self.innerblks, self.outerblks = cbr.getblocks(cenx, ceny, cenlon, cenlat, facutmzone, maxdist, modeldist, sourcelocs, op_overlap)
+  File "F:\HEM4Python\hem4_git\json_census_blocks.py", line 262, in getblocks
+    census_key = read_json_file("census/census_key.json", dtype_dict)
+  File "F:\HEM4Python\hem4_git\json_census_blocks.py", line 240, in read_json_file
+    with open(path_to_file) as p:
+FileNotFoundError: [Errno 2] No such file or directory: 'census/census_key.json'
+
+2018-09-28 16:28:56.690452:    Running facility 1 of 125
+2018-09-28 16:28:56.690452:    Building runstream for facility 18099110000399523
+2018-09-28 16:28:56.737332:    An error occurred while running a facility:
+Traceback (most recent call last):
+  File "F:\HEM4Python\hem4_git\Hem4Gui_Threaded.py", line 983, in process
+    runner.run()
+  File "F:\HEM4Python\hem4_git\runner\FacilityRunner.py", line 23, in run
+    runstream = prep.createRunstream(self.facilityId)
+  File "F:\HEM4Python\hem4_git\FacilityPrep.py", line 229, in createRunstream
+    cenx, ceny, cenlon, cenlat, max_srcdist, vertx_a, verty_a = fc.center(sourcelocs, facutmzone)
+  File "F:\HEM4Python\hem4_git\find_center.py", line 102, in center
+    cenx = (xmax1 + xmax2) / 2
+UnboundLocalError: local variable 'xmax1' referenced before assignment
+
+2018-09-28 16:28:56.737332:    Running facility 1 of 125
+2018-09-28 16:28:56.737332:    Building runstream for facility 18099110000592225
+2018-09-28 16:28:56.784189:    An error occurred while running a facility:
+Traceback (most recent call last):
+  File "F:\HEM4Python\hem4_git\Hem4Gui_Threaded.py", line 983, in process
+    runner.run()
+  File "F:\HEM4Python\hem4_git\runner\FacilityRunner.py", line 23, in run
+    runstream = prep.createRunstream(self.facilityId)
+  File "F:\HEM4Python\hem4_git\FacilityPrep.py", line 234, in createRunstream
+    self.innerblks, self.outerblks = cbr.getblocks(cenx, ceny, cenlon, cenlat, facutmzone, maxdist, modeldist, sourcelocs, op_overlap)
+  File "F:\HEM4Python\hem4_git\json_census_blocks.py", line 262, in getblocks
+    census_key = read_json_file("census/census_key.json", dtype_dict)
+  File "F:\HEM4Python\hem4_git\json_census_blocks.py", line 240, in read_json_file
+    with open(path_to_file) as p:
+FileNotFoundError: [Errno 2] No such file or directory: 'census/census_key.json'
+
+2018-09-28 16:28:56.784189:    Running facility 1 of 125
+2018-09-28 16:28:56.784189:    Building runstream for facility 18099110021008274
+2018-09-28 16:28:56.846700:    An error occurred while running a facility:
+Traceback (most recent call last):
+  File "F:\HEM4Python\hem4_git\Hem4Gui_Threaded.py", line 983, in process
+    runner.run()
+  File "F:\HEM4Python\hem4_git\runner\FacilityRunner.py", line 23, in run
+    runstream = prep.createRunstream(self.facilityId)
+  File "F:\HEM4Python\hem4_git\FacilityPrep.py", line 234, in createRunstream
+    self.innerblks, self.outerblks = cbr.getblocks(cenx, ceny, cenlon, cenlat, facutmzone, maxdist, modeldist, sourcelocs, op_overlap)
+  File "F:\HEM4Python\hem4_git\json_census_blocks.py", line 262, in getblocks
+    census_key = read_json_file("census/census_key.json", dtype_dict)
+  File "F:\HEM4Python\hem4_git\json_census_blocks.py", line 240, in read_json_file
+    with open(path_to_file) as p:
+FileNotFoundError: [Errno 2] No such file or directory: 'census/census_key.json'
+
+2018-09-28 16:28:56.846700:    Running facility 1 of 125
+2018-09-28 16:28:56.846700:    Building runstream for facility 18099110021292206
+2018-09-28 16:28:56.893580:    An error occurred while running a facility:
+Traceback (most recent call last):
+  File "F:\HEM4Python\hem4_git\Hem4Gui_Threaded.py", line 983, in process
+    runner.run()
+  File "F:\HEM4Python\hem4_git\runner\FacilityRunner.py", line 23, in run
+    runstream = prep.createRunstream(self.facilityId)
+  File "F:\HEM4Python\hem4_git\FacilityPrep.py", line 234, in createRunstream
+    self.innerblks, self.outerblks = cbr.getblocks(cenx, ceny, cenlon, cenlat, facutmzone, maxdist, modeldist, sourcelocs, op_overlap)
+  File "F:\HEM4Python\hem4_git\json_census_blocks.py", line 262, in getblocks
+    census_key = read_json_file("census/census_key.json", dtype_dict)
+  File "F:\HEM4Python\hem4_git\json_census_blocks.py", line 240, in read_json_file
+    with open(path_to_file) as p:
+FileNotFoundError: [Errno 2] No such file or directory: 'census/census_key.json'
+
+2018-09-28 16:28:56.893580:    Running facility 1 of 125
+2018-09-28 16:28:56.893580:    Building runstream for facility 18133110000396483
+2018-09-28 16:28:56.940455:    An error occurred while running a facility:
+Traceback (most recent call last):
+  File "F:\HEM4Python\hem4_git\Hem4Gui_Threaded.py", line 983, in process
+    runner.run()
+  File "F:\HEM4Python\hem4_git\runner\FacilityRunner.py", line 23, in run
+    runstream = prep.createRunstream(self.facilityId)
+  File "F:\HEM4Python\hem4_git\FacilityPrep.py", line 234, in createRunstream
+    self.innerblks, self.outerblks = cbr.getblocks(cenx, ceny, cenlon, cenlat, facutmzone, maxdist, modeldist, sourcelocs, op_overlap)
+  File "F:\HEM4Python\hem4_git\json_census_blocks.py", line 262, in getblocks
+    census_key = read_json_file("census/census_key.json", dtype_dict)
+  File "F:\HEM4Python\hem4_git\json_census_blocks.py", line 240, in read_json_file
+    with open(path_to_file) as p:
+FileNotFoundError: [Errno 2] No such file or directory: 'census/census_key.json'
+
+2018-09-28 16:28:56.940455:    Running facility 1 of 125
+2018-09-28 16:28:56.940455:    Building runstream for facility 18133110000396492
+2018-09-28 16:28:57.002937:    An error occurred while running a facility:
+Traceback (most recent call last):
+  File "F:\HEM4Python\hem4_git\Hem4Gui_Threaded.py", line 983, in process
+    runner.run()
+  File "F:\HEM4Python\hem4_git\runner\FacilityRunner.py", line 23, in run
+    runstream = prep.createRunstream(self.facilityId)
+  File "F:\HEM4Python\hem4_git\FacilityPrep.py", line 234, in createRunstream
+    self.innerblks, self.outerblks = cbr.getblocks(cenx, ceny, cenlon, cenlat, facutmzone, maxdist, modeldist, sourcelocs, op_overlap)
+  File "F:\HEM4Python\hem4_git\json_census_blocks.py", line 262, in getblocks
+    census_key = read_json_file("census/census_key.json", dtype_dict)
+  File "F:\HEM4Python\hem4_git\json_census_blocks.py", line 240, in read_json_file
+    with open(path_to_file) as p:
+FileNotFoundError: [Errno 2] No such file or directory: 'census/census_key.json'
+
+2018-09-28 16:28:57.002937:    Running facility 1 of 125
+2018-09-28 16:28:57.002937:    Building runstream for facility 18141110000399346
+2018-09-28 16:28:57.049830:    An error occurred while running a facility:
+Traceback (most recent call last):
+  File "F:\HEM4Python\hem4_git\Hem4Gui_Threaded.py", line 983, in process
+    runner.run()
+  File "F:\HEM4Python\hem4_git\runner\FacilityRunner.py", line 23, in run
+    runstream = prep.createRunstream(self.facilityId)
+  File "F:\HEM4Python\hem4_git\FacilityPrep.py", line 229, in createRunstream
+    cenx, ceny, cenlon, cenlat, max_srcdist, vertx_a, verty_a = fc.center(sourcelocs, facutmzone)
+  File "F:\HEM4Python\hem4_git\find_center.py", line 102, in center
+    cenx = (xmax1 + xmax2) / 2
+UnboundLocalError: local variable 'xmax1' referenced before assignment
+
+2018-09-28 16:28:57.049830:    Running facility 1 of 125
+2018-09-28 16:28:57.049830:    Building runstream for facility 18155110000592555
+2018-09-28 16:28:57.096704:    An error occurred while running a facility:
+Traceback (most recent call last):
+  File "F:\HEM4Python\hem4_git\Hem4Gui_Threaded.py", line 983, in process
+    runner.run()
+  File "F:\HEM4Python\hem4_git\runner\FacilityRunner.py", line 23, in run
+    runstream = prep.createRunstream(self.facilityId)
+  File "F:\HEM4Python\hem4_git\FacilityPrep.py", line 234, in createRunstream
+    self.innerblks, self.outerblks = cbr.getblocks(cenx, ceny, cenlon, cenlat, facutmzone, maxdist, modeldist, sourcelocs, op_overlap)
+  File "F:\HEM4Python\hem4_git\json_census_blocks.py", line 262, in getblocks
+    census_key = read_json_file("census/census_key.json", dtype_dict)
+  File "F:\HEM4Python\hem4_git\json_census_blocks.py", line 240, in read_json_file
+    with open(path_to_file) as p:
+FileNotFoundError: [Errno 2] No such file or directory: 'census/census_key.json'
+
+2018-09-28 16:28:57.096704:    Running facility 1 of 125
+2018-09-28 16:28:57.096704:    Building runstream for facility 18157110000404205
+2018-09-28 16:28:57.159187:    An error occurred while running a facility:
+Traceback (most recent call last):
+  File "F:\HEM4Python\hem4_git\Hem4Gui_Threaded.py", line 983, in process
+    runner.run()
+  File "F:\HEM4Python\hem4_git\runner\FacilityRunner.py", line 23, in run
+    runstream = prep.createRunstream(self.facilityId)
+  File "F:\HEM4Python\hem4_git\FacilityPrep.py", line 234, in createRunstream
+    self.innerblks, self.outerblks = cbr.getblocks(cenx, ceny, cenlon, cenlat, facutmzone, maxdist, modeldist, sourcelocs, op_overlap)
+  File "F:\HEM4Python\hem4_git\json_census_blocks.py", line 262, in getblocks
+    census_key = read_json_file("census/census_key.json", dtype_dict)
+  File "F:\HEM4Python\hem4_git\json_census_blocks.py", line 240, in read_json_file
+    with open(path_to_file) as p:
+FileNotFoundError: [Errno 2] No such file or directory: 'census/census_key.json'
+
+2018-09-28 16:28:57.159187:    Running facility 1 of 125
+2018-09-28 16:28:57.159187:    Building runstream for facility 18163110000403938
+2018-09-28 16:28:57.206074:    An error occurred while running a facility:
+Traceback (most recent call last):
+  File "F:\HEM4Python\hem4_git\Hem4Gui_Threaded.py", line 983, in process
+    runner.run()
+  File "F:\HEM4Python\hem4_git\runner\FacilityRunner.py", line 23, in run
+    runstream = prep.createRunstream(self.facilityId)
+  File "F:\HEM4Python\hem4_git\FacilityPrep.py", line 234, in createRunstream
+    self.innerblks, self.outerblks = cbr.getblocks(cenx, ceny, cenlon, cenlat, facutmzone, maxdist, modeldist, sourcelocs, op_overlap)
+  File "F:\HEM4Python\hem4_git\json_census_blocks.py", line 262, in getblocks
+    census_key = read_json_file("census/census_key.json", dtype_dict)
+  File "F:\HEM4Python\hem4_git\json_census_blocks.py", line 240, in read_json_file
+    with open(path_to_file) as p:
+FileNotFoundError: [Errno 2] No such file or directory: 'census/census_key.json'
+
+2018-09-28 16:28:57.206074:    Running facility 1 of 125
+2018-09-28 16:28:57.206074:    Building runstream for facility 19039110000412802
+2018-09-28 16:28:57.252955:    An error occurred while running a facility:
+Traceback (most recent call last):
+  File "F:\HEM4Python\hem4_git\Hem4Gui_Threaded.py", line 983, in process
+    runner.run()
+  File "F:\HEM4Python\hem4_git\runner\FacilityRunner.py", line 23, in run
+    runstream = prep.createRunstream(self.facilityId)
+  File "F:\HEM4Python\hem4_git\FacilityPrep.py", line 234, in createRunstream
+    self.innerblks, self.outerblks = cbr.getblocks(cenx, ceny, cenlon, cenlat, facutmzone, maxdist, modeldist, sourcelocs, op_overlap)
+  File "F:\HEM4Python\hem4_git\json_census_blocks.py", line 262, in getblocks
+    census_key = read_json_file("census/census_key.json", dtype_dict)
+  File "F:\HEM4Python\hem4_git\json_census_blocks.py", line 240, in read_json_file
+    with open(path_to_file) as p:
+FileNotFoundError: [Errno 2] No such file or directory: 'census/census_key.json'
+
+2018-09-28 16:28:57.252955:    Running facility 1 of 125
+2018-09-28 16:28:57.252955:    Building runstream for facility 19081110000833162
+2018-09-28 16:28:57.315439:    An error occurred while running a facility:
+Traceback (most recent call last):
+  File "F:\HEM4Python\hem4_git\Hem4Gui_Threaded.py", line 983, in process
+    runner.run()
+  File "F:\HEM4Python\hem4_git\runner\FacilityRunner.py", line 23, in run
+    runstream = prep.createRunstream(self.facilityId)
+  File "F:\HEM4Python\hem4_git\FacilityPrep.py", line 234, in createRunstream
+    self.innerblks, self.outerblks = cbr.getblocks(cenx, ceny, cenlon, cenlat, facutmzone, maxdist, modeldist, sourcelocs, op_overlap)
+  File "F:\HEM4Python\hem4_git\json_census_blocks.py", line 262, in getblocks
+    census_key = read_json_file("census/census_key.json", dtype_dict)
+  File "F:\HEM4Python\hem4_git\json_census_blocks.py", line 240, in read_json_file
+    with open(path_to_file) as p:
+FileNotFoundError: [Errno 2] No such file or directory: 'census/census_key.json'
+
+2018-09-28 16:28:57.315439:    Running facility 1 of 125
+2018-09-28 16:28:57.315439:    Building runstream for facility 19089110000414702
+2018-09-28 16:28:57.362329:    An error occurred while running a facility:
+Traceback (most recent call last):
+  File "F:\HEM4Python\hem4_git\Hem4Gui_Threaded.py", line 983, in process
+    runner.run()
+  File "F:\HEM4Python\hem4_git\runner\FacilityRunner.py", line 23, in run
+    runstream = prep.createRunstream(self.facilityId)
+  File "F:\HEM4Python\hem4_git\FacilityPrep.py", line 234, in createRunstream
+    self.innerblks, self.outerblks = cbr.getblocks(cenx, ceny, cenlon, cenlat, facutmzone, maxdist, modeldist, sourcelocs, op_overlap)
+  File "F:\HEM4Python\hem4_git\json_census_blocks.py", line 262, in getblocks
+    census_key = read_json_file("census/census_key.json", dtype_dict)
+  File "F:\HEM4Python\hem4_git\json_census_blocks.py", line 240, in read_json_file
+    with open(path_to_file) as p:
+FileNotFoundError: [Errno 2] No such file or directory: 'census/census_key.json'
+
+2018-09-28 16:28:57.362329:    Running facility 1 of 125
+2018-09-28 16:28:57.362329:    Building runstream for facility 19103110000593787
+2018-09-28 16:28:57.409219:    An error occurred while running a facility:
+Traceback (most recent call last):
+  File "F:\HEM4Python\hem4_git\Hem4Gui_Threaded.py", line 983, in process
+    runner.run()
+  File "F:\HEM4Python\hem4_git\runner\FacilityRunner.py", line 23, in run
+    runstream = prep.createRunstream(self.facilityId)
+  File "F:\HEM4Python\hem4_git\FacilityPrep.py", line 234, in createRunstream
+    self.innerblks, self.outerblks = cbr.getblocks(cenx, ceny, cenlon, cenlat, facutmzone, maxdist, modeldist, sourcelocs, op_overlap)
+  File "F:\HEM4Python\hem4_git\json_census_blocks.py", line 262, in getblocks
+    census_key = read_json_file("census/census_key.json", dtype_dict)
+  File "F:\HEM4Python\hem4_git\json_census_blocks.py", line 240, in read_json_file
+    with open(path_to_file) as p:
+FileNotFoundError: [Errno 2] No such file or directory: 'census/census_key.json'
+
+2018-09-28 16:28:57.409219:    Running facility 1 of 125
+2018-09-28 16:28:57.409219:    Building runstream for facility 19111110000742545
+2018-09-28 16:28:57.471703:    An error occurred while running a facility:
+Traceback (most recent call last):
+  File "F:\HEM4Python\hem4_git\Hem4Gui_Threaded.py", line 983, in process
+    runner.run()
+  File "F:\HEM4Python\hem4_git\runner\FacilityRunner.py", line 23, in run
+    runstream = prep.createRunstream(self.facilityId)
+  File "F:\HEM4Python\hem4_git\FacilityPrep.py", line 234, in createRunstream
+    self.innerblks, self.outerblks = cbr.getblocks(cenx, ceny, cenlon, cenlat, facutmzone, maxdist, modeldist, sourcelocs, op_overlap)
+  File "F:\HEM4Python\hem4_git\json_census_blocks.py", line 262, in getblocks
+    census_key = read_json_file("census/census_key.json", dtype_dict)
+  File "F:\HEM4Python\hem4_git\json_census_blocks.py", line 240, in read_json_file
+    with open(path_to_file) as p:
+FileNotFoundError: [Errno 2] No such file or directory: 'census/census_key.json'
+
+2018-09-28 16:28:57.471703:    Running facility 1 of 125
+2018-09-28 16:28:57.471703:    Building runstream for facility 19189110013394674
+2018-09-28 16:28:57.518562:    An error occurred while running a facility:
+Traceback (most recent call last):
+  File "F:\HEM4Python\hem4_git\Hem4Gui_Threaded.py", line 983, in process
+    runner.run()
+  File "F:\HEM4Python\hem4_git\runner\FacilityRunner.py", line 23, in run
+    runstream = prep.createRunstream(self.facilityId)
+  File "F:\HEM4Python\hem4_git\FacilityPrep.py", line 229, in createRunstream
+    cenx, ceny, cenlon, cenlat, max_srcdist, vertx_a, verty_a = fc.center(sourcelocs, facutmzone)
+  File "F:\HEM4Python\hem4_git\find_center.py", line 102, in center
+    cenx = (xmax1 + xmax2) / 2
+UnboundLocalError: local variable 'xmax1' referenced before assignment
+
+2018-09-28 16:28:57.518562:    Running facility 1 of 125
+2018-09-28 16:28:57.518562:    Building runstream for facility 20173110000446367
+2018-09-28 16:28:57.565437:    An error occurred while running a facility:
+Traceback (most recent call last):
+  File "F:\HEM4Python\hem4_git\Hem4Gui_Threaded.py", line 983, in process
+    runner.run()
+  File "F:\HEM4Python\hem4_git\runner\FacilityRunner.py", line 23, in run
+    runstream = prep.createRunstream(self.facilityId)
+  File "F:\HEM4Python\hem4_git\FacilityPrep.py", line 229, in createRunstream
+    cenx, ceny, cenlon, cenlat, max_srcdist, vertx_a, verty_a = fc.center(sourcelocs, facutmzone)
+  File "F:\HEM4Python\hem4_git\find_center.py", line 102, in center
+    cenx = (xmax1 + xmax2) / 2
+UnboundLocalError: local variable 'xmax1' referenced before assignment
+
+2018-09-28 16:28:57.565437:    Running facility 1 of 125
+2018-09-28 16:28:57.565437:    Building runstream for facility 21113110000378984
+2018-09-28 16:28:57.612328:    An error occurred while running a facility:
+Traceback (most recent call last):
+  File "F:\HEM4Python\hem4_git\Hem4Gui_Threaded.py", line 983, in process
+    runner.run()
+  File "F:\HEM4Python\hem4_git\runner\FacilityRunner.py", line 23, in run
+    runstream = prep.createRunstream(self.facilityId)
+  File "F:\HEM4Python\hem4_git\FacilityPrep.py", line 234, in createRunstream
+    self.innerblks, self.outerblks = cbr.getblocks(cenx, ceny, cenlon, cenlat, facutmzone, maxdist, modeldist, sourcelocs, op_overlap)
+  File "F:\HEM4Python\hem4_git\json_census_blocks.py", line 262, in getblocks
+    census_key = read_json_file("census/census_key.json", dtype_dict)
+  File "F:\HEM4Python\hem4_git\json_census_blocks.py", line 240, in read_json_file
+    with open(path_to_file) as p:
+FileNotFoundError: [Errno 2] No such file or directory: 'census/census_key.json'
+
+2018-09-28 16:28:57.612328:    Running facility 1 of 125
+2018-09-28 16:28:57.612328:    Building runstream for facility 21205110000378911
+2018-09-28 16:28:57.674827:    An error occurred while running a facility:
+Traceback (most recent call last):
+  File "F:\HEM4Python\hem4_git\Hem4Gui_Threaded.py", line 983, in process
+    runner.run()
+  File "F:\HEM4Python\hem4_git\runner\FacilityRunner.py", line 23, in run
+    runstream = prep.createRunstream(self.facilityId)
+  File "F:\HEM4Python\hem4_git\FacilityPrep.py", line 229, in createRunstream
+    cenx, ceny, cenlon, cenlat, max_srcdist, vertx_a, verty_a = fc.center(sourcelocs, facutmzone)
+  File "F:\HEM4Python\hem4_git\find_center.py", line 102, in center
+    cenx = (xmax1 + xmax2) / 2
+UnboundLocalError: local variable 'xmax1' referenced before assignment
+
+2018-09-28 16:28:57.674827:    Running facility 1 of 125
+2018-09-28 16:28:57.674827:    Building runstream for facility 21209110000378840
+2018-09-28 16:28:57.721686:    An error occurred while running a facility:
+Traceback (most recent call last):
+  File "F:\HEM4Python\hem4_git\Hem4Gui_Threaded.py", line 983, in process
+    runner.run()
+  File "F:\HEM4Python\hem4_git\runner\FacilityRunner.py", line 23, in run
+    runstream = prep.createRunstream(self.facilityId)
+  File "F:\HEM4Python\hem4_git\FacilityPrep.py", line 234, in createRunstream
+    self.innerblks, self.outerblks = cbr.getblocks(cenx, ceny, cenlon, cenlat, facutmzone, maxdist, modeldist, sourcelocs, op_overlap)
+  File "F:\HEM4Python\hem4_git\json_census_blocks.py", line 262, in getblocks
+    census_key = read_json_file("census/census_key.json", dtype_dict)
+  File "F:\HEM4Python\hem4_git\json_census_blocks.py", line 240, in read_json_file
+    with open(path_to_file) as p:
+FileNotFoundError: [Errno 2] No such file or directory: 'census/census_key.json'
+
+2018-09-28 16:28:57.721686:    Running facility 1 of 125
+2018-09-28 16:28:57.721686:    Building runstream for facility 21211110000377887
+2018-09-28 16:28:57.784201:    An error occurred while running a facility:
+Traceback (most recent call last):
+  File "F:\HEM4Python\hem4_git\Hem4Gui_Threaded.py", line 983, in process
+    runner.run()
+  File "F:\HEM4Python\hem4_git\runner\FacilityRunner.py", line 23, in run
+    runstream = prep.createRunstream(self.facilityId)
+  File "F:\HEM4Python\hem4_git\FacilityPrep.py", line 229, in createRunstream
+    cenx, ceny, cenlon, cenlat, max_srcdist, vertx_a, verty_a = fc.center(sourcelocs, facutmzone)
+  File "F:\HEM4Python\hem4_git\find_center.py", line 102, in center
+    cenx = (xmax1 + xmax2) / 2
+UnboundLocalError: local variable 'xmax1' referenced before assignment
+
+2018-09-28 16:28:57.784201:    Running facility 1 of 125
+2018-09-28 16:28:57.784201:    Building runstream for facility 25013110000307953
+2018-09-28 16:28:57.831077:    An error occurred while running a facility:
+Traceback (most recent call last):
+  File "F:\HEM4Python\hem4_git\Hem4Gui_Threaded.py", line 983, in process
+    runner.run()
+  File "F:\HEM4Python\hem4_git\runner\FacilityRunner.py", line 23, in run
+    runstream = prep.createRunstream(self.facilityId)
+  File "F:\HEM4Python\hem4_git\FacilityPrep.py", line 234, in createRunstream
+    self.innerblks, self.outerblks = cbr.getblocks(cenx, ceny, cenlon, cenlat, facutmzone, maxdist, modeldist, sourcelocs, op_overlap)
+  File "F:\HEM4Python\hem4_git\json_census_blocks.py", line 262, in getblocks
+    census_key = read_json_file("census/census_key.json", dtype_dict)
+  File "F:\HEM4Python\hem4_git\json_census_blocks.py", line 240, in read_json_file
+    with open(path_to_file) as p:
+FileNotFoundError: [Errno 2] No such file or directory: 'census/census_key.json'
+
+2018-09-28 16:28:57.831077:    Running facility 1 of 125
+2018-09-28 16:28:57.831077:    Building runstream for facility 26045110000408176
+2018-09-28 16:28:57.877952:    An error occurred while running a facility:
+Traceback (most recent call last):
+  File "F:\HEM4Python\hem4_git\Hem4Gui_Threaded.py", line 983, in process
+    runner.run()
+  File "F:\HEM4Python\hem4_git\runner\FacilityRunner.py", line 23, in run
+    runstream = prep.createRunstream(self.facilityId)
+  File "F:\HEM4Python\hem4_git\FacilityPrep.py", line 234, in createRunstream
+    self.innerblks, self.outerblks = cbr.getblocks(cenx, ceny, cenlon, cenlat, facutmzone, maxdist, modeldist, sourcelocs, op_overlap)
+  File "F:\HEM4Python\hem4_git\json_census_blocks.py", line 262, in getblocks
+    census_key = read_json_file("census/census_key.json", dtype_dict)
+  File "F:\HEM4Python\hem4_git\json_census_blocks.py", line 240, in read_json_file
+    with open(path_to_file) as p:
+FileNotFoundError: [Errno 2] No such file or directory: 'census/census_key.json'
+
+2018-09-28 16:28:57.877952:    Running facility 1 of 125
+2018-09-28 16:28:57.877952:    Building runstream for facility 26081110000593313
+2018-09-28 16:28:57.940435:    An error occurred while running a facility:
+Traceback (most recent call last):
+  File "F:\HEM4Python\hem4_git\Hem4Gui_Threaded.py", line 983, in process
+    runner.run()
+  File "F:\HEM4Python\hem4_git\runner\FacilityRunner.py", line 23, in run
+    runstream = prep.createRunstream(self.facilityId)
+  File "F:\HEM4Python\hem4_git\FacilityPrep.py", line 234, in createRunstream
+    self.innerblks, self.outerblks = cbr.getblocks(cenx, ceny, cenlon, cenlat, facutmzone, maxdist, modeldist, sourcelocs, op_overlap)
+  File "F:\HEM4Python\hem4_git\json_census_blocks.py", line 262, in getblocks
+    census_key = read_json_file("census/census_key.json", dtype_dict)
+  File "F:\HEM4Python\hem4_git\json_census_blocks.py", line 240, in read_json_file
+    with open(path_to_file) as p:
+FileNotFoundError: [Errno 2] No such file or directory: 'census/census_key.json'
+
+2018-09-28 16:28:57.940435:    Running facility 1 of 125
+2018-09-28 16:28:57.940435:    Building runstream for facility 26081110017435104
+2018-09-28 16:28:57.987310:    An error occurred while running a facility:
+Traceback (most recent call last):
+  File "F:\HEM4Python\hem4_git\Hem4Gui_Threaded.py", line 983, in process
+    runner.run()
+  File "F:\HEM4Python\hem4_git\runner\FacilityRunner.py", line 23, in run
+    runstream = prep.createRunstream(self.facilityId)
+  File "F:\HEM4Python\hem4_git\FacilityPrep.py", line 229, in createRunstream
+    cenx, ceny, cenlon, cenlat, max_srcdist, vertx_a, verty_a = fc.center(sourcelocs, facutmzone)
+  File "F:\HEM4Python\hem4_git\find_center.py", line 102, in center
+    cenx = (xmax1 + xmax2) / 2
+UnboundLocalError: local variable 'xmax1' referenced before assignment
+
+2018-09-28 16:28:57.987310:    Running facility 1 of 125
+2018-09-28 16:28:57.987310:    Building runstream for facility 26093110024524665
+2018-09-28 16:28:58.034202:    An error occurred while running a facility:
+Traceback (most recent call last):
+  File "F:\HEM4Python\hem4_git\Hem4Gui_Threaded.py", line 983, in process
+    runner.run()
+  File "F:\HEM4Python\hem4_git\runner\FacilityRunner.py", line 23, in run
+    runstream = prep.createRunstream(self.facilityId)
+  File "F:\HEM4Python\hem4_git\FacilityPrep.py", line 229, in createRunstream
+    cenx, ceny, cenlon, cenlat, max_srcdist, vertx_a, verty_a = fc.center(sourcelocs, facutmzone)
+  File "F:\HEM4Python\hem4_git\find_center.py", line 102, in center
+    cenx = (xmax1 + xmax2) / 2
+UnboundLocalError: local variable 'xmax1' referenced before assignment
+
+2018-09-28 16:28:58.034202:    Running facility 1 of 125
+2018-09-28 16:28:58.034202:    Building runstream for facility 26099110000742322
+2018-09-28 16:28:58.096685:    An error occurred while running a facility:
+Traceback (most recent call last):
+  File "F:\HEM4Python\hem4_git\Hem4Gui_Threaded.py", line 983, in process
+    runner.run()
+  File "F:\HEM4Python\hem4_git\runner\FacilityRunner.py", line 23, in run
+    runstream = prep.createRunstream(self.facilityId)
+  File "F:\HEM4Python\hem4_git\FacilityPrep.py", line 234, in createRunstream
+    self.innerblks, self.outerblks = cbr.getblocks(cenx, ceny, cenlon, cenlat, facutmzone, maxdist, modeldist, sourcelocs, op_overlap)
+  File "F:\HEM4Python\hem4_git\json_census_blocks.py", line 262, in getblocks
+    census_key = read_json_file("census/census_key.json", dtype_dict)
+  File "F:\HEM4Python\hem4_git\json_census_blocks.py", line 240, in read_json_file
+    with open(path_to_file) as p:
+FileNotFoundError: [Errno 2] No such file or directory: 'census/census_key.json'
+
+2018-09-28 16:28:58.096685:    Running facility 1 of 125
+2018-09-28 16:28:58.096685:    Building runstream for facility 26099110017436390
+2018-09-28 16:28:58.143560:    An error occurred while running a facility:
+Traceback (most recent call last):
+  File "F:\HEM4Python\hem4_git\Hem4Gui_Threaded.py", line 983, in process
+    runner.run()
+  File "F:\HEM4Python\hem4_git\runner\FacilityRunner.py", line 23, in run
+    runstream = prep.createRunstream(self.facilityId)
+  File "F:\HEM4Python\hem4_git\FacilityPrep.py", line 234, in createRunstream
+    self.innerblks, self.outerblks = cbr.getblocks(cenx, ceny, cenlon, cenlat, facutmzone, maxdist, modeldist, sourcelocs, op_overlap)
+  File "F:\HEM4Python\hem4_git\json_census_blocks.py", line 262, in getblocks
+    census_key = read_json_file("census/census_key.json", dtype_dict)
+  File "F:\HEM4Python\hem4_git\json_census_blocks.py", line 240, in read_json_file
+    with open(path_to_file) as p:
+FileNotFoundError: [Errno 2] No such file or directory: 'census/census_key.json'
+
+2018-09-28 16:28:58.143560:    Running facility 1 of 125
+2018-09-28 16:28:58.143560:    Building runstream for facility 26123110017413850
+2018-09-28 16:28:58.206071:    An error occurred while running a facility:
+Traceback (most recent call last):
+  File "F:\HEM4Python\hem4_git\Hem4Gui_Threaded.py", line 983, in process
+    runner.run()
+  File "F:\HEM4Python\hem4_git\runner\FacilityRunner.py", line 23, in run
+    runstream = prep.createRunstream(self.facilityId)
+  File "F:\HEM4Python\hem4_git\FacilityPrep.py", line 234, in createRunstream
+    self.innerblks, self.outerblks = cbr.getblocks(cenx, ceny, cenlon, cenlat, facutmzone, maxdist, modeldist, sourcelocs, op_overlap)
+  File "F:\HEM4Python\hem4_git\json_census_blocks.py", line 262, in getblocks
+    census_key = read_json_file("census/census_key.json", dtype_dict)
+  File "F:\HEM4Python\hem4_git\json_census_blocks.py", line 240, in read_json_file
+    with open(path_to_file) as p:
+FileNotFoundError: [Errno 2] No such file or directory: 'census/census_key.json'
+
+2018-09-28 16:28:58.206071:    Running facility 1 of 125
+2018-09-28 16:28:58.206071:    Building runstream for facility 26133110000412036
+2018-09-28 16:28:58.252946:    An error occurred while running a facility:
+Traceback (most recent call last):
+  File "F:\HEM4Python\hem4_git\Hem4Gui_Threaded.py", line 983, in process
+    runner.run()
+  File "F:\HEM4Python\hem4_git\runner\FacilityRunner.py", line 23, in run
+    runstream = prep.createRunstream(self.facilityId)
+  File "F:\HEM4Python\hem4_git\FacilityPrep.py", line 229, in createRunstream
+    cenx, ceny, cenlon, cenlat, max_srcdist, vertx_a, verty_a = fc.center(sourcelocs, facutmzone)
+  File "F:\HEM4Python\hem4_git\find_center.py", line 102, in center
+    cenx = (xmax1 + xmax2) / 2
+UnboundLocalError: local variable 'xmax1' referenced before assignment
+
+2018-09-28 16:28:58.252946:    Running facility 1 of 125
+2018-09-28 16:28:58.252946:    Building runstream for facility 26161110000592993
+2018-09-28 16:28:58.299825:    An error occurred while running a facility:
+Traceback (most recent call last):
+  File "F:\HEM4Python\hem4_git\Hem4Gui_Threaded.py", line 983, in process
+    runner.run()
+  File "F:\HEM4Python\hem4_git\runner\FacilityRunner.py", line 23, in run
+    runstream = prep.createRunstream(self.facilityId)
+  File "F:\HEM4Python\hem4_git\FacilityPrep.py", line 234, in createRunstream
+    self.innerblks, self.outerblks = cbr.getblocks(cenx, ceny, cenlon, cenlat, facutmzone, maxdist, modeldist, sourcelocs, op_overlap)
+  File "F:\HEM4Python\hem4_git\json_census_blocks.py", line 262, in getblocks
+    census_key = read_json_file("census/census_key.json", dtype_dict)
+  File "F:\HEM4Python\hem4_git\json_census_blocks.py", line 240, in read_json_file
+    with open(path_to_file) as p:
+FileNotFoundError: [Errno 2] No such file or directory: 'census/census_key.json'
+
+2018-09-28 16:28:58.299825:    Running facility 1 of 125
+2018-09-28 16:28:58.299825:    Building runstream for facility 26163110000405696
+2018-09-28 16:28:58.346685:    An error occurred while running a facility:
+Traceback (most recent call last):
+  File "F:\HEM4Python\hem4_git\Hem4Gui_Threaded.py", line 983, in process
+    runner.run()
+  File "F:\HEM4Python\hem4_git\runner\FacilityRunner.py", line 23, in run
+    runstream = prep.createRunstream(self.facilityId)
+  File "F:\HEM4Python\hem4_git\FacilityPrep.py", line 234, in createRunstream
+    self.innerblks, self.outerblks = cbr.getblocks(cenx, ceny, cenlon, cenlat, facutmzone, maxdist, modeldist, sourcelocs, op_overlap)
+  File "F:\HEM4Python\hem4_git\json_census_blocks.py", line 262, in getblocks
+    census_key = read_json_file("census/census_key.json", dtype_dict)
+  File "F:\HEM4Python\hem4_git\json_census_blocks.py", line 240, in read_json_file
+    with open(path_to_file) as p:
+FileNotFoundError: [Errno 2] No such file or directory: 'census/census_key.json'
+
+2018-09-28 16:28:58.346685:    Running facility 1 of 125
+2018-09-28 16:28:58.346685:    Building runstream for facility 27025110000423998
+2018-09-28 16:28:58.409183:    An error occurred while running a facility:
+Traceback (most recent call last):
+  File "F:\HEM4Python\hem4_git\Hem4Gui_Threaded.py", line 983, in process
+    runner.run()
+  File "F:\HEM4Python\hem4_git\runner\FacilityRunner.py", line 23, in run
+    runstream = prep.createRunstream(self.facilityId)
+  File "F:\HEM4Python\hem4_git\FacilityPrep.py", line 234, in createRunstream
+    self.innerblks, self.outerblks = cbr.getblocks(cenx, ceny, cenlon, cenlat, facutmzone, maxdist, modeldist, sourcelocs, op_overlap)
+  File "F:\HEM4Python\hem4_git\json_census_blocks.py", line 262, in getblocks
+    census_key = read_json_file("census/census_key.json", dtype_dict)
+  File "F:\HEM4Python\hem4_git\json_census_blocks.py", line 240, in read_json_file
+    with open(path_to_file) as p:
+FileNotFoundError: [Errno 2] No such file or directory: 'census/census_key.json'
+
+2018-09-28 16:28:58.409183:    Running facility 1 of 125
+2018-09-28 16:28:58.409183:    Building runstream for facility 27045110000594633
+2018-09-28 16:28:58.456059:    An error occurred while running a facility:
+Traceback (most recent call last):
+  File "F:\HEM4Python\hem4_git\Hem4Gui_Threaded.py", line 983, in process
+    runner.run()
+  File "F:\HEM4Python\hem4_git\runner\FacilityRunner.py", line 23, in run
+    runstream = prep.createRunstream(self.facilityId)
+  File "F:\HEM4Python\hem4_git\FacilityPrep.py", line 229, in createRunstream
+    cenx, ceny, cenlon, cenlat, max_srcdist, vertx_a, verty_a = fc.center(sourcelocs, facutmzone)
+  File "F:\HEM4Python\hem4_git\find_center.py", line 102, in center
+    cenx = (xmax1 + xmax2) / 2
+UnboundLocalError: local variable 'xmax1' referenced before assignment
+
+2018-09-28 16:28:58.456059:    Running facility 1 of 125
+2018-09-28 16:28:58.456059:    Building runstream for facility 27091110000594704
+2018-09-28 16:28:58.502950:    An error occurred while running a facility:
+Traceback (most recent call last):
+  File "F:\HEM4Python\hem4_git\Hem4Gui_Threaded.py", line 983, in process
+    runner.run()
+  File "F:\HEM4Python\hem4_git\runner\FacilityRunner.py", line 23, in run
+    runstream = prep.createRunstream(self.facilityId)
+  File "F:\HEM4Python\hem4_git\FacilityPrep.py", line 234, in createRunstream
+    self.innerblks, self.outerblks = cbr.getblocks(cenx, ceny, cenlon, cenlat, facutmzone, maxdist, modeldist, sourcelocs, op_overlap)
+  File "F:\HEM4Python\hem4_git\json_census_blocks.py", line 262, in getblocks
+    census_key = read_json_file("census/census_key.json", dtype_dict)
+  File "F:\HEM4Python\hem4_git\json_census_blocks.py", line 240, in read_json_file
+    with open(path_to_file) as p:
+FileNotFoundError: [Errno 2] No such file or directory: 'census/census_key.json'
+
+2018-09-28 16:28:58.502950:    Running facility 1 of 125
+2018-09-28 16:28:58.502950:    Building runstream for facility 27109110000426575
+2018-09-28 16:28:58.549826:    An error occurred while running a facility:
+Traceback (most recent call last):
+  File "F:\HEM4Python\hem4_git\Hem4Gui_Threaded.py", line 983, in process
+    runner.run()
+  File "F:\HEM4Python\hem4_git\runner\FacilityRunner.py", line 23, in run
+    runstream = prep.createRunstream(self.facilityId)
+  File "F:\HEM4Python\hem4_git\FacilityPrep.py", line 229, in createRunstream
+    cenx, ceny, cenlon, cenlat, max_srcdist, vertx_a, verty_a = fc.center(sourcelocs, facutmzone)
+  File "F:\HEM4Python\hem4_git\find_center.py", line 102, in center
+    cenx = (xmax1 + xmax2) / 2
+UnboundLocalError: local variable 'xmax1' referenced before assignment
+
+2018-09-28 16:28:58.549826:    Running facility 1 of 125
+2018-09-28 16:28:58.549826:    Building runstream for facility 27111110008867645
+2018-09-28 16:28:58.612321:    An error occurred while running a facility:
+Traceback (most recent call last):
+  File "F:\HEM4Python\hem4_git\Hem4Gui_Threaded.py", line 983, in process
+    runner.run()
+  File "F:\HEM4Python\hem4_git\runner\FacilityRunner.py", line 23, in run
+    runstream = prep.createRunstream(self.facilityId)
+  File "F:\HEM4Python\hem4_git\FacilityPrep.py", line 229, in createRunstream
+    cenx, ceny, cenlon, cenlat, max_srcdist, vertx_a, verty_a = fc.center(sourcelocs, facutmzone)
+  File "F:\HEM4Python\hem4_git\find_center.py", line 102, in center
+    cenx = (xmax1 + xmax2) / 2
+UnboundLocalError: local variable 'xmax1' referenced before assignment
+
+2018-09-28 16:28:58.612321:    Running facility 1 of 125
+2018-09-28 16:28:58.612321:    Building runstream for facility 28081110043311626
+2018-09-28 16:28:58.659199:    An error occurred while running a facility:
+Traceback (most recent call last):
+  File "F:\HEM4Python\hem4_git\Hem4Gui_Threaded.py", line 983, in process
+    runner.run()
+  File "F:\HEM4Python\hem4_git\runner\FacilityRunner.py", line 23, in run
+    runstream = prep.createRunstream(self.facilityId)
+  File "F:\HEM4Python\hem4_git\FacilityPrep.py", line 234, in createRunstream
+    self.innerblks, self.outerblks = cbr.getblocks(cenx, ceny, cenlon, cenlat, facutmzone, maxdist, modeldist, sourcelocs, op_overlap)
+  File "F:\HEM4Python\hem4_git\json_census_blocks.py", line 262, in getblocks
+    census_key = read_json_file("census/census_key.json", dtype_dict)
+  File "F:\HEM4Python\hem4_git\json_census_blocks.py", line 240, in read_json_file
+    with open(path_to_file) as p:
+FileNotFoundError: [Errno 2] No such file or directory: 'census/census_key.json'
+
+2018-09-28 16:28:58.659199:    Running facility 1 of 125
+2018-09-28 16:28:58.659199:    Building runstream for facility 28089110011073435
+2018-09-28 16:28:58.706075:    An error occurred while running a facility:
+Traceback (most recent call last):
+  File "F:\HEM4Python\hem4_git\Hem4Gui_Threaded.py", line 983, in process
+    runner.run()
+  File "F:\HEM4Python\hem4_git\runner\FacilityRunner.py", line 23, in run
+    runstream = prep.createRunstream(self.facilityId)
+  File "F:\HEM4Python\hem4_git\FacilityPrep.py", line 234, in createRunstream
+    self.innerblks, self.outerblks = cbr.getblocks(cenx, ceny, cenlon, cenlat, facutmzone, maxdist, modeldist, sourcelocs, op_overlap)
+  File "F:\HEM4Python\hem4_git\json_census_blocks.py", line 262, in getblocks
+    census_key = read_json_file("census/census_key.json", dtype_dict)
+  File "F:\HEM4Python\hem4_git\json_census_blocks.py", line 240, in read_json_file
+    with open(path_to_file) as p:
+FileNotFoundError: [Errno 2] No such file or directory: 'census/census_key.json'
+
+2018-09-28 16:28:58.706075:    Running facility 1 of 125
+2018-09-28 16:28:58.706075:    Building runstream for facility 28141110016787477
+2018-09-28 16:28:58.752949:    An error occurred while running a facility:
+Traceback (most recent call last):
+  File "F:\HEM4Python\hem4_git\Hem4Gui_Threaded.py", line 983, in process
+    runner.run()
+  File "F:\HEM4Python\hem4_git\runner\FacilityRunner.py", line 23, in run
+    runstream = prep.createRunstream(self.facilityId)
+  File "F:\HEM4Python\hem4_git\FacilityPrep.py", line 229, in createRunstream
+    cenx, ceny, cenlon, cenlat, max_srcdist, vertx_a, verty_a = fc.center(sourcelocs, facutmzone)
+  File "F:\HEM4Python\hem4_git\find_center.py", line 102, in center
+    cenx = (xmax1 + xmax2) / 2
+UnboundLocalError: local variable 'xmax1' referenced before assignment
+
+2018-09-28 16:28:58.752949:    Running facility 1 of 125
+2018-09-28 16:28:58.752949:    Building runstream for facility 29031110000596052
+2018-09-28 16:28:58.799823:    An error occurred while running a facility:
+Traceback (most recent call last):
+  File "F:\HEM4Python\hem4_git\Hem4Gui_Threaded.py", line 983, in process
+    runner.run()
+  File "F:\HEM4Python\hem4_git\runner\FacilityRunner.py", line 23, in run
+    runstream = prep.createRunstream(self.facilityId)
+  File "F:\HEM4Python\hem4_git\FacilityPrep.py", line 234, in createRunstream
+    self.innerblks, self.outerblks = cbr.getblocks(cenx, ceny, cenlon, cenlat, facutmzone, maxdist, modeldist, sourcelocs, op_overlap)
+  File "F:\HEM4Python\hem4_git\json_census_blocks.py", line 262, in getblocks
+    census_key = read_json_file("census/census_key.json", dtype_dict)
+  File "F:\HEM4Python\hem4_git\json_census_blocks.py", line 240, in read_json_file
+    with open(path_to_file) as p:
+FileNotFoundError: [Errno 2] No such file or directory: 'census/census_key.json'
+
+2018-09-28 16:28:58.799823:    Running facility 1 of 125
+2018-09-28 16:28:58.799823:    Building runstream for facility 29143110012609178
+2018-09-28 16:28:58.862326:    An error occurred while running a facility:
+Traceback (most recent call last):
+  File "F:\HEM4Python\hem4_git\Hem4Gui_Threaded.py", line 983, in process
+    runner.run()
+  File "F:\HEM4Python\hem4_git\runner\FacilityRunner.py", line 23, in run
+    runstream = prep.createRunstream(self.facilityId)
+  File "F:\HEM4Python\hem4_git\FacilityPrep.py", line 234, in createRunstream
+    self.innerblks, self.outerblks = cbr.getblocks(cenx, ceny, cenlon, cenlat, facutmzone, maxdist, modeldist, sourcelocs, op_overlap)
+  File "F:\HEM4Python\hem4_git\json_census_blocks.py", line 262, in getblocks
+    census_key = read_json_file("census/census_key.json", dtype_dict)
+  File "F:\HEM4Python\hem4_git\json_census_blocks.py", line 240, in read_json_file
+    with open(path_to_file) as p:
+FileNotFoundError: [Errno 2] No such file or directory: 'census/census_key.json'
+
+2018-09-28 16:28:58.862326:    Running facility 1 of 125
+2018-09-28 16:28:58.862326:    Building runstream for facility 29157110000442502
+2018-09-28 16:28:58.924820:    An error occurred while running a facility:
+Traceback (most recent call last):
+  File "F:\HEM4Python\hem4_git\Hem4Gui_Threaded.py", line 983, in process
+    runner.run()
+  File "F:\HEM4Python\hem4_git\runner\FacilityRunner.py", line 23, in run
+    runstream = prep.createRunstream(self.facilityId)
+  File "F:\HEM4Python\hem4_git\FacilityPrep.py", line 234, in createRunstream
+    self.innerblks, self.outerblks = cbr.getblocks(cenx, ceny, cenlon, cenlat, facutmzone, maxdist, modeldist, sourcelocs, op_overlap)
+  File "F:\HEM4Python\hem4_git\json_census_blocks.py", line 262, in getblocks
+    census_key = read_json_file("census/census_key.json", dtype_dict)
+  File "F:\HEM4Python\hem4_git\json_census_blocks.py", line 240, in read_json_file
+    with open(path_to_file) as p:
+FileNotFoundError: [Errno 2] No such file or directory: 'census/census_key.json'
+
+2018-09-28 16:28:58.924820:    Running facility 1 of 125
+2018-09-28 16:28:58.924820:    Building runstream for facility 37021110000351459
+2018-09-28 16:28:58.971699:    An error occurred while running a facility:
+Traceback (most recent call last):
+  File "F:\HEM4Python\hem4_git\Hem4Gui_Threaded.py", line 983, in process
+    runner.run()
+  File "F:\HEM4Python\hem4_git\runner\FacilityRunner.py", line 23, in run
+    runstream = prep.createRunstream(self.facilityId)
+  File "F:\HEM4Python\hem4_git\FacilityPrep.py", line 234, in createRunstream
+    self.innerblks, self.outerblks = cbr.getblocks(cenx, ceny, cenlon, cenlat, facutmzone, maxdist, modeldist, sourcelocs, op_overlap)
+  File "F:\HEM4Python\hem4_git\json_census_blocks.py", line 262, in getblocks
+    census_key = read_json_file("census/census_key.json", dtype_dict)
+  File "F:\HEM4Python\hem4_git\json_census_blocks.py", line 240, in read_json_file
+    with open(path_to_file) as p:
+FileNotFoundError: [Errno 2] No such file or directory: 'census/census_key.json'
+
+2018-09-28 16:28:58.971699:    Running facility 1 of 125
+2018-09-28 16:28:58.971699:    Building runstream for facility 37023110000351119
+2018-09-28 16:28:59.018574:    An error occurred while running a facility:
+Traceback (most recent call last):
+  File "F:\HEM4Python\hem4_git\Hem4Gui_Threaded.py", line 983, in process
+    runner.run()
+  File "F:\HEM4Python\hem4_git\runner\FacilityRunner.py", line 23, in run
+    runstream = prep.createRunstream(self.facilityId)
+  File "F:\HEM4Python\hem4_git\FacilityPrep.py", line 229, in createRunstream
+    cenx, ceny, cenlon, cenlat, max_srcdist, vertx_a, verty_a = fc.center(sourcelocs, facutmzone)
+  File "F:\HEM4Python\hem4_git\find_center.py", line 102, in center
+    cenx = (xmax1 + xmax2) / 2
+UnboundLocalError: local variable 'xmax1' referenced before assignment
+
+2018-09-28 16:28:59.018574:    Running facility 1 of 125
+2018-09-28 16:28:59.018574:    Building runstream for facility 37159110021335919
+2018-09-28 16:28:59.065448:    An error occurred while running a facility:
+Traceback (most recent call last):
+  File "F:\HEM4Python\hem4_git\Hem4Gui_Threaded.py", line 983, in process
+    runner.run()
+  File "F:\HEM4Python\hem4_git\runner\FacilityRunner.py", line 23, in run
+    runstream = prep.createRunstream(self.facilityId)
+  File "F:\HEM4Python\hem4_git\FacilityPrep.py", line 229, in createRunstream
+    cenx, ceny, cenlon, cenlat, max_srcdist, vertx_a, verty_a = fc.center(sourcelocs, facutmzone)
+  File "F:\HEM4Python\hem4_git\find_center.py", line 102, in center
+    cenx = (xmax1 + xmax2) / 2
+UnboundLocalError: local variable 'xmax1' referenced before assignment
+
+2018-09-28 16:28:59.065448:    Running facility 1 of 125
+2018-09-28 16:28:59.065448:    Building runstream for facility 39007110000385128
+2018-09-28 16:28:59.127947:    An error occurred while running a facility:
+Traceback (most recent call last):
+  File "F:\HEM4Python\hem4_git\Hem4Gui_Threaded.py", line 983, in process
+    runner.run()
+  File "F:\HEM4Python\hem4_git\runner\FacilityRunner.py", line 23, in run
+    runstream = prep.createRunstream(self.facilityId)
+  File "F:\HEM4Python\hem4_git\FacilityPrep.py", line 234, in createRunstream
+    self.innerblks, self.outerblks = cbr.getblocks(cenx, ceny, cenlon, cenlat, facutmzone, maxdist, modeldist, sourcelocs, op_overlap)
+  File "F:\HEM4Python\hem4_git\json_census_blocks.py", line 262, in getblocks
+    census_key = read_json_file("census/census_key.json", dtype_dict)
+  File "F:\HEM4Python\hem4_git\json_census_blocks.py", line 240, in read_json_file
+    with open(path_to_file) as p:
+FileNotFoundError: [Errno 2] No such file or directory: 'census/census_key.json'
+
+2018-09-28 16:28:59.127947:    Running facility 1 of 125
+2018-09-28 16:28:59.127947:    Building runstream for facility 39007110000385379
+2018-09-28 16:28:59.174807:    An error occurred while running a facility:
+Traceback (most recent call last):
+  File "F:\HEM4Python\hem4_git\Hem4Gui_Threaded.py", line 983, in process
+    runner.run()
+  File "F:\HEM4Python\hem4_git\runner\FacilityRunner.py", line 23, in run
+    runstream = prep.createRunstream(self.facilityId)
+  File "F:\HEM4Python\hem4_git\FacilityPrep.py", line 234, in createRunstream
+    self.innerblks, self.outerblks = cbr.getblocks(cenx, ceny, cenlon, cenlat, facutmzone, maxdist, modeldist, sourcelocs, op_overlap)
+  File "F:\HEM4Python\hem4_git\json_census_blocks.py", line 262, in getblocks
+    census_key = read_json_file("census/census_key.json", dtype_dict)
+  File "F:\HEM4Python\hem4_git\json_census_blocks.py", line 240, in read_json_file
+    with open(path_to_file) as p:
+FileNotFoundError: [Errno 2] No such file or directory: 'census/census_key.json'
+
+2018-09-28 16:28:59.174807:    Running facility 1 of 125
+2018-09-28 16:28:59.174807:    Building runstream for facility 39007110000385565
+2018-09-28 16:28:59.221698:    An error occurred while running a facility:
+Traceback (most recent call last):
+  File "F:\HEM4Python\hem4_git\Hem4Gui_Threaded.py", line 983, in process
+    runner.run()
+  File "F:\HEM4Python\hem4_git\runner\FacilityRunner.py", line 23, in run
+    runstream = prep.createRunstream(self.facilityId)
+  File "F:\HEM4Python\hem4_git\FacilityPrep.py", line 229, in createRunstream
+    cenx, ceny, cenlon, cenlat, max_srcdist, vertx_a, verty_a = fc.center(sourcelocs, facutmzone)
+  File "F:\HEM4Python\hem4_git\find_center.py", line 102, in center
+    cenx = (xmax1 + xmax2) / 2
+UnboundLocalError: local variable 'xmax1' referenced before assignment
+
+2018-09-28 16:28:59.221698:    Running facility 1 of 125
+2018-09-28 16:28:59.221698:    Building runstream for facility 39029110000389801
+2018-09-28 16:28:59.284193:    An error occurred while running a facility:
+Traceback (most recent call last):
+  File "F:\HEM4Python\hem4_git\Hem4Gui_Threaded.py", line 983, in process
+    runner.run()
+  File "F:\HEM4Python\hem4_git\runner\FacilityRunner.py", line 23, in run
+    runstream = prep.createRunstream(self.facilityId)
+  File "F:\HEM4Python\hem4_git\FacilityPrep.py", line 234, in createRunstream
+    self.innerblks, self.outerblks = cbr.getblocks(cenx, ceny, cenlon, cenlat, facutmzone, maxdist, modeldist, sourcelocs, op_overlap)
+  File "F:\HEM4Python\hem4_git\json_census_blocks.py", line 262, in getblocks
+    census_key = read_json_file("census/census_key.json", dtype_dict)
+  File "F:\HEM4Python\hem4_git\json_census_blocks.py", line 240, in read_json_file
+    with open(path_to_file) as p:
+FileNotFoundError: [Errno 2] No such file or directory: 'census/census_key.json'
+
+2018-09-28 16:28:59.284193:    Running facility 1 of 125
+2018-09-28 16:28:59.284193:    Building runstream for facility 39035110015686710
+2018-09-28 16:28:59.331072:    An error occurred while running a facility:
+Traceback (most recent call last):
+  File "F:\HEM4Python\hem4_git\Hem4Gui_Threaded.py", line 983, in process
+    runner.run()
+  File "F:\HEM4Python\hem4_git\runner\FacilityRunner.py", line 23, in run
+    runstream = prep.createRunstream(self.facilityId)
+  File "F:\HEM4Python\hem4_git\FacilityPrep.py", line 234, in createRunstream
+    self.innerblks, self.outerblks = cbr.getblocks(cenx, ceny, cenlon, cenlat, facutmzone, maxdist, modeldist, sourcelocs, op_overlap)
+  File "F:\HEM4Python\hem4_git\json_census_blocks.py", line 262, in getblocks
+    census_key = read_json_file("census/census_key.json", dtype_dict)
+  File "F:\HEM4Python\hem4_git\json_census_blocks.py", line 240, in read_json_file
+    with open(path_to_file) as p:
+FileNotFoundError: [Errno 2] No such file or directory: 'census/census_key.json'
+
+2018-09-28 16:28:59.331072:    Running facility 1 of 125
+2018-09-28 16:28:59.331072:    Building runstream for facility 39037110000394083
+2018-09-28 16:28:59.377948:    An error occurred while running a facility:
+Traceback (most recent call last):
+  File "F:\HEM4Python\hem4_git\Hem4Gui_Threaded.py", line 983, in process
+    runner.run()
+  File "F:\HEM4Python\hem4_git\runner\FacilityRunner.py", line 23, in run
+    runstream = prep.createRunstream(self.facilityId)
+  File "F:\HEM4Python\hem4_git\FacilityPrep.py", line 229, in createRunstream
+    cenx, ceny, cenlon, cenlat, max_srcdist, vertx_a, verty_a = fc.center(sourcelocs, facutmzone)
+  File "F:\HEM4Python\hem4_git\find_center.py", line 102, in center
+    cenx = (xmax1 + xmax2) / 2
+UnboundLocalError: local variable 'xmax1' referenced before assignment
+
+2018-09-28 16:28:59.377948:    Running facility 1 of 125
+2018-09-28 16:28:59.377948:    Building runstream for facility 39043110000741902
+2018-09-28 16:28:59.424823:    An error occurred while running a facility:
+Traceback (most recent call last):
+  File "F:\HEM4Python\hem4_git\Hem4Gui_Threaded.py", line 983, in process
+    runner.run()
+  File "F:\HEM4Python\hem4_git\runner\FacilityRunner.py", line 23, in run
+    runstream = prep.createRunstream(self.facilityId)
+  File "F:\HEM4Python\hem4_git\FacilityPrep.py", line 234, in createRunstream
+    self.innerblks, self.outerblks = cbr.getblocks(cenx, ceny, cenlon, cenlat, facutmzone, maxdist, modeldist, sourcelocs, op_overlap)
+  File "F:\HEM4Python\hem4_git\json_census_blocks.py", line 262, in getblocks
+    census_key = read_json_file("census/census_key.json", dtype_dict)
+  File "F:\HEM4Python\hem4_git\json_census_blocks.py", line 240, in read_json_file
+    with open(path_to_file) as p:
+FileNotFoundError: [Errno 2] No such file or directory: 'census/census_key.json'
+
+2018-09-28 16:28:59.424823:    Running facility 1 of 125
+2018-09-28 16:28:59.424823:    Building runstream for facility 39049110000381863
+2018-09-28 16:28:59.487318:    An error occurred while running a facility:
+Traceback (most recent call last):
+  File "F:\HEM4Python\hem4_git\Hem4Gui_Threaded.py", line 983, in process
+    runner.run()
+  File "F:\HEM4Python\hem4_git\runner\FacilityRunner.py", line 23, in run
+    runstream = prep.createRunstream(self.facilityId)
+  File "F:\HEM4Python\hem4_git\FacilityPrep.py", line 234, in createRunstream
+    self.innerblks, self.outerblks = cbr.getblocks(cenx, ceny, cenlon, cenlat, facutmzone, maxdist, modeldist, sourcelocs, op_overlap)
+  File "F:\HEM4Python\hem4_git\json_census_blocks.py", line 262, in getblocks
+    census_key = read_json_file("census/census_key.json", dtype_dict)
+  File "F:\HEM4Python\hem4_git\json_census_blocks.py", line 240, in read_json_file
+    with open(path_to_file) as p:
+FileNotFoundError: [Errno 2] No such file or directory: 'census/census_key.json'
+
+2018-09-28 16:28:59.487318:    Running facility 1 of 125
+2018-09-28 16:28:59.487318:    Building runstream for facility 39049110000382684
+2018-09-28 16:28:59.534197:    An error occurred while running a facility:
+Traceback (most recent call last):
+  File "F:\HEM4Python\hem4_git\Hem4Gui_Threaded.py", line 983, in process
+    runner.run()
+  File "F:\HEM4Python\hem4_git\runner\FacilityRunner.py", line 23, in run
+    runstream = prep.createRunstream(self.facilityId)
+  File "F:\HEM4Python\hem4_git\FacilityPrep.py", line 234, in createRunstream
+    self.innerblks, self.outerblks = cbr.getblocks(cenx, ceny, cenlon, cenlat, facutmzone, maxdist, modeldist, sourcelocs, op_overlap)
+  File "F:\HEM4Python\hem4_git\json_census_blocks.py", line 262, in getblocks
+    census_key = read_json_file("census/census_key.json", dtype_dict)
+  File "F:\HEM4Python\hem4_git\json_census_blocks.py", line 240, in read_json_file
+    with open(path_to_file) as p:
+FileNotFoundError: [Errno 2] No such file or directory: 'census/census_key.json'
+
+2018-09-28 16:28:59.534197:    Running facility 1 of 125
+2018-09-28 16:28:59.534197:    Building runstream for facility 39061110000393716
+2018-09-28 16:28:59.581056:    An error occurred while running a facility:
+Traceback (most recent call last):
+  File "F:\HEM4Python\hem4_git\Hem4Gui_Threaded.py", line 983, in process
+    runner.run()
+  File "F:\HEM4Python\hem4_git\runner\FacilityRunner.py", line 23, in run
+    runstream = prep.createRunstream(self.facilityId)
+  File "F:\HEM4Python\hem4_git\FacilityPrep.py", line 229, in createRunstream
+    cenx, ceny, cenlon, cenlat, max_srcdist, vertx_a, verty_a = fc.center(sourcelocs, facutmzone)
+  File "F:\HEM4Python\hem4_git\find_center.py", line 102, in center
+    cenx = (xmax1 + xmax2) / 2
+UnboundLocalError: local variable 'xmax1' referenced before assignment
+
+2018-09-28 16:28:59.581056:    Running facility 1 of 125
+2018-09-28 16:28:59.581056:    Building runstream for facility 39091110000382979
+2018-09-28 16:28:59.643567:    An error occurred while running a facility:
+Traceback (most recent call last):
+  File "F:\HEM4Python\hem4_git\Hem4Gui_Threaded.py", line 983, in process
+    runner.run()
+  File "F:\HEM4Python\hem4_git\runner\FacilityRunner.py", line 23, in run
+    runstream = prep.createRunstream(self.facilityId)
+  File "F:\HEM4Python\hem4_git\FacilityPrep.py", line 234, in createRunstream
+    self.innerblks, self.outerblks = cbr.getblocks(cenx, ceny, cenlon, cenlat, facutmzone, maxdist, modeldist, sourcelocs, op_overlap)
+  File "F:\HEM4Python\hem4_git\json_census_blocks.py", line 262, in getblocks
+    census_key = read_json_file("census/census_key.json", dtype_dict)
+  File "F:\HEM4Python\hem4_git\json_census_blocks.py", line 240, in read_json_file
+    with open(path_to_file) as p:
+FileNotFoundError: [Errno 2] No such file or directory: 'census/census_key.json'
+
+2018-09-28 16:28:59.643567:    Running facility 1 of 125
+2018-09-28 16:28:59.643567:    Building runstream for facility 39097110000382121
+2018-09-28 16:28:59.690446:    An error occurred while running a facility:
+Traceback (most recent call last):
+  File "F:\HEM4Python\hem4_git\Hem4Gui_Threaded.py", line 983, in process
+    runner.run()
+  File "F:\HEM4Python\hem4_git\runner\FacilityRunner.py", line 23, in run
+    runstream = prep.createRunstream(self.facilityId)
+  File "F:\HEM4Python\hem4_git\FacilityPrep.py", line 234, in createRunstream
+    self.innerblks, self.outerblks = cbr.getblocks(cenx, ceny, cenlon, cenlat, facutmzone, maxdist, modeldist, sourcelocs, op_overlap)
+  File "F:\HEM4Python\hem4_git\json_census_blocks.py", line 262, in getblocks
+    census_key = read_json_file("census/census_key.json", dtype_dict)
+  File "F:\HEM4Python\hem4_git\json_census_blocks.py", line 240, in read_json_file
+    with open(path_to_file) as p:
+FileNotFoundError: [Errno 2] No such file or directory: 'census/census_key.json'
+
+2018-09-28 16:28:59.690446:    Running facility 1 of 125
+2018-09-28 16:28:59.690446:    Building runstream for facility 39113110000393976
+2018-09-28 16:28:59.752941:    An error occurred while running a facility:
+Traceback (most recent call last):
+  File "F:\HEM4Python\hem4_git\Hem4Gui_Threaded.py", line 983, in process
+    runner.run()
+  File "F:\HEM4Python\hem4_git\runner\FacilityRunner.py", line 23, in run
+    runstream = prep.createRunstream(self.facilityId)
+  File "F:\HEM4Python\hem4_git\FacilityPrep.py", line 234, in createRunstream
+    self.innerblks, self.outerblks = cbr.getblocks(cenx, ceny, cenlon, cenlat, facutmzone, maxdist, modeldist, sourcelocs, op_overlap)
+  File "F:\HEM4Python\hem4_git\json_census_blocks.py", line 262, in getblocks
+    census_key = read_json_file("census/census_key.json", dtype_dict)
+  File "F:\HEM4Python\hem4_git\json_census_blocks.py", line 240, in read_json_file
+    with open(path_to_file) as p:
+FileNotFoundError: [Errno 2] No such file or directory: 'census/census_key.json'
+
+2018-09-28 16:28:59.752941:    Running facility 1 of 125
+2018-09-28 16:28:59.752941:    Building runstream for facility 39135110000394029
+2018-09-28 16:28:59.799821:    An error occurred while running a facility:
+Traceback (most recent call last):
+  File "F:\HEM4Python\hem4_git\Hem4Gui_Threaded.py", line 983, in process
+    runner.run()
+  File "F:\HEM4Python\hem4_git\runner\FacilityRunner.py", line 23, in run
+    runstream = prep.createRunstream(self.facilityId)
+  File "F:\HEM4Python\hem4_git\FacilityPrep.py", line 234, in createRunstream
+    self.innerblks, self.outerblks = cbr.getblocks(cenx, ceny, cenlon, cenlat, facutmzone, maxdist, modeldist, sourcelocs, op_overlap)
+  File "F:\HEM4Python\hem4_git\json_census_blocks.py", line 262, in getblocks
+    census_key = read_json_file("census/census_key.json", dtype_dict)
+  File "F:\HEM4Python\hem4_git\json_census_blocks.py", line 240, in read_json_file
+    with open(path_to_file) as p:
+FileNotFoundError: [Errno 2] No such file or directory: 'census/census_key.json'
+
+2018-09-28 16:28:59.799821:    Running facility 1 of 125
+2018-09-28 16:28:59.799821:    Building runstream for facility 39143110000493396
+2018-09-28 16:28:59.846697:    An error occurred while running a facility:
+Traceback (most recent call last):
+  File "F:\HEM4Python\hem4_git\Hem4Gui_Threaded.py", line 983, in process
+    runner.run()
+  File "F:\HEM4Python\hem4_git\runner\FacilityRunner.py", line 23, in run
+    runstream = prep.createRunstream(self.facilityId)
+  File "F:\HEM4Python\hem4_git\FacilityPrep.py", line 234, in createRunstream
+    self.innerblks, self.outerblks = cbr.getblocks(cenx, ceny, cenlon, cenlat, facutmzone, maxdist, modeldist, sourcelocs, op_overlap)
+  File "F:\HEM4Python\hem4_git\json_census_blocks.py", line 262, in getblocks
+    census_key = read_json_file("census/census_key.json", dtype_dict)
+  File "F:\HEM4Python\hem4_git\json_census_blocks.py", line 240, in read_json_file
+    with open(path_to_file) as p:
+FileNotFoundError: [Errno 2] No such file or directory: 'census/census_key.json'
+
+2018-09-28 16:28:59.846697:    Running facility 1 of 125
+2018-09-28 16:28:59.846697:    Building runstream for facility 39151110000741831
+2018-09-28 16:28:59.909196:    An error occurred while running a facility:
+Traceback (most recent call last):
+  File "F:\HEM4Python\hem4_git\Hem4Gui_Threaded.py", line 983, in process
+    runner.run()
+  File "F:\HEM4Python\hem4_git\runner\FacilityRunner.py", line 23, in run
+    runstream = prep.createRunstream(self.facilityId)
+  File "F:\HEM4Python\hem4_git\FacilityPrep.py", line 229, in createRunstream
+    cenx, ceny, cenlon, cenlat, max_srcdist, vertx_a, verty_a = fc.center(sourcelocs, facutmzone)
+  File "F:\HEM4Python\hem4_git\find_center.py", line 102, in center
+    cenx = (xmax1 + xmax2) / 2
+UnboundLocalError: local variable 'xmax1' referenced before assignment
+
+2018-09-28 16:28:59.909196:    Running facility 1 of 125
+2018-09-28 16:28:59.909196:    Building runstream for facility 39159110009427584
+2018-09-28 16:28:59.956055:    An error occurred while running a facility:
+Traceback (most recent call last):
+  File "F:\HEM4Python\hem4_git\Hem4Gui_Threaded.py", line 983, in process
+    runner.run()
+  File "F:\HEM4Python\hem4_git\runner\FacilityRunner.py", line 23, in run
+    runstream = prep.createRunstream(self.facilityId)
+  File "F:\HEM4Python\hem4_git\FacilityPrep.py", line 234, in createRunstream
+    self.innerblks, self.outerblks = cbr.getblocks(cenx, ceny, cenlon, cenlat, facutmzone, maxdist, modeldist, sourcelocs, op_overlap)
+  File "F:\HEM4Python\hem4_git\json_census_blocks.py", line 262, in getblocks
+    census_key = read_json_file("census/census_key.json", dtype_dict)
+  File "F:\HEM4Python\hem4_git\json_census_blocks.py", line 240, in read_json_file
+    with open(path_to_file) as p:
+FileNotFoundError: [Errno 2] No such file or directory: 'census/census_key.json'
+
+2018-09-28 16:28:59.956055:    Running facility 1 of 125
+2018-09-28 16:28:59.956055:    Building runstream for facility 39159110043812158
+2018-09-28 16:29:00.002930:    An error occurred while running a facility:
+Traceback (most recent call last):
+  File "F:\HEM4Python\hem4_git\Hem4Gui_Threaded.py", line 983, in process
+    runner.run()
+  File "F:\HEM4Python\hem4_git\runner\FacilityRunner.py", line 23, in run
+    runstream = prep.createRunstream(self.facilityId)
+  File "F:\HEM4Python\hem4_git\FacilityPrep.py", line 229, in createRunstream
+    cenx, ceny, cenlon, cenlat, max_srcdist, vertx_a, verty_a = fc.center(sourcelocs, facutmzone)
+  File "F:\HEM4Python\hem4_git\find_center.py", line 102, in center
+    cenx = (xmax1 + xmax2) / 2
+UnboundLocalError: local variable 'xmax1' referenced before assignment
+
+2018-09-28 16:29:00.002930:    Running facility 1 of 125
+2018-09-28 16:29:00.002930:    Building runstream for facility 39171110038095290
+2018-09-28 16:29:00.065447:    An error occurred while running a facility:
+Traceback (most recent call last):
+  File "F:\HEM4Python\hem4_git\Hem4Gui_Threaded.py", line 983, in process
+    runner.run()
+  File "F:\HEM4Python\hem4_git\runner\FacilityRunner.py", line 23, in run
+    runstream = prep.createRunstream(self.facilityId)
+  File "F:\HEM4Python\hem4_git\FacilityPrep.py", line 234, in createRunstream
+    self.innerblks, self.outerblks = cbr.getblocks(cenx, ceny, cenlon, cenlat, facutmzone, maxdist, modeldist, sourcelocs, op_overlap)
+  File "F:\HEM4Python\hem4_git\json_census_blocks.py", line 262, in getblocks
+    census_key = read_json_file("census/census_key.json", dtype_dict)
+  File "F:\HEM4Python\hem4_git\json_census_blocks.py", line 240, in read_json_file
+    with open(path_to_file) as p:
+FileNotFoundError: [Errno 2] No such file or directory: 'census/census_key.json'
+
+2018-09-28 16:29:00.065447:    Running facility 1 of 125
+2018-09-28 16:29:00.065447:    Building runstream for facility 39171110041071611
+2018-09-28 16:29:00.112305:    An error occurred while running a facility:
+Traceback (most recent call last):
+  File "F:\HEM4Python\hem4_git\Hem4Gui_Threaded.py", line 983, in process
+    runner.run()
+  File "F:\HEM4Python\hem4_git\runner\FacilityRunner.py", line 23, in run
+    runstream = prep.createRunstream(self.facilityId)
+  File "F:\HEM4Python\hem4_git\FacilityPrep.py", line 234, in createRunstream
+    self.innerblks, self.outerblks = cbr.getblocks(cenx, ceny, cenlon, cenlat, facutmzone, maxdist, modeldist, sourcelocs, op_overlap)
+  File "F:\HEM4Python\hem4_git\json_census_blocks.py", line 262, in getblocks
+    census_key = read_json_file("census/census_key.json", dtype_dict)
+  File "F:\HEM4Python\hem4_git\json_census_blocks.py", line 240, in read_json_file
+    with open(path_to_file) as p:
+FileNotFoundError: [Errno 2] No such file or directory: 'census/census_key.json'
+
+2018-09-28 16:29:00.112305:    Running facility 1 of 125
+2018-09-28 16:29:00.112305:    Building runstream for facility 39173110000384398
+2018-09-28 16:29:00.174804:    An error occurred while running a facility:
+Traceback (most recent call last):
+  File "F:\HEM4Python\hem4_git\Hem4Gui_Threaded.py", line 983, in process
+    runner.run()
+  File "F:\HEM4Python\hem4_git\runner\FacilityRunner.py", line 23, in run
+    runstream = prep.createRunstream(self.facilityId)
+  File "F:\HEM4Python\hem4_git\FacilityPrep.py", line 234, in createRunstream
+    self.innerblks, self.outerblks = cbr.getblocks(cenx, ceny, cenlon, cenlat, facutmzone, maxdist, modeldist, sourcelocs, op_overlap)
+  File "F:\HEM4Python\hem4_git\json_census_blocks.py", line 262, in getblocks
+    census_key = read_json_file("census/census_key.json", dtype_dict)
+  File "F:\HEM4Python\hem4_git\json_census_blocks.py", line 240, in read_json_file
+    with open(path_to_file) as p:
+FileNotFoundError: [Errno 2] No such file or directory: 'census/census_key.json'
+
+2018-09-28 16:29:00.174804:    Running facility 1 of 125
+2018-09-28 16:29:00.174804:    Building runstream for facility 39173110000395849
+2018-09-28 16:29:00.221679:    An error occurred while running a facility:
+Traceback (most recent call last):
+  File "F:\HEM4Python\hem4_git\Hem4Gui_Threaded.py", line 983, in process
+    runner.run()
+  File "F:\HEM4Python\hem4_git\runner\FacilityRunner.py", line 23, in run
+    runstream = prep.createRunstream(self.facilityId)
+  File "F:\HEM4Python\hem4_git\FacilityPrep.py", line 229, in createRunstream
+    cenx, ceny, cenlon, cenlat, max_srcdist, vertx_a, verty_a = fc.center(sourcelocs, facutmzone)
+  File "F:\HEM4Python\hem4_git\find_center.py", line 102, in center
+    cenx = (xmax1 + xmax2) / 2
+UnboundLocalError: local variable 'xmax1' referenced before assignment
+
+2018-09-28 16:29:00.221679:    Running facility 1 of 125
+2018-09-28 16:29:00.221679:    Building runstream for facility 39175110000605382
+2018-09-28 16:29:00.268570:    An error occurred while running a facility:
+Traceback (most recent call last):
+  File "F:\HEM4Python\hem4_git\Hem4Gui_Threaded.py", line 983, in process
+    runner.run()
+  File "F:\HEM4Python\hem4_git\runner\FacilityRunner.py", line 23, in run
+    runstream = prep.createRunstream(self.facilityId)
+  File "F:\HEM4Python\hem4_git\FacilityPrep.py", line 229, in createRunstream
+    cenx, ceny, cenlon, cenlat, max_srcdist, vertx_a, verty_a = fc.center(sourcelocs, facutmzone)
+  File "F:\HEM4Python\hem4_git\find_center.py", line 102, in center
+    cenx = (xmax1 + xmax2) / 2
+UnboundLocalError: local variable 'xmax1' referenced before assignment
+
+2018-09-28 16:29:00.268570:    Running facility 1 of 125
+2018-09-28 16:29:00.268570:    Building runstream for facility 42009110002440261
+2018-09-28 16:29:00.331065:    An error occurred while running a facility:
+Traceback (most recent call last):
+  File "F:\HEM4Python\hem4_git\Hem4Gui_Threaded.py", line 983, in process
+    runner.run()
+  File "F:\HEM4Python\hem4_git\runner\FacilityRunner.py", line 23, in run
+    runstream = prep.createRunstream(self.facilityId)
+  File "F:\HEM4Python\hem4_git\FacilityPrep.py", line 234, in createRunstream
+    self.innerblks, self.outerblks = cbr.getblocks(cenx, ceny, cenlon, cenlat, facutmzone, maxdist, modeldist, sourcelocs, op_overlap)
+  File "F:\HEM4Python\hem4_git\json_census_blocks.py", line 262, in getblocks
+    census_key = read_json_file("census/census_key.json", dtype_dict)
+  File "F:\HEM4Python\hem4_git\json_census_blocks.py", line 240, in read_json_file
+    with open(path_to_file) as p:
+FileNotFoundError: [Errno 2] No such file or directory: 'census/census_key.json'
+
+2018-09-28 16:29:00.331065:    Running facility 1 of 125
+2018-09-28 16:29:00.331065:    Building runstream for facility 42049110010986647
+2018-09-28 16:29:00.377928:    An error occurred while running a facility:
+Traceback (most recent call last):
+  File "F:\HEM4Python\hem4_git\Hem4Gui_Threaded.py", line 983, in process
+    runner.run()
+  File "F:\HEM4Python\hem4_git\runner\FacilityRunner.py", line 23, in run
+    runstream = prep.createRunstream(self.facilityId)
+  File "F:\HEM4Python\hem4_git\FacilityPrep.py", line 234, in createRunstream
+    self.innerblks, self.outerblks = cbr.getblocks(cenx, ceny, cenlon, cenlat, facutmzone, maxdist, modeldist, sourcelocs, op_overlap)
+  File "F:\HEM4Python\hem4_git\json_census_blocks.py", line 262, in getblocks
+    census_key = read_json_file("census/census_key.json", dtype_dict)
+  File "F:\HEM4Python\hem4_git\json_census_blocks.py", line 240, in read_json_file
+    with open(path_to_file) as p:
+FileNotFoundError: [Errno 2] No such file or directory: 'census/census_key.json'
+
+2018-09-28 16:29:00.377928:    Running facility 1 of 125
+2018-09-28 16:29:00.377928:    Building runstream for facility 44007110021104598
+2018-09-28 16:29:00.424821:    An error occurred while running a facility:
+Traceback (most recent call last):
+  File "F:\HEM4Python\hem4_git\Hem4Gui_Threaded.py", line 983, in process
+    runner.run()
+  File "F:\HEM4Python\hem4_git\runner\FacilityRunner.py", line 23, in run
+    runstream = prep.createRunstream(self.facilityId)
+  File "F:\HEM4Python\hem4_git\FacilityPrep.py", line 234, in createRunstream
+    self.innerblks, self.outerblks = cbr.getblocks(cenx, ceny, cenlon, cenlat, facutmzone, maxdist, modeldist, sourcelocs, op_overlap)
+  File "F:\HEM4Python\hem4_git\json_census_blocks.py", line 262, in getblocks
+    census_key = read_json_file("census/census_key.json", dtype_dict)
+  File "F:\HEM4Python\hem4_git\json_census_blocks.py", line 240, in read_json_file
+    with open(path_to_file) as p:
+FileNotFoundError: [Errno 2] No such file or directory: 'census/census_key.json'
+
+2018-09-28 16:29:00.424821:    Running facility 1 of 125
+2018-09-28 16:29:00.424821:    Building runstream for facility 44007110043693679
+2018-09-28 16:29:00.471694:    An error occurred while running a facility:
+Traceback (most recent call last):
+  File "F:\HEM4Python\hem4_git\Hem4Gui_Threaded.py", line 983, in process
+    runner.run()
+  File "F:\HEM4Python\hem4_git\runner\FacilityRunner.py", line 23, in run
+    runstream = prep.createRunstream(self.facilityId)
+  File "F:\HEM4Python\hem4_git\FacilityPrep.py", line 234, in createRunstream
+    self.innerblks, self.outerblks = cbr.getblocks(cenx, ceny, cenlon, cenlat, facutmzone, maxdist, modeldist, sourcelocs, op_overlap)
+  File "F:\HEM4Python\hem4_git\json_census_blocks.py", line 262, in getblocks
+    census_key = read_json_file("census/census_key.json", dtype_dict)
+  File "F:\HEM4Python\hem4_git\json_census_blocks.py", line 240, in read_json_file
+    with open(path_to_file) as p:
+FileNotFoundError: [Errno 2] No such file or directory: 'census/census_key.json'
+
+2018-09-28 16:29:00.471694:    Running facility 1 of 125
+2018-09-28 16:29:00.471694:    Building runstream for facility 45007110002235741
+2018-09-28 16:29:00.534190:    An error occurred while running a facility:
+Traceback (most recent call last):
+  File "F:\HEM4Python\hem4_git\Hem4Gui_Threaded.py", line 983, in process
+    runner.run()
+  File "F:\HEM4Python\hem4_git\runner\FacilityRunner.py", line 23, in run
+    runstream = prep.createRunstream(self.facilityId)
+  File "F:\HEM4Python\hem4_git\FacilityPrep.py", line 229, in createRunstream
+    cenx, ceny, cenlon, cenlat, max_srcdist, vertx_a, verty_a = fc.center(sourcelocs, facutmzone)
+  File "F:\HEM4Python\hem4_git\find_center.py", line 102, in center
+    cenx = (xmax1 + xmax2) / 2
+UnboundLocalError: local variable 'xmax1' referenced before assignment
+
+2018-09-28 16:29:00.534190:    Running facility 1 of 125
+2018-09-28 16:29:00.534190:    Building runstream for facility 45021110013339627
+2018-09-28 16:29:00.581070:    An error occurred while running a facility:
+Traceback (most recent call last):
+  File "F:\HEM4Python\hem4_git\Hem4Gui_Threaded.py", line 983, in process
+    runner.run()
+  File "F:\HEM4Python\hem4_git\runner\FacilityRunner.py", line 23, in run
+    runstream = prep.createRunstream(self.facilityId)
+  File "F:\HEM4Python\hem4_git\FacilityPrep.py", line 234, in createRunstream
+    self.innerblks, self.outerblks = cbr.getblocks(cenx, ceny, cenlon, cenlat, facutmzone, maxdist, modeldist, sourcelocs, op_overlap)
+  File "F:\HEM4Python\hem4_git\json_census_blocks.py", line 262, in getblocks
+    census_key = read_json_file("census/census_key.json", dtype_dict)
+  File "F:\HEM4Python\hem4_git\json_census_blocks.py", line 240, in read_json_file
+    with open(path_to_file) as p:
+FileNotFoundError: [Errno 2] No such file or directory: 'census/census_key.json'
+
+2018-09-28 16:29:00.581070:    Running facility 1 of 125
+2018-09-28 16:29:00.581070:    Building runstream for facility 45049110012208422
+2018-09-28 16:29:00.627944:    An error occurred while running a facility:
+Traceback (most recent call last):
+  File "F:\HEM4Python\hem4_git\Hem4Gui_Threaded.py", line 983, in process
+    runner.run()
+  File "F:\HEM4Python\hem4_git\runner\FacilityRunner.py", line 23, in run
+    runstream = prep.createRunstream(self.facilityId)
+  File "F:\HEM4Python\hem4_git\FacilityPrep.py", line 234, in createRunstream
+    self.innerblks, self.outerblks = cbr.getblocks(cenx, ceny, cenlon, cenlat, facutmzone, maxdist, modeldist, sourcelocs, op_overlap)
+  File "F:\HEM4Python\hem4_git\json_census_blocks.py", line 262, in getblocks
+    census_key = read_json_file("census/census_key.json", dtype_dict)
+  File "F:\HEM4Python\hem4_git\json_census_blocks.py", line 240, in read_json_file
+    with open(path_to_file) as p:
+FileNotFoundError: [Errno 2] No such file or directory: 'census/census_key.json'
+
+2018-09-28 16:29:00.627944:    Running facility 1 of 125
+2018-09-28 16:29:00.627944:    Building runstream for facility 45059110001137715
+2018-09-28 16:29:00.674819:    An error occurred while running a facility:
+Traceback (most recent call last):
+  File "F:\HEM4Python\hem4_git\Hem4Gui_Threaded.py", line 983, in process
+    runner.run()
+  File "F:\HEM4Python\hem4_git\runner\FacilityRunner.py", line 23, in run
+    runstream = prep.createRunstream(self.facilityId)
+  File "F:\HEM4Python\hem4_git\FacilityPrep.py", line 229, in createRunstream
+    cenx, ceny, cenlon, cenlat, max_srcdist, vertx_a, verty_a = fc.center(sourcelocs, facutmzone)
+  File "F:\HEM4Python\hem4_git\find_center.py", line 102, in center
+    cenx = (xmax1 + xmax2) / 2
+UnboundLocalError: local variable 'xmax1' referenced before assignment
+
+2018-09-28 16:29:00.674819:    Running facility 1 of 125
+2018-09-28 16:29:00.674819:    Building runstream for facility 45071110000352056
+2018-09-28 16:29:00.737315:    An error occurred while running a facility:
+Traceback (most recent call last):
+  File "F:\HEM4Python\hem4_git\Hem4Gui_Threaded.py", line 983, in process
+    runner.run()
+  File "F:\HEM4Python\hem4_git\runner\FacilityRunner.py", line 23, in run
+    runstream = prep.createRunstream(self.facilityId)
+  File "F:\HEM4Python\hem4_git\FacilityPrep.py", line 229, in createRunstream
+    cenx, ceny, cenlon, cenlat, max_srcdist, vertx_a, verty_a = fc.center(sourcelocs, facutmzone)
+  File "F:\HEM4Python\hem4_git\find_center.py", line 102, in center
+    cenx = (xmax1 + xmax2) / 2
+UnboundLocalError: local variable 'xmax1' referenced before assignment
+
+2018-09-28 16:29:00.737315:    Running facility 1 of 125
+2018-09-28 16:29:00.737315:    Building runstream for facility 47009110005008883
+2018-09-28 16:29:00.784183:    An error occurred while running a facility:
+Traceback (most recent call last):
+  File "F:\HEM4Python\hem4_git\Hem4Gui_Threaded.py", line 983, in process
+    runner.run()
+  File "F:\HEM4Python\hem4_git\runner\FacilityRunner.py", line 23, in run
+    runstream = prep.createRunstream(self.facilityId)
+  File "F:\HEM4Python\hem4_git\FacilityPrep.py", line 234, in createRunstream
+    self.innerblks, self.outerblks = cbr.getblocks(cenx, ceny, cenlon, cenlat, facutmzone, maxdist, modeldist, sourcelocs, op_overlap)
+  File "F:\HEM4Python\hem4_git\json_census_blocks.py", line 262, in getblocks
+    census_key = read_json_file("census/census_key.json", dtype_dict)
+  File "F:\HEM4Python\hem4_git\json_census_blocks.py", line 240, in read_json_file
+    with open(path_to_file) as p:
+FileNotFoundError: [Errno 2] No such file or directory: 'census/census_key.json'
+
+2018-09-28 16:29:00.784183:    Running facility 1 of 125
+2018-09-28 16:29:00.784183:    Building runstream for facility 47045110017278710
+2018-09-28 16:29:00.846692:    An error occurred while running a facility:
+Traceback (most recent call last):
+  File "F:\HEM4Python\hem4_git\Hem4Gui_Threaded.py", line 983, in process
+    runner.run()
+  File "F:\HEM4Python\hem4_git\runner\FacilityRunner.py", line 23, in run
+    runstream = prep.createRunstream(self.facilityId)
+  File "F:\HEM4Python\hem4_git\FacilityPrep.py", line 234, in createRunstream
+    self.innerblks, self.outerblks = cbr.getblocks(cenx, ceny, cenlon, cenlat, facutmzone, maxdist, modeldist, sourcelocs, op_overlap)
+  File "F:\HEM4Python\hem4_git\json_census_blocks.py", line 262, in getblocks
+    census_key = read_json_file("census/census_key.json", dtype_dict)
+  File "F:\HEM4Python\hem4_git\json_census_blocks.py", line 240, in read_json_file
+    with open(path_to_file) as p:
+FileNotFoundError: [Errno 2] No such file or directory: 'census/census_key.json'
+
+2018-09-28 16:29:00.846692:    Running facility 1 of 125
+2018-09-28 16:29:00.846692:    Building runstream for facility 47059110031019396
+2018-09-28 16:29:00.893568:    An error occurred while running a facility:
+Traceback (most recent call last):
+  File "F:\HEM4Python\hem4_git\Hem4Gui_Threaded.py", line 983, in process
+    runner.run()
+  File "F:\HEM4Python\hem4_git\runner\FacilityRunner.py", line 23, in run
+    runstream = prep.createRunstream(self.facilityId)
+  File "F:\HEM4Python\hem4_git\FacilityPrep.py", line 234, in createRunstream
+    self.innerblks, self.outerblks = cbr.getblocks(cenx, ceny, cenlon, cenlat, facutmzone, maxdist, modeldist, sourcelocs, op_overlap)
+  File "F:\HEM4Python\hem4_git\json_census_blocks.py", line 262, in getblocks
+    census_key = read_json_file("census/census_key.json", dtype_dict)
+  File "F:\HEM4Python\hem4_git\json_census_blocks.py", line 240, in read_json_file
+    with open(path_to_file) as p:
+FileNotFoundError: [Errno 2] No such file or directory: 'census/census_key.json'
+
+2018-09-28 16:29:00.893568:    Running facility 1 of 125
+2018-09-28 16:29:00.893568:    Building runstream for facility 47117110000370330
+2018-09-28 16:29:00.940444:    An error occurred while running a facility:
+Traceback (most recent call last):
+  File "F:\HEM4Python\hem4_git\Hem4Gui_Threaded.py", line 983, in process
+    runner.run()
+  File "F:\HEM4Python\hem4_git\runner\FacilityRunner.py", line 23, in run
+    runstream = prep.createRunstream(self.facilityId)
+  File "F:\HEM4Python\hem4_git\FacilityPrep.py", line 234, in createRunstream
+    self.innerblks, self.outerblks = cbr.getblocks(cenx, ceny, cenlon, cenlat, facutmzone, maxdist, modeldist, sourcelocs, op_overlap)
+  File "F:\HEM4Python\hem4_git\json_census_blocks.py", line 262, in getblocks
+    census_key = read_json_file("census/census_key.json", dtype_dict)
+  File "F:\HEM4Python\hem4_git\json_census_blocks.py", line 240, in read_json_file
+    with open(path_to_file) as p:
+FileNotFoundError: [Errno 2] No such file or directory: 'census/census_key.json'
+
+2018-09-28 16:29:00.940444:    Running facility 1 of 125
+2018-09-28 16:29:00.940444:    Building runstream for facility 47149110000370688
+2018-09-28 16:29:01.002927:    An error occurred while running a facility:
+Traceback (most recent call last):
+  File "F:\HEM4Python\hem4_git\Hem4Gui_Threaded.py", line 983, in process
+    runner.run()
+  File "F:\HEM4Python\hem4_git\runner\FacilityRunner.py", line 23, in run
+    runstream = prep.createRunstream(self.facilityId)
+  File "F:\HEM4Python\hem4_git\FacilityPrep.py", line 234, in createRunstream
+    self.innerblks, self.outerblks = cbr.getblocks(cenx, ceny, cenlon, cenlat, facutmzone, maxdist, modeldist, sourcelocs, op_overlap)
+  File "F:\HEM4Python\hem4_git\json_census_blocks.py", line 262, in getblocks
+    census_key = read_json_file("census/census_key.json", dtype_dict)
+  File "F:\HEM4Python\hem4_git\json_census_blocks.py", line 240, in read_json_file
+    with open(path_to_file) as p:
+FileNotFoundError: [Errno 2] No such file or directory: 'census/census_key.json'
+
+2018-09-28 16:29:01.002927:    Running facility 1 of 125
+2018-09-28 16:29:01.002927:    Building runstream for facility 48029110041474570
+2018-09-28 16:29:01.049817:    An error occurred while running a facility:
+Traceback (most recent call last):
+  File "F:\HEM4Python\hem4_git\Hem4Gui_Threaded.py", line 983, in process
+    runner.run()
+  File "F:\HEM4Python\hem4_git\runner\FacilityRunner.py", line 23, in run
+    runstream = prep.createRunstream(self.facilityId)
+  File "F:\HEM4Python\hem4_git\FacilityPrep.py", line 234, in createRunstream
+    self.innerblks, self.outerblks = cbr.getblocks(cenx, ceny, cenlon, cenlat, facutmzone, maxdist, modeldist, sourcelocs, op_overlap)
+  File "F:\HEM4Python\hem4_git\json_census_blocks.py", line 262, in getblocks
+    census_key = read_json_file("census/census_key.json", dtype_dict)
+  File "F:\HEM4Python\hem4_git\json_census_blocks.py", line 240, in read_json_file
+    with open(path_to_file) as p:
+FileNotFoundError: [Errno 2] No such file or directory: 'census/census_key.json'
+
+2018-09-28 16:29:01.049817:    Running facility 1 of 125
+2018-09-28 16:29:01.049817:    Building runstream for facility 48097110001879860
+2018-09-28 16:29:01.096676:    An error occurred while running a facility:
+Traceback (most recent call last):
+  File "F:\HEM4Python\hem4_git\Hem4Gui_Threaded.py", line 983, in process
+    runner.run()
+  File "F:\HEM4Python\hem4_git\runner\FacilityRunner.py", line 23, in run
+    runstream = prep.createRunstream(self.facilityId)
+  File "F:\HEM4Python\hem4_git\FacilityPrep.py", line 234, in createRunstream
+    self.innerblks, self.outerblks = cbr.getblocks(cenx, ceny, cenlon, cenlat, facutmzone, maxdist, modeldist, sourcelocs, op_overlap)
+  File "F:\HEM4Python\hem4_git\json_census_blocks.py", line 262, in getblocks
+    census_key = read_json_file("census/census_key.json", dtype_dict)
+  File "F:\HEM4Python\hem4_git\json_census_blocks.py", line 240, in read_json_file
+    with open(path_to_file) as p:
+FileNotFoundError: [Errno 2] No such file or directory: 'census/census_key.json'
+
+2018-09-28 16:29:01.096676:    Running facility 1 of 125
+2018-09-28 16:29:01.096676:    Building runstream for facility 51021110008189655
+2018-09-28 16:29:01.159189:    An error occurred while running a facility:
+Traceback (most recent call last):
+  File "F:\HEM4Python\hem4_git\Hem4Gui_Threaded.py", line 983, in process
+    runner.run()
+  File "F:\HEM4Python\hem4_git\runner\FacilityRunner.py", line 23, in run
+    runstream = prep.createRunstream(self.facilityId)
+  File "F:\HEM4Python\hem4_git\FacilityPrep.py", line 234, in createRunstream
+    self.innerblks, self.outerblks = cbr.getblocks(cenx, ceny, cenlon, cenlat, facutmzone, maxdist, modeldist, sourcelocs, op_overlap)
+  File "F:\HEM4Python\hem4_git\json_census_blocks.py", line 262, in getblocks
+    census_key = read_json_file("census/census_key.json", dtype_dict)
+  File "F:\HEM4Python\hem4_git\json_census_blocks.py", line 240, in read_json_file
+    with open(path_to_file) as p:
+FileNotFoundError: [Errno 2] No such file or directory: 'census/census_key.json'
+
+2018-09-28 16:29:01.159189:    Running facility 1 of 125
+2018-09-28 16:29:01.159189:    Building runstream for facility 55055110000416327
+2018-09-28 16:29:01.206063:    An error occurred while running a facility:
+Traceback (most recent call last):
+  File "F:\HEM4Python\hem4_git\Hem4Gui_Threaded.py", line 983, in process
+    runner.run()
+  File "F:\HEM4Python\hem4_git\runner\FacilityRunner.py", line 23, in run
+    runstream = prep.createRunstream(self.facilityId)
+  File "F:\HEM4Python\hem4_git\FacilityPrep.py", line 234, in createRunstream
+    self.innerblks, self.outerblks = cbr.getblocks(cenx, ceny, cenlon, cenlat, facutmzone, maxdist, modeldist, sourcelocs, op_overlap)
+  File "F:\HEM4Python\hem4_git\json_census_blocks.py", line 262, in getblocks
+    census_key = read_json_file("census/census_key.json", dtype_dict)
+  File "F:\HEM4Python\hem4_git\json_census_blocks.py", line 240, in read_json_file
+    with open(path_to_file) as p:
+FileNotFoundError: [Errno 2] No such file or directory: 'census/census_key.json'
+
+2018-09-28 16:29:01.206063:    Running facility 1 of 125
+2018-09-28 16:29:01.206063:    Building runstream for facility 55075110002458037
+2018-09-28 16:29:01.252949:    An error occurred while running a facility:
+Traceback (most recent call last):
+  File "F:\HEM4Python\hem4_git\Hem4Gui_Threaded.py", line 983, in process
+    runner.run()
+  File "F:\HEM4Python\hem4_git\runner\FacilityRunner.py", line 23, in run
+    runstream = prep.createRunstream(self.facilityId)
+  File "F:\HEM4Python\hem4_git\FacilityPrep.py", line 234, in createRunstream
+    self.innerblks, self.outerblks = cbr.getblocks(cenx, ceny, cenlon, cenlat, facutmzone, maxdist, modeldist, sourcelocs, op_overlap)
+  File "F:\HEM4Python\hem4_git\json_census_blocks.py", line 262, in getblocks
+    census_key = read_json_file("census/census_key.json", dtype_dict)
+  File "F:\HEM4Python\hem4_git\json_census_blocks.py", line 240, in read_json_file
+    with open(path_to_file) as p:
+FileNotFoundError: [Errno 2] No such file or directory: 'census/census_key.json'
+
+2018-09-28 16:29:01.252949:    Running facility 1 of 125
+2018-09-28 16:29:01.252949:    Building runstream for facility 55083110000420928
+2018-09-28 16:29:01.299818:    An error occurred while running a facility:
+Traceback (most recent call last):
+  File "F:\HEM4Python\hem4_git\Hem4Gui_Threaded.py", line 983, in process
+    runner.run()
+  File "F:\HEM4Python\hem4_git\runner\FacilityRunner.py", line 23, in run
+    runstream = prep.createRunstream(self.facilityId)
+  File "F:\HEM4Python\hem4_git\FacilityPrep.py", line 234, in createRunstream
+    self.innerblks, self.outerblks = cbr.getblocks(cenx, ceny, cenlon, cenlat, facutmzone, maxdist, modeldist, sourcelocs, op_overlap)
+  File "F:\HEM4Python\hem4_git\json_census_blocks.py", line 262, in getblocks
+    census_key = read_json_file("census/census_key.json", dtype_dict)
+  File "F:\HEM4Python\hem4_git\json_census_blocks.py", line 240, in read_json_file
+    with open(path_to_file) as p:
+FileNotFoundError: [Errno 2] No such file or directory: 'census/census_key.json'
+
+2018-09-28 16:29:01.299818:    Running facility 1 of 125
+2018-09-28 16:29:01.299818:    Building runstream for facility 55101110000417335
+2018-09-28 16:29:01.362313:    An error occurred while running a facility:
+Traceback (most recent call last):
+  File "F:\HEM4Python\hem4_git\Hem4Gui_Threaded.py", line 983, in process
+    runner.run()
+  File "F:\HEM4Python\hem4_git\runner\FacilityRunner.py", line 23, in run
+    runstream = prep.createRunstream(self.facilityId)
+  File "F:\HEM4Python\hem4_git\FacilityPrep.py", line 234, in createRunstream
+    self.innerblks, self.outerblks = cbr.getblocks(cenx, ceny, cenlon, cenlat, facutmzone, maxdist, modeldist, sourcelocs, op_overlap)
+  File "F:\HEM4Python\hem4_git\json_census_blocks.py", line 262, in getblocks
+    census_key = read_json_file("census/census_key.json", dtype_dict)
+  File "F:\HEM4Python\hem4_git\json_census_blocks.py", line 240, in read_json_file
+    with open(path_to_file) as p:
+FileNotFoundError: [Errno 2] No such file or directory: 'census/census_key.json'
+
+2018-09-28 16:29:01.362313:    Running facility 1 of 125
+2018-09-28 16:29:01.362313:    Building runstream for facility 55135110005478848
+2018-09-28 16:29:01.409192:    An error occurred while running a facility:
+Traceback (most recent call last):
+  File "F:\HEM4Python\hem4_git\Hem4Gui_Threaded.py", line 983, in process
+    runner.run()
+  File "F:\HEM4Python\hem4_git\runner\FacilityRunner.py", line 23, in run
+    runstream = prep.createRunstream(self.facilityId)
+  File "F:\HEM4Python\hem4_git\FacilityPrep.py", line 234, in createRunstream
+    self.innerblks, self.outerblks = cbr.getblocks(cenx, ceny, cenlon, cenlat, facutmzone, maxdist, modeldist, sourcelocs, op_overlap)
+  File "F:\HEM4Python\hem4_git\json_census_blocks.py", line 262, in getblocks
+    census_key = read_json_file("census/census_key.json", dtype_dict)
+  File "F:\HEM4Python\hem4_git\json_census_blocks.py", line 240, in read_json_file
+    with open(path_to_file) as p:
+FileNotFoundError: [Errno 2] No such file or directory: 'census/census_key.json'
+
+2018-09-28 16:29:01.409192:    HEM4 Modeling Completed. Finished modeling all facilities. Check the log tab for error messages. Modeling results are located in the Output subfolder of the HEM4 folder.

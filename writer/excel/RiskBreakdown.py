@@ -1,5 +1,5 @@
 import os
-from writer.excel import ExcelWriter
+from writer.excel.ExcelWriter import ExcelWriter
 
 class RiskBreakdown(ExcelWriter):
     """
