@@ -68,14 +68,14 @@ class MaximumIndividualRisks(ExcelWriter):
             mr_value_rnd = round(mr_value, -int(floor(log10(abs(mr_value)))))
             if self.model.risk_by_latlon["rectype"].loc[io_idx] == "P":
                 mr_pop = 0
-                mr_dist = self.model.polarrecs_df[(self.model.polarrecs_df["lon"] == mr_lon) & (self.model.polarrecs_df["lat"] == mr_lat)]["distance"].values[0]
-                mr_angle = self.model.polarrecs_df[(self.model.polarrecs_df["lon"] == mr_lon) & (self.model.polarrecs_df["lat"] == mr_lat)]["angle"].values[0]
-                mr_elev = self.model.polarrecs_df[(self.model.polarrecs_df["lon"] == mr_lon) & (self.model.polarrecs_df["lat"] == mr_lat)]["elev"].values[0]
-                mr_hill = self.model.polarrecs_df[(self.model.polarrecs_df["lon"] == mr_lon) & (self.model.polarrecs_df["lat"] == mr_lat)]["hill"].values[0]
+                mr_dist = self.model.polargrid[(self.model.polargrid["lon"] == mr_lon) & (self.model.polargrid["lat"] == mr_lat)]["distance"].values[0]
+                mr_angle = self.model.polargrid[(self.model.polargrid["lon"] == mr_lon) & (self.model.polargrid["lat"] == mr_lat)]["angle"].values[0]
+                mr_elev = self.model.polargrid[(self.model.polargrid["lon"] == mr_lon) & (self.model.polargrid["lat"] == mr_lat)]["elev"].values[0]
+                mr_hill = self.model.polargrid[(self.model.polargrid["lon"] == mr_lon) & (self.model.polargrid["lat"] == mr_lat)]["hill"].values[0]
                 mr_fips = ""
                 mr_block = ""
-                mr_utme = self.model.polarrecs_df[(self.model.polarrecs_df["lon"] == mr_lon) & (self.model.polarrecs_df["lat"] == mr_lat)]["utme"].values[0]
-                mr_utmn = self.model.polarrecs_df[(self.model.polarrecs_df["lon"] == mr_lon) & (self.model.polarrecs_df["lat"] == mr_lat)]["utmn"].values[0]
+                mr_utme = self.model.polargrid[(self.model.polargrid["lon"] == mr_lon) & (self.model.polargrid["lat"] == mr_lat)]["utme"].values[0]
+                mr_utmn = self.model.polargrid[(self.model.polargrid["lon"] == mr_lon) & (self.model.polargrid["lat"] == mr_lat)]["utmn"].values[0]
                 mr_rectype = "Polar"
                 mr_notes = "Polar"
             elif self.model.risk_by_latlon["rectype"].loc[iop_idx] == "O":
@@ -272,14 +272,14 @@ class MaximumIndividualRisks(ExcelWriter):
                 mr_value_rnd = round(mr_value, -int(floor(log10(abs(mr_value)))))
                 if self.model.risk_by_latlon["rectype"].loc[io_idx] == "P":
                     mr_pop = 0
-                    mr_dist = self.model.polarrecs_df[(self.model.polarrecs_df["lon"] == mr_lon) & (self.model.polarrecs_df["lat"] == mr_lat)]["distance"].values[0]
-                    mr_angle = self.model.polarrecs_df[(self.model.polarrecs_df["lon"] == mr_lon) & (self.model.polarrecs_df["lat"] == mr_lat)]["angle"].values[0]
-                    mr_elev = self.model.polarrecs_df[(self.model.polarrecs_df["lon"] == mr_lon) & (self.model.polarrecs_df["lat"] == mr_lat)]["elev"].values[0]
-                    mr_hill = self.model.polarrecs_df[(self.model.polarrecs_df["lon"] == mr_lon) & (self.model.polarrecs_df["lat"] == mr_lat)]["hill"].values[0]
+                    mr_dist = self.model.polargrid[(self.model.polargrid["lon"] == mr_lon) & (self.model.polargrid["lat"] == mr_lat)]["distance"].values[0]
+                    mr_angle = self.model.polargrid[(self.model.polargrid["lon"] == mr_lon) & (self.model.polargrid["lat"] == mr_lat)]["angle"].values[0]
+                    mr_elev = self.model.polargrid[(self.model.polargrid["lon"] == mr_lon) & (self.model.polargrid["lat"] == mr_lat)]["elev"].values[0]
+                    mr_hill = self.model.polargrid[(self.model.polargrid["lon"] == mr_lon) & (self.model.polargrid["lat"] == mr_lat)]["hill"].values[0]
                     mr_fips = ""
                     mr_block = ""
-                    mr_utme = self.model.polarrecs_df[(self.model.polarrecs_df["lon"] == mr_lon) & (self.model.polarrecs_df["lat"] == mr_lat)]["utme"].values[0]
-                    mr_utmn = self.model.polarrecs_df[(self.model.polarrecs_df["lon"] == mr_lon) & (self.model.polarrecs_df["lat"] == mr_lat)]["utmn"].values[0]
+                    mr_utme = self.model.polargrid[(self.model.polargrid["lon"] == mr_lon) & (self.model.polargrid["lat"] == mr_lat)]["utme"].values[0]
+                    mr_utmn = self.model.polargrid[(self.model.polargrid["lon"] == mr_lon) & (self.model.polargrid["lat"] == mr_lat)]["utmn"].values[0]
                     mr_rectype = "Polar"
                     mr_notes = "Polar"
                 elif self.model.risk_by_latlon["rectype"].loc[iop_idx] == "O":

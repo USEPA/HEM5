@@ -62,14 +62,14 @@ class AllPolarReceptors(CsvWriter):
                     d_emistype = "C"
                     d_pollutant = row2[2]
                     d_conc = row1[4] * row2[3] * self.cf
-                    d_distance = self.model.polarrecs_df.loc[(self.model.polarrecs_df["utme"] == row1[1]) & (self.model.polarrecs_df["utmn"] == row1[2]), "distance"].values[0]
-                    d_angle = self.model.polarrecs_df.loc[(self.model.polarrecs_df["utme"] == row1[1]) & (self.model.polarrecs_df["utmn"] == row1[2]), "angle"].values[0]
-                    d_sector = self.model.polarrecs_df.loc[(self.model.polarrecs_df["utme"] == row1[1]) & (self.model.polarrecs_df["utmn"] == row1[2]), "sector"].values[0]
-                    d_ring_no = self.model.polarrecs_df.loc[(self.model.polarrecs_df["utme"] == row1[1]) & (self.model.polarrecs_df["utmn"] == row1[2]), "ring"].values[0]
-                    d_elev = self.model.polarrecs_df.loc[(self.model.polarrecs_df["utme"] == row1[1]) & (self.model.polarrecs_df["utmn"] == row1[2]), "elev"].values[0]
-                    d_lat = self.model.polarrecs_df.loc[(self.model.polarrecs_df["utme"] == row1[1]) & (self.model.polarrecs_df["utmn"] == row1[2]), "lat"].values[0]
-                    d_lon = self.model.polarrecs_df.loc[(self.model.polarrecs_df["utme"] == row1[1]) & (self.model.polarrecs_df["utmn"] == row1[2]), "lon"].values[0]
-                    d_overlap = self.model.polarrecs_df.loc[(self.model.polarrecs_df["utme"] == row1[1]) & (self.model.polarrecs_df["utmn"] == row1[2]), "overlap"].values[0]
+                    d_distance = self.model.polargrid.loc[(self.model.polargrid["utme"] == row1[1]) & (self.model.polargrid["utmn"] == row1[2]), "distance"].values[0]
+                    d_angle = self.model.polargrid.loc[(self.model.polargrid["utme"] == row1[1]) & (self.model.polargrid["utmn"] == row1[2]), "angle"].values[0]
+                    d_sector = self.model.polargrid.loc[(self.model.polargrid["utme"] == row1[1]) & (self.model.polargrid["utmn"] == row1[2]), "sector"].values[0]
+                    d_ring_no = self.model.polargrid.loc[(self.model.polargrid["utme"] == row1[1]) & (self.model.polargrid["utmn"] == row1[2]), "ring"].values[0]
+                    d_elev = self.model.polargrid.loc[(self.model.polargrid["utme"] == row1[1]) & (self.model.polargrid["utmn"] == row1[2]), "elev"].values[0]
+                    d_lat = self.model.polargrid.loc[(self.model.polargrid["utme"] == row1[1]) & (self.model.polargrid["utmn"] == row1[2]), "lat"].values[0]
+                    d_lon = self.model.polargrid.loc[(self.model.polargrid["utme"] == row1[1]) & (self.model.polargrid["utmn"] == row1[2]), "lon"].values[0]
+                    d_overlap = self.model.polargrid.loc[(self.model.polargrid["utme"] == row1[1]) & (self.model.polargrid["utmn"] == row1[2]), "overlap"].values[0]
                     d_drydep = ""
                     d_wetdep = ""
                     datalist = [d_sourceid, d_emistype, d_pollutant, d_conc, d_distance, d_angle, d_sector, d_ring_no, d_elev, d_lat, d_lon, d_overlap, d_wetdep, d_drydep]

@@ -9,11 +9,18 @@ class Logger:
     the UI component that displays messages to the user.
     
     """
-
-    fileDir = os.path.dirname(os.path.realpath('__file__'))
-    filename = os.path.join(fileDir, 'output/hem4.log')
-    logfile = open(filename, 'w')
     messageQueue = None
+
+    @staticmethod
+    def initializeLog():
+        # Create output folder if needed
+        outdir = "output"
+        if not os.path.exists(outdir):
+            os.makedirs(outdir)
+
+        fileDir = os.path.dirname(os.path.realpath('__file__'))
+        filename = os.path.join(fileDir, 'output/hem4.log')
+        Logger.logfile = open(filename, 'w')
 
     @staticmethod
     def log(message, data, logToMessageQueue):

@@ -336,6 +336,8 @@ class FacilityPrep():
         # determine if polar receptors overlap any emission sources
         polar_df["overlap"] = polar_df.apply(lambda row: self.polar_overlap(row["utme"], row["utmn"], sourcelocs, op_overlap), axis=1)
 
+        # Assign the polar grid data frame to the model
+        self.model.polargrid = polar_df
 
         #%%----- Add sector and ring to inner and outer receptors ----------
 
@@ -390,7 +392,7 @@ class FacilityPrep():
 
         #%% result ##needs to create a new object to be passed...
         #return facops, emislocs, hapemis, innerblks, outerblks, sourcelocs, user_recs, buoyant_df, polyver_df
-        return rs.Runstream(facops, emislocs, hapemis, cenlat, cenlon, cenx, ceny, self.innerblks, user_recs, buoyant_df, polyver_df, polar_df, bldgdw_df)
+        return rs.Runstream(self.model, facops, emislocs, hapemis, cenlat, cenlon, cenx, ceny, self.innerblks, user_recs, buoyant_df, polyver_df, bldgdw_df)
 
     #%% Calculate ring and sector of block receptors
     

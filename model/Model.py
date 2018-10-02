@@ -16,6 +16,7 @@ class Model():
         self.vegetation = None
         self.facids = None
         self.depdeplt = None
+        self.polargrid = None
 
     @property
     def fac_ids(self):
@@ -36,3 +37,4 @@ class Model():
         self.vegetation = None
         self.facids = None
         self.depdeplt = None
+        self.polargrid = None

@@ -34,8 +34,18 @@ class FacilityRunner():
 
         #run aermod
         Logger.logMessage("Running Aermod for " + self.facilityId)
-        args = "aermod.exe aermod.inp"
-        subprocess.call(args, shell=False)
+
+        p = subprocess.Popen(['aermod.exe', 'aermod.inp'])
+        subRunning = True
+        # while subRunning:
+        #     print("Another chance to terminate...")
+        #     if iterations > 2:
+        #         print("Terminating...")
+        #         p.terminate()
+        #         subRunning = False
+        #     else:
+        #         time.sleep(0.5)
+        #         subRunning = (p.poll() is None)
 
         ## Check for successful aermod run:
         check = open('aermod.out','r')

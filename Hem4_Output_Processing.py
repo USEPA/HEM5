@@ -24,23 +24,16 @@ class Process_outputs():
         self.haplib_m = model.haplib.dataframe.as_matrix()
         self.hapemis = runstream.hapemis
         self.outdir = outdir
-        self.polar_recs = runstream.polar_df
         self.model = model
         self.runstream = runstream
-        self.model.numsectors = self.polar_recs["sector"].max()
-        self.model.numrings = self.polar_recs["ring"].max()
-        self.model.polarrecs_df = runstream.polar_df
+        self.model.numsectors = self.model.polargrid["sector"].max()
+        self.model.numrings = self.model.polargrid["ring"].max()
         self.model.innerblks_df = prep.innerblks
         self.model.outerblks_df = prep.outerblks
         self.model.runstream_hapemis = runstream.hapemis
 
         # Units conversion factor
         self.cf = 2000*0.4536/3600/8760
-#        #first check for facilities folder, if not create as output directory
-#        if not os.path.exists(self.outdir):
-#            os.makedirs(self.outdir)
-        
-
 
     def nodivby0(self, n, d):
         quotient = np.zeros(len(n))
