@@ -35,8 +35,15 @@ class FacilityRunner():
         #run aermod
         Logger.logMessage("Running Aermod for " + self.facilityId)
 
-        p = subprocess.Popen(['aermod.exe', 'aermod.inp'])
-        subRunning = True
+        args = "aermod.exe aermod.inp"
+        subprocess.call(args, shell=False)
+
+        # Below is an example of how we can start aermod asynchronously
+        # and then monitor it, with the possibility of terminating it
+        # midstream (i.e. if the thread is asked to die...)
+
+        # p = subprocess.Popen(['aermod.exe', 'aermod.inp'])
+        # subRunning = True
         # while subRunning:
         #     print("Another chance to terminate...")
         #     if iterations > 2:

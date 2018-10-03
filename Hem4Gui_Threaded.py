@@ -7,6 +7,7 @@ Created on Thu Nov 30 10:26:13 2017
 import os
 import concurrent.futures as futures
 import queue
+import sys
 import tkinter as tk
 import traceback
 from tkinter import messagebox
@@ -74,7 +75,7 @@ class Hem4():
             self.win.quit()
             self.win.destroy()
             self.close()
-            exit()
+            sys.exit()
         
         elif self.running == True:
              override = messagebox.askokcancel("Confirm HEM4 Quit", "Are you "+ 
@@ -83,7 +84,7 @@ class Hem4():
              if override == True:
                 self.win.quit()
                 self.win.destroy()
-                exit()
+                sys.exit()
     
 #%% Open HEM4 User Guide
     def user_guide(self):
