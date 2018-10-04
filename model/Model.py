@@ -17,6 +17,14 @@ class Model():
         self.facids = None
         self.depdeplt = None
         self.polargrid = None
+        self.organs = None
+        self.riskfacs_df = None
+        self.all_polar_receptors_df = None
+        self.all_inner_receptors_df = None
+        self.all_outer_receptors_df = None
+        self.risk_by_latlon = None
+        self.max_indiv_risk_df = None
+        
 
     @property
     def fac_ids(self):
@@ -38,3 +46,11 @@ class Model():
         self.facids = None
         self.depdeplt = None
         self.polargrid = None
+        self.organs = None
+        self.riskfacs_df = None
+        self.all_polar_receptors_df = None
+        self.all_inner_receptors_df = None
+        self.all_outer_receptors_df = None
+        self.risk_by_latlon = None
+        self.max_indiv_risk_df = None
+

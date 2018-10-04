@@ -50,7 +50,7 @@ def rotatedbox(xt, yt, box_x, box_y, len_x, len_y, angle, fringe, overlap_dist):
     # Also determine if this box overlaps the point.
 
     inbox = False
-    overlap = False
+    overlap = "N"
         
     A_rad = math.radians(angle)
     D_e = (yt-box_y)*math.cos(A_rad) + (xt-box_x)*math.sin(A_rad) - len_y
@@ -117,9 +117,9 @@ def rotatedbox(xt, yt, box_x, box_y, len_x, len_y, angle, fringe, overlap_dist):
 			                   and yt > box_y - math.tan(A_rad)*(xt-box_x) + len_y/math.cos(A_rad)
 			                   and overlap_dist < math.sqrt((box_x+len_y*math.sin(A_rad) - xt)**2
 				                + (box_y+len_y*math.cos(A_rad) - yt)**2))):
-                   overlap = False
+                   overlap = "N"
          else:
-               overlap = True
+               overlap = "Y"
 
     return inbox, overlap
 
@@ -146,8 +146,8 @@ def in_box(modelblks, sourcelocs, modeldist, maxdist, overlap_dist):
             outerblks = outerblks[~outerblks['IDMARPLOT'].isin(innerblks['IDMARPLOT'])]
 
             #Do any of these inner or outer blocks overlap this source?
-            innerblks["overlap"] = np.where(np.sqrt((innerblks["utme"]-src_x)**2 + (innerblks["utmn"]-src_y)**2) <= overlap_dist, "True", "False")
-            outerblks["overlap"] = np.where(np.sqrt((outerblks["utme"]-src_x)**2 + (outerblks["utmn"]-src_y)**2) <= overlap_dist, "True", "False")
+            innerblks["overlap"] = np.where(np.sqrt((innerblks["utme"]-src_x)**2 + (innerblks["utmn"]-src_y)**2) <= overlap_dist, "Y", "N")
+            outerblks["overlap"] = np.where(np.sqrt((outerblks["utme"]-src_x)**2 + (outerblks["utmn"]-src_y)**2) <= overlap_dist, "Y", "N")
     
     print("first innerblks size = ", innerblks.shape, " first outerblks size = ", outerblks.shape)
 
@@ -170,8 +170,8 @@ def in_box(modelblks, sourcelocs, modeldist, maxdist, overlap_dist):
             sw_y = row["utmn"] - overlap_dist
             ne_x = row["utme"] + row["lengthx"] + overlap_dist
             ne_y = row["utmn"] + row["lengthy"] + overlap_dist
-            innerblks["overlap"] = np.where((innerblks["utme"] >= sw_x) & (innerblks["utme"] <= ne_x) & (innerblks["utmn"] >= sw_y) & (innerblks["utmn"] <= ne_y), "True", "False")
-            outerblks["overlap"] = np.where((outerblks["utme"] >= sw_x) & (outerblks["utme"] <= ne_x) & (outerblks["utmn"] >= sw_y) & (outerblks["utmn"] <= ne_y), "True", "False")
+            innerblks["overlap"] = np.where((innerblks["utme"] >= sw_x) & (innerblks["utme"] <= ne_x) & (innerblks["utmn"] >= sw_y) & (innerblks["utmn"] <= ne_y), "Y", "N")
+            outerblks["overlap"] = np.where((outerblks["utme"] >= sw_x) & (outerblks["utme"] <= ne_x) & (outerblks["utmn"] >= sw_y) & (outerblks["utmn"] <= ne_y), "Y", "N")
             
     print("second innerblks size = ", innerblks.shape, " second outerblks size = ", outerblks.shape)
 
