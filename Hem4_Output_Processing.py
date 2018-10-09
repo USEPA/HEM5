@@ -4,6 +4,7 @@ Created on Mon Oct 23 12:43:52 2017
 
 @author: dlindsey
 """
+import sys
 import time
 import numpy as np
 import pandas as pd
@@ -12,6 +13,7 @@ from log.Logger import Logger
 from writer.csv.AllPolarReceptors import AllPolarReceptors
 from writer.csv.AllInnerReceptors import AllInnerReceptors
 from writer.csv.AllOuterReceptors import AllOuterReceptors
+from writer.csv.RingSummaryChronic import RingSummaryChronic
 from writer.excel.MaximumIndividualRisks import MaximumIndividualRisks
 # from writer.excel.RiskBreakdown import RiskBreakdown
 from writer.kml.KMLWriter import KMLWriter
@@ -303,7 +305,10 @@ class Process_outputs():
         max_indiv_risk = MaximumIndividualRisks(self.outdir, self.facid, self.model, plot_df)
         max_indiv_risk.write()
         self.model.max_indiv_risk_df = pd.DataFrame(data=max_indiv_risk.data, columns=max_indiv_risk.headers)
-        
+
+        #----------- create Ring_Summary_Chronic output file -----------------
+        ring_summary_chronic = RingSummaryChronic(self.outdir, self.facid, self.model, plot_df)
+        ring_summary_chronic.write()
         
 #        #----------- create Risk Breakdown output file ------------------------
 #        risk_breakdown = RiskBreakdown(self.outdir, self.facid, self.model, plot_df)
