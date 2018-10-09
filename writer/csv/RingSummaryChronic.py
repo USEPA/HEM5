@@ -60,7 +60,8 @@ class RingSummaryChronic(CsvWriter):
         newcolumns = ['lat', 'lon', 'overlap', 'elev', 'utme', 'utmn', 'hill', 'Mir', 'Hi_resp', 'Hi_liver', 'Hi_neuro',
                       'Hi_devel', 'Hi_repro', 'Hi_kidney', 'Hi_ocular', 'Hi_endoc', 'Hi_hemato', 'Hi_immune', 'Hi_skel',
                       'Hi_spleen', 'Hi_thyroid', 'Hi_whol_bo', 'distance', 'angle', 'sector']
-        self.data = merged.groupby(['lat', 'lon']).agg(aggs)[newcolumns].values
+
+        self.data = merged.groupby(['lat', 'lon']).agg(aggs)[newcolumns].sort_values(by=['sector','distance']).values
 
     def calculateRisks(self, pollutant, conc):
         URE = None
