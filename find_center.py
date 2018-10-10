@@ -75,9 +75,9 @@ def center(sourcelocs, utmz):
         
     # Find the two vertices that are the farthest apart
     # Also find the corners of the modeling domain
-    vertx_a = np.array(vertx_l)
     
-    verty_a = np.array(verty_l)
+    vertx_a = np.unique(np.array(vertx_l))
+    verty_a = np.unique(np.array(verty_l))
    
     max_dist = 0
     max_x = min_x = vertx_a[0]
