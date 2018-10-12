@@ -1,0 +1,16 @@
+.idea
+.gitignore
+aermod.exe
+aermod.inp
+kml_source_loc.txt
+output
+census
+instructions
+Documentation
+MetData
+sample files
+venv
+working
+working_kml
+*.pyc
+**/__pycache__/*.pyc
