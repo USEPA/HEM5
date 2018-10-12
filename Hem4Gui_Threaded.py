@@ -1044,7 +1044,3 @@ class Hem4():
             self.scr.insert(tk.INSERT, "\n")
             self.scr.configure(state='disabled')
             self.win.after(25, self.after_callback)
-
-messageQueue = queue.Queue()
-hem4 = Hem4(messageQueue)
-hem4.start_gui()
