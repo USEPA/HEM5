@@ -2,6 +2,7 @@ import os
 
 import pandas as pd
 
+from log import Logger
 from writer.csv.CsvWriter import CsvWriter
 
 class AllPolarReceptors(CsvWriter):
@@ -15,6 +16,8 @@ class AllPolarReceptors(CsvWriter):
         CsvWriter.__init__(self, model, plot_df)
 
         self.filename = os.path.join(targetDir, facilityId + "_all_polar_receptors.csv")
+
+        self.polarCache = {}
 
     def calculateOutputs(self):
         """
@@ -62,17 +65,27 @@ class AllPolarReceptors(CsvWriter):
                     d_emistype = "C"
                     d_pollutant = row2[2]
                     d_conc = row1[4] * row2[3] * self.cf
-                    d_distance = self.model.polargrid.loc[(self.model.polargrid["utme"] == row1[1]) & (self.model.polargrid["utmn"] == row1[2]), "distance"].values[0]
-                    d_angle = self.model.polargrid.loc[(self.model.polargrid["utme"] == row1[1]) & (self.model.polargrid["utmn"] == row1[2]), "angle"].values[0]
-                    d_sector = self.model.polargrid.loc[(self.model.polargrid["utme"] == row1[1]) & (self.model.polargrid["utmn"] == row1[2]), "sector"].values[0]
-                    d_ring_no = self.model.polargrid.loc[(self.model.polargrid["utme"] == row1[1]) & (self.model.polargrid["utmn"] == row1[2]), "ring"].values[0]
-                    d_elev = self.model.polargrid.loc[(self.model.polargrid["utme"] == row1[1]) & (self.model.polargrid["utmn"] == row1[2]), "elev"].values[0]
-                    d_lat = self.model.polargrid.loc[(self.model.polargrid["utme"] == row1[1]) & (self.model.polargrid["utmn"] == row1[2]), "lat"].values[0]
-                    d_lon = self.model.polargrid.loc[(self.model.polargrid["utme"] == row1[1]) & (self.model.polargrid["utmn"] == row1[2]), "lon"].values[0]
-                    d_overlap = self.model.polargrid.loc[(self.model.polargrid["utme"] == row1[1]) & (self.model.polargrid["utmn"] == row1[2]), "overlap"].values[0]
+
+                    record = None
+                    key = (row1[1], row1[2])
+                    if key in self.polarCache:
+                        record = self.polarCache.get(key)
+                    else:
+                        record = self.model.polargrid.loc[(self.model.polargrid["utme"] == row1[1]) & (self.model.polargrid["utmn"] == row1[2])]
+                        self.polarCache[key] = record
+
+                    d_distance = record["distance"].values[0]
+                    d_angle = record["angle"].values[0]
+                    d_sector = record["sector"].values[0]
+                    d_ring_no = record["ring"].values[0]
+                    d_elev = record["elev"].values[0]
+                    d_lat = record["lat"].values[0]
+                    d_lon = record["lon"].values[0]
+                    d_overlap = record["overlap"].values[0]
                     d_drydep = ""
                     d_wetdep = ""
                     datalist = [d_sourceid, d_emistype, d_pollutant, d_conc, d_distance, d_angle, d_sector, d_ring_no, d_elev, d_lat, d_lon, d_overlap, d_wetdep, d_drydep]
+
                     dlist.append(dict(zip(self.headers, datalist)))
 
         all_polar_receptors_df = pd.DataFrame(dlist, columns=self.headers)
