@@ -1,8 +1,10 @@
 import os
+import re
 
 from numpy import float64
 from pandas import Series
 
+from log import Logger
 from writer.csv.CsvWriter import CsvWriter
 
 class RingSummaryChronic(CsvWriter):
@@ -50,6 +52,8 @@ class RingSummaryChronic(CsvWriter):
                 'Hi_hemato', 'Hi_immune', 'Hi_skel', 'Hi_spleen', 'Hi_thyroid', 'Hi_whol_bo']] =\
             merged.apply(lambda row: self.calculateRisks(row['pollutant'], row['conc_ug_m3']), axis=1)
 
+        print('merged size = ' + str(merged.size))
+
         # last step: group by lat,lon and then aggregate each group by summing the mir and hazard index fields
         aggs = {'pollutant':'first', 'lat':'first', 'lon':'first', 'overlap':'first', 'elev':'first', 'utme':'first',
                 'utmn':'first', 'hill':'first', 'conc_ug_m3':'first', 'distance':'first', 'angle':'first',
@@ -67,15 +71,30 @@ class RingSummaryChronic(CsvWriter):
         URE = None
         RFC = None
 
+        # In order to get a case-insensitive exact match (i.e. matches exactly except for casing)
+        # we are using a regex that is specified to be the entire value. Since pollutant names can
+        # contain parentheses, escape them before constructing the pattern.
+        pattern = '^' + re.escape(pollutant) + '$'
+
         # Since it's relatively expensive to get these values from their respective libraries, cache them locally.
         # Note that they are cached as a pair (i.e. if one is in there, the other one will be too...)
         if pollutant in self.riskCache:
             URE = self.riskCache[pollutant]['URE']
             RFC = self.riskCache[pollutant]['RFC']
         else:
-            row = self.model.haplib.dataframe.loc[self.model.haplib.dataframe["pollutant"] == pollutant]
-            URE = row.iloc[0]["ure"]
-            RFC = row.iloc[0]["rfc"]
+            row = self.model.haplib.dataframe.loc[
+                self.model.haplib.dataframe["pollutant"].str.contains(pattern, case=False, regex=True)]
+
+            if row.size == 0:
+                msg = 'Could not find pollutant ' + pollutant + ' in the haplib!'
+                Logger.logMessage(msg)
+                Logger.log(msg, self.model.haplib.dataframe, False)
+                URE = 0
+                RFC = 0
+            else:
+                URE = row.iloc[0]["ure"]
+                RFC = row.iloc[0]["rfc"]
+
             self.riskCache[pollutant] = {'URE' : URE, 'RFC' : RFC}
             print('Added cached values... ' + pollutant + ': ' + str(URE) + ', ' + str(RFC))
 
@@ -83,8 +102,20 @@ class RingSummaryChronic(CsvWriter):
         if pollutant in self.organCache:
             organs = self.organCache[pollutant]
         else:
-            row = self.model.organs.dataframe.loc[self.model.organs.dataframe["pollutant"] == pollutant]
-            organs = row.values.tolist()[0]
+            row = self.model.organs.dataframe.loc[
+                self.model.organs.dataframe["pollutant"].str.contains(pattern, case=False, regex=True)]
+
+            if row.size == 0:
+                # Couldn't find the pollutant...set values to 0 and log message
+                Logger.logMessage('Could not find pollutant ' + pollutant + ' in the target organs.')
+                listed = []
+            else:
+                listed = row.values.tolist()
+
+            # Note: sometimes there is a pollutant with no effect on any organ (RFC == 0). In this case it will
+            # not appear in the organs library, and therefore 'listed' will be empty. We will just assign a
+            # dummy list in this case...
+            organs = listed[0] if len(listed) > 0 else list(range(16))
             self.organCache[pollutant] = organs
             print('Added cached values... ' + pollutant + ': ' + str(organs))
 
