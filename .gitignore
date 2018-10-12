@@ -12,5 +12,7 @@ sample files
 venv
 working
 working_kml
+build
+dist
 *.pyc
 **/__pycache__/*.pyc
