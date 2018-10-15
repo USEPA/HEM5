@@ -63,41 +63,51 @@ def center(sourcelocs, utmz):
             vertx_l.append(row["utme_x2"])
             verty_l.append(row["utmn_y2"])
             
-#            if row["location_type"].upper() == "L":
-#                utme2, utmn2, utmz = ll2utm.ll2utm(row["y2"], row["x2"],0,0)
-#            else:
-#                utme2 = row["lon"]
-#                utmn2 = row["lat"]
-#            vertx_l.append(utme2)
-#            verty_l.append(utmn2)
-#        
-        # If a polygon source, read the polygon vertex file
-        
+        #TODO  If a polygon source, read the polygon vertex file
+
+    vertx_a = np.array(vertx_l)
+    verty_a = np.array(verty_l)
+    
+    # Combine the x and y vertices lists into list of tuples and then get a
+    # unique list of vertices of the form (x, y) where x=utme and y=utmn
+    sourceverts = list(zip(vertx_l, verty_l))
+    unique_verts = list(set(sourceverts))
+    
     # Find the two vertices that are the farthest apart
     # Also find the corners of the modeling domain
-    
-    vertx_a = np.unique(np.array(vertx_l))
-    verty_a = np.unique(np.array(verty_l))
-   
+       
     max_dist = 0
-    max_x = min_x = vertx_a[0]
-    max_y = min_y = verty_a[0]
+    max_x = min_x = unique_verts[0][0]
+    max_y = min_y = unique_verts[0][1]
     
-    if len(vertx_a) > 1: #more than one source
-        for i in range(0, len(vertx_a)-1):
-            for j in range(0, len(verty_a)-1):
-                dist = (vertx_a[i] - vertx_a[i+1])**2 + (verty_a[j] - verty_a[j+1])**2
-                if dist > max_dist:
-                    max_x = max(max_x,vertx_a[i+1])
-                    max_y = max(max_y,verty_a[i+1])
-                    min_x = min(min_x,vertx_a[i+1])
-                    min_y = min(min_y,verty_a[i+1])
-                    max_dist = math.sqrt(dist)
-                    xmax1 = vertx_a[i]
-                    ymax1 = verty_a[i]
-                    xmax2 = vertx_a[i+1]
-                    ymax2 = verty_a[i+1]
-    
+    if len(unique_verts) > 1: #more than one source coordinate
+        for i in range(0, len(unique_verts)-1):
+            dist = (unique_verts[i][0] - unique_verts[i+1][0])**2 + (unique_verts[i][1] - unique_verts[i+1][1])**2
+            if dist > max_dist:
+                max_x = max(max_x, unique_verts[i+1][0])
+                max_y = max(max_y, unique_verts[i+1][1])
+                min_x = min(min_x, unique_verts[i+1][0])
+                min_y = min(min_y, unique_verts[i+1][1])
+                max_dist = math.sqrt(dist)
+                xmax1 = unique_verts[i][0]
+                ymax1 = unique_verts[i][1]
+                xmax2 = unique_verts[i+1][0]
+                ymax2 = unique_verts[i+1][1]
+            
+#        for i in range(0, len(vertx_a)-1):
+#            for j in range(0, len(verty_a)-1):
+#                dist = (vertx_a[i] - vertx_a[i+1])**2 + (verty_a[j] - verty_a[j+1])**2
+#                if dist > max_dist:
+#                    max_x = max(max_x,vertx_a[i+1])
+#                    max_y = max(max_y,verty_a[i+1])
+#                    min_x = min(min_x,vertx_a[i+1])
+#                    min_y = min(min_y,verty_a[i+1])
+#                    max_dist = math.sqrt(dist)
+#                    xmax1 = vertx_a[i]
+#                    ymax1 = verty_a[i]
+#                    xmax2 = vertx_a[i+1]
+#                    ymax2 = verty_a[i+1]
+            
         # Calculate the center of the facility in utm coordinates
         cenx = (xmax1 + xmax2) / 2
         ceny = (ymax1 + ymax2) / 2
@@ -111,7 +121,7 @@ def center(sourcelocs, utmz):
         cenlon = acenlon[0]
         cenlat = acenlat[0]
         
-    else: #single source
+    else: #single source coordinate
         
        # Calculate the center of the facility in utm coordinates
         cenx = max_x
