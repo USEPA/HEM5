@@ -10,7 +10,6 @@ import sys
 import numpy as np
 import pandas as pd
 import HEM4_Runstream as rs
-import find_center as fc
 import json_census_blocks as cbr
 from support.UTM import UTM
 
@@ -225,8 +224,10 @@ class FacilityPrep():
             sourcelocs = sourcelocs.fillna({"source_type":"", "lengthx":0, "lengthy":0, "angle":0, "utme_x2":0, "utmn_y2":0})
             sourcelocs = sourcelocs.reset_index()
 
+        self.model.sourcelocs = sourcelocs
+
         # Compute the coordinates of the facililty center
-        cenx, ceny, cenlon, cenlat, max_srcdist, vertx_a, verty_a = fc.center(sourcelocs, facutmzone)
+        cenx, ceny, cenlon, cenlat, max_srcdist, vertx_a, verty_a = UTM.center(sourcelocs, facutmzone)
 
         #retrieve blocks
         maxdist = facops.get_value(0,"max_dist")

@@ -264,18 +264,14 @@ class Process_outputs():
 
     def process(self):
 
-        
-#        start = time.time()
-    
         # Read plotfile and put into dataframe
-        pfile = open("resources/plotfile.plt", "r")
-        plot_df = pd.read_table(pfile, delim_whitespace=True, header=None, 
-            names=['utme','utmn','result','elev','hill','flag','avg_time','source_id','num_yrs','net_id'],
-            usecols=[0,1,2,3,4,5,6,7,8,9], 
-            converters={'utme':np.float64,'utmn':np.float64,'result':np.float64,'elev':np.float64,'hill':np.float64
-                   ,'flag':np.float64,'avg_time':np.str,'source_id':np.str,'num_yrs':np.int64,'net_id':np.str},
-            comment='*')
-
+        with open("resources/plotfile.plt", "r") as pfile:
+            plot_df = pd.read_table(pfile, delim_whitespace=True, header=None,
+                names=['utme','utmn','result','elev','hill','flag','avg_time','source_id','num_yrs','net_id'],
+                usecols=[0,1,2,3,4,5,6,7,8,9],
+                converters={'utme':np.float64,'utmn':np.float64,'result':np.float64,'elev':np.float64,'hill':np.float64
+                       ,'flag':np.float64,'avg_time':np.str,'source_id':np.str,'num_yrs':np.int64,'net_id':np.str},
+                comment='*')
 
         # Combine the dose response and target organ tables into one and create noncancer factors (multipliers)
         self.model.riskfacs_df = self.create_riskfacs()
@@ -284,23 +280,20 @@ class Process_outputs():
         all_polar_receptors = AllPolarReceptors(self.outdir, self.facid, self.model, plot_df)
         all_polar_receptors.write()
         self.model.all_polar_receptors_df = pd.DataFrame(data=all_polar_receptors.data, columns=all_polar_receptors.headers)
-
  
         #----------- create All_Inner_Receptor output file -----------------
         all_inner_receptors = AllInnerReceptors(self.outdir, self.facid, self.model, plot_df)
         all_inner_receptors.write()
         self.model.all_inner_receptors_df = pd.DataFrame(data=all_inner_receptors.data, columns=all_inner_receptors.headers)
-        
+
         #----------- create All_Outer_Receptor output file -----------------
         all_outer_receptors = AllOuterReceptors(self.outdir, self.facid, self.model, plot_df)
         all_outer_receptors.write()
         self.model.all_outer_receptors_df = pd.DataFrame(data=all_outer_receptors.data, columns=all_outer_receptors.headers)
 
-
         # Generate a dataframe of inner/outer/polar risk and HIs by lat, lon
-        self.model.risk_by_latlon = self.compute_risk_by_latlon(self. model)
-        
-        
+        self.model.risk_by_latlon = self.compute_risk_by_latlon(self.model)
+
         #----------- create Maximum_Individual_Risk output file ---------------
         max_indiv_risk = MaximumIndividualRisks(self.outdir, self.facid, self.model, plot_df)
         max_indiv_risk.write()
@@ -309,7 +302,7 @@ class Process_outputs():
         #----------- create Ring_Summary_Chronic output file -----------------
         ring_summary_chronic = RingSummaryChronic(self.outdir, self.facid, self.model, plot_df)
         ring_summary_chronic.write()
-        
+
 #        #----------- create Risk Breakdown output file ------------------------
 #        risk_breakdown = RiskBreakdown(self.outdir, self.facid, self.model, plot_df)
 #        risk_breakdown.write()

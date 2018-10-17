@@ -1,6 +1,7 @@
 import numpy as np
 import sys
 import math as m
+import pandas as pd
 
 class UTM:
     """
@@ -410,3 +411,127 @@ class UTM:
 
 
         return [utmn, utme, utmz]
+
+
+    def center(sourcelocs, utmz):
+
+        # Fill up lists of x and y coordinates of all source vertices    
+        vertx_l = []
+        verty_l = []
+        for index, row in sourcelocs.iterrows():
+    
+            vertx_l.append(row["utme"])
+            verty_l.append(row["utmn"])
+    
+            # If this is an area source, add the other 3 corners to vertex list
+            if row["source_type"].upper() == "A":
+                angle_rad = m.radians(row["angle"])
+                utme1 = row["utme"] + row["lengthx"] * m.cos(angle_rad)
+                utmn1 = row["utmn"] - row["lengthx"] * m.sin(angle_rad)
+                utme2 = (row["utme"] + (row["lengthx"] * m.cos(angle_rad)) +
+                         (row["lengthy"] * m.sin(angle_rad)))
+                utmn2 = (row["utmn"] + (row["lengthy"] * m.cos(angle_rad)) -
+                         (row["lengthx"] * m.sin(angle_rad)))
+                utme3 = row["utme"] + row["lengthy"] * m.sin(angle_rad)
+                utmn3 = row["utmn"] + row["lengthy"] * m.cos(angle_rad)
+                vertx_l.append(utme1)
+                vertx_l.append(utme2)
+                vertx_l.append(utme3)
+                verty_l.append(utmn1)
+                verty_l.append(utmn2)
+                verty_l.append(utmn3)
+    
+            # If this is a volume source, then add the vertices of it
+            if row["source_type"].upper() == "V":
+                utme1 = row["utme"] + row["lengthx"] * m.sqrt(2)/2
+                utmn1 = row["utmn"] - row["lengthy"] * m.sqrt(2)/2
+                utme2 = row["utme"] + row["lengthx"] * m.sqrt(2)/2
+                utmn2 = row["utmn"] + row["lengthy"] * m.sqrt(2)/2
+                utme3 = row["utme"] - row["lengthx"] * m.sqrt(2)/2
+                utmn3 = row["utmn"] + row["lengthy"] * m.sqrt(2)/2
+                vertx_l.append(utme1)
+                vertx_l.append(utme2)
+                vertx_l.append(utme3)
+                verty_l.append(utmn1)
+                verty_l.append(utmn2)
+                verty_l.append(utmn3)
+    
+            # If line or buoyant line source, add second vertex
+            if row["source_type"].upper() == "N" or row["source_type"].upper() == "B":
+                vertx_l.append(row["utme_x2"])
+                verty_l.append(row["utmn_y2"])
+    
+            #TODO  If a polygon source, read the polygon vertex file
+    
+        vertx_a = np.array(vertx_l)
+        verty_a = np.array(verty_l)
+    
+        # Combine the x and y vertices lists into list of tuples and then get a
+        # unique list of vertices of the form (x, y) where x=utme and y=utmn
+        sourceverts = list(zip(vertx_l, verty_l))
+        unique_verts = list(set(sourceverts))
+    
+        # Find the two vertices that are the farthest apart
+        # Also find the corners of the modeling domain
+    
+        max_dist = 0
+        max_x = min_x = unique_verts[0][0]
+        max_y = min_y = unique_verts[0][1]
+    
+        if len(unique_verts) > 1: #more than one source coordinate
+            for i in range(0, len(unique_verts)-1):
+                dist = (unique_verts[i][0] - unique_verts[i+1][0])**2 + (unique_verts[i][1] - unique_verts[i+1][1])**2
+                if dist > max_dist:
+                    max_x = max(max_x, unique_verts[i+1][0])
+                    max_y = max(max_y, unique_verts[i+1][1])
+                    min_x = min(min_x, unique_verts[i+1][0])
+                    min_y = min(min_y, unique_verts[i+1][1])
+                    max_dist = m.sqrt(dist)
+                    xmax1 = unique_verts[i][0]
+                    ymax1 = unique_verts[i][1]
+                    xmax2 = unique_verts[i+1][0]
+                    ymax2 = unique_verts[i+1][1]
+    
+            #        for i in range(0, len(vertx_a)-1):
+            #            for j in range(0, len(verty_a)-1):
+            #                dist = (vertx_a[i] - vertx_a[i+1])**2 + (verty_a[j] - verty_a[j+1])**2
+            #                if dist > max_dist:
+            #                    max_x = max(max_x,vertx_a[i+1])
+            #                    max_y = max(max_y,verty_a[i+1])
+            #                    min_x = min(min_x,vertx_a[i+1])
+            #                    min_y = min(min_y,verty_a[i+1])
+            #                    max_dist = math.sqrt(dist)
+            #                    xmax1 = vertx_a[i]
+            #                    ymax1 = verty_a[i]
+            #                    xmax2 = vertx_a[i+1]
+            #                    ymax2 = verty_a[i+1]
+    
+            # Calculate the center of the facility in utm coordinates
+            cenx = (xmax1 + xmax2) / 2
+            ceny = (ymax1 + ymax2) / 2
+    
+            # Compute the lat/lon of the center
+            sceny = pd.Series([ceny])
+            scenx = pd.Series([cenx])
+            sutmz = pd.Series([utmz])
+            acenlat, acenlon = UTM.utm2ll(sceny, scenx, sutmz)
+    
+            cenlon = acenlon[0]
+            cenlat = acenlat[0]
+    
+        else: #single source coordinate
+    
+            # Calculate the center of the facility in utm coordinates
+            cenx = max_x
+            ceny = max_y
+    
+            # Compute the lat/lon of the center
+            sceny = pd.Series([ceny])
+            scenx = pd.Series([cenx])
+            sutmz = pd.Series([utmz])
+            acenlat, acenlon = UTM.utm2ll(sceny, scenx, sutmz)
+    
+            cenlon = acenlon[0]
+            cenlat = acenlat[0]
+    
+        return cenx, ceny, cenlon, cenlat, max_dist, vertx_a, verty_a

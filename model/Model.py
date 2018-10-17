@@ -24,7 +24,7 @@ class Model():
         self.all_outer_receptors_df = None
         self.risk_by_latlon = None
         self.max_indiv_risk_df = None
-        
+        self.sourcelocs = None
 
     @property
     def fac_ids(self):
@@ -53,4 +53,5 @@ class Model():
         self.all_outer_receptors_df = None
         self.risk_by_latlon = None
         self.max_indiv_risk_df = None
+        self.sourcelocs = None
 
