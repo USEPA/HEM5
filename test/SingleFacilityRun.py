@@ -6,6 +6,7 @@ from Hem4Gui_Threaded import Hem4
 from writer.csv.AllInnerReceptors import AllInnerReceptors
 from writer.csv.AllOuterReceptors import AllOuterReceptors
 from writer.csv.AllPolarReceptors import AllPolarReceptors
+from writer.csv.RingSummaryChronic import RingSummaryChronic
 
 fixturePresent = {}
 
@@ -50,7 +51,6 @@ class SingleFacilityRun(unittest.TestCase):
                  "The contents of the AllPolarReceptors output file are inconsistent with the test fixture:" +
                  checksum_expected + " != " + checksum_generated)
 
-    @unittest.skip("All inner receptors test fixture not present.")
     def test_all_inner_receptors(self):
         """
         Verify that the all inner receptors output file is identical to the test fixture.
@@ -65,7 +65,6 @@ class SingleFacilityRun(unittest.TestCase):
                              "The contents of the output file are inconsistent with the test fixture:" +
                              checksum_expected + " != " + checksum_generated)
 
-    @unittest.skip("All outer receptors test fixture not present.")
     def test_all_outer_receptors(self):
         """
         Verify that the all outer receptors output file is identical to the test fixture.
@@ -79,7 +78,21 @@ class SingleFacilityRun(unittest.TestCase):
             self.assertEqual(checksum_expected, checksum_generated,
                              "The contents of the output file are inconsistent with the test fixture:" +
                              checksum_expected + " != " + checksum_generated)
-            
+
+    def test_ring_summary_chronic(self):
+        """
+        Verify that the ring summary chronic output file is identical to the test fixture.
+        """
+        for facid in self.hem4.model.facids:
+            fixture = RingSummaryChronic("fixtures/output", facid, None, None)
+            checksum_expected = self.hashFile(fixture.filename)
+
+            generated = RingSummaryChronic("output/"+facid, facid, None, None)
+            checksum_generated = self.hashFile(generated.filename)
+            self.assertEqual(checksum_expected, checksum_generated,
+                             "The contents of the output file are inconsistent with the test fixture:" +
+                             checksum_expected + " != " + checksum_generated)
+
     def test_aermod(self):
         """
         The aermod output files should be identical, except for the timestamp!
