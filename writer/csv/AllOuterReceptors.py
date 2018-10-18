@@ -70,11 +70,20 @@ class AllOuterReceptors(CsvWriter):
             if r2 > self.model.numrings:
                r2 = self.model.numrings
             
+            # the purpose of using matrix notation is because its faster 
+            # than pandas (pandas being built on top of numpy arrays/matrices for its data objects)
+            # we found that merging, lookup, and other pandas functions are costly with larger tables
+            # and can be replicated with just nump arrays and functions for much faster results at scale
+            # np.logical_and allows us to check the boolean conditions for two columns with specific values 
+            # in this instance we are checking for combinations of sector (s1 and s2) and row (r1 and r2)
+            # so that we can interpolate properly
+            # the notation[:,#] gives us all rows in that 'column'
             s1r1 = np.logical_and(all_polar_receptors_m[:, 6] == s1, all_polar_receptors_m[:,7] == r1 )
             s1r2 = np.logical_and(all_polar_receptors_m[:, 6] == s1, all_polar_receptors_m[:,7] == r2 )
             s2r1 = np.logical_and(all_polar_receptors_m[:, 6] == s2, all_polar_receptors_m[:,7] == r1 )
             s2r2 = np.logical_and(all_polar_receptors_m[:, 6] == s2, all_polar_receptors_m[:,7] == r2 )
             
+            #we use those boolean lookups to get the 4 surrounding polar receptors
             co1 = all_polar_receptors_m[s1r1]
             co2 = all_polar_receptors_m[s1r2]
             co3 = all_polar_receptors_m[s2r1]
