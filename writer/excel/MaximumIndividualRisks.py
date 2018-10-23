@@ -27,9 +27,9 @@ class MaximumIndividualRisks(ExcelWriter):
     def calcHI(self, hiname, hivar):
         mr_parameter = hiname
         io_idx = self.model.risk_by_latlon[self.model.risk_by_latlon["rectype"] != "P"][hivar].idxmax()
-        mr_lat = float(self.model.risk_by_latlon["Lat"].loc[io_idx])
-        mr_lon = float(self.model.risk_by_latlon["Lon"].loc[io_idx])
-        if self.model.risk_by_latlon["Overlap"].loc[io_idx] == "N":
+        mr_lat = float(self.model.risk_by_latlon["lat"].loc[io_idx])
+        mr_lon = float(self.model.risk_by_latlon["lon"].loc[io_idx])
+        if self.model.risk_by_latlon["overlap"].loc[io_idx] == "N":
             #not overlapped
             mr_value = self.model.risk_by_latlon[hivar].loc[io_idx]
             mr_value_sci = format(mr_value, ".1e")
@@ -60,9 +60,9 @@ class MaximumIndividualRisks(ExcelWriter):
                 mr_notes = "Interpolated"
         else:
             #overlapped
-            iop_idx = self.model.risk_by_latlon[self.model.risk_by_latlon["Overlap"] == "N"][hivar].idxmax()
-            mr_lat = float(self.model.risk_by_latlon["Lat"].loc[iop_idx])
-            mr_lon = float(self.model.risk_by_latlon["Lon"].loc[iop_idx])
+            iop_idx = self.model.risk_by_latlon[self.model.risk_by_latlon["overlap"] == "N"][hivar].idxmax()
+            mr_lat = float(self.model.risk_by_latlon["lat"].loc[iop_idx])
+            mr_lon = float(self.model.risk_by_latlon["lon"].loc[iop_idx])
             mr_value = self.model.risk_by_latlon[hivar].loc[iop_idx]
             mr_value_sci = format(mr_value, ".1e")
             mr_value_rnd = round(mr_value, -int(floor(log10(abs(mr_value)))))
@@ -228,14 +228,16 @@ class MaximumIndividualRisks(ExcelWriter):
             4) Get information about this receptor
         """
         mr_parameter = "Cancer risk"
-        io_idx = self.model.risk_by_latlon[self.model.risk_by_latlon["rectype"] != "P"]["risk"].idxmax()
-        if self.model.risk_by_latlon["risk"].loc[io_idx] > 0:
+        io_idx = self.model.risk_by_latlon[self.model.risk_by_latlon["rectype"] != "P"]["mir"].idxmax()
+        #debug
+        print("io_idx = ", io_idx)
+        if self.model.risk_by_latlon["mir"].loc[io_idx] > 0:            
             #max risk is > 0, do calculations
-            mr_lat = float(self.model.risk_by_latlon["Lat"].loc[io_idx])
-            mr_lon = float(self.model.risk_by_latlon["Lon"].loc[io_idx])
-            if self.model.risk_by_latlon["Overlap"].loc[io_idx] == "N":
+            mr_lat = float(self.model.risk_by_latlon["lat"].loc[io_idx])
+            mr_lon = float(self.model.risk_by_latlon["lon"].loc[io_idx])
+            if self.model.risk_by_latlon["overlap"].loc[io_idx] == "N":
                 #not overlapped
-                mr_value = self.model.risk_by_latlon["risk"].loc[io_idx]
+                mr_value = self.model.risk_by_latlon["mir"].loc[io_idx]
                 mr_value_sci = format(mr_value, ".1e")
                 mr_value_rnd = round(mr_value, -int(floor(log10(abs(mr_value))))) if mr_value > 0 else 0
                 if self.model.risk_by_latlon["rectype"].loc[io_idx] == "I":
@@ -264,10 +266,10 @@ class MaximumIndividualRisks(ExcelWriter):
                     mr_notes = "Interpolated"
             else:
                 #overlapped
-                iop_idx = self.model.risk_by_latlon[self.model.risk_by_latlon["Overlap"] == "N"]["risk"].idxmax()
-                mr_lat = float(self.model.risk_by_latlon["Lat"].loc[iop_idx])
-                mr_lon = float(self.model.risk_by_latlon["Lon"].loc[iop_idx])
-                mr_value = self.model.risk_by_latlon["risk"].loc[iop_idx]
+                iop_idx = self.model.risk_by_latlon[self.model.risk_by_latlon["overlap"] == "N"]["mir"].idxmax()
+                mr_lat = float(self.model.risk_by_latlon["lat"].loc[iop_idx])
+                mr_lon = float(self.model.risk_by_latlon["lon"].loc[iop_idx])
+                mr_value = self.model.risk_by_latlon["mir"].loc[iop_idx]
                 mr_value_sci = format(mr_value, ".1e")
                 mr_value_rnd = round(mr_value, -int(floor(log10(abs(mr_value)))))
                 if self.model.risk_by_latlon["rectype"].loc[io_idx] == "P":

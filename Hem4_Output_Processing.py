@@ -14,6 +14,7 @@ from writer.csv.AllPolarReceptors import AllPolarReceptors
 from writer.csv.AllInnerReceptors import AllInnerReceptors
 from writer.csv.AllOuterReceptors import AllOuterReceptors
 from writer.csv.RingSummaryChronic import RingSummaryChronic
+from writer.csv.BlockSummaryChronic import BlockSummaryChronic
 from writer.excel.MaximumIndividualRisks import MaximumIndividualRisks
 # from writer.excel.RiskBreakdown import RiskBreakdown
 from writer.kml.KMLWriter import KMLWriter
@@ -47,192 +48,6 @@ class Process_outputs():
         return quotient
     
     
-    def compute_risk_by_latlon(self, model):
-
-        #------ first - inner receptor risk by lat/lon --------------------
-        
-        #sum conc to Lat, Lon, pollutant
-        inner_sum = self.model.all_inner_receptors_df.groupby(['Lat','Lon','Pollutant','Overlap'], as_index=False)['Conc_ug_m3'].sum()
-        
-        #merge risk factors (cancer and noncancer) by pollutant        
-        inner_sum2 = pd.merge(inner_sum, self.model.riskfacs_df, left_on="Pollutant", right_on="pollutant", how="left")
-#        inner_sum2 = pd.merge(inner_sum,self.model.haplib.dataframe[["pollutant","ure","rfc"]],left_on="Pollutant",right_on="pollutant",how="left")
-        if inner_sum2["ure"].isnull().sum() > 0:
-            #TODO
-            #THIS IS AN ERROR TO BE HANDLED
-            print("Error!")
-
-#        #merge target organ endpoint values 
-#        inner_sum3 = pd.merge(inner_sum2,self.model.organs.dataframe[["pollutant","resp","liver","neuro","dev",
-#                                                                      "reprod","kidney","ocular","endoc","hemato",
-#                                                                      "immune","skeletal","spleen","thyroid",
-#                                                                      "wholebod"]],on="pollutant",how="left")
-       
-        #calculate risk and target organ specific HIs 
-        inner_sum2["risk"] = inner_sum2["Conc_ug_m3"]*inner_sum2["ure"]
-        inner_sum2["hi_resp"] = inner_sum2["Conc_ug_m3"]*inner_sum2["resp_fac"]/1000
-        inner_sum2["hi_live"] = inner_sum2["Conc_ug_m3"]*inner_sum2["live_fac"]/1000
-        inner_sum2["hi_neur"] = inner_sum2["Conc_ug_m3"]*inner_sum2["neur_fac"]/1000
-        inner_sum2["hi_deve"] = inner_sum2["Conc_ug_m3"]*inner_sum2["deve_fac"]/1000
-        inner_sum2["hi_repr"] = inner_sum2["Conc_ug_m3"]*inner_sum2["repr_fac"]/1000
-        inner_sum2["hi_kidn"] = inner_sum2["Conc_ug_m3"]*inner_sum2["kidn_fac"]/1000
-        inner_sum2["hi_ocul"] = inner_sum2["Conc_ug_m3"]*inner_sum2["ocul_fac"]/1000
-        inner_sum2["hi_endo"] = inner_sum2["Conc_ug_m3"]*inner_sum2["endo_fac"]/1000
-        inner_sum2["hi_hema"] = inner_sum2["Conc_ug_m3"]*inner_sum2["hema_fac"]/1000
-        inner_sum2["hi_immu"] = inner_sum2["Conc_ug_m3"]*inner_sum2["immu_fac"]/1000
-        inner_sum2["hi_skel"] = inner_sum2["Conc_ug_m3"]*inner_sum2["skel_fac"]/1000
-        inner_sum2["hi_sple"] = inner_sum2["Conc_ug_m3"]*inner_sum2["sple_fac"]/1000
-        inner_sum2["hi_thyr"] = inner_sum2["Conc_ug_m3"]*inner_sum2["thyr_fac"]/1000
-        inner_sum2["hi_whol"] = inner_sum2["Conc_ug_m3"]*inner_sum2["whol_fac"]/1000
-        
-#        inner_sum3["risk"] = inner_sum3["Conc_ug_m3"]*inner_sum3["ure"]
-#        inner_sum3["hi_resp"] = self.nodivby0(inner_sum3["Conc_ug_m3"],inner_sum3["rfc"])*inner_sum3["resp"]/1000
-#        inner_sum3["hi_live"] = self.nodivby0(inner_sum3["Conc_ug_m3"],inner_sum3["rfc"])*inner_sum3["liver"]/1000
-#        inner_sum3["hi_neur"] = self.nodivby0(inner_sum3["Conc_ug_m3"],inner_sum3["rfc"])*inner_sum3["neuro"]/1000
-#        inner_sum3["hi_deve"] = self.nodivby0(inner_sum3["Conc_ug_m3"],inner_sum3["rfc"])*inner_sum3["dev"]/1000
-#        inner_sum3["hi_repr"] = self.nodivby0(inner_sum3["Conc_ug_m3"],inner_sum3["rfc"])*inner_sum3["reprod"]/1000
-#        inner_sum3["hi_kidn"] = self.nodivby0(inner_sum3["Conc_ug_m3"],inner_sum3["rfc"])*inner_sum3["kidney"]/1000
-#        inner_sum3["hi_ocul"] = self.nodivby0(inner_sum3["Conc_ug_m3"],inner_sum3["rfc"])*inner_sum3["ocular"]/1000
-#        inner_sum3["hi_endo"] = self.nodivby0(inner_sum3["Conc_ug_m3"],inner_sum3["rfc"])*inner_sum3["endoc"]/1000
-#        inner_sum3["hi_hema"] = self.nodivby0(inner_sum3["Conc_ug_m3"],inner_sum3["rfc"])*inner_sum3["hemato"]/1000
-#        inner_sum3["hi_immu"] = self.nodivby0(inner_sum3["Conc_ug_m3"],inner_sum3["rfc"])*inner_sum3["immune"]/1000
-#        inner_sum3["hi_skel"] = self.nodivby0(inner_sum3["Conc_ug_m3"],inner_sum3["rfc"])*inner_sum3["skeletal"]/1000
-#        inner_sum3["hi_sple"] = self.nodivby0(inner_sum3["Conc_ug_m3"],inner_sum3["rfc"])*inner_sum3["spleen"]/1000
-#        inner_sum3["hi_thyr"] = self.nodivby0(inner_sum3["Conc_ug_m3"],inner_sum3["rfc"])*inner_sum3["thyroid"]/1000
-#        inner_sum3["hi_whol"] = self.nodivby0(inner_sum3["Conc_ug_m3"],inner_sum3["rfc"])*inner_sum3["wholebod"]/1000
-        
-        #sum risk and HI to lat, lon and assign a receptor type
-        inner_riskhi_by_latlon = inner_sum2.groupby(['Lat','Lon','Overlap'], as_index=False)["risk","hi_resp","hi_live",
-                                                  "hi_neur","hi_deve","hi_repr","hi_kidn","hi_ocul","hi_endo",
-                                                  "hi_hema","hi_immu","hi_skel","hi_sple","hi_thyr","hi_whol"].sum()
-        inner_riskhi_by_latlon["rectype"] = "I"
-
-
-        #--------- second - outer receptor risk by lat/lon ----------------
-        
-        #sum conc to lat, Lon, pollutant
-        outer_sum = self.model.all_outer_receptors_df.groupby(['Lat','Lon','Pollutant','Overlap'], as_index=False)['Conc_ug_m3'].sum()
-        
-        #merge risk factors (cancer and noncancer) by pollutant        
-        outer_sum2 = pd.merge(outer_sum, self.model.riskfacs_df, left_on="Pollutant", right_on="pollutant", how="left")
-#        outer_sum2 = pd.merge(outer_sum,self.model.haplib.dataframe[["pollutant","ure","rfc"]],left_on="Pollutant",right_on="pollutant",how="left")
-        if outer_sum2["ure"].isnull().sum() > 0:
-            #TODO
-            #THIS IS AN ERROR TO BE HANDLED
-            print("Error!")
-
-        #calculate risk and target organ specific HIs 
-        outer_sum2["risk"] = outer_sum2["Conc_ug_m3"]*outer_sum2["ure"]
-        outer_sum2["hi_resp"] = outer_sum2["Conc_ug_m3"]*outer_sum2["resp_fac"]/1000
-        outer_sum2["hi_live"] = outer_sum2["Conc_ug_m3"]*outer_sum2["live_fac"]/1000
-        outer_sum2["hi_neur"] = outer_sum2["Conc_ug_m3"]*outer_sum2["neur_fac"]/1000
-        outer_sum2["hi_deve"] = outer_sum2["Conc_ug_m3"]*outer_sum2["deve_fac"]/1000
-        outer_sum2["hi_repr"] = outer_sum2["Conc_ug_m3"]*outer_sum2["repr_fac"]/1000
-        outer_sum2["hi_kidn"] = outer_sum2["Conc_ug_m3"]*outer_sum2["kidn_fac"]/1000
-        outer_sum2["hi_ocul"] = outer_sum2["Conc_ug_m3"]*outer_sum2["ocul_fac"]/1000
-        outer_sum2["hi_endo"] = outer_sum2["Conc_ug_m3"]*outer_sum2["endo_fac"]/1000
-        outer_sum2["hi_hema"] = outer_sum2["Conc_ug_m3"]*outer_sum2["hema_fac"]/1000
-        outer_sum2["hi_immu"] = outer_sum2["Conc_ug_m3"]*outer_sum2["immu_fac"]/1000
-        outer_sum2["hi_skel"] = outer_sum2["Conc_ug_m3"]*outer_sum2["skel_fac"]/1000
-        outer_sum2["hi_sple"] = outer_sum2["Conc_ug_m3"]*outer_sum2["sple_fac"]/1000
-        outer_sum2["hi_thyr"] = outer_sum2["Conc_ug_m3"]*outer_sum2["thyr_fac"]/1000
-        outer_sum2["hi_whol"] = outer_sum2["Conc_ug_m3"]*outer_sum2["whol_fac"]/1000
-
-#        #merge target organ endpoint values
-#        outer_sum3 = pd.merge(outer_sum2,self.model.organs.dataframe[["pollutant","resp","liver","neuro","dev",
-#                                                                      "reprod","kidney","ocular","endoc","hemato",
-#                                                                      "immune","skeletal","spleen","thyroid",
-#                                                                      "wholebod"]],on="pollutant",how="left")
-
-#        #calculate risk and HI
-#        outer_sum3["risk"] = outer_sum3["Conc_ug_m3"]*outer_sum3["ure"]
-#        outer_sum3["hi_resp"] = self.nodivby0(outer_sum3["Conc_ug_m3"],outer_sum3["rfc"])*outer_sum3["resp"]/1000
-#        outer_sum3["hi_live"] = self.nodivby0(outer_sum3["Conc_ug_m3"],outer_sum3["rfc"])*outer_sum3["liver"]/1000
-#        outer_sum3["hi_neur"] = self.nodivby0(outer_sum3["Conc_ug_m3"],outer_sum3["rfc"])*outer_sum3["neuro"]/1000
-#        outer_sum3["hi_deve"] = self.nodivby0(outer_sum3["Conc_ug_m3"],outer_sum3["rfc"])*outer_sum3["dev"]/1000
-#        outer_sum3["hi_repr"] = self.nodivby0(outer_sum3["Conc_ug_m3"],outer_sum3["rfc"])*outer_sum3["reprod"]/1000
-#        outer_sum3["hi_kidn"] = self.nodivby0(outer_sum3["Conc_ug_m3"],outer_sum3["rfc"])*outer_sum3["kidney"]/1000
-#        outer_sum3["hi_ocul"] = self.nodivby0(outer_sum3["Conc_ug_m3"],outer_sum3["rfc"])*outer_sum3["ocular"]/1000
-#        outer_sum3["hi_endo"] = self.nodivby0(outer_sum3["Conc_ug_m3"],outer_sum3["rfc"])*outer_sum3["endoc"]/1000
-#        outer_sum3["hi_hema"] = self.nodivby0(outer_sum3["Conc_ug_m3"],outer_sum3["rfc"])*outer_sum3["hemato"]/1000
-#        outer_sum3["hi_immu"] = self.nodivby0(outer_sum3["Conc_ug_m3"],outer_sum3["rfc"])*outer_sum3["immune"]/1000
-#        outer_sum3["hi_skel"] = self.nodivby0(outer_sum3["Conc_ug_m3"],outer_sum3["rfc"])*outer_sum3["skeletal"]/1000
-#        outer_sum3["hi_sple"] = self.nodivby0(outer_sum3["Conc_ug_m3"],outer_sum3["rfc"])*outer_sum3["spleen"]/1000
-#        outer_sum3["hi_thyr"] = self.nodivby0(outer_sum3["Conc_ug_m3"],outer_sum3["rfc"])*outer_sum3["thyroid"]/1000
-#        outer_sum3["hi_whol"] = self.nodivby0(outer_sum3["Conc_ug_m3"],outer_sum3["rfc"])*outer_sum3["wholebod"]/1000
-          
-        #sum risk and HI to lat, lon and assign receptor type
-        outer_riskhi_by_latlon = outer_sum2.groupby(['Lat','Lon','Overlap'], as_index=False)["risk","hi_resp","hi_live",
-                                                  "hi_neur","hi_deve","hi_repr","hi_kidn","hi_ocul","hi_endo",
-                                                  "hi_hema","hi_immu","hi_skel","hi_sple","hi_thyr","hi_whol"].sum()
-        outer_riskhi_by_latlon["rectype"] = "O"
-
-
-        #---------- third - polar receptor risk by lat/lon --------------
-        
-        #sum conc to lat, lon, pollutant
-        polar_sum = self.model.all_polar_receptors_df.groupby(['Lat','Lon','Pollutant','Overlap'], as_index=False)['Conc_ug_m3'].sum()
-        
-        #merge risk factors (cancer and noncancer) by pollutant        
-        polar_sum2 = pd.merge(polar_sum, self.model.riskfacs_df, left_on="Pollutant", right_on="pollutant", how="left")
-#        polar_sum2 = pd.merge(polar_sum,self.model.haplib.dataframe[["pollutant","ure","rfc"]],left_on="Pollutant",right_on="pollutant",how="left")
-        if polar_sum2["ure"].isnull().sum() > 0:
-            #TODO
-            #THIS IS AN ERROR TO BE HANDLED
-            print("Error!")
-
-        #calculate risk and target organ specific HIs 
-        polar_sum2["risk"] = polar_sum2["Conc_ug_m3"]*polar_sum2["ure"]
-        polar_sum2["hi_resp"] = polar_sum2["Conc_ug_m3"]*polar_sum2["resp_fac"]/1000
-        polar_sum2["hi_live"] = polar_sum2["Conc_ug_m3"]*polar_sum2["live_fac"]/1000
-        polar_sum2["hi_neur"] = polar_sum2["Conc_ug_m3"]*polar_sum2["neur_fac"]/1000
-        polar_sum2["hi_deve"] = polar_sum2["Conc_ug_m3"]*polar_sum2["deve_fac"]/1000
-        polar_sum2["hi_repr"] = polar_sum2["Conc_ug_m3"]*polar_sum2["repr_fac"]/1000
-        polar_sum2["hi_kidn"] = polar_sum2["Conc_ug_m3"]*polar_sum2["kidn_fac"]/1000
-        polar_sum2["hi_ocul"] = polar_sum2["Conc_ug_m3"]*polar_sum2["ocul_fac"]/1000
-        polar_sum2["hi_endo"] = polar_sum2["Conc_ug_m3"]*polar_sum2["endo_fac"]/1000
-        polar_sum2["hi_hema"] = polar_sum2["Conc_ug_m3"]*polar_sum2["hema_fac"]/1000
-        polar_sum2["hi_immu"] = polar_sum2["Conc_ug_m3"]*polar_sum2["immu_fac"]/1000
-        polar_sum2["hi_skel"] = polar_sum2["Conc_ug_m3"]*polar_sum2["skel_fac"]/1000
-        polar_sum2["hi_sple"] = polar_sum2["Conc_ug_m3"]*polar_sum2["sple_fac"]/1000
-        polar_sum2["hi_thyr"] = polar_sum2["Conc_ug_m3"]*polar_sum2["thyr_fac"]/1000
-        polar_sum2["hi_whol"] = polar_sum2["Conc_ug_m3"]*polar_sum2["whol_fac"]/1000
-
-#        #merge target organ endpoint values
-#        polar_sum3 = pd.merge(polar_sum2,self.model.organs.dataframe[["pollutant","resp","liver","neuro","dev",
-#                                                                      "reprod","kidney","ocular","endoc","hemato",
-#                                                                      "immune","skeletal","spleen","thyroid",
-#                                                                      "wholebod"]],on="pollutant",how="left")
-
-#        #calculate risk and HI
-#        polar_sum3["risk"] = polar_sum3["Conc_ug_m3"]*polar_sum3["ure"]
-#        polar_sum3["hi_resp"] = self.nodivby0(polar_sum3["Conc_ug_m3"],polar_sum3["rfc"])*polar_sum3["resp"]/1000
-#        polar_sum3["hi_live"] = self.nodivby0(polar_sum3["Conc_ug_m3"],polar_sum3["rfc"])*polar_sum3["liver"]/1000
-#        polar_sum3["hi_neur"] = self.nodivby0(polar_sum3["Conc_ug_m3"],polar_sum3["rfc"])*polar_sum3["neuro"]/1000
-#        polar_sum3["hi_deve"] = self.nodivby0(polar_sum3["Conc_ug_m3"],polar_sum3["rfc"])*polar_sum3["dev"]/1000
-#        polar_sum3["hi_repr"] = self.nodivby0(polar_sum3["Conc_ug_m3"],polar_sum3["rfc"])*polar_sum3["reprod"]/1000
-#        polar_sum3["hi_kidn"] = self.nodivby0(polar_sum3["Conc_ug_m3"],polar_sum3["rfc"])*polar_sum3["kidney"]/1000
-#        polar_sum3["hi_ocul"] = self.nodivby0(polar_sum3["Conc_ug_m3"],polar_sum3["rfc"])*polar_sum3["ocular"]/1000
-#        polar_sum3["hi_endo"] = self.nodivby0(polar_sum3["Conc_ug_m3"],polar_sum3["rfc"])*polar_sum3["endoc"]/1000
-#        polar_sum3["hi_hema"] = self.nodivby0(polar_sum3["Conc_ug_m3"],polar_sum3["rfc"])*polar_sum3["hemato"]/1000
-#        polar_sum3["hi_immu"] = self.nodivby0(polar_sum3["Conc_ug_m3"],polar_sum3["rfc"])*polar_sum3["immune"]/1000
-#        polar_sum3["hi_skel"] = self.nodivby0(polar_sum3["Conc_ug_m3"],polar_sum3["rfc"])*polar_sum3["skeletal"]/1000
-#        polar_sum3["hi_sple"] = self.nodivby0(polar_sum3["Conc_ug_m3"],polar_sum3["rfc"])*polar_sum3["spleen"]/1000
-#        polar_sum3["hi_thyr"] = self.nodivby0(polar_sum3["Conc_ug_m3"],polar_sum3["rfc"])*polar_sum3["thyroid"]/1000
-#        polar_sum3["hi_whol"] = self.nodivby0(polar_sum3["Conc_ug_m3"],polar_sum3["rfc"])*polar_sum3["wholebod"]/1000
-        
-        #sum risk and HI to lat, lon and assign receptor type
-        polar_riskhi_by_latlon = polar_sum2.groupby(['Lat','Lon','Overlap'], as_index=False)["risk","hi_resp","hi_live",
-                                                  "hi_neur","hi_deve","hi_repr","hi_kidn","hi_ocul","hi_endo",
-                                                  "hi_hema","hi_immu","hi_skel","hi_sple","hi_thyr","hi_whol"].sum()
-        polar_riskhi_by_latlon["rectype"] = "P"
-
-        # Combine inner, outer, and polar riskhq
-        combined_riskhi = pd.concat([inner_riskhi_by_latlon, outer_riskhi_by_latlon, polar_riskhi_by_latlon], ignore_index=True, axis=0)
-
-        return combined_riskhi
-    
-    
     def create_riskfacs(self):
         """
         Combine the dose response and target organ tables into one dataframe. Also create noncancer endpoint
@@ -264,14 +79,18 @@ class Process_outputs():
 
     def process(self):
 
+        
+#        start = time.time()
+    
         # Read plotfile and put into dataframe
-        with open("resources/plotfile.plt", "r") as pfile:
-            plot_df = pd.read_table(pfile, delim_whitespace=True, header=None,
-                names=['utme','utmn','result','elev','hill','flag','avg_time','source_id','num_yrs','net_id'],
-                usecols=[0,1,2,3,4,5,6,7,8,9],
-                converters={'utme':np.float64,'utmn':np.float64,'result':np.float64,'elev':np.float64,'hill':np.float64
-                       ,'flag':np.float64,'avg_time':np.str,'source_id':np.str,'num_yrs':np.int64,'net_id':np.str},
-                comment='*')
+        pfile = open("resources/plotfile.plt", "r")
+        plot_df = pd.read_table(pfile, delim_whitespace=True, header=None, 
+            names=['utme','utmn','result','elev','hill','flag','avg_time','source_id','num_yrs','net_id'],
+            usecols=[0,1,2,3,4,5,6,7,8,9], 
+            converters={'utme':np.float64,'utmn':np.float64,'result':np.float64,'elev':np.float64,'hill':np.float64
+                   ,'flag':np.float64,'avg_time':np.str,'source_id':np.str,'num_yrs':np.int64,'net_id':np.str},
+            comment='*')
+
 
         # Combine the dose response and target organ tables into one and create noncancer factors (multipliers)
         self.model.riskfacs_df = self.create_riskfacs()
@@ -280,29 +99,45 @@ class Process_outputs():
         all_polar_receptors = AllPolarReceptors(self.outdir, self.facid, self.model, plot_df)
         all_polar_receptors.write()
         self.model.all_polar_receptors_df = pd.DataFrame(data=all_polar_receptors.data, columns=all_polar_receptors.headers)
+
  
         #----------- create All_Inner_Receptor output file -----------------
         all_inner_receptors = AllInnerReceptors(self.outdir, self.facid, self.model, plot_df)
         all_inner_receptors.write()
         self.model.all_inner_receptors_df = pd.DataFrame(data=all_inner_receptors.data, columns=all_inner_receptors.headers)
-
+        
         #----------- create All_Outer_Receptor output file -----------------
         all_outer_receptors = AllOuterReceptors(self.outdir, self.facid, self.model, plot_df)
         all_outer_receptors.write()
         self.model.all_outer_receptors_df = pd.DataFrame(data=all_outer_receptors.data, columns=all_outer_receptors.headers)
 
-        # Generate a dataframe of inner/outer/polar risk and HIs by lat, lon
-        self.model.risk_by_latlon = self.compute_risk_by_latlon(self.model)
+        #----------- create Ring_Summary_Chronic output file -----------------
+        ring_summary_chronic = RingSummaryChronic(self.outdir, self.facid, self.model, plot_df)
+        ring_summary_chronic.write()
+        ring_summary_chronic_df = pd.DataFrame(data=ring_summary_chronic.data, columns=ring_summary_chronic.headers)
+        
+        #----------- create Block_Summary_Chronic output file -----------------
+        block_summary_chronic = BlockSummaryChronic(self.outdir, self.facid, self.model, plot_df)
+        block_summary_chronic.write()
+        block_summary_chronic_df = pd.DataFrame(data=block_summary_chronic.data, columns=block_summary_chronic.headers)
 
+        # Combine ring summary chronic and block summary chronic into one df and assign a receptor type
+        ring_columns = ['lat', 'lon', 'mir', 'hi_resp', 'hi_live', 'hi_neur', 'hi_deve', 'hi_repr', 'hi_kidn', 'hi_ocul', 
+                      'hi_endo', 'hi_hema', 'hi_immu', 'hi_skel', 'hi_sple', 'hi_thyr', 'hi_whol', 'overlap']
+        block_columns = ring_columns + ['rectype']
+        
+        ring_risk = ring_summary_chronic_df[ring_columns]
+        ring_risk['rectype'] = 'P'
+        block_risk = block_summary_chronic_df[block_columns]
+        self.model.risk_by_latlon = ring_risk.append(block_risk)
+        
+        
         #----------- create Maximum_Individual_Risk output file ---------------
         max_indiv_risk = MaximumIndividualRisks(self.outdir, self.facid, self.model, plot_df)
         max_indiv_risk.write()
         self.model.max_indiv_risk_df = pd.DataFrame(data=max_indiv_risk.data, columns=max_indiv_risk.headers)
 
-        #----------- create Ring_Summary_Chronic output file -----------------
-        ring_summary_chronic = RingSummaryChronic(self.outdir, self.facid, self.model, plot_df)
-        ring_summary_chronic.write()
-
+        
 #        #----------- create Risk Breakdown output file ------------------------
 #        risk_breakdown = RiskBreakdown(self.outdir, self.facid, self.model, plot_df)
 #        risk_breakdown.write()

@@ -29,9 +29,9 @@ class RingSummaryChronic(CsvWriter):
         already been processed and stored in the model (see model.all_polar_receptors)
         """
 
-        self.headers = ['Lat', 'Lon', 'Overlap', 'Elevation', 'X', 'Y', 'Hill', 'Mir', 'Hi_resp', 'Hi_liver', 'Hi_neuro',
-                        'Hi_devel', 'Hi_repro', 'Hi_kidney', 'Hi_ocular', 'Hi_endoc', 'Hi_hemato', 'Hi_immune', 'Hi_skel',
-                        'Hi_spleen', 'Hi_thyroid', 'Hi_whol_bo', 'Distance', 'Angle', 'Sector']
+        self.headers = ['lat', 'lon', 'overlap', 'elevation', 'x', 'y', 'hill', 'mir', 'hi_resp', 'hi_live', 'hi_neur',
+                        'hi_deve', 'hi_repr', 'hi_kidn', 'hi_ocul', 'hi_endo', 'hi_hema', 'hi_immu', 'hi_skel',
+                        'hi_sple', 'hi_thyr', 'hi_whol', 'distance', 'angle', 'sector']
 
         allpolar_df = self.model.all_polar_receptors_df.copy()
 
@@ -48,8 +48,8 @@ class RingSummaryChronic(CsvWriter):
         merged = allpolar_df.merge(self.model.polargrid, on=['lat', 'lon', 'elev', 'angle', 'overlap'])[columns]
 
         # get a URE value for each row, by joining with the dose response library (on pollutant)
-        merged[['Mir', 'Hi_resp', 'Hi_liver', 'Hi_neuro', 'Hi_devel', 'Hi_repro', 'Hi_kidney', 'Hi_ocular', 'Hi_endoc',
-                'Hi_hemato', 'Hi_immune', 'Hi_skel', 'Hi_spleen', 'Hi_thyroid', 'Hi_whol_bo']] =\
+        merged[['mir', 'hi_resp', 'hi_live', 'hi_neur', 'hi_deve', 'hi_repr', 'hi_kidn', 'hi_ocul'
+                , 'hi_endo', 'hi_hema', 'hi_immu', 'hi_skel', 'hi_sple', 'hi_thyr', 'hi_whol']] =\
             merged.apply(lambda row: self.calculateRisks(row['pollutant'], row['conc_ug_m3']), axis=1)
 
         print('merged size = ' + str(merged.size))
@@ -57,13 +57,13 @@ class RingSummaryChronic(CsvWriter):
         # last step: group by lat,lon and then aggregate each group by summing the mir and hazard index fields
         aggs = {'pollutant':'first', 'lat':'first', 'lon':'first', 'overlap':'first', 'elev':'first', 'utme':'first',
                 'utmn':'first', 'hill':'first', 'conc_ug_m3':'first', 'distance':'first', 'angle':'first',
-                'sector':'first', 'Mir':'sum', 'Hi_resp':'sum', 'Hi_liver':'sum', 'Hi_neuro':'sum', 'Hi_devel':'sum',
-                'Hi_repro':'sum', 'Hi_kidney':'sum', 'Hi_ocular':'sum', 'Hi_endoc':'sum', 'Hi_hemato':'sum',
-                'Hi_immune':'sum', 'Hi_skel':'sum', 'Hi_spleen':'sum', 'Hi_thyroid':'sum', 'Hi_whol_bo':'sum'}
+                'sector':'first', 'mir':'sum', 'hi_resp':'sum', 'hi_live':'sum', 'hi_neur':'sum', 'hi_deve':'sum',
+                'hi_repr':'sum', 'hi_kidn':'sum', 'hi_ocul':'sum', 'hi_endo':'sum', 'hi_hema':'sum',
+                'hi_immu':'sum', 'hi_skel':'sum', 'hi_sple':'sum', 'hi_thyr':'sum', 'hi_whol':'sum'}
 
-        newcolumns = ['lat', 'lon', 'overlap', 'elev', 'utme', 'utmn', 'hill', 'Mir', 'Hi_resp', 'Hi_liver', 'Hi_neuro',
-                      'Hi_devel', 'Hi_repro', 'Hi_kidney', 'Hi_ocular', 'Hi_endoc', 'Hi_hemato', 'Hi_immune', 'Hi_skel',
-                      'Hi_spleen', 'Hi_thyroid', 'Hi_whol_bo', 'distance', 'angle', 'sector']
+        newcolumns = ['lat', 'lon', 'overlap', 'elev', 'utme', 'utmn', 'hill', 'mir', 'hi_resp', 'hi_live', 'hi_neur',
+                      'hi_deve', 'hi_repr', 'hi_kidn', 'hi_ocul', 'hi_endo', 'hi_hema', 'hi_immu', 'hi_skel',
+                      'hi_sple', 'hi_thyr', 'hi_whol', 'distance', 'angle', 'sector']
 
         self.data = merged.groupby(['lat', 'lon']).agg(aggs)[newcolumns].sort_values(by=['sector','distance']).values
 

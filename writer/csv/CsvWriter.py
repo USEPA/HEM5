@@ -23,7 +23,7 @@ class CsvWriter(Writer):
         if self.filename is None:
             raise RuntimeError("No file name set. Cannot write to file.")
 
-        fobj = open(self.filename, 'w')
+        fobj = open(self.filename, 'w', newline='')
         writer = csv.writer(fobj, delimiter=',', lineterminator='\r\n', quoting=csv.QUOTE_NONNUMERIC)
         writer.writerow(self.headers)
         for row in self.data:

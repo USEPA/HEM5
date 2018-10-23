@@ -174,8 +174,8 @@ OU FINISHED
  *** SETUP Finishes Successfully ***
  ***********************************
 
- *** AERMOD - VERSION 16216r ***   ***  01043110000366247                                                   ***        10/01/18
- *** AERMET - VERSION  16216 ***   ***  Combined particle and vapor-phase emissions                         ***        11:32:50
+ *** AERMOD - VERSION 16216r ***   ***  01043110000366247                                                   ***        10/23/18
+ *** AERMET - VERSION  16216 ***   ***  Combined particle and vapor-phase emissions                         ***        12:42:54
                                                                                                                        PAGE   1
  *** MODELOPTs:    NonDFAULT  CONC  ELEV  BETA  RURAL  ADJ_U*
 
@@ -242,8 +242,8 @@ OU FINISHED
   
  **Approximate Storage Requirements of Model =      3.5 MB of RAM.
   
- *** AERMOD - VERSION 16216r ***   ***  01043110000366247                                                   ***        10/01/18
- *** AERMET - VERSION  16216 ***   ***  Combined particle and vapor-phase emissions                         ***        11:32:50
+ *** AERMOD - VERSION 16216r ***   ***  01043110000366247                                                   ***        10/23/18
+ *** AERMET - VERSION  16216 ***   ***  Combined particle and vapor-phase emissions                         ***        12:42:54
                                                                                                                        PAGE   2
  *** MODELOPTs:    NonDFAULT  CONC  ELEV  BETA  RURAL  ADJ_U*
 
@@ -256,8 +256,8 @@ OU FINISHED
  - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
  CEOT0001         0   0.10000E+04  514554.0 3776658.0   233.7    13.72   353.14    12.77     0.91    NO      NO    NO         
- *** AERMOD - VERSION 16216r ***   ***  01043110000366247                                                   ***        10/01/18
- *** AERMET - VERSION  16216 ***   ***  Combined particle and vapor-phase emissions                         ***        11:32:50
+ *** AERMOD - VERSION 16216r ***   ***  01043110000366247                                                   ***        10/23/18
+ *** AERMET - VERSION  16216 ***   ***  Combined particle and vapor-phase emissions                         ***        12:42:54
                                                                                                                        PAGE   3
  *** MODELOPTs:    NonDFAULT  CONC  ELEV  BETA  RURAL  ADJ_U*
 
@@ -269,8 +269,8 @@ OU FINISHED
 
 
   CEOT0001   CEOT0001    ,
- *** AERMOD - VERSION 16216r ***   ***  01043110000366247                                                   ***        10/01/18
- *** AERMET - VERSION  16216 ***   ***  Combined particle and vapor-phase emissions                         ***        11:32:50
+ *** AERMOD - VERSION 16216r ***   ***  01043110000366247                                                   ***        10/23/18
+ *** AERMET - VERSION  16216 ***   ***  Combined particle and vapor-phase emissions                         ***        12:42:54
                                                                                                                        PAGE   4
  *** MODELOPTs:    NonDFAULT  CONC  ELEV  BETA  RURAL  ADJ_U*
 
@@ -292,8 +292,8 @@ OU FINISHED
 
           360.0,      22.5,      45.0,      67.5,      90.0,     112.5,     135.0,     157.5,     180.0,     202.5,
           225.0,     247.5,     270.0,     292.5,     315.0,     337.5,
- *** AERMOD - VERSION 16216r ***   ***  01043110000366247                                                   ***        10/01/18
- *** AERMET - VERSION  16216 ***   ***  Combined particle and vapor-phase emissions                         ***        11:32:50
+ *** AERMOD - VERSION 16216r ***   ***  01043110000366247                                                   ***        10/23/18
+ *** AERMET - VERSION  16216 ***   ***  Combined particle and vapor-phase emissions                         ***        12:42:54
                                                                                                                        PAGE   5
  *** MODELOPTs:    NonDFAULT  CONC  ELEV  BETA  RURAL  ADJ_U*
 
@@ -321,8 +321,8 @@ OU FINISHED
       292.50 |        233.70       233.70       233.70       233.70       219.20       217.20       219.70       237.10       297.30
       315.00 |        233.70       233.70       233.70       233.70       219.20       219.10       231.20       245.70       293.20
       337.50 |        233.70       233.70       233.70       233.70       233.70       224.40       237.60       247.20       304.00
- *** AERMOD - VERSION 16216r ***   ***  01043110000366247                                                   ***        10/01/18
- *** AERMET - VERSION  16216 ***   ***  Combined particle and vapor-phase emissions                         ***        11:32:50
+ *** AERMOD - VERSION 16216r ***   ***  01043110000366247                                                   ***        10/23/18
+ *** AERMET - VERSION  16216 ***   ***  Combined particle and vapor-phase emissions                         ***        12:42:54
                                                                                                                        PAGE   6
  *** MODELOPTs:    NonDFAULT  CONC  ELEV  BETA  RURAL  ADJ_U*
 
@@ -350,8 +350,8 @@ OU FINISHED
       292.50 |        311.40       307.50       303.90       225.20
       315.00 |        320.10       337.60       282.30       195.40
       337.50 |        312.10       328.50       341.60       219.40
- *** AERMOD - VERSION 16216r ***   ***  01043110000366247                                                   ***        10/01/18
- *** AERMET - VERSION  16216 ***   ***  Combined particle and vapor-phase emissions                         ***        11:32:50
+ *** AERMOD - VERSION 16216r ***   ***  01043110000366247                                                   ***        10/23/18
+ *** AERMET - VERSION  16216 ***   ***  Combined particle and vapor-phase emissions                         ***        12:42:54
                                                                                                                        PAGE   7
  *** MODELOPTs:    NonDFAULT  CONC  ELEV  BETA  RURAL  ADJ_U*
 
@@ -379,8 +379,8 @@ OU FINISHED
       292.50 |        233.70       233.70       233.70       233.70       219.20       217.20       219.70       237.10       297.30
       315.00 |        233.70       233.70       233.70       233.70       219.20       219.10       231.20       245.70       293.20
       337.50 |        233.70       233.70       233.70       233.70       233.70       224.40       237.60       247.20       304.00
- *** AERMOD - VERSION 16216r ***   ***  01043110000366247                                                   ***        10/01/18
- *** AERMET - VERSION  16216 ***   ***  Combined particle and vapor-phase emissions                         ***        11:32:50
+ *** AERMOD - VERSION 16216r ***   ***  01043110000366247                                                   ***        10/23/18
+ *** AERMET - VERSION  16216 ***   ***  Combined particle and vapor-phase emissions                         ***        12:42:54
                                                                                                                        PAGE   8
  *** MODELOPTs:    NonDFAULT  CONC  ELEV  BETA  RURAL  ADJ_U*
 
@@ -408,8 +408,8 @@ OU FINISHED
       292.50 |        311.40       307.50       303.90       225.20
       315.00 |        320.10       337.60       282.30       195.40
       337.50 |        312.10       328.50       341.60       219.40
- *** AERMOD - VERSION 16216r ***   ***  01043110000366247                                                   ***        10/01/18
- *** AERMET - VERSION  16216 ***   ***  Combined particle and vapor-phase emissions                         ***        11:32:50
+ *** AERMOD - VERSION 16216r ***   ***  01043110000366247                                                   ***        10/23/18
+ *** AERMET - VERSION  16216 ***   ***  Combined particle and vapor-phase emissions                         ***        12:42:54
                                                                                                                        PAGE   9
  *** MODELOPTs:    NonDFAULT  CONC  ELEV  BETA  RURAL  ADJ_U*
 
@@ -460,8 +460,8 @@ OU FINISHED
      ( 516305.0, 3774425.0,     208.0,     208.0,       0.0);         ( 515931.0, 3775066.0,     219.0,     219.0,       0.0);      
      ( 516298.0, 3774772.0,     216.0,     216.0,       0.0);         ( 515730.0, 3775661.0,     213.0,     213.0,       0.0);      
      ( 513882.0, 3774433.0,     217.0,     217.0,       0.0);         ( 516655.0, 3775261.0,     220.0,     220.0,       0.0);      
- *** AERMOD - VERSION 16216r ***   ***  01043110000366247                                                   ***        10/01/18
- *** AERMET - VERSION  16216 ***   ***  Combined particle and vapor-phase emissions                         ***        11:32:50
+ *** AERMOD - VERSION 16216r ***   ***  01043110000366247                                                   ***        10/23/18
+ *** AERMET - VERSION  16216 ***   ***  Combined particle and vapor-phase emissions                         ***        12:42:54
                                                                                                                        PAGE  10
  *** MODELOPTs:    NonDFAULT  CONC  ELEV  BETA  RURAL  ADJ_U*
 
@@ -485,8 +485,8 @@ OU FINISHED
                                                             (METERS/SEC)
 
                                                  1.54,   3.09,   5.14,   8.23,  10.80,
- *** AERMOD - VERSION 16216r ***   ***  01043110000366247                                                   ***        10/01/18
- *** AERMET - VERSION  16216 ***   ***  Combined particle and vapor-phase emissions                         ***        11:32:50
+ *** AERMOD - VERSION 16216r ***   ***  01043110000366247                                                   ***        10/23/18
+ *** AERMET - VERSION  16216 ***   ***  Combined particle and vapor-phase emissions                         ***        12:42:54
                                                                                                                        PAGE  11
  *** MODELOPTs:    NonDFAULT  CONC  ELEV  BETA  RURAL  ADJ_U*
 
@@ -534,8 +534,8 @@ OU FINISHED
  16 01 01 01   10.0 1    1.    6.46   276.5   99.0  -99.00  -99.00
 
  F indicates top of profile (=1) or below (=0)
- *** AERMOD - VERSION 16216r ***   ***  01043110000366247                                                   ***        10/01/18
- *** AERMET - VERSION  16216 ***   ***  Combined particle and vapor-phase emissions                         ***        11:32:50
+ *** AERMOD - VERSION 16216r ***   ***  01043110000366247                                                   ***        10/23/18
+ *** AERMET - VERSION  16216 ***   ***  Combined particle and vapor-phase emissions                         ***        12:42:54
                                                                                                                        PAGE  12
  *** MODELOPTs:    NonDFAULT  CONC  ELEV  BETA  RURAL  ADJ_U*
 
@@ -566,8 +566,8 @@ OU FINISHED
       292.50 |     616.94869   1019.06558    962.51159    654.24076    379.80038    280.89535    226.36174    206.42194     88.80423
       315.00 |     559.50877    931.31011    882.69282    589.33171    327.16555    222.36242    184.57782    137.61349     71.11518
       337.50 |     520.49755    961.52742   1030.47459    748.85898    482.31330    268.90370    191.38270    120.71549     43.22260
- *** AERMOD - VERSION 16216r ***   ***  01043110000366247                                                   ***        10/01/18
- *** AERMET - VERSION  16216 ***   ***  Combined particle and vapor-phase emissions                         ***        11:32:50
+ *** AERMOD - VERSION 16216r ***   ***  01043110000366247                                                   ***        10/23/18
+ *** AERMET - VERSION  16216 ***   ***  Combined particle and vapor-phase emissions                         ***        12:42:54
                                                                                                                        PAGE  13
  *** MODELOPTs:    NonDFAULT  CONC  ELEV  BETA  RURAL  ADJ_U*
 
@@ -598,8 +598,8 @@ OU FINISHED
       292.50 |      40.62976     26.16139     14.75714      9.07710
       315.00 |      25.19774     12.65878     13.53304      6.31727
       337.50 |      23.06601     11.17070      5.58579      5.43921
- *** AERMOD - VERSION 16216r ***   ***  01043110000366247                                                   ***        10/01/18
- *** AERMET - VERSION  16216 ***   ***  Combined particle and vapor-phase emissions                         ***        11:32:50
+ *** AERMOD - VERSION 16216r ***   ***  01043110000366247                                                   ***        10/23/18
+ *** AERMET - VERSION  16216 ***   ***  Combined particle and vapor-phase emissions                         ***        12:42:54
                                                                                                                        PAGE  14
  *** MODELOPTs:    NonDFAULT  CONC  ELEV  BETA  RURAL  ADJ_U*
 
@@ -652,8 +652,8 @@ OU FINISHED
          515571.00    3776702.00      106.30577                      515066.00    3776508.00      345.23946                         
          515385.00    3776216.00      170.18021                      515088.00    3774750.00      139.16567                         
          515417.00    3775995.00      152.94177                      517326.00    3776177.00       36.36212                         
- *** AERMOD - VERSION 16216r ***   ***  01043110000366247                                                   ***        10/01/18
- *** AERMET - VERSION  16216 ***   ***  Combined particle and vapor-phase emissions                         ***        11:32:50
+ *** AERMOD - VERSION 16216r ***   ***  01043110000366247                                                   ***        10/23/18
+ *** AERMET - VERSION  16216 ***   ***  Combined particle and vapor-phase emissions                         ***        12:42:54
                                                                                                                        PAGE  15
  *** MODELOPTs:    NonDFAULT  CONC  ELEV  BETA  RURAL  ADJ_U*
 
@@ -669,8 +669,8 @@ OU FINISHED
          516305.00    3774425.00       81.33721                      515931.00    3775066.00       98.53245                         
          516298.00    3774772.00       86.30707                      515730.00    3775661.00      114.52316                         
          513882.00    3774433.00      127.81495                      516655.00    3775261.00       82.51210                         
- *** AERMOD - VERSION 16216r ***   ***  01043110000366247                                                   ***        10/01/18
- *** AERMET - VERSION  16216 ***   ***  Combined particle and vapor-phase emissions                         ***        11:32:50
+ *** AERMOD - VERSION 16216r ***   ***  01043110000366247                                                   ***        10/23/18
+ *** AERMET - VERSION  16216 ***   ***  Combined particle and vapor-phase emissions                         ***        12:42:54
                                                                                                                        PAGE  16
  *** MODELOPTs:    NonDFAULT  CONC  ELEV  BETA  RURAL  ADJ_U*
 
@@ -699,8 +699,8 @@ CEOT0001  1ST HIGHEST VALUE IS    1030.47459 AT (  514454.50,  3776898.21,   233
                       GP = GRIDPOLR
                       DC = DISCCART
                       DP = DISCPOLR
- *** AERMOD - VERSION 16216r ***   ***  01043110000366247                                                   ***        10/01/18
- *** AERMET - VERSION  16216 ***   ***  Combined particle and vapor-phase emissions                         ***        11:32:50
+ *** AERMOD - VERSION 16216r ***   ***  01043110000366247                                                   ***        10/23/18
+ *** AERMET - VERSION  16216 ***   ***  Combined particle and vapor-phase emissions                         ***        12:42:54
                                                                                                                        PAGE  17
  *** MODELOPTs:    NonDFAULT  CONC  ELEV  BETA  RURAL  ADJ_U*
 
