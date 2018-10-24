@@ -22,7 +22,7 @@ from writer.kml.KMLWriter import KMLWriter
 
 class Process_outputs():
     
-    def __init__(self, outdir, facid, model, prep, runstream):
+    def __init__(self, outdir, facid, model, prep, runstream, abort):
         self.facid = facid
         self.haplib_m = model.haplib.dataframe.as_matrix()
         self.hapemis = runstream.hapemis
@@ -34,6 +34,8 @@ class Process_outputs():
         self.model.innerblks_df = prep.innerblks
         self.model.outerblks_df = prep.outerblks
         self.model.runstream_hapemis = runstream.hapemis
+
+        self.abort = abort
 
         # Units conversion factor
         self.cf = 2000*0.4536/3600/8760
@@ -92,6 +94,10 @@ class Process_outputs():
             comment='*')
 
 
+        if self.abort.is_set():
+            Logger.logMessage("Terminating output processing...")
+            return
+
         # Combine the dose response and target organ tables into one and create noncancer factors (multipliers)
         self.model.riskfacs_df = self.create_riskfacs()
         
@@ -100,26 +106,45 @@ class Process_outputs():
         all_polar_receptors.write()
         self.model.all_polar_receptors_df = pd.DataFrame(data=all_polar_receptors.data, columns=all_polar_receptors.headers)
 
- 
+        if self.abort.is_set():
+            Logger.logMessage("Terminating output processing...")
+            return
+
         #----------- create All_Inner_Receptor output file -----------------
         all_inner_receptors = AllInnerReceptors(self.outdir, self.facid, self.model, plot_df)
         all_inner_receptors.write()
         self.model.all_inner_receptors_df = pd.DataFrame(data=all_inner_receptors.data, columns=all_inner_receptors.headers)
-        
+
+        if self.abort.is_set():
+            Logger.logMessage("Terminating output processing...")
+            return
+
         #----------- create All_Outer_Receptor output file -----------------
         all_outer_receptors = AllOuterReceptors(self.outdir, self.facid, self.model, plot_df)
         all_outer_receptors.write()
         self.model.all_outer_receptors_df = pd.DataFrame(data=all_outer_receptors.data, columns=all_outer_receptors.headers)
 
+        if self.abort.is_set():
+            Logger.logMessage("Terminating output processing...")
+            return
+
         #----------- create Ring_Summary_Chronic output file -----------------
         ring_summary_chronic = RingSummaryChronic(self.outdir, self.facid, self.model, plot_df)
         ring_summary_chronic.write()
         ring_summary_chronic_df = pd.DataFrame(data=ring_summary_chronic.data, columns=ring_summary_chronic.headers)
-        
+
+        if self.abort.is_set():
+            Logger.logMessage("Terminating output processing...")
+            return
+
         #----------- create Block_Summary_Chronic output file -----------------
         block_summary_chronic = BlockSummaryChronic(self.outdir, self.facid, self.model, plot_df)
         block_summary_chronic.write()
         block_summary_chronic_df = pd.DataFrame(data=block_summary_chronic.data, columns=block_summary_chronic.headers)
+
+        if self.abort.is_set():
+            Logger.logMessage("Terminating output processing...")
+            return
 
         # Combine ring summary chronic and block summary chronic into one df and assign a receptor type
         ring_columns = ['lat', 'lon', 'mir', 'hi_resp', 'hi_live', 'hi_neur', 'hi_deve', 'hi_repr', 'hi_kidn', 'hi_ocul', 
@@ -130,8 +155,11 @@ class Process_outputs():
         ring_risk['rectype'] = 'P'
         block_risk = block_summary_chronic_df[block_columns]
         self.model.risk_by_latlon = ring_risk.append(block_risk)
-        
-        
+
+        if self.abort.is_set():
+            Logger.logMessage("Terminating output processing...")
+            return
+
         #----------- create Maximum_Individual_Risk output file ---------------
         max_indiv_risk = MaximumIndividualRisks(self.outdir, self.facid, self.model, plot_df)
         max_indiv_risk.write()

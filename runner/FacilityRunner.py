@@ -9,9 +9,10 @@ from log.Logger import Logger
 
 class FacilityRunner():
 
-    def __init__(self, id, model):
+    def __init__(self, id, model, abort):
         self.facilityId = id
         self.model = model
+        self.abort = abort
         
     def run(self):
 
@@ -35,24 +36,19 @@ class FacilityRunner():
         #run aermod
         Logger.logMessage("Running Aermod for " + self.facilityId)
 
-        args = "aermod.exe aermod.inp"
-        subprocess.call(args, shell=False)
+        # Start aermod asynchronously and then monitor it, with the possibility
+        # of terminating it midstream (i.e. if the thread is asked to die...)
 
-        # Below is an example of how we can start aermod asynchronously
-        # and then monitor it, with the possibility of terminating it
-        # midstream (i.e. if the thread is asked to die...)
-
-        # p = subprocess.Popen(['aermod.exe', 'aermod.inp'])
-        # subRunning = True
-        # while subRunning:
-        #     print("Another chance to terminate...")
-        #     if iterations > 2:
-        #         print("Terminating...")
-        #         p.terminate()
-        #         subRunning = False
-        #     else:
-        #         time.sleep(0.5)
-        #         subRunning = (p.poll() is None)
+        p = subprocess.Popen(['aermod.exe', 'aermod.inp'])
+        subRunning = True
+        while subRunning:
+            if self.abort.is_set():
+                Logger.logMessage("Terminating aermod process...")
+                p.terminate()
+                return
+            else:
+                time.sleep(0.5)
+                subRunning = (p.poll() is None)
 
         ## Check for successful aermod run:
         check = open('aermod.out','r')
@@ -80,7 +76,7 @@ class FacilityRunner():
 
             #process outputs
             Logger.logMessage("Processing Outputs for " + self.facilityId)
-            outputProcess = po.Process_outputs(fac_folder, self.facilityId, self.model, prep, runstream)
+            outputProcess = po.Process_outputs(fac_folder, self.facilityId, self.model, prep, runstream, self.abort)
             outputProcess.process()
 
             pace =  str(time.time()-start) + 'seconds'

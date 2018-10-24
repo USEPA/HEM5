@@ -50,7 +50,7 @@ class Processor():
                               str(len(fac_list)))
 
             try:
-                runner = FacilityRunner(facid, self.model)
+                runner = FacilityRunner(facid, self.model, self.abort)
                 runner.run()
 
                 # increment facility count
