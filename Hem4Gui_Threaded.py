@@ -4,20 +4,23 @@ Created on Thu Nov 30 10:26:13 2017
 
 @author: dlindsey
 """
+import asyncio
 import os
-import concurrent.futures as futures
 import queue
+import sched
 import sys
 import tkinter as tk
 import traceback
+from concurrent.futures import ThreadPoolExecutor
+from threading import Event, current_thread, main_thread
+from time import sleep, time
 from tkinter import messagebox
 from tkinter import scrolledtext
 from tkinter import ttk
 
-import FacilityPrep as prepare
+from Processor import Processor
 from log.Logger import Logger
 from model.Model import Model
-from runner.FacilityRunner import FacilityRunner
 from upload.FileUploader import FileUploader
 from tkinter.filedialog import askopenfilename
 from checker.InputChecker import InputChecker
@@ -28,14 +31,14 @@ from check_dep import check_dep
 #%% Hem4 GUI
 from writer.kml.KMLWriter import KMLWriter
 
-
 class Hem4():
 
-    def __init__ (self, messageQueue):
+    def __init__ (self, messageQueue, callbackQueue):
         """
         The HEM4 class object builds the GUI for the HEM4 application.
         """
         self.running = False
+        self.aborted = False
 
         # Create the model
         self.model = Model()
@@ -45,6 +48,7 @@ class Hem4():
         self.messageQueue = messageQueue
         self.lastException = None
 
+        self.callbackQueue = callbackQueue
         Logger.messageQueue = messageQueue
 
     def start_gui(self):
@@ -59,34 +63,94 @@ class Hem4():
         self.createWidgets()
 
         self.win.after(25, self.after_callback)
+        self.win.after(2000, self.nonblocking)
         self.win.mainloop()
 
     def close(self):
         Logger.close(True)
 
-#%% Quit Function    
-    def quit_gui(self):    
-        """ 
+    def quit(self):
+        """
         Function handles quiting HEM4 by closing the window containing
         the GUI and exiting all background processes & threads
         """
-    
-        if self.running == False:
-            self.win.quit()
-            self.win.destroy()
-            self.close()
-            sys.exit()
-        
-        elif self.running == True:
-             override = messagebox.askokcancel("Confirm HEM4 Quit", "Are you "+ 
-              "sure? Hem4 is currently running. Clicking 'OK' will stop HEM4.")
-             
-             if override == True:
-                self.win.quit()
-                self.win.destroy()
-                sys.exit()
-    
-#%% Open HEM4 User Guide
+        if self.running:
+            override = messagebox.askokcancel("Confirm HEM4 Quit", "Are you "+
+                                              "sure? Hem4 is currently running. Clicking 'OK' will stop HEM4.")
+
+            if override:
+                # Abort the thread and wait for it to stop...once it has
+                # completed, it will kill the GUI
+                Logger.logMessage("Stopping Hem4...")
+                self.processor.abortProcessing()
+                self.aborted = True
+
+        else:
+            self.quit_gui()
+
+    def quit_gui(self):
+        """
+        Destroy the GUI, close the log, and exit. The latter two are OK here, because
+        we don't ever destroy the GUI until all processing has stopped, which means
+        it's -really- time to end!
+        """
+        self.win.quit()
+        self.win.destroy()
+        self.close()
+        sys.exit()
+
+    def reset_gui(self):
+        #reset all inputs if everything finished
+        self.model.reset()
+        self.fac_list.set('')
+        self.hap_list.set('')
+        self.emisloc_list.set('')
+
+        if hasattr(self, 's6'):
+            self.urep.destroy()
+            self.urep_list_man.destroy()
+            self.ur_label.destroy()
+            self.s6.destroy()
+
+        if hasattr(self, 's7'):
+            self.buoyant_list_man.destroy()
+            self.buoyant_up.destroy()
+            self.b_label.destroy()
+            self.s7.destroy()
+
+        if hasattr(self, 's8'):
+            self.poly_list_man.destroy()
+            self.poly_up.destroy()
+            self.poly_label.destroy()
+            self.s8.destroy()
+
+        if hasattr(self, 's9'):
+            self.bldgdw_up.destroy()
+            self.bldgdw_list_man.destroy()
+            self.bldgdw_label.destroy()
+            self.s9.destroy()
+
+        if hasattr(self, 's12'):
+            #clear particle
+            if hasattr(self, 'dep_part'):
+                self.dep_part_up.destroy()
+                self.dep_part_man.destroy()
+                self.dep_part.destroy()
+            #clear land
+            if hasattr(self, 'dep_land'):
+                self.dep_land_up.destroy()
+                self.dep_land_man.destroy()
+                self.dep_land.destroy()
+
+            #clear vegetation
+            if hasattr(self, 'dep_veg'):
+                self.dep_veg_up.destroy()
+                self.dep_veg_man.destroy()
+                self.dep_veg.destroy()
+
+            self.s12.destroy()
+
+    #%% Open HEM4 User Guide
     def user_guide(self):
         """ 
         Function opens the user guide for Hem4
@@ -94,10 +158,7 @@ class Hem4():
         """
         
         os.startfile("userguide\Multi_HEM-3_Users_Guide.pdf")
-    
-                
-#%%Create Widgets
-    
+
     def createWidgets(self):
         """
         Function creates the main tab structure and required inputs,
@@ -117,7 +178,7 @@ class Hem4():
 
         self.tabControl.pack(expand=1, fill="both")  # Pack to make visible
         
-         # Create container frame to hold all other widgets
+        # Create container frame to hold all other widgets
         self.main = ttk.LabelFrame(tab1, text='Human Exposure Model,'+
                                    ' open-source (HEM4), Version 1.0', 
                                    labelanchor="n")
@@ -129,16 +190,12 @@ class Hem4():
         self.s3 = tk.Frame(self.main, width=250, height=100, pady=10, padx=10)
         self.s4 = tk.Frame(self.main, width=250, height=100, pady=10, padx=10)
         self.s5 = tk.Frame(self.main, width=250, height=100, pady=10, padx=10)
-        
 
         self.s1.grid(row=0)
         self.s2.grid(row=1, column=0, sticky="nsew")
         self.s3.grid(row=2, column=0, columnspan=2, sticky="nsew")
         self.s4.grid(row=3, column=0, columnspan=2, sticky="nsew")
         self.s5.grid(row=4, column=0, columnspan=2, sticky="nsew")
-
-
-       
 
         self.main.grid_rowconfigure(8, weight=4)
         self.main.grid_columnconfigure(2, weight=1)
@@ -155,20 +212,20 @@ class Hem4():
                                              height=scrolH, wrap=tk.WORD)
         self.scr.grid(column=0, row=3, sticky='WE', columnspan=3)
         
-#%% Set Quit, Run, and User Guide buttons        
+        #%% Set Quit, Run, and User Guide buttons
         self.quit = tk.Button(self.main, text="QUIT", fg="red",
-                              command=self.quit_gui)
+                              command=self.quit)
         self.quit.grid(row=10, column=0, sticky="W")
         
         #run only appears once the required files have been set
         self.run_button = tk.Button(self.main, text='RUN', fg="green", 
-                                    command=self.runThread).grid(row=10, 
+                                    command=self.run).grid(row=10,
                                                           column=1, sticky="E")
         
         self.guide = tk.Button(self.main, text="User Guide", 
                                command=self.user_guide).grid(row=0, column=0, 
                                                       sticky='W')
-#%% Setting up  directions text space
+        #%% Setting up  directions text space
 
         #Dynamic instructions place holder
         global instruction_instance
@@ -178,10 +235,8 @@ class Hem4():
         
         self.dynamic_inst["textvariable"] = instruction_instance 
         self.dynamic_inst.grid(row = 2, sticky='ew', padx = 10)
-        
-        
-        
-# %% Setting up each file upload space (includes browse button, and manual text entry for file path)         
+
+        # %% Setting up each file upload space (includes browse button, and manual text entry for file path)
         
         #facilities label
         fac_label = tk.Label(self.s3, font="-size 10", 
@@ -255,9 +310,7 @@ class Hem4():
         #event handler for instructions (Button 1 is the left mouse click)
         self.emisloc_list_man.bind('<Button-1>', 
                                    lambda e:self.manual("instructions/emis_man.txt"))
-         
-        
-        
+
     def is_excel(self, filepath):
         """
         Function checks to make sure excel files are selected for inputs
@@ -373,8 +426,6 @@ class Hem4():
 
 
                     self.s12.destroy()                        
-                    
-            
 
     def uploadHAPEmissions(self):
         """
@@ -485,8 +536,7 @@ class Hem4():
             # Update the UI
             self.urep_list.set(fullpath)
             [self.scr.insert(tk.INSERT, msg) for msg in self.model.ureceptr.log]
-                            
-            
+
     def uploadBuildingDownwash(self):
         """ 
         Function for uploading building downwash
@@ -504,9 +554,6 @@ class Hem4():
             # Update the UI
             self.bldgdw_list.set(fullpath)
             [self.scr.insert(tk.INSERT, msg) for msg in self.model.bldgdw.log]
-    
-
-
 
     def uploadParticle(self, facilities):
         """ 
@@ -525,8 +572,7 @@ class Hem4():
             # Update the UI
             self.dep_part.set(fullpath)
             [self.scr.insert(tk.INSERT, msg) for msg in self.model.partdep.log]
-    
-    
+
     def uploadLandUse(self):
         """ 
         Function for uploading land use information
@@ -544,8 +590,7 @@ class Hem4():
             # Update the UI
             self.dep_land.set(fullpath)
             [self.scr.insert(tk.INSERT, msg) for msg in self.model.landuse.log]
-            
-    
+
     def uploadVegetation(self):
         """ 
         Function for uploading season vegetation information
@@ -563,8 +608,6 @@ class Hem4():
             # Update the UI
             self.dep_land.set(fullpath)
             [self.scr.insert(tk.INSERT, msg) for msg in self.model.vegetation.log]
-    
-    
 
     def add_ur(self):
         """
@@ -597,8 +640,6 @@ class Hem4():
         #event handler for instructions (Button 1 is the left mouse click)
         self.urep_list_man.bind('<Button-1>', 
                                 lambda e:self.manual("instructions/urep_man.txt"))
-            
-
 
     def add_buoyant(self):
         """
@@ -634,9 +675,7 @@ class Hem4():
         #event handler for instructions (Button 1 is the left mouse click)
         self.buoyant_list_man.bind('<Button-1>', 
                                    lambda e:self.manual("instructions/buoyant_browse.txt"))
-        
-    
-    
+
     def add_poly(self):
         """
         Function for creating row and polyvertex file upload widgets
@@ -668,8 +707,7 @@ class Hem4():
         #event handler for instructions (Button 1 is the left mouse click)
         self.poly_list_man.bind('<Button-1>', 
                                 lambda e:self.manual("instructions/poly_browse.txt"))
-    
-    
+
     def add_bldgdw(self):
         """ 
         Function for creating row and building downwash file upload widgets
@@ -702,9 +740,7 @@ class Hem4():
         #event handler for instructions (Button 1 is the left mouse click)
         self.bldgdw_list_man.bind('<Button-1>', 
                                 lambda e:self.manual("instructions/bd_man.txt"))
-        
-        
-        
+
     def add_particle(self):
         """
         Function for creating column for particle size file upload widgets
@@ -736,8 +772,7 @@ class Hem4():
         #event handler for instructions (Button 1 is the left mouse click)
         self.dep_part_man.bind('<Button-1>', 
                                lambda e:self.manual("instructions/dep_part_man.txt"))
-              
-        
+
     def add_land(self):
         
         """
@@ -770,8 +805,7 @@ class Hem4():
         #event handler for instructions (Button 1 is the left mouse click)
         self.dep_land_man.bind('<Button-1>', 
                                lambda e:self.manual("instructions/dep_land_man.txt"))
-        
-        
+
     def add_veg(self):
         """
         Function for creating column for seasonal vegetation upload widgets
@@ -803,8 +837,7 @@ class Hem4():
         #event handler for instructions (Button 1 is the left mouse click)
         self.dep_veg_man.bind('<Button-1>', 
                               lambda e:self.manual("instructions/dep_veg_man.txt"))
-        
-        
+
  #%% Event handlers for porting instructions
 
     #reset instructions space
@@ -834,8 +867,7 @@ class Hem4():
         global instruction_instance
         read_inst = open(location, 'r')
         instruction_instance.set(read_inst.read())
-    
-             
+
 #%% Run function with checks if somethign is missing raise the error here and 
 #   create an additional dialogue before trying to run the file
 
@@ -850,11 +882,8 @@ class Hem4():
         When all facilites are done the GUI is reset and all optional inputs
         are destroyed
         """
-        
-#%% check file dataframes
 
         self.ready = False
-        
 
         # Upload the Dose response and Target Organ Endponts libraries
         self.uploader.uploadLibrary("haplib")
@@ -865,16 +894,13 @@ class Hem4():
         required = check_inputs.check_required()
         
         if 'ready' not in required['result']:
-            
             messagebox.showinfo('Error', required['result'])
             self.ready = False
             
         elif required['dependencies'] is not []:
-            
             optional = check_inputs.check_dependent(required['dependencies'])
             
             if 'ready' not in optional['result']:
-                
                 messagebox.showinfo('Error', optional['result'])
                 self.ready = False
                 
@@ -882,7 +908,6 @@ class Hem4():
                 self.ready = True
         
         else:
-            
             self.ready = True
         
 
@@ -894,136 +919,46 @@ class Hem4():
                                    " will start HEM4. Check the log tabs for" +
                                    " updates on facility runs.")
 
-            #create object for prepare inputs
-            self.running = True
+            global instruction_instance
+            instruction_instance.set("Hem4 Running, check the log tab for updates")
             self.process()
 
-            #reset all inputs if everything finished
-            self.model.reset()
-            self.fac_list.set('')
-            self.hap_list.set('')
-            self.emisloc_list.set('')
-
-            if hasattr(self, 's6'):
-                self.urep.destroy()
-                self.urep_list_man.destroy()
-                self.ur_label.destroy()
-                self.s6.destroy()
-
-            if hasattr(self, 's7'):
-                self.buoyant_list_man.destroy()
-                self.buoyant_up.destroy()
-                self.b_label.destroy()
-                self.s7.destroy()
-
-            if hasattr(self, 's8'):
-                self.poly_list_man.destroy()
-                self.poly_up.destroy()
-                self.poly_label.destroy()
-                self.s8.destroy()
-
-            if hasattr(self, 's9'):
-                self.bldgdw_up.destroy()
-                self.bldgdw_list_man.destroy()
-                self.bldgdw_label.destroy()
-                self.s9.destroy()
-
-            if hasattr(self, 's12'):
-                #clear particle
-                if hasattr(self, 'dep_part'):
-                    self.dep_part_up.destroy()
-                    self.dep_part_man.destroy()
-                    self.dep_part.destroy()
-                #clear land
-                if hasattr(self, 'dep_land'):
-                    self.dep_land_up.destroy()
-                    self.dep_land_man.destroy()
-                    self.dep_land.destroy()
-
-                #clear vegetation
-                if hasattr(self, 'dep_veg'):
-                    self.dep_veg_up.destroy()
-                    self.dep_veg_man.destroy()
-                    self.dep_veg.destroy()
-
-
-                self.s12.destroy()
-
+    #%% Create/start separate thread for processing
     def process(self):
-        #create a Google Earth KML of all sources to be modeled
-        kmlWriter = KMLWriter()
-        if kmlWriter is not None:
-            #kmlWriter.write_kml_emis_loc(self.model)
-            pass
-
-        Logger.logMessage("Preparing Inputs for " + str(
-                self.model.facids.count()) + " facilities")
-
-
-        # let's tell after_callback that this completed
-        #print('thread_target puts None to the queue')
-
-
-        fac_list = []
-        for index, row in self.model.faclist.dataframe.iterrows():
-
-           facid = row[0]
-           fac_list.append(facid)
-           num = 1
-
-        Logger.log("The facilities ids being modeled:", fac_list, False)
-
-        for facid in fac_list:
-
-            #save version of this gui as is? constantly overwrite it once each facility is done?
-            Logger.logMessage("Running facility " + str(num) + " of " +
-                          str(len(fac_list)))
-
-            try:
-                runner = FacilityRunner(facid, self.model)
-                runner.run()
-
-                # increment facility count
-                num += 1
-            except Exception as ex:
-
-                fullStackInfo=''.join(traceback.format_exception(
-                        etype=type(ex), value=ex, tb=ex.__traceback__))
-
-                Logger.logMessage("An error occurred while running a facility:\n" + fullStackInfo)
-
-        Logger.logMessage("HEM4 Modeling Completed. Finished modeling all" +
-                             " facilities. Check the log tab for error messages."+
-                             " Modeling results are located in the Output"+
-                             " subfolder of the HEM4 folder.")
-        self.running = False
-
-    def workerComplete(self, future):
-        """
-        Function catches raised exceptions/errors on threads and logs traceback 
-        information to the log tab via queue method
-        """
-        ex = future.exception()
-
-        if ex is not None:
-            fullStackInfo = ''.join(traceback.format_exception(etype=type(ex), 
-                                                               value=ex, 
-                                                               tb=ex.__traceback__))
-            
-            Logger.logMessage("An error occurred while running a facility:\n" + fullStackInfo)
-
-    #%% Create Thread for Threaded Process
-    def runThread(self):
         """
         Function creates thread for running HEM4 concurrently with tkinter GUI
         """
-        global instruction_instance
-        instruction_instance.set("Hem4 Running, check the log tab for updates")
+        executor = ThreadPoolExecutor(max_workers=1)
 
-        executor = futures.ThreadPoolExecutor(max_workers=1)
-        future = executor.submit(self.run)
-        future.add_done_callback(self.workerComplete)
+        self.running = True
+        self.processor = Processor(self.model, Event())
+        future = executor.submit(self.processor.process)
+        future.add_done_callback(self.finish)
 
+    def finish(self, future):
+        print("in thread callback")
+        self.callbackQueue.put(self.stop)
+
+    def stop(self):
+        self.running = False
+
+        print("thread is finished...")
+
+        if self.aborted:
+            self.quit_gui()
+        else:
+            self.reset_gui()
+
+
+    def nonblocking(self):
+        try:
+            callback = self.callbackQueue.get(block=False)
+        except queue.Empty: #raised when queue is empty
+            self.win.after(500, self.nonblocking)
+            return
+
+        print("About to call callback...")
+        callback()
 
     def after_callback(self):
         """
