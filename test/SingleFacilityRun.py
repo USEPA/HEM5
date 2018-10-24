@@ -18,7 +18,8 @@ class SingleFacilityRun(unittest.TestCase):
     @classmethod
     def setUpClass(cls):
         messageQueue = queue.Queue()
-        cls.hem4 = Hem4(messageQueue)
+        callbackQueue = queue.Queue()
+        cls.hem4 = Hem4(messageQueue, callbackQueue)
 
         # set up the test fixture files...
         cls.hem4.uploader.uploadLibrary("haplib")
