@@ -17,6 +17,7 @@ from time import sleep, time
 from tkinter import messagebox
 from tkinter import scrolledtext
 from tkinter import ttk
+from tkinter.simpledialog import Dialog, Toplevel
 
 from Processor import Processor
 from log.Logger import Logger
@@ -90,10 +91,27 @@ class Hem4():
                 Logger.logMessage("Stopping Hem4...")
                 self.processor.abortProcessing()
                 self.aborted = True
+                self.display_app_quit()
 
         else:
             # If we're not running, the only thing to do is quit the GUI...
             self.quit_gui()
+
+    def display_app_quit(self):
+        self.disable_widgets(self.main)
+
+        message = "HEM4 is stopping. Please wait."
+        tk.Label(self.win, text=message).pack()
+
+    def disable_widgets(self, root):
+        """
+        Recursively disable widgets starting from the given root.
+        """
+        if "state" in root.keys():
+            root.configure(state='disabled')
+
+        for child in root.winfo_children():
+            self.disable_widgets(child)
 
     def quit_gui(self):
         """
@@ -178,6 +196,7 @@ class Hem4():
 
         tab1 = ttk.Frame(self.tabControl)            # Create a tab
         self.tabControl.add(tab1, text='HEM4')      # Add the tab
+        self.tab1 = tab1
 
         tab2 = ttk.Frame(self.tabControl)            # Add a second tab
         self.tabControl.add(tab2, text='Log')      # Make second tab visible
