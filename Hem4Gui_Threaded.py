@@ -39,6 +39,7 @@ class Hem4():
         """
         self.running = False
         self.aborted = False
+        self.ready = False
 
         # Create the model
         self.model = Model()
@@ -46,9 +47,14 @@ class Hem4():
         # Create a file uploader
         self.uploader = FileUploader(self.model)
         self.messageQueue = messageQueue
+
+        # The callback queue is shared by the main thread and the processing thread.
+        # The main thread polls it periodically (via the tkinter event loop) to see
+        # if the processing thread has completed.
+        self.callbackQueue = callbackQueue
+        self.processor = None
         self.lastException = None
 
-        self.callbackQueue = callbackQueue
         Logger.messageQueue = messageQueue
 
     def start_gui(self):
@@ -63,7 +69,7 @@ class Hem4():
         self.createWidgets()
 
         self.win.after(25, self.after_callback)
-        self.win.after(2000, self.nonblocking)
+        self.win.after(500, self.check_processing)
         self.win.mainloop()
 
     def close(self):
@@ -80,12 +86,13 @@ class Hem4():
 
             if override:
                 # Abort the thread and wait for it to stop...once it has
-                # completed, it will kill the GUI
+                # completed, it will signal this class to kill the GUI
                 Logger.logMessage("Stopping Hem4...")
                 self.processor.abortProcessing()
                 self.aborted = True
 
         else:
+            # If we're not running, the only thing to do is quit the GUI...
             self.quit_gui()
 
     def quit_gui(self):
@@ -150,7 +157,6 @@ class Hem4():
 
             self.s12.destroy()
 
-    #%% Open HEM4 User Guide
     def user_guide(self):
         """ 
         Function opens the user guide for Hem4
@@ -868,9 +874,6 @@ class Hem4():
         read_inst = open(location, 'r')
         instruction_instance.set(read_inst.read())
 
-#%% Run function with checks if somethign is missing raise the error here and 
-#   create an additional dialogue before trying to run the file
-
     def run(self):
         """ 
         Function passes model class to InputChecker class, then uses returned 
@@ -923,7 +926,6 @@ class Hem4():
             instruction_instance.set("Hem4 Running, check the log tab for updates")
             self.process()
 
-    #%% Create/start separate thread for processing
     def process(self):
         """
         Function creates thread for running HEM4 concurrently with tkinter GUI
@@ -933,28 +935,43 @@ class Hem4():
         self.running = True
         self.processor = Processor(self.model, Event())
         future = executor.submit(self.processor.process)
-        future.add_done_callback(self.finish)
+        future.add_done_callback(self.processing_finish)
 
-    def finish(self, future):
-        print("in thread callback")
-        self.callbackQueue.put(self.stop)
+    def processing_finish(self, future):
+        """
+        Callback that gets run in the same thread as the processor, after the target method
+        has finished. It's purpose is to update the shared callback queue so that the main
+        thread can update the GUI (which cannot be done in this thread!)
+        :param future:
+        :return: None
+        """
+        self.callbackQueue.put(self.finish_run)
 
-    def stop(self):
+    def finish_run(self):
+        """
+        Return Hem4 running state to False, and either reset or quit the GUI, depending on
+        whether or not the processing finished naturally or was aborted.
+        :return: None
+        """
         self.running = False
-
-        print("thread is finished...")
 
         if self.aborted:
             self.quit_gui()
         else:
             self.reset_gui()
 
-
-    def nonblocking(self):
+    def check_processing(self):
+        """
+        Check the callback queue to see if the processing thread has indicated that
+        it's finished running. If an entry is found, it's the method to run that
+        instructs this class how to reset/kill the GUI. If not, schedule another
+        check soon.
+        :return: None
+        """
         try:
             callback = self.callbackQueue.get(block=False)
         except queue.Empty: #raised when queue is empty
-            self.win.after(500, self.nonblocking)
+            self.win.after(500, self.check_processing)
             return
 
         print("About to call callback...")
