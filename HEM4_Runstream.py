@@ -7,23 +7,20 @@ Created on Mon Oct 16 15:07:13 2017
 import pandas as pd
 import numpy as np
 import math
+
 import find_met as fm
+from dep_sort import sort
 
-
-## Test files
- # %% Optional Input Files (uncomment for test)
-    
-#    receptr_df = pd.read_excel(r"C:\HEM3_V153\Inputs_multi\Template_Multi_user_receptors.xlsx")
-#    landuse_df = pd.read_excel(r"C:\HEM3_V153\Inputs_multi\Template_Multi_landuse.xlsx")
-#    partdia_df = pd.read_excel(r"C:\HEM3_V153\Inputs_multi\Template_Multi_particle_data.xlsx")
-#    gseason_df = pd.read_excel(r"C:\HEM3_V153\Inputs_multi\Template_Multi_seasons.xlsx")
 
 #%%
 
 class Runstream():
     
-    def __init__(self, model, facops_df, emislocs_df, hapemis_df, cenlat, cenlon, cenx, ceny, innerblks_df, userrecs_df, buoyant_df, polyver_df, bldgdw_df):
-        self.model = model
+    def __init__(self, facops_df, emislocs_df, hapemis_df, cenlat, cenlon, 
+                 cenx, ceny, innerblks_df, userrecs_df, buoyant_df, polyver_df,
+                 polar_df, bldgdw_df, partdia_df, landuse_df, seasons_df, 
+                 gasparams_df):
+        
         self.facoptn_df = facops_df
         self.emisloc_df = emislocs_df
         self.hapemis = hapemis_df
@@ -37,15 +34,19 @@ class Runstream():
         self.user_recs = userrecs_df
         self.buoyant_df = buoyant_df
         self.polyver_df = polyver_df
+        self.polar_df = polar_df
         self.bldgdw_df = bldgdw_df
-
+        self.partdia_df = partdia_df
+        self.landuse_df = landuse_df
+        self.seasons_df = seasons_df
+        self.gas_params = gas_params
+        
+        
+        
     def build(self):
 
         # These are being defined here as placeholders...used in code below.
-        receptr_df = None
-        landuse_df = None
-        partdia_df = None
-        gseason_df = None
+
         part_met2 = None
         poly_pos = None
         wide = None
@@ -55,7 +56,7 @@ class Runstream():
     
         varemis = 0
         
-    # %% Emission Location File
+    # %% Emission Location File -- gets used  in SO as far as I can tell
     
         srid = self.emisloc_df['source_id'][:]                   # Source ID
         cord = self.emisloc_df['location_type'][:]           # Coordinate System
@@ -103,7 +104,7 @@ class Runstream():
         xco2[np.isnan(xco2)] = 0
         yco2[np.isnan(yco2)] = 0
 
- # %% Facility Options File
+ # %% Facility Options File -- gets used in CO
     
     #----------------------------------------------------------------------------------------
         facid = self.facoptn_df['fac_id'][0]                  # Facility ID
@@ -151,7 +152,7 @@ class Runstream():
         elif overl > 500:
             overl = 30
     #----------------------------------------------------------------------------------------
-        acute = self.facoptn_df['acute'][0]
+        acute = self.facoptn_df['acute'][0] #-- move to OU section
     
         if acute == "":
             acute = "N"
@@ -182,84 +183,26 @@ class Runstream():
         else:
             firnd = firnd
     #----------------------------------------------------------------------------------------
-        depos = self.facoptn_df['dep'][0]                         # Deposition
-        vdepo = self.facoptn_df['vdep'][0]                        # Vapor Deposition
-        pdepo = self.facoptn_df['pdep'][0]                        # Particle Deposition
-    
-        if depos == "":
-            depos = "N"
-    
-        if ("Y" in depos) == 1:
-            if pdepo == "WD" or vdepo == "WD":
-                optds_1 = " WDEP DDEP "
-            else:
-                optds_1 = ""
-            if pdepo == "DO" or vdepo == "DO":
-                optds_2 = " DDEP "
-            else:
-                optds_2 = ""
-            if pdepo == "WO" or vdepo == "WO":
-                optds_3 = " WDEP "
-            else:
-                optds_3 = ""
-            if pdepo == "NO" and vdepo == "NO":
-                optds_4 = ""
-            else:
-                optds_4 = ""
-            optds = " DEPOS " + optds_1 + optds_2 + optds_3 + optds_4
+   
+        #get depositon and depletion model options, results will eventually be stored in the model
+        settings = sort(self.facoptn_df)
+        
+        print('MODEL OPTIONS', settings)
+        
+        #logic for pahse setting in model options
+        if settings['phase'] == 'P':
+            optdp = settings['settings'][0]
+            
+        
+        elif settings['phase'] == 'V':
+            optdp = settings['settings'][0]
+            
+            
+            
+        
         else:
-            optds = ""
-    #----------------------------------------------------------------------------------------
-        deple = self.facoptn_df['depl'][0]                        # Depletion
-        vdepl = self.facoptn_df['vdepl'][0]                       # Vapor Depletion
-        pdepl = self.facoptn_df['pdepl'][0]                       # Particle Depletion
+            optdp = ''
     
-        if deple == "Y":
-            if pdepl == "WD" or vdepl == "WD":
-                optdp_1 = " DRYDPLT WETDPLT "
-                optdp = optdp_1
-            else:
-                optdp_1 = ""
-                if pdepl == "DO" and vdepl == "DO":
-                    optdp_2 = " DRYDPLT NOWETDPLT "
-                else:
-                    optdp_2 = ""
-                if pdepl == "DO" and vdepl != "DO":
-                    optdp_3 = " DRYDPLT "
-                else:
-                    optdp_3 = ""
-                if pdepl != "DO" and vdepl == "DO":
-                    optdp_4 = " DRYDPLT "
-                else:
-                    optdp_4 = ""
-                if pdepl == "WO" and vdepl == "WO":
-                    optdp_5 = " WETDPLT NODRYDPLT "
-                else:
-                    optdp_5 = ""
-                if pdepl == "WO" and vdepl != "WO":
-                    optdp_6 = " WETDPLT "
-                else:
-                    optdp_6 = ""
-                if pdepl != "WO" and vdepl == "WO":
-                    optdp_7 = " WETDPLT "
-                else:
-                    optdp_7 = ""
-                if pdepl == "NO" and vdepl == "NO":
-                    optdp_8 = ""
-                else:
-                    optdp_8 = ""
-                if pdepl == "" or vdepl == "":
-                    optdp_9 = ""
-                else:
-                    optdp_9 = ""
-                optdp = optdp_1 + optdp_2 + optdp_3 + optdp_4 + optdp_5 + optdp_6 + optdp_7 + optdp_8 + optdp_9
-        else:
-            optdp = ""
-    #----------------------------------------------------------------------------------------
-        phase = self.facoptn_df['phase'][0]                       # Phase
-    
-        if phase == "":
-            phase = "B"
     #----------------------------------------------------------------------------------------
         blddw = self.facoptn_df['bldg_dw'][0]
     #---------------------------------------------------------------------------------------- 
@@ -270,6 +213,7 @@ class Runstream():
         else:
             optfa = ""
     #----------------------------------------------------------------------------------------
+
     # %% Converting Coordinates from UTM to Lat-Lon
     
        # nad = 83*np.ones(len(ylat))
@@ -287,41 +231,74 @@ class Runstream():
         inp_f = open("aermod.inp", "w")
     
     # %% CO Section
-    
+        #optdp and optdepos used to represent deposition options and depletion options
+        # maybe just need to pull out the optdp
+        
         co1 = "CO STARTING  \n"
         co2 = "CO TITLEONE  " + str(facid) + "\n"
         co3 = "CO TITLETWO  Combined particle and vapor-phase emissions \n"
-        co4 = "CO MODELOPT  CONC  BETA " + optdp + optel + optds + optfa + "\n"
+        co4 = "CO MODELOPT  CONC  BETA " + optdp + optel + optfa + "\n"  
     
+
         inp_f.write(co1)
         inp_f.write(co2)
         inp_f.write(co3)
         inp_f.write(co4)
+        
+        #    # Landuse Options for Deposition
+        if 'DDEP' in optdp:
+            coland = ("CO GDLANUSE " + str(self.landuse_df_df['D01'][0]) + " " + 
+                      str(self.landuse_df['D02'][0]) + " " + 
+                      str(self.landuse_df['D03'][0]) + " " + 
+                      str(self.landuse_df['D04'][0]) + " " + 
+                      str(self.landuse_df['D05'][0]) + " " + 
+                      str(self.landuse_df['D06'][0]) + " " + 
+                      str(self.landuse_df['D07'][0]) + " " + 
+                      str(self.landuse_df['D08'][0]) + " " + 
+                      str(self.landuse_df['D09'][0]) + " " + 
+                      str(self.landuse_df['D10'][0]) + " " + 
+                      str(self.landuse_df['D11'][0]) + " " + 
+                      str(self.landuse_df['D12'][0]) + " " + 
+                      str(self.landuse_df['D13'][0]) + " " + 
+                      str(self.landuse_df['D14'][0]) + " " + 
+                      str(self.landuse_df['D15'][0]) + " " + 
+                      str(self.landuse_df['D16'][0]) + " " + 
+                      str(self.landuse_df['D17'][0]) + " " + 
+                      str(self.landuse_df['D18'][0]) + " " + 
+                      str(self.landuse_df['D19'][0]) + " " + 
+                      str(self.landuse_df['D20'][0]) + " " + 
+                      str(self.landuse_df['D21'][0]) + " " + 
+                      str(self.landuse_df['D22'][0]) + " " + 
+                      str(self.landuse_df['D23'][0]) + " " + 
+                      str(self.landuse_df['D24'][0]) + " " + 
+                      str(self.landuse_df['D25'][0]) + " " + 
+                      str(self.landuse_df['D26'][0]) + " " + 
+                      str(self.landuse_df['D27'][0]) + " " + 
+                      str(self.landuse_df['D28'][0]) + " " + 
+                      str(self.landuse_df['D29'][0]) + " " + 
+                      str(self.landuse_df['D30'][0]))
+            
+            inp_f.write(coland)
     
-    # Season Options for Deposition
+            # Season Options for Deposition
     
-        if ("Y" in depos) == 1:
-            coseas = "CO GDSEASON " + str(gseason_df['M01'][0]) + " " + str(gseason_df['M02'][0]) + " " + \
-                str(gseason_df['M03'][0]) + " " + str(gseason_df['M04'][0]) + " " + str(gseason_df['M05'][0]) + \
-                str(gseason_df['M06'][0]) + " " + str(gseason_df['M07'][0]) + " " + str(gseason_df['M08'][0]) + \
-                str(gseason_df['M09'][0]) + " " + str(gseason_df['M10'][0]) + " " + str(gseason_df['M11'][0]) + \
-                str(gseason_df['M12'][0])
+       
+            coseas = ("CO GDSEASON " + str(self.seasons_df['M01'][0]) + " " + 
+                      str(self.seasons_df['M02'][0]) + " " + 
+                      str(self.seasons_df['M03'][0]) + " " + 
+                      str(self.seasons_df['M04'][0]) + " " + 
+                      str(self.seasons_df['M05'][0]) + " " +
+                      str(self.seasons_df['M06'][0]) + " " + 
+                      str(self.seasons_df['M07'][0]) + " " + 
+                      str(self.seasons_df['M08'][0]) + " " +
+                      str(self.seasons_df['M09'][0]) + " " + 
+                      str(self.seasons_df['M10'][0]) + " " + 
+                      str(self.seasons_df['M11'][0]) + " " +
+                      str(self.seasons_df['M12'][0]))
+            
             inp_f.write(coseas)
-    
-    # Landuse Options for Deposition
-    
-        if ("Y" in depos) == 1:
-            coland = "CO GDLANUSE " + str(landuse_df['D01'][0]) + " " + str(landuse_df['D02'][0]) + " " + \
-                str(landuse_df['D03'][0]) + " " + str(landuse_df['D04'][0]) + " " + str(landuse_df['D05'][0]) + " " + \
-                str(landuse_df['D06'][0]) + " " + str(landuse_df['D07'][0]) + " " + str(landuse_df['D08'][0]) + " " + \
-                str(landuse_df['D09'][0]) + " " + str(landuse_df['D10'][0]) + " " + str(landuse_df['D11'][0]) + " " + \
-                str(landuse_df['D12'][0]) + " " + str(landuse_df['D13'][0]) + " " + str(landuse_df['D14'][0]) + " " + \
-                str(landuse_df['D15'][0]) + " " + str(landuse_df['D16'][0]) + " " + str(landuse_df['D17'][0]) + " " + \
-                str(landuse_df['D18'][0]) + " " + str(landuse_df['D19'][0]) + " " + str(landuse_df['D20'][0]) + " " + \
-                str(landuse_df['D21'][0]) + " " + str(landuse_df['D22'][0]) + " " + str(landuse_df['D23'][0]) + " " + \
-                str(landuse_df['D24'][0]) + " " + str(landuse_df['D25'][0]) + " " + str(landuse_df['D26'][0]) + " " + \
-                str(landuse_df['D27'][0]) + " " + str(landuse_df['D28'][0]) + " " + str(landuse_df['D29'][0]) + " " + \
-                str(landuse_df['D30'][0])
+#    
+
     
         co5 = "CO AVERTIME  " + hours + "\n"
         co6 = "CO POLLUTID  UNITHAP \n"
@@ -341,12 +318,7 @@ class Runstream():
         inp_f.write(so1)
         inp_f.write(so2)
     
-    ## Gas Deposition parameters if option is selected in file selection
-    
-        da    =    0.07
-        dw    =    0.70
-        rcl   = 2000.00
-        henry =    5.00
+       
     
         newline = "\n"
     
@@ -425,30 +397,67 @@ class Runstream():
                                 inp_f.write(newline)
                                 
                             
-    
-                if ("Y" in depos) == 1:
-                    sodepos = "SO GASDEPOS " + str(srid[index]) + " " + str(da) + " " + str(dw) + " " + str(rcl) + " " + str(henry)
-                    inp_f.write(sodepos)
-                    if phase == "Y" or phase == "B":
-                        if part_met2 == "Y":
-                            partme2_df = pd.read_excel(r"Currently not a created file") ################################
-                            sourc = list(partme2_df['Source ID'][:])
-                            sr_pos = sourc.index(srid[index])
-                            someth2 = "SO METHOD_2 " + str(srid[index]) + " " + str(partme2_df['Fine Mass'][sr_pos]) + \
-                                " " + str(partme2_df['Dmm'][sr_pos]) + "\n"
-                            inp_f.write(someth2)
-                        else:
-                            sourc = list(partdia_df['Source ID'][:])
-                            sr_pos = sourc.index(srid[index])
-                            sopdiam = "SO PARTDIAM " + str(srid[sr_pos]) + " " + str(partdia_df['Particle diameter'][sr_pos])
-                            sopdens = "SO PARTDENS " + str(srid[sr_pos]) + " " + str(partdia_df['Particle density'][sr_pos])
-                            somassf = "SO MASSFRAX " + str(srid[sr_pos]) + " " + str(partdia_df['Mass fraction'][sr_pos])
-                            inp_f.write(sopdiam)
-                            inp_f.write(sopdens)
-                            inp_f.write(somassf)
-    
-    
-       
+                #particle deposition
+                if settings['phase'] == 'P':
+#                    
+#                    if phase == "Y" or phase == "B":
+#                        if part_met2 == "Y":
+#                            partme2_df = pd.read_excel(r"Currently not a created file") ################################
+#                            sourc = list(partme2_df['Source ID'][:])
+#                            sr_pos = sourc.index(srid[index])
+#                            someth2 = "SO METHOD_2 " + str(srid[index]) + " " + str(partme2_df['Fine Mass'][sr_pos]) + \
+#                                " " + str(partme2_df['Dmm'][sr_pos]) + "\n"
+#                            inp_f.write(someth2)
+#                        else:
+                        
+                        #get values for this source id
+                        
+                        partdia_source = self.partdia_df[self.partdia_df['source_id'] == srid[index]]
+                        part_diam = partdia_source['part_diam'].tolist()
+                        part_dens = partdia_source['part_dens'].tolist()
+                        mass_frac = partdia_source['mass_frac'].tolist()
+                        
+            
+                        sopdiam = ("SO PARTDIAM " + str(srid[index]) + " " +
+                                   " ".join(map(str, part_diam)) +"\n")
+                        sopdens = ("SO PARTDENS " + str(srid[index]) + " " +
+                                   " ".join(map(str, part_dens))+"\n")
+                        somassf = ("SO MASSFRAX " + str(srid[index]) + " " +
+                                   " ".join(map(str, mass_frac))+"\n")
+                        
+                        print(sopdiam)
+                        print(sopdens)
+                        print(somassf)
+                        inp_f.write(sopdiam)
+                        inp_f.write(somassf)
+                        inp_f.write(sopdens)
+                        
+                if settings['phase'] == 'V':
+                    
+                    pollutants = self.hapemis[self.hapemis['source_id'] == srid[index]]['pollutants'].str.lower().tolist()
+                    #write values if they exist in the 
+                    #so there should only be one pollutant per source id for vapor/gas deposition to work
+                    #currently default values if the size of pollutant list is greater than 1
+                    
+                    if len(pollutants) > 1:
+                        #log message about defaulting 
+                        
+                        da    =    0.07
+                        dw    =    0.70
+                        rcl   = 2000.00
+                        henry =    5.00
+                        
+                        sodepos = "SO GASDEPOS " + str(srid[index]) + " " + str(da) + " " + str(dw) + " " + str(rcl) + " " + str(henry)
+                        inp_f.write(sodepos)
+                        
+                    else:
+                    
+                    #check gas params dataframe for real values and pull them out for that one source
+                        pass
+                    
+                    
+                    
+                        
        #%% Capped Point Source
             elif srct[index] == 'C':
                 soloc = "SO LOCATION " + str(srid[index]) + " POINTCAP " + str(xco1[index]) + " " + str(yco1[index]) + " " + \
@@ -520,28 +529,41 @@ class Runstream():
                                 inp_f.write(bldgdim)
                                 inp_f.write(newline)
                                 
-                if ("Y" in depos) == 1:
-                    sodepos = "SO GASDEPOS " + str(srid[index]) + " " + str(da) + " " + str(dw) + " " + str(rcl) + " " + str(henry)
-                    inp_f.write(sodepos)
-                    if phase == "Y" or phase == "B":
-                        if part_met2 == "Y":   ######### Add for facility list options?
-                            sourc = list(partme2_df['Source ID'][:])
-                            sr_pos = sourc.index(srid[index])
-                            someth2 = "SO METHOD_2 " + str(srid[index]) + " " + str(partme2_df['Fine Mass'][sr_pos]) + \
-                                " " + str(partme2_df['Dmm'][sr_pos]) + "\n"
-                            inp_f.write(someth2)
-                        else:
-                            sourc = list(partdia_df['Source ID'][:])
-                            sr_pos = sourc.index(srid[index])
-                        sopdiam = "SO PARTDIAM " + str(srid[sr_pos]) + " " + str(partdia_df['Particle diameter'][sr_pos])
-                        sopdens = "SO PARTDENS " + str(srid[sr_pos]) + " " + str(partdia_df['Particle density'][sr_pos])
-                        somassf = "SO MASSFRAX " + str(srid[sr_pos]) + " " + str(partdia_df['Mass fraction'][sr_pos])
+                #particle deposition
+                if settings['phase'] == 'P':
+#                    sodepos = "SO GASDEPOS " + str(srid[index]) + " " + str(da) + " " + str(dw) + " " + str(rcl) + " " + str(henry)
+#                    inp_f.write(sodepos)
+#                    if phase == "Y" or phase == "B":
+#                        if part_met2 == "Y":
+#                            partme2_df = pd.read_excel(r"Currently not a created file") ################################
+#                            sourc = list(partme2_df['Source ID'][:])
+#                            sr_pos = sourc.index(srid[index])
+#                            someth2 = "SO METHOD_2 " + str(srid[index]) + " " + str(partme2_df['Fine Mass'][sr_pos]) + \
+#                                " " + str(partme2_df['Dmm'][sr_pos]) + "\n"
+#                            inp_f.write(someth2)
+#                        else:
+                        
+                        #get values for this source id
+                        
+                        partdia_source = self.partdia_df[self.partdia_df['source_id'] == srid[index]]
+                        part_diam = partdia_source['part_diam'].tolist()
+                        part_dens = partdia_source['part_dens'].tolist()
+                        mass_frac = partdia_source['mass_frac'].tolist()
+                        
+            
+                        sopdiam = ("SO PARTDIAM " + str(srid[index]) + " " +
+                                   " ".join(map(str, part_diam)) +"\n")
+                        sopdens = ("SO PARTDENS " + str(srid[index]) + " " +
+                                   " ".join(map(str, part_dens))+"\n")
+                        somassf = ("SO MASSFRAX " + str(srid[index]) + " " +
+                                   " ".join(map(str, mass_frac))+"\n")
+                        
+                        print(sopdiam)
+                        print(sopdens)
+                        print(somassf)
                         inp_f.write(sopdiam)
+                        inp_f.write(somassf)
                         inp_f.write(sopdens)
-                        inp_f.write(somassf)                     
-
-
-
        # %% # Horizontal Point Source
     
             elif srct[index] == 'H':
@@ -614,26 +636,41 @@ class Runstream():
                                 inp_f.write(bldgdim)
                                 inp_f.write(newline)
             
-                if ("Y" in depos) == 1:
-                    sodepos = "SO GASDEPOS " + str(srid[index]) + " " + str(da) + " " + str(dw) + " " + str(rcl) + " " + str(henry)
-                    inp_f.write(sodepos)
-                    if phase == "Y" or phase == "B":
-                        if part_met2 == "Y":   ######### Add for facility list options?
-                            sourc = list(partme2_df['Source ID'][:])####################### Change for Method_2 Dataframe
-                            sr_pos = sourc.index(srid[index])
-                            someth2 = "SO METHOD_2 " + str(srid[index]) + " " + str(partme2_df['Fine Mass'][sr_pos]) + \
-                                " " + str(partme2_df['Dmm'][sr_pos]) + "\n"
-                            inp_f.write(someth2)
-                        else:
-                            sourc = list(partdia_df['Source ID'][:])
-                            sr_pos = sourc.index(srid[index])
-                        sopdiam = "SO PARTDIAM " + str(srid[sr_pos]) + " " + str(partdia_df['Particle diameter'][sr_pos])
-                        sopdens = "SO PARTDENS " + str(srid[sr_pos]) + " " + str(partdia_df['Particle density'][sr_pos])
-                        somassf = "SO MASSFRAX " + str(srid[sr_pos]) + " " + str(partdia_df['Mass fraction'][sr_pos])
+                 #particle deposition
+                if settings['phase'] == 'P':
+#                    sodepos = "SO GASDEPOS " + str(srid[index]) + " " + str(da) + " " + str(dw) + " " + str(rcl) + " " + str(henry)
+#                    inp_f.write(sodepos)
+#                    if phase == "Y" or phase == "B":
+#                        if part_met2 == "Y":
+#                            partme2_df = pd.read_excel(r"Currently not a created file") ################################
+#                            sourc = list(partme2_df['Source ID'][:])
+#                            sr_pos = sourc.index(srid[index])
+#                            someth2 = "SO METHOD_2 " + str(srid[index]) + " " + str(partme2_df['Fine Mass'][sr_pos]) + \
+#                                " " + str(partme2_df['Dmm'][sr_pos]) + "\n"
+#                            inp_f.write(someth2)
+#                        else:
+                        
+                        #get values for this source id
+                        
+                        partdia_source = self.partdia_df[self.partdia_df['source_id'] == srid[index]]
+                        part_diam = partdia_source['part_diam'].tolist()
+                        part_dens = partdia_source['part_dens'].tolist()
+                        mass_frac = partdia_source['mass_frac'].tolist()
+                        
+            
+                        sopdiam = ("SO PARTDIAM " + str(srid[index]) + " " +
+                                   " ".join(map(str, part_diam)) +"\n")
+                        sopdens = ("SO PARTDENS " + str(srid[index]) + " " +
+                                   " ".join(map(str, part_dens))+"\n")
+                        somassf = ("SO MASSFRAX " + str(srid[index]) + " " +
+                                   " ".join(map(str, mass_frac))+"\n")
+                        
+                        print(sopdiam)
+                        print(sopdens)
+                        print(somassf)
                         inp_f.write(sopdiam)
-                        inp_f.write(sopdens)
                         inp_f.write(somassf)
-        
+                        inp_f.write(sopdens)
           # %% # Area Source
     
             elif srct[index] == 'A':
@@ -706,27 +743,42 @@ class Runstream():
                                 inp_f.write(bldgdim)
                                 inp_f.write(newline)
                             
-                if ("Y" in depos) == 1:
-                    sodepos = "SO GASDEPOS " + str(srid[index]) + " " + str(da) + " " + str(dw) + " " + str(rcl) + " " + str(henry)
-                    inp_f.write(sodepos)
-                    if phase == "Y" or phase == "B":
-                        if part_met2 == "Y":   ######### Add for facility list options?
-                            sourc = list(partme2_df['Source ID'][:])####################### Change for Method_2 Dataframe
-                            sr_pos = sourc.index(srid[index])
-                            someth2 = "SO METHOD_2 " + str(srid[index]) + " " + str(partme2_df['Fine Mass'][sr_pos]) + \
-                                " " + str(partme2_df['Dmm'][sr_pos]) + "\n"
-                            inp_f.write(someth2)
-                        else:
-                            sourc = list(partdia_df['Source ID'][:])
-                            sr_pos = sourc.index(srid[index])
-                        sopdiam = "SO PARTDIAM " + str(srid[sr_pos]) + " " + str(partdia_df['Particle diameter'][sr_pos])
-                        sopdens = "SO PARTDENS " + str(srid[sr_pos]) + " " + str(partdia_df['Particle density'][sr_pos])
-                        somassf = "SO MASSFRAX " + str(srid[sr_pos]) + " " + str(partdia_df['Mass fraction'][sr_pos])
+                 #particle deposition
+                if settings['phase'] == 'P':
+#                    sodepos = "SO GASDEPOS " + str(srid[index]) + " " + str(da) + " " + str(dw) + " " + str(rcl) + " " + str(henry)
+#                    inp_f.write(sodepos)
+#                    if phase == "Y" or phase == "B":
+#                        if part_met2 == "Y":
+#                            partme2_df = pd.read_excel(r"Currently not a created file") ################################
+#                            sourc = list(partme2_df['Source ID'][:])
+#                            sr_pos = sourc.index(srid[index])
+#                            someth2 = "SO METHOD_2 " + str(srid[index]) + " " + str(partme2_df['Fine Mass'][sr_pos]) + \
+#                                " " + str(partme2_df['Dmm'][sr_pos]) + "\n"
+#                            inp_f.write(someth2)
+#                        else:
+                        
+                        #get values for this source id
+                        
+                        partdia_source = self.partdia_df[self.partdia_df['source_id'] == srid[index]]
+                        part_diam = partdia_source['part_diam'].tolist()
+                        part_dens = partdia_source['part_dens'].tolist()
+                        mass_frac = partdia_source['mass_frac'].tolist()
+                        
+            
+                        sopdiam = ("SO PARTDIAM " + str(srid[index]) + " " +
+                                   " ".join(map(str, part_diam)) +"\n")
+                        sopdens = ("SO PARTDENS " + str(srid[index]) + " " +
+                                   " ".join(map(str, part_dens))+"\n")
+                        somassf = ("SO MASSFRAX " + str(srid[index]) + " " +
+                                   " ".join(map(str, mass_frac))+"\n")
+                        
+                        print(sopdiam)
+                        print(sopdens)
+                        print(somassf)
                         inp_f.write(sopdiam)
-                        inp_f.write(sopdens)
                         inp_f.write(somassf)
+                        inp_f.write(sopdens)
     
-
        # %% # Volume Source
     
             elif srct[index] == 'V':
@@ -798,26 +850,41 @@ class Runstream():
                                 inp_f.write(bldgdim)
                                 inp_f.write(newline)
             
-                if ("Y" in depos) == 1:
-                    sodepos = "SO GASDEPOS " + str(srid[index]) + " " + str(da) + " " + str(dw) + " " + str(rcl) + " " + str(henry)
-                    inp_f.write(sodepos)
-                    if phase == "Y" or phase == "B":
-                        if part_met2 == "Y":   ######### Add for facility list options?
-                            sourc = list(partme2_df['Source ID'][:])####################### Change for Method_2 Dataframe
-                            sr_pos = sourc.index(srid[index])
-                            someth2 = "SO METHOD_2 " + str(srid[index]) + " " + str(partme2_df['Fine Mass'][sr_pos]) + \
-                                " " + str(partme2_df['Dmm'][sr_pos]) + "\n"
-                            inp_f.write(someth2)
-                        else:
-                            sourc = list(partdia_df['Source ID'][:])
-                            sr_pos = sourc.index(srid[index])
-                        sopdiam = "SO PARTDIAM " + str(srid[sr_pos]) + " " + str(partdia_df['Particle diameter'][sr_pos])
-                        sopdens = "SO PARTDENS " + str(srid[sr_pos]) + " " + str(partdia_df['Particle density'][sr_pos])
-                        somassf = "SO MASSFRAX " + str(srid[sr_pos]) + " " + str(partdia_df['Mass fraction'][sr_pos])
+                 #particle deposition
+                if settings['phase'] == 'P':
+#                    sodepos = "SO GASDEPOS " + str(srid[index]) + " " + str(da) + " " + str(dw) + " " + str(rcl) + " " + str(henry)
+#                    inp_f.write(sodepos)
+#                    if phase == "Y" or phase == "B":
+#                        if part_met2 == "Y":
+#                            partme2_df = pd.read_excel(r"Currently not a created file") ################################
+#                            sourc = list(partme2_df['Source ID'][:])
+#                            sr_pos = sourc.index(srid[index])
+#                            someth2 = "SO METHOD_2 " + str(srid[index]) + " " + str(partme2_df['Fine Mass'][sr_pos]) + \
+#                                " " + str(partme2_df['Dmm'][sr_pos]) + "\n"
+#                            inp_f.write(someth2)
+#                        else:
+                        
+                        #get values for this source id
+                        
+                        partdia_source = self.partdia_df[self.partdia_df['source_id'] == srid[index]]
+                        part_diam = partdia_source['part_diam'].tolist()
+                        part_dens = partdia_source['part_dens'].tolist()
+                        mass_frac = partdia_source['mass_frac'].tolist()
+                        
+            
+                        sopdiam = ("SO PARTDIAM " + str(srid[index]) + " " +
+                                   " ".join(map(str, part_diam)) +"\n")
+                        sopdens = ("SO PARTDENS " + str(srid[index]) + " " +
+                                   " ".join(map(str, part_dens))+"\n")
+                        somassf = ("SO MASSFRAX " + str(srid[index]) + " " +
+                                   " ".join(map(str, mass_frac))+"\n")
+                        
+                        print(sopdiam)
+                        print(sopdens)
+                        print(somassf)
                         inp_f.write(sopdiam)
-                        inp_f.write(sopdens)
                         inp_f.write(somassf)
-        
+                        inp_f.write(sopdens)
         # %% # Area Polygon (Irregular) Source
     
             elif srct[index] == 'I':
@@ -914,26 +981,41 @@ class Runstream():
                                 inp_f.write(bldgdim)
                                 inp_f.write(newline)
             
-                if ("Y" in depos) == 1:
-                    sodepos = "SO GASDEPOS " + str(srid[index]) + " " + str(da) + " " + str(dw) + " " + str(rcl) + " " + str(henry)
-                    inp_f.write(sodepos)
-                    if phase == "Y" or phase == "B":
-                        if part_met2 == "Y":   ######### Add for facility list options?
-                            sourc = list(partme2_df['Source ID'][:])####################### Change for Method_2 Dataframe
-                            sr_pos = sourc.index(srid[index])
-                            someth2 = "SO METHOD_2 " + str(srid[index]) + " " + str(partme2_df['Fine Mass'][sr_pos]) + \
-                                " " + str(partme2_df['Dmm'][sr_pos]) + "\n"
-                            inp_f.write(someth2)
-                        else:
-                            sourc = list(partdia_df['Source ID'][:])
-                            sr_pos = sourc.index(srid[index])
-                        sopdiam = "SO PARTDIAM " + str(srid[sr_pos]) + " " + str(partdia_df['Particle diameter'][sr_pos])
-                        sopdens = "SO PARTDENS " + str(srid[sr_pos]) + " " + str(partdia_df['Particle density'][sr_pos])
-                        somassf = "SO MASSFRAX " + str(srid[sr_pos]) + " " + str(partdia_df['Mass fraction'][sr_pos])
+                 #particle deposition
+                if settings['phase'] == 'P':
+#                    sodepos = "SO GASDEPOS " + str(srid[index]) + " " + str(da) + " " + str(dw) + " " + str(rcl) + " " + str(henry)
+#                    inp_f.write(sodepos)
+#                    if phase == "Y" or phase == "B":
+#                        if part_met2 == "Y":
+#                            partme2_df = pd.read_excel(r"Currently not a created file") ################################
+#                            sourc = list(partme2_df['Source ID'][:])
+#                            sr_pos = sourc.index(srid[index])
+#                            someth2 = "SO METHOD_2 " + str(srid[index]) + " " + str(partme2_df['Fine Mass'][sr_pos]) + \
+#                                " " + str(partme2_df['Dmm'][sr_pos]) + "\n"
+#                            inp_f.write(someth2)
+#                        else:
+                        
+                        #get values for this source id
+                        
+                        partdia_source = self.partdia_df[self.partdia_df['source_id'] == srid[index]]
+                        part_diam = partdia_source['part_diam'].tolist()
+                        part_dens = partdia_source['part_dens'].tolist()
+                        mass_frac = partdia_source['mass_frac'].tolist()
+                        
+            
+                        sopdiam = ("SO PARTDIAM " + str(srid[index]) + " " +
+                                   " ".join(map(str, part_diam)) +"\n")
+                        sopdens = ("SO PARTDENS " + str(srid[index]) + " " +
+                                   " ".join(map(str, part_dens))+"\n")
+                        somassf = ("SO MASSFRAX " + str(srid[index]) + " " +
+                                   " ".join(map(str, mass_frac))+"\n")
+                        
+                        print(sopdiam)
+                        print(sopdens)
+                        print(somassf)
                         inp_f.write(sopdiam)
-                        inp_f.write(sopdens)
                         inp_f.write(somassf)
-
+                        inp_f.write(sopdens)
         # %% # Line Source
     
             elif srct[index] == 'N':
@@ -1008,26 +1090,41 @@ class Runstream():
                                 inp_f.write(bldgdim)
                                 inp_f.write(newline)
             
-                if ("Y" in depos) == 1:
-                    sodepos = "SO GASDEPOS " + str(srid[index]) + " " + str(da) + " " + str(dw) + " " + str(rcl) + " " + str(henry)
-                    inp_f.write(sodepos)
-                    if phase == "Y" or phase == "B":
-                        if part_met2 == "Y":   ######### Add for facility list options?
-                            sourc = list(partme2_df['Source ID'][:])####################### Change for Method_2 Dataframe
-                            sr_pos = sourc.index(srid[index])
-                            someth2 = "SO METHOD_2 " + str(srid[index]) + " " + str(partme2_df['Fine Mass'][sr_pos]) + \
-                                " " + str(partme2_df['Dmm'][sr_pos]) + "\n"
-                            inp_f.write(someth2)
-                        else:
-                            sourc = list(partdia_df['Source ID'][:])
-                            sr_pos = sourc.index(srid[index])
-                        sopdiam = "SO PARTDIAM " + str(sourc[sr_pos]) + " " + str(partdia_df['Particle diameter'][sr_pos])
-                        sopdens = "SO PARTDENS " + str(sourc[sr_pos]) + " " + str(partdia_df['Particle density'][sr_pos])
-                        somassf = "SO MASSFRAX " + str(sourc[sr_pos]) + " " + str(partdia_df['Mass fraction'][sr_pos])
+                 #particle deposition
+                if settings['phase'] == 'P':
+#                    sodepos = "SO GASDEPOS " + str(srid[index]) + " " + str(da) + " " + str(dw) + " " + str(rcl) + " " + str(henry)
+#                    inp_f.write(sodepos)
+#                    if phase == "Y" or phase == "B":
+#                        if part_met2 == "Y":
+#                            partme2_df = pd.read_excel(r"Currently not a created file") ################################
+#                            sourc = list(partme2_df['Source ID'][:])
+#                            sr_pos = sourc.index(srid[index])
+#                            someth2 = "SO METHOD_2 " + str(srid[index]) + " " + str(partme2_df['Fine Mass'][sr_pos]) + \
+#                                " " + str(partme2_df['Dmm'][sr_pos]) + "\n"
+#                            inp_f.write(someth2)
+#                        else:
+                        
+                        #get values for this source id
+                        
+                        partdia_source = self.partdia_df[self.partdia_df['source_id'] == srid[index]]
+                        part_diam = partdia_source['part_diam'].tolist()
+                        part_dens = partdia_source['part_dens'].tolist()
+                        mass_frac = partdia_source['mass_frac'].tolist()
+                        
+            
+                        sopdiam = ("SO PARTDIAM " + str(srid[index]) + " " +
+                                   " ".join(map(str, part_diam)) +"\n")
+                        sopdens = ("SO PARTDENS " + str(srid[index]) + " " +
+                                   " ".join(map(str, part_dens))+"\n")
+                        somassf = ("SO MASSFRAX " + str(srid[index]) + " " +
+                                   " ".join(map(str, mass_frac))+"\n")
+                        
+                        print(sopdiam)
+                        print(sopdens)
+                        print(somassf)
                         inp_f.write(sopdiam)
-                        inp_f.write(sopdens)
                         inp_f.write(somassf)
- 
+                        inp_f.write(sopdens)
         # %% # Buoyant Line Source
     
             elif srct[index] == 'B':
@@ -1110,28 +1207,42 @@ class Runstream():
                                 inp_f.write(newline)
                                 
                                 
-                if ("Y" in depos) == 1:
-                    sodepos = "SO GASDEPOS " + str(srid[index]) + " " + str(da) + " " + str(dw) + " " + str(rcl) + " " + str(henry)
-                    inp_f.write(sodepos)
-                    if phase == "Y" or phase == "B":
-                        if part_met2 == "Y":   ######### Add for facility list options?
-                            sourc = list(partme2_df['Source ID'][:])####################### Change for Method_2 Dataframe
-                            sr_pos = sourc.index(srid[index])
-                            someth2 = "SO METHOD_2 " + str(srid[index]) + " " + str(partme2_df['Fine Mass'][sr_pos]) + \
-                                " " + str(partme2_df['Dmm'][sr_pos]) + "\n"
-                            inp_f.write(someth2)
-                        else:
-                            sourc = list(partdia_df['Source ID'][:])
-                            sr_pos = sourc.index(sr_pos)
-                        sopdiam = "SO PARTDIAM " + str(sourc[sr_pos]) + " " + str(partdia_df['Particle diameter'][sr_pos])
-                        sopdens = "SO PARTDENS " + str(sourc[sr_pos]) + " " + str(partdia_df['Particle density'][sr_pos])
-                        somassf = "SO MASSFRAX " + str(sourc[sr_pos]) + " " + str(partdia_df['Mass fraction'][sr_pos])
+                 #particle deposition
+                if settings['phase'] == 'P':
+#                    sodepos = "SO GASDEPOS " + str(srid[index]) + " " + str(da) + " " + str(dw) + " " + str(rcl) + " " + str(henry)
+#                    inp_f.write(sodepos)
+#                    if phase == "Y" or phase == "B":
+#                        if part_met2 == "Y":
+#                            partme2_df = pd.read_excel(r"Currently not a created file") ################################
+#                            sourc = list(partme2_df['Source ID'][:])
+#                            sr_pos = sourc.index(srid[index])
+#                            someth2 = "SO METHOD_2 " + str(srid[index]) + " " + str(partme2_df['Fine Mass'][sr_pos]) + \
+#                                " " + str(partme2_df['Dmm'][sr_pos]) + "\n"
+#                            inp_f.write(someth2)
+#                        else:
+                        
+                        #get values for this source id
+                        
+                        partdia_source = self.partdia_df[self.partdia_df['source_id'] == srid[index]]
+                        part_diam = partdia_source['part_diam'].tolist()
+                        part_dens = partdia_source['part_dens'].tolist()
+                        mass_frac = partdia_source['mass_frac'].tolist()
+                        
+            
+                        sopdiam = ("SO PARTDIAM " + str(srid[index]) + " " +
+                                   " ".join(map(str, part_diam)) +"\n")
+                        sopdens = ("SO PARTDENS " + str(srid[index]) + " " +
+                                   " ".join(map(str, part_dens))+"\n")
+                        somassf = ("SO MASSFRAX " + str(srid[index]) + " " +
+                                   " ".join(map(str, mass_frac))+"\n")
+                        
+                        print(sopdiam)
+                        print(sopdens)
+                        print(somassf)
                         inp_f.write(sopdiam)
-                        inp_f.write(sopdens)
                         inp_f.write(somassf)
-    
-        
-        
+                        inp_f.write(sopdens)
+                        
     # %% SO Source groups
     
         uniqsrcs = srid.unique()
@@ -1178,7 +1289,7 @@ class Runstream():
         inp_f.write(repo)
         inp_f.write(repd)
 
-        recep_dis = self.model.polargrid["distance"].unique()
+        recep_dis = self.polar_df["distance"].unique()
         num_rings = len(recep_dis)
         for i in np.arange(num_rings):
             repdis = str(recep_dis[i]) + " "
@@ -1189,7 +1300,7 @@ class Runstream():
         repi = "RE GRIDPOLR polgrid1 DDIR "
         inp_f.write(repi)
 
-        recep_dir = self.model.polargrid["angle"].unique()
+        recep_dir = self.polar_df["angle"].unique()
         num_sectors = len(recep_dir)
         for i in np.arange(num_sectors):
             repdir = str(recep_dir[i]) + " "
@@ -1201,20 +1312,20 @@ class Runstream():
         if eleva == "Y":
             for i in range(1, num_sectors+1):
                 indexStr = "S" + str(i) + "R1"
-                repelev0 = "RE GRIDPOLR polgrid1 ELEV " + str(self.model.polargrid["angle"].loc[indexStr]) + " "
+                repelev0 = "RE GRIDPOLR polgrid1 ELEV " + str(self.polar_df["angle"].loc[indexStr]) + " "
                 inp_f.write(repelev0)
                 for j in range(1, num_rings+1):
                     indexStr = "S" + str(i) + "R" + str(j)
-                    repelev1 = str(self.model.polargrid["elev"].loc[indexStr]) + " "
+                    repelev1 = str(self.polar_df["elev"].loc[indexStr]) + " "
                     inp_f.write(repelev1)
 
                 inp_f.write(newline)
 
-                rephill0 = "RE GRIDPOLR polgrid1 HILL " + str(self.model.polargrid["angle"].loc[indexStr]) + " "
+                rephill0 = "RE GRIDPOLR polgrid1 HILL " + str(self.polar_df["angle"].loc[indexStr]) + " "
                 inp_f.write(rephill0)
                 for j in range(1, num_rings+1):
                     indexStr = "S" + str(i) + "R" + str(j)
-                    rephill1 = str(self.model.polargrid["hill"].loc[indexStr]) + " "
+                    rephill1 = str(self.polar_df["hill"].loc[indexStr]) + " "
                     inp_f.write(rephill1)
                 
                 inp_f.write(newline)

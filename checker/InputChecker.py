@@ -72,6 +72,12 @@ class InputChecker():
                 #user receptors
                 if 'Y' in self.model.faclist.dataframe['user_rcpt'].tolist():
                     result['dependencies'].append('user_rcpt')
+                    
+                    
+                #add bldgdw
+                
+                
+                #add dep/depl
               
                          
         try:
@@ -212,7 +218,7 @@ class InputChecker():
                         result['result'] =  logMsg7b
                         result['reset'] = 'user_rcpt'
                         return result
-                        
+                       
                 
             elif option is 'bouyant_line':
                 
@@ -249,6 +255,10 @@ class InputChecker():
                         result['reset'] = 'bouyant_line'
                         return result
                     
+                    else:
+                        #set ureceptr model option to TRUE
+                        self.model.model_optns['ureceptr'] = True
+                        
                 
             elif option is 'polyvertex':
                 

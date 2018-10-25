@@ -10,8 +10,11 @@ import sys
 import numpy as np
 import pandas as pd
 import HEM4_Runstream as rs
+import find_center as fc
 import json_census_blocks as cbr
 from support.UTM import UTM
+
+from runstream.Runstream import Runstream
 
 
 ##REFORMATTED TO MOVE THE DATA FRAME CREATION TO THE GUI
@@ -209,6 +212,44 @@ class FacilityPrep():
         
 
 
+
+        #%% ------ Optional Particle Data -------------------------------------
+        
+        if hasattr(self.model.partdep, "dataframe"):
+            
+            partdia_df = self.model.partdep.dataframe.loc[self.model.partdep.dataframe.fac_id == facid].copy()
+        
+        else:
+            partdia_df = pd.DataFrame()
+            
+            
+        #%% -- Optional Land Use ----------------------------------------------
+        
+        if hasattr(self.model.landuse, "dataframe"):
+            landuse_df = self.model.landuse.dataframe.loc[self.model.landuse.dataframe.fac_id == facid].copy()
+            
+        else:
+            landuse_df = pd.DataFrame()
+        
+        
+        
+        #%% --- Optional Seasons ---------------------------------------------
+        
+        if hasattr(self.model.seasons, "dataframe"):
+            seasons_df = self.model.seasons.dataframe.loc[self.model.seasons.dataframe.fac_id == facid].copy()
+            
+        else:
+            seasons_df = pd.DataFrame()
+            
+        
+        #%%-- Gas Params for gas runs -- needs to be incorporated better
+        
+        if hasattr(self.model.gasparams, "dataframe"):
+            gasparams_df = self.model.gasparams.dataframe
+            
+        else:
+            gasparams_df = pd.DataFrame()
+        
         #%%---------- Get Census Block Receptors -------------------------------------- needs to be connected
 
         # Keep necessary source location columns
@@ -224,10 +265,8 @@ class FacilityPrep():
             sourcelocs = sourcelocs.fillna({"source_type":"", "lengthx":0, "lengthy":0, "angle":0, "utme_x2":0, "utmn_y2":0})
             sourcelocs = sourcelocs.reset_index()
 
-        self.model.sourcelocs = sourcelocs
-
         # Compute the coordinates of the facililty center
-        cenx, ceny, cenlon, cenlat, max_srcdist, vertx_a, verty_a = UTM.center(sourcelocs, facutmzone)
+        cenx, ceny, cenlon, cenlat, max_srcdist, vertx_a, verty_a = fc.center(sourcelocs, facutmzone)
 
         #retrieve blocks
         maxdist = facops.get_value(0,"max_dist")
@@ -337,9 +376,8 @@ class FacilityPrep():
         # determine if polar receptors overlap any emission sources
         polar_df["overlap"] = polar_df.apply(lambda row: self.polar_overlap(row["utme"], row["utmn"], sourcelocs, op_overlap), axis=1)
 
-        # Assign the polar grid data frame to the model
+         # Assign the polar grid data frame to the model
         self.model.polargrid = polar_df
-
         #%%----- Add sector and ring to inner and outer receptors ----------
 
         # assign sector and ring number (integers) to each inner receptor and compute fractional sector (s) and ring_loc (log weighted) numbers
@@ -391,9 +429,19 @@ class FacilityPrep():
         emislocs_con.save()
 
 
-        #%% result ##needs to create a new object to be passed...
-        #return facops, emislocs, hapemis, innerblks, outerblks, sourcelocs, user_recs, buoyant_df, polyver_df
-        return rs.Runstream(self.model, facops, emislocs, hapemis, cenlat, cenlon, cenx, ceny, self.innerblks, user_recs, buoyant_df, polyver_df, bldgdw_df)
+        #%% this is where runstream file will be compiled
+        #new logic to be
+        
+        runstream = Runstream(facops, emislocs, hapemis, user_recs, buoyant_df, polyver_df, bldgdw_df, partdia_df, landuse_df, seasons_df)
+        runstream.build_co()
+        runstream.build_so()
+        runstream.build_re(self.innerblks, cenx, ceny, polar_df)
+        runstream.build_me(cenlat, cenlon)
+        runstream.build_ou()
+        
+        return runstream
+        #no return statement since it will just need to build the file
+        #return rs.Runstream(facops, emislocs, hapemis, cenlat, cenlon, cenx, ceny, self.innerblks, user_recs, buoyant_df, polyver_df, polar_df, bldgdw_df, partdia_df, landuse_df, seasons_df, gasparams_df)
 
     #%% Calculate ring and sector of block receptors
     
