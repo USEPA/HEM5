@@ -32,6 +32,7 @@ from check_dep import check_dep
 #%% Hem4 GUI
 from writer.kml.KMLWriter import KMLWriter
 
+
 class Hem4():
 
     def __init__ (self, messageQueue, callbackQueue):
@@ -39,8 +40,6 @@ class Hem4():
         The HEM4 class object builds the GUI for the HEM4 application.
         """
         self.running = False
-        self.aborted = False
-        self.ready = False
 
         # Create the model
         self.model = Model()
@@ -58,6 +57,7 @@ class Hem4():
 
         Logger.messageQueue = messageQueue
 
+
     def start_gui(self):
 
         #create window instance
@@ -70,12 +70,12 @@ class Hem4():
         self.createWidgets()
 
         self.win.after(25, self.after_callback)
-        self.win.after(500, self.check_processing)
         self.win.mainloop()
 
     def close(self):
         Logger.close(True)
 
+#%% Quit Function    
     def quit(self):
         """
         Function handles quiting HEM4 by closing the window containing
@@ -174,7 +174,8 @@ class Hem4():
                 self.dep_veg.destroy()
 
             self.s12.destroy()
-
+    
+#%% Open HEM4 User Guide
     def user_guide(self):
         """ 
         Function opens the user guide for Hem4
@@ -182,7 +183,10 @@ class Hem4():
         """
         
         os.startfile("userguide\Multi_HEM-3_Users_Guide.pdf")
-
+    
+                
+#%%Create Widgets
+    
     def createWidgets(self):
         """
         Function creates the main tab structure and required inputs,
@@ -196,14 +200,13 @@ class Hem4():
 
         tab1 = ttk.Frame(self.tabControl)            # Create a tab
         self.tabControl.add(tab1, text='HEM4')      # Add the tab
-        self.tab1 = tab1
 
         tab2 = ttk.Frame(self.tabControl)            # Add a second tab
         self.tabControl.add(tab2, text='Log')      # Make second tab visible
 
         self.tabControl.pack(expand=1, fill="both")  # Pack to make visible
         
-        # Create container frame to hold all other widgets
+         # Create container frame to hold all other widgets
         self.main = ttk.LabelFrame(tab1, text='Human Exposure Model,'+
                                    ' open-source (HEM4), Version 1.0', 
                                    labelanchor="n")
@@ -215,12 +218,16 @@ class Hem4():
         self.s3 = tk.Frame(self.main, width=250, height=100, pady=10, padx=10)
         self.s4 = tk.Frame(self.main, width=250, height=100, pady=10, padx=10)
         self.s5 = tk.Frame(self.main, width=250, height=100, pady=10, padx=10)
+        
 
         self.s1.grid(row=0)
         self.s2.grid(row=1, column=0, sticky="nsew")
         self.s3.grid(row=2, column=0, columnspan=2, sticky="nsew")
         self.s4.grid(row=3, column=0, columnspan=2, sticky="nsew")
         self.s5.grid(row=4, column=0, columnspan=2, sticky="nsew")
+
+
+       
 
         self.main.grid_rowconfigure(8, weight=4)
         self.main.grid_columnconfigure(2, weight=1)
@@ -237,20 +244,20 @@ class Hem4():
                                              height=scrolH, wrap=tk.WORD)
         self.scr.grid(column=0, row=3, sticky='WE', columnspan=3)
         
-        #%% Set Quit, Run, and User Guide buttons
+#%% Set Quit, Run, and User Guide buttons        
         self.quit = tk.Button(self.main, text="QUIT", fg="red",
-                              command=self.quit)
+                              command=self.quit_gui)
         self.quit.grid(row=10, column=0, sticky="W")
         
         #run only appears once the required files have been set
         self.run_button = tk.Button(self.main, text='RUN', fg="green", 
-                                    command=self.run).grid(row=10,
+                                    command=self.run).grid(row=10, 
                                                           column=1, sticky="E")
         
         self.guide = tk.Button(self.main, text="User Guide", 
                                command=self.user_guide).grid(row=0, column=0, 
                                                       sticky='W')
-        #%% Setting up  directions text space
+#%% Setting up  directions text space
 
         #Dynamic instructions place holder
         global instruction_instance
@@ -260,8 +267,10 @@ class Hem4():
         
         self.dynamic_inst["textvariable"] = instruction_instance 
         self.dynamic_inst.grid(row = 2, sticky='ew', padx = 10)
-
-        # %% Setting up each file upload space (includes browse button, and manual text entry for file path)
+        
+        
+        
+# %% Setting up each file upload space (includes browse button, and manual text entry for file path)         
         
         #facilities label
         fac_label = tk.Label(self.s3, font="-size 10", 
@@ -335,7 +344,9 @@ class Hem4():
         #event handler for instructions (Button 1 is the left mouse click)
         self.emisloc_list_man.bind('<Button-1>', 
                                    lambda e:self.manual("instructions/emis_man.txt"))
-
+         
+        
+        
     def is_excel(self, filepath):
         """
         Function checks to make sure excel files are selected for inputs
@@ -414,20 +425,18 @@ class Hem4():
             
             
             if conditional is not None:
-                #print(conditional)
+                #if deposition or depletion present load gas params library
+                self.uploader.uploadLibrary("gas params")
                 for required in conditional:
                     print(required)
                     if required == 'particle size':
-                        self.add_particle()
-                        
+                        self.add_particle()        
                     
                     elif required == 'land use':
                         self.add_land()
                     
-                    elif required == 'vegetation':
-                        
-                        
-                        self.add_veg()
+                    elif required == 'seasons':
+                        self.add_seasons()
                         
             else:
                 #clear on new input without dep/deplt
@@ -444,13 +453,15 @@ class Hem4():
                         self.dep_land.destroy()
 
                     #clear vegetation
-                    if hasattr(self, 'dep_veg'):
-                        self.dep_veg_up.destroy()
-                        self.dep_veg_man.destroy()
-                        self.dep_veg.destroy()
+                    if hasattr(self, 'dep_seasons'):
+                        self.dep_seasons_up.destroy()
+                        self.dep_seasons_man.destroy()
+                        self.dep_seasons.destroy()
 
 
                     self.s12.destroy()                        
+                    
+            
 
     def uploadHAPEmissions(self):
         """
@@ -561,7 +572,8 @@ class Hem4():
             # Update the UI
             self.urep_list.set(fullpath)
             [self.scr.insert(tk.INSERT, msg) for msg in self.model.ureceptr.log]
-
+                            
+            
     def uploadBuildingDownwash(self):
         """ 
         Function for uploading building downwash
@@ -579,6 +591,9 @@ class Hem4():
             # Update the UI
             self.bldgdw_list.set(fullpath)
             [self.scr.insert(tk.INSERT, msg) for msg in self.model.bldgdw.log]
+    
+
+
 
     def uploadParticle(self, facilities):
         """ 
@@ -597,7 +612,9 @@ class Hem4():
             # Update the UI
             self.dep_part.set(fullpath)
             [self.scr.insert(tk.INSERT, msg) for msg in self.model.partdep.log]
-
+            
+    
+    
     def uploadLandUse(self):
         """ 
         Function for uploading land use information
@@ -615,10 +632,11 @@ class Hem4():
             # Update the UI
             self.dep_land.set(fullpath)
             [self.scr.insert(tk.INSERT, msg) for msg in self.model.landuse.log]
-
-    def uploadVegetation(self):
+            
+    
+    def uploadSeasons(self):
         """ 
-        Function for uploading season vegetation information
+        Function for uploading seasonal vegetation information
         """
         if self.model.faclist.dataframe is None:
             messagebox.showinfo("Facilities List Option File Missing",
@@ -627,12 +645,14 @@ class Hem4():
 
         fullpath = self.openFile(askopenfilename())
         if fullpath is not None: 
-            self.uploader.uploadDependent("vegetation", fullpath, 
+            self.uploader.uploadDependent("seasons", fullpath, 
                                           self.model.faclist.dataframe)
 
             # Update the UI
-            self.dep_land.set(fullpath)
-            [self.scr.insert(tk.INSERT, msg) for msg in self.model.vegetation.log]
+            self.dep_seasons.set(fullpath)
+            [self.scr.insert(tk.INSERT, msg) for msg in self.model.seasons.log]
+    
+    
 
     def add_ur(self):
         """
@@ -665,6 +685,8 @@ class Hem4():
         #event handler for instructions (Button 1 is the left mouse click)
         self.urep_list_man.bind('<Button-1>', 
                                 lambda e:self.manual("instructions/urep_man.txt"))
+            
+
 
     def add_buoyant(self):
         """
@@ -700,7 +722,9 @@ class Hem4():
         #event handler for instructions (Button 1 is the left mouse click)
         self.buoyant_list_man.bind('<Button-1>', 
                                    lambda e:self.manual("instructions/buoyant_browse.txt"))
-
+        
+    
+    
     def add_poly(self):
         """
         Function for creating row and polyvertex file upload widgets
@@ -732,7 +756,8 @@ class Hem4():
         #event handler for instructions (Button 1 is the left mouse click)
         self.poly_list_man.bind('<Button-1>', 
                                 lambda e:self.manual("instructions/poly_browse.txt"))
-
+    
+    
     def add_bldgdw(self):
         """ 
         Function for creating row and building downwash file upload widgets
@@ -765,7 +790,9 @@ class Hem4():
         #event handler for instructions (Button 1 is the left mouse click)
         self.bldgdw_list_man.bind('<Button-1>', 
                                 lambda e:self.manual("instructions/bd_man.txt"))
-
+        
+        
+        
     def add_particle(self):
         """
         Function for creating column for particle size file upload widgets
@@ -797,7 +824,8 @@ class Hem4():
         #event handler for instructions (Button 1 is the left mouse click)
         self.dep_part_man.bind('<Button-1>', 
                                lambda e:self.manual("instructions/dep_part_man.txt"))
-
+              
+        
     def add_land(self):
         
         """
@@ -830,8 +858,9 @@ class Hem4():
         #event handler for instructions (Button 1 is the left mouse click)
         self.dep_land_man.bind('<Button-1>', 
                                lambda e:self.manual("instructions/dep_land_man.txt"))
-
-    def add_veg(self):
+        
+        
+    def add_seasons(self):
         """
         Function for creating column for seasonal vegetation upload widgets
         """
@@ -841,28 +870,29 @@ class Hem4():
         self.s12.grid(row=4, column=2, columnspan=2, sticky="nsew")
         
         #land use size label
-        veg_label = tk.Label(self.s12, font="-size 10", 
+        seasons_label = tk.Label(self.s12, font="-size 10", 
                              text="Upload the file containing seasonal vegetation information:")
-        veg_label.grid(row=1, sticky="W")
+        seasons_label.grid(row=1, sticky="W")
     
         #laand use file upload button
-        self.dep_veg_up = ttk.Button(self.s12, 
-                                     command = lambda: self.uploadVegetation())
-        self.dep_veg_up["text"] = "Browse"
-        self.dep_veg_up.grid(row=2, column=0, sticky="W")
-        self.dep_veg_up.bind('<Enter>', 
+        self.dep_seasons_up = ttk.Button(self.s12, 
+                                     command = lambda: self.uploadSeasons())
+        self.dep_seasons_up["text"] = "Browse"
+        self.dep_seasons_up.grid(row=2, column=0, sticky="W")
+        self.dep_seasons_up.bind('<Enter>', 
                              lambda e:self.browse("instructions/dep_veg_browse.txt"))
          
         #land use file text entry
-        self.dep_veg = tk.StringVar(self.s12)
-        self.dep_veg_man = ttk.Entry(self.s12)
-        self.dep_veg_man["width"] = 55
-        self.dep_veg_man["textvariable"]= self.dep_veg
-        self.dep_veg_man.grid(row=2, column=0, sticky='E', padx=85)
+        self.dep_seasons = tk.StringVar(self.s12)
+        self.dep_seasons_man = ttk.Entry(self.s12)
+        self.dep_seasons_man["width"] = 55
+        self.dep_seasons_man["textvariable"]= self.dep_veg
+        self.dep_seasons_man.grid(row=2, column=0, sticky='E', padx=85)
         #event handler for instructions (Button 1 is the left mouse click)
-        self.dep_veg_man.bind('<Button-1>', 
+        self.dep_seasons_man.bind('<Button-1>', 
                               lambda e:self.manual("instructions/dep_veg_man.txt"))
-
+        
+        
  #%% Event handlers for porting instructions
 
     #reset instructions space
@@ -892,6 +922,10 @@ class Hem4():
         global instruction_instance
         read_inst = open(location, 'r')
         instruction_instance.set(read_inst.read())
+    
+             
+#%% Run function with checks if somethign is missing raise the error here and 
+#   create an additional dialogue before trying to run the file
 
     def run(self):
         """ 

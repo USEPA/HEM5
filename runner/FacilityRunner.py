@@ -24,7 +24,7 @@ class FacilityRunner():
         runstream = prep.createRunstream(self.facilityId)
 
         Logger.logMessage("Building Runstream File for " + self.facilityId)
-        runstream.build()
+        
 
         #create fac folder
         fac_folder = "output/"+ self.facilityId + "/"
