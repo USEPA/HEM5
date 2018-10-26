@@ -40,6 +40,8 @@ class Hem4():
         The HEM4 class object builds the GUI for the HEM4 application.
         """
         self.running = False
+        self.aborted = False
+        self.ready = False
 
         # Create the model
         self.model = Model()
@@ -70,6 +72,7 @@ class Hem4():
         self.createWidgets()
 
         self.win.after(25, self.after_callback)
+        self.win.after(500, self.check_processing)
         self.win.mainloop()
 
     def close(self):
@@ -246,7 +249,7 @@ class Hem4():
         
 #%% Set Quit, Run, and User Guide buttons        
         self.quit = tk.Button(self.main, text="QUIT", fg="red",
-                              command=self.quit_gui)
+                              command=self.quit)
         self.quit.grid(row=10, column=0, sticky="W")
         
         #run only appears once the required files have been set
