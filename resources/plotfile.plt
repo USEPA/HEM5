@@ -1,5 +1,5 @@
 * AERMOD (16216r):  Facility1                                                               10/29/18
-* AERMET ( 16216):                                                                          14:43:54
+* AERMET ( 16216):                                                                          14:55:27
 * MODELING OPTIONS USED:   NonDFAULT  CONC  WDEP  FLAT  BETA  RURAL  ADJ_U*
 *         PLOT FILE OF ANNUAL VALUES AVERAGED ACROSS   1 YEARS FOR SOURCE GROUP: CV000001
 *         FOR A TOTAL OF   307 RECEPTORS.
@@ -314,7 +314,7 @@
   678634.47188 4004266.70527  0.000000E+00  0.000000E+00   121.00   121.00     0.00  ANNUAL  CV000001  00000001  POLGRID1
   671554.82838 4021358.47663  0.000000E+00  0.000000E+00   121.00   121.00     0.00  ANNUAL  CV000001  00000001  POLGRID1
 * AERMOD (16216r):  Facility1                                                               10/29/18
-* AERMET ( 16216):                                                                          14:43:54
+* AERMET ( 16216):                                                                          14:55:27
 * MODELING OPTIONS USED:   NonDFAULT  CONC  WDEP  FLAT  BETA  RURAL  ADJ_U*
 *         PLOT FILE OF ANNUAL VALUES AVERAGED ACROSS   1 YEARS FOR SOURCE GROUP: HV000001
 *         FOR A TOTAL OF   307 RECEPTORS.
