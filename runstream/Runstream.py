@@ -463,13 +463,13 @@ class Runstream():
                 
              # SO Source groups ---------------------------------------------
     
-            self.uniqsrcs = srid.unique()
-            for i in np.arange(len(self.uniqsrcs)):  
-                sogroup = ("SO SRCGROUP " + self.uniqsrcs[i] + " " + 
-                           self.uniqsrcs[i] + "-" + self.uniqsrcs[i] + "\n")
-                self.inp_f.write(sogroup)
-            so3 = "SO FINISHED \n" + "\n"
-            self.inp_f.write(so3)
+        self.uniqsrcs = srid.unique()
+        for i in np.arange(len(self.uniqsrcs)):  
+            sogroup = ("SO SRCGROUP " + self.uniqsrcs[i] + " " + 
+                       self.uniqsrcs[i] + "-" + self.uniqsrcs[i] + "\n")
+            self.inp_f.write(sogroup)
+        so3 = "SO FINISHED \n" + "\n"
+        self.inp_f.write(so3)
                 
         
     def build_re(self, discrecs_df, cenx, ceny, polar_df):
