@@ -23,8 +23,8 @@ class Polyvertex(DependentInputFile):
        
         #POLYVERTEX excel to dataframe
         multipoly_df = self.readFromPath(("fac_id","source_id","location_type",
-                                         "lon","lat","utmzone","numvert","area"
-                                         ),{0:str, 1:str, 2:str, 5:str})
+                                         "lon","lat","utmzone","numvert","area",
+                                         "fispsct"),{0:str, 1:str, 2:str, 5:str})
         
         #check for unassigned polyvertex
         check_poly_assignment = set(multipoly_df["fac_id"])
