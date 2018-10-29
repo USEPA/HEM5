@@ -1,0 +1,6 @@
+pandas==0.23.0
+numpy==1.14.3
+fastkml==0.11
+lxml==4.2.5
+pygeoif==0.7
+xlsxwriter==1.1.2
