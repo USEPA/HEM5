@@ -244,11 +244,11 @@ class FacilityPrep():
         
         #%%-- Gas Params for gas runs -- needs to be incorporated better
         
-        if hasattr(self.model.gasparams, "dataframe"):
-            gasparams_df = self.model.gasparams.dataframe
+        #if hasattr(self.model.gasparams, "dataframe"):
+            #gasparams_df = self.model.gasparams.dataframe
             
-        else:
-            gasparams_df = pd.DataFrame()
+        #else:
+            #gasparams_df = pd.DataFrame()
         
         #%%---------- Get Census Block Receptors -------------------------------------- needs to be connected
 
@@ -432,7 +432,7 @@ class FacilityPrep():
         #%% this is where runstream file will be compiled
         #new logic to be
         
-        runstream = Runstream(facops, emislocs, hapemis, user_recs, buoyant_df, polyver_df, bldgdw_df, partdia_df, landuse_df, seasons_df)
+        runstream = Runstream(facops, emislocs, hapemis, user_recs, buoyant_df, polyver_df, bldgdw_df, partdia_df, landuse_df, seasons_df, self.model.gasparams.dataframe)
         runstream.build_co()
         runstream.build_so()
         runstream.build_re(self.innerblks, cenx, ceny, polar_df)

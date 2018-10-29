@@ -58,21 +58,24 @@ class HAPEmissions(InputFile):
             #if yes, clear box and empty dataframe
 
             if fix_pollutants is True:
-                #clear hap emis upload area
+                #clear hap emis upload area, how to do this from separate thread...
                 file_path = ''
 
             #if no, remove them from dataframe
             elif fix_pollutants is False:
-                missing = list(missing_pollutants.values())
-                remove = set(missing[0].split(', '))
+                missing = missing_pollutants
+                remove = set(missing)
+                print(remove)
 
 
                 #remove them from data frame
                 # to seperate log file the non-modeled HAP Emissions
                 fileDir = os.path.dirname(os.path.realpath('__file__'))
-                filename = os.path.join(fileDir, 'output/HAP_ignored_'+str(datetime.now())+'.log')
+                filename = os.path.join(fileDir, "output\HAP_ignored.log")
                 logfile = open(filename, 'w')
-
+                
+                logfile.write(str(datetime.now()) + ":\n")
+                
                 for p in remove:
 
                     hapemis_df = hapemis_df[hapemis_df.pollutant != str(p)]
@@ -86,7 +89,7 @@ class HAPEmissions(InputFile):
                     #get row so we can write facility and other info
                     ignored = hapemis_df[hapemis_df.pollutant == p]
                     
-                    logfile.append(ignored)
+                    logfile.write("Removed: " + str(ignored))
                     
                 
                 logfile.close()

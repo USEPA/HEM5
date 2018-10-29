@@ -772,7 +772,7 @@ class Hem4():
         # building dw labels
         self.bldgdw_label = tk.Label(self.s9,
                                      text="Please select associated Building" + 
-                                     " Downwash file")
+                                     " Dimensions file")
         self.bldgdw_label.grid(row=1, sticky="W")
         
         #building dw upload button
@@ -889,7 +889,7 @@ class Hem4():
         self.dep_seasons = tk.StringVar(self.s12)
         self.dep_seasons_man = ttk.Entry(self.s12)
         self.dep_seasons_man["width"] = 55
-        self.dep_seasons_man["textvariable"]= self.dep_veg
+        self.dep_seasons_man["textvariable"]= self.dep_seasons
         self.dep_seasons_man.grid(row=2, column=0, sticky='E', padx=85)
         #event handler for instructions (Button 1 is the left mouse click)
         self.dep_seasons_man.bind('<Button-1>', 
