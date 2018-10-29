@@ -1,5 +1,9 @@
 import os
-from writer.excel import ExcelWriter
+
+from numpy.core.multiarray import array
+from pandas import DataFrame
+
+from writer.excel.ExcelWriter import ExcelWriter
 
 class InputSelectionOptions(ExcelWriter):
     """
@@ -9,6 +13,7 @@ class InputSelectionOptions(ExcelWriter):
     def __init__(self, targetDir, facilityId, model, plot_df):
         ExcelWriter.__init__(self, model, plot_df)
 
+        self.facilityId = facilityId
         self.filename = os.path.join(targetDir, facilityId + "_input_selection_options.xlsx")
 
     def calculateOutputs(self):
@@ -27,5 +32,6 @@ class InputSelectionOptions(ExcelWriter):
                         'bldg_dw_so', 'hremis_file', 'hour_emis', 'prefix', 'prefixyn', 'm_usr_rcpt', 'm_dep_depl',
                         'm_prt_size', 'm_season', 'm_landuse', 'blp_file', 'csv_output', 'reset']
 
-        # TODO
-        self.data = []
+        options = self.model.faclist.dataframe.loc[self.model.faclist.dataframe.fac_id == self.facilityId]
+
+        self.data = array(['','','','','',options['rural_urban']], ndmin=2)
