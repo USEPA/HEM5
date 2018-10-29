@@ -153,8 +153,9 @@ class Process_outputs():
         
         ring_risk = ring_summary_chronic_df[ring_columns]
         ring_risk['rectype'] = 'P'
+
         block_risk = block_summary_chronic_df[block_columns]
-        self.model.risk_by_latlon = ring_risk.append(block_risk).reset_index(drop=True)
+        self.model.risk_by_latlon = ring_risk.append(block_risk).reset_index(drop=True).infer_objects()
 
         if self.abort.is_set():
             Logger.logMessage("Terminating output processing...")
