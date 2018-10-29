@@ -51,30 +51,8 @@ def check_dep(dataframe):
         if p == 'P':
             #add facid
             options = [fac_id]
-            
-            if (deposition[i] == 'Y' and depletion != 'Y'):
-                
-                #all particle deposition uses particle size file
-                options.append('particle size')
-                
-                if 'DO' or 'WD' in part_depo[i]:
-                    options.append('land use')
-                    options.append('vegetation')
-                                
-            elif (deposition[i] != 'Y' and depletion[i] == 'Y'):
-                options.append('particle size')
-                                
-            elif deposition[i] == 'Y' and depletion[i] == 'Y':
-                options.append('particle size')
-                
-                if 'DO' in part_depo[i] and 'DO' in part_depl[i]:
-                    options.append('land use')
-                    options.append('vegetation')
-                    
-                elif 'WD' in part_depo[i] and 'WD' in part_depl[i]:
-                    options.append('land use')
-                    options.append('vegetation')
-                    
+            options.append('particle size')
+      
             inputs.append(options)
                             
         elif p == 'V':
@@ -85,17 +63,17 @@ def check_dep(dataframe):
                 
                 if 'DO' or 'WD' in vapor_depo[i]:
                     options.append('land use')
-                    options.append('vegetation')
+                    options.append('seasons')
                     
             elif deposition[i] == 'Y' and depletion[i] == 'Y':
                 if 'DO' in vapor_depo[i] and 'DO' in vapor_depl[i]:
                     options.append('land use')
-                    options.append('vegetation')
+                    options.append('seasons')
             
             
                 elif 'WD' in vapor_depo[i] and 'WD' in vapor_depl[i]:
                     options.append('land use')
-                    options.append('vegetation')
+                    options.append('seasons')
             
             inputs.append(options)
       
@@ -110,11 +88,11 @@ def check_dep(dataframe):
                 
                     if 'WD' or 'DO' in vapor_depo[i]:
                         options.append('land use')
-                        options.append('vegetation')
+                        options.append('seasons')
             
                 elif 'NO' in part_depo[i] and 'WD' or 'DO' in vapor_depo[i]:
                      options.append('land use')
-                     options.append('vegetation')
+                     options.append('seasons')
                 
             elif (depletion[i] == 'Y' and deposition[i] != 'Y'):
                 
@@ -123,7 +101,7 @@ def check_dep(dataframe):
                 
                 elif 'NO' in part_depl[i] and 'WD' or 'DO' in vapor_depl[i]:
                     options.append('land use')
-                    options.append('vegetation')
+                    options.append('seasons')
                     
                 elif 'NO' in part_depl[i] and 'NO' in vapor_depl[i]:
                     options.append('particle size')
@@ -138,13 +116,13 @@ def check_dep(dataframe):
                     if ('WD' or 'DO' in vapor_depo[i] and 
                         'WD' or 'DO' in vapor_depl[i]):
                         options.append('land use')
-                        options.append('vegetation')
+                        options.append('seasons')
                     
                 elif 'NO' in part_depo[i] and 'NO' in part_depl[i]:
                     if ('WD' or 'DO' in vapor_depo[i] and 
                         'WD' or 'DO' in vapor_depl[i]):
                         options.append('land use')
-                        options.append('vegetation')
+                        options.append('seasons')
                     
          
             inputs.append(options)

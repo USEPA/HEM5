@@ -19,4 +19,4 @@ class GasParams(InputFile):
                                             ), {})
         
         
-        
+        self.dataframe['pollutant'] = self.dataframe['pollutant'].str.lower()

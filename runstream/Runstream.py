@@ -20,7 +20,8 @@ class Runstream():
     
     def __init__(self, facops_df, emislocs_df, hapemis_df, urecs_df = None, 
                  buoyant_df = None, polyver_df = None, bldgdw_df = None, 
-                 partdia_df = None, landuse_df = None, seasons_df = None):
+                 partdia_df = None, landuse_df = None, seasons_df = None,
+                 gas_params = None):
         
         self.facoptn_df = facops_df
         self.emisloc_df = emislocs_df
@@ -32,7 +33,7 @@ class Runstream():
         self.partdia_df = partdia_df
         self.landuse_df = landuse_df
         self.seasons_df = seasons_df
-#        self.gas_params = gas_params
+        self.gas_params = gas_params
         
         #open file to write
         self.inp_f = open("aermod.inp", "w")
@@ -114,8 +115,8 @@ class Runstream():
         self.inp_f.write(co4)
         
         #    # Landuse Options for Deposition
-        if 'DDEP' in optdp:
-            coland = ("CO GDLANUSE " + str(self.landuse_df_df['D01'][0]) + " " + 
+        if self.settings['phase'] == 'V' and 'DDEP' in optdp:
+            coland = ("CO GDLANUSE " + str(self.landuse_df['D01'][0]) + " " + 
                       str(self.landuse_df['D02'][0]) + " " + 
                       str(self.landuse_df['D03'][0]) + " " + 
                       str(self.landuse_df['D04'][0]) + " " + 
@@ -463,13 +464,13 @@ class Runstream():
                 
              # SO Source groups ---------------------------------------------
     
-            self.uniqsrcs = srid.unique()
-            for i in np.arange(len(self.uniqsrcs)):  
-                sogroup = ("SO SRCGROUP " + self.uniqsrcs[i] + " " + 
-                           self.uniqsrcs[i] + "-" + self.uniqsrcs[i] + "\n")
-                self.inp_f.write(sogroup)
-            so3 = "SO FINISHED \n" + "\n"
-            self.inp_f.write(so3)
+        self.uniqsrcs = srid.unique()
+        for i in np.arange(len(self.uniqsrcs)):  
+            sogroup = ("SO SRCGROUP " + self.uniqsrcs[i] + " " + 
+                       self.uniqsrcs[i] + "-" + self.uniqsrcs[i] + "\n")
+            self.inp_f.write(sogroup)
+        so3 = "SO FINISHED \n" + "\n"
+        self.inp_f.write(so3)
                 
         
     def build_re(self, discrecs_df, cenx, ceny, polar_df):
@@ -705,13 +706,14 @@ class Runstream():
         Compiles and writes parameters for vapor deposition/depletion by source
         """
         pollutants = (self.hapemis[self.hapemis['source_id'] == 
-                                   srid]['pollutants'].str.lower().tolist())
+                                   srid]['pollutant'].str.lower().tolist())
         
+        params = self.gas_params[self.gas_params['pollutant'] == pollutants[0]]
     #write values if they exist in the 
         #so there should only be one pollutant per source id for vapor/gas deposition to work
         #currently default values if the size of pollutant list is greater than 1
         
-        if len(pollutants) > 1:
+        if len(pollutants) > 1 or len(params) == 0: ## check if len params works for empties
             #log message about defaulting 
             
             da    =    0.07
@@ -720,11 +722,18 @@ class Runstream():
             henry =    5.00
             
             sodepos = ("SO GASDEPOS " + str(srid) + " " + str(da) + 
-                       " " + str(dw) + " " + str(rcl) + " " + str(henry))
+                       " " + str(dw) + " " + str(rcl) + " " + str(henry) + "\n")
             self.inp_f.write(sodepos)
             
         else:
         
         #check gas params dataframe for real values and pull them out for that one source
-            pass
+
+                print('found vapor params', params)
+            
+                sodepos = ("SO GASDEPOS " + str(srid) + " " + str(params['da'][0]) + 
+                       " " + str(params['dw'][0]) + " " + str(params['rcl'][0]) + 
+                       " " + str(params['henry'][0]) + "\n")
+                self.inp_f.write(sodepos)
+            
              
