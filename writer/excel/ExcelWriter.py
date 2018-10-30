@@ -1,4 +1,5 @@
 import xlsxwriter
+
 from writer.Writer import Writer
 
 class ExcelWriter(Writer):
@@ -21,7 +22,7 @@ class ExcelWriter(Writer):
         self.write_header(worksheet)
         self.write_data(worksheet)
 
-        workbook.close
+        workbook.close()
 
     def write_header(self, worksheet):
         """
@@ -40,4 +41,4 @@ class ExcelWriter(Writer):
         # With 'constant_memory' you must write data in row by column order.
         for row in range(0, self.data.shape[0]):
             for col in range(0, self.data.shape[1]):
-                worksheet.write(row + 1, col, self.data[row][col])
+               worksheet.write(row + 1, col, self.data[row][col])
