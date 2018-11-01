@@ -14,6 +14,7 @@ class Model():
         self.partdep = None
         self.landuse = None
         self.seasons = None
+        self.emisvar = None
         self.facids = None
         self.depdeplt = None
         self.polargrid = None
@@ -45,6 +46,7 @@ class Model():
         self.partdep = None
         self.landuse = None
         self.seasons = None
+        self,emisvar = None
         self.facids = None
         self.depdeplt = None
         self.polargrid = None
@@ -56,7 +58,5 @@ class Model():
         self.risk_by_latlon = None
         self.max_indiv_risk_df = None
         self.sourcelocs = None
-        
-        
         self.gasparams = None
         self.run_optns = {'ureceptr': False, 'phase': None, 'settings': None}

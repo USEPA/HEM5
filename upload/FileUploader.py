@@ -16,6 +16,7 @@ from upload.Particle import Particle
 from upload.LandUse import LandUse
 from upload.Seasons import Seasons
 from upload.GasParams import GasParams
+from upload EmisVar import EmisVar
 
 
 class FileUploader():
@@ -65,5 +66,5 @@ class FileUploader():
             self.model.seasons = Seasons(path, dependency)
         
         elif filetype == "emissions variation":
-            pass
+            self,model.emisvar = EmisVar(path, dependency)
                 
