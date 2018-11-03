@@ -26,11 +26,11 @@ from upload.FileUploader import FileUploader
 from tkinter.filedialog import askopenfilename
 from checker.InputChecker import InputChecker
 from check_dep import check_dep
-
+from writer.kml.KMLWriter import KMLWriter
 
 
 #%% Hem4 GUI
-from writer.kml.KMLWriter import KMLWriter
+
 
 
 class Hem4():
@@ -656,7 +656,26 @@ class Hem4():
             [self.scr.insert(tk.INSERT, msg) for msg in self.model.seasons.log]
     
     
-
+    
+    def uploadVariation(self):
+        """
+        Function for uploading emissions variation inputs
+        """
+        
+        if self.model.emisloc.dataframe is None:
+            messagebox.showinfo("Emissions Location File Missing",
+                "Please upload an Emissions Location file before selecting"+
+                " a temporal emissions variation file.")
+            
+        fullpath = self.openFile(askopenfilename())
+        if fullpath is not None:
+            self.uploader.uploadDependent("emissions variation", fullpath, 
+                                          self.model.emisloc.dataframe)
+            
+             # Update the UI
+            #self.tempemis.set(fullpath)
+            [self.scr.insert(tk.INSERT, msg) for msg in self.model.emisvar.log]
+    
     def add_ur(self):
         """
         Function for creating row and upload widgets for user receptors
@@ -895,7 +914,12 @@ class Hem4():
         self.dep_seasons_man.bind('<Button-1>', 
                               lambda e:self.manual("instructions/dep_veg_man.txt"))
         
+    def add_variation(self):
+        """
+        Function for creating temporal variation input space
+        """
         
+        pass
  #%% Event handlers for porting instructions
 
     #reset instructions space
