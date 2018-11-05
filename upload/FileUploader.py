@@ -16,7 +16,7 @@ from upload.Particle import Particle
 from upload.LandUse import LandUse
 from upload.Seasons import Seasons
 from upload.GasParams import GasParams
-from upload EmisVar import EmisVar
+from upload.EmisVar import EmisVar
 
 
 class FileUploader():
