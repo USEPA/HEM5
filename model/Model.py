@@ -46,7 +46,7 @@ class Model():
         self.partdep = None
         self.landuse = None
         self.seasons = None
-        self,emisvar = None
+        self.emisvar = None
         self.facids = None
         self.depdeplt = None
         self.polargrid = None

@@ -18,10 +18,14 @@ class Vegetation(DependentInputFile):
     def createDataframe(self):
         
         faclist_df = self.dependency
-        
+
+        # Specify dtypes for all fields
+        self.numericColumns = ["M01", "M02", "M03", "M04","M05", "M06", "M07", "M08", "M09","M10","M11", "M12"]
+        self.strColumns = ["fac_id"]
+
         vegetation_df = self.readFromPath(("fac_id", "M01", "M02", "M03", "M04", 
                                       "M05", "M06", "M07", "M08", "M09","M10",
-                                      "M11", "M12"), {0:str})
+                                      "M11", "M12"))
         
         
         #check for unassigned veg

@@ -15,6 +15,7 @@ from writer.csv.AllInnerReceptors import AllInnerReceptors
 from writer.csv.AllOuterReceptors import AllOuterReceptors
 from writer.csv.RingSummaryChronic import RingSummaryChronic
 from writer.csv.BlockSummaryChronic import BlockSummaryChronic
+from writer.excel.InputSelectionOptions import InputSelectionOptions
 from writer.excel.MaximumIndividualRisks import MaximumIndividualRisks
 # from writer.excel.RiskBreakdown import RiskBreakdown
 from writer.kml.KMLWriter import KMLWriter
@@ -80,10 +81,16 @@ class Process_outputs():
     
 
     def process(self):
+        #        start = time.time()
 
-        
-#        start = time.time()
-    
+        #----------- create input selection file -----------------
+        input_selection = InputSelectionOptions(self.outdir, self.facid, self.model, None)
+        input_selection.write()
+
+        if self.abort.is_set():
+            Logger.logMessage("Terminating output processing...")
+            return
+
         # Read plotfile and put into dataframe
         pfile = open("resources/plotfile.plt", "r")
         plot_df = pd.read_table(pfile, delim_whitespace=True, header=None, 

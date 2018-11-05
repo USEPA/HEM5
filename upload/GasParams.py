@@ -13,10 +13,12 @@ class GasParams(InputFile):
         InputFile.__init__(self, "resources/Gas_Param.xlsx")
 
     def createDataframe(self):
-        self.dataframe = self.readFromPath(('pollutant', 'da', 'dw', 'rcl', 
-                                            'henry', 'valid', 'source', 
-                                            'dw_da_source', 'rcl_source', 'notes'
-                                            ), {})
+
+        # Specify dtypes for all fields
+        self.numericColumns = ["da", "dw", "rcl", "henry", "valid"]
+        self.strColumns = ["pollutant","notes", "source", "dw_da_source", "rcl_source"]
         
-        
-        self.dataframe['pollutant'] = self.dataframe['pollutant'].str.lower()
+        self.dataframe = self.readFromPath(
+            ("pollutant", "da", "dw", "rcl", "henry", "valid", "source", "dw_da_source", "rcl_source", "notes"))
+
+        self.dataframe["pollutant"] = self.dataframe["pollutant"].str.lower()

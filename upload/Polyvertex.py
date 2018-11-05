@@ -18,13 +18,14 @@ class Polyvertex(DependentInputFile):
     def createDataframe(self): 
        
         emisloc_df = self.dependency;
-        
-       
+
+        # Specify dtypes for all fields
+        self.numericColumns = ["lon","lat","numvert","area","fispsct"]
+        self.strColumns = ["fac_id","source_id","location_type","utmzone"]
        
         #POLYVERTEX excel to dataframe
         multipoly_df = self.readFromPath(("fac_id","source_id","location_type",
-                                         "lon","lat","utmzone","numvert","area",
-                                         "fispsct"),{0:str, 1:str, 2:str, 5:str})
+                                         "lon","lat","utmzone","numvert","area","fispsct"))
         
         #check for unassigned polyvertex
         check_poly_assignment = set(multipoly_df["fac_id"])

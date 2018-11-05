@@ -17,10 +17,13 @@ class BuoyantLine(DependentInputFile):
     def createDataframe(self):
         
         emisloc_df = self.dependency
-        
-        multibuoy_df = self.readFromPath(("fac_id", "avgbld_len", "avgbld_hgt", 
-                                         "avgbld_wid", "avglin_wid", "avgbld_sep"
-                                         , "avgbuoy"),{0:str})
+
+        # Specify dtypes for all fields
+        self.numericColumns = ["avgbld_len","avgbld_hgt","avgbld_wid","avglin_wid","avgbld_sep","avgbuoy"]
+        self.strColumns = ["fac_id"]
+
+        multibuoy_df = self.readFromPath(
+            ("fac_id", "avgbld_len", "avgbld_hgt", "avgbld_wid", "avglin_wid", "avgbld_sep", "avgbuoy"))
                                          
         #check for unassigned buoyant line  
         check_buoyant_assignment = set(multibuoy_df['fac_id'])

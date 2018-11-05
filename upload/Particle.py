@@ -21,8 +21,12 @@ class Particle(DependentInputFile):
     def createDataframe(self):
         
         faclist_df = self.dependency
-        particle_df = self.readFromPath(("fac_id", "source_id", "part_diam",
-                                        "mass_frac", "part_dens"), {0:str, 1:str})
+
+        # Specify dtypes for all fields
+        self.numericColumns = ["part_diam","mass_frac","part_dens"]
+        self.strColumns = ["fac_id","source_id"]
+
+        particle_df = self.readFromPath(("fac_id", "source_id", "part_diam","mass_frac", "part_dens"))
         
         particle_df['mass_frac'] = particle_df['mass_frac'] / 100
         

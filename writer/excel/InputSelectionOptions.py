@@ -3,6 +3,7 @@ import os
 from numpy.core.multiarray import array
 from pandas import DataFrame
 
+from log import Logger
 from writer.excel.ExcelWriter import ExcelWriter
 
 class InputSelectionOptions(ExcelWriter):
@@ -17,9 +18,7 @@ class InputSelectionOptions(ExcelWriter):
         self.filename = os.path.join(targetDir, facilityId + "_input_selection_options.xlsx")
 
     def calculateOutputs(self):
-        """
-        Do something with the model and plot data, setting self.headers and self.data in the process.
-        """
+
         self.headers = ['title1', 'title2', 'inhalation', 'multi_media', 'hap_phase', 'rural_urban', 'air_conc',
                         'dep_yn', 'depl_yn', 'part_vap', 'dep_prmt', 'dep', 'depl_prmt', 'depl', 'incl_elev',
                         'incl_hour', 'model status', 'hr_ratio', 'incl_bldg_dw', 'incl_size', 'user_rcpt', 'new_urfs',
@@ -34,4 +33,9 @@ class InputSelectionOptions(ExcelWriter):
 
         options = self.model.faclist.dataframe.loc[self.model.faclist.dataframe.fac_id == self.facilityId]
 
-        self.data = array(['','','','','',options['rural_urban']], ndmin=2)
+        ruralurban = options.iloc[0]['rural_urban']
+        df = DataFrame(array(['','','','','',ruralurban], ndmin=2), dtype="object")
+
+        df.replace(to_replace='nan', value='', inplace=True)
+
+        self.data = df.values

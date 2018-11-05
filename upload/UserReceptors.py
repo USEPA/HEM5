@@ -10,8 +10,13 @@ class UserReceptors(DependentInputFile):
 
         #USER RECEPTOR dataframe
         faclist_df = self.dependency
+
+        # Specify dtypes for all fields
+        self.numericColumns = ["lon", "lat", "elev"]
+        self.strColumns = ["fac_id","loc_type", "utmzone", "rec_type", "rec_id"]
+
         ureceptor_df = self.readFromPath(
-            ("fac_id", "loc_type", "lon", "lat", "utmzone", "elev", "rec_type", "rec_id"), {0:str})
+            ("fac_id", "loc_type", "lon", "lat", "utmzone", "elev", "rec_type", "rec_id"))
 
         #check for unassigned user receptors
         check_receptor_assignment = ureceptor_df["fac_id"]

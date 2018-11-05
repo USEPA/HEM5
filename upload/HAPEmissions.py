@@ -11,12 +11,14 @@ class HAPEmissions(InputFile):
 
     def createDataframe(self):
 
+        # Specify dtypes for all fields
+        self.numericColumns = ["emis_tpy","part_frac"]
+        self.strColumns = ["fac_id","source_id","pollutant"]
+
         #HAP EMISSIONS excel to dataframe
         # HEADER------------------------
         # FacilityID|SourceID|HEM3chem|SumEmissionTPY|FractionParticulate
-        hapemis_df = self.readFromPath(
-            ("fac_id","source_id","pollutant","emis_tpy","part_frac"),
-            {0:str,1:str,2:str,3:float,4:float})
+        hapemis_df = self.readFromPath(("fac_id","source_id","pollutant","emis_tpy","part_frac"))
 
         #fill Nan with 0
         hapemis_df.fillna(0)

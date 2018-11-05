@@ -8,9 +8,14 @@ class TargetOrganEndpoints(InputFile):
 
     def createDataframe(self):
 
+        # Specify dtypes for all fields
+        self.numericColumns = ["resp","liver","neuro","dev","reprod","kidney","ocular","endoc","hemato",
+                               "immune","skeletal","spleen","thyroid","wholebod"]
+        self.strColumns = ["pollutant","epa_woe"]
+
         # TARGET ORGAN ENDPOINTS excel to dataframe
         # HEADER----------------------
         # pollutant|epa_woe	|resp|liver|neuro|dev|reprod|kidney|ocular|endoc|hemato|immune|skeletal|spleen|thyroid|wholebod
         self.dataframe = self.readFromPath(
             ("pollutant","epa_woe","resp","liver","neuro","dev","reprod","kidney","ocular","endoc","hemato",
-             "immune","skeletal","spleen","thyroid","wholebod"), {})
+             "immune","skeletal","spleen","thyroid","wholebod"))
