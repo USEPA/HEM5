@@ -21,7 +21,7 @@ class Runstream():
     def __init__(self, facops_df, emislocs_df, hapemis_df, urecs_df = None, 
                  buoyant_df = None, polyver_df = None, bldgdw_df = None, 
                  partdia_df = None, landuse_df = None, seasons_df = None,
-                 gas_params = None):
+                 emisvar = None, gas_params = None):
         
         self.facoptn_df = facops_df
         self.emisloc_df = emislocs_df
@@ -735,5 +735,11 @@ class Runstream():
                        " " + str(params['dw'][0]) + " " + str(params['rcl'][0]) + 
                        " " + str(params['henry'][0]) + "\n")
                 self.inp_f.write(sodepos)
-            
+   
+    def get_variation(self, srid):
+        """
+        Compiles and writes parameters for emissions variation
+        """
+         
+        variation = (self.emisvar)
              

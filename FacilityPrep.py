@@ -9,11 +9,9 @@ import math
 import sys
 import numpy as np
 import pandas as pd
-import HEM4_Runstream as rs
 import find_center as fc
 import json_census_blocks as cbr
 from support.UTM import UTM
-
 from runstream.Runstream import Runstream
 
 

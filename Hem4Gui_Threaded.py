@@ -326,7 +326,8 @@ class Hem4():
         
         #Emissions location label
         emisloc_label = tk.Label(self.s5, font="-size 10",  
-                                 text="Please select the associated Emissions Locations file:")
+                                 text="Please select the associated Emissions" +
+                                 " Locations file:")
         emisloc_label.grid(row=1, sticky="W")
         
         #emissions location upload button
@@ -348,6 +349,13 @@ class Hem4():
         self.emisloc_list_man.bind('<Button-1>', 
                                    lambda e:self.manual("instructions/emis_man.txt"))
          
+        
+        #add emissions variation checkbox
+        self.check_emisvar = tk.IntVar()
+        self.emisvar_sel = tk.Checkbutton(self.s5, text="Add Emissions Variations", 
+                                          variable = self.check_emisvar,
+                                          command = self.add_variation)
+        self.emisvar_sel.grid(row=3, column=0, sticky='E', padx = 85)
         
         
     def is_excel(self, filepath):
@@ -661,12 +669,6 @@ class Hem4():
         """
         Function for uploading emissions variation inputs
         """
-        
-        if self.model.emisloc.dataframe is None:
-            messagebox.showinfo("Emissions Location File Missing",
-                "Please upload an Emissions Location file before selecting"+
-                " a temporal emissions variation file.")
-            
         fullpath = self.openFile(askopenfilename())
         if fullpath is not None:
             self.uploader.uploadDependent("emissions variation", fullpath, 
@@ -918,8 +920,55 @@ class Hem4():
         """
         Function for creating temporal variation input space
         """
-        
-        pass
+        if self.check_emisvar.get() == 1:
+            
+            if hasattr(self, 'model.emisloc.dataframe'):
+                #create row for emissions variation
+                self.s13 = tk.Frame(self.main, width=250, height=100, pady=10, 
+                                    padx=10)
+                self.s13.grid(row=9, column=0, columnspan=2, sticky="nsew")
+                
+                #emissions variation label
+                self.emisvar_label = tk.Label(self.s13, font="-size 10", 
+                                     text="Please select an Emissions Variation"+
+                                     " file:")
+                self.emisvar_label.grid(row=0, sticky="W")
+            
+                #emissions variation upload button
+                self.emisvar_on = ttk.Button(self.s13, 
+                                       command = lambda: self.uploadVariation())
+                self.emisvar_on["text"] = "Browse"
+                self.emisvar_on.grid(row=1, column=0, sticky="W")
+                #self.emisvar_on.bind('<Enter>', 
+                               #lambda e:self.browse("instructions/urep_browse.txt"))
+                
+                #emissions variation text entry
+                self.emisvar_list = tk.StringVar(self.s13)
+                self.emisvar_list_man = ttk.Entry(self.s13)
+                self.emisvar_list_man["width"] = 55
+                self.emisvar_list_man["textvariable"]= self.emisvar_list
+                self.emisvar_list_man.grid(row=1, column=0, sticky='E', padx=85)
+                #event handler for instructions (Button 1 is the left mouse click)
+                #self.emisvar_list_man.bind('<Button-1>', 
+                                       #lambda e:self.manual("instructions/urep_man.txt"))
+            
+            else:
+                 messagebox.showinfo("Emissions Location File Missing",
+                "Please upload an Emissions Location file before selecting"+
+                " a temporal emissions variation file.")
+                 
+                 #uncheck the box
+                 self.check_emisvar = 0
+            
+        #if checked and then unchecked
+        elif self.check_emisvar.get() == 0:
+            if hasattr(self, 's13'):
+                    self.emisvar_list_man.destroy()
+                    self.emisvar_on.destroy()
+                    self.emisvar_label.destroy()
+                    self.s13.destroy()
+            
+            
  #%% Event handlers for porting instructions
 
     #reset instructions space
