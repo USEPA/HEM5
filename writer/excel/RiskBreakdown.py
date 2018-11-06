@@ -1,7 +1,13 @@
 import os
+import math
+import re
+import pandas as pd
+
+from log import Logger
 from writer.excel.ExcelWriter import ExcelWriter
 
 class RiskBreakdown(ExcelWriter):
+
     """
     Provides the max cancer risk and max TOSHI values at populated block (“MIR”) sites and at any (“max offsite impact”)
     sites broken down by source and pollutant, including total sources and all modeled pollutants combined, as well as
@@ -12,13 +18,268 @@ class RiskBreakdown(ExcelWriter):
         ExcelWriter.__init__(self, model, plot_df)
 
         self.filename = os.path.join(targetDir, facilityId + "_risk_breakdown.xlsx")
+        
+        # Local cache for URE/RFC values
+        self.riskCache = {}
+
+        # Local cache for organ endpoint values
+        self.organCache = {}
+
 
     def calculateOutputs(self):
         """
-        Do something with the model and plot data, setting self.headers and self.data in the process.
+        Compute the sourceid and pollutant breakdown of each maximum risk and HI location.
         """
         self.headers = ['site_type', 'parameter', 'source_id', 'pollutant', 'emis_type', 'value', 'value_rnd',
-                        'conc (µg/m3)', 'conc rnd (µg/m3)', 'emis tpy', 'ure 1/(µg/m3)', 'rfc (mg/m3)']
+                        'conc', 'conc_rnd', 'emis_tpy', 'ure', 'rfc']
 
-        # TODO
-        self.data = []
+        # Dictionary for mapping HI name to position in the target organ list
+        self.hidict = {"Respiratory HI":2, "Liver HI":3, "Neurological HI":4,
+                  "Developmental HI":5, "Reproductive HI":6, "Kidney HI":7,
+                  "Ocular HI":8, "Endocrine HI":9, "Hematological HI":10,
+                  "Immunological HI":11, "Skeletal HI":12, "Spleen HI":13,
+                  "Thyroid HI":14, "Whole body HI":15}
+
+        # Initialize output dataframe
+        riskbkdn_df = pd.DataFrame(columns=self.headers)
+
+
+        # Dictionary for mapping cancer and HI names used in max_indiv_risk df to
+        # those used in risk_by_latlon df
+        namemap = {"Cancer risk":"mir", "Respiratory HI":"hi_resp", "Liver HI":"hi_live",
+                   "Neurological HI":"hi_neur", "Developmental HI":"hi_deve", "Reproductive HI":"hi_repr",
+                   "Kidney HI":"hi_kidn", "Ocular HI":"hi_ocul", "Endocrine HI":"hi_endo",
+                   "Hematological HI":"hi_hema", "Immunological HI":"hi_immu", "Skeletal HI":"hi_skel",
+                   "Spleen HI":"hi_sple", "Thyroid HI":"hi_thyr", "Whole body HI":"hi_whol"}
+        
+               
+        # Loop over the max inidividual risk dataframe
+        for index, row in self.model.max_indiv_risk_df.iterrows():
+
+            # ----------- First breakdown max individual risk for this parameter ---------------
+
+            # If max cancer or noncancer is > 0, compute source/pollutant breakdown values, otherwise set breakdown to 0           
+            if row["Value"] > 0:
+                 
+                # Get source and pollutant specific concs. Depends on receptor type.
+                if row["Notes"] == "Discrete":
+                    concdata = self.model.all_inner_receptors_df[["Lat","Lon","Source_id","Pollutant","Emis_type","Conc_ug_m3"]] \
+                                                                [(self.model.all_inner_receptors_df["Lat"]==row["Latitude"]) & 
+                                                                (self.model.all_inner_receptors_df["Lon"]==row["Longitude"])]
+                elif row["Notes"] == "Polar":
+                    concdata = self.model.all_polar_receptors_df[["Lat","Lon","Source_id","Pollutant","Emis_type","Conc_ug_m3"]] \
+                                                                [(self.model.all_polar_receptors_df["Lat"]==row["Latitude"]) & 
+                                                                 (self.model.all_polar_receptors_df["Lon"]==row["Longitude"])]
+                else:
+                    concdata = self.model.all_outer_receptors_df[["Lat","Lon","Source_id","Pollutant","Emis_type","Conc_ug_m3"]] \
+                                                                [(self.model.all_outer_receptors_df["Lat"]==row["Latitude"]) & 
+                                                                 (self.model.all_outer_receptors_df["Lon"]==row["Longitude"])]           
+    
+                # for consistency and ease of use, change some column names
+                concdata.rename(columns={"Source_id":"source_id", "Pollutant":"pollutant",
+                                         "Emis_type":"emis_type", "Conc_ug_m3":"conc"}, inplace=True)
+
+                # merge hapemis to get emis_tpy field
+                bkdndata = pd.merge(concdata,self.model.runstream_hapemis[["source_id","pollutant","emis_tpy"]],
+                                    on=["source_id","pollutant"], how="left") 
+                                                              
+                # compute the value column (risk or HI)
+                if row["Parameter"] == "Cancer risk":
+                    bkdndata["value"] = bkdndata.apply(lambda bkdnrow: self.calculateRisks(bkdnrow["pollutant"], 
+                                        bkdnrow["conc"], "cancer"), axis=1)
+                else:
+                    bkdndata["value"] = bkdndata.apply(lambda bkdnrow: self.calculateRisks(bkdnrow["pollutant"], 
+                                        bkdnrow["conc"], row["Parameter"]), axis=1)
+                
+                # set the rounded value column
+                bkdndata["value_rnd"] = bkdndata["value"].apply(lambda x: round(x, -int(math.floor(math.log10(abs(x))))) if x > 0 else 0)
+                                
+            else:
+                
+                # Max risk or HI value = 0. Get source/pollutant breakdown from hapemis.
+                bkdndata = self.model.runstream_hapemis[["source_id","pollutant","emis_tpy"]]
+                bkdndata["value"] = 0
+                bkdndata["value_rnd"] = 0
+                bkdndata["conc"] = 0
+                bkdndata["conc_rnd"] = 0
+                bkdndata["emis_type"] = "NA"
+
+            # set the remaining columns in bkdndata            
+            bkdndata["ure"], bkdndata["rfc"] = zip(*bkdndata.apply(lambda row: 
+                self.getRiskParms(row["pollutant"])[0:2], axis=1))
+            bkdndata["site_type"] = "Max indiv risk"
+            bkdndata["parameter"] = row["Parameter"]
+            bkdndata["conc_rnd"] = bkdndata["conc"].apply(lambda x: round(x, -int(math.floor(math.log10(abs(x))))) if x > 0 else 0)
+
+            # keep needed columns                
+            temp_df = bkdndata[self.headers]
+            
+            # append to riskbkdn_df
+            riskbkdn_df = riskbkdn_df.append(temp_df, ignore_index=True)
+
+
+            # ----------- Next, breakdown max offsite risk for this parameter ---------------
+
+            # If max cancer or noncancer is > 0, then get max offsite breakdown, otherwise set breakdown to 0           
+            if row["Value"] > 0:
+            
+                # Find row with highest cancer or HI. This will occur at any inner or polar receptor that does not overlap.
+                # The row["Parameter"] value indicates cancer or HI.
+                io_idx = self.model.risk_by_latlon[(self.model.risk_by_latlon["rectype"] != "O") &
+                                                   (self.model.risk_by_latlon["overlap"] == "N")] \
+                                                   [namemap[row["Parameter"]]].idxmax()
+                
+                # lat/lon and receptor type of max
+                mr_lat = float(self.model.risk_by_latlon["lat"].loc[io_idx])
+                mr_lon = float(self.model.risk_by_latlon["lon"].loc[io_idx])
+                mr_rectype = self.model.risk_by_latlon["rectype"].loc[io_idx]
+                
+                # Get source and pollutant specific concs. Depends on receptor type.
+                if mr_rectype == "I":
+                    concdata = self.model.all_inner_receptors_df[["Lat","Lon","Source_id","Pollutant","Emis_type","Conc_ug_m3"]] \
+                                                                [(self.model.all_inner_receptors_df["Lat"] == mr_lat) & 
+                                                                (self.model.all_inner_receptors_df["Lon"] == mr_lon)]
+                else:
+                    concdata = self.model.all_polar_receptors_df[["Lat","Lon","Source_id","Pollutant","Emis_type","Conc_ug_m3"]] \
+                                                                [(self.model.all_polar_receptors_df["Lat"] == mr_lat) & 
+                                                                 (self.model.all_polar_receptors_df["Lon"] == mr_lon)]    
+                # for consistency and ease of use, change some column names
+                concdata.rename(columns={"Source_id":"source_id", "Pollutant":"pollutant",
+                                         "Emis_type":"emis_type", "Conc_ug_m3":"conc"}, inplace=True)
+
+                # merge hapemis to get emis_tpy field
+                bkdndata = pd.merge(concdata,self.model.runstream_hapemis[["source_id","pollutant","emis_tpy"]],
+                                    on=["source_id","pollutant"], how="left") 
+                                                              
+                # compute the value column (risk or HI)
+                if row["Parameter"] == "Cancer risk":
+                    bkdndata["value"] = bkdndata.apply(lambda bkdnrow: self.calculateRisks(bkdnrow["pollutant"], 
+                                        bkdnrow["conc"], "cancer"), axis=1)
+                else:
+                    bkdndata["value"] = bkdndata.apply(lambda bkdnrow: self.calculateRisks(bkdnrow["pollutant"], 
+                                        bkdnrow["conc"], row["Parameter"]), axis=1)
+                
+                # set the rounded value column
+                bkdndata["value_rnd"] = bkdndata["value"].apply(lambda x: round(x, -int(math.floor(math.log10(abs(x))))) if x > 0 else 0)
+                                
+            else:
+                
+                # Max off-site risk or HI value = 0. Get source/pollutant breakdown from hapemis.
+                bkdndata = self.model.runstream_hapemis[["source_id","pollutant","emis_tpy"]]
+                bkdndata["value"] = 0
+                bkdndata["value_rnd"] = 0
+                bkdndata["conc"] = 0
+                bkdndata["conc_rnd"] = 0
+                bkdndata["emis_type"] = "NA"
+
+            # set the remaining columns in bkdndata            
+            bkdndata["ure"], bkdndata["rfc"] = zip(*bkdndata.apply(lambda row: 
+                self.getRiskParms(row["pollutant"])[0:2], axis=1))
+            bkdndata["site_type"] = "Max offsite impact"
+            bkdndata["parameter"] = row["Parameter"]
+            bkdndata["conc_rnd"] = bkdndata["conc"].apply(lambda x: round(x, -int(math.floor(math.log10(abs(x))))) if x > 0 else 0)
+
+            # keep needed columns                
+            temp_df = bkdndata[self.headers]
+            
+            # append to riskbkdn_df
+            riskbkdn_df = riskbkdn_df.append(temp_df, ignore_index=True)
+        
+        #TODO
+        # Change dtype of conc. This will be done upstream later.
+        riskbkdn_df["conc"] = pd.to_numeric(riskbkdn_df["conc"])
+        
+        # Create some aggregate rows
+        
+        # Sum Value by site_type, parameter, and pollutant to get Total source_id
+        srctot = riskbkdn_df.groupby(['site_type', 'parameter', 'pollutant', 'ure', 'rfc'],
+                                     as_index=False)['value', 'value_rnd', 'conc', 'conc_rnd', 'emis_tpy'].sum()
+        srctot["source_id"] = "Total"
+        srctot["emis_type"] = "NA"
+        srctot["ure"] = 0
+        srctot["rfc"] = 0
+            
+        # Sum Value by site_type, parameter, and source_id to get Total pollutant
+        polltot = riskbkdn_df.groupby(['site_type', 'parameter', 'source_id'],
+                                     as_index=False)['value', 'value_rnd', 'conc', 'conc_rnd', 'emis_tpy'].sum()
+        polltot["pollutant"] = "All modeled pollutants"
+        polltot["emis_type"] = "NA"
+        polltot["ure"] = 0
+        polltot["rfc"] = 0
+
+        # Append aggregates, sort rows, and sort columns
+        riskbkdn_df = riskbkdn_df.append(srctot, ignore_index=True)
+        riskbkdn_df = riskbkdn_df.append(polltot, ignore_index=True)
+        riskbkdn_df.sort_values(['site_type', 'parameter', 'source_id', 'pollutant'], 
+                                ascending=[True, True, True, True], inplace=True)
+        riskbkdn_df = riskbkdn_df[self.headers]
+
+        # Done
+        self.data = riskbkdn_df.values
+
+        
+    def calculateRisks(self, pollutant, conc, risktype):
+        URE, RFC, organs = self.getRiskParms(pollutant)
+        
+        if risktype == "cancer":
+            risk = conc * URE
+        else:
+            # risktype is a non-cancer HI; use as an index to hidict
+            risk = (0 if RFC == 0 else (conc/RFC/1000)*organs[self.hidict[risktype]])
+
+        return risk
+
+
+    def getRiskParms(self, pollutant):
+        URE = 0
+        RFC = 0
+
+        # In order to get a case-insensitive exact match (i.e. matches exactly except for casing)
+        # we are using a regex that is specified to be the entire value. Since pollutant names can
+        # contain parentheses, escape them before constructing the pattern.
+        pattern = '^' + re.escape(pollutant) + '$'
+
+        # Since it's relatively expensive to get these values from their respective libraries, cache them locally.
+        # Note that they are cached as a pair (i.e. if one is in there, the other one will be too...)
+        if pollutant in self.riskCache:
+            URE = self.riskCache[pollutant]['URE']
+            RFC = self.riskCache[pollutant]['RFC']
+        else:
+            row = self.model.haplib.dataframe.loc[
+                self.model.haplib.dataframe["pollutant"].str.contains(pattern, case=False, regex=True)]
+
+            if row.size == 0:
+                msg = 'Could not find pollutant ' + pollutant + ' in the haplib!'
+                Logger.logMessage(msg)
+                Logger.log(msg, self.model.haplib.dataframe, False)
+                URE = 0
+                RFC = 0
+            else:
+                URE = row.iloc[0]["ure"]
+                RFC = row.iloc[0]["rfc"]
+
+            self.riskCache[pollutant] = {'URE' : URE, 'RFC' : RFC}
+
+        # organs is a list from the target organ table for one pollutant
+        organs = None
+        if pollutant in self.organCache:
+            organs = self.organCache[pollutant]
+        else:
+            row = self.model.organs.dataframe.loc[
+                self.model.organs.dataframe["pollutant"].str.contains(pattern, case=False, regex=True)]
+
+            if row.size == 0:
+                # Couldn't find the pollutant...set values to 0 and log message
+                Logger.logMessage('Could not find pollutant ' + pollutant + ' in the target organs.')
+                listed = []
+            else:
+                listed = row.values.tolist()
+
+            # Note: sometimes there is a pollutant with no effect on any organ (RFC == 0). In this case it will
+            # not appear in the organs library, and therefore 'listed' will be empty. We will just assign a
+            # dummy list in this case...
+            organs = listed[0] if len(listed) > 0 else list(range(16))
+            self.organCache[pollutant] = organs
+            
+        return URE, RFC, organs
+
