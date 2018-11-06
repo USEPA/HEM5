@@ -17,8 +17,8 @@ from writer.csv.RingSummaryChronic import RingSummaryChronic
 from writer.csv.BlockSummaryChronic import BlockSummaryChronic
 from writer.excel.InputSelectionOptions import InputSelectionOptions
 from writer.excel.MaximumIndividualRisks import MaximumIndividualRisks
-# from writer.excel.RiskBreakdown import RiskBreakdown
-from writer.kml.KMLWriter import KMLWriter
+from writer.excel.RiskBreakdown import RiskBreakdown
+#from writer.kml.KMLWriter import KMLWriter
 
 
 class Process_outputs():
@@ -174,11 +174,10 @@ class Process_outputs():
         self.model.max_indiv_risk_df = pd.DataFrame(data=max_indiv_risk.data, columns=max_indiv_risk.headers)
 
         
-#        #----------- create Risk Breakdown output file ------------------------
-#        risk_breakdown = RiskBreakdown(self.outdir, self.facid, self.model, plot_df)
-#        risk_breakdown.write()
+        #----------- create Risk Breakdown output file ------------------------
+        risk_breakdown = RiskBreakdown(self.outdir, self.facid, self.model, plot_df)
+        risk_breakdown.write()
      
-        
 
 #        #create facility kml
 #        Logger.logMessage("Writing KML file for " + self.facid)
