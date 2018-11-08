@@ -675,7 +675,7 @@ class Hem4():
                                           self.model.emisloc.dataframe)
             
              # Update the UI
-            #self.tempemis.set(fullpath)
+            self.emisvar_list.set(fullpath)
             [self.scr.insert(tk.INSERT, msg) for msg in self.model.emisvar.log]
     
     def add_ur(self):
@@ -920,9 +920,10 @@ class Hem4():
         """
         Function for creating temporal variation input space
         """
+        
         if self.check_emisvar.get() == 1:
             
-            if hasattr(self, 'model.emisloc.dataframe'):
+            if hasattr(self.model.emisloc, 'dataframe'):
                 #create row for emissions variation
                 self.s13 = tk.Frame(self.main, width=250, height=100, pady=10, 
                                     padx=10)
@@ -958,7 +959,7 @@ class Hem4():
                 " a temporal emissions variation file.")
                  
                  #uncheck the box
-                 self.check_emisvar = 0
+                 self.check_emisvar.set(0)
             
         #if checked and then unchecked
         elif self.check_emisvar.get() == 0:

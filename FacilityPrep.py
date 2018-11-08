@@ -239,6 +239,16 @@ class FacilityPrep():
         else:
             seasons_df = pd.DataFrame()
             
+            
+            
+        #%% --- Optional Emissions Variations --------------------------------
+            
+        if hasattr(self.model.emisvar, "dataframe"):
+            emisvar_df = self.model.emisvar.dataframe.loc[self.model.emisvar.dataframe.fac_id == facid].copy()
+        
+        else:
+            emisvar_df = pd.DataFrame()
+        
         
         #%%-- Gas Params for gas runs -- needs to be incorporated better
         
@@ -430,7 +440,10 @@ class FacilityPrep():
         #%% this is where runstream file will be compiled
         #new logic to be
         
-        runstream = Runstream(facops, emislocs, hapemis, user_recs, buoyant_df, polyver_df, bldgdw_df, partdia_df, landuse_df, seasons_df, self.model.gasparams.dataframe)
+        runstream = Runstream(facops, emislocs, hapemis, user_recs, buoyant_df,
+                              polyver_df, bldgdw_df, partdia_df, landuse_df, 
+                              seasons_df, emisvar_df, 
+                              self.model.gasparams.dataframe)
         runstream.build_co()
         runstream.build_so()
         runstream.build_re(self.innerblks, cenx, ceny, polar_df)

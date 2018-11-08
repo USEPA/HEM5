@@ -21,7 +21,7 @@ class Runstream():
     def __init__(self, facops_df, emislocs_df, hapemis_df, urecs_df = None, 
                  buoyant_df = None, polyver_df = None, bldgdw_df = None, 
                  partdia_df = None, landuse_df = None, seasons_df = None,
-                 emisvar = None, gas_params = None):
+                 emisvar_df = None, gas_params = None):
         
         self.facoptn_df = facops_df
         self.emisloc_df = emislocs_df
@@ -33,6 +33,7 @@ class Runstream():
         self.partdia_df = partdia_df
         self.landuse_df = landuse_df
         self.seasons_df = seasons_df
+        self.emisvar_df = emisvar_df
         self.gas_params = gas_params
         
         #open file to write
@@ -116,52 +117,59 @@ class Runstream():
         
         #    # Landuse Options for Deposition
         if self.settings['phase'] == 'V' and 'DDEP' in optdp:
-            coland = ("CO GDLANUSE " + str(self.landuse_df['D01'][0]) + " " + 
-                      str(self.landuse_df['D02'][0]) + " " + 
-                      str(self.landuse_df['D03'][0]) + " " + 
-                      str(self.landuse_df['D04'][0]) + " " + 
-                      str(self.landuse_df['D05'][0]) + " " + 
-                      str(self.landuse_df['D06'][0]) + " " + 
-                      str(self.landuse_df['D07'][0]) + " " + 
-                      str(self.landuse_df['D08'][0]) + " " + 
-                      str(self.landuse_df['D09'][0]) + " " + 
-                      str(self.landuse_df['D10'][0]) + " " + 
-                      str(self.landuse_df['D11'][0]) + " " + 
-                      str(self.landuse_df['D12'][0]) + " " + 
-                      str(self.landuse_df['D13'][0]) + " " + 
-                      str(self.landuse_df['D14'][0]) + " " + 
-                      str(self.landuse_df['D15'][0]) + " " + 
-                      str(self.landuse_df['D16'][0]) + " " + 
-                      str(self.landuse_df['D17'][0]) + " " + 
-                      str(self.landuse_df['D18'][0]) + " " + 
-                      str(self.landuse_df['D19'][0]) + " " + 
-                      str(self.landuse_df['D20'][0]) + " " + 
-                      str(self.landuse_df['D21'][0]) + " " + 
-                      str(self.landuse_df['D22'][0]) + " " + 
-                      str(self.landuse_df['D23'][0]) + " " + 
-                      str(self.landuse_df['D24'][0]) + " " + 
-                      str(self.landuse_df['D25'][0]) + " " + 
-                      str(self.landuse_df['D26'][0]) + " " + 
-                      str(self.landuse_df['D27'][0]) + " " + 
-                      str(self.landuse_df['D28'][0]) + " " + 
-                      str(self.landuse_df['D29'][0]) + " " + 
-                      str(self.landuse_df['D30'][0]))
             
+            landval = self.landuse_df[self.landuse_df.columns[1:]].values[0]
+            coland = ("CO GDLANUSE " + " ".join(map(str, landval)))
+            
+#            coland = ("CO GDLANUSE " + str(self.landuse_df['D01'][0]) + " " + 
+#                      str(self.landuse_df['D02'][0]) + " " + 
+#                      str(self.landuse_df['D03'][0]) + " " + 
+#                      str(self.landuse_df['D04'][0]) + " " + 
+#                      str(self.landuse_df['D05'][0]) + " " + 
+#                      str(self.landuse_df['D06'][0]) + " " + 
+#                      str(self.landuse_df['D07'][0]) + " " + 
+#                      str(self.landuse_df['D08'][0]) + " " + 
+#                      str(self.landuse_df['D09'][0]) + " " + 
+#                      str(self.landuse_df['D10'][0]) + " " + 
+#                      str(self.landuse_df['D11'][0]) + " " + 
+#                      str(self.landuse_df['D12'][0]) + " " + 
+#                      str(self.landuse_df['D13'][0]) + " " + 
+#                      str(self.landuse_df['D14'][0]) + " " + 
+#                      str(self.landuse_df['D15'][0]) + " " + 
+#                      str(self.landuse_df['D16'][0]) + " " + 
+#                      str(self.landuse_df['D17'][0]) + " " + 
+#                      str(self.landuse_df['D18'][0]) + " " + 
+#                      str(self.landuse_df['D19'][0]) + " " + 
+#                      str(self.landuse_df['D20'][0]) + " " + 
+#                      str(self.landuse_df['D21'][0]) + " " + 
+#                      str(self.landuse_df['D22'][0]) + " " + 
+#                      str(self.landuse_df['D23'][0]) + " " + 
+#                      str(self.landuse_df['D24'][0]) + " " + 
+#                      str(self.landuse_df['D25'][0]) + " " + 
+#                      str(self.landuse_df['D26'][0]) + " " + 
+#                      str(self.landuse_df['D27'][0]) + " " + 
+#                      str(self.landuse_df['D28'][0]) + " " + 
+#                      str(self.landuse_df['D29'][0]) + " " + 
+#                      str(self.landuse_df['D30'][0]))
+#            
             self.inp_f.write(coland)
     
-            # Season Options for Deposition     
-            coseas = ("CO GDSEASON " + str(self.seasons_df['M01'][0]) + " " + 
-                      str(self.seasons_df['M02'][0]) + " " + 
-                      str(self.seasons_df['M03'][0]) + " " + 
-                      str(self.seasons_df['M04'][0]) + " " + 
-                      str(self.seasons_df['M05'][0]) + " " +
-                      str(self.seasons_df['M06'][0]) + " " + 
-                      str(self.seasons_df['M07'][0]) + " " + 
-                      str(self.seasons_df['M08'][0]) + " " +
-                      str(self.seasons_df['M09'][0]) + " " + 
-                      str(self.seasons_df['M10'][0]) + " " + 
-                      str(self.seasons_df['M11'][0]) + " " +
-                      str(self.seasons_df['M12'][0]))
+            # Season Options for Deposition
+            seasval = self.seasons_df[self.seasons_df.columns[1:]].values[0]
+            coseas = ("CO GDSEASON " + " ".join(map(str,seasval)))
+            
+#            coseas = ("CO GDSEASON " + str(self.seasons_df['M01'][0]) + " " + 
+#                      str(self.seasons_df['M02'][0]) + " " + 
+#                      str(self.seasons_df['M03'][0]) + " " + 
+#                      str(self.seasons_df['M04'][0]) + " " + 
+#                      str(self.seasons_df['M05'][0]) + " " +
+#                      str(self.seasons_df['M06'][0]) + " " + 
+#                      str(self.seasons_df['M07'][0]) + " " + 
+#                      str(self.seasons_df['M08'][0]) + " " +
+#                      str(self.seasons_df['M09'][0]) + " " + 
+#                      str(self.seasons_df['M10'][0]) + " " + 
+#                      str(self.seasons_df['M11'][0]) + " " +
+#                      str(self.seasons_df['M12'][0]))
             
             self.inp_f.write(coseas)
 
@@ -259,6 +267,11 @@ class Runstream():
                     
                 elif self.settings['phase'] == 'V':
                     self.get_vapor(srid[index])
+                      
+                if (self.emisvar_df is not None and 
+                    srid[index] in self.emisvar_df['source_id'].values ):
+                    self.get_variation(srid[index])
+                    
                     
                 
             # Horizontal Point Source ----------------------------------------
@@ -283,6 +296,10 @@ class Runstream():
                     
                 elif self.settings['phase'] == 'V':
                     self.get_vapor(srid[index])
+                    
+                if (self.emisvar_df is not None and 
+                    srid[index] in self.emisvar_df['source_id'].values ):
+                    self.get_variation(srid[index])
                     
                     
              # Area Source ---------------------------------------------------
@@ -309,6 +326,9 @@ class Runstream():
                 elif self.settings['phase'] == 'V':
                     self.get_vapor(srid[index])
                     
+                if (self.emisvar_df is not None and 
+                    srid[index] in self.emisvar_df['source_id'].values ):
+                    self.get_variation(srid[index])    
                     
             # Volume Source --------------------------------------------------
     
@@ -332,6 +352,10 @@ class Runstream():
                     
                 elif self.settings['phase'] == 'V':
                     self.get_vapor(srid[index])
+                
+                if (self.emisvar_df is not None and 
+                    srid[index] in self.emisvar_df['source_id'].values ):
+                    self.get_variation(srid[index])
                     
                     
             # Area Polygon (Irregular) Source --------------------------------
@@ -396,6 +420,10 @@ class Runstream():
                     
                 elif self.settings['phase'] == 'V':
                     self.get_vapor(srid[index])
+                
+                if (self.emisvar_df is not None and 
+                    srid[index] in self.emisvar_df['source_id'].values ):
+                    self.get_variation(srid[index])
                     
              # Line Source ----------------------------------------------------
     
@@ -424,6 +452,10 @@ class Runstream():
                     
                 elif self.settings['phase'] == 'V':
                     self.get_vapor(srid[index])
+                
+                if (self.emisvar_df is not None and 
+                    srid[index] in self.emisvar_df['source_id'].values ):
+                    self.get_variation(srid[index])
                     
                 
             # Buoyant Line Source ---------------------------------------------
@@ -460,6 +492,10 @@ class Runstream():
                     
                 elif self.settings['phase'] == 'V':
                     self.get_vapor(srid[index])
+                    
+                if (self.emisvar_df is not None and 
+                    srid[index] in self.emisvar_df['source_id'].values):
+                    self.get_variation(srid[index])
                     
                 
              # SO Source groups ---------------------------------------------
@@ -693,6 +729,7 @@ class Runstream():
         self.inp_f.write(somassf)
         self.inp_f.write(sopdens)
         
+        #method 2 tbd
 #         if part_met2 == "Y":
 #        partme2_df = pd.read_excel(r"Currently not a created file") 
 #        sourc = list(partme2_df['Source ID'][:])
@@ -728,8 +765,7 @@ class Runstream():
         else:
         
         #check gas params dataframe for real values and pull them out for that one source
-
-                print('found vapor params', params)
+                #print('found vapor params', params)
             
                 sodepos = ("SO GASDEPOS " + str(srid) + " " + str(params['da'][0]) + 
                        " " + str(params['dw'][0]) + " " + str(params['rcl'][0]) + 
@@ -740,6 +776,50 @@ class Runstream():
         """
         Compiles and writes parameters for emissions variation
         """
-         
-        variation = (self.emisvar)
+        
+        #get row
+        sourcevar =  self.emisvar_df[self.emisvar_df["source_id"] == srid]
+        
+        #get qflag
+        qflag = sourcevar[sourcevar.columns[2]].str.upper().values[0]
+        
+        #get variation -- variable number of columns so slice all starting at 4
+        variation = sourcevar[sourcevar.columns[3:]].values
+        
+        #seasons, windspeed or month will have only one list
+        if len(variation) == 1:
+        
+            length = len(variation[0])
+            
+            #if seasons, windspeed or month
+            if length == 4 or length == 6 or length == 12:
+                var = variation[0].tolist()
+                print(var)
+                sotempvar = str("SO EMISFACT " + str(srid) + " " + qflag +  " " +
+                             " ".join(map(str, var)) +"\n")
+                
+                self.inp_f.write(sotempvar)
+            
+        #everything elese will have lists in multiples of 12   
+        else:
+        
+            for row in variation:
+                var = variation.tolist()
+                print(var)
+                sotempvar = str("SO EMISFACT " + str(srid) + " " + qflag +  " " +
+                         " ".join(map(str, var)) +"\n")
+            
+                self.inp_f.write(sotempvar)
+        
+                 
+                
+    
+            
+
+        
+            
+            
+        
+        
+        
              
