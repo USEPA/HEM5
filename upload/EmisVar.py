@@ -26,8 +26,9 @@ class EmisVar(DependentInputFile):
         emisvar_df.columns = map(str.lower, emisvar_df.columns)
         
         #rename first two columns
-        emisvar_df.rename({"facility id": "fac_id", "source id": "source_id"}, 
-                          inplace=True)
+        emisvar_df.rename(columns={"facility id": "fac_id", 
+                                   "source id": "source_id", 
+                                   emisvar_df.columns[2]: "variation"}, inplace=True)
         
         
         #check source ids against emislocs
@@ -48,49 +49,94 @@ class EmisVar(DependentInputFile):
                                 " file.")
         
         
-        if ('SEASON' in emisvar_df['variation'].tolist() or 
-              'season' in  emisvar_df['variation'].tolist()):
+        vtype = emisvar_df['variation'].str.lower().tolist()
+        
+        
+        if ('season' in vtype):
             
-            #check that seasonal varaiton only has 4 values
+            #check that seasonal variaton only has 4 values
                 seasons = emisvar_df[emisvar_df['variation'].str.lower() == 'season']
+                print(seasons)
                 s_wrong = []
                 for row in seasons.iterrows():
-                    if len(seasons[:2]) != 4:
+                    #print('row', row[1].values[3:])
+                    if len(row[1].values[3:]) != 4:
                         
-                        s_wrong.append(seasons["source_id"])        
+                        s_wrong.append(seasons["source_id"].values[0])        
                 
                 
-                messagebox.showinfo("Seasonal Emissions Variation", 
+                if len(s_wrong) > 0:
+                    messagebox.showinfo("Seasonal Emissions Variation", 
                                     "Seasonal emissions variations require 4 "+
                                     "values. Sources: " + ", ".join(s_wrong) +
                                     " do not have the correct number of values. " +
                                     "Please update your Emission Variation File.")
+         
+         #check wind speed is only 6 values   
+        if ('wspeed' in vtype):    
                 
-        if ('WSPEED' in emisvar_df['variation'].tolist() or 
-              'wspeed' in  emisvar_df['variation'].tolist()):    
-                #check wind speed is only 6 values
 
                 wspeed = emisvar_df[emisvar_df['variation'].str.lower() == 'wspeed']
+                #print(wspeed)
                 w_wrong = []
                 for row in wspeed.iterrows():
-                    if len(wspeed[:2]) != 6:
+
+                    if len(row[1].values[3:]) != 6:
                         
-                        w_wrong.append(seasons["source_id"])        
+                        w_wrong.append(wspeed["source_id"].values[0])        
                 
-                
-                messagebox.showinfo("Wind Speed Emissions Variation", 
+                if len(w_wrong) > 0:
+                    messagebox.showinfo("Wind Speed Emissions Variation", 
                                     "Wind speed emissions variations require 6 "+
                                     "values. Sources: " + ", ".join(w_wrong) +
                                     " do not have the correct number of values. " +
                                     "Please update your Emission Variation File.")
             
             
+             #make sure the monthly emissions variation has 12 values
+        if ('month'  in vtype):
             
+            month = emisvar_df[emisvar_df['variation'].str.lower() == 'month']
+            #print(wspeed)
+            m_wrong = []
+            for row in month.iterrows():
+
+                if len(row[1].values[3:]) != 12:
+                    
+                    m_wrong.append(month["source_id"].values[0])        
             
-    
-               #make sure the len of inputs is divisable by 12
-               
-               
+            if len(m_wrong) > 0:
+                messagebox.showinfo("Monthly Emissions Variation", 
+                                "Monthly emissions variations require 12 "+
+                                "values. Sources: " + ", ".join(m_wrong) +
+                                " do not have the correct number of values. " +
+                                "Please update your Emission Variation File.")
+        
+                
+                
+          
+        if ('hrofdy' in vtype or 'seashr' in vtype or 'shrdow' in vtype or 
+            'shrdow7' in vtype):
+            
+            other = emisvar_df[~emisvar_df['variation'].str.lower().isin(['month', 'wspeed', 'season'])]
+            variation = other[other.columns[3:]].values
+            
+            o_wrong = 0
+            for row in variation:
+                if len(row) != 12:
+                    o_wrong += 1
+                    
+            if len(o_wrong) > 0:
+                messagebox.showinfo("Emissions Variation Error", 
+                                    "One of the emissions variations type does "+ 
+                                    "not have the correct number of values. "+
+                                    "Please check your input file to make all "+
+                                    "values are either a multiple or factor "+
+                                    "of 12.")
+                
+           
+            
+            o_wrong = []
         #make sure this is triggered correctly!
         self.log.append("Uploaded emissions variations for " + 
                             " ".join(var_source_ids))
