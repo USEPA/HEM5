@@ -57,6 +57,18 @@ class Hem4():
         self.processor = None
         self.lastException = None
 
+        self.run_button = None
+        self.fac_up = None
+        self.hap_up = None
+        self.emisloc_up = None
+        self.urep = None
+        self.poly_up = None
+        self.buoyant_up = None
+        self.bldgdw_up = None
+        self.dep_part_up = None
+        self.dep_land_up = None
+        self.dep_seasons_up = None
+
         Logger.messageQueue = messageQueue
 
 
@@ -101,20 +113,63 @@ class Hem4():
             self.quit_gui()
 
     def display_app_quit(self):
-        self.disable_widgets(self.main)
+        self.enable_widgets(self.main, False)
 
         message = "HEM4 is stopping. Please wait."
         tk.Label(self.win, text=message).pack()
 
-    def disable_widgets(self, root):
+    def disable_buttons(self):
+        self.enable_widgets(self.run_button, False)
+        self.enable_widgets(self.fac_up, False)
+        self.enable_widgets(self.hap_up, False)
+        self.enable_widgets(self.emisloc_up, False)
+
+        if self.urep is not None:
+            self.enable_widgets(self.urep, False)
+        if self.poly_up is not None:
+            self.enable_widgets(self.poly_up, False)
+        if self.buoyant_up is not None:
+            self.enable_widgets(self.buoyant_up, False)
+        if self.bldgdw_up is not None:
+            self.enable_widgets(self.bldgdw_up, False)
+        if self.dep_part_up is not None:
+            self.enable_widgets(self.dep_part_up, False)
+        if self.dep_land_up is not None:
+            self.enable_widgets(self.dep_land_up, False)
+        if self.dep_seasons_up is not None:
+            self.enable_widgets(self.dep_seasons_up, False)
+            
+    def enable_buttons(self):
+        self.enable_widgets(self.run_button, True)
+        self.enable_widgets(self.fac_up, True)
+        self.enable_widgets(self.hap_up, True)
+        self.enable_widgets(self.emisloc_up, True)
+
+        if self.urep is not None:
+            self.enable_widgets(self.urep, True)
+        if self.poly_up is not None:
+            self.enable_widgets(self.poly_up, True)
+        if self.buoyant_up is not None:
+            self.enable_widgets(self.buoyant_up, True)
+        if self.bldgdw_up is not None:
+            self.enable_widgets(self.bldgdw_up, True)
+        if self.dep_part_up is not None:
+            self.enable_widgets(self.dep_part_up, True)
+        if self.dep_land_up is not None:
+            self.enable_widgets(self.dep_land_up, True)
+        if self.dep_seasons_up is not None:
+            self.enable_widgets(self.dep_seasons_up, True)
+            
+    def enable_widgets(self, root, enabled):
         """
         Recursively disable widgets starting from the given root.
         """
+        state = 'normal' if enabled else 'disabled'
         if "state" in root.keys():
-            root.configure(state='disabled')
+            root.configure(state=state)
 
         for child in root.winfo_children():
-            self.disable_widgets(child)
+            self.enable_widgets(child, enabled)
 
     def quit_gui(self):
         """
@@ -177,7 +232,9 @@ class Hem4():
                 self.dep_veg.destroy()
 
             self.s12.destroy()
-    
+
+        self.enable_buttons()
+
 #%% Open HEM4 User Guide
     def user_guide(self):
         """ 
@@ -254,12 +311,12 @@ class Hem4():
         
         #run only appears once the required files have been set
         self.run_button = tk.Button(self.main, text='RUN', fg="green", 
-                                    command=self.run).grid(row=10, 
-                                                          column=1, sticky="E")
+                                    command=self.run)
+        self.run_button.grid(row=10, column=1, sticky="E")
         
         self.guide = tk.Button(self.main, text="User Guide", 
-                               command=self.user_guide).grid(row=0, column=0, 
-                                                      sticky='W')
+                               command=self.user_guide)
+        self.guide.grid(row=0, column=0, sticky='W')
 #%% Setting up  directions text space
 
         #Dynamic instructions place holder
@@ -1013,6 +1070,8 @@ class Hem4():
         executor = ThreadPoolExecutor(max_workers=1)
 
         self.running = True
+        self.disable_buttons()
+        
         self.processor = Processor(self.model, Event())
         future = executor.submit(self.processor.process)
         future.add_done_callback(self.processing_finish)
