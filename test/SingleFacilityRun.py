@@ -1,8 +1,10 @@
+import glob
 import hashlib
-import queue
+import os
+import shutil
 import unittest
 
-from Hem4Gui_Threaded import Hem4
+from test.TestHarness import TestHarness
 from writer.csv.AllInnerReceptors import AllInnerReceptors
 from writer.csv.AllOuterReceptors import AllOuterReceptors
 from writer.csv.AllPolarReceptors import AllPolarReceptors
@@ -17,32 +19,26 @@ class SingleFacilityRun(unittest.TestCase):
 
     @classmethod
     def setUpClass(cls):
-        messageQueue = queue.Queue()
-        callbackQueue = queue.Queue()
-        cls.hem4 = Hem4(messageQueue, callbackQueue)
 
-        # set up the test fixture files...
-        cls.hem4.uploader.uploadLibrary("haplib")
-        cls.hem4.uploader.uploadLibrary("organs")
+        # Remove all facility folders from the output directory before beginning
+        folder = "output"
+        for the_file in os.listdir(folder):
+            file_path = os.path.join(folder, the_file)
+            try:
+                if os.path.isdir(file_path): shutil.rmtree(file_path)
+            except Exception as e:
+                print(e)
 
-        cls.hem4.uploader.upload("faclist", "fixtures/input/faclist.xlsx")
-        cls.hem4.model.facids = cls.hem4.model.faclist.dataframe["fac_id"]
-        cls.hem4.uploader.upload("hapemis", "fixtures/input/hapemis.xlsx")
-        cls.hem4.uploader.upload("emisloc", "fixtures/input/emisloc.xlsx")
-        cls.hem4.uploader.uploadDependent("user receptors", "fixtures/input/urec.xlsx",
-                                      cls.hem4.model.faclist.dataframe)
-
-        cls.hem4.process()
-
-    @classmethod
-    def tearDownClass(cls):
-        cls.hem4.close()
+        # Create the test harness, process the files, etc.
+        cls.testHarness = TestHarness()
+        if not cls.testHarness.success:
+            raise RuntimeError("something went wrong creating the test harness")
 
     def test_all_polar_receptors(self):
         """
         Verify that the all polar receptors output file is identical to the test fixture.
         """
-        for facid in self.hem4.model.facids:
+        for facid in self.testHarness.model.facids:
             fixture = AllPolarReceptors("fixtures/output", facid, None, None)
             checksum_expected = self.hashFile(fixture.filename)
 
@@ -56,7 +52,7 @@ class SingleFacilityRun(unittest.TestCase):
         """
         Verify that the all inner receptors output file is identical to the test fixture.
         """
-        for facid in self.hem4.model.facids:
+        for facid in self.testHarness.model.facids:
             fixture = AllInnerReceptors("fixtures/output", facid, None, None)
             checksum_expected = self.hashFile(fixture.filename)
 
@@ -70,7 +66,7 @@ class SingleFacilityRun(unittest.TestCase):
         """
         Verify that the all outer receptors output file is identical to the test fixture.
         """
-        for facid in self.hem4.model.facids:
+        for facid in self.testHarness.model.facids:
             fixture = AllOuterReceptors("fixtures/output", facid, None, None)
             checksum_expected = self.hashFile(fixture.filename)
 
@@ -84,7 +80,7 @@ class SingleFacilityRun(unittest.TestCase):
         """
         Verify that the ring summary chronic output file is identical to the test fixture.
         """
-        for facid in self.hem4.model.facids:
+        for facid in self.testHarness.model.facids:
             fixture = RingSummaryChronic("fixtures/output", facid, None, None)
             checksum_expected = self.hashFile(fixture.filename)
 
@@ -99,7 +95,7 @@ class SingleFacilityRun(unittest.TestCase):
         The aermod output files should be identical, except for the timestamp!
         """
 
-        for facid in self.hem4.model.facids:
+        for facid in self.testHarness.model.facids:
             checksum_expected = self.hashFile("fixtures/output/aermod.out")
             checksum_generated = self.hashFile("output/" + facid + "/aermod.out")
             self.assertNotEqual(checksum_expected, checksum_generated,

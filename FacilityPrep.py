@@ -428,7 +428,7 @@ class FacilityPrep():
         emislocs.to_excel(emislocs_con,'Sheet1')
         emislocs_con.save()
 
-
+        print("got past emislocs save")
         #%% this is where runstream file will be compiled
         #new logic to be
         
