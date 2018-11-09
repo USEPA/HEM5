@@ -91,7 +91,7 @@ class Hem4():
         Logger.close(True)
 
 #%% Quit Function    
-    def quit(self):
+    def quit_app(self):
         """
         Function handles quiting HEM4 by closing the window containing
         the GUI and exiting all background processes & threads
@@ -306,7 +306,7 @@ class Hem4():
         
 #%% Set Quit, Run, and User Guide buttons        
         self.quit = tk.Button(self.main, text="QUIT", fg="red",
-                              command=self.quit)
+                              command=self.quit_app)
         self.quit.grid(row=10, column=0, sticky="W")
         
         #run only appears once the required files have been set
@@ -1105,13 +1105,14 @@ class Hem4():
         if self.ready == True:
 
             #tell user to check the Progress/Log section
-            messagebox.askokcancel("Confirm HEM4 Run", "Clicking 'OK'"+
+            override = messagebox.askokcancel("Confirm HEM4 Run", "Clicking 'OK'"+
                                    " will start HEM4. Check the log tabs for" +
                                    " updates on facility runs.")
 
-            global instruction_instance
-            instruction_instance.set("Hem4 Running, check the log tab for updates")
-            self.process()
+            if override:
+                global instruction_instance
+                instruction_instance.set("Hem4 Running, check the log tab for updates")
+                self.process()
 
     def process(self):
         """
