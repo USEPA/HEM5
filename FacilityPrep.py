@@ -156,9 +156,9 @@ class FacilityPrep():
             user_recs["utmn"] = autmn.tolist()
             user_recs["utmzone"] = autmz.tolist()
 
-        #else:
+        else:
             # No user receptors. Empty dataframe.
-            #user_recs = pd.DataFrame()
+            user_recs = pd.DataFrame()
 
         #%%---------- Optional Buoyant Line Parameters ----------------------------------------- needs to be connected
 
@@ -166,9 +166,9 @@ class FacilityPrep():
 
             buoyant_df = self.model.multibuoy.dataframe.loc[ self.model.multibuoy.dataframe.fac_id == facid].copy()
 
-        #else:
+        else:
             # No buoyant line sources. Empty dataframe.
-            #buoyant_df = pd.DataFrame()
+            buoyant_df = pd.DataFrame()
 
         #%%---------- Optional Polygon Vertex File ----------------------------------------- neeeds to be connected
 
@@ -195,9 +195,9 @@ class FacilityPrep():
             # Assign source_type
             polyver_df["source_type"] = "I"
 
-        #else:
+        else:
             # No polygon sources. Empty dataframe.
-            #polyver_df = pd.DataFrame()
+            polyver_df = pd.DataFrame()
 
         #%%---------- Optional Building Downwash -------------------------------------
         
@@ -205,8 +205,8 @@ class FacilityPrep():
             
             bldgdw_df = self.model.bldgdw.dataframe.loc[self.model.bldgdw.dataframe.fac_id==facid].copy()
             
-        #else:
-            #bldgdw_df = pd.DataFrame()
+        else:
+            bldgdw_df = pd.DataFrame()
         
 
 
@@ -217,8 +217,8 @@ class FacilityPrep():
             
             partdia_df = self.model.partdep.dataframe.loc[self.model.partdep.dataframe.fac_id == facid].copy()
         
-        #else:
-            #partdia_df = pd.DataFrame()
+        else:
+            partdia_df = pd.DataFrame()
             
             
         #%% -- Optional Land Use ----------------------------------------------
@@ -226,8 +226,8 @@ class FacilityPrep():
         if hasattr(self.model.landuse, "dataframe"):
             landuse_df = self.model.landuse.dataframe.loc[self.model.landuse.dataframe.fac_id == facid].copy()
             
-        #else:
-            #landuse_df = pd.DataFrame()
+        else:
+            landuse_df = pd.DataFrame()
         
         
         
@@ -236,8 +236,8 @@ class FacilityPrep():
         if hasattr(self.model.seasons, "dataframe"):
             seasons_df = self.model.seasons.dataframe.loc[self.model.seasons.dataframe.fac_id == facid].copy()
             
-        #else:
-            #seasons_df = pd.DataFrame()
+        else:
+            seasons_df = pd.DataFrame()
             
             
             
@@ -246,8 +246,8 @@ class FacilityPrep():
         if hasattr(self.model.emisvar, "dataframe"):
             emisvar_df = self.model.emisvar.dataframe.loc[self.model.emisvar.dataframe.fac_id == facid].copy()
         
-        #else:
-            #emisvar_df = pd.DataFrame()
+        else:
+            emisvar_df = pd.DataFrame()
         
         
         #%%-- Gas Params for gas runs -- needs to be incorporated better
