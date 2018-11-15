@@ -15,6 +15,7 @@ from writer.csv.AllInnerReceptors import AllInnerReceptors
 from writer.csv.AllOuterReceptors import AllOuterReceptors
 from writer.csv.RingSummaryChronic import RingSummaryChronic
 from writer.csv.BlockSummaryChronic import BlockSummaryChronic
+from writer.excel.CancerRiskExposure import CancerRiskExposure
 from writer.excel.InputSelectionOptions import InputSelectionOptions
 from writer.excel.MaximumIndividualRisks import MaximumIndividualRisks
 from writer.excel.RiskBreakdown import RiskBreakdown
@@ -148,6 +149,14 @@ class Process_outputs():
         block_summary_chronic = BlockSummaryChronic(self.outdir, self.facid, self.model, plot_df)
         block_summary_chronic.write()
         block_summary_chronic_df = pd.DataFrame(data=block_summary_chronic.data, columns=block_summary_chronic.headers)
+
+        if self.abort.is_set():
+            Logger.logMessage("Terminating output processing...")
+            return
+
+        #----------- create cancer risk exposure output file -----------------
+        cancer_risk_exposure = CancerRiskExposure(self.outdir, self.facid, self.model, plot_df, block_summary_chronic_df)
+        cancer_risk_exposure.write()
 
         if self.abort.is_set():
             Logger.logMessage("Terminating output processing...")
