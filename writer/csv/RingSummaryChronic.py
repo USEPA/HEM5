@@ -28,7 +28,6 @@ class RingSummaryChronic(CsvWriter):
         Note that this implementation does NOT use the plot file data, because the polar receptor concentrations have
         already been processed and stored in the model (see model.all_polar_receptors)
         """
-
         self.headers = ['lat', 'lon', 'overlap', 'elevation', 'x', 'y', 'hill', 'mir', 'hi_resp', 'hi_live', 'hi_neur',
                         'hi_deve', 'hi_repr', 'hi_kidn', 'hi_ocul', 'hi_endo', 'hi_hema', 'hi_immu', 'hi_skel',
                         'hi_sple', 'hi_thyr', 'hi_whol', 'distance', 'angle', 'sector']
@@ -96,7 +95,7 @@ class RingSummaryChronic(CsvWriter):
                 RFC = row.iloc[0]["rfc"]
 
             self.riskCache[pollutant] = {'URE' : URE, 'RFC' : RFC}
-            print('Added cached values... ' + pollutant + ': ' + str(URE) + ', ' + str(RFC))
+#            print('Added cached values... ' + pollutant + ': ' + str(URE) + ', ' + str(RFC))
 
         organs = None
         if pollutant in self.organCache:
@@ -117,7 +116,7 @@ class RingSummaryChronic(CsvWriter):
             # dummy list in this case...
             organs = listed[0] if len(listed) > 0 else list(range(16))
             self.organCache[pollutant] = organs
-            print('Added cached values... ' + pollutant + ': ' + str(organs))
+#            print('Added cached values... ' + pollutant + ': ' + str(organs))
 
         risks = []
         mir = conc * URE

@@ -4,8 +4,6 @@ Created on Mon Oct 23 12:43:52 2017
 
 @author: dlindsey
 """
-import sys
-import time
 import numpy as np
 import pandas as pd
 
@@ -18,6 +16,7 @@ from writer.csv.BlockSummaryChronic import BlockSummaryChronic
 from writer.excel.InputSelectionOptions import InputSelectionOptions
 from writer.excel.MaximumIndividualRisks import MaximumIndividualRisks
 from writer.excel.RiskBreakdown import RiskBreakdown
+ #from writer.excel.Incidence import Incidence
 #from writer.kml.KMLWriter import KMLWriter
 
 
@@ -135,32 +134,32 @@ class Process_outputs():
             Logger.logMessage("Terminating output processing...")
             return
 
-        #----------- create Ring_Summary_Chronic output file -----------------
+        #----------- create Ring_Summary_Chronic data -----------------
         ring_summary_chronic = RingSummaryChronic(self.outdir, self.facid, self.model, plot_df)
-        ring_summary_chronic.write()
+        ring_summary_chronic.calculateOutputs()
         ring_summary_chronic_df = pd.DataFrame(data=ring_summary_chronic.data, columns=ring_summary_chronic.headers)
 
         if self.abort.is_set():
             Logger.logMessage("Terminating output processing...")
             return
 
-        #----------- create Block_Summary_Chronic output file -----------------
+        #----------- create Block_Summary_Chronic data -----------------      
         block_summary_chronic = BlockSummaryChronic(self.outdir, self.facid, self.model, plot_df)
-        block_summary_chronic.write()
+        block_summary_chronic.calculateOutputs()
         block_summary_chronic_df = pd.DataFrame(data=block_summary_chronic.data, columns=block_summary_chronic.headers)
 
         if self.abort.is_set():
             Logger.logMessage("Terminating output processing...")
             return
 
-        # Combine ring summary chronic and block summary chronic into one df and assign a receptor type
+        # Combine ring summary chronic and block summary chronic dfs into one and assign a receptor type
         ring_columns = ['lat', 'lon', 'mir', 'hi_resp', 'hi_live', 'hi_neur', 'hi_deve', 'hi_repr', 'hi_kidn', 'hi_ocul', 
                       'hi_endo', 'hi_hema', 'hi_immu', 'hi_skel', 'hi_sple', 'hi_thyr', 'hi_whol', 'overlap']
         block_columns = ring_columns + ['rectype']
         
         ring_risk = ring_summary_chronic_df[ring_columns]
         ring_risk['rectype'] = 'P'
-
+        
         block_risk = block_summary_chronic_df[block_columns]
         self.model.risk_by_latlon = ring_risk.append(block_risk).reset_index(drop=True).infer_objects()
 
@@ -173,11 +172,29 @@ class Process_outputs():
         max_indiv_risk.write()
         self.model.max_indiv_risk_df = pd.DataFrame(data=max_indiv_risk.data, columns=max_indiv_risk.headers)
 
+
+        # For any rows in ring_summary_chronic and block_summary_chronic where overlap = Y, 
+        # replace mir and HI's with values from max_indiv_risk and write data to csv output.
+        replacement = self.model.max_indiv_risk_df["Value"].values
+        ringrows = np.where(ring_summary_chronic_df['overlap'] == 'Y')[0]
+        if len(ringrows) > 0:
+            ring_summary_chronic.data[ringrows, 10:24] = replacement
+        blockrows = np.where(block_summary_chronic_df['overlap'] == 'Y')[0]
+        if len(blockrows) > 0:
+            block_summary_chronic.data[blockrows, 7:22] = replacement
+
+        ring_summary_chronic.write()
+        block_summary_chronic.write()
+        
         
         #----------- create Risk Breakdown output file ------------------------
         risk_breakdown = RiskBreakdown(self.outdir, self.facid, self.model, plot_df)
         risk_breakdown.write()
-     
+
+#        #----------- create Incidence output file ------------------------
+#        incidence= Incidence(self.outdir, self.facid, self.model, plot_df)
+#        incidence.write()
+      
 
 #        #create facility kml
 #        Logger.logMessage("Writing KML file for " + self.facid)
