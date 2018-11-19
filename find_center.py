@@ -79,6 +79,7 @@ def center(sourcelocs, utmz):
     
     verty_a = np.array(verty_l)
    
+    max_sqdist = 0
     max_dist = 0
     max_x = min_x = vertx_a[0]
     max_y = min_y = verty_a[0]
@@ -86,18 +87,19 @@ def center(sourcelocs, utmz):
     if len(vertx_a) > 1: #more than one source
         for i in range(0, len(vertx_a)-1):
             for j in range(0, len(verty_a)-1):
-                dist = (vertx_a[i] - vertx_a[i+1])**2 + (verty_a[j] - verty_a[j+1])**2
-                if dist > max_dist:
+                sqdist = (vertx_a[i] - vertx_a[i+1])**2 + (verty_a[j] - verty_a[j+1])**2
+                if sqdist > max_sqdist:
                     max_x = max(max_x,vertx_a[i+1])
                     max_y = max(max_y,verty_a[i+1])
                     min_x = min(min_x,vertx_a[i+1])
                     min_y = min(min_y,verty_a[i+1])
-                    max_dist = math.sqrt(dist)
+                    max_sqdist = sqdist
+                    max_dist = math.sqrt(sqdist)
                     xmax1 = vertx_a[i]
                     ymax1 = verty_a[i]
                     xmax2 = vertx_a[i+1]
                     ymax2 = verty_a[i+1]
-    
+   
         # Calculate the center of the facility in utm coordinates
         cenx = (xmax1 + xmax2) / 2
         ceny = (ymax1 + ymax2) / 2
@@ -125,5 +127,5 @@ def center(sourcelocs, utmz):
     
         cenlon = acenlon[0]
         cenlat = acenlat[0]    
-    
+ 
     return cenx, ceny, cenlon, cenlat, max_dist, vertx_a, verty_a

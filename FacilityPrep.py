@@ -275,7 +275,7 @@ class FacilityPrep():
 
         # Compute the coordinates of the facililty center
         cenx, ceny, cenlon, cenlat, max_srcdist, vertx_a, verty_a = fc.center(sourcelocs, facutmzone)
-
+        
         #retrieve blocks
         maxdist = facops.get_value(0,"max_dist")
         modeldist = facops.get_value(0,"model_dist")
@@ -386,6 +386,8 @@ class FacilityPrep():
 
          # Assign the polar grid data frame to the model
         self.model.polargrid = polar_df
+        
+        
         #%%----- Add sector and ring to inner and outer receptors ----------
 
         # assign sector and ring number (integers) to each inner receptor and compute fractional sector (s) and ring_loc (log weighted) numbers

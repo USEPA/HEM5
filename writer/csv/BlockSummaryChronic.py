@@ -26,7 +26,8 @@ class BlockSummaryChronic(CsvWriter):
 
     def calculateOutputs(self):
         """
-        Do something with the model and plot data, setting self.headers and self.data in the process.
+        plot_df is not needed. Instead, the allinner and allouter receptor
+        outputs are used to compute cancer risk and HI's at each block receptor.
         """
 
         self.headers = ['lat', 'lon', 'overlap', 'elevation', 'fips', 'block', 'x', 'y', 'hill', 'population',
@@ -37,8 +38,7 @@ class BlockSummaryChronic(CsvWriter):
         allouter_df = self.model.all_outer_receptors_df.copy()
         
         innerblocks = self.model.innerblks_df[['LAT', 'LON', 'utme', 'utmn', 'HILL']]
-        outerblocks = self.model.outerblks_df[['LAT', 'LON', 'utme', 'utmn', 'HILL']]
-        
+        outerblocks = self.model.outerblks_df[['LAT', 'LON', 'utme', 'utmn', 'HILL']]        
 
         # rename and retype various columns to make them joinable
         allinner_df.rename(columns=self.lowercase, inplace=True)
@@ -57,7 +57,7 @@ class BlockSummaryChronic(CsvWriter):
                    'utme', 'utmn', 'population', 'hill']
         innermerged = allinner_df.merge(innerblocks, on=['lat', 'lon'])[columns]
 
-        # join inner receptor df with the inner block df and then select columns
+        # join outer receptor df with the outer block df and then select columns
         outermerged = allouter_df.merge(outerblocks, on=['lat', 'lon'])[columns]
 
         # compute cancer and noncancer values for each Inner rececptor row
@@ -69,9 +69,9 @@ class BlockSummaryChronic(CsvWriter):
         outermerged[['mir', 'hi_resp', 'hi_live', 'hi_neur', 'hi_deve', 'hi_repr', 'hi_kidn', 'hi_ocul', 'hi_endo',
                 'hi_hema', 'hi_immu', 'hi_skel', 'hi_sple', 'hi_thyr', 'hi_whol']] =\
             outermerged.apply(lambda row: self.calculateRisks(row['pollutant'], row['conc_ug_m3']), axis=1)
-
-        print('inner merged size = ' + str(innermerged.size))
-        print('outer merged size = ' + str(outermerged.size))
+        
+#        print('inner merged size = ' + str(innermerged.size))
+#        print('outer merged size = ' + str(outermerged.size))
 
         # For the Inner and Outer receptors, group by lat,lon and then aggregate each group by summing the mir and hazard index fields
         aggs = {'pollutant':'first', 'lat':'first', 'lon':'first', 'overlap':'first', 'elevation':'first', 'utme':'first',
@@ -90,11 +90,10 @@ class BlockSummaryChronic(CsvWriter):
         # add a receptor type column to note if inner or outer. I => inner, O => outer
         inneragg["rectype"] = "I"
         outeragg["rectype"] = "O"
-        
+                                
         # append the inner and outer values and write
         self.data = inneragg.append(outeragg, ignore_index = True).sort_values(by=['fips', 'block']).values
         
-#        self.data = merged.groupby(['lat', 'lon']).agg(aggs)[newcolumns].sort_values(by=['sector','distance']).values
 
     def calculateRisks(self, pollutant, conc):
         URE = None
@@ -125,7 +124,7 @@ class BlockSummaryChronic(CsvWriter):
                 RFC = row.iloc[0]["rfc"]
 
             self.riskCache[pollutant] = {'URE' : URE, 'RFC' : RFC}
-            print('Added cached values... ' + pollutant + ': ' + str(URE) + ', ' + str(RFC))
+#            print('Added cached values... ' + pollutant + ': ' + str(URE) + ', ' + str(RFC))
 
         organs = None
         if pollutant in self.organCache:
@@ -146,7 +145,7 @@ class BlockSummaryChronic(CsvWriter):
             # dummy list in this case...
             organs = listed[0] if len(listed) > 0 else list(range(16))
             self.organCache[pollutant] = organs
-            print('Added cached values... ' + pollutant + ': ' + str(organs))
+#            print('Added cached values... ' + pollutant + ': ' + str(organs))
 
         risks = []
         mir = conc * URE

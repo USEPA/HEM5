@@ -229,8 +229,6 @@ class MaximumIndividualRisks(ExcelWriter):
         """
         mr_parameter = "Cancer risk"
         io_idx = self.model.risk_by_latlon[self.model.risk_by_latlon["rectype"] != "P"]["mir"].idxmax()
-        #debug
-        print("io_idx = ", io_idx)
         if self.model.risk_by_latlon["mir"].loc[io_idx] > 0:            
             #max risk is > 0, do calculations
             mr_lat = float(self.model.risk_by_latlon["lat"].loc[io_idx])
