@@ -9,11 +9,9 @@ import math
 import sys
 import numpy as np
 import pandas as pd
-import HEM4_Runstream as rs
 import find_center as fc
 import json_census_blocks as cbr
 from support.UTM import UTM
-
 from runstream.Runstream import Runstream
 
 
@@ -160,7 +158,7 @@ class FacilityPrep():
 
         else:
             # No user receptors. Empty dataframe.
-            user_recs = pd.DataFrame()
+            user_recs = None
 
         #%%---------- Optional Buoyant Line Parameters ----------------------------------------- needs to be connected
 
@@ -170,7 +168,7 @@ class FacilityPrep():
 
         else:
             # No buoyant line sources. Empty dataframe.
-            buoyant_df = pd.DataFrame()
+            buoyant_df = None
 
         #%%---------- Optional Polygon Vertex File ----------------------------------------- neeeds to be connected
 
@@ -199,7 +197,7 @@ class FacilityPrep():
 
         else:
             # No polygon sources. Empty dataframe.
-            polyver_df = pd.DataFrame()
+            polyver_df = None
 
         #%%---------- Optional Building Downwash -------------------------------------
         
@@ -208,7 +206,7 @@ class FacilityPrep():
             bldgdw_df = self.model.bldgdw.dataframe.loc[self.model.bldgdw.dataframe.fac_id==facid].copy()
             
         else:
-            bldgdw_df = pd.DataFrame()
+            bldgdw_df = None
         
 
 
@@ -220,7 +218,7 @@ class FacilityPrep():
             partdia_df = self.model.partdep.dataframe.loc[self.model.partdep.dataframe.fac_id == facid].copy()
         
         else:
-            partdia_df = pd.DataFrame()
+            partdia_df = None
             
             
         #%% -- Optional Land Use ----------------------------------------------
@@ -229,7 +227,7 @@ class FacilityPrep():
             landuse_df = self.model.landuse.dataframe.loc[self.model.landuse.dataframe.fac_id == facid].copy()
             
         else:
-            landuse_df = pd.DataFrame()
+            landuse_df = None
         
         
         
@@ -239,8 +237,18 @@ class FacilityPrep():
             seasons_df = self.model.seasons.dataframe.loc[self.model.seasons.dataframe.fac_id == facid].copy()
             
         else:
-            seasons_df = pd.DataFrame()
+            seasons_df = None
             
+            
+            
+        #%% --- Optional Emissions Variations --------------------------------
+            
+        if hasattr(self.model.emisvar, "dataframe"):
+            emisvar_df = self.model.emisvar.dataframe.loc[self.model.emisvar.dataframe.fac_id == facid].copy()
+        
+        else:
+            emisvar_df = None
+        
         
         #%%-- Gas Params for gas runs -- needs to be incorporated better
         
@@ -248,7 +256,7 @@ class FacilityPrep():
             #gasparams_df = self.model.gasparams.dataframe
             
         #else:
-            #gasparams_df = pd.DataFrame()
+            #gasparams_df = None
         
         #%%---------- Get Census Block Receptors -------------------------------------- needs to be connected
 
@@ -430,11 +438,13 @@ class FacilityPrep():
         emislocs.to_excel(emislocs_con,'Sheet1')
         emislocs_con.save()
 
-
         #%% this is where runstream file will be compiled
         #new logic to be
         
-        runstream = Runstream(facops, emislocs, hapemis, user_recs, buoyant_df, polyver_df, bldgdw_df, partdia_df, landuse_df, seasons_df, self.model.gasparams.dataframe)
+        runstream = Runstream(facops, emislocs, hapemis, user_recs, buoyant_df,
+                              polyver_df, bldgdw_df, partdia_df, landuse_df, 
+                              seasons_df, emisvar_df, 
+                              self.model.gasparams.dataframe)
         runstream.build_co()
         runstream.build_so()
         runstream.build_re(self.innerblks, cenx, ceny, polar_df)

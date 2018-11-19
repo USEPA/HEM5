@@ -13,8 +13,10 @@ from writer.csv.AllInnerReceptors import AllInnerReceptors
 from writer.csv.AllOuterReceptors import AllOuterReceptors
 from writer.csv.RingSummaryChronic import RingSummaryChronic
 from writer.csv.BlockSummaryChronic import BlockSummaryChronic
+from writer.excel.CancerRiskExposure import CancerRiskExposure
 from writer.excel.InputSelectionOptions import InputSelectionOptions
 from writer.excel.MaximumIndividualRisks import MaximumIndividualRisks
+from writer.excel.NoncancerRiskExposure import NoncancerRiskExposure
 from writer.excel.RiskBreakdown import RiskBreakdown
  #from writer.excel.Incidence import Incidence
 #from writer.kml.KMLWriter import KMLWriter
@@ -167,6 +169,22 @@ class Process_outputs():
             Logger.logMessage("Terminating output processing...")
             return
 
+        #----------- create noncancer risk exposure output file -----------------
+        noncancer_risk_exposure = NoncancerRiskExposure(self.outdir, self.facid, self.model, plot_df, block_summary_chronic_df)
+        noncancer_risk_exposure.write()
+
+        if self.abort.is_set():
+            Logger.logMessage("Terminating output processing...")
+            return
+
+        #----------- create cancer risk exposure output file -----------------
+        cancer_risk_exposure = CancerRiskExposure(self.outdir, self.facid, self.model, plot_df, block_summary_chronic_df)
+        cancer_risk_exposure.write()
+
+        if self.abort.is_set():
+            Logger.logMessage("Terminating output processing...")
+            return
+          
         #----------- create Maximum_Individual_Risk output file ---------------
         max_indiv_risk = MaximumIndividualRisks(self.outdir, self.facid, self.model, plot_df)
         max_indiv_risk.write()

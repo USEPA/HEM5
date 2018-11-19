@@ -1,0 +1,255 @@
+CO STARTING
+CO TITLEONE  Facility1
+CO TITLETWO  Combined particle and vapor-phase emissions
+CO MODELOPT  CONC  BETA  FLAT
+CO AVERTIME  1 ANNUAL
+CO POLLUTID  UNITHAP
+CO RUNORNOT  RUN
+CO FINISHED
+ 
+SO STARTING
+SO ELEVUNIT METERS
+SO LOCATION CT000001 POINT 690956.0 3974986.0 0
+SO SRCPARAM CT000001 1000 50.292 322.04 21.06275 2.819
+SO EMISFACT CT000001 SEASON 0.2138 0.1433 1.2928 0.098SO LOCATION HV000001 POINTHOR 690561.0 3975207.0 0
+SO SRCPARAM HV000001 1000 45.0 300.0 0.006 3.0
+SO LOCATION FU000001 AREA 690957.0 3974943.0 0
+SO SRCPARAM FU000001 0.1 2.0 100.0 100.0 45.0 0.0
+SO EMISFACT FU000001 SEASON 1.3959 1.2728 0.1079 1.5255SO LOCATION SR000001 VOLUME 690991.0 3974996.0 0
+SO SRCPARAM SR000001 1000 10.0 10.0 10.0
+SO LOCATION RW000001 LINE 690560.0 3975117.0 690751.0 3975163.0 0
+SO SRCPARAM RW000001 0.06786751719790185 3.0 75.0 3.0
+SO SRCGROUP CT000001 CT000001-CT000001
+SO SRCGROUP CV000001 CV000001-CV000001
+SO SRCGROUP HV000001 HV000001-HV000001
+SO SRCGROUP FU000001 FU000001-FU000001
+SO SRCGROUP SR000001 SR000001-SR000001
+SO SRCGROUP RW000001 RW000001-RW000001
+SO SRCGROUP RV000001 RV000001-RV000001
+SO SRCGROUP RV000002 RV000002-RV000002
+SO SRCGROUP RV000003 RV000003-RV000003
+SO SRCGROUP RV000004 RV000004-RV000004
+SO SRCGROUP MS000001 MS000001-MS000001
+SO FINISHED
+ 
+RE STARTING
+RE DISCCART  688085 3975161
+RE DISCCART  688431 3974590
+RE DISCCART  688074 3974564
+RE DISCCART  688329 3973976
+RE DISCCART  688603 3974075
+RE DISCCART  689200 3973740
+RE DISCCART  688986 3973544
+RE DISCCART  688843 3975073
+RE DISCCART  688627 3975147
+RE DISCCART  688703 3974777
+RE DISCCART  688794 3974637
+RE DISCCART  688857 3974368
+RE DISCCART  688897 3974590
+RE DISCCART  688987 3974348
+RE DISCCART  688771 3973458
+RE DISCCART  688844 3973490
+RE DISCCART  688649 3973298
+RE DISCCART  688548 3973225
+RE DISCCART  688950 3972883
+RE DISCCART  689303 3973138
+RE DISCCART  689577 3972790
+RE DISCCART  689172 3972686
+RE DISCCART  689054 3972778
+RE DISCCART  689351 3972699
+RE DISCCART  688985 3973950
+RE DISCCART  690232 3977482
+RE DISCCART  689973 3977269
+RE DISCCART  689784 3977054
+RE DISCCART  689839 3977307
+RE DISCCART  689377 3977079
+RE DISCCART  688939 3977109
+RE DISCCART  689546 3976773
+RE DISCCART  690422 3977084
+RE DISCCART  690753 3976745
+RE DISCCART  690380 3975830
+RE DISCCART  690373 3976300
+RE DISCCART  688776 3976941
+RE DISCCART  688967 3976910
+RE DISCCART  688772 3976636
+RE DISCCART  688711 3976331
+RE DISCCART  688805 3976573
+RE DISCCART  688330 3976343
+RE DISCCART  688569 3976401
+RE DISCCART  688507 3976487
+RE DISCCART  688848 3976479
+RE DISCCART  688711 3976240
+RE DISCCART  689857 3976390
+RE DISCCART  688427 3975999
+RE DISCCART  688996 3975928
+RE DISCCART  688183 3976015
+RE DISCCART  690043 3975305
+RE DISCCART  690578 3975403
+RE DISCCART  689655 3975059
+RE DISCCART  689938 3974512
+RE DISCCART  690588 3974829
+RE DISCCART  690684 3974103
+RE DISCCART  690450 3973762
+RE DISCCART  690980 3974021
+RE DISCCART  691066 3973888
+RE DISCCART  690815 3973572
+RE DISCCART  690576 3973288
+RE DISCCART  690779 3973254
+RE DISCCART  690711 3972983
+RE DISCCART  690637 3973057
+RE DISCCART  690105 3973474
+RE DISCCART  689633 3974258
+RE DISCCART  690679 3973127
+RE DISCCART  688408 3976306
+RE DISCCART  688351 3975672
+RE DISCCART  688784 3975431
+RE DISCCART  688843 3975276
+RE DISCCART  689212 3975304
+RE DISCCART  689227 3975496
+RE DISCCART  690507 3975525
+RE DISCCART  692808 3973032
+RE DISCCART  692697 3972751
+RE DISCCART  692799 3972873
+RE DISCCART  690605 3974816
+RE DISCCART  687983 3974266
+RE DISCCART  690717 3978045
+RE DISCCART  688258 3976491
+RE DISCCART  688177 3976452
+RE DISCCART  687777 3974674
+RE DISCCART  687575 3974995
+RE DISCCART  687970 3974082
+RE DISCCART  688004 3973984
+RE DISCCART  688214 3973472
+RE DISCCART  687663 3975486
+RE DISCCART  687631 3975345
+RE DISCCART  689264 3977739
+RE DISCCART  688706 3977504
+RE DISCCART  689106 3977618
+RE DISCCART  690319 3978179
+RE DISCCART  688485 3977018
+RE DISCCART  688475 3977352
+RE DISCCART  688217 3976662
+RE DISCCART  687975 3976513
+RE DISCCART  688021 3976581
+RE DISCCART  688063 3976642
+RE DISCCART  688085 3976510
+RE DISCCART  688759 3972795
+RE DISCCART  687987 3973623
+RE GRIDPOLR polgrid1 STA
+RE GRIDPOLR polgrid1 ORIG 690704.0 3975428.5
+RE GRIDPOLR polgrid1 DIST 712.0 1020.0 1460.0 2090.0 3000.0 4300.0 6100.0 8700.0 12400.0 17600.0 25000.0 35500.0 50000.0
+RE GRIDPOLR polgrid1 DDIR 0.0 22.5 45.0 67.5 90.0 112.5 135.0 157.5 180.0 202.5 225.0 247.5 270.0 292.5 315.0 337.5
+RE GRIDPOLR polgrid1 END
+RE FINISHED
+ME STARTING
+ME SURFFILE  metdata\NC13722.SFC
+ME PROFFILE  metdata\NC13722.PFL
+ME SURFDATA  13722 2016 RALEIGH/DURHAM,NC
+ME UAIRDATA  13723 2016 GREENSBORO,NC
+ME PROFBASE  121
+ME FINISHED
+OU STARTING
+OU FILEFORM EXP
+OU PLOTFILE ANNUAL CT000001 resources\plotfile.plt 35
+OU PLOTFILE ANNUAL CV000001 resources\plotfile.plt 35
+OU PLOTFILE ANNUAL HV000001 resources\plotfile.plt 35
+OU PLOTFILE ANNUAL FU000001 resources\plotfile.plt 35
+OU PLOTFILE ANNUAL SR000001 resources\plotfile.plt 35
+OU PLOTFILE ANNUAL RW000001 resources\plotfile.plt 35
+OU PLOTFILE ANNUAL RV000001 resources\plotfile.plt 35
+OU PLOTFILE ANNUAL RV000002 resources\plotfile.plt 35
+OU PLOTFILE ANNUAL RV000003 resources\plotfile.plt 35
+OU PLOTFILE ANNUAL RV000004 resources\plotfile.plt 35
+OU PLOTFILE ANNUAL MS000001 resources\plotfile.plt 35
+OU FINISHED
+
+
+  *** Message Summary For AERMOD Model Setup ***
+
+  --------- Summary of Total Messages --------
+  
+ A Total of           14 Fatal Error Message(s)
+ A Total of           11 Warning Message(s)
+ A Total of            0 Informational Message(s)
+  
+  
+    ******** FATAL ERROR MESSAGES ******** 
+ SO E208      14       EFFILL: Illegal Numerical Field Encountered in                 EMISFACT
+ SO E208      14       EFFILL: Illegal Numerical Field Encountered in                 EMISFACT
+ SO E208      14       EFFILL: Illegal Numerical Field Encountered in                 EMISFACT
+ SO E208      14       EFFILL: Illegal Numerical Field Encountered in                 EMISFACT
+ SO E231      14       EFFILL: Too Many Numerical Values Specified for            QFACT Src001
+ SO E231      14       EFFILL: Too Many Numerical Values Specified for            QFACT Src001
+ SO E300      15       SOPARM: Specified SRCID Has Not Been Defined Yet: KEYWORD=     SRCPARAM
+ SO E208      18       EFFILL: Illegal Numerical Field Encountered in                 EMISFACT
+ SO E208      18       EFFILL: Illegal Numerical Field Encountered in                 EMISFACT
+ SO E208      18       EFFILL: Illegal Numerical Field Encountered in                 EMISFACT
+ SO E208      18       EFFILL: Illegal Numerical Field Encountered in                 EMISFACT
+ SO E231      18       EFFILL: Too Many Numerical Values Specified for            QFACT Src002
+ SO E231      18       EFFILL: Too Many Numerical Values Specified for            QFACT Src002
+ SO E300      19       SOPARM: Specified SRCID Has Not Been Defined Yet: KEYWORD=     SRCPARAM
+  
+    ********   WARNING MESSAGES   ******** 
+ SO W319      33        SRCQA: No Sources Included in Specified Source Group:         CV000001
+ SO W319      33        SRCQA: No Sources Included in Specified Source Group:         HV000001
+ SO W319      33        SRCQA: No Sources Included in Specified Source Group:         SR000001
+ SO W319      33        SRCQA: No Sources Included in Specified Source Group:         RV000001
+ SO W319      33        SRCQA: No Sources Included in Specified Source Group:         RV000002
+ SO W319      33        SRCQA: No Sources Included in Specified Source Group:         RV000003
+ SO W319      33        SRCQA: No Sources Included in Specified Source Group:         RV000004
+ SO W319      33        SRCQA: No Sources Included in Specified Source Group:         MS000001
+ ME W186     150       MEOPEN: THRESH_1MIN 1-min ASOS wind speed threshold used           0.50
+ ME W187     150       MEOPEN: ADJ_U* Option for Low Winds used in AERMET                     
+ OU W540     164        OUTQA: No RECTABLE/MAXTABLE/DAYTABLE for Average Period         001-HR
+
+    **************************************
+    *** SETUP Finishes UN-successfully ***
+    **************************************
+
+ *** AERMOD - VERSION 16216r ***   ***  Facility1                                                           ***        11/08/18
+ *** AERMET - VERSION  16216 ***   ***  Combined particle and vapor-phase emissions                         ***        16:17:16
+                                                                                                                       PAGE   1
+ *** MODELOPTs:  
+
+ *** Message Summary : AERMOD Model Execution ***
+
+  --------- Summary of Total Messages --------
+  
+ A Total of           14 Fatal Error Message(s)
+ A Total of           11 Warning Message(s)
+ A Total of            0 Informational Message(s)
+  
+  
+    ******** FATAL ERROR MESSAGES ******** 
+ SO E208      14       EFFILL: Illegal Numerical Field Encountered in                 EMISFACT
+ SO E208      14       EFFILL: Illegal Numerical Field Encountered in                 EMISFACT
+ SO E208      14       EFFILL: Illegal Numerical Field Encountered in                 EMISFACT
+ SO E208      14       EFFILL: Illegal Numerical Field Encountered in                 EMISFACT
+ SO E231      14       EFFILL: Too Many Numerical Values Specified for            QFACT Src001
+ SO E231      14       EFFILL: Too Many Numerical Values Specified for            QFACT Src001
+ SO E300      15       SOPARM: Specified SRCID Has Not Been Defined Yet: KEYWORD=     SRCPARAM
+ SO E208      18       EFFILL: Illegal Numerical Field Encountered in                 EMISFACT
+ SO E208      18       EFFILL: Illegal Numerical Field Encountered in                 EMISFACT
+ SO E208      18       EFFILL: Illegal Numerical Field Encountered in                 EMISFACT
+ SO E208      18       EFFILL: Illegal Numerical Field Encountered in                 EMISFACT
+ SO E231      18       EFFILL: Too Many Numerical Values Specified for            QFACT Src002
+ SO E231      18       EFFILL: Too Many Numerical Values Specified for            QFACT Src002
+ SO E300      19       SOPARM: Specified SRCID Has Not Been Defined Yet: KEYWORD=     SRCPARAM
+  
+    ********   WARNING MESSAGES   ******** 
+ SO W319      33        SRCQA: No Sources Included in Specified Source Group:         CV000001
+ SO W319      33        SRCQA: No Sources Included in Specified Source Group:         HV000001
+ SO W319      33        SRCQA: No Sources Included in Specified Source Group:         SR000001
+ SO W319      33        SRCQA: No Sources Included in Specified Source Group:         RV000001
+ SO W319      33        SRCQA: No Sources Included in Specified Source Group:         RV000002
+ SO W319      33        SRCQA: No Sources Included in Specified Source Group:         RV000003
+ SO W319      33        SRCQA: No Sources Included in Specified Source Group:         RV000004
+ SO W319      33        SRCQA: No Sources Included in Specified Source Group:         MS000001
+ ME W186     150       MEOPEN: THRESH_1MIN 1-min ASOS wind speed threshold used           0.50
+ ME W187     150       MEOPEN: ADJ_U* Option for Low Winds used in AERMET                     
+ OU W540     164        OUTQA: No RECTABLE/MAXTABLE/DAYTABLE for Average Period         001-HR
+
+    ***************************************
+    *** AERMOD Finishes UN-successfully ***
+    ***************************************
+

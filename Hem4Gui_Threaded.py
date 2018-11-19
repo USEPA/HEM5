@@ -57,6 +57,18 @@ class Hem4():
         self.processor = None
         self.lastException = None
 
+        self.run_button = None
+        self.fac_up = None
+        self.hap_up = None
+        self.emisloc_up = None
+        self.urep = None
+        self.poly_up = None
+        self.buoyant_up = None
+        self.bldgdw_up = None
+        self.dep_part_up = None
+        self.dep_land_up = None
+        self.dep_seasons_up = None
+
         Logger.messageQueue = messageQueue
 
 
@@ -79,7 +91,7 @@ class Hem4():
         Logger.close(True)
 
 #%% Quit Function    
-    def quit(self):
+    def quit_app(self):
         """
         Function handles quiting HEM4 by closing the window containing
         the GUI and exiting all background processes & threads
@@ -101,20 +113,63 @@ class Hem4():
             self.quit_gui()
 
     def display_app_quit(self):
-        self.disable_widgets(self.main)
+        self.enable_widgets(self.main, False)
 
         message = "HEM4 is stopping. Please wait."
         tk.Label(self.win, text=message).pack()
 
-    def disable_widgets(self, root):
+    def disable_buttons(self):
+        self.enable_widgets(self.run_button, False)
+        self.enable_widgets(self.fac_up, False)
+        self.enable_widgets(self.hap_up, False)
+        self.enable_widgets(self.emisloc_up, False)
+
+        if self.urep is not None:
+            self.enable_widgets(self.urep, False)
+        if self.poly_up is not None:
+            self.enable_widgets(self.poly_up, False)
+        if self.buoyant_up is not None:
+            self.enable_widgets(self.buoyant_up, False)
+        if self.bldgdw_up is not None:
+            self.enable_widgets(self.bldgdw_up, False)
+        if self.dep_part_up is not None:
+            self.enable_widgets(self.dep_part_up, False)
+        if self.dep_land_up is not None:
+            self.enable_widgets(self.dep_land_up, False)
+        if self.dep_seasons_up is not None:
+            self.enable_widgets(self.dep_seasons_up, False)
+            
+    def enable_buttons(self):
+        self.enable_widgets(self.run_button, True)
+        self.enable_widgets(self.fac_up, True)
+        self.enable_widgets(self.hap_up, True)
+        self.enable_widgets(self.emisloc_up, True)
+
+        if self.urep is not None:
+            self.enable_widgets(self.urep, True)
+        if self.poly_up is not None:
+            self.enable_widgets(self.poly_up, True)
+        if self.buoyant_up is not None:
+            self.enable_widgets(self.buoyant_up, True)
+        if self.bldgdw_up is not None:
+            self.enable_widgets(self.bldgdw_up, True)
+        if self.dep_part_up is not None:
+            self.enable_widgets(self.dep_part_up, True)
+        if self.dep_land_up is not None:
+            self.enable_widgets(self.dep_land_up, True)
+        if self.dep_seasons_up is not None:
+            self.enable_widgets(self.dep_seasons_up, True)
+            
+    def enable_widgets(self, root, enabled):
         """
         Recursively disable widgets starting from the given root.
         """
+        state = 'normal' if enabled else 'disabled'
         if "state" in root.keys():
-            root.configure(state='disabled')
+            root.configure(state=state)
 
         for child in root.winfo_children():
-            self.disable_widgets(child)
+            self.enable_widgets(child, enabled)
 
     def quit_gui(self):
         """
@@ -177,7 +232,9 @@ class Hem4():
                 self.dep_veg.destroy()
 
             self.s12.destroy()
-    
+
+        self.enable_buttons()
+
 #%% Open HEM4 User Guide
     def user_guide(self):
         """ 
@@ -249,17 +306,17 @@ class Hem4():
         
 #%% Set Quit, Run, and User Guide buttons        
         self.quit = tk.Button(self.main, text="QUIT", fg="red",
-                              command=self.quit)
+                              command=self.quit_app)
         self.quit.grid(row=10, column=0, sticky="W")
         
         #run only appears once the required files have been set
         self.run_button = tk.Button(self.main, text='RUN', fg="green", 
-                                    command=self.run).grid(row=10, 
-                                                          column=1, sticky="E")
+                                    command=self.run)
+        self.run_button.grid(row=10, column=1, sticky="E")
         
         self.guide = tk.Button(self.main, text="User Guide", 
-                               command=self.user_guide).grid(row=0, column=0, 
-                                                      sticky='W')
+                               command=self.user_guide)
+        self.guide.grid(row=0, column=0, sticky='W')
 #%% Setting up  directions text space
 
         #Dynamic instructions place holder
@@ -326,7 +383,8 @@ class Hem4():
         
         #Emissions location label
         emisloc_label = tk.Label(self.s5, font="-size 10",  
-                                 text="Please select the associated Emissions Locations file:")
+                                 text="Please select the associated Emissions" +
+                                 " Locations file:")
         emisloc_label.grid(row=1, sticky="W")
         
         #emissions location upload button
@@ -348,6 +406,13 @@ class Hem4():
         self.emisloc_list_man.bind('<Button-1>', 
                                    lambda e:self.manual("instructions/emis_man.txt"))
          
+        
+        #add emissions variation checkbox
+        self.check_emisvar = tk.IntVar()
+        self.emisvar_sel = tk.Checkbutton(self.s5, text="Add Emissions Variations", 
+                                          variable = self.check_emisvar,
+                                          command = self.add_variation)
+        self.emisvar_sel.grid(row=3, column=0, sticky='E', padx = 85)
         
         
     def is_excel(self, filepath):
@@ -661,19 +726,13 @@ class Hem4():
         """
         Function for uploading emissions variation inputs
         """
-        
-        if self.model.emisloc.dataframe is None:
-            messagebox.showinfo("Emissions Location File Missing",
-                "Please upload an Emissions Location file before selecting"+
-                " a temporal emissions variation file.")
-            
         fullpath = self.openFile(askopenfilename())
         if fullpath is not None:
             self.uploader.uploadDependent("emissions variation", fullpath, 
                                           self.model.emisloc.dataframe)
             
              # Update the UI
-            #self.tempemis.set(fullpath)
+            self.emisvar_list.set(fullpath)
             [self.scr.insert(tk.INSERT, msg) for msg in self.model.emisvar.log]
     
     def add_ur(self):
@@ -919,7 +978,55 @@ class Hem4():
         Function for creating temporal variation input space
         """
         
-        pass
+        if self.check_emisvar.get() == 1:
+            
+            if hasattr(self.model.emisloc, 'dataframe'):
+                #create row for emissions variation
+                self.s13 = tk.Frame(self.main, width=250, height=100, pady=10, 
+                                    padx=10)
+                self.s13.grid(row=9, column=0, columnspan=2, sticky="nsew")
+                
+                #emissions variation label
+                self.emisvar_label = tk.Label(self.s13, font="-size 10", 
+                                     text="Please select an Emissions Variation"+
+                                     " file:")
+                self.emisvar_label.grid(row=0, sticky="W")
+            
+                #emissions variation upload button
+                self.emisvar_on = ttk.Button(self.s13, 
+                                       command = lambda: self.uploadVariation())
+                self.emisvar_on["text"] = "Browse"
+                self.emisvar_on.grid(row=1, column=0, sticky="W")
+                #self.emisvar_on.bind('<Enter>', 
+                               #lambda e:self.browse("instructions/urep_browse.txt"))
+                
+                #emissions variation text entry
+                self.emisvar_list = tk.StringVar(self.s13)
+                self.emisvar_list_man = ttk.Entry(self.s13)
+                self.emisvar_list_man["width"] = 55
+                self.emisvar_list_man["textvariable"]= self.emisvar_list
+                self.emisvar_list_man.grid(row=1, column=0, sticky='E', padx=85)
+                #event handler for instructions (Button 1 is the left mouse click)
+                #self.emisvar_list_man.bind('<Button-1>', 
+                                       #lambda e:self.manual("instructions/urep_man.txt"))
+            
+            else:
+                 messagebox.showinfo("Emissions Location File Missing",
+                "Please upload an Emissions Location file before selecting"+
+                " a temporal emissions variation file.")
+                 
+                 #uncheck the box
+                 self.check_emisvar.set(0)
+            
+        #if checked and then unchecked
+        elif self.check_emisvar.get() == 0:
+            if hasattr(self, 's13'):
+                    self.emisvar_list_man.destroy()
+                    self.emisvar_on.destroy()
+                    self.emisvar_label.destroy()
+                    self.s13.destroy()
+            
+            
  #%% Event handlers for porting instructions
 
     #reset instructions space
@@ -998,13 +1105,14 @@ class Hem4():
         if self.ready == True:
 
             #tell user to check the Progress/Log section
-            messagebox.askokcancel("Confirm HEM4 Run", "Clicking 'OK'"+
+            override = messagebox.askokcancel("Confirm HEM4 Run", "Clicking 'OK'"+
                                    " will start HEM4. Check the log tabs for" +
                                    " updates on facility runs.")
 
-            global instruction_instance
-            instruction_instance.set("Hem4 Running, check the log tab for updates")
-            self.process()
+            if override:
+                global instruction_instance
+                instruction_instance.set("Hem4 Running, check the log tab for updates")
+                self.process()
 
     def process(self):
         """
@@ -1013,6 +1121,8 @@ class Hem4():
         executor = ThreadPoolExecutor(max_workers=1)
 
         self.running = True
+        self.disable_buttons()
+        
         self.processor = Processor(self.model, Event())
         future = executor.submit(self.processor.process)
         future.add_done_callback(self.processing_finish)

@@ -13,6 +13,7 @@ class Processor():
     def __init__ (self, model, abort):
         self.model = model
         self.abort = abort
+        self.exception = None
 
     def abortProcessing(self):
         self.abort.set()
@@ -49,20 +50,27 @@ class Processor():
             Logger.logMessage("Running facility " + str(num) + " of " +
                               str(len(fac_list)))
 
+            success = False
             try:
                 runner = FacilityRunner(facid, self.model, self.abort)
                 runner.run()
 
                 # increment facility count
                 num += 1
+                success = True
             except Exception as ex:
 
+                self.exception = ex
                 fullStackInfo=''.join(traceback.format_exception(
                     etype=type(ex), value=ex, tb=ex.__traceback__))
 
-                Logger.logMessage("An error occurred while running a facility:\n" + fullStackInfo)
+                message = "An error occurred while running a facility:\n" + fullStackInfo
+                print(message)
+                Logger.logMessage(message)
 
         Logger.logMessage("HEM4 Modeling Completed. Finished modeling all" +
                           " facilities. Check the log tab for error messages."+
                           " Modeling results are located in the Output"+
                           " subfolder of the HEM4 folder.")
+
+        return success

@@ -66,5 +66,5 @@ class FileUploader():
             self.model.seasons = Seasons(path, dependency)
         
         elif filetype == "emissions variation":
-            self,model.emisvar = EmisVar(path, dependency)
+            self.model.emisvar = EmisVar(path, dependency)
                 
