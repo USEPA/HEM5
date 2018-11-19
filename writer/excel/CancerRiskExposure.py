@@ -1,11 +1,8 @@
 import os
-
-import pandas as pd
-from numpy.core.multiarray import array
-from pandas import DataFrame
 from math import log10, floor
-from log import Logger
+from pandas import DataFrame
 from writer.excel.ExcelWriter import ExcelWriter
+
 
 class CancerRiskExposure(ExcelWriter):
     """
@@ -19,6 +16,9 @@ class CancerRiskExposure(ExcelWriter):
         self.block_summary_chronic_df = block_summary_chronic_df
 
     def round_to_sigfig(self, x, sig=1):
+        if x == 0:
+            return 0;
+
         rounded = round(x, sig-int(floor(log10(abs(x))))-1)
         #print("Rounded " + str(x) + " to " + str(rounded))
         return rounded
