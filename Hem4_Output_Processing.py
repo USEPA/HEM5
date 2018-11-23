@@ -18,7 +18,7 @@ from writer.excel.InputSelectionOptions import InputSelectionOptions
 from writer.excel.MaximumIndividualRisks import MaximumIndividualRisks
 from writer.excel.NoncancerRiskExposure import NoncancerRiskExposure
 from writer.excel.RiskBreakdown import RiskBreakdown
- #from writer.excel.Incidence import Incidence
+from writer.excel.Incidence import Incidence
 #from writer.kml.KMLWriter import KMLWriter
 
 
@@ -209,9 +209,10 @@ class Process_outputs():
         risk_breakdown = RiskBreakdown(self.outdir, self.facid, self.model, plot_df)
         risk_breakdown.write()
 
-#        #----------- create Incidence output file ------------------------
-#        incidence= Incidence(self.outdir, self.facid, self.model, plot_df)
-#        incidence.write()
+
+        #----------- create Incidence output file ------------------------
+        incidence= Incidence(self.outdir, self.facid, self.model, plot_df)
+        incidence.write()
       
 
 #        #create facility kml
