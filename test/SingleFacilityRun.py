@@ -90,18 +90,6 @@ class SingleFacilityRun(unittest.TestCase):
                              "The contents of the output file are inconsistent with the test fixture:" +
                              checksum_expected + " != " + checksum_generated)
 
-    def test_aermod(self):
-        """
-        The aermod output files should be identical, except for the timestamp!
-        """
-
-        for facid in self.testHarness.model.facids:
-            checksum_expected = self.hashFile("fixtures/output/aermod.out")
-            checksum_generated = self.hashFile("output/" + facid + "/aermod.out")
-            self.assertNotEqual(checksum_expected, checksum_generated,
-                 "The contents of the aermod output file should have a different date than the test fixture:" +
-                 checksum_expected + " != " + checksum_generated)
-
     def hashFile(self, filename):
         """
         Calculate the md5 checksum for a given file and return the result.
