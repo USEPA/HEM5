@@ -4,7 +4,7 @@ from Processor import Processor
 from log import Logger
 from model.Model import Model
 from upload.FileUploader import FileUploader
-
+import pkg_resources
 
 class TestHarness:
     """
@@ -13,6 +13,11 @@ class TestHarness:
     """
     def __init__(self):
         self.success = False
+
+        pd_version = pkg_resources.get_distribution("pandas").version
+        np_version = pkg_resources.get_distribution("numpy").version
+        print("Pandas version:" + str(pd_version))
+        print("Numpy version:" + str(np_version))
 
         self.model = Model()
         uploader = FileUploader(self.model)
