@@ -33,13 +33,12 @@ from writer.kml.KMLWriter import KMLWriter
 
 
 
-class Hem4(tk.Frame):
+class Hem4():
 
-    def __init__ (self, parent, controller, messageQueue, callbackQueue):
+    def __init__ (self, messageQueue, callbackQueue):
         """
         The HEM4 class object builds the GUI for the HEM4 application.
         """
-        tk.Frame.__init__(self, parent)
         self.running = False
         self.aborted = False
         self.ready = False
