@@ -4,11 +4,15 @@ import os
 import shutil
 import unittest
 
+import pandas as pd
+
 from test.TestHarness import TestHarness
 from writer.csv.AllInnerReceptors import AllInnerReceptors
 from writer.csv.AllOuterReceptors import AllOuterReceptors
 from writer.csv.AllPolarReceptors import AllPolarReceptors
+from writer.csv.BlockSummaryChronic import BlockSummaryChronic
 from writer.csv.RingSummaryChronic import RingSummaryChronic
+from writer.excel.CancerRiskExposure import CancerRiskExposure
 
 fixturePresent = {}
 
@@ -67,14 +71,22 @@ class SingleFacilityRun(unittest.TestCase):
         Verify that the all outer receptors output file is identical to the test fixture.
         """
         for facid in self.testHarness.model.facids:
-            fixture = AllOuterReceptors("fixtures/output", facid, None, None)
-            checksum_expected = self.hashFile(fixture.filename)
 
-            generated = AllOuterReceptors("output/"+facid, facid, None, None)
-            checksum_generated = self.hashFile(generated.filename)
-            self.assertEqual(checksum_expected, checksum_generated,
-                             "The contents of the output file are inconsistent with the test fixture:" +
-                             checksum_expected + " != " + checksum_generated)
+            fixture = pd.read_csv("fixtures/output/" + facid + "_all_outer_receptors.csv")
+            produced = pd.read_csv("output/" + facid + "/" + facid + "_all_outer_receptors.csv")
+
+            difference = fixture[fixture!=produced]
+            print(difference)
+            self.assertTrue(fixture.equals(produced), "The contents of the output file are inconsistent with the test fixture.")
+
+            # fixture = AllOuterReceptors("fixtures/output", facid, None, None)
+            # checksum_expected = self.hashFile(fixture.filename)
+            #
+            # generated = AllOuterReceptors("output/"+facid, facid, None, None)
+            # checksum_generated = self.hashFile(generated.filename)
+            # self.assertEqual(checksum_expected, checksum_generated,
+            #                  "The contents of the output file are inconsistent with the test fixture:" +
+            #                  checksum_expected + " != " + checksum_generated)
 
     def test_ring_summary_chronic(self):
         """
@@ -89,6 +101,30 @@ class SingleFacilityRun(unittest.TestCase):
             self.assertEqual(checksum_expected, checksum_generated,
                              "The contents of the output file are inconsistent with the test fixture:" +
                              checksum_expected + " != " + checksum_generated)
+
+    def test_block_summary_chronic(self):
+        """
+        Verify that the block summary chronic output file is identical to the test fixture.
+        """
+        for facid in self.testHarness.model.facids:
+            fixture = BlockSummaryChronic("fixtures/output", facid, None, None)
+            checksum_expected = self.hashFile(fixture.filename)
+
+            generated = BlockSummaryChronic("output/"+facid, facid, None, None)
+            checksum_generated = self.hashFile(generated.filename)
+            self.assertEqual(checksum_expected, checksum_generated,
+                             "The contents of the output file are inconsistent with the test fixture:" +
+                             checksum_expected + " != " + checksum_generated)
+
+    def test_cancer_risk_exposure(self):
+        """
+        Verify that the cancer risk exposure output file is identical to the test fixture.
+        """
+        for facid in self.testHarness.model.facids:
+            fixture = pd.read_excel("fixtures/output/" + facid + "_cancer_risk_exposure.xlsx")
+            produced = pd.read_excel("output/" + facid + "/" + facid + "_cancer_risk_exposure.xlsx")
+
+            self.assertTrue(fixture.equals(produced), "The contents of the output file are inconsistent with the test fixture.")
 
     def hashFile(self, filename):
         """
