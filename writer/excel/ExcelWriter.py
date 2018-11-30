@@ -42,5 +42,5 @@ class ExcelWriter(Writer):
         for row in range(0, self.data.shape[0]):
             for col in range(0, self.data.shape[1]):
                 value = self.data[row][col]
-                truncated = float('{:6.14}'.format(value)) if isinstance(value, float) else value
+                truncated = float('{:6.12}'.format(value)) if isinstance(value, float) else value
                 worksheet.write(row + 1, col, truncated)

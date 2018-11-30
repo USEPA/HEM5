@@ -28,7 +28,7 @@ class CsvWriter(Writer):
         writer.writerow(self.headers)
         for row in self.data:
             # writer.writerow(row)
-            writer.writerow([float('{:6.14}'.format(x)) if isinstance(x, float) else x for x in row])
+            writer.writerow([float('{:6.12}'.format(x)) if isinstance(x, float) else x for x in row])
         
         fobj.close()
         
