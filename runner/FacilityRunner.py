@@ -75,17 +75,25 @@ class FacilityRunner():
         else:
             #double run needs to create subfolder for particle and vapor
             #also store the runstream objects for later use in processing
-            phases = sort(fac)
             
+            #let the sort get both phases then loop through each
+            phases = sort(fac)
             runstreams = []
+            
             for r in phases:
                 
-                Logger.logMessage(r + " run:")
+                #log label for particle and vapor so easy to track 
+                
+                #Logger.logMessage(r + " run:")
                 
                 #store run in subfolder
                 sub_folder = fac_folder + r +"/"
                 
-                runstreams.append(self.prep_fac.createRunstream(self.facilityId, r))
+                #run individual phase
+                self.runstream = self.prep_fac.createRunstream(self.facilityId, r)
+                
+                #store runstream objects for later use
+                runstreams.append(self.runstream)
                 
                 self.run(sub_folder)
              
