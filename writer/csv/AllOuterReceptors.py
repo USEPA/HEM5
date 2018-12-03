@@ -2,9 +2,7 @@ import os
 import numpy as np
 import math
 import pandas as pd
-
 from writer.csv.CsvWriter import CsvWriter
-from log import Logger
 
 class AllOuterReceptors(CsvWriter):
     """
@@ -22,7 +20,7 @@ class AllOuterReceptors(CsvWriter):
         """
         Interpolate polar pollutant concs to outer receptors.
         """
-        Logger.log("Polar data", self.model.all_polar_receptors_df, False)
+        # Logger.log("Polar data", self.model.all_polar_receptors_df, False)
 
         self.headers = ['Fips', 'Block', 'Lat', 'Lon', 'Source_id', 'Emis_type', 'Pollutant', 'Conc_ug_m3', 'Acon_ug_m2',
                         'Elevation', 'Population', 'Overlap']
@@ -122,4 +120,4 @@ class AllOuterReceptors(CsvWriter):
         # dataframe to array
         self.data = outerconc_df.values
 
-        Logger.log("Outer data", outerconc_df, False)
+        # Logger.log("Outer data", outerconc_df, False)

@@ -1,4 +1,10 @@
 
+fac_id = 'fac_id';
+source_id = 'source_id';
+pollutant = 'pollutant';
+lon = 'lon';
+lat = 'lat';
+elev = 'elev';
 
 class Model():
 
