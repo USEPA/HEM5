@@ -39,7 +39,7 @@ class Runstream():
         #open file to write
         self.inp_f = open("aermod.inp", "w")
         
-    def build_co(self):
+    def build_co(self, phase):
         """
         Creates CO section of Aermod.inp file
         """
@@ -76,17 +76,17 @@ class Runstream():
         #get depositon and depletion model options, results will eventually be 
         #stored in the model
         
-        self.settings = sort(self.facoptn_df)
         
-        print('MODEL OPTIONS', self.settings)
+        
+        print('MODEL OPTIONS', phase)
         
         #logic for pahse setting in model options
-        if self.settings['phase'] == 'P':
-            optdp = self.settings['settings'][0]
+        if phase['phase'] == 'P':
+            optdp = phase['settings'][0]
             
         
-        elif self.settings['phase'] == 'V':
-            optdp = self.settings['settings'][0]
+        elif phase['phase'] == 'V':
+            optdp = phase['settings'][0]
 
         else:
             optdp = ''

@@ -32,11 +32,27 @@ def sort(facops):
         deple = "N"
         
     ## don't forget to call upper!
-    opts = []
-    ##order matters for pahse 'B'-- particle first, then vapor
     
-    if phase == 'P' or phase == 'V':
+    if phase == 'P' or phase =='V':
         
+        return single_phase(phase, depos, deple, vdepo, pdepo, vdepl, pdepl)
+    
+    elif phase == 'B':
+        
+        #construct particle and vapor runs separately
+        particle = single_phase('P', depos, deple, None, pdepo, None, pdepl)
+        
+        vapor = single_phase('V', depos, deple, vdepo, None, vdepl, None)
+            
+        return [particle, vapor]
+        
+    
+    
+
+    ##order matters for pahse 'B'-- particle first, then vapor
+def single_phase(phase, depos, deple, vdepo, pdepo, vdepl, pdepl):
+        
+        opts = []
         if "Y" in depos:
             
             if pdepo == "WO" or vdepo == "WO":
@@ -94,11 +110,8 @@ def sort(facops):
                     opts.append(" WDEP ")
         
    
-        
-    elif phase is 'B':
-        pass
     
     
-    return {'phase': phase, 'settings': opts}
+        return {'phase': phase, 'settings': opts}
     
         ## split it into two lists, duplicate the row and call dep_sort on each?
