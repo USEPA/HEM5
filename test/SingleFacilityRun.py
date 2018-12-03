@@ -43,7 +43,7 @@ class SingleFacilityRun(unittest.TestCase):
         Verify that the all polar receptors output file is identical to the test fixture.
         """
         for facid in self.testHarness.model.facids:
-            fixture = AllPolarReceptors("fixtures/output", facid, None, None)
+            fixture = AllPolarReceptors("fixtures/output/", facid, None, None)
             checksum_expected = self.hashFile(fixture.filename)
 
             generated = AllPolarReceptors("output/"+facid, facid, None, None)
@@ -57,7 +57,7 @@ class SingleFacilityRun(unittest.TestCase):
         Verify that the all inner receptors output file is identical to the test fixture.
         """
         for facid in self.testHarness.model.facids:
-            fixture = AllInnerReceptors("fixtures/output", facid, None, None)
+            fixture = AllInnerReceptors("fixtures/output/", facid, None, None)
             checksum_expected = self.hashFile(fixture.filename)
 
             generated = AllInnerReceptors("output/"+facid, facid, None, None)
@@ -84,7 +84,7 @@ class SingleFacilityRun(unittest.TestCase):
         Verify that the ring summary chronic output file is identical to the test fixture.
         """
         for facid in self.testHarness.model.facids:
-            fixture = RingSummaryChronic("fixtures/output", facid, None, None)
+            fixture = RingSummaryChronic("fixtures/output/", facid, None, None)
             checksum_expected = self.hashFile(fixture.filename)
 
             generated = RingSummaryChronic("output/"+facid, facid, None, None)
@@ -98,7 +98,7 @@ class SingleFacilityRun(unittest.TestCase):
         Verify that the block summary chronic output file is identical to the test fixture.
         """
         for facid in self.testHarness.model.facids:
-            fixture = BlockSummaryChronic("fixtures/output", facid, None, None)
+            fixture = BlockSummaryChronic("fixtures/output/", facid, None, None)
             checksum_expected = self.hashFile(fixture.filename)
 
             generated = BlockSummaryChronic("output/"+facid, facid, None, None)
