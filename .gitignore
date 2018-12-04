@@ -6,6 +6,7 @@ resources/plotfile.plt
 kml_source_loc.txt
 Inputs
 /output
+/test/output
 census
 instructions
 Documentation
