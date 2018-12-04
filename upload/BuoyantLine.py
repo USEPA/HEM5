@@ -5,9 +5,18 @@ Created on Tue Jul  3 20:34:16 2018
 
 @author: d
 """
-
+from model.Model import fac_id
 from upload.DependentInputFile import DependentInputFile
 from tkinter import messagebox
+
+from upload.EmissionsLocations import source_type
+
+avgbld_len = 'avgbld_len';
+avgbld_hgt = 'avgbld_hgt';
+avgbld_wid = 'avgbld_wid';
+avglin_wid = 'avglin_wid';
+avgbld_sep = 'avgbld_sep';
+avgbuoy = 'avgbuoy';
 
 class BuoyantLine(DependentInputFile):
 
@@ -19,18 +28,18 @@ class BuoyantLine(DependentInputFile):
         emisloc_df = self.dependency
 
         # Specify dtypes for all fields
-        self.numericColumns = ["avgbld_len","avgbld_hgt","avgbld_wid","avglin_wid","avgbld_sep","avgbuoy"]
-        self.strColumns = ["fac_id"]
+        self.numericColumns = [avgbld_len,avgbld_hgt,avgbld_wid,avglin_wid,avgbld_sep,avgbuoy]
+        self.strColumns = [fac_id]
 
         multibuoy_df = self.readFromPath(
-            ("fac_id", "avgbld_len", "avgbld_hgt", "avgbld_wid", "avglin_wid", "avgbld_sep", "avgbuoy"))
+            (fac_id, avgbld_len, avgbld_hgt, avgbld_wid, avglin_wid, avgbld_sep, avgbuoy))
                                          
         #check for unassigned buoyant line  
-        check_buoyant_assignment = set(multibuoy_df['fac_id'])
+        check_buoyant_assignment = set(multibuoy_df[fac_id])
         
         #get buoyant line facility list
-        find_b = emisloc_df[emisloc_df['source_type'] == 'B']
-        buoyant_fac = set(find_b["fac_id"])
+        find_b = emisloc_df[emisloc_df[source_type] == 'B']
+        buoyant_fac = set(find_b[fac_id])
         
         if check_buoyant_assignment != buoyant_fac:
             buoyant_unassigned = (check_buoyant_assignment - buoyant_fac).tolist()

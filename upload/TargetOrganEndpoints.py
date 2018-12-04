@@ -1,5 +1,21 @@
+from model.Model import pollutant
 from upload.InputFile import InputFile
 
+epa_woe = 'epa_woe';
+resp = 'resp';
+liver = 'liver';
+neuro = 'neuro';
+dev = 'dev';
+reprod = 'reprod';
+kidney = 'kidney';
+ocular = 'ocular';
+endoc = 'endoc';
+hemato = 'hemato';
+immune = 'immune';
+skeletal = 'skeletal';
+spleen = 'spleen';
+thyroid = 'thyroid';
+wholebod = 'wholebod';
 
 class TargetOrganEndpoints(InputFile):
 
@@ -9,13 +25,13 @@ class TargetOrganEndpoints(InputFile):
     def createDataframe(self):
 
         # Specify dtypes for all fields
-        self.numericColumns = ["resp","liver","neuro","dev","reprod","kidney","ocular","endoc","hemato",
-                               "immune","skeletal","spleen","thyroid","wholebod"]
-        self.strColumns = ["pollutant","epa_woe"]
+        self.numericColumns = [resp,liver,neuro,dev,reprod,kidney,ocular,endoc,hemato,
+                               immune,skeletal,spleen,thyroid,wholebod]
+        self.strColumns = [pollutant,epa_woe]
 
         # TARGET ORGAN ENDPOINTS excel to dataframe
         # HEADER----------------------
         # pollutant|epa_woe	|resp|liver|neuro|dev|reprod|kidney|ocular|endoc|hemato|immune|skeletal|spleen|thyroid|wholebod
         self.dataframe = self.readFromPath(
-            ("pollutant","epa_woe","resp","liver","neuro","dev","reprod","kidney","ocular","endoc","hemato",
-             "immune","skeletal","spleen","thyroid","wholebod"))
+            (pollutant,epa_woe,resp,liver,neuro,dev,reprod,kidney,ocular,endoc,hemato,
+             immune,skeletal,spleen,thyroid,wholebod))

@@ -2,6 +2,7 @@
 fac_id = 'fac_id';
 source_id = 'source_id';
 pollutant = 'pollutant';
+group = 'group';
 lon = 'lon';
 lat = 'lat';
 elev = 'elev';
