@@ -61,9 +61,9 @@ class FacilityRunner():
             check = self.check_run(fac_folder)
             
             if check == True:
-                pass
+              
                 #process outputs for single facility -- turn off for particle
-                #self.process_outputs(fac_folder)
+                self.process_outputs(fac_folder)
             
         else:
             #double run needs to create subfolder for particle and vapor
@@ -73,14 +73,20 @@ class FacilityRunner():
             phases = sort(fac)
             runstreams = []
             
+            
             for r in phases:
                 
                 #log label for particle and vapor so easy to track 
                 
                 #Logger.logMessage(r + " run:")
+                print(phases)
                 
                 #store run in subfolder
-                sub_folder = fac_folder + r +"/"
+                sub_folder = fac_folder + r['phase'] +"/"
+                if os.path.exists(sub_folder):
+                    pass
+                else:
+                    os.makedirs(sub_folder)
                 
                 #run individual phase
                 self.runstream = self.prep_fac.createRunstream(self.facilityId, r)
@@ -131,14 +137,14 @@ class FacilityRunner():
         message = check.read()
         if 'AERMOD Finishes UN-successfully' in message:
             success = False
-            Logger.logMessage("Aermod ran unsuccessfully. Please check the error section of the aermod.out file.")
+            Logger.logMessage("Aermod ran unsuccessfully. Please check the "+
+                              "error section of the aermod.out file.")
         else:
             success = True
             Logger.logMessage("Aermod ran successfully.")
         check.close()
 
         if success == True:
-
 
             #move aermod.out to the fac output folder
             #replace if one is already in there othewrwise will throw error
@@ -160,10 +166,13 @@ class FacilityRunner():
             
             #process outputs
             Logger.logMessage("Processing Outputs for " + self.facilityId)
-            outputProcess = po.Process_outputs(fac_folder, self.facilityId, self.model, self.prep_fac, self.runstream, self.abort)
+            outputProcess = po.Process_outputs(fac_folder, self.facilityId, 
+                                               self.model, self.prep_fac,
+                                               self.runstream, self.abort)
             outputProcess.process()
             
             
 
             pace =  str(time.time()- self.start) + 'seconds'
-            Logger.logMessage("Finished calculations for " + self.facilityId + ' after' + pace + "\n")
+            Logger.logMessage("Finished calculations for " + self.facilityId + 
+                              ' after' + pace + "\n")

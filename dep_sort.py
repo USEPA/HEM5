@@ -86,7 +86,8 @@ def single_phase(phase, depos, deple, vdepo, pdepo, vdepl, pdepl):
         #        if phase == 'B':
         #            if pdepo == "WD" and vdepo == "WD":
         #                opts.append(" WDEP DDEP NOWETDPLT NODRYDPLT ")
-            
+            if pdepo == 'NO' or vdepo == 'NO':
+                opts.append("")
         #----------------------------------------------------------------------------------------
         if "Y" in deple:
 #            print(deple)
@@ -111,7 +112,8 @@ def single_phase(phase, depos, deple, vdepo, pdepo, vdepl, pdepl):
                 else:
                     opts.append(" WDEP ")
         
-   
+            if pdepl == 'NO' or vdepl == 'NO':
+                opts.append("")
     
     
         return {'phase': phase, 'settings': opts}

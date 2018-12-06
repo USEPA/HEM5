@@ -85,13 +85,16 @@ class Runstream():
         
         if phase['phase'] == 'P':
             optdp = phase['settings'][0]
+            titletwo = "CO TITLETWO  Particle-phase emissions \n"
             
         
         elif phase['phase'] == 'V':
             optdp = phase['settings'][0]
-
+            titletwo = "CO TITLETWO  Vapor-phase emissions \n"
+            
         else:
             optdp = ''
+            titletwo = "CO TITLETWO  Combined particle and vapor-phase emissions \n"
     
     # BUilding downwash option ------------------------------------------------
         self.blddw = self.facoptn_df['bldg_dw'][0]
@@ -108,7 +111,7 @@ class Runstream():
         
         co1 = "CO STARTING  \n"
         co2 = "CO TITLEONE  " + str(facid) + "\n"
-        co3 = "CO TITLETWO  Combined particle and vapor-phase emissions \n"
+        co3 = titletwo   
         co4 = "CO MODELOPT  CONC  BETA " + optdp + optel + optfa + "\n"  
     
 
