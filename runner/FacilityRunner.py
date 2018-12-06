@@ -46,7 +46,7 @@ class FacilityRunner():
         if self.model.run_optns['phase'] != 'B':
             
             if self.model.run_optns['phase'] != None:
-                phase = sort(self.fac)
+                phase = sort(fac)
                 
             else:
                 phase = {'phase': None, 'settings': None}
@@ -61,9 +61,9 @@ class FacilityRunner():
             check = self.check_run(fac_folder)
             
             if check == True:
-                
-                #process outputs for single facility
-                self.process_outputs(fac_folder)
+                pass
+                #process outputs for single facility -- turn off for particle
+                #self.process_outputs(fac_folder)
             
         else:
             #double run needs to create subfolder for particle and vapor

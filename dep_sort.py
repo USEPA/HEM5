@@ -15,15 +15,17 @@ def sort(facops):
     """
     
     """
-    phase = facops['phase'][0].upper()                    # Phase
+    print('facility slice:', facops)
+    print('phase', facops['phase'])
+    phase = facops['phase'].tolist()[0].upper()                    # Phase
 
-    depos = facops['dep'].fillna("")[0]                       # Deposition
-    vdepo = facops['vdep'].fillna("")[0]                       # Vapor Deposition
-    pdepo = facops['pdep'].fillna("")[0]                       # Particle Deposition
+    depos = facops['dep'].fillna("").tolist()[0]                       # Deposition
+    vdepo = facops['vdep'].fillna("").tolist()[0]                       # Vapor Deposition
+    pdepo = facops['pdep'].fillna("").tolist()[0]                       # Particle Deposition
     
-    deple = facops['depl'].fillna("")[0]                       # Depletion
-    vdepl = facops['vdepl'].fillna("")[0]                       # Vapor Depletion
-    pdepl = facops['pdepl'].fillna("")[0]                       # Particle Depletion
+    deple = facops['depl'].fillna("").tolist()[0]                       # Depletion
+    vdepl = facops['vdepl'].fillna("").tolist()[0]                       # Vapor Depletion
+    pdepl = facops['pdepl'].fillna("").tolist()[0]                       # Particle Depletion
     
     if depos == "":
         depos = "N"

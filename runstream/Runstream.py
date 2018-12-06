@@ -121,7 +121,7 @@ class Runstream():
         if phase['phase'] == 'V' and 'DDEP' in optdp:
             
             landval = self.landuse_df[self.landuse_df.columns[1:]].values[0]
-            coland = ("CO GDLANUSE " + " ".join(map(str, landval)))
+            coland = ("CO GDLANUSE " + " ".join(map(str, landval)) + '\n')
             
 #            coland = ("CO GDLANUSE " + str(self.landuse_df['D01'][0]) + " " + 
 #                      str(self.landuse_df['D02'][0]) + " " + 
@@ -158,7 +158,7 @@ class Runstream():
     
             # Season Options for Deposition
             seasval = self.seasons_df[self.seasons_df.columns[1:]].values[0]
-            coseas = ("CO GDSEASON " + " ".join(map(str,seasval)))
+            coseas = ("CO GDSEASON " + " ".join(map(str,seasval)) + '\n')
             
 #            coseas = ("CO GDSEASON " + str(self.seasons_df['M01'][0]) + " " + 
 #                      str(self.seasons_df['M02'][0]) + " " + 
