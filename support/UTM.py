@@ -3,6 +3,12 @@ import sys
 import math as m
 import pandas as pd
 
+utme = 'utme';
+utmn = 'utmn';
+utmzone = 'utmzone';
+utmz = 'utmz';
+utms = 'utms';
+
 class UTM:
     """
     A utility class with functions related to UTM zones.

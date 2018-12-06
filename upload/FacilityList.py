@@ -10,7 +10,6 @@ circles = 'circles';
 overlap_dist = 'overlap_dist';
 acute = 'acute';
 hours = 'hours';
-elev = 'elev';
 multiplier = 'multiplier';
 ring1 = 'ring1';
 dep = 'dep';

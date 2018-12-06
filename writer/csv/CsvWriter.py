@@ -25,7 +25,10 @@ class CsvWriter(Writer):
 
         fobj = open(self.filename, 'w', newline='')
         writer = csv.writer(fobj, delimiter=',', lineterminator='\r\n', quoting=csv.QUOTE_NONNUMERIC)
-        writer.writerow(self.headers)
+
+        encoded=[s.encode('utf-8') for s in self.headers]
+        writer.writerow(encoded)
+
         for row in self.data:
             # writer.writerow(row)
             writer.writerow([float('{:6.12}'.format(x)) if isinstance(x, float) else x for x in row])

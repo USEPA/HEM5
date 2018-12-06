@@ -1,8 +1,8 @@
 from upload.InputFile import InputFile
 from model.Model import *
+from support.UTM import *
 
 location_type = 'location_type';
-utmzone = 'utmzone';
 source_type = 'source_type';
 lengthx = 'lengthx';
 lengthy = 'lengthy';
@@ -16,8 +16,6 @@ stkvel = 'stkvel';
 stktemp = 'stktemp';
 x2 = 'x2';
 y2 = 'y2';
-utme = 'utme';
-utmn = 'utmn';
 
 class EmissionsLocations(InputFile):
 

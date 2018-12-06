@@ -6,18 +6,17 @@ Created on Mon Oct  2 10:35:51 2017
 """
 
 import math
-import sys
-import numpy as np
-import pandas as pd
 import find_center as fc
-import json_census_blocks as cbr
-from support.UTM import UTM
-from upload.FacilityList import *
+from json_census_blocks import *
+from runstream.Runstream import Runstream
 from upload.EmissionsLocations import *
 from upload.HAPEmissions import *
+from upload.FacilityList import *
 
-from runstream.Runstream import Runstream
-
+distance = 'distance';
+angle = 'angle';
+sector = 'sector';
+ring = 'ring';
 
 ##REFORMATTED TO MOVE THE DATA FRAME CREATION TO THE GUI
 class FacilityPrep():
@@ -283,7 +282,7 @@ class FacilityPrep():
         #retrieve blocks
         maxdist = facops.get_value(0,max_dist)
         modeldist = facops.get_value(0,model_dist)
-        self.innerblks, self.outerblks = cbr.getblocks(cenx, ceny, cenlon, cenlat, facutmzone, maxdist, modeldist, sourcelocs, op_overlap)
+        self.innerblks, self.outerblks = getblocks(cenx, ceny, cenlon, cenlat, facutmzone, maxdist, modeldist, sourcelocs, op_overlap)
 
 
         #%%----- Polar receptors ----------
@@ -382,11 +381,11 @@ class FacilityPrep():
         polar_df = pd.DataFrame.from_items(dfitems)
 
         # define the index of polar_df as concatenation of sector and ring
-        polar_idx = polar_df.apply(lambda row: self.define_polar_idx(row['sector'], row['ring']), axis=1)
+        polar_idx = polar_df.apply(lambda row: self.define_polar_idx(row[sector], row[ring]), axis=1)
         polar_df.set_index(polar_idx, inplace=True)
 
         # determine if polar receptors overlap any emission sources
-        polar_df["overlap"] = polar_df.apply(lambda row: self.polar_overlap(row[utme], row[utmn], sourcelocs, op_overlap), axis=1)
+        polar_df[overlap] = polar_df.apply(lambda row: self.polar_overlap(row[utme], row[utmn], sourcelocs, op_overlap), axis=1)
 
          # Assign the polar grid data frame to the model
         self.model.polargrid = polar_df
@@ -395,10 +394,10 @@ class FacilityPrep():
         #%%----- Add sector and ring to inner and outer receptors ----------
 
         # assign sector and ring number (integers) to each inner receptor and compute fractional sector (s) and ring_loc (log weighted) numbers
-        self.innerblks["sector"], self.innerblks["s"], self.innerblks["ring"], self.innerblks["ring_loc"] = zip(*self.innerblks.apply(lambda row: self.calc_ring_sector(polar_dist,row["DISTANCE"],row["ANGLE"],op_radial), axis=1))
+        self.innerblks[sector], self.innerblks["s"], self.innerblks[ring], self.innerblks["ring_loc"] = zip(*self.innerblks.apply(lambda row: self.calc_ring_sector(polar_dist,row[distance],row[angle],op_radial), axis=1))
 
         # assign sector and ring number (integers) to each outer receptor and compute fractional sector (s) and ring_loc (log weighted) numbers
-        self.outerblks["sector"], self.outerblks["s"], self.outerblks["ring"], self.outerblks["ring_loc"] = zip(*self.outerblks.apply(lambda row: self.calc_ring_sector(polar_dist,row["DISTANCE"],row["ANGLE"],op_radial), axis=1))
+        self.outerblks[sector], self.outerblks["s"], self.outerblks[ring], self.outerblks["ring_loc"] = zip(*self.outerblks.apply(lambda row: self.calc_ring_sector(polar_dist,row[distance],row[angle],op_radial), axis=1))
 
 
         # export innerblks to an Excel file in the Working directory
@@ -418,16 +417,16 @@ class FacilityPrep():
 
         # if the facility will use elevations, assign them to emission sources and polar receptors
         if facops.get_value(0,elev).upper() == "Y":
-            polar_df[elev], polar_df["hill"] = zip(*polar_df.apply(lambda row: self.assign_polar_elev_step1(row,self.innerblks,self.outerblks,maxdist), axis=1))
+            polar_df[elev], polar_df[hill] = zip(*polar_df.apply(lambda row: self.assign_polar_elev_step1(row,self.innerblks,self.outerblks,maxdist), axis=1))
             if emislocs[elev].max() == 0 and emislocs[elev].min() == 0:
                 emislocs[elev] = self.compute_emisloc_elev(polar_df,op_circles)
             # if polar receptor still has missing elevation, fill it in
-            polar_df[elev], polar_df["hill"] = zip(*polar_df.apply(lambda row: self.assign_polar_elev_step2(row,self.innerblks,self.outerblks,emislocs), axis=1))
+            polar_df[elev], polar_df[hill] = zip(*polar_df.apply(lambda row: self.assign_polar_elev_step2(row,self.innerblks,self.outerblks,emislocs), axis=1))
         else:
             polar_df[elev] = 0
-            polar_df["hill"] = 0
+            polar_df[hill] = 0
             emislocs[elev] = 0
-            emislocs["hill"] = 0
+            emislocs[hill] = 0
 
 
         # export polar_df to an Excel file in the Working directory
@@ -491,12 +490,12 @@ class FacilityPrep():
 #%% Assign elevation and hill height to polar receptors
     def assign_polar_elev_step1(self, polar_row, innblks, outblks, maxdist):
 
-        sector1 = polar_row["sector"]
-        ring1 = polar_row["ring"]
+        sector1 = polar_row[sector]
+        ring1 = polar_row[ring]
 
         #subset the inner and outer block dataframes to sector, ring
-        innblks_sub = innblks.loc[(innblks["sector"] == sector1) & (innblks["ring"] == ring1)]
-        outblks_sub = outblks.loc[(outblks["sector"] == sector1) & (outblks["ring"] == ring1)]
+        innblks_sub = innblks.loc[(innblks[sector] == sector1) & (innblks[ring] == ring1)]
+        outblks_sub = outblks.loc[(outblks[sector] == sector1) & (outblks[ring] == ring1)]
 
         #initialize variables
         r_nearelev = -999
@@ -511,32 +510,32 @@ class FacilityPrep():
 
         #try inner block subset
         for index, row in innblks_sub.iterrows():
-            if row["ELEV"] > r_maxelev:
-                r_maxelev = row["ELEV"]
-                r_hill = row["HILL"]
-            r_avgelev = r_avgelev + row["ELEV"]
-            r_popelev = r_popelev + row["ELEV"] * row["POPULATION"]
+            if row[elev] > r_maxelev:
+                r_maxelev = row[elev]
+                r_hill = row[hill]
+            r_avgelev = r_avgelev + row[elev]
+            r_popelev = r_popelev + row[elev] * row[population]
             r_nblk = r_nblk + 1
-            r_pop = r_pop + row["POPULATION"]
-            d_test = math.sqrt(row["DISTANCE"]**2 + polar_row["distance"]**2 - 2*row["DISTANCE"]*polar_row["distance"]*math.cos(math.radians(row["ANGLE"]-polar_row["angle"])))
+            r_pop = r_pop + row[population]
+            d_test = math.sqrt(row[distance]**2 + polar_row[distance]**2 - 2*row[distance]*polar_row[distance]*math.cos(math.radians(row[angle]-polar_row[angle])))
             if d_test <= d_nearelev:
                 d_nearelev = d_test
-                r_nearelev = row["ELEV"]
+                r_nearelev = row[elev]
 
 
         #try outer block subset
         for index, row in outblks_sub.iterrows():
-            if row["ELEV"] > r_maxelev:
-                r_maxelev = row["ELEV"]
-                r_hill = row["HILL"]
-            r_avgelev = r_avgelev + row["ELEV"]
-            r_popelev = r_popelev + row["ELEV"] * row["POPULATION"]
+            if row[elev] > r_maxelev:
+                r_maxelev = row[elev]
+                r_hill = row[hill]
+            r_avgelev = r_avgelev + row[elev]
+            r_popelev = r_popelev + row[elev] * row[population]
             r_nblk = r_nblk + 1
-            r_pop = r_pop + row["POPULATION"]
-            d_test = math.sqrt(row["DISTANCE"]**2 + polar_row["distance"]**2 - 2*row["DISTANCE"]*polar_row["distance"]*math.cos(math.radians(row["ANGLE"]-polar_row["angle"])))
+            r_pop = r_pop + row[population]
+            d_test = math.sqrt(row[distance]**2 + polar_row[distance]**2 - 2*row[distance]*polar_row[distance]*math.cos(math.radians(row[angle]-polar_row[angle])))
             if d_test <= d_nearelev:
                 d_nearelev = d_test
-                r_nearelev = row["ELEV"]
+                r_nearelev = row[elev]
 
 
         #compute average and population elevations
@@ -581,32 +580,32 @@ class FacilityPrep():
             d_test = inner_dist.iloc[mindist_index]
             if d_test <= d_nearelev:
                 d_nearelev = d_test
-                r_nearelev = innblks["ELEV"].iloc[mindist_index]
+                r_nearelev = innblks[elev].iloc[mindist_index]
                 r_maxelev = r_nearelev
                 r_avgelev = r_nearelev
                 r_popelev = r_nearelev
             if d_test <= d_nearhill:
                 d_nearhill = d_test
-                r_hill = innblks.get_value(mindist_index, "HILL")
+                r_hill = innblks.get_value(mindist_index, hill)
 
             #check outer blocks
-            outer_dist = np.sqrt((outblks["utme"] - polar_row["utme"])**2 + (outblks["utmn"] - polar_row["utmn"])**2)
+            outer_dist = np.sqrt((outblks[utme] - polar_row[utme])**2 + (outblks[utmn] - polar_row[utmn])**2)
             mindist_index = outer_dist.values.argmin()
             d_test = outer_dist.iloc[mindist_index]
             if d_test <= d_nearelev:
                 d_nearelev = d_test
-                r_nearelev = outblks["ELEV"].iloc[mindist_index]
+                r_nearelev = outblks[elev].iloc[mindist_index]
                 r_maxelev = r_nearelev
                 r_avgelev = r_nearelev
                 r_popelev = r_nearelev
             if d_test <= d_nearhill:
                 d_nearhill = d_test
-                r_hill = outblks["HILL"].iloc[mindist_index]
+                r_hill = outblks[hill].iloc[mindist_index]
 
         else:
 
             r_maxelev = polar_row[elev]
-            r_hill = polar_row["hill"]
+            r_hill = polar_row[hill]
 
         #Note: the max elevation is returned as the elevation for this polar receptor
         return r_maxelev, r_hill
@@ -620,7 +619,7 @@ class FacilityPrep():
         N_selev = 0
         ringnum = 1
         while D_selev == 0 and ringnum <= num_rings:
-            polar_sub = polars.loc[polars["ring"] == ringnum]
+            polar_sub = polars.loc[polars[ring] == ringnum]
             for index, row in polar_sub.iterrows():
                 if row[elev] != -999:
                     D_selev = D_selev + row[elev]
@@ -655,7 +654,7 @@ class FacilityPrep():
         """
 
         # First, check for any utm zones provided by the user in the emission location file
-        utmzones_df = el_df["utmzone"].loc[el_df[location_type] == "U"]
+        utmzones_df = el_df[utmzone].loc[el_df[location_type] == "U"]
         if utmzones_df.shape[0] > 0:
             # there are some; find the smallest one
             min_utmzu = int(np.nan_to_num(utmzones_df).min(axis=0))
@@ -671,19 +670,19 @@ class FacilityPrep():
             min_utmzl = 0
 
         if min_utmzu == 0:
-            utmzone = min_utmzl
+            utmZone = min_utmzl
         else:
             if min_utmzl == 0:
-                utmzone = min_utmzu
+                utmZone = min_utmzu
             else:
-                utmzone = min(min_utmzu, min_utmzl)
+                utmZone = min(min_utmzu, min_utmzl)
 
-        if utmzone == 0:
+        if utmZone == 0:
             print("Error! UTM zone is 0")
             sys.exit()
 ########### Route error to log ##################
 
-        return utmzone
+        return utmZone
 
 
 #%% Check for polar receptors overlapping emission sources

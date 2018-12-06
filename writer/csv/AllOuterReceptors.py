@@ -1,8 +1,4 @@
-import os
-import numpy as np
-import math
-import pandas as pd
-from writer.csv.CsvWriter import CsvWriter
+from writer.csv.AllInnerReceptors import *
 
 class AllOuterReceptors(CsvWriter):
     """
@@ -22,11 +18,12 @@ class AllOuterReceptors(CsvWriter):
         """
         # Logger.log("Polar data", self.model.all_polar_receptors_df, False)
 
-        self.headers = ['Fips', 'Block', 'Lat', 'Lon', 'Source_id', 'Emis_type', 'Pollutant', 'Conc_ug_m3', 'Acon_ug_m2',
-                        'Elevation', 'Population', 'Overlap']
+        self.headers = ['FIPs', 'Block', 'Latitude', 'Longitude', 'Source ID', 'Emission type', 'Pollutant',
+                        'Conc (µg/m3)', 'Acute Conc (µg/m3)', 'Elevation (m)',
+                        'Population', 'Overlap']
         
         #list of unique source ids/pollutants from polar concs
-        uniqsrcpol = self.model.all_polar_receptors_df[["Source_id","Pollutant"]].drop_duplicates().as_matrix()
+        uniqsrcpol = self.model.all_polar_receptors_df[[source_id, pollutant]].drop_duplicates().as_matrix()
 #        uniqsrcpol = [list(x) for x in set(tuple(x) for x in srcpol)]
         
         #convert outer blocks dataframe to matrix
@@ -37,7 +34,8 @@ class AllOuterReceptors(CsvWriter):
 
 
         dlist = []
-        
+        columns = [fips, block, lat, lon, source_id, ems_type, pollutant, conc, aconc, elev, population, overlap]
+
         #process each outer block
         for row in outerblks_m:
                         
@@ -91,22 +89,22 @@ class AllOuterReceptors(CsvWriter):
                 sub = full[(full[:,0] == srcpolrow[0]) & (full[:,2] == srcpolrow[1])]
                 
                 #polar concs of 4 surrounding polar receptors                
-                conc = sub[:, 3]
+                concentration = sub[:, 3]
                 
                 d_sourceid = srcpolrow[0]
                 d_pollutant = srcpolrow[1]
                 
                 #interpolate
-                if conc[0] == 0 or conc[1] == 0:
-                    R_s12 = max(conc[0], conc[1])
+                if concentration[0] == 0 or concentration[1] == 0:
+                    R_s12 = max(concentration[0], concentration[1])
                 else:
-                    Lnr_s12 = (math.log(conc[0]) * (int(ring_loc)+1-ring_loc)) + (math.log(conc[1]) * (ring_loc-int(ring_loc)))
+                    Lnr_s12 = (math.log(concentration[0]) * (int(ring_loc)+1-ring_loc)) + (math.log(concentration[1]) * (ring_loc-int(ring_loc)))
                     R_s12 = math.exp(Lnr_s12)
             
-                if conc[2] == 0 or conc[3] == 0:
-                    R_s34 = max(conc[2], conc[3] )
+                if concentration[2] == 0 or concentration[3] == 0:
+                    R_s34 = max(concentration[2], concentration[3] )
                 else:
-                    Lnr_s34 = (math.log(conc[2]) * (int(ring_loc)+1-ring_loc)) + (math.log(conc[3] ) * (ring_loc-int(ring_loc)))
+                    Lnr_s34 = (math.log(concentration[2]) * (int(ring_loc)+1-ring_loc)) + (math.log(concentration[3] ) * (ring_loc-int(ring_loc)))
                     R_s34 = math.exp(Lnr_s34)
                 
                 d_conc = R_s12*(int(cs)+1-cs) + R_s34*(cs-int(cs))
@@ -115,9 +113,10 @@ class AllOuterReceptors(CsvWriter):
                             d_aconc, d_elev, d_population, d_overlap]
                 dlist.append(datalist)
 
-        outerconc_df = pd.DataFrame(dlist, columns=self.headers)
+        outerconc_df = pd.DataFrame(dlist, columns=columns)
         
         # dataframe to array
-        self.data = outerconc_df.values
+        self.dataframe = outerconc_df
+        self.data = self.dataframe.values
 
         # Logger.log("Outer data", outerconc_df, False)

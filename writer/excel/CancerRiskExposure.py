@@ -1,8 +1,9 @@
 import os
 from math import log10, floor
 from pandas import DataFrame
+from json_census_blocks import population
+from writer.csv.BlockSummaryChronic import mir
 from writer.excel.ExcelWriter import ExcelWriter
-
 
 class CancerRiskExposure(ExcelWriter):
     """
@@ -25,7 +26,7 @@ class CancerRiskExposure(ExcelWriter):
 
     def calculateOutputs(self):
 
-        self.headers = ['level', 'population']
+        self.headers = ['Level', 'Population']
 
         bucketHeaders = ["Greater than or equal to 1 in 1,000", "Greater than or equal to 1 in 10,000",
                          "Greater than or equal to 1 in 20,000", "Greater than or equal to 1 in 100,000",
@@ -38,10 +39,11 @@ class CancerRiskExposure(ExcelWriter):
         populations = []
 
         for level in levels:
-            indexed = df[df.apply(lambda x: (self.round_to_sigfig(scalingFactor*x['mir'])) > level, axis=1)]
-            populations.append(0 if indexed.empty else indexed['population'].agg('sum'))
+            indexed = df[df.apply(lambda x: (self.round_to_sigfig(scalingFactor*x[mir])) > level, axis=1)]
+            populations.append(0 if indexed.empty else indexed[population].agg('sum'))
 
         buckets = list(zip(bucketHeaders, populations))
-        result = DataFrame(buckets)
+        df = DataFrame(buckets, columns=[level, population])
 
-        self.data = result.values
+        self.dataframe = df
+        self.data = self.dataframe.values
