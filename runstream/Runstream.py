@@ -80,7 +80,9 @@ class Runstream():
         
         print('MODEL OPTIONS', phase)
         
+        
         #logic for pahse setting in model options
+        
         if phase['phase'] == 'P':
             optdp = phase['settings'][0]
             
@@ -116,7 +118,7 @@ class Runstream():
         self.inp_f.write(co4)
         
         #    # Landuse Options for Deposition
-        if self.settings['phase'] == 'V' and 'DDEP' in optdp:
+        if phase['phase'] == 'V' and 'DDEP' in optdp:
             
             landval = self.landuse_df[self.landuse_df.columns[1:]].values[0]
             coland = ("CO GDLANUSE " + " ".join(map(str, landval)))
@@ -183,7 +185,7 @@ class Runstream():
         self.inp_f.write(co7)
         self.inp_f.write(co8)    
     
-    def build_so(self):
+    def build_so(self, phase):
         """
         Function writes SO section of Aermod.inp names source types and 
         their parameters
@@ -262,10 +264,10 @@ class Runstream():
                 if self.blddw == "Y":
                     self.get_blddw(srid[index])
                     
-                if self.settings['phase'] == 'P':
+                if phase['phase'] == 'P':
                     self.get_particle(srid[index])
                     
-                elif self.settings['phase'] == 'V':
+                elif phase['phase'] == 'V':
                     self.get_vapor(srid[index])
                       
                 if (self.emisvar_df is not None and 
@@ -291,10 +293,10 @@ class Runstream():
                 if self.blddw == "Y":
                     self.get_blddw(srid[index])
                     
-                if self.settings['phase'] == 'P':
+                if phase['phase'] == 'P':
                     self.get_particle(srid[index])
                     
-                elif self.settings['phase'] == 'V':
+                elif phase['phase'] == 'V':
                     self.get_vapor(srid[index])
                     
                 if (self.emisvar_df is not None and 
@@ -320,10 +322,10 @@ class Runstream():
                 if self.blddw == "Y":
                     self.get_blddw(srid[index])
                     
-                if self.settings['phase'] == 'P':
+                if phase['phase'] == 'P':
                     self.get_particle(srid[index])
                     
-                elif self.settings['phase'] == 'V':
+                elif phase['phase'] == 'V':
                     self.get_vapor(srid[index])
                     
                 if (self.emisvar_df is not None and 
@@ -347,10 +349,10 @@ class Runstream():
                 if self.blddw == "Y":
                     self.get_blddw(srid[index])
                     
-                if self.settings['phase'] == 'P':
+                if phase['phase'] == 'P':
                     self.get_particle(srid[index])
                     
-                elif self.settings['phase'] == 'V':
+                elif phase['phase'] == 'V':
                     self.get_vapor(srid[index])
                 
                 if (self.emisvar_df is not None and 
@@ -415,10 +417,10 @@ class Runstream():
                 if self.blddw == "Y":
                     self.get_blddw(srid[index])
                     
-                if self.settings['phase'] == 'P':
+                if phase['phase'] == 'P':
                     self.get_particle(srid[index])
                     
-                elif self.settings['phase'] == 'V':
+                elif phase['phase'] == 'V':
                     self.get_vapor(srid[index])
                 
                 if (self.emisvar_df is not None and 
@@ -447,10 +449,10 @@ class Runstream():
                 if self.blddw == "Y":
                     self.get_blddw(srid[index])
                     
-                if self.settings['phase'] == 'P':
+                if phase['phase'] == 'P':
                     self.get_particle(srid[index])
                     
-                elif self.settings['phase'] == 'V':
+                elif phase['phase'] == 'V':
                     self.get_vapor(srid[index])
                 
                 if (self.emisvar_df is not None and 
@@ -487,10 +489,10 @@ class Runstream():
                 if self.blddw == "Y":
                     self.get_blddw(srid[index])
                     
-                if self.settings['phase'] == 'P':
+                if phase['phase'] == 'P':
                     self.get_particle(srid[index])
                     
-                elif self.settings['phase'] == 'V':
+                elif phase['phase'] == 'V':
                     self.get_vapor(srid[index])
                     
                 if (self.emisvar_df is not None and 

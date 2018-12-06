@@ -20,25 +20,18 @@ class FacilityRunner():
     def setup(self):
         
         #put phase in run_optns
-        fac = self.model.faclist.dataframe.loc[self.model.faclist.dataframe.fac_id == self.facilityId]
-        self.model.run_optns['phase'] = fac['phase']
+        ## need to fix this not pulling phase out correctly
+        fac = self.model.faclist.dataframe.loc[self.model.faclist.dataframe['fac_id'] == self.facilityId]
+        print('fac list:', fac['phase'].tolist()[0])
         
-          #get run optn ahead of creating the rustream
-        if self.model.run_optns['phase'].upper() not in ['P', 'V', 'B']:
+        if 'nan' in fac['phase'].tolist()[0]:
             self.model.run_optns['phase'] = None
-        
-        #get run optn ahead of creating the rustream
-#        self.settings = sort(self.facoptn_df)
-        
-        #logic for pahse setting in model options
-#        if self.settings['phase'] == 'P':
-#            optdp = self.settings['settings'][0]
-#            
-#        
-#        elif self.settings['phase'] == 'V':
-#            optdp = self.settings['settings'][0]
+            print(self.model.run_optns['phase'])
+            
+        else:
+            self.model.run_optns['phase'] = fac['phase'].tolist()[0]
 
-        
+
         #create fac folder
         fac_folder = "output/"+ self.facilityId + "/"
         if os.path.exists(fac_folder):
@@ -56,7 +49,7 @@ class FacilityRunner():
                 phase = sort(self.fac)
                 
             else:
-                phase = None
+                phase = {'phase': None, 'settings': None}
             
             #create runstream
             self.runstream = self.prep_fac.createRunstream(self.facilityId, phase)
@@ -98,6 +91,8 @@ class FacilityRunner():
                 self.run(sub_folder)
              
                 check = self.check_run(sub_folder)
+                
+                #currently process outputs has not been made for a double run
     
     def prep(self):
         

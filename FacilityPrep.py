@@ -447,7 +447,7 @@ class FacilityPrep():
                               seasons_df, emisvar_df, 
                               self.model.gasparams.dataframe)
         runstream.build_co(phase)
-        runstream.build_so()
+        runstream.build_so(phase)
         runstream.build_re(self.innerblks, cenx, ceny, polar_df)
         runstream.build_me(cenlat, cenlon)
         runstream.build_ou()
