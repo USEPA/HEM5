@@ -1,7 +1,5 @@
-from writer.csv.BlockSummaryChronic import *
-from model.Model import *
-from support.UTM import *
 from FacilityPrep import *
+from writer.csv.BlockSummaryChronic import *
 
 class RingSummaryChronic(CsvWriter):
     """
@@ -31,13 +29,6 @@ class RingSummaryChronic(CsvWriter):
         
         allpolar_df = self.model.all_polar_receptors_df.copy()
 
-        # rename and retype various columns to make them joinable
-        #allpolar_df.rename(columns=self.lowercase, inplace=True)
-        # allpolar_df[lat] = allpolar_df[lat].astype(float64)
-        # allpolar_df[lon] = allpolar_df[lon].astype(float64)
-        # allpolar_df[elev] = allpolar_df[elev].astype(float64)
-        # allpolar_df[angle] = allpolar_df[angle].astype(float64)
-
         # join with the polar grid df and then select columns
         columns = [pollutant, conc, lat, lon, overlap, elev, utme, utmn, hill, distance, angle, sector]
         merged = allpolar_df.merge(self.model.polargrid, on=[lat, lon, elev, distance, angle, sector, overlap])[columns]
@@ -46,8 +37,6 @@ class RingSummaryChronic(CsvWriter):
         merged[[mir, hi_resp, hi_live, hi_neur, hi_deve, hi_repr, hi_kidn, hi_ocul
                 , hi_endo, hi_hema, hi_immu, hi_skel, hi_sple, hi_thyr, hi_whol]] =\
             merged.apply(lambda row: self.calculateRisks(row[pollutant], row[conc]), axis=1)
-
-        print('merged size = ' + str(merged.size))
 
         # last step: group by lat,lon and then aggregate each group by summing the mir and hazard index fields
         aggs = {pollutant:'first', lat:'first', lon:'first', overlap:'first', elev:'first', utme:'first',

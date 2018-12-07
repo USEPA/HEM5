@@ -23,15 +23,10 @@ class CsvWriter(Writer):
         if self.filename is None:
             raise RuntimeError("No file name set. Cannot write to file.")
 
-        fobj = open(self.filename, 'w', newline='')
-        writer = csv.writer(fobj, delimiter=',', lineterminator='\r\n', quoting=csv.QUOTE_NONNUMERIC)
+        with open(self.filename, 'w', encoding='UTF-8', newline='') as csvarchive:
 
-        encoded=[s.encode('utf-8') for s in self.headers]
-        writer.writerow(encoded)
+            writer = csv.writer(csvarchive, quoting=csv.QUOTE_NONNUMERIC)
+            writer.writerow(self.headers)
 
-        for row in self.data:
-            # writer.writerow(row)
-            writer.writerow([float('{:6.12}'.format(x)) if isinstance(x, float) else x for x in row])
-        
-        fobj.close()
-        
+            for row in self.data:
+                writer.writerow([float('{:6.12}'.format(x)) if isinstance(x, float) else x for x in row])

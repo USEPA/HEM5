@@ -61,18 +61,6 @@ class BlockSummaryChronic(CsvWriter):
         innerblocks = self.model.innerblks_df[[lat, lon, utme, utmn, hill]]
         outerblocks = self.model.outerblks_df[[lat, lon, utme, utmn, hill]]
 
-        # rename and retype various columns to make them joinable
-        #allinner_df.rename(columns=self.lowercase, inplace=True)
-        #allouter_df.rename(columns=self.lowercase, inplace=True)
-        # allinner_df[lat] = allinner_df[lat].astype(float64)
-        # allinner_df[lon] = allinner_df[lon].astype(float64)
-        # allouter_df[lat] = allouter_df[lat].astype(float64)
-        # allouter_df[lon] = allouter_df[lon].astype(float64)
-        # allinner_df[elev] = allinner_df[elev].astype(float64)
-        # allouter_df[elev] = allouter_df[elev].astype(float64)
-        #innerblocks.rename(columns=self.lowercase, inplace=True)
-        #outerblocks.rename(columns=self.lowercase, inplace=True)
-
         # join inner receptor df with the inner block df and then select columns
         columns = [pollutant, conc, lat, lon, fips, block, overlap, elev,
                    utme, utmn, population, hill]

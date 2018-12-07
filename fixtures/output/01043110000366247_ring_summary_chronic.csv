@@ -1,4 +1,4 @@
-"lat","lon","overlap","elevation","x","y","hill","mir","hi_resp","hi_live","hi_neur","hi_deve","hi_repr","hi_kidn","hi_ocul","hi_endo","hi_hema","hi_immu","hi_skel","hi_sple","hi_thyr","hi_whol","distance","angle","sector"
+"Latitude","Longitude","Overlap","Elevation (m)","X","Y","Hill","MIR","Respiratory HI","Liver HI","Neurological HI","Developmental HI","Reproductive HI","Kidney HI","Ocular HI","Endocrine HI","Hematological HI","Immunological HI","Skeletal HI","Spleen HI","Thyroid HI","Whole body HI","Distance (m)","Angle (from north)","Sector"
 34.1315916175,-86.8421564608,"N",233.7,514554.0,3776758.0,233.7,1.90739231507e-08,0.0,0.0,0.00224122195874,7.62956926027e-06,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,100.0,0.0,1
 34.132132739,-86.8421554549,"N",233.7,514554.0,3776818.0,233.7,3.37577855137e-08,0.0,0.0,0.00396660349179,1.35031142055e-05,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,160.0,0.0,1
 34.1330346081,-86.8421537784,"N",233.7,514554.0,3776918.0,233.7,3.4438049589e-08,0.0,0.0,0.00404653580416,1.37752198356e-05,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,260.0,0.0,1

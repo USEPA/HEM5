@@ -1,3 +1,5 @@
+import math
+
 from writer.csv.AllInnerReceptors import *
 
 class AllOuterReceptors(CsvWriter):

@@ -21,7 +21,6 @@ class CancerRiskExposure(ExcelWriter):
             return 0;
 
         rounded = round(x, sig-int(floor(log10(abs(x))))-1)
-        #print("Rounded " + str(x) + " to " + str(rounded))
         return rounded
 
     def calculateOutputs(self):
