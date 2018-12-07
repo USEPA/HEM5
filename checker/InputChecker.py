@@ -10,6 +10,9 @@ import pandas as pd
 from tkinter.filedialog import askopenfilename
 from tkinter import messagebox
 
+from upload.EmissionsLocations import source_type
+from upload.FacilityList import *
+
 
 class InputChecker():
     
@@ -65,13 +68,13 @@ class InputChecker():
             
             #extract idsand determine if there are dependent uploads .
             else:
-                fids = set(self.model.faclist.dataframe['fac_id'])
+                fids = set(self.model.faclist.dataframe[fac_id])
         
                 
                 #find dependents and return which ones need to be checked
                 #user receptors
-                if 'Y' in self.model.faclist.dataframe['user_rcpt'].tolist():
-                    result['dependencies'].append('user_rcpt')
+                if 'Y' in self.model.faclist.dataframe[user_rcpt].tolist():
+                    result['dependencies'].append(user_rcpt)
                     
                     
                 #add bldgdw
@@ -102,8 +105,8 @@ class InputChecker():
                 
             else:
                 #get locations and source ids
-                hfids = set(self.model.hapemis.dataframe['fac_id'])
-                hsource = set(self.model.hapemis.dataframe['source_id'])
+                hfids = set(self.model.hapemis.dataframe[fac_id])
+                hsource = set(self.model.hapemis.dataframe[source_id])
                 
    
         try:
@@ -128,16 +131,16 @@ class InputChecker():
                 
              else:
                 #check facility id with emis loc ids
-                efids = set(self.model.emisloc.dataframe['fac_id'])
-                esource = set(self.model.emisloc.dataframe['source_id'])
+                efids = set(self.model.emisloc.dataframe[fac_id])
+                esource = set(self.model.emisloc.dataframe[source_id])
                
                 
                 #check source types for optional inputs
                 
-                if 'I' in self.model.emisloc.dataframe['source_type'].tolist():
+                if 'I' in self.model.emisloc.dataframe[source_type].tolist():
                     result['dependencies'].append('polyvertex')
                     
-                if 'B' in self.model.emisloc.dataframe['source_type'].tolist():
+                if 'B' in self.model.emisloc.dataframe[source_type].tolist():
                     result['dependencies'].append('bouyant')
                     
                 #check for deposition and depletion and pass to dep_check model
@@ -204,8 +207,8 @@ class InputChecker():
                 else:
                 
                     #check facility ids in ureceptors 
-                    uids = set(self.model.ureceptr.dataframe['fac_id'])
-                    fids = set(self.model.faclist.dataframe['fac_id'])
+                    uids = set(self.model.ureceptr.dataframe[fac_id])
+                    fids = set(self.model.faclist.dataframe[fac_id])
                     
                     if fids.intersection(uids) != fids:
                         
@@ -239,8 +242,8 @@ class InputChecker():
                 else:
                     
                     #check facility ids against bouyant line ids
-                    bids = set(self.model.multibuoy.dataframe['fac_id'])
-                    fids = set(self.model.faclist.dataframe['fac_id'])
+                    bids = set(self.model.multibuoy.dataframe[fac_id])
+                    fids = set(self.model.faclist.dataframe[fac_id])
                     
                     if fids.intersection(bids) != fids:
                         
@@ -281,8 +284,8 @@ class InputChecker():
                 else:
                     
                     #check facility ids against polyvertex ids
-                    pids = set(self.model.multipoly.dataframe['fac_id'])
-                    fids = set(self.model.faclist.dataframe['fac_id'])
+                    pids = set(self.model.multipoly.dataframe[fac_id])
+                    fids = set(self.model.faclist.dataframe[fac_id])
                     
                     if fids.intersection(pids) != fids:
                         

@@ -1,4 +1,4 @@
-"Fips","Block","Lat","Lon","Source_id","Emis_type","Pollutant","Conc_ug_m3","Acon_ug_m2","Elevation","Population","Overlap"
+"FIPs","Block","Latitude","Longitude","Source ID","Emission type","Pollutant","Conc (µg/m3)","Acute Conc (µg/m3)","Elevation (m)","Population","Overlap"
 "01009","0501011006",33.9456017,-86.4725374,"CEOT0001","C","Ethyl benzene",3.90550538247e-05,0.0,262.2,3,"N"
 "01009","0501011006",33.9456017,-86.4725374,"CEOT0001","C","Toluene",3.31599513606e-05,0.0,262.2,3,"N"
 "01009","0501011006",33.9456017,-86.4725374,"CEOT0001","C","Xylenes (mixed)",0.00114659742927,0.0,262.2,3,"N"

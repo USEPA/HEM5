@@ -11,6 +11,8 @@ import math
 
 import find_met as fm
 from dep_sort import sort
+from model.Model import *
+from support.UTM import *
 
 class Runstream():
     """
@@ -523,10 +525,10 @@ class Runstream():
 
     ## Discrete Receptors
 
-        recx = list(discrecs_df['utme'][:])
-        recy = list(discrecs_df['utmn'][:])
-        rece = list(discrecs_df['ELEV'][:]) # Elevations
-        rech = list(discrecs_df['HILL'][:]) # Hill height
+        recx = list(discrecs_df[utme][:])
+        recy = list(discrecs_df[utmn][:])
+        rece = list(discrecs_df[elev][:]) # Elevations
+        rech = list(discrecs_df[hill][:]) # Hill height
 
         for i in np.arange(len(recx)):
             if self.eleva == "Y":

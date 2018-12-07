@@ -8,6 +8,7 @@ class Writer(ABC):
         self.filename = None
         self.headers = None
         self.data = None
+        self.dataframe = None
 
     def write(self):
 

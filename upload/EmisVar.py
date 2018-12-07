@@ -7,6 +7,7 @@ Created on Thu Nov  1 12:35:08 2018
 import pandas as pd
 from upload.DependentInputFile import DependentInputFile
 from tkinter import messagebox
+from model.Model import *
 
 class EmisVar(DependentInputFile):
 
@@ -26,15 +27,15 @@ class EmisVar(DependentInputFile):
         emisvar_df.columns = map(str.lower, emisvar_df.columns)
         
         #rename first two columns
-        emisvar_df.rename(columns={"facility id": "fac_id", 
-                                   "source id": "source_id", 
+        emisvar_df.rename(columns={"facility id": fac_id,
+                                   "source id": source_id,
                                    emisvar_df.columns[2]: "variation"}, inplace=True)
         
         
         #check source ids against emislocs
-        var_source_ids = emisvar_df["source_id"].tolist()
+        var_source_ids = emisvar_df[source_id].tolist()
         
-        model_source_ids = emisloc_df["source_id"].tolist()
+        model_source_ids = emisloc_df[source_id].tolist()
         
         
         #make sure no emission sources missing from 
@@ -62,7 +63,7 @@ class EmisVar(DependentInputFile):
                     #print('row', row[1].values[3:])
                     if len(row[1].values[3:]) != 4:
                         
-                        s_wrong.append(seasons["source_id"].values[0])        
+                        s_wrong.append(seasons[source_id].values[0])
                 
                 
                 if len(s_wrong) > 0:
@@ -83,7 +84,7 @@ class EmisVar(DependentInputFile):
 
                     if len(row[1].values[3:]) != 6:
                         
-                        w_wrong.append(wspeed["source_id"].values[0])        
+                        w_wrong.append(wspeed[source_id].values[0])
                 
                 if len(w_wrong) > 0:
                     messagebox.showinfo("Wind Speed Emissions Variation", 
@@ -103,7 +104,7 @@ class EmisVar(DependentInputFile):
 
                 if len(row[1].values[3:]) != 12:
                     
-                    m_wrong.append(month["source_id"].values[0])        
+                    m_wrong.append(month[source_id].values[0])
             
             if len(m_wrong) > 0:
                 messagebox.showinfo("Monthly Emissions Variation", 

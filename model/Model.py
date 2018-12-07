@@ -1,4 +1,19 @@
 
+fac_id = 'fac_id';
+source_id = 'source_id';
+pollutant = 'pollutant';
+group = 'group';
+lon = 'lon';
+lat = 'lat';
+elev = 'elev';
+hill = 'hill';
+overlap = 'overlap';
+conc = 'conc'
+result = 'result';
+flag = 'flag';
+avg_time = 'avg_time';
+num_yrs = 'num_yrs';
+net_id = 'net_id';
 
 class Model():
 

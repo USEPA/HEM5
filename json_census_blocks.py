@@ -1,11 +1,15 @@
-import math
-import pandas as pd
-import numpy as np
+from FacilityPrep import *
+from support.UTM import *
+from model.Model import *
+
+rec_no = 'rec_no';
+fips = 'fips';
+idmarplot = 'idmarplot';
+population = 'population';
+moved = 'moved';
+urban_pop = 'urban_pop';
 
 #%% compute a bearing from the center of a facility to a census receptor
-from support.UTM import UTM
-
-
 def bearing(utme, utmn, cenx, ceny):
     if utmn > ceny:
         if utme > cenx:
@@ -136,18 +140,18 @@ def in_box(modelblks, sourcelocs, modeldist, maxdist, overlap_dist):
     
     ptsources = sourcelocs.query("source_type in ('P','C','H','V','N','B')")
     for index, row in ptsources.iterrows():
-        src_x = row["utme"]
-        src_y = row["utmn"]
+        src_x = row[utme]
+        src_y = row[utmn]
         indist = outerblks.query('sqrt((@src_x - utme)**2 + (@src_y - utmn)**2) <= @modeldist')
         
         if len(indist) > 0:
             innerblks = innerblks.append(indist).reset_index(drop=True)
-            innerblks = innerblks[~innerblks['IDMARPLOT'].apply(tuple).duplicated()]
-            outerblks = outerblks[~outerblks['IDMARPLOT'].isin(innerblks['IDMARPLOT'])]
+            innerblks = innerblks[~innerblks[idmarplot].apply(tuple).duplicated()]
+            outerblks = outerblks[~outerblks[idmarplot].isin(innerblks[idmarplot])]
 
             #Do any of these inner or outer blocks overlap this source?
-            innerblks["overlap"] = np.where(np.sqrt((innerblks["utme"]-src_x)**2 + (innerblks["utmn"]-src_y)**2) <= overlap_dist, "Y", "N")
-            outerblks["overlap"] = np.where(np.sqrt((outerblks["utme"]-src_x)**2 + (outerblks["utmn"]-src_y)**2) <= overlap_dist, "Y", "N")
+            innerblks['overlap'] = np.where(np.sqrt((innerblks[utme]-src_x)**2 + (innerblks[utmn]-src_y)**2) <= overlap_dist, "Y", "N")
+            outerblks['overlap'] = np.where(np.sqrt((outerblks[utme]-src_x)**2 + (outerblks[utmn]-src_y)**2) <= overlap_dist, "Y", "N")
     
     print("first innerblks size = ", innerblks.shape, " first outerblks size = ", outerblks.shape)
 
@@ -155,23 +159,23 @@ def in_box(modelblks, sourcelocs, modeldist, maxdist, overlap_dist):
     
     area0sources = sourcelocs.query("source_type in ('A') and angle == 0")
     for index, row in area0sources.iterrows():
-        sw_x = row["utme"] - modeldist
-        sw_y = row["utmn"] - modeldist
-        ne_x = row["utme"] + row["lengthx"] + modeldist
-        ne_y = row["utmn"] + row["lengthy"] + modeldist
+        sw_x = row[utme] - modeldist
+        sw_y = row[utmn] - modeldist
+        ne_x = row[utme] + row["lengthx"] + modeldist
+        ne_y = row[utmn] + row["lengthy"] + modeldist
         indist = outerblks.query('utme >= @sw_x and utme <= @ne_x and utmn >= @sw_y and utmn <= @ne_y')
         if len(indist) > 0:
             innerblks = innerblks.append(indist).reset_index(drop=True)
-            innerblks = innerblks[~innerblks['IDMARPLOT'].apply(tuple).duplicated()]
-            outerblks = outerblks[~outerblks['IDMARPLOT'].isin(innerblks['IDMARPLOT'])]
+            innerblks = innerblks[~innerblks[idmarplot].apply(tuple).duplicated()]
+            outerblks = outerblks[~outerblks[idmarplot].isin(innerblks[idmarplot])]
 
             #Do any of these inner or outer blocks overlap this source?
-            sw_x = row["utme"] - overlap_dist
-            sw_y = row["utmn"] - overlap_dist
-            ne_x = row["utme"] + row["lengthx"] + overlap_dist
-            ne_y = row["utmn"] + row["lengthy"] + overlap_dist
-            innerblks["overlap"] = np.where((innerblks["utme"] >= sw_x) & (innerblks["utme"] <= ne_x) & (innerblks["utmn"] >= sw_y) & (innerblks["utmn"] <= ne_y), "Y", "N")
-            outerblks["overlap"] = np.where((outerblks["utme"] >= sw_x) & (outerblks["utme"] <= ne_x) & (outerblks["utmn"] >= sw_y) & (outerblks["utmn"] <= ne_y), "Y", "N")
+            sw_x = row[utme] - overlap_dist
+            sw_y = row[utmn] - overlap_dist
+            ne_x = row[utme] + row["lengthx"] + overlap_dist
+            ne_y = row[utmn] + row["lengthy"] + overlap_dist
+            innerblks[overlap] = np.where((innerblks[utme] >= sw_x) & (innerblks[utme] <= ne_x) & (innerblks[utmn] >= sw_y) & (innerblks[utmn] <= ne_y), "Y", "N")
+            outerblks[overlap] = np.where((outerblks[utme] >= sw_x) & (outerblks[utme] <= ne_x) & (outerblks[utmn] >= sw_y) & (outerblks[utmn] <= ne_y), "Y", "N")
             
     print("second innerblks size = ", innerblks.shape, " second outerblks size = ", outerblks.shape)
 
@@ -179,19 +183,19 @@ def in_box(modelblks, sourcelocs, modeldist, maxdist, overlap_dist):
 
     areasources = sourcelocs.query("source_type in ('A') and angle > 0")
     for index, row in areasources.iterrows():
-        box_x = row["utme"]
-        box_y = row["utmn"]
+        box_x = row[utme]
+        box_y = row[utmn]
         len_x = row["lengthx"]
         len_y = row["lengthy"]
-        angle = row["angle"]
+        angle = row[angle]
         fringe = modeldist
-        outerblks["inbox"], outerblks["overlap"] = zip(*outerblks.apply(lambda row: rotatedbox(row['utme'], 
-                 row['utmn'], box_x, box_y, len_x, len_y, angle, fringe, overlap_dist), axis=1))
+        outerblks["inbox"], outerblks[overlap] = zip(*outerblks.apply(lambda row: rotatedbox(row[utme],
+                 row[utmn], box_x, box_y, len_x, len_y, angle, fringe, overlap_dist), axis=1))
         indist = outerblks.query('inbox == True')
         if len(indist) > 0:
             innerblks = innerblks.append(indist).reset_index(drop=True)
-            innerblks = innerblks[~innerblks['IDMARPLOT'].apply(tuple).duplicated()]
-            outerblks = outerblks[~outerblks['IDMARPLOT'].isin(innerblks['IDMARPLOT'])]
+            innerblks = innerblks[~innerblks[idmarplot].apply(tuple).duplicated()]
+            outerblks = outerblks[~outerblks[idmarplot].isin(innerblks[idmarplot])]
                   
     print("third innerblks size = ", innerblks.shape, " third outerblks size = ", outerblks.shape)
 
@@ -202,28 +206,28 @@ def in_box(modelblks, sourcelocs, modeldist, maxdist, overlap_dist):
     if len(polyvertices) > 1:
             
         # for tract polygons, any outerblks in the same tract as any polygon vertex will be counted as inner
-        outerblks["tract"] = outerblks["IDMARPLOT"].str[0:10]
-        polyvertices["tract"] = polyvertices["fac_id"].str[1:11]
+        outerblks["tract"] = outerblks[idmarplot].str[0:10]
+        polyvertices["tract"] = polyvertices[fac_id].str[1:11]
         intract = pd.merge(outerblks, polyvertices, how='inner', on='tract')
         if len(intract) > 0:
             innerblks = innerblks.append(intract).reset_index(drop=True)
-            innerblks = innerblks[~innerblks['IDMARPLOT'].apply(tuple).duplicated()]
-            outerblks = outerblks[~outerblks['IDMARPLOT'].isin(innerblks['IDMARPLOT'])]
+            innerblks = innerblks[~innerblks[idmarplot].apply(tuple).duplicated()]
+            outerblks = outerblks[~outerblks[idmarplot].isin(innerblks[idmarplot])]
         
         # for non-tract polygons, are any blocks within the modeldist of any polygon side?
         #     process each source_id
-        for grp,df in polyvertices.groupby("source_id"):
+        for grp,df in polyvertices.groupby(source_id):
             # loop over each row of the source_id specific dataframe (df)
             for i in range(0, df.shape[0]-1):
-                v1 = np.array([df.iloc[i]["utme"], df.iloc[i]["utmn"]])
-                v2 = np.array([df.iloc[i+1]["utme"], df.iloc[i+1]["utmn"]])
+                v1 = np.array([df.iloc[i][utme], df.iloc[i][utmn]])
+                v2 = np.array([df.iloc[i+1][utme], df.iloc[i+1][utmn]])
                 outerblks["nearpoly"] = (outerblks.apply(lambda row: polygonbox(v1, v2, 
-                     np.array([row["utme"],row["utmn"]]), modeldist), axis=1))
+                     np.array([row[utme],row[utmn]]), modeldist), axis=1))
                 polyblks = outerblks.query('nearpoly == True')
                 if len(polyblks) > 0:
                     innerblks = innerblks.append(polyblks).reset_index(drop=True)
-                    innerblks = innerblks[~innerblks['IDMARPLOT'].apply(tuple).duplicated()]
-                    outerblks = outerblks[~outerblks['IDMARPLOT'].isin(innerblks['IDMARPLOT'])]
+                    innerblks = innerblks[~innerblks[idmarplot].apply(tuple).duplicated()]
+                    outerblks = outerblks[~outerblks[idmarplot].isin(innerblks[idmarplot])]
 
     print("fourth innerblks size = ", innerblks.shape, " fourth outerblks size = ", outerblks.shape)
         
@@ -238,7 +242,9 @@ def in_box(modelblks, sourcelocs, modeldist, maxdist, overlap_dist):
 #%%
 def read_json_file(path_to_file, dtype_dict):
     with open(path_to_file) as p:
-        return pd.read_json(p, orient="columns", dtype=eval(dtype_dict))
+        raw = pd.read_json(p, orient="columns", dtype=eval(dtype_dict))
+        raw.columns = [x.lower() for x in raw.columns]
+        return raw
 
     
 #%%
@@ -288,20 +294,20 @@ def getblocks(cenx, ceny, cenlon, cenlat, utmzone, maxdist, modeldist, sourceloc
         state = "census/" + row['file_name'] + ".json"
         # Query state census file
         if state in censusfile2use:
-            censusfile2use[state].append(str(row["fips"]))
+            censusfile2use[state].append(str(row[fips]))
         else:
-            censusfile2use[state] = [str(row["fips"])]
+            censusfile2use[state] = [str(row[fips])]
             #print("done!")
        
-    for state, fips in censusfile2use.items():
-        locations = fips        
+    for state, FIPS in censusfile2use.items():
+        locations = FIPS
         dtype_dict = '{"REC_NO":int, "FIPS":object, "IDMARPLOT":object, "POPULATION":int, "LAT":float, "LON":float, "ELEV":float, "HILL":float, "MOVED":object, "URBAN_POP":int}'
         state_pd = read_json_file(state, dtype_dict)
-        
+        state_pd.columns = [x.lower() for x in state_pd.columns]
 #        state_pd = pd.DataFrame.from_dict(state_data['data'], orient='columns')
         
         
-        check = state_pd[state_pd['FIPS'].isin(locations)]
+        check = state_pd[state_pd[fips].isin(locations)]
         frames.append(check)
 
     #combine dataframes to modelblks
@@ -312,37 +318,37 @@ def getblocks(cenx, ceny, cenlon, cenlat, utmzone, maxdist, modeldist, sourceloc
     #print(censusblks)
 
     #convert to utm if necessary
-    censusblks["utms"] = censusblks.apply(lambda row: UTM.ll2utm_alt(row['LAT'], row['LON'], utmzone), axis=1)
+    censusblks[utms] = censusblks.apply(lambda row: UTM.ll2utm_alt(row[lat], row[lon], utmzone), axis=1)
 
     #split utms column into utmn, utme, utmz
-    censusblks[['utmn', 'utme', 'utmz']] = pd.DataFrame(censusblks.utms.values.tolist(), index= censusblks.index)
+    censusblks[[utmn, utme, utmz]] = pd.DataFrame(censusblks.utms.values.tolist(), index= censusblks.index)
     #clean up censusblks df
-    del censusblks['utms']
+    del censusblks[utms]
     
     #coerce hill and elevation into floats
-    censusblks['HILL'] = pd.to_numeric(censusblks['HILL'], errors='coerce').fillna(0)
-    censusblks['ELEV'] = pd.to_numeric(censusblks['ELEV'], errors='coerce').fillna(0)
+    censusblks[hill] = pd.to_numeric(censusblks[hill], errors='coerce').fillna(0)
+    censusblks[elev] = pd.to_numeric(censusblks[elev], errors='coerce').fillna(0)
 
     #compute distance and bearing (angle) from the center of the facility
-    censusblks['DISTANCE'] = np.sqrt((cenx - censusblks.utme)**2 + (ceny - censusblks.utmn)**2)
-    censusblks['ANGLE'] = censusblks.apply(lambda row: bearing(row["utme"],row["utmn"],cenx,ceny), axis=1)  
+    censusblks['distance'] = np.sqrt((cenx - censusblks.utme)**2 + (ceny - censusblks.utmn)**2)
+    censusblks['angle'] = censusblks.apply(lambda row: bearing(row[utme],row[utmn],cenx,ceny), axis=1)
 
     #subset the censusblks dataframe to blocks that are within the modeling distance of the facility 
-    modelblks = censusblks.query('DISTANCE <= @maxdist')
+    modelblks = censusblks.query('distance <= @maxdist')
 
     # Split modelblks into inner and outer block receptors
     innerblks, outerblks = in_box(modelblks, sourcelocs, modeldist, maxdist, overlap_dist)
         
     
     # convert utme, utmn, utmz, and population to integers
-    innerblks["utme"] = innerblks["utme"].astype(int)
-    innerblks["utmn"] = innerblks["utmn"].astype(int)
-    innerblks["utmz"] = innerblks["utmz"].astype(int)
-    innerblks["POPULATION"] = pd.to_numeric(innerblks["POPULATION"], errors='coerce').astype(int)
-    outerblks["utme"] = outerblks["utme"].astype(int)
-    outerblks["utmn"] = outerblks["utmn"].astype(int)
-    outerblks["utmz"] = outerblks["utmz"].astype(int)
-    outerblks["POPULATION"] = pd.to_numeric(outerblks["POPULATION"], errors='coerce').astype(int)
+    innerblks[utme] = innerblks[utme].astype(int)
+    innerblks[utmn] = innerblks[utmn].astype(int)
+    innerblks[utmz] = innerblks[utmz].astype(int)
+    innerblks[population] = pd.to_numeric(innerblks[population], errors='coerce').astype(int)
+    outerblks[utme] = outerblks[utme].astype(int)
+    outerblks[utmn] = outerblks[utmn].astype(int)
+    outerblks[utmz] = outerblks[utmz].astype(int)
+    outerblks[population] = pd.to_numeric(outerblks[population], errors='coerce').astype(int)
     
     return innerblks, outerblks
 

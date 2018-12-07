@@ -1,4 +1,4 @@
-"lat","lon","overlap","elevation","fips","block","x","y","hill","population","mir","hi_resp","hi_live","hi_neur","hi_deve","hi_repr","hi_kidn","hi_ocul","hi_endo","hi_hema","hi_immu","hi_skel","hi_sple","hi_thyr","hi_whol","rectype"
+"Latitude","Longitude","Overlap","Elevation (m)","FIPs","Block","X","Y","Hill","Population","MIR","Respiratory HI","Liver HI","Neurological HI","Developmental HI","Reproductive HI","Kidney HI","Ocular HI","Endocrine HI","Hematological HI","Immunological HI","Skeletal HI","Spleen HI","Thyroid HI","Whole body HI","Receptor type"
 33.9456017,-86.4725374,"N",262.2,"01009","0501011006",548741,3756250,262.2,3,9.76376345618e-11,0.0,0.0,1.1472606283e-05,3.90550538247e-08,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,"O"
 33.9447839,-86.4730657,"N",262.6,"01009","0501011007",548693,3756159,262.6,2,9.79760345066e-11,0.0,0.0,1.1512368915e-05,3.91904138026e-08,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,"O"
 33.9446487,-86.4746523,"N",261.7,"01009","0501011008",548546,3756143,261.7,5,9.79989518836e-11,0.0,0.0,1.151506175e-05,3.91995807535e-08,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,"O"

@@ -1,9 +1,5 @@
-import os
-
-import pandas as pd
-
-from log import Logger
-from writer.csv.CsvWriter import CsvWriter
+from FacilityPrep import *
+from writer.csv.AllInnerReceptors import *
 
 class AllPolarReceptors(CsvWriter):
     """
@@ -38,9 +34,9 @@ class AllPolarReceptors(CsvWriter):
             overlap (Y/N)
         """
 
-        self.headers = ["Source_id", "Emis_type", "Pollutant", "Conc_ug_m3",
-                         "Distance_m", "Angle", "Sector_num", "Ring_num", "Elev_m", 
-                         "Lat", "Lon", "Overlap", "Wdp_g_m2_y", "Ddp_g_m2_y",]
+        self.headers = ['Source ID', 'Emission type', 'Pollutant', 'Conc (µg/m3)',
+                        'Distance (m)', 'Angle (from north)', 'Sector', 'Ring number', 'Elevation (m)',
+                        'Latitude', 'Longitude', 'Overlap', 'Wet deposition (g/m2/yr)', 'Dry deposition (g/m2/yr)']
 
         # Units conversion factor
         self.cf = 2000*0.4536/3600/8760
@@ -51,14 +47,16 @@ class AllPolarReceptors(CsvWriter):
         polarplot_df.utmn = polarplot_df.utmn.round()
 
         # array of unique source_id's
-        srcids = polarplot_df['source_id'].unique().tolist()
+        srcids = polarplot_df[source_id].unique().tolist()
 
         dlist = []
+        columns = [source_id, ems_type, pollutant, conc, distance, angle, sector, ring, elev, lat, lon, overlap, wetdep,
+                   drydep]
 
         # process polar concs one source_id at a time
         for x in srcids:
-            polarplot_onesrcid = polarplot_df[["utme","utmn","source_id","result"]].loc[polarplot_df['source_id'] == x]
-            hapemis_onesrcid = self.model.runstream_hapemis[["source_id","pollutant","emis_tpy"]].loc[self.model.runstream_hapemis['source_id'] == x]
+            polarplot_onesrcid = polarplot_df[[utme,utmn,source_id,result]].loc[polarplot_df[source_id] == x]
+            hapemis_onesrcid = self.model.runstream_hapemis[[source_id,pollutant,emis_tpy]].loc[self.model.runstream_hapemis[source_id] == x]
             for row1 in polarplot_onesrcid.itertuples():
                 for row2 in hapemis_onesrcid.itertuples():
                     d_sourceid = row1[3]
@@ -71,24 +69,26 @@ class AllPolarReceptors(CsvWriter):
                     if key in self.polarCache:
                         record = self.polarCache.get(key)
                     else:
-                        record = self.model.polargrid.loc[(self.model.polargrid["utme"] == row1[1]) & (self.model.polargrid["utmn"] == row1[2])]
+                        record = self.model.polargrid.loc[(self.model.polargrid[utme] == row1[1]) & (self.model.polargrid[utmn] == row1[2])]
                         self.polarCache[key] = record
 
-                    d_distance = record["distance"].values[0]
-                    d_angle = record["angle"].values[0]
-                    d_sector = record["sector"].values[0]
-                    d_ring_no = record["ring"].values[0]
-                    d_elev = record["elev"].values[0]
-                    d_lat = record["lat"].values[0]
-                    d_lon = record["lon"].values[0]
-                    d_overlap = record["overlap"].values[0]
+                    d_distance = record[distance].values[0]
+                    d_angle = record[angle].values[0]
+                    d_sector = record[sector].values[0]
+                    d_ring_no = record[ring].values[0]
+                    d_elev = record[elev].values[0]
+                    d_lat = record[lat].values[0]
+                    d_lon = record[lon].values[0]
+                    d_overlap = record[overlap].values[0]
                     d_drydep = ""
                     d_wetdep = ""
-                    datalist = [d_sourceid, d_emistype, d_pollutant, d_conc, d_distance, d_angle, d_sector, d_ring_no, d_elev, d_lat, d_lon, d_overlap, d_wetdep, d_drydep]
+                    datalist = [d_sourceid, d_emistype, d_pollutant, d_conc, d_distance, d_angle, d_sector, d_ring_no,
+                                d_elev, d_lat, d_lon, d_overlap, d_wetdep, d_drydep]
 
-                    dlist.append(dict(zip(self.headers, datalist)))
+                    dlist.append(dict(zip(columns, datalist)))
 
-        all_polar_receptors_df = pd.DataFrame(dlist, columns=self.headers)
+        all_polar_receptors_df = pd.DataFrame(dlist, columns=columns)
 
         #dataframe to array
-        self.data = all_polar_receptors_df.values
+        self.dataframe = all_polar_receptors_df
+        self.data = self.dataframe.values

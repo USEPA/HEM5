@@ -1,4 +1,4 @@
-"Source_id","Emis_type","Pollutant","Conc_ug_m3","Distance_m","Angle","Sector_num","Ring_num","Elev_m","Lat","Lon","Overlap","Wdp_g_m2_y","Ddp_g_m2_y"
+"Source ID","Emission type","Pollutant","Conc (µg/m3)","Distance (m)","Angle (from north)","Sector","Ring number","Elevation (m)","Latitude","Longitude","Overlap","Wet deposition (g/m2/yr)","Dry deposition (g/m2/yr)"
 "CEOT0001","C","Ethyl benzene",0.00762956926027,100.0,0.0,1,1,233.7,34.1315916175,-86.8421564608,"N","",""
 "CEOT0001","C","Toluene",0.00647793616438,100.0,0.0,1,1,233.7,34.1315916175,-86.8421564608,"N","",""
 "CEOT0001","C","Xylenes (mixed)",0.223992637151,100.0,0.0,1,1,233.7,34.1315916175,-86.8421564608,"N","",""
