@@ -15,15 +15,17 @@ def sort(facops):
     """
     
     """
-    phase = facops['phase'][0].upper()                    # Phase
+    print('facility slice:', facops)
+    print('phase', facops['phase'])
+    phase = facops['phase'].tolist()[0].upper()                    # Phase
 
-    depos = facops['dep'].fillna("")[0]                       # Deposition
-    vdepo = facops['vdep'].fillna("")[0]                       # Vapor Deposition
-    pdepo = facops['pdep'].fillna("")[0]                       # Particle Deposition
+    depos = facops['dep'].fillna("").tolist()[0]                       # Deposition
+    vdepo = facops['vdep'].fillna("").tolist()[0]                       # Vapor Deposition
+    pdepo = facops['pdep'].fillna("").tolist()[0]                       # Particle Deposition
     
-    deple = facops['depl'].fillna("")[0]                       # Depletion
-    vdepl = facops['vdepl'].fillna("")[0]                       # Vapor Depletion
-    pdepl = facops['pdepl'].fillna("")[0]                       # Particle Depletion
+    deple = facops['depl'].fillna("").tolist()[0]                       # Depletion
+    vdepl = facops['vdepl'].fillna("").tolist()[0]                       # Vapor Depletion
+    pdepl = facops['pdepl'].fillna("").tolist()[0]                       # Particle Depletion
     
     if depos == "":
         depos = "N"
@@ -32,11 +34,27 @@ def sort(facops):
         deple = "N"
         
     ## don't forget to call upper!
-    opts = []
-    ##order matters for pahse 'B'-- particle first, then vapor
     
-    if phase == 'P' or phase == 'V':
+    if phase == 'P' or phase =='V':
         
+        return single_phase(phase, depos, deple, vdepo, pdepo, vdepl, pdepl)
+    
+    elif phase == 'B':
+        
+        #construct particle and vapor runs separately
+        particle = single_phase('P', depos, deple, None, pdepo, None, pdepl)
+        
+        vapor = single_phase('V', depos, deple, vdepo, None, vdepl, None)
+            
+        return [particle, vapor]
+        
+    
+    
+
+    ##order matters for pahse 'B'-- particle first, then vapor
+def single_phase(phase, depos, deple, vdepo, pdepo, vdepl, pdepl):
+        
+        opts = []
         if "Y" in depos:
             
             if pdepo == "WO" or vdepo == "WO":
@@ -68,7 +86,8 @@ def sort(facops):
         #        if phase == 'B':
         #            if pdepo == "WD" and vdepo == "WD":
         #                opts.append(" WDEP DDEP NOWETDPLT NODRYDPLT ")
-            
+            if pdepo == 'NO' or vdepo == 'NO':
+                opts.append("")
         #----------------------------------------------------------------------------------------
         if "Y" in deple:
 #            print(deple)
@@ -93,12 +112,10 @@ def sort(facops):
                 else:
                     opts.append(" WDEP ")
         
-   
-        
-    elif phase is 'B':
-        pass
+            if pdepl == 'NO' or vdepl == 'NO':
+                opts.append("")
     
     
-    return {'phase': phase, 'settings': opts}
+        return {'phase': phase, 'settings': opts}
     
         ## split it into two lists, duplicate the row and call dep_sort on each?
