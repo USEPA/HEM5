@@ -7,6 +7,8 @@ import shutil
 from FacilityPrep import FacilityPrep
 from log.Logger import Logger
 from dep_sort import sort
+from model.Model import fac_id
+
 
 class FacilityRunner():
 
@@ -21,13 +23,13 @@ class FacilityRunner():
         
         #put phase in run_optns
         ## need to fix this not pulling phase out correctly
-        fac = self.model.faclist.dataframe.loc[self.model.faclist.dataframe['fac_id'] == self.facilityId]
+        fac = self.model.faclist.dataframe.loc[self.model.faclist.dataframe[fac_id] == self.facilityId]
         print('fac list:', fac['phase'].tolist()[0])
-        
+
         if 'nan' in fac['phase'].tolist()[0]:
             self.model.run_optns['phase'] = None
             print(self.model.run_optns['phase'])
-            
+
         else:
             self.model.run_optns['phase'] = fac['phase'].tolist()[0]
 
@@ -38,49 +40,49 @@ class FacilityRunner():
             pass
         else:
             os.makedirs(fac_folder)
-        
+
         #do prep
         self.prep_fac = self.prep()
-        
+
         #Single run model options
         if self.model.run_optns['phase'] != 'B':
-            
+
             if self.model.run_optns['phase'] != None:
                 phase = sort(fac)
-                
+
             else:
                 phase = {'phase': None, 'settings': None}
-            
+
             #create runstream
             self.runstream = self.prep_fac.createRunstream(self.facilityId, phase)
-            
+
             #run aermod
             self.run(fac_folder)
-            
+
             #check aermod run and move aer.out file to facility folder
             check = self.check_run(fac_folder)
-            
+
             if check == True:
-              
+
                 #process outputs for single facility -- turn off for particle
                 self.process_outputs(fac_folder)
-            
+
         else:
             #double run needs to create subfolder for particle and vapor
             #also store the runstream objects for later use in processing
-            
+
             #let the sort get both phases then loop through each
             phases = sort(fac)
             runstreams = []
-            
-            
+
+
             for r in phases:
-                
-                #log label for particle and vapor so easy to track 
-                
+
+                #log label for particle and vapor so easy to track
+
                 #Logger.logMessage(r + " run:")
                 print(phases)
-                
+
                 #store run in subfolder
                 sub_folder = fac_folder + r['phase'] +"/"
                 if os.path.exists(sub_folder):
