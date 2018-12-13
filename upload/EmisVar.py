@@ -60,10 +60,12 @@ class EmisVar(DependentInputFile):
                 print(seasons)
                 s_wrong = []
                 for row in seasons.iterrows():
-                    #print('row', row[1].values[3:])
-                    if len(row[1].values[3:]) != 4:
+                    
+                    row = row[1].dropna()
+                    print(row)
+                    if len(row.values[3:]) != 4:
                         
-                        s_wrong.append(seasons[source_id].values[0])
+                        s_wrong.append(row[1])
                 
                 
                 if len(s_wrong) > 0:
@@ -81,10 +83,12 @@ class EmisVar(DependentInputFile):
                 #print(wspeed)
                 w_wrong = []
                 for row in wspeed.iterrows():
+                    
+                    row = row[1].dropna()
 
-                    if len(row[1].values[3:]) != 6:
+                    if len(row.values[3:]) != 6:
                         
-                        w_wrong.append(wspeed[source_id].values[0])
+                        w_wrong.append(row[1])
                 
                 if len(w_wrong) > 0:
                     messagebox.showinfo("Wind Speed Emissions Variation", 
@@ -101,10 +105,10 @@ class EmisVar(DependentInputFile):
             #print(wspeed)
             m_wrong = []
             for row in month.iterrows():
-
-                if len(row[1].values[3:]) != 12:
+                row = row[1].dropna()
+                if len(row.values[3:]) != 12:
                     
-                    m_wrong.append(month[source_id].values[0])
+                    m_wrong.append(row[1])
             
             if len(m_wrong) > 0:
                 messagebox.showinfo("Monthly Emissions Variation", 

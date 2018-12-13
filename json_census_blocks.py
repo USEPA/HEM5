@@ -9,6 +9,7 @@ population = 'population';
 moved = 'moved';
 urban_pop = 'urban_pop';
 
+
 #%% compute a bearing from the center of a facility to a census receptor
 def bearing(utme, utmn, cenx, ceny):
     if utmn > ceny:
