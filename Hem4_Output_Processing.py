@@ -14,6 +14,7 @@ from writer.csv.BlockSummaryChronic import *
 from writer.excel.CancerRiskExposure import CancerRiskExposure
 from writer.excel.InputSelectionOptions import InputSelectionOptions
 from writer.excel.MaximumIndividualRisks import MaximumIndividualRisks, value
+from writer.excel.MaximumOffsiteImpacts import MaximumOffsiteImpacts
 from writer.excel.NoncancerRiskExposure import NoncancerRiskExposure
 from writer.excel.RiskBreakdown import RiskBreakdown
 from writer.excel.Incidence import Incidence
@@ -188,6 +189,12 @@ class Process_outputs():
         max_indiv_risk = MaximumIndividualRisks(self.outdir, self.facid, self.model, plot_df)
         max_indiv_risk.write()
         self.model.max_indiv_risk_df = max_indiv_risk.dataframe
+
+        #----------- create Maximum_Offsite_Impacts output file ---------------
+        inner_recep_risk_df = block_summary_chronic_df[block_summary_chronic_df["rec_type"] == "I"]
+        max_offsite_impacts = MaximumOffsiteImpacts(self.outdir, self.facid, self.model, plot_df,
+                                                    ring_summary_chronic_df, inner_recep_risk_df)
+        max_offsite_impacts.write()
 
 
         # For any rows in ring_summary_chronic and block_summary_chronic where overlap = Y, 

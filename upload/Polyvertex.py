@@ -13,7 +13,7 @@ from upload.EmissionsLocations import *
 
 numvert = 'numvert';
 area = 'area';
-fispsct = 'fispsct';
+fipstct = 'fipstct';
 
 class Polyvertex(DependentInputFile):
 
@@ -26,12 +26,12 @@ class Polyvertex(DependentInputFile):
         emisloc_df = self.dependency;
 
         # Specify dtypes for all fields
-        self.numericColumns = [lon,lat,numvert,area,fispsct]
+        self.numericColumns = [lon,lat,numvert,area,fipstct]
         self.strColumns = [fac_id,source_id,location_type,utmzone]
        
         #POLYVERTEX excel to dataframe
         multipoly_df = self.readFromPath((fac_id,source_id,location_type,
-                                         lon,lat,utmzone,numvert,area,fispsct))
+                                         lon,lat,utmzone,numvert,area,fipstct))
         
         #check for unassigned polyvertex
         check_poly_assignment = set(multipoly_df[fac_id])

@@ -48,8 +48,6 @@ class HAPEmissions(InputFile):
             if hap.lower() not in lower:
                 missing_pollutants.append(hap)
 
-
-
         self.log = []
         #if there are any missing pollutants
         if len(missing_pollutants) > 0:
