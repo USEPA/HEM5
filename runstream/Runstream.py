@@ -41,7 +41,7 @@ class Runstream():
         #open file to write
         self.inp_f = open("aermod.inp", "w")
         
-    def build_co(self, phase):
+    def build_co(self, phase, innerblks, outerblks):
         """
         Creates CO section of Aermod.inp file
         """
@@ -74,12 +74,7 @@ class Runstream():
             optel = " FLAT "
     
     # deposition & depletion --------------------------------------------------
-    
-        #get depositon and depletion model options, results will eventually be 
-        #stored in the model
-        
-        
-        
+
         print('MODEL OPTIONS', phase)
         
         
@@ -122,62 +117,40 @@ class Runstream():
         self.inp_f.write(co3)
         self.inp_f.write(co4)
         
-        #    # Landuse Options for Deposition
+        #check for user specified urban option
+        if self.facoptn_df['rural_urban'][0] == 'U':
+            self.urban = True
+            urbanopt = "CO URBANOPT " + str(self.facoptn_df['urban_pop'][0]) + "\n"
+            self.inp_f.write(urbanopt)
+             
+        #check if there should be an urban option and set
+        else:
+            #get shortest distance in innerblks and check for urban population
+            if innerblks != None:
+                closest = innerblks.nsmallest(1, 'distance')
+                if closest['urban_pop'][0] > 0:
+                    self.urban = True
+                    urbanopt = "CO URBANOPT " + str(closest['urban_pop'][0]) + "\n"
+                    self.inp_f.write(urbanopt)
+                    
+            else: #get shortest distance from outerblocks 
+                closest = outerblks.nsmallest(1, 'distance')
+                if closest['urban_pop'][0] > 0:
+                    self.urban = True
+                    urbanopt = "CO URBANOPT " + str(closest['urban_pop'][0]) + "\n"
+                    self.inp_f.write(urbanopt)
+                
+            
+            # Landuse Options for Deposition
         if phase['phase'] == 'V' and 'DDEP' in optdp:
             
             landval = self.landuse_df[self.landuse_df.columns[1:]].values[0]
             coland = ("CO GDLANUSE " + " ".join(map(str, landval)) + '\n')
-            
-#            coland = ("CO GDLANUSE " + str(self.landuse_df['D01'][0]) + " " + 
-#                      str(self.landuse_df['D02'][0]) + " " + 
-#                      str(self.landuse_df['D03'][0]) + " " + 
-#                      str(self.landuse_df['D04'][0]) + " " + 
-#                      str(self.landuse_df['D05'][0]) + " " + 
-#                      str(self.landuse_df['D06'][0]) + " " + 
-#                      str(self.landuse_df['D07'][0]) + " " + 
-#                      str(self.landuse_df['D08'][0]) + " " + 
-#                      str(self.landuse_df['D09'][0]) + " " + 
-#                      str(self.landuse_df['D10'][0]) + " " + 
-#                      str(self.landuse_df['D11'][0]) + " " + 
-#                      str(self.landuse_df['D12'][0]) + " " + 
-#                      str(self.landuse_df['D13'][0]) + " " + 
-#                      str(self.landuse_df['D14'][0]) + " " + 
-#                      str(self.landuse_df['D15'][0]) + " " + 
-#                      str(self.landuse_df['D16'][0]) + " " + 
-#                      str(self.landuse_df['D17'][0]) + " " + 
-#                      str(self.landuse_df['D18'][0]) + " " + 
-#                      str(self.landuse_df['D19'][0]) + " " + 
-#                      str(self.landuse_df['D20'][0]) + " " + 
-#                      str(self.landuse_df['D21'][0]) + " " + 
-#                      str(self.landuse_df['D22'][0]) + " " + 
-#                      str(self.landuse_df['D23'][0]) + " " + 
-#                      str(self.landuse_df['D24'][0]) + " " + 
-#                      str(self.landuse_df['D25'][0]) + " " + 
-#                      str(self.landuse_df['D26'][0]) + " " + 
-#                      str(self.landuse_df['D27'][0]) + " " + 
-#                      str(self.landuse_df['D28'][0]) + " " + 
-#                      str(self.landuse_df['D29'][0]) + " " + 
-#                      str(self.landuse_df['D30'][0]))
-#            
             self.inp_f.write(coland)
     
             # Season Options for Deposition
             seasval = self.seasons_df[self.seasons_df.columns[1:]].values[0]
             coseas = ("CO GDSEASON " + " ".join(map(str,seasval)) + '\n')
-            
-#            coseas = ("CO GDSEASON " + str(self.seasons_df['M01'][0]) + " " + 
-#                      str(self.seasons_df['M02'][0]) + " " + 
-#                      str(self.seasons_df['M03'][0]) + " " + 
-#                      str(self.seasons_df['M04'][0]) + " " + 
-#                      str(self.seasons_df['M05'][0]) + " " +
-#                      str(self.seasons_df['M06'][0]) + " " + 
-#                      str(self.seasons_df['M07'][0]) + " " + 
-#                      str(self.seasons_df['M08'][0]) + " " +
-#                      str(self.seasons_df['M09'][0]) + " " + 
-#                      str(self.seasons_df['M10'][0]) + " " + 
-#                      str(self.seasons_df['M11'][0]) + " " +
-#                      str(self.seasons_df['M12'][0]))
-            
             self.inp_f.write(coseas)
 
         co5 = "CO AVERTIME  " + self.hours + "\n"
@@ -265,6 +238,9 @@ class Runstream():
                 
                 self.inp_f.write(soloc)
                 self.inp_f.write(soparam)
+                
+                if self.urban == True:
+                    urbanopt = "SO URBANSRC " + str(srid[index]) + "\n"
 
                 if self.blddw == "Y":
                     self.get_blddw(srid[index])
@@ -295,6 +271,9 @@ class Runstream():
                 self.inp_f.write(soloc)
                 self.inp_f.write(soparam)
                 
+                if self.urban == True:
+                    urbanopt = "SO URBANSRC " + str(srid[index]) + "\n"
+                
                 if self.blddw == "Y":
                     self.get_blddw(srid[index])
                     
@@ -308,7 +287,37 @@ class Runstream():
                     srid[index] in self.emisvar_df['source_id'].values ):
                     self.get_variation(srid[index])
                     
+                
+            # Capped Point Source ---------------------------------------------------
+            
+            elif srct[index] == 'C':
+                soloc = ("SO LOCATION " + str(srid[index]) + " POINTCAP " + 
+                         str(xco1[index]) + " " + str(yco1[index]) + " " + 
+                         str(elev[index]) + "\n")
+                
+                soparam = ("SO SRCPARAM " + str(srid[index]) + " 1000 " + 
+                           str(stkh[index]) + " " + str(temp[index]) + " " + 
+                           str(emiv[index]) + " " + str(diam[index]) + "\n")
+                
+                self.inp_f.write(soloc)
+                self.inp_f.write(soparam)
+                
+                if self.urban == True:
+                    urbanopt = "SO URBANSRC " + str(srid[index]) + "\n"
+                
+                if self.blddw == "Y":
+                    self.get_blddw(srid[index])
                     
+                if phase['phase'] == 'P':
+                    self.get_particle(srid[index])
+                    
+                elif phase['phase'] == 'V':
+                    self.get_vapor(srid[index])
+                    
+                if (self.emisvar_df is not None and 
+                    srid[index] in self.emisvar_df['source_id'].values ):
+                    self.get_variation(srid[index])
+                
              # Area Source ---------------------------------------------------
     
             elif srct[index] == 'A':
@@ -323,6 +332,9 @@ class Runstream():
                 
                 self.inp_f.write(soloc)
                 self.inp_f.write(soparam)
+                
+                if self.urban == True:
+                    urbanopt = "SO URBANSRC " + str(srid[index]) + "\n"
                 
                 if self.blddw == "Y":
                     self.get_blddw(srid[index])
@@ -351,6 +363,9 @@ class Runstream():
                 self.inp_f.write(soloc)
                 self.inp_f.write(soparam)
                 
+                if self.urban == True:
+                    urbanopt = "SO URBANSRC " + str(srid[index]) + "\n"
+                
                 if self.blddw == "Y":
                     self.get_blddw(srid[index])
                     
@@ -363,8 +378,7 @@ class Runstream():
                 if (self.emisvar_df is not None and 
                     srid[index] in self.emisvar_df['source_id'].values ):
                     self.get_variation(srid[index])
-                    
-                    
+                          
             # Area Polygon (Irregular) Source --------------------------------
     
             elif srct[index] == 'I':
@@ -419,6 +433,9 @@ class Runstream():
                                      str(poly_utmn[i]) + " ")
                         ##write something?
                     
+                if self.urban == True:
+                    urbanopt = "SO URBANSRC " + str(srid[index]) + "\n"
+                
                 if self.blddw == "Y":
                     self.get_blddw(srid[index])
                     
@@ -450,6 +467,9 @@ class Runstream():
                 
                 self.inp_f.write(soloc)
                 self.inp_f.write(soparam)
+                
+                if self.urban == True:
+                    urbanopt = "SO URBANSRC " + str(srid[index]) + "\n"
                 
                 if self.blddw == "Y":
                     self.get_blddw(srid[index])
@@ -490,6 +510,9 @@ class Runstream():
                 
                 self.inp_f.write(soloc)
                 self.inp_f.write(soparam)
+                
+                if self.urban == True:
+                    urbanopt = "SO URBANSRC " + str(srid[index]) + "\n"
                 
                 if self.blddw == "Y":
                     self.get_blddw(srid[index])

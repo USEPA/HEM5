@@ -279,13 +279,15 @@ class InputChecker():
                     result['result'] = logMsg9
                     result['reset'] = 'polyvertex'
                     return result
-                    
+                       
                 
                 else:
                     
                     #check facility ids against polyvertex ids
                     pids = set(self.model.multipoly.dataframe[fac_id])
-                    fids = set(self.model.faclist.dataframe[fac_id])
+                    fids = set(self.model.emisloc.dataframe[self.model.emisloc.dataframe[source_type] == 'I'][fac_id].values)
+                    print('pids', pids)
+                    print('fids', fids)
                     
                     if fids.intersection(pids) != fids:
                         
