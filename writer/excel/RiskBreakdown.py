@@ -68,7 +68,7 @@ class RiskBreakdown(ExcelWriter):
                     concdata = self.model.all_inner_receptors_df[[lat,lon,source_id,pollutant,ems_type,conc]] \
                                                                 [(self.model.all_inner_receptors_df[lat]==row[lat]) & 
                                                                 (self.model.all_inner_receptors_df[lon]==row[lon])]
-                elif row["Notes"] == "Polar":
+                elif row[notes] == "Polar":
                     concdata = self.model.all_polar_receptors_df[[lat,lon,source_id,pollutant,ems_type,conc]] \
                                                                 [(self.model.all_polar_receptors_df[lat]==row[lat]) & 
                                                                  (self.model.all_polar_receptors_df[lon]==row[lon])]

@@ -43,6 +43,8 @@ class MaximumIndividualRisks(ExcelWriter):
             #not overlapped
             mr_value = self.model.risk_by_latlon[hivar].loc[io_idx]
             mr_value_sci = format(mr_value, ".1e")
+            # TODO keep 2 significant figures for rounded value
+            #mr_value_rnd = round(mr_value, -int(floor(log10(mr_value))) + 1) if mr_value > 0 else 0
             mr_value_rnd = round(mr_value, -int(floor(log10(abs(mr_value))))) if mr_value > 0 else 0
             if self.model.risk_by_latlon[rec_type].loc[io_idx] == "I":
                 mr_pop = self.model.innerblks_df[(self.model.innerblks_df[lon] == mr_lon) & (self.model.innerblks_df[lat] == mr_lat)][population].values[0]
@@ -75,7 +77,9 @@ class MaximumIndividualRisks(ExcelWriter):
             mr_lon = float(self.model.risk_by_latlon[lon].loc[iop_idx])
             mr_value = self.model.risk_by_latlon[hivar].loc[iop_idx]
             mr_value_sci = format(mr_value, ".1e")
-            mr_value_rnd = round(mr_value, -int(floor(log10(abs(mr_value)))))
+            # TODO keep 2 significant figures for rounded value
+            #mr_value_rnd = round(mr_value, -int(floor(log10(mr_value))) + 1) if mr_value > 0 else 0
+            mr_value_rnd = round(mr_value, -int(floor(log10(abs(mr_value))))) if mr_value > 0 else 0
             if self.model.risk_by_latlon[rec_type].loc[io_idx] == "P":
                 mr_pop = 0
                 mr_dist = self.model.polarrecs_df[(self.model.polarrecs_df[lon] == mr_lon) & (self.model.polarrecs_df[lat] == mr_lat)][distance].values[0]
