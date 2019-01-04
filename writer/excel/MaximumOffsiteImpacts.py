@@ -21,14 +21,16 @@ class MaximumOffsiteImpacts(ExcelWriter):
         self.inner_recep_risk_df = inner_recep_risk_df
         
 
-    def calculateOutputs(self):
+    def getHeader(self):
+        return ['Parameter', 'Value', 'Value_rnd', 'Value_sci', 'Population', 'Distance (in meters)',
+                'Angle (from north)', 'Elevation (in meters)', 'Hill Height (in meters)', 'Fips', 'Block',
+                'Utm_east', 'Utm_north', 'Latitude', 'Longitude', 'Rec_type', 'Notes', 'Warning']
+
+    def generateOutputs(self):
         """
         Max offsite impacts occur at non-overlapped inner or polar receptors with the highest value. Outer
         receptors are not checked because they cannot be higher than any polar receptor.
         """
-        self.headers = ['Parameter', 'Value', 'Value_rnd', 'Value_sci', 'Population', 'Distance (in meters)',
-                        'Angle (from north)', 'Elevation (in meters)', 'Hill Height (in meters)', 'Fips', 'Block',
-                        'Utm_east', 'Utm_north', 'Latitude', 'Longitude', 'Rec_type', 'Notes', 'Warning']
         
         # dictionary of receptor types
         rectype_dict = {"P":"Polar grid", "I":"Census block"}
@@ -97,5 +99,7 @@ class MaximumOffsiteImpacts(ExcelWriter):
 
         
         moilist_df = pd.DataFrame(moilist)
-        self.data = moilist_df.values
-                
+
+        self.dataframe = moilist_df
+        self.data = self.dataframe.values
+        yield self.dataframe

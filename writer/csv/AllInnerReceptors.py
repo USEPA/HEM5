@@ -23,14 +23,15 @@ class AllInnerReceptors(CsvWriter):
 
         self.innerBlocksCache = {}
 
-    def calculateOutputs(self):
+    def getHeader(self):
+        return ['FIPs', 'Block', 'Latitude', 'Longitude', 'Source ID', 'Emission type', 'Pollutant',
+                'Conc (µg/m3)', 'Acute Conc (µg/m3)', 'Elevation (m)',
+                'Dry deposition (g/m2/yr)', 'Wet deposition (g/m2/yr)', 'Population', 'Overlap']
+
+    def generateOutputs(self):
         """
         Compute source and pollutant specific air concentrations at inner receptors.
         """
-
-        self.headers = ['FIPs', 'Block', 'Latitude', 'Longitude', 'Source ID', 'Emission type', 'Pollutant',
-                        'Conc (µg/m3)', 'Acute Conc (µg/m3)', 'Elevation (m)',
-                        'Dry deposition (g/m2/yr)', 'Wet deposition (g/m2/yr)', 'Population', 'Overlap']
 
         # Units conversion factor
         self.cf = 2000*0.4536/3600/8760
@@ -86,3 +87,5 @@ class AllInnerReceptors(CsvWriter):
         # dataframe to array
         self.dataframe = innerconc_df
         self.data = self.dataframe.values
+
+        yield self.dataframe

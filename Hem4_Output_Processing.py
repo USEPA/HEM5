@@ -138,17 +138,19 @@ class Process_outputs():
 
         #----------- create Ring_Summary_Chronic data -----------------
         ring_summary_chronic = RingSummaryChronic(self.outdir, self.facid, self.model, plot_df)
-        ring_summary_chronic.calculateOutputs()
-        ring_summary_chronic_df = ring_summary_chronic.dataframe
+        generator = ring_summary_chronic.generateOutputs()
+        for batch in generator:
+            ring_summary_chronic_df = ring_summary_chronic.dataframe
 
         if self.abort.is_set():
             Logger.logMessage("Terminating output processing...")
             return
 
         #----------- create Block_Summary_Chronic data -----------------      
-        block_summary_chronic = BlockSummaryChronic(self.outdir, self.facid, self.model, plot_df)
-        block_summary_chronic.calculateOutputs()
-        block_summary_chronic_df = block_summary_chronic.dataframe
+        block_summary_chronic = BlockSummaryChronic(self.outdir, self.facid, self.model, plot_df, all_outer_receptors.outerAgg)
+        generator = block_summary_chronic.generateOutputs()
+        for batch in generator:
+            block_summary_chronic_df = block_summary_chronic.dataframe
 
         if self.abort.is_set():
             Logger.logMessage("Terminating output processing...")
@@ -217,7 +219,7 @@ class Process_outputs():
 
 
         #----------- create Incidence output file ------------------------
-        incidence= Incidence(self.outdir, self.facid, self.model, plot_df)
+        incidence= Incidence(self.outdir, self.facid, self.model, plot_df, all_outer_receptors.outerInc)
         incidence.write()
       
 

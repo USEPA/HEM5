@@ -17,15 +17,17 @@ class RingSummaryChronic(CsvWriter):
         # Local cache for organ endpoint values
         self.organCache = {}
 
-    def calculateOutputs(self):
+    def getHeader(self):
+        return ['Latitude', 'Longitude', 'Overlap', 'Elevation (m)', 'X', 'Y', 'Hill', 'MIR',
+                'Respiratory HI', 'Liver HI', 'Neurological HI', 'Developmental HI', 'Reproductive HI',
+                'Kidney HI', 'Ocular HI', 'Endocrine HI', 'Hematological HI', 'Immunological HI', 'Skeletal HI',
+                'Spleen HI', 'Thyroid HI', 'Whole body HI', 'Distance (m)', 'Angle (from north)', 'Sector']
+
+    def generateOutputs(self):
         """
         Note that this implementation does NOT use the plot file data, because the polar receptor concentrations have
         already been processed and stored in the model (see model.all_polar_receptors)
         """
-        self.headers = ['Latitude', 'Longitude', 'Overlap', 'Elevation (m)', 'X', 'Y', 'Hill', 'MIR',
-                        'Respiratory HI', 'Liver HI', 'Neurological HI', 'Developmental HI', 'Reproductive HI',
-                        'Kidney HI', 'Ocular HI', 'Endocrine HI', 'Hematological HI', 'Immunological HI', 'Skeletal HI',
-                        'Spleen HI', 'Thyroid HI', 'Whole body HI', 'Distance (m)', 'Angle (from north)', 'Sector']
         
         allpolar_df = self.model.all_polar_receptors_df.copy()
 
@@ -51,6 +53,7 @@ class RingSummaryChronic(CsvWriter):
 
         self.dataframe = merged.groupby([lat, lon]).agg(aggs)[newcolumns].sort_values(by=[sector, distance])
         self.data = self.dataframe.values
+        yield self.dataframe
 
     def calculateRisks(self, pollutant_name, conc):
         URE = None
@@ -73,7 +76,7 @@ class RingSummaryChronic(CsvWriter):
             if row.size == 0:
                 msg = 'Could not find pollutant ' + pollutant_name + ' in the haplib!'
                 Logger.logMessage(msg)
-                Logger.log(msg, self.model.haplib.dataframe, False)
+                # Logger.log(msg, self.model.haplib.dataframe, False)
                 URE = 0
                 RFC = 0
             else:
