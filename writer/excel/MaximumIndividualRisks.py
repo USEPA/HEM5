@@ -116,16 +116,17 @@ class MaximumIndividualRisks(ExcelWriter):
         return [mr_parameter, mr_value, mr_value_rnd, mr_value_sci, mr_pop, mr_dist, mr_angle, mr_elev,
                mr_hill, mr_fips, mr_block, mr_utme, mr_utmn, mr_lat, mr_lon, mr_rectype, mr_notes]
               
-        
-    def calculateOutputs(self):
+
+    def getHeader(self):
+        return ['Parameter', 'Value', 'Value rounded', 'Value scientific notation', 'Population', 'Distance (m)',
+                'Angle (from north)', 'Elevation (m)', 'Hill height (m)', 'FIPs', 'Block',
+                'UTM easting', 'UTM northing', 'Latitude', 'Longitude', 'Receptor type', 'Notes']
+
+    def generateOutputs(self):
         """
         Find maximum risk/HI. First look at populated receptors then at polar receptors. 
         Also set self.headers and self.data.
         """
-        self.headers = ['Parameter', 'Value', 'Value rounded', 'Value scientific notation', 'Population', 'Distance (m)',
-                        'Angle (from north)', 'Elevation (m)', 'Hill height (m)', 'FIPs', 'Block',
-                        'UTM easting', 'UTM northing', 'Latitude', 'Longitude', 'Receptor type', 'Notes']
-
 
         #construct dataframe that indicates if specific HI is present at the facility
         labels = ["Parmname", "Parmvar", "Status"]
@@ -369,3 +370,4 @@ class MaximumIndividualRisks(ExcelWriter):
 
         self.dataframe = maxrisk_df
         self.data = self.dataframe.values
+        yield self.dataframe

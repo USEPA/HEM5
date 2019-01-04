@@ -26,13 +26,15 @@ class RiskBreakdown(ExcelWriter):
         self.organCache = {}
 
 
-    def calculateOutputs(self):
+    def getHeader(self):
+        return ['Site type', 'Parameter', 'Source ID', 'Pollutant', 'Emission type', 'Value', 'Value rounded',
+                'Conc (µg/m3)', 'Conc rounded (µg/m3)', 'Emissions (tpy)',
+                'URE 1/(µg/m3)', 'RFc (mg/m3)']
+
+    def generateOutputs(self):
         """
         Compute the sourceid and pollutant breakdown of each maximum risk and HI location.
         """
-        self.headers = ['Site type', 'Parameter', 'Source ID', 'Pollutant', 'Emission type', 'Value', 'Value rounded',
-                        'Conc (µg/m3)', 'Conc rounded (µg/m3)', 'Emissions (tpy)',
-                        'URE 1/(µg/m3)', 'RFc (mg/m3)']
 
         # Dictionary for mapping HI name to position in the target organ list
         self.hidict = {"Respiratory HI":2, "Liver HI":3, "Neurological HI":4,
@@ -68,7 +70,7 @@ class RiskBreakdown(ExcelWriter):
                     concdata = self.model.all_inner_receptors_df[[lat,lon,source_id,pollutant,ems_type,conc]] \
                                                                 [(self.model.all_inner_receptors_df[lat]==row[lat]) & 
                                                                 (self.model.all_inner_receptors_df[lon]==row[lon])]
-                elif row["Notes"] == "Polar":
+                elif row[notes] == "Polar":
                     concdata = self.model.all_polar_receptors_df[[lat,lon,source_id,pollutant,ems_type,conc]] \
                                                                 [(self.model.all_polar_receptors_df[lat]==row[lat]) & 
                                                                  (self.model.all_polar_receptors_df[lon]==row[lon])]
@@ -87,10 +89,10 @@ class RiskBreakdown(ExcelWriter):
                                                               
                 # compute the value column (risk or HI)
                 if row[parameter] == "Cancer risk":
-                    bkdndata[value] = bkdndata.apply(lambda bkdnrow: self.calculateRisks(bkdnrow["pollutant"], 
+                    bkdndata[value] = bkdndata.apply(lambda bkdnrow: self.calculateRisks(bkdnrow[pollutant],
                                         bkdnrow[conc], "cancer"), axis=1)
                 else:
-                    bkdndata[value] = bkdndata.apply(lambda bkdnrow: self.calculateRisks(bkdnrow["pollutant"], 
+                    bkdndata[value] = bkdndata.apply(lambda bkdnrow: self.calculateRisks(bkdnrow[pollutant],
                                         bkdnrow[conc], row[parameter]), axis=1)
                 
                 # set the rounded value column
@@ -217,7 +219,9 @@ class RiskBreakdown(ExcelWriter):
         riskbkdn_df = riskbkdn_df[columns]
 
         # Done
-        self.data = riskbkdn_df.values
+        self.dataframe = riskbkdn_df
+        self.data = self.dataframe.values
+        yield self.dataframe
 
         
     def calculateRisks(self, pollutant_name, conc, risktype):
@@ -253,7 +257,7 @@ class RiskBreakdown(ExcelWriter):
             if row.size == 0:
                 msg = 'Could not find pollutant ' + pollutant_name + ' in the haplib!'
                 Logger.logMessage(msg)
-                Logger.log(msg, self.model.haplib.dataframe, False)
+                # Logger.log(msg, self.model.haplib.dataframe, False)
                 URE = 0
                 RFC = 0
             else:

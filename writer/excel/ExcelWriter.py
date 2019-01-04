@@ -1,4 +1,6 @@
 import xlsxwriter
+from openpyxl import load_workbook
+import pandas as pd
 
 from writer.Writer import Writer
 
@@ -10,37 +12,35 @@ class ExcelWriter(Writer):
         self.model = model
         self.plot_df = plot_df
 
-    def writeToFile(self):
+    def appendToFile(self, dataframe):
+        data = dataframe.values
+        book = load_workbook(self.filename)
+        writer = pd.ExcelWriter(self.filename, engine='openpyxl')
+        writer.book = book
+        writer.sheets = dict((ws.title, ws) for ws in book.worksheets)
 
-        if self.filename is None:
-            raise RuntimeError("No file name set. Cannot write to file.")
+        ws = writer.book["Sheet1"]
+        startrow = ws.max_row
+        for row in range(0, data.shape[0]):
+            for col in range(0, data.shape[1]):
+                value = self.data[row][col]
+                truncated = float('{:6.12}'.format(value)) if isinstance(value, float) else value
+                ws.cell(row=startrow + row+1, column=col+1).value = truncated
 
+        writer.save()
+
+    def writeHeader(self):
+        """
+         Write the header (column names) in the given Excel worksheet.
+        """
         workbook = xlsxwriter.Workbook(self.filename, {'constant_memory': True})
-
         worksheet = workbook.add_worksheet()
 
-        self.write_header(worksheet)
-        self.write_data(worksheet)
+        headers = self.getHeader()
+        for i in range(0, len(headers)):
+            worksheet.write(0, i, headers[i])
 
         workbook.close()
 
-    def write_header(self, worksheet):
-        """
-         Write the header (column names) in the given Excel worksheet.
-
-         :param str worksheet: An Excel worksheet, created by xlsxwriter
-         :param str[] headers: An array of column header names
-         :return: void
-        """
-
-        for i in range(0, len(self.headers)):
-            worksheet.write(0, i, self.headers[i])
-
-    def write_data(self, worksheet):
-
-        # With 'constant_memory' you must write data in row by column order.
-        for row in range(0, self.data.shape[0]):
-            for col in range(0, self.data.shape[1]):
-                value = self.data[row][col]
-                truncated = float('{:6.12}'.format(value)) if isinstance(value, float) else value
-                worksheet.write(row + 1, col, truncated)
+    def analyze(self, data):
+        pass

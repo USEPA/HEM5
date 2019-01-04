@@ -12,13 +12,15 @@ class Temporal(CsvWriter):
 
         self.filename = os.path.join(targetDir, facilityId + "_temporal.csv")
 
-    def calculateOutputs(self):
+    def getHeader(self):
+        return ['Fips', 'Block', 'Population', 'Lat', 'Lon', 'Pollutant', 'Emis_type', 'Overlap', 'Modeled',
+                'C_01', 'C_02', 'C_03', 'C_04 ', 'etc, depending on temporal variations selected']
+
+    def generateOutputs(self):
         """
         Do something with the model and plot data, setting self.headers and self.data in the process.
         """
 
-        self.headers = ['Fips', 'Block', 'Population', 'Lat', 'Lon', 'Pollutant', 'Emis_type', 'Overlap', 'Modeled',
-                        'C_01', 'C_02', 'C_03', 'C_04 ', 'etc, depending on temporal variations selected']
-
         # TODO
         self.data = []
+        yield self.dataframe

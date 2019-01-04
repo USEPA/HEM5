@@ -1,6 +1,5 @@
 from abc import abstractmethod, ABC
 
-
 class Writer(ABC):
 
     def __init__(self):
@@ -9,20 +8,34 @@ class Writer(ABC):
         self.headers = None
         self.data = None
         self.dataframe = None
+        self.batchSize = 100000
 
     def write(self):
+        self.writeHeader()
+        for data in self.generateOutputs():
+            if data is not None:
+                self.appendToFile(data)
 
-        self.calculateOutputs()
+                print("data size: " + str(data.size))
 
-        if self.headers is not None and self.data is not None:
-            self.writeToFile()
-        else:
-            raise RuntimeError("Headers and data must be present to write file.")
+                self.analyze(data)
 
     @abstractmethod
-    def calculateOutputs(self):
+    def writeHeader(self):
         pass
 
     @abstractmethod
-    def writeToFile(self):
+    def appendToFile(self):
+        pass
+
+    @abstractmethod
+    def getHeader(self):
+        pass
+
+    @abstractmethod
+    def generateOutputs(self):
+        pass
+
+    @abstractmethod
+    def analyze(self, data):
         pass

@@ -93,10 +93,10 @@ class SingleFacilityRun(unittest.TestCase):
         Verify that the block summary chronic output file is identical to the test fixture.
         """
         for facid in self.testHarness.model.facids:
-            fixture = BlockSummaryChronic("fixtures/output/", facid, None, None)
+            fixture = BlockSummaryChronic("fixtures/output/", facid, None, None, None)
             checksum_expected = self.hashFile(fixture.filename)
 
-            generated = BlockSummaryChronic("output/"+facid, facid, None, None)
+            generated = BlockSummaryChronic("output/"+facid, facid, None, None, None)
             checksum_generated = self.hashFile(generated.filename)
             self.assertEqual(checksum_expected, checksum_generated,
                              "The contents of the output file are inconsistent with the test fixture:" +

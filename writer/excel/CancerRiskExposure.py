@@ -23,9 +23,10 @@ class CancerRiskExposure(ExcelWriter):
         rounded = round(x, sig-int(floor(log10(abs(x))))-1)
         return rounded
 
-    def calculateOutputs(self):
+    def getHeader(self):
+        return ['Level', 'Population']
 
-        self.headers = ['Level', 'Population']
+    def generateOutputs(self):
 
         bucketHeaders = ["Greater than or equal to 1 in 1,000", "Greater than or equal to 1 in 10,000",
                          "Greater than or equal to 1 in 20,000", "Greater than or equal to 1 in 100,000",
@@ -46,3 +47,4 @@ class CancerRiskExposure(ExcelWriter):
 
         self.dataframe = df
         self.data = self.dataframe.values
+        yield self.dataframe

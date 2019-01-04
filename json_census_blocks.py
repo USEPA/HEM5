@@ -349,7 +349,7 @@ def getblocks(cenx, ceny, cenlon, cenlat, utmzone, maxdist, modeldist, sourceloc
     outerblks[utmn] = outerblks[utmn].astype(int)
     outerblks[utmz] = outerblks[utmz].astype(int)
     outerblks[population] = pd.to_numeric(outerblks[population], errors='coerce').astype(int)
-    
+
     return innerblks, outerblks
 
 

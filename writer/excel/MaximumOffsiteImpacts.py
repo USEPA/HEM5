@@ -1,5 +1,5 @@
 import os
-from writer.excel import ExcelWriter
+from writer.excel.ExcelWriter import ExcelWriter
 
 class MaximumOffsiteImpacts(ExcelWriter):
     """
@@ -12,13 +12,16 @@ class MaximumOffsiteImpacts(ExcelWriter):
 
         self.filename = os.path.join(targetDir, facilityId + "_maximum_offsite_impacts.xlsx")
 
-    def calculateOutputs(self):
+    def getHeader(self):
+        return ['Parameter', 'Value', 'Value_rnd', 'Value_sci', 'Population', 'Distance (in meters)',
+                'Angle (from north)', 'Elevation (in meters)', 'Hill Height (in meters)', 'Fips', 'Block',
+                'Utm_east', 'Utm_north', 'Latitude', 'Longitude', 'Rec_type', 'Notes', 'Warning']
+
+    def generateOutputs(self):
         """
         Do something with the model and plot data, setting self.headers and self.data in the process.
         """
-        self.headers = ['Parameter', 'Value', 'Value_rnd', 'Value_sci', 'Population', 'Distance (in meters)',
-                        'Angle (from north)', 'Elevation (in meters)', 'Hill Height (in meters)', 'Fips', 'Block',
-                        'Utm_east', 'Utm_north', 'Latitude', 'Longitude', 'Rec_type', 'Notes', 'Warning']
 
         # TODO
         self.data = []
+        yield self.dataframe
