@@ -106,7 +106,7 @@ class InputChecker():
             else:
                 #get locations and source ids
                 hfids = set(self.model.hapemis.dataframe[fac_id])
-                hsource = set(self.model.hapemis.dataframe[source_id])
+                
                 
    
         try:
@@ -132,7 +132,7 @@ class InputChecker():
              else:
                 #check facility id with emis loc ids
                 efids = set(self.model.emisloc.dataframe[fac_id])
-                esource = set(self.model.emisloc.dataframe[source_id])
+               
                
                 
                 #check source types for optional inputs
@@ -148,7 +148,7 @@ class InputChecker():
                 
            
         
-        #make sure facility id's and emis location id's match
+        #make sure emis locs has facility ids
         if fids.intersection(efids) != fids:   
             logMsg4 = ("The Emissions Locations file is missing one or more" + 
                        " facilities please make sure to upload the correct" + 
@@ -158,8 +158,8 @@ class InputChecker():
             return result
         
         
-        #make sure facility ids and hap emission ids match        
-        if fids.intersection(efids) != hfids:     
+        #make sure hapemis has facility ids      
+        if fids.intersection(hfids) != fids:     
             logMsg5 = ("The HAP Emissions file is missing one or more" + 
                        " facilities please make sure to upload the correct HAP" + 
                        " Emissions file.")
@@ -168,6 +168,11 @@ class InputChecker():
             return result
         
         #make sure source ids match in hap emissions and emissions location
+        #for facilities in faclist file
+        
+        hsource = set(self.model.hapemis.dataframe[self.model.hapemis.dataframe[fac_id].isin(fids.tolist())])
+        esource = set(self.model.emisloc.dataframe[self.model.emisloc.dataframe[fac_id].isin(fids.tolist())])
+        
         if hsource != esource:
             logMsg6 = ("Source ids for Hap Emissions and Emissions Locations" + 
                        " do not match, please upload corresponding files.")
