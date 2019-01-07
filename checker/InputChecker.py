@@ -404,6 +404,7 @@ class InputChecker():
                     result['result'] = logMsg11
                     result['reset'] = 'vapor'
                     
+                else:
                     
                     try:
                         
@@ -421,42 +422,114 @@ class InputChecker():
                     
                     
                     
-                else:
-                    
-                    landids = set(self.model.landuse.dataframe[fac_id])
-                    sids = set(self.model.seasons.dataframe[fac_id])
-                    fids = set(self.model.faclist.dataframe[self.model.faclist.dataframe[phase] == 'V'][fac_id].values)
-                    
-                    if fids.intersection(landids) != fids:
-                        missing = fids - landids
+                    else:
                         
-                        logMsg11b = ("Facilities: " + ",".join(list(missing)) + 
-                                    " are missing land use specifications that" +
-                                    " were indicated in the Facilities list" +
-                                    " Options file")
-            
-                        result['result'] =  logMsg11b
-                        result['reset'] = 'particle'
-                         return result
+                        landids = set(self.model.landuse.dataframe[fac_id])
+                        sids = set(self.model.seasons.dataframe[fac_id])
+                        fids = set(self.model.faclist.dataframe[self.model.faclist.dataframe[phase] == 'V'][fac_id].values)
+                        
+                        if fids.intersection(landids) != fids:
+                            missing = fids - landids
+                            
+                            logMsg11b = ("Facilities: " + ",".join(list(missing)) + 
+                                        " are missing land use specifications that" +
+                                        " were indicated in the Facilities list" +
+                                        " Options file")
+                
+                            result['result'] =  logMsg11b
+                            result['reset'] = 'particle'
+                            return result
                         
                         
-                    if fids.intersection(sids) != fids:
-                        missing = fids - sids
-                        
-                        logMsg12b = ("Facilities: " + ",".join(list(missing)) + 
-                                    " are missing seasonal vegetation " +
-                                    "specifications that were indicated in the "+
-                                    "Facilities List Options file")
-            
-                        result['result'] =  logMsg11b
-                        result['reset'] = 'particle'
-
-                        
-                        return result
+                        if fids.intersection(sids) != fids:
+                            missing = fids - sids
+                            
+                            logMsg12b = ("Facilities: " + ",".join(list(missing)) + 
+                                        " are missing seasonal vegetation " +
+                                        "specifications that were indicated in the "+
+                                        "Facilities List Options file")
+                
+                            result['result'] =  logMsg12b
+                            result['reset'] = 'particle'
+    
+                            
+                            return result
             
             elif option is 'both':
                 
                 
+                
+                vdepo = self.model.faclist.dataframe['vdep'].fillna("").tolist()[0]                       # Vapor Deposition
+                pdepo = self.model.faclist.dataframe['pdep'].fillna("").tolist()[0]                       # Particle Deposition
+                
+                vdepl = self.model.faclist.dataframe['vdepl'].fillna("").tolist()[0]                       # Vapor Depletion
+                pdepl =self.model.faclist.dataframe['pdepl'].fillna("").tolist()[0]
+                
+                no = ['NO', 'no', 'No']    #condition with no 'No's'
+                
+                if (no not in vdepo and no not in pdepo and no not in vdepl and
+                    no not in pdepl):
+                    
+                    
+                    try:
+                    
+                        self.model.partdep.dataframe
+                    
+                    except AttributeError:
+                    
+                        logMsg15 = ("Particle deposition or depletion parameters" +
+                                    " are specified in the Facilities List Options" +
+                                    " file. Please upload a Particle Size File." )
+                        
+                        result['result'] = logMsg15
+                        result['reset'] = 'particle'
+                        return result
+                    
+                    
+                    else:
+                    
+                        try:
+                        
+                            self.model.landuse.dataframe
+                        
+                        except AttributeError:
+                        
+                            logMsg16 = ("Vapor deposition or depletion parameters" +
+                                    " are specified in the Facilities List Options" +
+                                    " file. Please upload a Land Use File." )
+                        
+                            result['result'] = logMsg16
+                            result['reset'] = 'vapor'
+                            return result
+                        
+                            
+                        else:
+                            
+                            try:
+                                
+                                self.model.seasons.dataframe
+                                
+                            except AttributeError:
+                                
+                                logMsg17 = ("Vapor deposition or depletion parameters" +
+                                        " are specified in the Facilities List Options" +
+                                        " file. Please upload a Land Use File." )
+                            
+                                result['result'] = logMsg17
+                                result['reset'] = 'vapor'
+                                return result
+                    
+                            else:
+                                #need to compare
+                                pass
+                            
+                                
+                    
+                    
+                    
+                    
+                
+                #WHAT about both conditions that have a NO on dep or depl?
                 pass
         
         
