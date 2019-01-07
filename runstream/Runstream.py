@@ -37,6 +37,7 @@ class Runstream():
         self.seasons_df = seasons_df
         self.emisvar_df = emisvar_df
         self.gas_params = gas_params
+        self.urban = False
         
         #open file to write
         self.inp_f = open("aermod.inp", "w")
@@ -126,16 +127,16 @@ class Runstream():
         #check if there should be an urban option and set
         else:
             #get shortest distance in innerblks and check for urban population
-            if innerblks != None:
+            if not innerblks.empty:
                 closest = innerblks.nsmallest(1, 'distance')
-                if closest['urban_pop'][0] > 0:
+                if closest['urban_pop'].values[0] > 0:
                     self.urban = True
                     urbanopt = "CO URBANOPT " + str(closest['urban_pop'][0]) + "\n"
                     self.inp_f.write(urbanopt)
                     
             else: #get shortest distance from outerblocks 
                 closest = outerblks.nsmallest(1, 'distance')
-                if closest['urban_pop'][0] > 0:
+                if closest['urban_pop'].values[0] > 0:
                     self.urban = True
                     urbanopt = "CO URBANOPT " + str(closest['urban_pop'][0]) + "\n"
                     self.inp_f.write(urbanopt)
