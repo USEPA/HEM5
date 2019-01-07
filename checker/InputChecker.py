@@ -143,9 +143,16 @@ class InputChecker():
                 if 'B' in self.model.emisloc.dataframe[source_type].tolist():
                     result['dependencies'].append('bouyant')
                     
-                #check for deposition and depletion and pass to dep_check model
+                #check for deposition or depletion
                 
-                
+                if ['B'] in self.model.faclist.dataframe[phase].tolist():
+                    result['dependencies'].append('both')
+                    
+                if ['V'] in self.model.faclist.dataframe[phase].tolist():
+                    result['dependencies'].append('vapor')
+                    
+                if ['P'] in self.model.faclist.dataframe[phase].tolist():
+                    result['dependencies'].append('particle')
            
         
         #make sure emis locs has facility ids
@@ -213,7 +220,7 @@ class InputChecker():
                 
                     #check facility ids in ureceptors 
                     uids = set(self.model.ureceptr.dataframe[fac_id])
-                    fids = set(self.model.faclist.dataframe[fac_id])
+                    fids = set(self.model.faclist.dataframe[self.model.faclist.dataframe[user_rcpt] == 'Y'][fac_id].values)
                     
                     if fids.intersection(uids) != fids:
                         
@@ -248,7 +255,7 @@ class InputChecker():
                     
                     #check facility ids against bouyant line ids
                     bids = set(self.model.multibuoy.dataframe[fac_id])
-                    fids = set(self.model.faclist.dataframe[fac_id])
+                    fids = set(self.model.emisloc.dataframe[self.model.emisloc.dataframe[source_type] == 'B'][fac_id].values)
                     
                     if fids.intersection(bids) != fids:
                         
@@ -278,7 +285,7 @@ class InputChecker():
                     
                     logMsg9 = ("Polyvertex parameters are specified in the " + 
                                " Facilities List Options file, please upload " + 
-                               " polyvertex sources for " )
+                               " polyvertex source file " )
                     
                     
                     result['result'] = logMsg9
@@ -307,6 +314,154 @@ class InputChecker():
                         result['reset'] = 'poly_vertex'
                         return result
                 
+            
+            elif option is 'downwash':
+            
+                try:
+                    
+                    self.model.bldgdw.dataframe
+                    
+                except AttributeError:
+                    
+                    logMsg14 = ("Building downwash parameters are specified in "+
+                                  "the Facilities List Options file, please " +
+                                  "upload a Building Downwash file " )
+                    
+                    result['result'] = logMsg14
+                    result['reset'] = 'bldgdw'
+                    return result
+                
+                
+                else:
+            
+                    dids = set(self.model.bldgdw.dataframe[fac_id])
+                    fids = set(self.model.faclist.dataframe[self.model.faclist.dataframe[bldg_dw] == 'Y'][fac_id].values)
+                    
+                    if fids.intersection(dids) != fids:
+                        
+                        missing = fids - dids
+                        
+                        logMsg14b = ("Facilities: " + ",".join(list(missing)) + 
+                                    " are missing building downash specifications" +
+                                    " that were indicated in the Facilities list" +
+                                    " Options file")
+                    
+                     
+                        result['result'] = logMsg14b
+                        result['reset'] = 'bldgdw'
+                
+                        return result
+                    
+                    
+            
+            elif option is 'particle':
+                
+                
+                try:
+                    
+                    self.model.partdep.dataframe
+                    
+                except AttributeError:
+                    
+                    logMsg10 = ("Particle deposition or depletion parameters" +
+                                " are specified in the Facilities List Options" +
+                                " file. Please upload a Particle Size File." )
+                    
+                    result['result'] = logMsg10
+                    result['reset'] = 'particle'
+                    return result
+                    
+                else:
+                    
+                    partids = set(self.model.partdep.dataframe[fac_id])
+                    fids = set(self.model.faclist.dataframe[self.model.faclist.dataframe[phase] == 'P'][fac_id].values)
+                    
+                    if fids.intersection(partids) != fids:
+                        missing = fids - partids
+                        
+                        logMsg10b = ("Facilities: " + ",".join(list(missing)) + 
+                                    " are missing particle size specifications that" +
+                                    " were indicated in the Facilities list" +
+                                    " Options file")
+            
+                        result['result'] =  logMsg10b
+                        result['reset'] = 'particle'
+                        return result
+            
+            
+            elif option is 'vapor':
+                
+                try:
+                    
+                    self.model.landuse.dataframe
+                    
+                except AttributeError:
+                    
+                    logMsg11 = ("Vapor deposition or depletion parameters" +
+                                " are specified in the Facilities List Options" +
+                                " file. Please upload a Land Use File." )
+                    
+                    result['result'] = logMsg11
+                    result['reset'] = 'vapor'
+                    
+                    
+                    try:
+                        
+                        self.model.seasons.dataframe
+                        
+                    except AttributeError:
+                        
+                        logMsg12 = ("Vapor deposition or depletion parameters" +
+                                " are specified in the Facilities List Options" +
+                                " file. Please upload a Land Use File." )
+                    
+                        result['result'] = logMsg12
+                        result['reset'] = 'vapor'
+                        return result
+                    
+                    
+                    
+                else:
+                    
+                    landids = set(self.model.landuse.dataframe[fac_id])
+                    sids = set(self.model.seasons.dataframe[fac_id])
+                    fids = set(self.model.faclist.dataframe[self.model.faclist.dataframe[phase] == 'V'][fac_id].values)
+                    
+                    if fids.intersection(landids) != fids:
+                        missing = fids - landids
+                        
+                        logMsg11b = ("Facilities: " + ",".join(list(missing)) + 
+                                    " are missing land use specifications that" +
+                                    " were indicated in the Facilities list" +
+                                    " Options file")
+            
+                        result['result'] =  logMsg11b
+                        result['reset'] = 'particle'
+                         return result
+                        
+                        
+                    if fids.intersection(sids) != fids:
+                        missing = fids - sids
+                        
+                        logMsg12b = ("Facilities: " + ",".join(list(missing)) + 
+                                    " are missing seasonal vegetation " +
+                                    "specifications that were indicated in the "+
+                                    "Facilities List Options file")
+            
+                        result['result'] =  logMsg11b
+                        result['reset'] = 'particle'
+
+                        
+                        return result
+            
+            elif option is 'both':
+                
+                
+                pass
+        
+        
+        
+        
         
         result['result'] = 'ready'
         return result

@@ -59,7 +59,7 @@ class Downwash(DependentInputFile):
                             "downwash parameters for " +
                             ", ".join(downwash_unassigned) + " have not" +
                             " been assigned. Please edit the" +
-                            " 'source_type' column in the Emissions Locations" +
+                            " 'bldgdw' column in the Facilities List Option" +
                             " file.")
 
         else:
