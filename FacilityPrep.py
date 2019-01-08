@@ -449,7 +449,7 @@ class FacilityPrep():
                               polyver_df, bldgdw_df, partdia_df, landuse_df,
                               seasons_df, emisvar_df,
                               self.model.gasparams.dataframe)
-        runstream.build_co(runPhase)
+        runstream.build_co(runPhase, self.innerblks, self.outerblks)
         runstream.build_so(runPhase)
         runstream.build_re(self.innerblks, cenx, ceny, polar_df)
         runstream.build_me(cenlat, cenlon)

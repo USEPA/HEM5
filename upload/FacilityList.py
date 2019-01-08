@@ -1,5 +1,6 @@
 from model.Model import *
 from upload.InputFile import InputFile
+from tkinter import messagebox
 
 met_station = 'met_station';
 rural_urban = 'rural_urban';
@@ -46,8 +47,25 @@ class FacilityList(InputFile):
              hours,elev,multiplier,ring1,dep,depl,phase,pdep,pdepl,vdep,vdepl,all_rcpts,
              user_rcpt,bldg_dw,urban_pop,fastall)
         )
+            
+        
+        #checkif urban_rural has a u and if it does if there is a urban pop 
+        #value greater than zero
+        urban = faclist_df[faclist_df[rural_urban] == 'U']
+        missing_pop = [] 
+        for row in urban.iterrows():
+            if row[urban_pop][0] >= 0 or isnan(row[urban_pop][0]):
+                missing_pop.append(row[fac_id][0])
+                
+    
+        if len(missing_pop) == 0: 
 
-        facilityCount = faclist_df[fac_id].count()
-        facilities = "facility" if facilityCount == 1 else "facilities"
-        self.log.append("Uploaded facilities options list file for " + str(facilityCount) + " " + facilities + "\n")
-        self.dataframe = faclist_df
+            facilityCount = faclist_df[fac_id].count()
+            facilities = "facility" if facilityCount == 1 else "facilities"
+            self.log.append("Uploaded facilities options list file for " + str(facilityCount) + " " + facilities + "\n")
+            self.dataframe = faclist_df
+            
+        elif len(missing_pop) > 0:
+             messagebox.showinfo("Missing Urban Population Values", "The urban" + 
+                                 " urban population values for: " + 
+                                 ", ".join(missing_pop))          

@@ -187,7 +187,7 @@ def in_box(modelblks, sourcelocs, modeldist, maxdist, overlap_dist):
         box_y = row[utmn]
         len_x = row["lengthx"]
         len_y = row["lengthy"]
-        angle_val = row[angle]
+        angle_val = row["angle"]
         fringe = modeldist
         outerblks["inbox"], outerblks[overlap] = zip(*outerblks.apply(lambda row: rotatedbox(row[utme],
                  row[utmn], box_x, box_y, len_x, len_y, angle_val, fringe, overlap_dist), axis=1))
