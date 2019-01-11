@@ -4,23 +4,23 @@ Created on Mon Oct 23 12:43:52 2017
 
 @author: dlindsey
 """
-import numpy as np
-import pandas as pd
 
-from log.Logger import Logger
-from writer.csv.AllPolarReceptors import AllPolarReceptors
-from writer.csv.AllInnerReceptors import AllInnerReceptors
+from upload.TargetOrganEndpoints import *
+from upload.UserReceptors import rec_type
+from writer.csv.AllPolarReceptors import *
 from writer.csv.AllOuterReceptors import AllOuterReceptors
 from writer.csv.RingSummaryChronic import RingSummaryChronic
-from writer.csv.BlockSummaryChronic import BlockSummaryChronic
+from writer.csv.BlockSummaryChronic import *
 from writer.excel.CancerRiskExposure import CancerRiskExposure
 from writer.excel.InputSelectionOptions import InputSelectionOptions
-from writer.excel.MaximumIndividualRisks import MaximumIndividualRisks
+from writer.excel.MaximumIndividualRisks import MaximumIndividualRisks, value
+from writer.excel.MaximumOffsiteImpacts import MaximumOffsiteImpacts
 from writer.excel.NoncancerRiskExposure import NoncancerRiskExposure
 from writer.excel.RiskBreakdown import RiskBreakdown
 from writer.excel.Incidence import Incidence
 #from writer.kml.KMLWriter import KMLWriter
-
+from support.UTM import *
+from model.Model import *
 
 class Process_outputs():
     
@@ -31,8 +31,8 @@ class Process_outputs():
         self.outdir = outdir
         self.model = model
         self.runstream = runstream
-        self.model.numsectors = self.model.polargrid["sector"].max()
-        self.model.numrings = self.model.polargrid["ring"].max()
+        self.model.numsectors = self.model.polargrid[sector].max()
+        self.model.numrings = self.model.polargrid[ring].max()
         self.model.innerblks_df = prep.innerblks
         self.model.outerblks_df = prep.outerblks
         self.model.runstream_hapemis = runstream.hapemis
@@ -58,25 +58,25 @@ class Process_outputs():
         specific factors (multipliers) that are defined as (endpoint factor)/rfc.
         """
         
-        riskfacs_df = pd.merge(self.model.haplib.dataframe[["pollutant","ure","rfc"]], self.model.organs.dataframe[["pollutant",
-                          "resp","liver","neuro","dev","reprod","kidney","ocular","endoc","hemato","immune",
-                          "skeletal","spleen","thyroid","wholebod"]], on="pollutant", how="inner")
-        riskfacs_df["resp_fac"] = self.nodivby0(riskfacs_df["resp"], riskfacs_df["rfc"])
-        riskfacs_df["live_fac"] = self.nodivby0(riskfacs_df["liver"], riskfacs_df["rfc"])
-        riskfacs_df["neur_fac"] = self.nodivby0(riskfacs_df["neuro"], riskfacs_df["rfc"])
-        riskfacs_df["deve_fac"] = self.nodivby0(riskfacs_df["dev"], riskfacs_df["rfc"])
-        riskfacs_df["repr_fac"] = self.nodivby0(riskfacs_df["reprod"], riskfacs_df["rfc"])
-        riskfacs_df["kidn_fac"] = self.nodivby0(riskfacs_df["kidney"], riskfacs_df["rfc"])
-        riskfacs_df["ocul_fac"] = self.nodivby0(riskfacs_df["ocular"], riskfacs_df["rfc"])
-        riskfacs_df["endo_fac"] = self.nodivby0(riskfacs_df["endoc"], riskfacs_df["rfc"])
-        riskfacs_df["hema_fac"] = self.nodivby0(riskfacs_df["hemato"], riskfacs_df["rfc"])
-        riskfacs_df["immu_fac"] = self.nodivby0(riskfacs_df["immune"], riskfacs_df["rfc"])
-        riskfacs_df["skel_fac"] = self.nodivby0(riskfacs_df["skeletal"], riskfacs_df["rfc"])
-        riskfacs_df["sple_fac"] = self.nodivby0(riskfacs_df["spleen"], riskfacs_df["rfc"])
-        riskfacs_df["thyr_fac"] = self.nodivby0(riskfacs_df["thyroid"], riskfacs_df["rfc"])
-        riskfacs_df["whol_fac"] = self.nodivby0(riskfacs_df["wholebod"], riskfacs_df["rfc"])
-        riskfacs_df.drop(["resp","liver","neuro","dev","reprod","kidney","ocular","endoc","hemato","immune",
-                          "skeletal","spleen","thyroid","wholebod"], axis=1, inplace=True)
+        riskfacs_df = pd.merge(self.model.haplib.dataframe[[pollutant,ure,rfc]], self.model.organs.dataframe[[pollutant,
+                          resp,liver,neuro,dev,reprod,kidney,ocular,endoc,hemato,immune,
+                          skeletal,spleen,thyroid,wholebod]], on=pollutant, how="inner")
+        riskfacs_df["resp_fac"] = self.nodivby0(riskfacs_df[resp], riskfacs_df[rfc])
+        riskfacs_df["live_fac"] = self.nodivby0(riskfacs_df[liver], riskfacs_df[rfc])
+        riskfacs_df["neur_fac"] = self.nodivby0(riskfacs_df[neuro], riskfacs_df[rfc])
+        riskfacs_df["deve_fac"] = self.nodivby0(riskfacs_df[dev], riskfacs_df[rfc])
+        riskfacs_df["repr_fac"] = self.nodivby0(riskfacs_df[reprod], riskfacs_df[rfc])
+        riskfacs_df["kidn_fac"] = self.nodivby0(riskfacs_df[kidney], riskfacs_df[rfc])
+        riskfacs_df["ocul_fac"] = self.nodivby0(riskfacs_df[ocular], riskfacs_df[rfc])
+        riskfacs_df["endo_fac"] = self.nodivby0(riskfacs_df[endoc], riskfacs_df[rfc])
+        riskfacs_df["hema_fac"] = self.nodivby0(riskfacs_df[hemato], riskfacs_df[rfc])
+        riskfacs_df["immu_fac"] = self.nodivby0(riskfacs_df[immune], riskfacs_df[rfc])
+        riskfacs_df["skel_fac"] = self.nodivby0(riskfacs_df[skeletal], riskfacs_df[rfc])
+        riskfacs_df["sple_fac"] = self.nodivby0(riskfacs_df[spleen], riskfacs_df[rfc])
+        riskfacs_df["thyr_fac"] = self.nodivby0(riskfacs_df[thyroid], riskfacs_df[rfc])
+        riskfacs_df["whol_fac"] = self.nodivby0(riskfacs_df[wholebod], riskfacs_df[rfc])
+        riskfacs_df.drop([resp,liver,neuro,dev,reprod,kidney,ocular,endoc,hemato,immune,
+                          skeletal,spleen,thyroid,wholebod], axis=1, inplace=True)
                
         return riskfacs_df
     
@@ -95,10 +95,10 @@ class Process_outputs():
         # Read plotfile and put into dataframe
         pfile = open("resources/plotfile.plt", "r")
         plot_df = pd.read_table(pfile, delim_whitespace=True, header=None, 
-            names=['utme','utmn','result','elev','hill','flag','avg_time','source_id','num_yrs','net_id'],
+            names=[utme,utmn,result,elev,hill,flag,avg_time,source_id,num_yrs,net_id],
             usecols=[0,1,2,3,4,5,6,7,8,9], 
-            converters={'utme':np.float64,'utmn':np.float64,'result':np.float64,'elev':np.float64,'hill':np.float64
-                   ,'flag':np.float64,'avg_time':np.str,'source_id':np.str,'num_yrs':np.int64,'net_id':np.str},
+            converters={utme:np.float64,utmn:np.float64,result:np.float64,elev:np.float64,hill:np.float64
+                   ,flag:np.float64,avg_time:np.str,source_id:np.str,num_yrs:np.int64,net_id:np.str},
             comment='*')
 
 
@@ -112,7 +112,7 @@ class Process_outputs():
         #----------- create All_Polar_Receptor output file -----------------
         all_polar_receptors = AllPolarReceptors(self.outdir, self.facid, self.model, plot_df)
         all_polar_receptors.write()
-        self.model.all_polar_receptors_df = pd.DataFrame(data=all_polar_receptors.data, columns=all_polar_receptors.headers)
+        self.model.all_polar_receptors_df = all_polar_receptors.dataframe
 
         if self.abort.is_set():
             Logger.logMessage("Terminating output processing...")
@@ -121,7 +121,7 @@ class Process_outputs():
         #----------- create All_Inner_Receptor output file -----------------
         all_inner_receptors = AllInnerReceptors(self.outdir, self.facid, self.model, plot_df)
         all_inner_receptors.write()
-        self.model.all_inner_receptors_df = pd.DataFrame(data=all_inner_receptors.data, columns=all_inner_receptors.headers)
+        self.model.all_inner_receptors_df = all_inner_receptors.dataframe
 
         if self.abort.is_set():
             Logger.logMessage("Terminating output processing...")
@@ -130,7 +130,7 @@ class Process_outputs():
         #----------- create All_Outer_Receptor output file -----------------
         all_outer_receptors = AllOuterReceptors(self.outdir, self.facid, self.model, plot_df)
         all_outer_receptors.write()
-        self.model.all_outer_receptors_df = pd.DataFrame(data=all_outer_receptors.data, columns=all_outer_receptors.headers)
+        self.model.all_outer_receptors_df = all_outer_receptors.dataframe
 
         if self.abort.is_set():
             Logger.logMessage("Terminating output processing...")
@@ -139,7 +139,7 @@ class Process_outputs():
         #----------- create Ring_Summary_Chronic data -----------------
         ring_summary_chronic = RingSummaryChronic(self.outdir, self.facid, self.model, plot_df)
         ring_summary_chronic.calculateOutputs()
-        ring_summary_chronic_df = pd.DataFrame(data=ring_summary_chronic.data, columns=ring_summary_chronic.headers)
+        ring_summary_chronic_df = ring_summary_chronic.dataframe
 
         if self.abort.is_set():
             Logger.logMessage("Terminating output processing...")
@@ -148,19 +148,19 @@ class Process_outputs():
         #----------- create Block_Summary_Chronic data -----------------      
         block_summary_chronic = BlockSummaryChronic(self.outdir, self.facid, self.model, plot_df)
         block_summary_chronic.calculateOutputs()
-        block_summary_chronic_df = pd.DataFrame(data=block_summary_chronic.data, columns=block_summary_chronic.headers)
+        block_summary_chronic_df = block_summary_chronic.dataframe
 
         if self.abort.is_set():
             Logger.logMessage("Terminating output processing...")
             return
 
         # Combine ring summary chronic and block summary chronic dfs into one and assign a receptor type
-        ring_columns = ['lat', 'lon', 'mir', 'hi_resp', 'hi_live', 'hi_neur', 'hi_deve', 'hi_repr', 'hi_kidn', 'hi_ocul', 
-                      'hi_endo', 'hi_hema', 'hi_immu', 'hi_skel', 'hi_sple', 'hi_thyr', 'hi_whol', 'overlap']
-        block_columns = ring_columns + ['rectype']
+        ring_columns = [lat, lon, mir, hi_resp, hi_live, hi_neur, hi_deve, hi_repr, hi_kidn, hi_ocul, 
+                      hi_endo, hi_hema, hi_immu, hi_skel, hi_sple, hi_thyr, hi_whol, overlap]
+        block_columns = ring_columns + [rec_type]
         
         ring_risk = ring_summary_chronic_df[ring_columns]
-        ring_risk['rectype'] = 'P'
+        ring_risk[rec_type] = 'P'
         
         block_risk = block_summary_chronic_df[block_columns]
         self.model.risk_by_latlon = ring_risk.append(block_risk).reset_index(drop=True).infer_objects()
@@ -188,16 +188,22 @@ class Process_outputs():
         #----------- create Maximum_Individual_Risk output file ---------------
         max_indiv_risk = MaximumIndividualRisks(self.outdir, self.facid, self.model, plot_df)
         max_indiv_risk.write()
-        self.model.max_indiv_risk_df = pd.DataFrame(data=max_indiv_risk.data, columns=max_indiv_risk.headers)
+        self.model.max_indiv_risk_df = max_indiv_risk.dataframe
+
+        #----------- create Maximum_Offsite_Impacts output file ---------------
+        inner_recep_risk_df = block_summary_chronic_df[block_summary_chronic_df["rec_type"] == "I"]
+        max_offsite_impacts = MaximumOffsiteImpacts(self.outdir, self.facid, self.model, plot_df,
+                                                    ring_summary_chronic_df, inner_recep_risk_df)
+        max_offsite_impacts.write()
 
 
         # For any rows in ring_summary_chronic and block_summary_chronic where overlap = Y, 
         # replace mir and HI's with values from max_indiv_risk and write data to csv output.
-        replacement = self.model.max_indiv_risk_df["Value"].values
-        ringrows = np.where(ring_summary_chronic_df['overlap'] == 'Y')[0]
+        replacement = self.model.max_indiv_risk_df[value].values
+        ringrows = np.where(ring_summary_chronic_df[overlap] == 'Y')[0]
         if len(ringrows) > 0:
             ring_summary_chronic.data[ringrows, 10:24] = replacement
-        blockrows = np.where(block_summary_chronic_df['overlap'] == 'Y')[0]
+        blockrows = np.where(block_summary_chronic_df[overlap] == 'Y')[0]
         if len(blockrows) > 0:
             block_summary_chronic.data[blockrows, 7:22] = replacement
 

@@ -10,6 +10,9 @@ import pandas as pd
 from tkinter.filedialog import askopenfilename
 from tkinter import messagebox
 
+from upload.EmissionsLocations import source_type
+from upload.FacilityList import *
+
 
 class InputChecker():
     
@@ -65,13 +68,13 @@ class InputChecker():
             
             #extract idsand determine if there are dependent uploads .
             else:
-                fids = set(self.model.faclist.dataframe['fac_id'])
+                fids = set(self.model.faclist.dataframe[fac_id])
         
                 
                 #find dependents and return which ones need to be checked
                 #user receptors
-                if 'Y' in self.model.faclist.dataframe['user_rcpt'].tolist():
-                    result['dependencies'].append('user_rcpt')
+                if 'Y' in self.model.faclist.dataframe[user_rcpt].tolist():
+                    result['dependencies'].append(user_rcpt)
                     
                     
                 #add bldgdw
@@ -102,8 +105,8 @@ class InputChecker():
                 
             else:
                 #get locations and source ids
-                hfids = set(self.model.hapemis.dataframe['fac_id'])
-                hsource = set(self.model.hapemis.dataframe['source_id'])
+                hfids = set(self.model.hapemis.dataframe[fac_id])
+                
                 
    
         try:
@@ -128,24 +131,31 @@ class InputChecker():
                 
              else:
                 #check facility id with emis loc ids
-                efids = set(self.model.emisloc.dataframe['fac_id'])
-                esource = set(self.model.emisloc.dataframe['source_id'])
+                efids = set(self.model.emisloc.dataframe[fac_id])
+               
                
                 
                 #check source types for optional inputs
                 
-                if 'I' in self.model.emisloc.dataframe['source_type'].tolist():
+                if 'I' in self.model.emisloc.dataframe[source_type].tolist():
                     result['dependencies'].append('polyvertex')
                     
-                if 'B' in self.model.emisloc.dataframe['source_type'].tolist():
+                if 'B' in self.model.emisloc.dataframe[source_type].tolist():
                     result['dependencies'].append('bouyant')
                     
-                #check for deposition and depletion and pass to dep_check model
+                #check for deposition or depletion
                 
-                
+                if ['B'] in self.model.faclist.dataframe[phase].tolist():
+                    result['dependencies'].append('both')
+                    
+                if ['V'] in self.model.faclist.dataframe[phase].tolist():
+                    result['dependencies'].append('vapor')
+                    
+                if ['P'] in self.model.faclist.dataframe[phase].tolist():
+                    result['dependencies'].append('particle')
            
         
-        #make sure facility id's and emis location id's match
+        #make sure emis locs has facility ids
         if fids.intersection(efids) != fids:   
             logMsg4 = ("The Emissions Locations file is missing one or more" + 
                        " facilities please make sure to upload the correct" + 
@@ -155,8 +165,8 @@ class InputChecker():
             return result
         
         
-        #make sure facility ids and hap emission ids match        
-        if fids.intersection(efids) != hfids:     
+        #make sure hapemis has facility ids      
+        if fids.intersection(hfids) != fids:     
             logMsg5 = ("The HAP Emissions file is missing one or more" + 
                        " facilities please make sure to upload the correct HAP" + 
                        " Emissions file.")
@@ -165,6 +175,11 @@ class InputChecker():
             return result
         
         #make sure source ids match in hap emissions and emissions location
+        #for facilities in faclist file
+        
+        hsource = set(self.model.hapemis.dataframe[self.model.hapemis.dataframe[fac_id].isin(fids.tolist())])
+        esource = set(self.model.emisloc.dataframe[self.model.emisloc.dataframe[fac_id].isin(fids.tolist())])
+        
         if hsource != esource:
             logMsg6 = ("Source ids for Hap Emissions and Emissions Locations" + 
                        " do not match, please upload corresponding files.")
@@ -204,8 +219,8 @@ class InputChecker():
                 else:
                 
                     #check facility ids in ureceptors 
-                    uids = set(self.model.ureceptr.dataframe['fac_id'])
-                    fids = set(self.model.faclist.dataframe['fac_id'])
+                    uids = set(self.model.ureceptr.dataframe[fac_id])
+                    fids = set(self.model.faclist.dataframe[self.model.faclist.dataframe[user_rcpt] == 'Y'][fac_id].values)
                     
                     if fids.intersection(uids) != fids:
                         
@@ -239,8 +254,8 @@ class InputChecker():
                 else:
                     
                     #check facility ids against bouyant line ids
-                    bids = set(self.model.multibuoy.dataframe['fac_id'])
-                    fids = set(self.model.faclist.dataframe['fac_id'])
+                    bids = set(self.model.multibuoy.dataframe[fac_id])
+                    fids = set(self.model.emisloc.dataframe[self.model.emisloc.dataframe[source_type] == 'B'][fac_id].values)
                     
                     if fids.intersection(bids) != fids:
                         
@@ -270,19 +285,21 @@ class InputChecker():
                     
                     logMsg9 = ("Polyvertex parameters are specified in the " + 
                                " Facilities List Options file, please upload " + 
-                               " polyvertex sources for " )
+                               " polyvertex source file " )
                     
                     
                     result['result'] = logMsg9
                     result['reset'] = 'polyvertex'
                     return result
-                    
+                       
                 
                 else:
                     
                     #check facility ids against polyvertex ids
-                    pids = set(self.model.multipoly.dataframe['fac_id'])
-                    fids = set(self.model.faclist.dataframe['fac_id'])
+                    pids = set(self.model.multipoly.dataframe[fac_id])
+                    fids = set(self.model.emisloc.dataframe[self.model.emisloc.dataframe[source_type] == 'I'][fac_id].values)
+                    print('pids', pids)
+                    print('fids', fids)
                     
                     if fids.intersection(pids) != fids:
                         
@@ -297,6 +314,227 @@ class InputChecker():
                         result['reset'] = 'poly_vertex'
                         return result
                 
+            
+            elif option is 'downwash':
+            
+                try:
+                    
+                    self.model.bldgdw.dataframe
+                    
+                except AttributeError:
+                    
+                    logMsg14 = ("Building downwash parameters are specified in "+
+                                  "the Facilities List Options file, please " +
+                                  "upload a Building Downwash file " )
+                    
+                    result['result'] = logMsg14
+                    result['reset'] = 'bldgdw'
+                    return result
+                
+                
+                else:
+            
+                    dids = set(self.model.bldgdw.dataframe[fac_id])
+                    fids = set(self.model.faclist.dataframe[self.model.faclist.dataframe[bldg_dw] == 'Y'][fac_id].values)
+                    
+                    if fids.intersection(dids) != fids:
+                        
+                        missing = fids - dids
+                        
+                        logMsg14b = ("Facilities: " + ",".join(list(missing)) + 
+                                    " are missing building downash specifications" +
+                                    " that were indicated in the Facilities list" +
+                                    " Options file")
+                    
+                     
+                        result['result'] = logMsg14b
+                        result['reset'] = 'bldgdw'
+                
+                        return result
+                    
+                    
+            
+            elif option is 'particle':
+                
+                
+                try:
+                    
+                    self.model.partdep.dataframe
+                    
+                except AttributeError:
+                    
+                    logMsg10 = ("Particle deposition or depletion parameters" +
+                                " are specified in the Facilities List Options" +
+                                " file. Please upload a Particle Size File." )
+                    
+                    result['result'] = logMsg10
+                    result['reset'] = 'particle'
+                    return result
+                    
+                else:
+                    
+                    partids = set(self.model.partdep.dataframe[fac_id])
+                    fids = set(self.model.faclist.dataframe[self.model.faclist.dataframe[phase] == 'P'][fac_id].values)
+                    
+                    if fids.intersection(partids) != fids:
+                        missing = fids - partids
+                        
+                        logMsg10b = ("Facilities: " + ",".join(list(missing)) + 
+                                    " are missing particle size specifications that" +
+                                    " were indicated in the Facilities list" +
+                                    " Options file")
+            
+                        result['result'] =  logMsg10b
+                        result['reset'] = 'particle'
+                        return result
+            
+            
+            elif option is 'vapor':
+                
+                try:
+                    
+                    self.model.landuse.dataframe
+                    
+                except AttributeError:
+                    
+                    logMsg11 = ("Vapor deposition or depletion parameters" +
+                                " are specified in the Facilities List Options" +
+                                " file. Please upload a Land Use File." )
+                    
+                    result['result'] = logMsg11
+                    result['reset'] = 'vapor'
+                    
+                else:
+                    
+                    try:
+                        
+                        self.model.seasons.dataframe
+                        
+                    except AttributeError:
+                        
+                        logMsg12 = ("Vapor deposition or depletion parameters" +
+                                " are specified in the Facilities List Options" +
+                                " file. Please upload a Land Use File." )
+                    
+                        result['result'] = logMsg12
+                        result['reset'] = 'vapor'
+                        return result
+                    
+                    
+                    
+                    else:
+                        
+                        landids = set(self.model.landuse.dataframe[fac_id])
+                        sids = set(self.model.seasons.dataframe[fac_id])
+                        fids = set(self.model.faclist.dataframe[self.model.faclist.dataframe[phase] == 'V'][fac_id].values)
+                        
+                        if fids.intersection(landids) != fids:
+                            missing = fids - landids
+                            
+                            logMsg11b = ("Facilities: " + ",".join(list(missing)) + 
+                                        " are missing land use specifications that" +
+                                        " were indicated in the Facilities list" +
+                                        " Options file")
+                
+                            result['result'] =  logMsg11b
+                            result['reset'] = 'particle'
+                            return result
+                        
+                        
+                        if fids.intersection(sids) != fids:
+                            missing = fids - sids
+                            
+                            logMsg12b = ("Facilities: " + ",".join(list(missing)) + 
+                                        " are missing seasonal vegetation " +
+                                        "specifications that were indicated in the "+
+                                        "Facilities List Options file")
+                
+                            result['result'] =  logMsg12b
+                            result['reset'] = 'particle'
+    
+                            
+                            return result
+            
+            elif option is 'both':
+                
+                
+                
+                vdepo = self.model.faclist.dataframe['vdep'].fillna("").tolist()[0]                       # Vapor Deposition
+                pdepo = self.model.faclist.dataframe['pdep'].fillna("").tolist()[0]                       # Particle Deposition
+                
+                vdepl = self.model.faclist.dataframe['vdepl'].fillna("").tolist()[0]                       # Vapor Depletion
+                pdepl =self.model.faclist.dataframe['pdepl'].fillna("").tolist()[0]
+                
+                no = ['NO', 'no', 'No']    #condition with no 'No's'
+                
+                if (no not in vdepo and no not in pdepo and no not in vdepl and
+                    no not in pdepl):
+                    
+                    
+                    try:
+                    
+                        self.model.partdep.dataframe
+                    
+                    except AttributeError:
+                    
+                        logMsg15 = ("Particle deposition or depletion parameters" +
+                                    " are specified in the Facilities List Options" +
+                                    " file. Please upload a Particle Size File." )
+                        
+                        result['result'] = logMsg15
+                        result['reset'] = 'particle'
+                        return result
+                    
+                    
+                    else:
+                    
+                        try:
+                        
+                            self.model.landuse.dataframe
+                        
+                        except AttributeError:
+                        
+                            logMsg16 = ("Vapor deposition or depletion parameters" +
+                                    " are specified in the Facilities List Options" +
+                                    " file. Please upload a Land Use File." )
+                        
+                            result['result'] = logMsg16
+                            result['reset'] = 'vapor'
+                            return result
+                        
+                            
+                        else:
+                            
+                            try:
+                                
+                                self.model.seasons.dataframe
+                                
+                            except AttributeError:
+                                
+                                logMsg17 = ("Vapor deposition or depletion parameters" +
+                                        " are specified in the Facilities List Options" +
+                                        " file. Please upload a Land Use File." )
+                            
+                                result['result'] = logMsg17
+                                result['reset'] = 'vapor'
+                                return result
+                    
+                            else:
+                                #need to compare
+                                pass
+                            
+                                
+                    
+                    
+                    
+                    
+                
+                #WHAT about both conditions that have a NO on dep or depl?
+                pass
+        
+        
+        
+        
         
         result['result'] = 'ready'
         return result

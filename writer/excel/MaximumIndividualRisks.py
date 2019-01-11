@@ -1,8 +1,18 @@
-import os
+from upload.UserReceptors import rec_type
+from writer.csv.BlockSummaryChronic import mir
+from writer.csv.AllInnerReceptors import *
 from writer.excel.ExcelWriter import ExcelWriter
+from FacilityPrep import *
 import pandas as pd
 import numpy as np
 from math import log10, floor
+from model.Model import *
+
+parameter = 'parameter';
+value = 'value';
+value_rnd = 'value_rnd';
+value_sci = 'value_sci';
+notes = 'notes';
 
 class MaximumIndividualRisks(ExcelWriter):
     """
@@ -26,80 +36,84 @@ class MaximumIndividualRisks(ExcelWriter):
     
     def calcHI(self, hiname, hivar):
         mr_parameter = hiname
-        io_idx = self.model.risk_by_latlon[self.model.risk_by_latlon["rectype"] != "P"][hivar].idxmax()
-        mr_lat = float(self.model.risk_by_latlon["lat"].loc[io_idx])
-        mr_lon = float(self.model.risk_by_latlon["lon"].loc[io_idx])
-        if self.model.risk_by_latlon["overlap"].loc[io_idx] == "N":
+        io_idx = self.model.risk_by_latlon[self.model.risk_by_latlon[rec_type] != "P"][hivar].idxmax()
+        mr_lat = float(self.model.risk_by_latlon[lat].loc[io_idx])
+        mr_lon = float(self.model.risk_by_latlon[lon].loc[io_idx])
+        if self.model.risk_by_latlon[overlap].loc[io_idx] == "N":
             #not overlapped
             mr_value = self.model.risk_by_latlon[hivar].loc[io_idx]
             mr_value_sci = format(mr_value, ".1e")
+            # TODO keep 2 significant figures for rounded value
+            #mr_value_rnd = round(mr_value, -int(floor(log10(mr_value))) + 1) if mr_value > 0 else 0
             mr_value_rnd = round(mr_value, -int(floor(log10(abs(mr_value))))) if mr_value > 0 else 0
-            if self.model.risk_by_latlon["rectype"].loc[io_idx] == "I":
-                mr_pop = self.model.innerblks_df[(self.model.innerblks_df["LON"] == mr_lon) & (self.model.innerblks_df["LAT"] == mr_lat)]["POPULATION"].values[0]
-                mr_dist = self.model.innerblks_df[(self.model.innerblks_df["LON"] == mr_lon) & (self.model.innerblks_df["LAT"] == mr_lat)]["DISTANCE"].values[0]
-                mr_angle = self.model.innerblks_df[(self.model.innerblks_df["LON"] == mr_lon) & (self.model.innerblks_df["LAT"] == mr_lat)]["ANGLE"].values[0]
-                mr_elev = self.model.innerblks_df[(self.model.innerblks_df["LON"] == mr_lon) & (self.model.innerblks_df["LAT"] == mr_lat)]["ELEV"].values[0]
-                mr_hill = self.model.innerblks_df[(self.model.innerblks_df["LON"] == mr_lon) & (self.model.innerblks_df["LAT"] == mr_lat)]["HILL"].values[0]
-                mr_fips = self.model.innerblks_df[(self.model.innerblks_df["LON"] == mr_lon) & (self.model.innerblks_df["LAT"] == mr_lat)]["FIPS"].values[0]
-                mr_block = self.model.innerblks_df[(self.model.innerblks_df["LON"] == mr_lon) & (self.model.innerblks_df["LAT"] == mr_lat)]["IDMARPLOT"].values[0][-10:]
-                mr_utme = self.model.innerblks_df[(self.model.innerblks_df["LON"] == mr_lon) & (self.model.innerblks_df["LAT"] == mr_lat)]["utme"].values[0]
-                mr_utmn = self.model.innerblks_df[(self.model.innerblks_df["LON"] == mr_lon) & (self.model.innerblks_df["LAT"] == mr_lat)]["utmn"].values[0]
+            if self.model.risk_by_latlon[rec_type].loc[io_idx] == "I":
+                mr_pop = self.model.innerblks_df[(self.model.innerblks_df[lon] == mr_lon) & (self.model.innerblks_df[lat] == mr_lat)][population].values[0]
+                mr_dist = self.model.innerblks_df[(self.model.innerblks_df[lon] == mr_lon) & (self.model.innerblks_df[lat] == mr_lat)][distance].values[0]
+                mr_angle = self.model.innerblks_df[(self.model.innerblks_df[lon] == mr_lon) & (self.model.innerblks_df[lat] == mr_lat)][angle].values[0]
+                mr_elev = self.model.innerblks_df[(self.model.innerblks_df[lon] == mr_lon) & (self.model.innerblks_df[lat] == mr_lat)][elev].values[0]
+                mr_hill = self.model.innerblks_df[(self.model.innerblks_df[lon] == mr_lon) & (self.model.innerblks_df[lat] == mr_lat)][hill].values[0]
+                mr_fips = self.model.innerblks_df[(self.model.innerblks_df[lon] == mr_lon) & (self.model.innerblks_df[lat] == mr_lat)][fips].values[0]
+                mr_block = self.model.innerblks_df[(self.model.innerblks_df[lon] == mr_lon) & (self.model.innerblks_df[lat] == mr_lat)][idmarplot].values[0][-10:]
+                mr_utme = self.model.innerblks_df[(self.model.innerblks_df[lon] == mr_lon) & (self.model.innerblks_df[lat] == mr_lat)][utme].values[0]
+                mr_utmn = self.model.innerblks_df[(self.model.innerblks_df[lon] == mr_lon) & (self.model.innerblks_df[lat] == mr_lat)][utmn].values[0]
                 mr_rectype = "Census block"
                 mr_notes = "Discrete"
             else:
-                mr_pop = self.model.outerblks_df[(self.model.outerblks_df["LON"] == mr_lon) & (self.model.outerblks_df["LAT"] == mr_lat)]["POPULATION"].values[0]
-                mr_dist = self.model.outerblks_df[(self.model.outerblks_df["LON"] == mr_lon) & (self.model.outerblks_df["LAT"] == mr_lat)]["DISTANCE"].values[0]
-                mr_angle = self.model.outerblks_df[(self.model.outerblks_df["LON"] == mr_lon) & (self.model.outerblks_df["LAT"] == mr_lat)]["ANGLE"].values[0]
-                mr_elev = self.model.outerblks_df[(self.model.outerblks_df["LON"] == mr_lon) & (self.model.outerblks_df["LAT"] == mr_lat)]["ELEV"].values[0]
-                mr_hill = self.model.outerblks_df[(self.model.outerblks_df["LON"] == mr_lon) & (self.model.outerblks_df["LAT"] == mr_lat)]["HILL"].values[0]
-                mr_fips = self.model.outerblks_df[(self.model.outerblks_df["LON"] == mr_lon) & (self.model.outerblks_df["LAT"] == mr_lat)]["FIPS"].values[0]
-                mr_block = self.model.outerblks_df[(self.model.outerblks_df["LON"] == mr_lon) & (self.model.outerblks_df["LAT"] == mr_lat)]["IDMARPLOT"].values[0][-10:]
-                mr_utme = self.model.outerblks_df[(self.model.outerblks_df["LON"] == mr_lon) & (self.model.outerblks_df["LAT"] == mr_lat)]["utme"].values[0]
-                mr_utmn = self.model.outerblks_df[(self.model.outerblks_df["LON"] == mr_lon) & (self.model.outerblks_df["LAT"] == mr_lat)]["utmn"].values[0]
+                mr_pop = self.model.outerblks_df[(self.model.outerblks_df[lon] == mr_lon) & (self.model.outerblks_df[lat] == mr_lat)][population].values[0]
+                mr_dist = self.model.outerblks_df[(self.model.outerblks_df[lon] == mr_lon) & (self.model.outerblks_df[lat] == mr_lat)][distance].values[0]
+                mr_angle = self.model.outerblks_df[(self.model.outerblks_df[lon] == mr_lon) & (self.model.outerblks_df[lat] == mr_lat)][angle].values[0]
+                mr_elev = self.model.outerblks_df[(self.model.outerblks_df[lon] == mr_lon) & (self.model.outerblks_df[lat] == mr_lat)][elev].values[0]
+                mr_hill = self.model.outerblks_df[(self.model.outerblks_df[lon] == mr_lon) & (self.model.outerblks_df[lat] == mr_lat)][hill].values[0]
+                mr_fips = self.model.outerblks_df[(self.model.outerblks_df[lon] == mr_lon) & (self.model.outerblks_df[lat] == mr_lat)][fips].values[0]
+                mr_block = self.model.outerblks_df[(self.model.outerblks_df[lon] == mr_lon) & (self.model.outerblks_df[lat] == mr_lat)][idmarplot].values[0][-10:]
+                mr_utme = self.model.outerblks_df[(self.model.outerblks_df[lon] == mr_lon) & (self.model.outerblks_df[lat] == mr_lat)][utme].values[0]
+                mr_utmn = self.model.outerblks_df[(self.model.outerblks_df[lon] == mr_lon) & (self.model.outerblks_df[lat] == mr_lat)][utmn].values[0]
                 mr_rectype = "Census block"
                 mr_notes = "Interpolated"
         else:
             #overlapped
-            iop_idx = self.model.risk_by_latlon[self.model.risk_by_latlon["overlap"] == "N"][hivar].idxmax()
-            mr_lat = float(self.model.risk_by_latlon["lat"].loc[iop_idx])
-            mr_lon = float(self.model.risk_by_latlon["lon"].loc[iop_idx])
+            iop_idx = self.model.risk_by_latlon[self.model.risk_by_latlon[overlap] == "N"][hivar].idxmax()
+            mr_lat = float(self.model.risk_by_latlon[lat].loc[iop_idx])
+            mr_lon = float(self.model.risk_by_latlon[lon].loc[iop_idx])
             mr_value = self.model.risk_by_latlon[hivar].loc[iop_idx]
             mr_value_sci = format(mr_value, ".1e")
-            mr_value_rnd = round(mr_value, -int(floor(log10(abs(mr_value)))))
-            if self.model.risk_by_latlon["rectype"].loc[io_idx] == "P":
+            # TODO keep 2 significant figures for rounded value
+            #mr_value_rnd = round(mr_value, -int(floor(log10(mr_value))) + 1) if mr_value > 0 else 0
+            mr_value_rnd = round(mr_value, -int(floor(log10(abs(mr_value))))) if mr_value > 0 else 0
+            if self.model.risk_by_latlon[rec_type].loc[io_idx] == "P":
                 mr_pop = 0
-                mr_dist = self.model.polarrecs_df[(self.model.polarrecs_df["lon"] == mr_lon) & (self.model.polarrecs_df["lat"] == mr_lat)]["distance"].values[0]
-                mr_angle = self.model.polarrecs_df[(self.model.polarrecs_df["lon"] == mr_lon) & (self.model.polarrecs_df["lat"] == mr_lat)]["angle"].values[0]
-                mr_elev = self.model.polarrecs_df[(self.model.polarrecs_df["lon"] == mr_lon) & (self.model.polarrecs_df["lat"] == mr_lat)]["elev"].values[0]
-                mr_hill = self.model.polarrecs_df[(self.model.polarrecs_df["lon"] == mr_lon) & (self.model.polarrecs_df["lat"] == mr_lat)]["hill"].values[0]
+                mr_dist = self.model.polarrecs_df[(self.model.polarrecs_df[lon] == mr_lon) & (self.model.polarrecs_df[lat] == mr_lat)][distance].values[0]
+                mr_angle = self.model.polarrecs_df[(self.model.polarrecs_df[lon] == mr_lon) & (self.model.polarrecs_df[lat] == mr_lat)][angle].values[0]
+                mr_elev = self.model.polarrecs_df[(self.model.polarrecs_df[lon] == mr_lon) & (self.model.polarrecs_df[lat] == mr_lat)][elev].values[0]
+                mr_hill = self.model.polarrecs_df[(self.model.polarrecs_df[lon] == mr_lon) & (self.model.polarrecs_df[lat] == mr_lat)][hill].values[0]
                 mr_fips = ""
                 mr_block = ""
-                mr_utme = self.model.polarrecs_df[(self.model.polarrecs_df["lon"] == mr_lon) & (self.model.polarrecs_df["lat"] == mr_lat)]["utme"].values[0]
-                mr_utmn = self.model.polarrecs_df[(self.model.polarrecs_df["lon"] == mr_lon) & (self.model.polarrecs_df["lat"] == mr_lat)]["utmn"].values[0]
+                mr_utme = self.model.polarrecs_df[(self.model.polarrecs_df[lon] == mr_lon) & (self.model.polarrecs_df[lat] == mr_lat)][utme].values[0]
+                mr_utmn = self.model.polarrecs_df[(self.model.polarrecs_df[lon] == mr_lon) & (self.model.polarrecs_df[lat] == mr_lat)][utmn].values[0]
                 mr_rectype = "Polar"
                 mr_notes = "Polar"
-            elif self.model.risk_by_latlon["rectype"].loc[iop_idx] == "O":
-                mr_pop = self.model.outerblks_df[(self.model.outerblks_df["LON"] == mr_lon) & (self.model.outerblks_df["LAT"] == mr_lat)]["POPULATION"].values[0]
-                mr_dist = self.model.outerblks_df[(self.model.outerblks_df["LON"] == mr_lon) & (self.model.outerblks_df["LAT"] == mr_lat)]["DISTANCE"].values[0]
-                mr_angle = self.model.outerblks_df[(self.model.outerblks_df["LON"] == mr_lon) & (self.model.outerblks_df["LAT"] == mr_lat)]["ANGLE"].values[0]
-                mr_elev = self.model.outerblks_df[(self.model.outerblks_df["LON"] == mr_lon) & (self.model.outerblks_df["LAT"] == mr_lat)]["ELEV"].values[0]
-                mr_hill = self.model.outerblks_df[(self.model.outerblks_df["LON"] == mr_lon) & (self.model.outerblks_df["LAT"] == mr_lat)]["HILL"].values[0]
-                mr_fips = self.model.outerblks_df[(self.model.outerblks_df["LON"] == mr_lon) & (self.model.outerblks_df["LAT"] == mr_lat)]["FIPS"].values[0]
-                mr_block = self.model.outerblks_df[(self.model.outerblks_df["LON"] == mr_lon) & (self.model.outerblks_df["LAT"] == mr_lat)]["IDMARPLOT"].values[0][-10:]
-                mr_utme = self.model.outerblks_df[(self.model.outerblks_df["LON"] == mr_lon) & (self.model.outerblks_df["LAT"] == mr_lat)]["utme"].values[0]
-                mr_utmn = self.model.outerblks_df[(self.model.outerblks_df["LON"] == mr_lon) & (self.model.outerblks_df["LAT"] == mr_lat)]["utmn"].values[0]
+            elif self.model.risk_by_latlon[rec_type].loc[iop_idx] == "O":
+                mr_pop = self.model.outerblks_df[(self.model.outerblks_df[lon] == mr_lon) & (self.model.outerblks_df[lat] == mr_lat)][population].values[0]
+                mr_dist = self.model.outerblks_df[(self.model.outerblks_df[lon] == mr_lon) & (self.model.outerblks_df[lat] == mr_lat)][distance].values[0]
+                mr_angle = self.model.outerblks_df[(self.model.outerblks_df[lon] == mr_lon) & (self.model.outerblks_df[lat] == mr_lat)][angle].values[0]
+                mr_elev = self.model.outerblks_df[(self.model.outerblks_df[lon] == mr_lon) & (self.model.outerblks_df[lat] == mr_lat)][elev].values[0]
+                mr_hill = self.model.outerblks_df[(self.model.outerblks_df[lon] == mr_lon) & (self.model.outerblks_df[lat] == mr_lat)][hill].values[0]
+                mr_fips = self.model.outerblks_df[(self.model.outerblks_df[lon] == mr_lon) & (self.model.outerblks_df[lat] == mr_lat)][fips].values[0]
+                mr_block = self.model.outerblks_df[(self.model.outerblks_df[lon] == mr_lon) & (self.model.outerblks_df[lat] == mr_lat)][idmarplot].values[0][-10:]
+                mr_utme = self.model.outerblks_df[(self.model.outerblks_df[lon] == mr_lon) & (self.model.outerblks_df[lat] == mr_lat)][utme].values[0]
+                mr_utmn = self.model.outerblks_df[(self.model.outerblks_df[lon] == mr_lon) & (self.model.outerblks_df[lat] == mr_lat)][utmn].values[0]
                 mr_rectype = "Census block"
                 mr_notes = "Interpolated"
             else:
-                mr_pop = self.model.innerblks_df[(self.model.innerblks_df["LON"] == mr_lon) & (self.model.innerblks_df["LAT"] == mr_lat)]["POPULATION"].values[0]
-                mr_dist = self.model.innerblks_df[(self.model.innerblks_df["LON"] == mr_lon) & (self.model.innerblks_df["LAT"] == mr_lat)]["DISTANCE"].values[0]
-                mr_angle = self.model.innerblks_df[(self.model.innerblks_df["LON"] == mr_lon) & (self.model.innerblks_df["LAT"] == mr_lat)]["ANGLE"].values[0]
-                mr_elev = self.model.innerblks_df[(self.model.innerblks_df["LON"] == mr_lon) & (self.model.innerblks_df["LAT"] == mr_lat)]["ELEV"].values[0]
-                mr_hill = self.model.innerblks_df[(self.model.innerblks_df["LON"] == mr_lon) & (self.model.innerblks_df["LAT"] == mr_lat)]["HILL"].values[0]
-                mr_fips = self.model.innerblks_df[(self.model.innerblks_df["LON"] == mr_lon) & (self.model.innerblks_df["LAT"] == mr_lat)]["FIPS"].values[0]
-                mr_block = self.model.innerblks_df[(self.model.innerblks_df["LON"] == mr_lon) & (self.model.innerblks_df["LAT"] == mr_lat)]["IDMARPLOT"].values[0][-10:]
-                mr_utme = self.model.innerblks_df[(self.model.innerblks_df["LON"] == mr_lon) & (self.model.innerblks_df["LAT"] == mr_lat)]["utme"].values[0]
-                mr_utmn = self.model.innerblks_df[(self.model.innerblks_df["LON"] == mr_lon) & (self.model.innerblks_df["LAT"] == mr_lat)]["utmn"].values[0]
+                mr_pop = self.model.innerblks_df[(self.model.innerblks_df[lon] == mr_lon) & (self.model.innerblks_df[lat] == mr_lat)][population].values[0]
+                mr_dist = self.model.innerblks_df[(self.model.innerblks_df[lon] == mr_lon) & (self.model.innerblks_df[lat] == mr_lat)][distance].values[0]
+                mr_angle = self.model.innerblks_df[(self.model.innerblks_df[lon] == mr_lon) & (self.model.innerblks_df[lat] == mr_lat)][angle].values[0]
+                mr_elev = self.model.innerblks_df[(self.model.innerblks_df[lon] == mr_lon) & (self.model.innerblks_df[lat] == mr_lat)][elev].values[0]
+                mr_hill = self.model.innerblks_df[(self.model.innerblks_df[lon] == mr_lon) & (self.model.innerblks_df[lat] == mr_lat)][hill].values[0]
+                mr_fips = self.model.innerblks_df[(self.model.innerblks_df[lon] == mr_lon) & (self.model.innerblks_df[lat] == mr_lat)][fips].values[0]
+                mr_block = self.model.innerblks_df[(self.model.innerblks_df[lon] == mr_lon) & (self.model.innerblks_df[lat] == mr_lat)][idmarplot].values[0][-10:]
+                mr_utme = self.model.innerblks_df[(self.model.innerblks_df[lon] == mr_lon) & (self.model.innerblks_df[lat] == mr_lat)][utme].values[0]
+                mr_utmn = self.model.innerblks_df[(self.model.innerblks_df[lon] == mr_lon) & (self.model.innerblks_df[lat] == mr_lat)][utmn].values[0]
                 mr_rectype = "Census block"
                 mr_notes = "Discrete"
   
@@ -112,14 +126,14 @@ class MaximumIndividualRisks(ExcelWriter):
         Find maximum risk/HI. First look at populated receptors then at polar receptors. 
         Also set self.headers and self.data.
         """
-        self.headers = ['Parameter', 'Value', 'Value_rnd', 'Value_sci', 'Population', 'Distance (in meters)',
-                        'Angle (from north)', 'Elevation (in meters)', 'Hill Height (in meters)', 'Fips', 'Block',
-                        'Utm_east', 'Utm_north', 'Latitude', 'Longitude', 'Rec_type', 'Notes']
+        self.headers = ['Parameter', 'Value', 'Value rounded', 'Value scientific notation', 'Population', 'Distance (m)',
+                        'Angle (from north)', 'Elevation (m)', 'Hill height (m)', 'FIPs', 'Block',
+                        'UTM easting', 'UTM northing', 'Latitude', 'Longitude', 'Receptor type', 'Notes']
 
 
         #construct dataframe that indicates if specific HI is present at the facility
         labels = ["Parmname", "Parmvar", "Status"]
-        pollist = self.model.runstream_hapemis["pollutant"].unique().tolist()
+        pollist = self.model.runstream_hapemis[pollutant].unique().tolist()
         pollist_df = pd.DataFrame({"pollutant":pollist})
         pollist_endpts = pd.merge(pollist_df,self.model.organs.dataframe[["pollutant","resp","liver","neuro","dev",
                                                                       "reprod","kidney","ocular","endoc","hemato",
@@ -228,82 +242,82 @@ class MaximumIndividualRisks(ExcelWriter):
             4) Get information about this receptor
         """
         mr_parameter = "Cancer risk"
-        io_idx = self.model.risk_by_latlon[self.model.risk_by_latlon["rectype"] != "P"]["mir"].idxmax()
-        if self.model.risk_by_latlon["mir"].loc[io_idx] > 0:            
+        io_idx = self.model.risk_by_latlon[self.model.risk_by_latlon[rec_type] != "P"][mir].idxmax()
+        if self.model.risk_by_latlon[mir].loc[io_idx] > 0:            
             #max risk is > 0, do calculations
-            mr_lat = float(self.model.risk_by_latlon["lat"].loc[io_idx])
-            mr_lon = float(self.model.risk_by_latlon["lon"].loc[io_idx])
-            if self.model.risk_by_latlon["overlap"].loc[io_idx] == "N":
+            mr_lat = float(self.model.risk_by_latlon[lat].loc[io_idx])
+            mr_lon = float(self.model.risk_by_latlon[lon].loc[io_idx])
+            if self.model.risk_by_latlon[overlap].loc[io_idx] == "N":
                 #not overlapped
-                mr_value = self.model.risk_by_latlon["mir"].loc[io_idx]
+                mr_value = self.model.risk_by_latlon[mir].loc[io_idx]
                 mr_value_sci = format(mr_value, ".1e")
                 mr_value_rnd = round(mr_value, -int(floor(log10(abs(mr_value))))) if mr_value > 0 else 0
-                if self.model.risk_by_latlon["rectype"].loc[io_idx] == "I":
-                    mr_pop = self.model.innerblks_df[(self.model.innerblks_df["LON"] == mr_lon) & (self.model.innerblks_df["LAT"] == mr_lat)]["POPULATION"].values[0]
-                    mr_dist = self.model.innerblks_df[(self.model.innerblks_df["LON"] == mr_lon) & (self.model.innerblks_df["LAT"] == mr_lat)]["DISTANCE"].values[0]
-                    mr_angle = self.model.innerblks_df[(self.model.innerblks_df["LON"] == mr_lon) & (self.model.innerblks_df["LAT"] == mr_lat)]["ANGLE"].values[0]
-                    mr_elev = self.model.innerblks_df[(self.model.innerblks_df["LON"] == mr_lon) & (self.model.innerblks_df["LAT"] == mr_lat)]["ELEV"].values[0]
-                    mr_hill = self.model.innerblks_df[(self.model.innerblks_df["LON"] == mr_lon) & (self.model.innerblks_df["LAT"] == mr_lat)]["HILL"].values[0]
-                    mr_fips = self.model.innerblks_df[(self.model.innerblks_df["LON"] == mr_lon) & (self.model.innerblks_df["LAT"] == mr_lat)]["FIPS"].values[0]
-                    mr_block = self.model.innerblks_df[(self.model.innerblks_df["LON"] == mr_lon) & (self.model.innerblks_df["LAT"] == mr_lat)]["IDMARPLOT"].values[0][-10:]
-                    mr_utme = self.model.innerblks_df[(self.model.innerblks_df["LON"] == mr_lon) & (self.model.innerblks_df["LAT"] == mr_lat)]["utme"].values[0]
-                    mr_utmn = self.model.innerblks_df[(self.model.innerblks_df["LON"] == mr_lon) & (self.model.innerblks_df["LAT"] == mr_lat)]["utmn"].values[0]
+                if self.model.risk_by_latlon[rec_type].loc[io_idx] == "I":
+                    mr_pop = self.model.innerblks_df[(self.model.innerblks_df[lon] == mr_lon) & (self.model.innerblks_df[lat] == mr_lat)][population].values[0]
+                    mr_dist = self.model.innerblks_df[(self.model.innerblks_df[lon] == mr_lon) & (self.model.innerblks_df[lat] == mr_lat)][distance].values[0]
+                    mr_angle = self.model.innerblks_df[(self.model.innerblks_df[lon] == mr_lon) & (self.model.innerblks_df[lat] == mr_lat)][angle].values[0]
+                    mr_elev = self.model.innerblks_df[(self.model.innerblks_df[lon] == mr_lon) & (self.model.innerblks_df[lat] == mr_lat)][elev].values[0]
+                    mr_hill = self.model.innerblks_df[(self.model.innerblks_df[lon] == mr_lon) & (self.model.innerblks_df[lat] == mr_lat)][hill].values[0]
+                    mr_fips = self.model.innerblks_df[(self.model.innerblks_df[lon] == mr_lon) & (self.model.innerblks_df[lat] == mr_lat)][fips].values[0]
+                    mr_block = self.model.innerblks_df[(self.model.innerblks_df[lon] == mr_lon) & (self.model.innerblks_df[lat] == mr_lat)][idmarplot].values[0][-10:]
+                    mr_utme = self.model.innerblks_df[(self.model.innerblks_df[lon] == mr_lon) & (self.model.innerblks_df[lat] == mr_lat)][utme].values[0]
+                    mr_utmn = self.model.innerblks_df[(self.model.innerblks_df[lon] == mr_lon) & (self.model.innerblks_df[lat] == mr_lat)][utmn].values[0]
                     mr_rectype = "Census block"
                     mr_notes = "Discrete"
                 else:
-                    mr_pop = self.model.outerblks_df[(self.model.outerblks_df["LON"] == mr_lon) & (self.model.outerblks_df["LAT"] == mr_lat)]["POPULATION"].values[0]
-                    mr_dist = self.model.outerblks_df[(self.model.outerblks_df["LON"] == mr_lon) & (self.model.outerblks_df["LAT"] == mr_lat)]["DISTANCE"].values[0]
-                    mr_angle = self.model.outerblks_df[(self.model.outerblks_df["LON"] == mr_lon) & (self.model.outerblks_df["LAT"] == mr_lat)]["ANGLE"].values[0]
-                    mr_elev = self.model.outerblks_df[(self.model.outerblks_df["LON"] == mr_lon) & (self.model.outerblks_df["LAT"] == mr_lat)]["ELEV"].values[0]
-                    mr_hill = self.model.outerblks_df[(self.model.outerblks_df["LON"] == mr_lon) & (self.model.outerblks_df["LAT"] == mr_lat)]["HILL"].values[0]
-                    mr_fips = self.model.outerblks_df[(self.model.outerblks_df["LON"] == mr_lon) & (self.model.outerblks_df["LAT"] == mr_lat)]["FIPS"].values[0]
-                    mr_block = self.model.outerblks_df[(self.model.outerblks_df["LON"] == mr_lon) & (self.model.outerblks_df["LAT"] == mr_lat)]["IDMARPLOT"].values[0][-10:]
-                    mr_utme = self.model.outerblks_df[(self.model.outerblks_df["LON"] == mr_lon) & (self.model.outerblks_df["LAT"] == mr_lat)]["utme"].values[0]
-                    mr_utmn = self.model.outerblks_df[(self.model.outerblks_df["LON"] == mr_lon) & (self.model.outerblks_df["LAT"] == mr_lat)]["utmn"].values[0]
+                    mr_pop = self.model.outerblks_df[(self.model.outerblks_df[lon] == mr_lon) & (self.model.outerblks_df[lat] == mr_lat)][population].values[0]
+                    mr_dist = self.model.outerblks_df[(self.model.outerblks_df[lon] == mr_lon) & (self.model.outerblks_df[lat] == mr_lat)][distance].values[0]
+                    mr_angle = self.model.outerblks_df[(self.model.outerblks_df[lon] == mr_lon) & (self.model.outerblks_df[lat] == mr_lat)][angle].values[0]
+                    mr_elev = self.model.outerblks_df[(self.model.outerblks_df[lon] == mr_lon) & (self.model.outerblks_df[lat] == mr_lat)][elev].values[0]
+                    mr_hill = self.model.outerblks_df[(self.model.outerblks_df[lon] == mr_lon) & (self.model.outerblks_df[lat] == mr_lat)][hill].values[0]
+                    mr_fips = self.model.outerblks_df[(self.model.outerblks_df[lon] == mr_lon) & (self.model.outerblks_df[lat] == mr_lat)][fips].values[0]
+                    mr_block = self.model.outerblks_df[(self.model.outerblks_df[lon] == mr_lon) & (self.model.outerblks_df[lat] == mr_lat)][idmarplot].values[0][-10:]
+                    mr_utme = self.model.outerblks_df[(self.model.outerblks_df[lon] == mr_lon) & (self.model.outerblks_df[lat] == mr_lat)][utme].values[0]
+                    mr_utmn = self.model.outerblks_df[(self.model.outerblks_df[lon] == mr_lon) & (self.model.outerblks_df[lat] == mr_lat)][utmn].values[0]
                     mr_rectype = "Census block"
                     mr_notes = "Interpolated"
             else:
                 #overlapped
-                iop_idx = self.model.risk_by_latlon[self.model.risk_by_latlon["overlap"] == "N"]["mir"].idxmax()
-                mr_lat = float(self.model.risk_by_latlon["lat"].loc[iop_idx])
-                mr_lon = float(self.model.risk_by_latlon["lon"].loc[iop_idx])
-                mr_value = self.model.risk_by_latlon["mir"].loc[iop_idx]
+                iop_idx = self.model.risk_by_latlon[self.model.risk_by_latlon[overlap] == "N"][mir].idxmax()
+                mr_lat = float(self.model.risk_by_latlon[lat].loc[iop_idx])
+                mr_lon = float(self.model.risk_by_latlon[lon].loc[iop_idx])
+                mr_value = self.model.risk_by_latlon[mir].loc[iop_idx]
                 mr_value_sci = format(mr_value, ".1e")
                 mr_value_rnd = round(mr_value, -int(floor(log10(abs(mr_value)))))
-                if self.model.risk_by_latlon["rectype"].loc[io_idx] == "P":
+                if self.model.risk_by_latlon[rec_type].loc[io_idx] == "P":
                     mr_pop = 0
-                    mr_dist = self.model.polarrecs_df[(self.model.polarrecs_df["lon"] == mr_lon) & (self.model.polarrecs_df["lat"] == mr_lat)]["distance"].values[0]
-                    mr_angle = self.model.polarrecs_df[(self.model.polarrecs_df["lon"] == mr_lon) & (self.model.polarrecs_df["lat"] == mr_lat)]["angle"].values[0]
-                    mr_elev = self.model.polarrecs_df[(self.model.polarrecs_df["lon"] == mr_lon) & (self.model.polarrecs_df["lat"] == mr_lat)]["elev"].values[0]
-                    mr_hill = self.model.polarrecs_df[(self.model.polarrecs_df["lon"] == mr_lon) & (self.model.polarrecs_df["lat"] == mr_lat)]["hill"].values[0]
+                    mr_dist = self.model.polarrecs_df[(self.model.polarrecs_df[lon] == mr_lon) & (self.model.polarrecs_df[lat] == mr_lat)][distance].values[0]
+                    mr_angle = self.model.polarrecs_df[(self.model.polarrecs_df[lon] == mr_lon) & (self.model.polarrecs_df[lat] == mr_lat)][angle].values[0]
+                    mr_elev = self.model.polarrecs_df[(self.model.polarrecs_df[lon] == mr_lon) & (self.model.polarrecs_df[lat] == mr_lat)][elev].values[0]
+                    mr_hill = self.model.polarrecs_df[(self.model.polarrecs_df[lon] == mr_lon) & (self.model.polarrecs_df[lat] == mr_lat)][hill].values[0]
                     mr_fips = ""
                     mr_block = ""
-                    mr_utme = self.model.polarrecs_df[(self.model.polarrecs_df["lon"] == mr_lon) & (self.model.polarrecs_df["lat"] == mr_lat)]["utme"].values[0]
-                    mr_utmn = self.model.polarrecs_df[(self.model.polarrecs_df["lon"] == mr_lon) & (self.model.polarrecs_df["lat"] == mr_lat)]["utmn"].values[0]
+                    mr_utme = self.model.polarrecs_df[(self.model.polarrecs_df[lon] == mr_lon) & (self.model.polarrecs_df[lat] == mr_lat)][utme].values[0]
+                    mr_utmn = self.model.polarrecs_df[(self.model.polarrecs_df[lon] == mr_lon) & (self.model.polarrecs_df[lat] == mr_lat)][utmn].values[0]
                     mr_rectype = "Polar"
                     mr_notes = "Polar"
-                elif self.model.risk_by_latlon["rectype"].loc[iop_idx] == "O":
-                    mr_pop = self.model.outerblks_df[(self.model.outerblks_df["LON"] == mr_lon) & (self.model.outerblks_df["LAT"] == mr_lat)]["POPULATION"].values[0]
-                    mr_dist = self.model.outerblks_df[(self.model.outerblks_df["LON"] == mr_lon) & (self.model.outerblks_df["LAT"] == mr_lat)]["DISTANCE"].values[0]
-                    mr_angle = self.model.outerblks_df[(self.model.outerblks_df["LON"] == mr_lon) & (self.model.outerblks_df["LAT"] == mr_lat)]["ANGLE"].values[0]
-                    mr_elev = self.model.outerblks_df[(self.model.outerblks_df["LON"] == mr_lon) & (self.model.outerblks_df["LAT"] == mr_lat)]["ELEV"].values[0]
-                    mr_hill = self.model.outerblks_df[(self.model.outerblks_df["LON"] == mr_lon) & (self.model.outerblks_df["LAT"] == mr_lat)]["HILL"].values[0]
-                    mr_fips = self.model.outerblks_df[(self.model.outerblks_df["LON"] == mr_lon) & (self.model.outerblks_df["LAT"] == mr_lat)]["FIPS"].values[0]
-                    mr_block = self.model.outerblks_df[(self.model.outerblks_df["LON"] == mr_lon) & (self.model.outerblks_df["LAT"] == mr_lat)]["IDMARPLOT"].values[0][-10:]
-                    mr_utme = self.model.outerblks_df[(self.model.outerblks_df["LON"] == mr_lon) & (self.model.outerblks_df["LAT"] == mr_lat)]["utme"].values[0]
-                    mr_utmn = self.model.outerblks_df[(self.model.outerblks_df["LON"] == mr_lon) & (self.model.outerblks_df["LAT"] == mr_lat)]["utmn"].values[0]
+                elif self.model.risk_by_latlon[rec_type].loc[iop_idx] == "O":
+                    mr_pop = self.model.outerblks_df[(self.model.outerblks_df[lon] == mr_lon) & (self.model.outerblks_df[lat] == mr_lat)][population].values[0]
+                    mr_dist = self.model.outerblks_df[(self.model.outerblks_df[lon] == mr_lon) & (self.model.outerblks_df[lat] == mr_lat)][distance].values[0]
+                    mr_angle = self.model.outerblks_df[(self.model.outerblks_df[lon] == mr_lon) & (self.model.outerblks_df[lat] == mr_lat)][angle].values[0]
+                    mr_elev = self.model.outerblks_df[(self.model.outerblks_df[lon] == mr_lon) & (self.model.outerblks_df[lat] == mr_lat)][elev].values[0]
+                    mr_hill = self.model.outerblks_df[(self.model.outerblks_df[lon] == mr_lon) & (self.model.outerblks_df[lat] == mr_lat)][hill].values[0]
+                    mr_fips = self.model.outerblks_df[(self.model.outerblks_df[lon] == mr_lon) & (self.model.outerblks_df[lat] == mr_lat)][fips].values[0]
+                    mr_block = self.model.outerblks_df[(self.model.outerblks_df[lon] == mr_lon) & (self.model.outerblks_df[lat] == mr_lat)][idmarplot].values[0][-10:]
+                    mr_utme = self.model.outerblks_df[(self.model.outerblks_df[lon] == mr_lon) & (self.model.outerblks_df[lat] == mr_lat)][utme].values[0]
+                    mr_utmn = self.model.outerblks_df[(self.model.outerblks_df[lon] == mr_lon) & (self.model.outerblks_df[lat] == mr_lat)][utmn].values[0]
                     mr_rectype = "Census block"
                     mr_notes = "Interpolated"
                 else:
-                    mr_pop = self.model.innerblks_df[(self.model.innerblks_df["LON"] == mr_lon) & (self.model.innerblks_df["LAT"] == mr_lat)]["POPULATION"].values[0]
-                    mr_dist = self.model.innerblks_df[(self.model.innerblks_df["LON"] == mr_lon) & (self.model.innerblks_df["LAT"] == mr_lat)]["DISTANCE"].values[0]
-                    mr_angle = self.model.innerblks_df[(self.model.innerblks_df["LON"] == mr_lon) & (self.model.innerblks_df["LAT"] == mr_lat)]["ANGLE"].values[0]
-                    mr_elev = self.model.innerblks_df[(self.model.innerblks_df["LON"] == mr_lon) & (self.model.innerblks_df["LAT"] == mr_lat)]["ELEV"].values[0]
-                    mr_hill = self.model.innerblks_df[(self.model.innerblks_df["LON"] == mr_lon) & (self.model.innerblks_df["LAT"] == mr_lat)]["HILL"].values[0]
-                    mr_fips = self.model.innerblks_df[(self.model.innerblks_df["LON"] == mr_lon) & (self.model.innerblks_df["LAT"] == mr_lat)]["FIPS"].values[0]
-                    mr_block = self.model.innerblks_df[(self.model.innerblks_df["LON"] == mr_lon) & (self.model.innerblks_df["LAT"] == mr_lat)]["IDMARPLOT"].values[0][-10:]
-                    mr_utme = self.model.innerblks_df[(self.model.innerblks_df["LON"] == mr_lon) & (self.model.innerblks_df["LAT"] == mr_lat)]["utme"].values[0]
-                    mr_utmn = self.model.innerblks_df[(self.model.innerblks_df["LON"] == mr_lon) & (self.model.innerblks_df["LAT"] == mr_lat)]["utmn"].values[0]
+                    mr_pop = self.model.innerblks_df[(self.model.innerblks_df[lon] == mr_lon) & (self.model.innerblks_df[lat] == mr_lat)][population].values[0]
+                    mr_dist = self.model.innerblks_df[(self.model.innerblks_df[lon] == mr_lon) & (self.model.innerblks_df[lat] == mr_lat)][distance].values[0]
+                    mr_angle = self.model.innerblks_df[(self.model.innerblks_df[lon] == mr_lon) & (self.model.innerblks_df[lat] == mr_lat)][angle].values[0]
+                    mr_elev = self.model.innerblks_df[(self.model.innerblks_df[lon] == mr_lon) & (self.model.innerblks_df[lat] == mr_lat)][elev].values[0]
+                    mr_hill = self.model.innerblks_df[(self.model.innerblks_df[lon] == mr_lon) & (self.model.innerblks_df[lat] == mr_lat)][hill].values[0]
+                    mr_fips = self.model.innerblks_df[(self.model.innerblks_df[lon] == mr_lon) & (self.model.innerblks_df[lat] == mr_lat)][fips].values[0]
+                    mr_block = self.model.innerblks_df[(self.model.innerblks_df[lon] == mr_lon) & (self.model.innerblks_df[lat] == mr_lat)][idmarplot].values[0][-10:]
+                    mr_utme = self.model.innerblks_df[(self.model.innerblks_df[lon] == mr_lon) & (self.model.innerblks_df[lat] == mr_lat)][utme].values[0]
+                    mr_utmn = self.model.innerblks_df[(self.model.innerblks_df[lon] == mr_lon) & (self.model.innerblks_df[lat] == mr_lat)][utmn].values[0]
                     mr_rectype = "Census block"
                     mr_notes = "Discrete"
         else:
@@ -352,6 +366,10 @@ class MaximumIndividualRisks(ExcelWriter):
             maxrisklist.append(hirow)
         
 
+        columns = [parameter, value, value_rnd, value_sci, population, distance, angle, elev,
+                   hill, fips, block, utme, utmn, lat, lon, rec_type, notes]
         # Convert maxrisklist list to a dataframe and then output to self.data array
-        maxrisk_df = pd.DataFrame(maxrisklist)
-        self.data = maxrisk_df.values
+        maxrisk_df = pd.DataFrame(maxrisklist, columns=columns)
+
+        self.dataframe = maxrisk_df
+        self.data = self.dataframe.values

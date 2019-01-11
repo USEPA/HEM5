@@ -51,6 +51,10 @@ class Hem4(tk.Frame):
         self.uploader = FileUploader(self.model)
         self.messageQueue = messageQueue
 
+        # Upload the Dose response and Target Organ Endponts libraries
+        self.uploader.uploadLibrary("haplib")
+        self.uploader.uploadLibrary("organs")
+
         # The callback queue is shared by the main thread and the processing thread.
         # The main thread polls it periodically (via the tkinter event loop) to see
         # if the processing thread has completed.
@@ -1073,10 +1077,6 @@ class Hem4(tk.Frame):
         """
 
         self.ready = False
-
-        # Upload the Dose response and Target Organ Endponts libraries
-        self.uploader.uploadLibrary("haplib")
-        self.uploader.uploadLibrary("organs")
 
         #Check inputs
         check_inputs = InputChecker(self.model)

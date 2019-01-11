@@ -1,7 +1,6 @@
-import os
 from math import log10, floor
 from pandas import DataFrame
-
+from writer.csv.BlockSummaryChronic import *
 from writer.excel.ExcelWriter import ExcelWriter
 
 class NoncancerRiskExposure(ExcelWriter):
@@ -24,13 +23,14 @@ class NoncancerRiskExposure(ExcelWriter):
 
     def calculateOutputs(self):
 
-        self.headers = ['level', 'resp_hi', 'liver_hi', 'neuro_hi', 'develop_hi', 'repro_hi', 'kidney_hi', 'endo_hi',
-                        'hema_hi', 'immune_hi', 'skel_hi', 'spleen_hi', 'thyroid_hi', 'wholeb_hi', 'ocular_hi']
+        self.headers = ['Level', 'Respiratory HI', 'Liver HI', 'Neurological HI', 'Developmental HI',
+                        'Reproductive HI', 'Kidney HI', 'Ocular HI', 'Endocrine HI', 'Hematological HI',
+                        'Immunological HI', 'Skeletal HI', 'Spleen HI', 'Thyroid HI', 'Whole body HI']
 
         df = self.block_summary_chronic_df.copy()
         levels =[100, 50, 10, 1.0, 0.5, 0.2]
-        toshis = ['hi_resp', 'hi_live', 'hi_neur', 'hi_deve', 'hi_repr', 'hi_kidn', 'hi_ocul',
-                  'hi_endo', 'hi_hema', 'hi_immu', 'hi_skel', 'hi_sple', 'hi_thyr', 'hi_whol']
+        toshis = [hi_resp, hi_live, hi_neur, hi_deve, hi_repr, hi_kidn, hi_ocul,
+                  hi_endo, hi_hema, hi_immu, hi_skel, hi_sple, hi_thyr, hi_whol]
 
         populations = []
 
@@ -39,9 +39,12 @@ class NoncancerRiskExposure(ExcelWriter):
 
             for toshi in toshis:
                 indexed = df[df.apply(lambda x: (self.round_to_sigfig(x[toshi])) > level, axis=1)]
-                values.append(0 if indexed.empty else indexed['population'].agg('sum'))
+                values.append(0 if indexed.empty else indexed[population].agg('sum'))
 
             populations.append(values)
 
-        result = DataFrame(populations)
-        self.data = result.values
+        df = DataFrame(populations, columns=[level, hi_resp, hi_live, hi_neur, hi_deve, hi_repr, hi_kidn, hi_ocul,
+                                                 hi_endo, hi_hema, hi_immu, hi_skel, hi_sple, hi_thyr, hi_whol])
+
+        self.dataframe = df
+        self.data = self.dataframe.values

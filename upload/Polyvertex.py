@@ -9,6 +9,12 @@ Created on Thu Jul 19 00:34:57 2018
 from upload.DependentInputFile import DependentInputFile
 from tkinter import messagebox
 
+from upload.EmissionsLocations import *
+
+numvert = 'numvert';
+area = 'area';
+fipstct = 'fipstct';
+
 class Polyvertex(DependentInputFile):
 
     def __init__(self, path, dependency):
@@ -20,19 +26,19 @@ class Polyvertex(DependentInputFile):
         emisloc_df = self.dependency;
 
         # Specify dtypes for all fields
-        self.numericColumns = ["lon","lat","numvert","area","fispsct"]
-        self.strColumns = ["fac_id","source_id","location_type","utmzone"]
+        self.numericColumns = [lon,lat,numvert,area,fipstct]
+        self.strColumns = [fac_id,source_id,location_type,utmzone]
        
         #POLYVERTEX excel to dataframe
-        multipoly_df = self.readFromPath(("fac_id","source_id","location_type",
-                                         "lon","lat","utmzone","numvert","area","fispsct"))
+        multipoly_df = self.readFromPath((fac_id,source_id,location_type,
+                                         lon,lat,utmzone,numvert,area,fipstct))
         
         #check for unassigned polyvertex
-        check_poly_assignment = set(multipoly_df["fac_id"])
+        check_poly_assignment = set(multipoly_df[fac_id])
         
         #get polyvertex facility list for check
-        find_p = emisloc_df[emisloc_df['source_type'] == "I"]
-        poly_fac = set(find_p['fac_id'])
+        find_p = emisloc_df[emisloc_df[source_type] == "I"]
+        poly_fac = set(find_p[fac_id])
         
 #        print("poly assignment", check_poly_assignment)
 #        print("poly:", poly_fac)

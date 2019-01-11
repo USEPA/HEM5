@@ -42,7 +42,7 @@ class Logger:
                 pd.set_option('display.width', 1000)
                 pd.set_option('display.max_rows', 100000)
                 pd.set_option('display.max_columns', 200)
-                pd.set_option('precision', 12)
+                pd.set_option('precision', 22)
 
             printer = pprint.PrettyPrinter(indent=4, compact=True, width=1000)
             Logger.logfile.write(printer.pformat(data) + "\n")

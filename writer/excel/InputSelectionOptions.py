@@ -46,12 +46,13 @@ class InputSelectionOptions(ExcelWriter):
         radials = facoptions['radial']
         acute = facoptions['acute']
         fastall = facoptions['fastall']
+        max_rad = facoptions['max_dist']
         facil_number = self.facilityId
 
         # Where oh where do you live?
-        title2, part_vap, dep, depl, model_status, hr_ratio, incl_size, max_rad, min_rad, blk_dist, acute_hours, \
+        title2, part_vap, dep, depl, model_status, hr_ratio, incl_size, min_rad, blk_dist, acute_hours, \
         poll_type, done, num_of_runs, multi_file, all_receptors, pop_size, first_ring, diurnal, time_blks, \
-        seas_var, emis_var, results_temporal, flagpole, bldg_dw_so, hour_emis, prefix, prefixyn, reset = ('?',)*29
+        seas_var, emis_var, results_temporal, flagpole, bldg_dw_so, hour_emis, prefix, prefixyn, reset = ('?',)*28
 
         emis_file = self.model.haplib.path
         hap_emis_file = self.model.hapemis.path

@@ -1,5 +1,10 @@
 from upload.DependentInputFile import DependentInputFile
 from tkinter import messagebox
+from upload.EmissionsLocations import *
+from upload.FacilityList import *
+
+rec_type = 'rec_type';
+rec_id = 'rec_id';
 
 class UserReceptors(DependentInputFile):
 
@@ -12,21 +17,21 @@ class UserReceptors(DependentInputFile):
         faclist_df = self.dependency
 
         # Specify dtypes for all fields
-        self.numericColumns = ["lon", "lat", "elev"]
-        self.strColumns = ["fac_id","loc_type", "utmzone", "rec_type", "rec_id"]
+        self.numericColumns = [lon, lat, elev]
+        self.strColumns = [fac_id,location_type, utmzone, rec_type, rec_id]
 
         ureceptor_df = self.readFromPath(
-            ("fac_id", "loc_type", "lon", "lat", "utmzone", "elev", "rec_type", "rec_id"))
+            (fac_id, location_type, lon, lat, utmzone, elev, rec_type, rec_id))
 
         #check for unassigned user receptors
-        check_receptor_assignment = ureceptor_df["fac_id"]
+        check_receptor_assignment = ureceptor_df[fac_id]
 
         receptor_unassigned = []
         for receptor in check_receptor_assignment:
             #print(receptor)
-            row = faclist_df.loc[faclist_df['fac_id'] == receptor]
+            row = faclist_df.loc[faclist_df[fac_id] == receptor]
             #print(row)
-            check = row['user_rcpt'] == 'Y'
+            check = row[user_rcpt] == 'Y'
             #print(check)
 
             if check is False:

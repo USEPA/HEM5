@@ -53,11 +53,9 @@ class Processor():
             success = False
             try:
                 runner = FacilityRunner(facid, self.model, self.abort)
-                runner.run()
+                runner.setup()
 
-                # increment facility count
-                num += 1
-                success = True
+                
             except Exception as ex:
 
                 self.exception = ex
@@ -67,6 +65,17 @@ class Processor():
                 message = "An error occurred while running a facility:\n" + fullStackInfo
                 print(message)
                 Logger.logMessage(message)
+                
+                
+            else:
+                ## if the try is successful this is where we would update the 
+                # dataframes or cache the last processed facility so that when 
+                # restart we know which faciltiy we want to start on
+                # increment facility count
+                num += 1
+                success = True
+                
+                
 
         Logger.logMessage("HEM4 Modeling Completed. Finished modeling all" +
                           " facilities. Check the log tab for error messages."+
