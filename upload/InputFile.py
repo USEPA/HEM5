@@ -10,6 +10,7 @@ class InputFile(ABC):
         self.log = []
         self.numericColumns = []
         self.strColumns = []
+        self.skiprows = 0
         self.createDataframe()
 
     @abstractmethod
@@ -21,7 +22,7 @@ class InputFile(ABC):
     # values in the resultant dataframe become NaN values. All values will either be strings or float64s.
     def readFromPath(self, colnames):
         with open(self.path, "rb") as f:
-            df = pd.read_excel(f, names=colnames, dtype=str, na_values=[''], keep_default_na=False)
+            df = pd.read_excel(f, skiprows=self.skiprows, names=colnames, dtype=str, na_values=[''], keep_default_na=False)
             df = df.astype(str).applymap(self.convertEmptyToNaN)
             types = self.get_column_types()
             df = df.astype(dtype=types)
