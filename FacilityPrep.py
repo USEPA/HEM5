@@ -248,7 +248,14 @@ class FacilityPrep():
         #%% --- Optional Emissions Variations --------------------------------
 
         if hasattr(self.model.emisvar, "dataframe"):
-            emisvar_df = self.model.emisvar.dataframe.loc[self.model.emisvar.dataframe[fac_id] == facid].copy()
+            
+            if self.model.emisvar[-3:] == 'txt':
+                
+                #if linked file set stored file path 
+                emisvar_df = self.model.emisvar
+                
+            else:
+                emisvar_df = self.model.emisvar.dataframe.loc[self.model.emisvar.dataframe[fac_id] == facid].copy()
 
         else:
             emisvar_df = None
