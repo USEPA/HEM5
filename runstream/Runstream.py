@@ -202,14 +202,14 @@ class Runstream():
     # Checks that may be done outside of this program
     
     #checks for emission variation and extracts source ids from linked txt file
-    if self.emisvar_df is not None and type(self.emisvar_df) == str:
-        so_col = []
-        with open(self.emisvar_df) as fobj:
-            for line in fobj:
-                row = line.split()
-                so_col.append(row[6])
-        
-        var_sources = set(so_col).tolist()
+        if self.emisvar_df is not None and type(self.emisvar_df) == str:
+            so_col = []
+            with open(self.emisvar_df) as fobj:
+                for line in fobj:
+                    row = line.split()
+                    so_col.append(row[6])
+            
+            var_sources = set(so_col).tolist()
 
     
     # Lat/Lon check also needs to be inserted

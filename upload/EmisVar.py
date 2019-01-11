@@ -24,6 +24,7 @@ class EmisVar(DependentInputFile):
         #depending on varation type
         
         #checking to see if variaiton file is excel or txt.
+        #NEED TO MAKE SURE THE LINKED FILE HAS A .txt in it or append
         
         if self.path[-3:] == 'txt': 
             
