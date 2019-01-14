@@ -18,7 +18,7 @@ class Writer(ABC):
 
                 print("data size: " + str(data.size))
 
-                self.analyze(data)
+#                self.analyze(data)
 
     @abstractmethod
     def writeHeader(self):
