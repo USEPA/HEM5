@@ -9,7 +9,7 @@ import os
 
 #get other pages for navigation
 import startpage
-import Hem4Gui_Threaded as hem4
+import hem4Window as hem4
 
 TITLE_FONT= ("Verdana", 12)
 TEXT_FONT = ("Verdana", 10)

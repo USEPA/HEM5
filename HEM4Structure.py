@@ -8,7 +8,7 @@ Created on Thu Nov 29 12:17:06 2018
 import tkinter as tk
 from startpage import StartPage
 from navigation import Navigation
-from Hem4Gui_Threaded import Hem4
+from hem4Window import Hem4
 
 import queue
 messageQueue = queue.Queue()
@@ -34,21 +34,24 @@ class HEM4Structure(tk.Tk):
 
         self.frames = {}
 
-        for F in (StartPage, Navigation):
-
-            frame = F(container, self)
-
-            self.frames[F] = frame
-
-            frame.grid(row=0, column=0, sticky="nsew")
-            
-            if F == Hem4:
+        for F in (StartPage, Navigation, Hem4):
+             if F == Hem4:
                 
                 frame = F(container, self, messageQueue, callbackQueue)
                 
                 self.frames[F] = frame
 
                 frame.grid(row=0, column=0, sticky="nsew")
+             
+             else: 
+
+                frame = F(container, self)
+    
+                self.frames[F] = frame
+    
+                frame.grid(row=0, column=0, sticky="nsew")
+            
+           
 
         self.show_frame(StartPage)
 
