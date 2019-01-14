@@ -1,7 +1,11 @@
 import math
 import re
+import time
 
+import pandas as pd
+import numpy as np
 from pandas import Series
+from functools import reduce
 
 from log import Logger
 from upload.DoseResponse import *
@@ -55,115 +59,206 @@ class AllOuterReceptors(CsvWriter):
         """
         Interpolate polar pollutant concs to outer receptors.
         """
-        # Logger.log("Polar data", self.model.all_polar_receptors_df, False)
 
-        #list of unique source ids/pollutants from polar concs
-        uniqsrcpol = self.model.all_polar_receptors_df[[source_id, pollutant]].drop_duplicates().as_matrix()
-        #        uniqsrcpol = [list(x) for x in set(tuple(x) for x in srcpol)]
+        # Units conversion factor
+        self.cf = 2000*0.4536/3600/8760
 
-        #convert outer blocks dataframe to matrix
-        outerblks_m = self.model.outerblks_df.as_matrix()
-
-        #convert all polar receptors dataframe to matrix
-        all_polar_receptors_m = self.model.all_polar_receptors_df.as_matrix()
-
-
-        dlist = []
         columns = [fips, block, lat, lon, source_id, ems_type, pollutant, conc, aconc, elev, population, overlap]
 
-        print("total size: " + str(outerblks_m.size))
+        #extract polar concs from Aermod plotfile and round the utm coordinates
+        polarplot_df = self.plot_df.query("net_id == 'POLGRID1'").copy()
+        polarplot_df.utme = polarplot_df.utme.round()
+        polarplot_df.utmn = polarplot_df.utmn.round()
 
-        #process each outer block
-        for row in outerblks_m:
-
-            d_fips = row[1]
-            d_block = row[3][6:]
-            d_lat = row[4]
-            d_lon = row[5]
-            d_elev = row[0]
-            d_population = row[7]
-            d_emistype = "C"
-            d_aconc = 0.0
-            d_overlap = row[15]
-
-            #ring and sector of this outer block
-            ring_loc = row[19]
-            cs = row[17]
-
-            #define the four surrounding polar sector/rings for this outer block
-            s = ((row[14] * self.model.numsectors)/360.0 % self.model.numsectors) + 1
-            if int(s) == self.model.numsectors:
-                s1 = self.model.numsectors
-                s2 = 1
-            else:
-                s1 = int(s)
-                s2 = int(s) + 1
-            r1 = int(row[19])
-            if r1 == self.model.numrings:
-                r1 = r1 - 1
-            r2 = int(row[19]) + 1
-            if r2 > self.model.numrings:
-                r2 = self.model.numrings
-
-            s1r1 = np.logical_and(all_polar_receptors_m[:, 6] == s1, all_polar_receptors_m[:,7] == r1 )
-            s1r2 = np.logical_and(all_polar_receptors_m[:, 6] == s1, all_polar_receptors_m[:,7] == r2 )
-            s2r1 = np.logical_and(all_polar_receptors_m[:, 6] == s2, all_polar_receptors_m[:,7] == r1 )
-            s2r2 = np.logical_and(all_polar_receptors_m[:, 6] == s2, all_polar_receptors_m[:,7] == r2 )
-
-            co1 = all_polar_receptors_m[s1r1]
-            co2 = all_polar_receptors_m[s1r2]
-            co3 = all_polar_receptors_m[s2r1]
-            co4 = all_polar_receptors_m[s2r2]
-
-            #full has polar conc records for the 4 surrounding polar receptors
-            full = np.concatenate((co1, co2, co3, co4), axis=0)
+        #array of unique source_id's from polarplot DF
+        srcids = polarplot_df[source_id].unique().tolist()
 
 
-            #work on one source/pollutant at a time
-            for srcpolrow in uniqsrcpol:
+        #merge polarplot DF with polargrid DF and set an index
+        polargrid_concs = pd.merge(polarplot_df[['utme', 'utmn', 'source_id', 'result']],
+                                   self.model.polargrid[['utme', 'utmn', 'sector', 'ring']],
+                                   on=['utme', 'utmn'], how='left')
+        polargrid_concs.set_index(['source_id', 'sector', 'ring'], inplace=True, drop=False)
+        polargrid_concs.sort_index(inplace=True)
+        
+        
+        #subset outer blocks DF to needed columns
+        outerblks_subset = self.model.outerblks_df[[fips, idmarplot, lat, lon, elev, 
+                                                    'angle', population, overlap, 's', 
+                                                    'ring_loc']].copy()
 
-                #subset to specific source id and pollutant
-                sub = full[(full[:,0] == srcpolrow[0]) & (full[:,2] == srcpolrow[1])]
+        #define sector/ring of 4 surrounding polar receptors for each outer receptor and set an index
+        outerblks_subset[["s1", "s2", "r1", "r2"]] = outerblks_subset.apply(self.compute_s1s2r1r2, axis=1)
+        outerblks_subset.set_index(['s1', 's2', 'r1', 'r2'], inplace=True, drop=False)
+        outerblks_subset.sort_index(inplace=True)
 
-                #polar concs of 4 surrounding polar receptors
-                concentration = sub[:, 3]
 
-                d_sourceid = srcpolrow[0]
-                d_pollutant = srcpolrow[1]
+        num_sectors = len(polargrid_concs['sector'].unique())
+        num_rings = len(polargrid_concs['ring'].unique())
 
-                #interpolate
-                if concentration[0] == 0 or concentration[1] == 0:
-                    R_s12 = max(concentration[0], concentration[1])
+          
+        dlist = []
+
+
+        #Process all outer blocks within a box defined by the corners (s1,r1), (s1,r2), (s1,r1), (s2,r2)
+        for isector in range(1, num_sectors):
+            for iring in range(1, num_rings):
+                
+                #timer
+                box_starttime = time.clock()
+                
+                sector1 = isector
+                sector2 = isector + 1
+                ring1 = iring
+                ring2 = iring + 1
+                
+                #If sector1,sector2,ring1,ring2 are in the index of outerblks_subset, then
+                #create a DF of outer blocks within this box. Otherwise go to next box.
+                if (sector1, sector2, ring1, ring2) in outerblks_subset.index:
+                    outerblks_touse = outerblks_subset.loc[sector1, sector2, ring1, ring2]
                 else:
-                    Lnr_s12 = (math.log(concentration[0]) * (int(ring_loc)+1-ring_loc)) + (math.log(concentration[1]) * (ring_loc-int(ring_loc)))
-                    R_s12 = math.exp(Lnr_s12)
+                    continue
+                
+#                outerblks_touse = outerblks_subset.loc[(outerblks_subset['s1'] == sector1) & 
+#                                                       (outerblks_subset['s2'] == sector2) &
+#                                                       (outerblks_subset['r1'] == ring1) &
+#                                                       (outerblks_subset['r2'] == ring2)]
+#                
+#                #if no outer blocks, go to the next box
+#                if outerblks_touse.empty == True:
+#                    continue
+                
+                #work on one source_id at a time to optimize retrieval time
+                for isrc in srcids:
+                    
+#                    #subset the polargrid_concs DF to this source_id and set of sectors and rings
+#                    sectorlist = [sector1, sector2]
+#                    ringlist = [ring1, ring2]
+#                    polargrid_concs_1srcid = polargrid_concs[['sector', 'ring', 'source_id', 'result']].query \
+#                        ('source_id == @isrc and sector == @sectorlist and ring == @ringlist')
+#                    polargrid_concs_1srcid.set_index(['sector', 'ring'], inplace=True)
 
-                if concentration[2] == 0 or concentration[3] == 0:
-                    R_s34 = max(concentration[2], concentration[3] )
-                else:
-                    Lnr_s34 = (math.log(concentration[2]) * (int(ring_loc)+1-ring_loc)) + (math.log(concentration[3] ) * (ring_loc-int(ring_loc)))
-                    R_s34 = math.exp(Lnr_s34)
-
-                d_conc = R_s12*(int(cs)+1-cs) + R_s34*(cs-int(cs))
-
-                datalist = [d_fips, d_block, d_lat, d_lon, d_sourceid, d_emistype, d_pollutant, d_conc,
-                            d_aconc, d_elev, d_population, d_overlap]
-
-                dlist.append(datalist)
-
-            # End of iteration for this outer receptor...time to check if we
-            # need to write a batch.
-            if len(dlist) >= self.batchSize:
-                yield pd.DataFrame(dlist, columns=columns)
-                dlist = []
-
+                    #subset the hapemis DF to this source_id
+                    hapemis_onesrcid = self.model.runstream_hapemis[[source_id,pollutant,emis_tpy]] \
+                                       .loc[self.model.runstream_hapemis[source_id] == isrc]
+                    
+                    #Interpolate polar Aermod concs to each outer block in this box
+                    #Also apply emissions to the interpolated conc
+                    for row_id, row in enumerate(outerblks_touse.values):
+                        d_fips = row[0]
+                        d_block = row[1][6:]
+                        d_lat = row[2]
+                        d_lon = row[3]
+                        d_elev = row[4]
+                        d_population = row[6]
+                        d_aconc = 0.0
+                        d_overlap = row[7]
+                        d_sourceid = isrc
+                        d_emistype = "C"
+                        ring_loc = row[9]
+                        s = row[8]
+                        conc_interp = self.interpolate(polargrid_concs, isrc, sector1, sector2,
+                                                  ring1, ring2, s, ring_loc)
+                        #multiply pollutant specific emissions by interpolated conc
+                        for ipoll in hapemis_onesrcid.itertuples():
+                            d_pollutant = ipoll[2]
+                            d_conc = conc_interp * ipoll[3] * self.cf
+                            datalist = [d_fips, d_block, d_lat, d_lon, d_sourceid, d_emistype, d_pollutant, 
+                                        d_conc, d_aconc, d_elev, d_population, d_overlap]
+                            dlist.append(datalist)
+                
+                #timer
+                box_endtime = time.clock()
+                print("One box took ", box_endtime - box_starttime, " seconds")
+                
+                # End of iteration for this box...time to check if we
+                # need to write a batch.
+                if len(dlist) >= self.batchSize:
+                    yield pd.DataFrame(dlist, columns=columns)
+                    dlist = []
+                
+                
         outerconc_df = pd.DataFrame(dlist, columns=columns)
+
+        #Debug
+        import pdb; pdb.set_trace() 
 
         # dataframe to array
         self.dataframe = outerconc_df
         self.data = self.dataframe.values
         yield self.dataframe
 
+
+    def interpolate(self, pconcs, srcid, s1, s2, r1, r2, s, ring_loc):
+        conc_s1r1 = pconcs['result'].loc[srcid, s1, r1]
+        conc_s1r2 = pconcs['result'].loc[srcid, s1, r2]
+        conc_s2r1 = pconcs['result'].loc[srcid, s2, r1]
+        conc_s2r2 = pconcs['result'].loc[srcid, s2, r2]
+
+#        conc_s1r1 = pconcs['result'].loc[(pconcs['sector']==s1) & (pconcs['ring']==r1)].iat[0]
+#        conc_s1r2 = pconcs['result'].loc[(pconcs['sector']==s1) & (pconcs['ring']==r2)].iat[0]
+#        conc_s2r1 = pconcs['result'].loc[(pconcs['sector']==s2) & (pconcs['ring']==r1)].iat[0]
+#        conc_s2r2 = pconcs['result'].loc[(pconcs['sector']==s2) & (pconcs['ring']==r2)].iat[0]
+        
+        if conc_s1r1 == 0 or conc_s1r2 == 0:
+            R_s12 = max(conc_s1r1, conc_s1r2)
+        else:
+            Lnr_s12 = ((math.log(conc_s1r1) * (int(ring_loc)+1-ring_loc)) + 
+                      (math.log(conc_s1r2) * (ring_loc-int(ring_loc))))
+            R_s12 = math.exp(Lnr_s12)
+
+        if conc_s2r1 == 0 or conc_s2r2 == 0:
+            R_s34 = max(conc_s2r1, conc_s2r2 )
+        else:
+            Lnr_s34 = ((math.log(conc_s2r1) * (int(ring_loc)+1-ring_loc)) + 
+                      (math.log(conc_s2r2) * (ring_loc-int(ring_loc))))
+            R_s34 = math.exp(Lnr_s34)
+
+        interp_conc = R_s12*(int(s)+1-s) + R_s34*(s-int(s))       
+        return interp_conc
+
+
+#    def interpolate(self, conc_s1r1, conc_s2r1, conc_s1r2, conc_s2r2, s, ring_loc):
+#        interp_conc = np.zeros(len(conc_s1r1))
+#        for i in np.arange(len(conc_s1r1)):
+#            if conc_s1r1[i] == 0 or conc_s1r2[i] == 0:
+#                R_s12 = max(conc_s1r1[i], conc_s1r2[i])
+#            else:
+#                Lnr_s12 = ((math.log(conc_s1r1[i]) * (int(ring_loc)+1-ring_loc)) + 
+#                          (math.log(conc_s1r2[i]) * (ring_loc-int(ring_loc))))
+#                R_s12 = math.exp(Lnr_s12)
+#    
+#            if conc_s2r1[i] == 0 or conc_s2r2[i] == 0:
+#                R_s34 = max(conc_s2r1[i], conc_s2r2[i] )
+#            else:
+#                Lnr_s34 = ((math.log(conc_s2r1[i]) * (int(ring_loc)+1-ring_loc)) + 
+#                          (math.log(conc_s2r2[i]) * (ring_loc-int(ring_loc))))
+#                R_s34 = math.exp(Lnr_s34)
+#    
+#            interp_conc[i] = R_s12*(int(s)+1-s) + R_s34*(s-int(s))       
+#        return interp_conc
+    
+        
+
+    def compute_s1s2r1r2(self, row):
+        #define the four surrounding polar sector/rings for this outer block
+        if int(row['s']) == self.model.numsectors:
+            s1 = self.model.numsectors
+            s2 = 1
+        else:
+            s1 = int(row['s'])
+            s2 = int(row['s']) + 1
+        r1 = int(row['ring_loc'])
+        if r1 == self.model.numrings:
+            r1 = r1 - 1
+        r2 = int(row['ring_loc']) + 1
+        if r2 > self.model.numrings:
+            r2 = self.model.numrings
+        return Series((s1, s2, r1, r2))
+        
+        
+        
+        
     def analyze(self, data):
         columns = [pollutant, conc, lat, lon, fips, block, overlap, elev,
            utme, utmn, population, hill]
