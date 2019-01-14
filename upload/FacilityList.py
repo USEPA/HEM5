@@ -1,3 +1,5 @@
+from math import isnan
+
 from model.Model import *
 from upload.InputFile import InputFile
 from tkinter import messagebox
@@ -29,9 +31,12 @@ fastall = 'fastall';
 class FacilityList(InputFile):
     
     def __init__(self, path):
+        self.skiprows = 1
         InputFile.__init__(self, path)
-    
+
     def createDataframe(self):
+
+        self.skiprows = 1
 
         # Specify dtypes for all fields
         self.numericColumns = [max_dist,model_dist,radial,circles,overlap_dist,hours,multiplier,ring1,urban_pop]

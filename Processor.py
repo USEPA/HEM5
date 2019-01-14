@@ -40,6 +40,7 @@ class Processor():
 
         Logger.log("The facilities ids being modeled:", fac_list, False)
 
+        success = False
         for facid in fac_list:
 
             if self.abort.is_set():

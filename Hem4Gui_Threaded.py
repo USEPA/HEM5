@@ -169,6 +169,9 @@ class Hem4(tk.Frame):
         """
         Recursively disable widgets starting from the given root.
         """
+        if not root.winfo_exists():
+            return
+
         state = 'normal' if enabled else 'disabled'
         if "state" in root.keys():
             root.configure(state=state)
@@ -238,7 +241,8 @@ class Hem4(tk.Frame):
 
             self.s12.destroy()
 
-        self.enable_buttons()
+        self.win.after(100, self.enable_buttons)
+        #self.enable_buttons()
 
 #%% Open HEM4 User Guide
     def user_guide(self):
