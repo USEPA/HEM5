@@ -23,7 +23,7 @@ class Runstream():
     def __init__(self, facops_df, emislocs_df, hapemis_df, urecs_df = None, 
                  buoyant_df = None, polyver_df = None, bldgdw_df = None, 
                  partdia_df = None, landuse_df = None, seasons_df = None,
-                 emisvar_df = None, gas_params = None, model_optns):
+                 emisvar_df = None, gas_params = None, model_optns = None):
         
         self.facoptn_df = facops_df
         self.emisloc_df = emislocs_df
