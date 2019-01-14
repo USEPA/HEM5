@@ -23,7 +23,7 @@ class Runstream():
     def __init__(self, facops_df, emislocs_df, hapemis_df, urecs_df = None, 
                  buoyant_df = None, polyver_df = None, bldgdw_df = None, 
                  partdia_df = None, landuse_df = None, seasons_df = None,
-                 emisvar_df = None, gas_params = None):
+                 emisvar_df = None, gas_params = None, model_optns):
         
         self.facoptn_df = facops_df
         self.emisloc_df = emislocs_df
@@ -38,6 +38,7 @@ class Runstream():
         self.emisvar_df = emisvar_df
         self.gas_params = gas_params
         self.urban = False
+        self.model_optns = model_optns
         
         #open file to write
         self.inp_f = open("aermod.inp", "w")
@@ -764,6 +765,9 @@ class Runstream():
         
         if acute == "Y":
             recacu = "OU RECTABLE" + " 1 " + str(self.hours) + " FIRST" + "\n"
+            #set in model options
+            self.model_optns['acute'] = True
+            
         
         ou = "OU FINISHED \n"
         self.inp_f.write(ou)

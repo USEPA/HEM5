@@ -455,7 +455,7 @@ class FacilityPrep():
         runstream = Runstream(facops, emislocs, hapemis, user_recs, buoyant_df,
                               polyver_df, bldgdw_df, partdia_df, landuse_df,
                               seasons_df, emisvar_df,
-                              self.model.gasparams.dataframe)
+                              self.model.gasparams.dataframe, self.model.model_optns)
         runstream.build_co(runPhase, self.innerblks, self.outerblks)
         runstream.build_so(runPhase)
         runstream.build_re(self.innerblks, cenx, ceny, polar_df)

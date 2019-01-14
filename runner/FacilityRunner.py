@@ -27,11 +27,11 @@ class FacilityRunner():
         print('fac list:', fac['phase'].tolist()[0])
 
         if 'nan' in fac['phase'].tolist()[0]:
-            self.model.run_optns['phase'] = None
-            print(self.model.run_optns['phase'])
+            self.model.model_optns['phase'] = None
+            print(self.model.model_optns['phase'])
 
         else:
-            self.model.run_optns['phase'] = fac['phase'].tolist()[0]
+            self.model.model_optns['phase'] = fac['phase'].tolist()[0]
 
 
         #create fac folder
@@ -45,9 +45,9 @@ class FacilityRunner():
         self.prep_fac = self.prep()
 
         #Single run model options
-        if self.model.run_optns['phase'] != 'B':
+        if self.model.model_optns['phase'] != 'B':
 
-            if self.model.run_optns['phase'] != None:
+            if self.model.model_optns['phase'] != None:
                 phase = sort(fac)
 
             else:
