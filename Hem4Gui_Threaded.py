@@ -644,7 +644,8 @@ class Hem4():
         if fullpath is not None:
             self.uploader.uploadDependent("user receptors", fullpath, 
                                           self.model.faclist.dataframe)
-
+            
+            self.model.model_optns['ureceptr'] = True
             # Update the UI
             self.urep_list.set(fullpath)
             [self.scr.insert(tk.INSERT, msg) for msg in self.model.ureceptr.log]
