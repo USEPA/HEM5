@@ -29,6 +29,8 @@ from checker.InputChecker import InputChecker
 from check_dep import check_dep
 from writer.kml.KMLWriter import KMLWriter
 
+
+
 class Hem4(tk.Frame):
     def __init__(self, parent, controller, messageQueue, callbackQueue):
         tk.Frame.__init__(self, parent)
@@ -187,7 +189,7 @@ class Hem4(tk.Frame):
         we don't ever destroy the GUI until all processing has stopped, which means
         it's -really- time to end!
         """
-        self.parent.quit()
+        self.quit()
         self.destroy()
         self.close()
         sys.exit()
@@ -1042,7 +1044,7 @@ class Hem4(tk.Frame):
         executor = ThreadPoolExecutor(max_workers=1)
 
         self.running = True
-        self.disable_buttons()
+        #self.disable_buttons()
         
         self.processor = Processor(self.model, Event())
         future = executor.submit(self.processor.process)

@@ -177,8 +177,15 @@ class InputChecker():
         #make sure source ids match in hap emissions and emissions location
         #for facilities in faclist file
         
-        hsource = set(self.model.hapemis.dataframe[self.model.hapemis.dataframe[fac_id].isin(fids.tolist())])
-        esource = set(self.model.emisloc.dataframe[self.model.emisloc.dataframe[fac_id].isin(fids.tolist())])
+        hfac = set(self.model.hapemis.dataframe[fac_id])
+        efac = set(self.model.emisloc.dataframe[fac_id])
+        
+        in_hap = list(fids.intersection(hfac)) 
+        in_emis = list(fids.intersection(efac))
+        
+        hsource = set(self.model.hapemis.dataframe[self.model.hapemis.dataframe[fac_id].isin(in_hap)][source_id])
+        esource = set(self.model.emisloc.dataframe[self.model.emisloc.dataframe[fac_id].isin(in_emis)][source_id])
+        
         
         if hsource != esource:
             logMsg6 = ("Source ids for Hap Emissions and Emissions Locations" + 
