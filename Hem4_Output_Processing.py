@@ -12,6 +12,7 @@ from writer.csv.AllOuterReceptors import AllOuterReceptors
 from writer.csv.RingSummaryChronic import RingSummaryChronic
 from writer.csv.BlockSummaryChronic import *
 from writer.excel.CancerRiskExposure import CancerRiskExposure
+from writer.excel.FacilityMaxRiskandHI import FacilityMaxRiskandHI
 from writer.excel.InputSelectionOptions import InputSelectionOptions
 from writer.excel.MaximumIndividualRisks import MaximumIndividualRisks, value
 from writer.excel.MaximumOffsiteImpacts import MaximumOffsiteImpacts
@@ -191,6 +192,10 @@ class Process_outputs():
         max_indiv_risk = MaximumIndividualRisks(self.outdir, self.facid, self.model, plot_df)
         max_indiv_risk.write()
         self.model.max_indiv_risk_df = max_indiv_risk.dataframe
+
+        #----------- append to facility max risk output file ------------------
+        # fac_max_risk = FacilityMaxRiskandHI(self.outdir, self.facid, self.model, plot_df)
+        # fac_max_risk.write()
 
         #----------- create Maximum_Offsite_Impacts output file ---------------
         inner_recep_risk_df = block_summary_chronic_df[block_summary_chronic_df["rec_type"] == "I"]
