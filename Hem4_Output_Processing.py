@@ -193,10 +193,6 @@ class Process_outputs():
         max_indiv_risk.write()
         self.model.max_indiv_risk_df = max_indiv_risk.dataframe
 
-        #----------- append to facility max risk output file ------------------
-        # fac_max_risk = FacilityMaxRiskandHI(self.outdir, self.facid, self.model, plot_df)
-        # fac_max_risk.write()
-
         #----------- create Maximum_Offsite_Impacts output file ---------------
         inner_recep_risk_df = block_summary_chronic_df[block_summary_chronic_df["rec_type"] == "I"]
         max_offsite_impacts = MaximumOffsiteImpacts(self.outdir, self.facid, self.model, plot_df,
@@ -226,7 +222,10 @@ class Process_outputs():
         #----------- create Incidence output file ------------------------
         incidence= Incidence(self.outdir, self.facid, self.model, plot_df, all_outer_receptors.outerInc)
         incidence.write()
-      
+
+        #----------- append to facility max risk output file ------------------
+        fac_max_risk = FacilityMaxRiskandHI("output/", self.facid, self.model, plot_df, incidence.dataframe)
+        fac_max_risk.writeWithoutHeader()
 
 #        #create facility kml
 #        Logger.logMessage("Writing KML file for " + self.facid)

@@ -1,3 +1,4 @@
+import os
 import threading
 
 from log import Logger
@@ -97,5 +98,10 @@ class Processor():
 
     def createSourceCategoryOutputs(self):
 
-        fac_max_risk = FacilityMaxRiskandHI(self.outdir, self.facid, self.model, None)
+        #create fac folder
+        output_folder = "output/"
+        if not os.path.exists(output_folder):
+            os.makedirs(output_folder)
+
+        fac_max_risk = FacilityMaxRiskandHI(output_folder, None, self.model, None, None)
         fac_max_risk.write()

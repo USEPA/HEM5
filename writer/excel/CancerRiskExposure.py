@@ -1,3 +1,4 @@
+import math
 import os
 from math import log10, floor
 from pandas import DataFrame
@@ -19,6 +20,9 @@ class CancerRiskExposure(ExcelWriter):
     def round_to_sigfig(self, x, sig=1):
         if x == 0:
             return 0;
+
+        if math.isnan(x):
+            return float('NaN')
 
         rounded = round(x, sig-int(floor(log10(abs(x))))-1)
         return rounded

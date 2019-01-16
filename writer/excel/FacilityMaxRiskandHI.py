@@ -20,14 +20,16 @@ class FacilityMaxRiskandHI(ExcelWriter):
     exposed to different cancer risk levels at each facility.
     """
 
-    def __init__(self, targetDir, facilityId, model, plot_df):
+    def __init__(self, targetDir, facilityId, model, plot_df, incidence):
         ExcelWriter.__init__(self, model, plot_df)
 
         self.filename = os.path.join(targetDir, "SC_max_risk_and_hi.xlsx")
-              
+        self.facilityId = facilityId
+        self.header = None
+        self.incidence = incidence
 
     def getHeader(self):
-        return ['Facil_id', 'mx_can_rsk', 'can_rsk_interpltd', 'can_rcpt_type', 'can_latitude', 'can_longitude',
+        self.header = ['Facil_id', 'mx_can_rsk', 'can_rsk_interpltd', 'can_rcpt_type', 'can_latitude', 'can_longitude',
                 'can_blk', 'respiratory_hi', 'resp_hi_interpltd', 'resp_rcpt_type', 'resp_latitude', 'resp_longitude',
                 'resp_blk', 'liver_hi', 'liver_hi_interpltd', 'liver_rcpt_type', 'liver_blk', 'neurological_hi',
                 'neuro_hi_interpltd', 'neuro_rcpt_type', 'neuro_latitude', 'neuro_longitude', 'neuro_blk',
@@ -41,18 +43,49 @@ class FacilityMaxRiskandHI(ExcelWriter):
                 'thyroid_hi_interptd', 'thyroid_rcpt_type', 'thyroid_blk', 'whole_body_hi', 'whole_hi_interptd',
                 'whole_rcpt_type', 'whole_blk', 'pop_overlp', 'incidence', 'metname', 'km_to_metstation',
                 'fac_center_latitude', 'fac_center_longitude', 'rural_urban']
+        return self.header
+
+    def writeWithoutHeader(self):
+        for data in self.generateOutputs():
+            if data is not None:
+                self.appendToFile(data)
 
     def generateOutputs(self):
 
         # Simply take the indiv max risks data frame, do some gymnastics, and yield it as the next
         # record to be appended.
-        facrisk = pd.DataFrame()
+        facrisk_df = pd.DataFrame()
 
-        if hasattr(self.model, 'max_indiv_risk_df'):
+        if self.model.max_indiv_risk_df is not None:
             maxrisk = self.model.max_indiv_risk_df
-            #facrisk = ...
+            risklist = []
+            riskrow = [self.facilityId]
+            for i in range(0,15):
+                row = maxrisk.iloc[i]
+                interpolated = 'Y' if row['notes'] == 'Interpolated' else 'N'
+                riskrow.extend([row['value'], interpolated, row['rec_type']])
 
-        self.dataframe = facrisk
+                # Note: respiratory and neuro have additional lat/lon columns
+                if i in (0, 1, 3):
+                    riskrow.extend([row['lat'], row['lon']])
+
+                riskrow.append(row['block'])
+
+            # Population that is overlapped
+            riskrow.append("TODO")
+            riskrow.append(self.incidence.iloc[0]['inc'])
+            riskrow.append(self.model.computedValues['metfile'])
+            riskrow.append(self.model.computedValues['distance'])
+            riskrow.append(self.model.computedValues['cenlat'])
+            riskrow.append(self.model.computedValues['cenlon'])
+
+            # rural or urban
+            riskrow.append("TODO")
+
+            risklist.append(riskrow)
+            facrisk_df = pd.DataFrame(risklist)
+
+        self.dataframe = facrisk_df
         self.data = self.dataframe.values
         yield self.dataframe
 

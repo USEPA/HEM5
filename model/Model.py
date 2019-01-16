@@ -46,6 +46,10 @@ class Model():
         self.gasparams = None
         self.model_optns = defaultdict()
 
+        # Facility-specific values that are computed during the run - these are ephemeral
+        # and get overwritten when the next facility runs.
+        self.computedValues = {}
+
     @property
     def fac_ids(self):
         """Read-only array of facility ids"""

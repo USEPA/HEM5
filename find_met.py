@@ -34,6 +34,7 @@ def find_met(ylat, xlon):
          dist[i] = np.sqrt((ylat-lat[i])**2+((xlon+lon[i])*cos(radians(ylat)))**2)*60*2*3*12/39.37
     index = np.where(dist==dist.min())[0][0]
 
+    distance = dist[index]
     surf_file = met_st['surffile'][index]
     upper_file = met_st['upperfile'][index]
     # Note: remove white space from surfcity and uacity, Aermod will not allow spaces in the city name
@@ -41,4 +42,4 @@ def find_met(ylat, xlon):
     uairdata_str = str(met_st['uawban'][index]) + " " + str(met_st['surfyear'][index]) + " " + str(met_st['uacity'][index]).replace(" ","")
     prof_base = str(met_st['elev'][index])
         
-    return surf_file, upper_file, surfdata_str, uairdata_str, prof_base
+    return surf_file, upper_file, surfdata_str, uairdata_str, prof_base, distance
