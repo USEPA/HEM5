@@ -181,6 +181,7 @@ class AllOuterReceptors(CsvWriter):
         outerconc_df = pd.DataFrame(dlist, columns=columns)
 
         #Debug
+
         #import pdb; pdb.set_trace()
 
         # dataframe to array

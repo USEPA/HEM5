@@ -20,6 +20,7 @@ class Writer(ABC):
 
                 self.analyze(data)
 
+
     @abstractmethod
     def writeHeader(self):
         pass

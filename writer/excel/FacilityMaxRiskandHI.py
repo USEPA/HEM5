@@ -89,4 +89,3 @@ class FacilityMaxRiskandHI(ExcelWriter):
         self.dataframe = facrisk_df
         self.data = self.dataframe.values
         yield self.dataframe
-
