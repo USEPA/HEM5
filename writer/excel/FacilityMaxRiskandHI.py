@@ -73,6 +73,7 @@ class FacilityMaxRiskandHI(ExcelWriter):
 
             # Population that is overlapped
             riskrow.append("TODO")
+
             riskrow.append(self.incidence.iloc[0]['inc'])
             riskrow.append(self.model.computedValues['metfile'])
             riskrow.append(self.model.computedValues['distance'])
