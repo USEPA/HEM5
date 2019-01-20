@@ -248,7 +248,14 @@ class FacilityPrep():
         #%% --- Optional Emissions Variations --------------------------------
 
         if hasattr(self.model.emisvar, "dataframe"):
-            emisvar_df = self.model.emisvar.dataframe.loc[self.model.emisvar.dataframe[fac_id] == facid].copy()
+            
+            if self.model.emisvar[-3:] == 'txt':
+                
+                #if linked file set stored file path 
+                emisvar_df = self.model.emisvar
+                
+            else:
+                emisvar_df = self.model.emisvar.dataframe.loc[self.model.emisvar.dataframe[fac_id] == facid].copy()
 
         else:
             emisvar_df = None
@@ -448,8 +455,8 @@ class FacilityPrep():
         runstream = Runstream(facops, emislocs, hapemis, user_recs, buoyant_df,
                               polyver_df, bldgdw_df, partdia_df, landuse_df,
                               seasons_df, emisvar_df,
-                              self.model.gasparams.dataframe)
-        runstream.build_co(runPhase)
+                              self.model.gasparams.dataframe, self.model.model_optns)
+        runstream.build_co(runPhase, self.innerblks, self.outerblks)
         runstream.build_so(runPhase)
         runstream.build_re(self.innerblks, cenx, ceny, polar_df)
         runstream.build_me(cenlat, cenlon)

@@ -168,6 +168,9 @@ class Hem4():
         """
         Recursively disable widgets starting from the given root.
         """
+        if not root.winfo_exists():
+            return
+
         state = 'normal' if enabled else 'disabled'
         if "state" in root.keys():
             root.configure(state=state)
@@ -237,7 +240,8 @@ class Hem4():
 
             self.s12.destroy()
 
-        self.enable_buttons()
+        self.win.after(100, self.enable_buttons)
+        #self.enable_buttons()
 
 #%% Open HEM4 User Guide
     def user_guide(self):
@@ -640,7 +644,8 @@ class Hem4():
         if fullpath is not None:
             self.uploader.uploadDependent("user receptors", fullpath, 
                                           self.model.faclist.dataframe)
-
+            
+            self.model.model_optns['ureceptr'] = True
             # Update the UI
             self.urep_list.set(fullpath)
             [self.scr.insert(tk.INSERT, msg) for msg in self.model.ureceptr.log]

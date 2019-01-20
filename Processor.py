@@ -4,6 +4,7 @@ from log import Logger
 from runner.FacilityRunner import FacilityRunner
 from writer.kml.KMLWriter import KMLWriter
 import traceback
+from collections import defaultdict
 
 threadLocal = threading.local()
 
@@ -40,6 +41,7 @@ class Processor():
 
         Logger.log("The facilities ids being modeled:", fac_list, False)
 
+        success = False
         for facid in fac_list:
 
             if self.abort.is_set():
@@ -74,6 +76,9 @@ class Processor():
                 # increment facility count
                 num += 1
                 success = True
+                
+                #reset model options aftr facility
+                self.model.model_optns = defaultdict
                 
                 
 

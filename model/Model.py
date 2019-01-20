@@ -1,3 +1,4 @@
+from collections import defaultdict
 
 fac_id = 'fac_id';
 source_id = 'source_id';
@@ -43,7 +44,7 @@ class Model():
         self.max_indiv_risk_df = None
         self.sourcelocs = None
         self.gasparams = None
-        self.run_optns = {'ureceptr': False, 'phase': None, 'settings': None}
+        self.model_optns = defaultdict()
 
     @property
     def fac_ids(self):
@@ -75,4 +76,4 @@ class Model():
         self.max_indiv_risk_df = None
         self.sourcelocs = None
         self.gasparams = None
-        self.run_optns = {'ureceptr': False, 'phase': None, 'settings': None}
+        self.model_optns = defaultdict()
