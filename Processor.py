@@ -1,10 +1,11 @@
 import threading
-
+from state.SaveState import SaveState 
 from log import Logger
 from runner.FacilityRunner import FacilityRunner
 from writer.kml.KMLWriter import KMLWriter
 import traceback
 from collections import defaultdict
+import datetime
 
 threadLocal = threading.local()
 
@@ -31,6 +32,13 @@ class Processor():
 
         Logger.logMessage("Preparing Inputs for " + str(
             self.model.facids.count()) + " facilities")
+        
+        #create run id for saving model
+        runid = datetime.datetime.now().strftime("%I:%M%p-%B-%d-%Y")
+        print(runid)
+        #create save model
+        save_state = SaveState(runid, self.model)
+        
 
         fac_list = []
         for index, row in self.model.faclist.dataframe.iterrows():
@@ -43,11 +51,15 @@ class Processor():
 
         success = False
         for facid in fac_list:
+            
+            save_state.save_model(facid)
 
             if self.abort.is_set():
                 Logger.logMessage("Aborting processing...")
                 return
-
+            
+            
+            
             #save version of this gui as is? constantly overwrite it once each facility is done?
             Logger.logMessage("Running facility " + str(num) + " of " +
                               str(len(fac_list)))
@@ -76,6 +88,10 @@ class Processor():
                 # increment facility count
                 num += 1
                 success = True
+                
+                
+                
+                
                 
                 #reset model options aftr facility
                 self.model.model_optns = defaultdict
