@@ -1,4 +1,4 @@
-from FacilityPrep import *
+import math
 from support.UTM import *
 from model.Model import *
 
@@ -231,13 +231,7 @@ def in_box(modelblks, sourcelocs, modeldist, maxdist, overlap_dist):
 
     print("fourth innerblks size = ", innerblks.shape, " fourth outerblks size = ", outerblks.shape)
         
-    return innerblks, outerblks    
-    
-    
-
-    
-    
-    
+    return innerblks, outerblks
 
 #%%
 def read_json_file(path_to_file, dtype_dict):
