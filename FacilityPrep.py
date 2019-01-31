@@ -7,6 +7,7 @@ Created on Mon Oct  2 10:35:51 2017
 import math
 import find_center as fc
 from json_census_blocks import *
+from log import Logger
 from runstream.Runstream import Runstream
 from upload.EmissionsLocations import *
 from upload.HAPEmissions import *
@@ -291,12 +292,12 @@ class FacilityPrep():
         modeldist = facops.get_value(0,model_dist)
 
         if self.model.model_optns['ureponly']:
-            self.innerblks, self.outerblks = self.getBlocksFromUrep(cenx, ceny, cenlon, cenlat, facutmzone, maxdist, modeldist, sourcelocs, op_overlap)
+            self.innerblks, self.outerblks = self.getBlocksFromUrep(facid, cenx, ceny, cenlon, cenlat, facutmzone,
+                maxdist, modeldist, sourcelocs, op_overlap)
 
         else:
-            self.innerblks, self.outerblks = getblocks(cenx, ceny, cenlon, cenlat, facutmzone, maxdist, modeldist, sourcelocs, op_overlap)
-
-
+            self.innerblks, self.outerblks = getblocks(cenx, ceny, cenlon, cenlat, facutmzone, maxdist, modeldist,
+                sourcelocs, op_overlap)
 
 
         #%%----- Polar receptors ----------
@@ -778,80 +779,48 @@ class FacilityPrep():
 
         return inbox
 
+    def copyUTMColumns(self, utmn, utme, utmz):
+        return [utmn, utme, utmz]
+
     # Determine inner and outer blocks from the set of user receptors only.
-    def getBlocksFromUrep(cenx, ceny, cenlon, cenlat, utmzone, maxdist, modeldist, sourcelocs, overlap_dist):
+    def getBlocksFromUrep(self, facid, cenx, ceny, cenlon, cenlat, utmZone, maxdist, modeldist, sourcelocs, overlap_dist):
 
         # convert max outer ring distance from meters to degrees latitude
         maxdist_deg = maxdist*39.36/36/2000/60
 
-        ##%% census key look-up
+        # Get all user receptors that correspond to the given fac id
+        urecs = self.model.ureceptr.dataframe.loc[self.model.ureceptr.dataframe[fac_id] == facid]
 
-        #load census key into data frame
-        dtype_dict = '{"ELEV_MAX":float,"FILE_NAME":object,"FIPS":object,"LAT_MAX":float,"LAT_MIN":float,"LON_MAX":float,"LON_MIN":float,"MIN_REC":int,"NO":int,"YEAR":int}'
-        census_key = read_json_file("census/census_key.json", dtype_dict)
-        census_key.columns = [x.lower() for x in census_key.columns]
-
-        #create selection for "inzone" and find where true in census_key dataframe
-
-        census_key["inzone"] = census_key.apply(lambda row: cntyinzone(row["lat_min"], row["lon_min"], row["lat_max"], row["lon_max"], cenlat, cenlon, maxdist_deg), axis=1)
-        cntyinzone_df = census_key.query('inzone == True')
-
-        censusfile2use = {}
-
-        # Find all blocks within the intersecting counties that intersect the modeling zone. Store them in modelblks.
-        frames = []
-
-        for index, row in cntyinzone_df.iterrows():
-            #print("starting loop")
-
-            state = "census/" + row['file_name'] + ".json"
-            # Query state census file
-            if state in censusfile2use:
-                censusfile2use[state].append(str(row[fips]))
-            else:
-                censusfile2use[state] = [str(row[fips])]
-                #print("done!")
-
-        for state, FIPS in censusfile2use.items():
-            locations = FIPS
-            dtype_dict = '{"REC_NO":int, "FIPS":object, "IDMARPLOT":object, "POPULATION":int, "LAT":float, "LON":float, "ELEV":float, "HILL":float, "MOVED":object, "URBAN_POP":int}'
-            state_pd = read_json_file(state, dtype_dict)
-            state_pd.columns = [x.lower() for x in state_pd.columns]
-            #        state_pd = pd.DataFrame.from_dict(state_data['data'], orient='columns')
-
-
-            check = state_pd[state_pd[fips].isin(locations)]
-            frames.append(check)
-
-        #combine dataframes to modelblks
-        censusblks = pd.concat(frames)
-
-        #lowercase column names
-        #censusblks.columns = map(str.lower, censusblks.columns)
-        #print(censusblks)
-
-        #convert to utm if necessary
-        censusblks[utms] = censusblks.apply(lambda row: UTM.ll2utm_alt(row[lat], row[lon], utmzone), axis=1)
+        # Which location type is being used? If lat/lon, convert to UTM. Otherwise, just copy over
+        # the relevant values.
+        ltype = urecs.iloc[0][location_type]
+        if ltype == 'L':
+            urecs[utms] = urecs.apply(lambda row: UTM.ll2utm_alt(row[lat], row[lon], utmZone), axis=1)
+        else:
+            urecs[utms] = urecs.apply(lambda row: self.copyUTMColumns(row[lat], row[lon], utmZone), axis=1)
 
         #split utms column into utmn, utme, utmz
-        censusblks[[utmn, utme, utmz]] = pd.DataFrame(censusblks.utms.values.tolist(), index= censusblks.index)
-        #clean up censusblks df
-        del censusblks[utms]
+        urecs[[utmn, utme, utmz]] = pd.DataFrame(urecs.utms.values.tolist(), index= urecs.index)
+
+        del urecs[utms]
 
         #coerce hill and elevation into floats
-        censusblks[hill] = pd.to_numeric(censusblks[hill], errors='coerce').fillna(0)
-        censusblks[elev] = pd.to_numeric(censusblks[elev], errors='coerce').fillna(0)
+        urecs[hill] = pd.to_numeric(urecs[hill], errors='coerce').fillna(0)
+        urecs[elev] = pd.to_numeric(urecs[elev], errors='coerce').fillna(0)
 
         #compute distance and bearing (angle) from the center of the facility
-        censusblks['distance'] = np.sqrt((cenx - censusblks.utme)**2 + (ceny - censusblks.utmn)**2)
-        censusblks['angle'] = censusblks.apply(lambda row: bearing(row[utme],row[utmn],cenx,ceny), axis=1)
+        urecs['distance'] = np.sqrt((cenx - urecs.utme)**2 + (ceny - urecs.utmn)**2)
+        urecs['angle'] = urecs.apply(lambda row: bearing(row[utme],row[utmn],cenx,ceny), axis=1)
+        urecs['urban_pop'] = 0
 
-        #subset the censusblks dataframe to blocks that are within the modeling distance of the facility
-        modelblks = censusblks.query('distance <= @maxdist')
+        #subset the urecs dataframe to blocks that are within the modeling distance of the facility
+        modelblks = urecs.query('distance <= @maxdist')
 
         # Split modelblks into inner and outer block receptors
         innerblks, outerblks = in_box(modelblks, sourcelocs, modeldist, maxdist, overlap_dist)
 
+
+        Logger.log("OUTERBLOCKS", outerblks, False)
 
         # convert utme, utmn, utmz, and population to integers
         innerblks[utme] = innerblks[utme].astype(int)
