@@ -29,9 +29,11 @@ class SingleFacilityRun(unittest.TestCase):
                 print(e)
 
         # Create the test harness, process the files, etc.
-        cls.testHarness = TestHarness()
+        cls.testHarness = TestHarness(False)
         if not cls.testHarness.success:
             raise RuntimeError("something went wrong creating the test harness")
+
+        cls.outputFixturePrefix = "fixtures/output/"
 
     def test_all_polar_receptors(self):
         """
@@ -52,7 +54,7 @@ class SingleFacilityRun(unittest.TestCase):
         Verify that the all inner receptors output file is identical to the test fixture.
         """
         for facid in self.testHarness.model.facids:
-            fixture = AllInnerReceptors("fixtures/output/", facid, None, None)
+            fixture = AllInnerReceptors(self.outputFixturePrefix, facid, None, None)
             checksum_expected = self.hashFile(fixture.filename)
 
             generated = AllInnerReceptors("output/"+facid, facid, None, None)
@@ -67,7 +69,7 @@ class SingleFacilityRun(unittest.TestCase):
         """
         for facid in self.testHarness.model.facids:
 
-            fixture = pd.read_csv("fixtures/output/" + facid + "_all_outer_receptors.csv")
+            fixture = pd.read_csv(self.outputFixturePrefix + facid + "_all_outer_receptors.csv")
             produced = pd.read_csv("output/" + facid + "/" + facid + "_all_outer_receptors.csv")
 
             # difference = fixture[fixture!=produced]
@@ -93,7 +95,7 @@ class SingleFacilityRun(unittest.TestCase):
         Verify that the block summary chronic output file is identical to the test fixture.
         """
         for facid in self.testHarness.model.facids:
-            fixture = BlockSummaryChronic("fixtures/output/", facid, None, None)
+            fixture = BlockSummaryChronic(self.outputFixturePrefix, facid, None, None)
             checksum_expected = self.hashFile(fixture.filename)
 
             generated = BlockSummaryChronic("output/"+facid, facid, None, None)
@@ -127,7 +129,7 @@ class SingleFacilityRun(unittest.TestCase):
         Verify that the maximum individual risks output file is identical to the test fixture.
         """
         for facid in self.testHarness.model.facids:
-            fixture = pd.read_excel("fixtures/output/" + facid + "_maximum_indiv_risks.xlsx")
+            fixture = pd.read_excel(self.outputFixturePrefix + facid + "_maximum_indiv_risks.xlsx")
             produced = pd.read_excel("output/" + facid + "/" + facid + "_maximum_indiv_risks.xlsx")
 
             self.assertTrue(fixture.equals(produced), "The contents of the output file are inconsistent with the test fixture.")

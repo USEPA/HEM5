@@ -46,6 +46,9 @@ class Model():
         self.gasparams = None
         self.model_optns = defaultdict()
 
+        # Initialize model options
+        self.model_optns['ureponly'] = False
+
     @property
     def fac_ids(self):
         """Read-only array of facility ids"""

@@ -777,7 +777,6 @@ class Hem4():
                                 lambda e:self.manual("instructions/urep_man.txt"))
 
         self.check_ureponly = tk.BooleanVar()
-        self.model.model_optns['ureponly'] = False
         self.urep_sel = tk.Checkbutton(self.s6, text="Use only these receptors",
                                         variable = self.check_ureponly,
                                         command = self.set_ureponly)
