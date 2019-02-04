@@ -473,6 +473,7 @@ class FacilityPrep():
         #no return statement since it will just need to build the file
         #return rs.Runstream(facops, emislocs, hapemis, cenlat, cenlon, cenx, ceny, self.innerblks, user_recs, buoyant_df, polyver_df, polar_df, bldgdw_df, partdia_df, landuse_df, seasons_df, gasparams_df)
 
+
     #%% Calculate ring and sector of block receptors
     def calc_ring_sector(self, ring_distances, block_distance, block_angle, num_sectors):
 
@@ -790,6 +791,15 @@ class FacilityPrep():
 
         # Get all user receptors that correspond to the given fac id
         urecs = self.model.ureceptr.dataframe.loc[self.model.ureceptr.dataframe[fac_id] == facid]
+
+        # If any population values are missing, we cannot create an Incidence report
+        self.model.model_optns['ureponly_nopop'] = urecs.isnull().any()[population]
+        urecs[population] = pd.to_numeric(urecs[population], errors='coerce').fillna(0)
+
+        # If any elevation or hill height values are missing, we must run in FLAT mode.
+        self.model.model_optns['ureponly_flat'] = urecs.isnull().any()[elev] or urecs.isnull().any()[hill]
+        urecs[elev] = pd.to_numeric(urecs[elev], errors='coerce').fillna(0)
+        urecs[hill] = pd.to_numeric(urecs[hill], errors='coerce').fillna(0)
 
         # Which location type is being used? If lat/lon, convert to UTM. Otherwise, just copy over
         # the relevant values.

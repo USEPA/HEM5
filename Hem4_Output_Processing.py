@@ -126,6 +126,7 @@ class Process_outputs():
         # Was this facility run with user receptors only? If so, we need to use the output modules that do not
         # reference census data fields like FIPs and block number.
         ureponly = self.model.model_optns["ureponly"]
+        ureponly_nopop = self.model.model_optns["ureponly_nopop"]
 
         #----------- create All_Inner_Receptor output file -----------------
         all_inner_receptors = AllInnerReceptorsNonCensus(self.outdir, self.facid, self.model, plot_df) if ureponly \
@@ -231,8 +232,9 @@ class Process_outputs():
 
 
         #----------- create Incidence output file ------------------------
-        incidence= Incidence(self.outdir, self.facid, self.model, plot_df)
-        incidence.write()
+        if not ureponly_nopop:
+            incidence= Incidence(self.outdir, self.facid, self.model, plot_df)
+            incidence.write()
       
 
 #        #create facility kml

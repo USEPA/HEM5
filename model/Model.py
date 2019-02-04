@@ -48,6 +48,8 @@ class Model():
 
         # Initialize model options
         self.model_optns['ureponly'] = False
+        self.model_optns['ureponly_nopop'] = False
+        self.model_optns['ureponly_flat'] = False
 
     @property
     def fac_ids(self):
