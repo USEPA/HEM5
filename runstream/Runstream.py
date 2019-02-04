@@ -132,7 +132,7 @@ class Runstream():
                 closest = innerblks.nsmallest(1, 'distance')
                 if closest['urban_pop'].values[0] > 0:
                     self.urban = True
-                    urbanopt = "CO URBANOPT " + str(closest['urban_pop'][0]) + "\n"
+                    urbanopt = "CO URBANOPT  " + str(closest['urban_pop'].values[0]) + "\n"
                     self.inp_f.write(urbanopt)
                     
             else: #get shortest distance from outerblocks 
@@ -254,6 +254,7 @@ class Runstream():
                 
                 if self.urban == True:
                     urbanopt = "SO URBANSRC " + str(srid[index]) + "\n"
+                    self.inp_f.write(urbanopt)
 
                 if self.blddw == "Y":
                     self.get_blddw(srid[index])
@@ -293,6 +294,7 @@ class Runstream():
                 
                 if self.urban == True:
                     urbanopt = "SO URBANSRC " + str(srid[index]) + "\n"
+                    self.inp_f.write(urbanopt)
                 
                 if self.blddw == "Y":
                     self.get_blddw(srid[index])
@@ -331,6 +333,7 @@ class Runstream():
                 
                 if self.urban == True:
                     urbanopt = "SO URBANSRC " + str(srid[index]) + "\n"
+                    self.inp_f.write(urbanopt)
                 
                 if self.blddw == "Y":
                     self.get_blddw(srid[index])
@@ -370,6 +373,7 @@ class Runstream():
                 
                 if self.urban == True:
                     urbanopt = "SO URBANSRC " + str(srid[index]) + "\n"
+                    self.inp_f.write(urbanopt)
                 
                 if self.blddw == "Y":
                     self.get_blddw(srid[index])
@@ -408,6 +412,7 @@ class Runstream():
                 
                 if self.urban == True:
                     urbanopt = "SO URBANSRC " + str(srid[index]) + "\n"
+                    self.inp_f.write(urbanopt)
                 
                 if self.blddw == "Y":
                     self.get_blddw(srid[index])
@@ -486,6 +491,7 @@ class Runstream():
                     
                 if self.urban == True:
                     urbanopt = "SO URBANSRC " + str(srid[index]) + "\n"
+                    self.inp_f.write(urbanopt)
                 
                 if self.blddw == "Y":
                     self.get_blddw(srid[index])
@@ -529,6 +535,7 @@ class Runstream():
                 
                 if self.urban == True:
                     urbanopt = "SO URBANSRC " + str(srid[index]) + "\n"
+                    self.inp_f.write(urbanopt)
                 
                 if self.blddw == "Y":
                     self.get_blddw(srid[index])
@@ -580,6 +587,7 @@ class Runstream():
                 
                 if self.urban == True:
                     urbanopt = "SO URBANSRC " + str(srid[index]) + "\n"
+                    self.inp_f.write(urbanopt)
                 
                 if self.blddw == "Y":
                     self.get_blddw(srid[index])
