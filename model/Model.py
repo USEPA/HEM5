@@ -20,6 +20,14 @@ angle = 'angle';
 class Model():
 
     def __init__(self):
+        """
+        The following are inputs and have dataframe, msg, 
+        
+        faclist - facilities list options file 
+        emisloc
+        
+        
+        """
         self.faclist = None
         self.emisloc = None
         self.hapemis = None
@@ -45,6 +53,7 @@ class Model():
         self.sourcelocs = None
         self.gasparams = None
         self.model_optns = defaultdict()
+        self.save = None
 
     @property
     def fac_ids(self):
@@ -77,3 +86,4 @@ class Model():
         self.sourcelocs = None
         self.gasparams = None
         self.model_optns = defaultdict()
+        self.save = None

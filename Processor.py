@@ -1,6 +1,5 @@
 import threading
-from state.SaveState import SaveState 
-from log import Logger
+ from log import Logger
 from runner.FacilityRunner import FacilityRunner
 from writer.kml.KMLWriter import KMLWriter
 import traceback
@@ -34,10 +33,10 @@ class Processor():
             self.model.facids.count()) + " facilities")
         
         #create run id for saving model
-        runid = datetime.datetime.now().strftime("%I:%M%p-%B-%d-%Y")
-        print(runid)
+        #runid = datetime.datetime.now().strftime("%B-%d-%Y-%H-%M-%p")
+        #print(runid)
         #create save model
-        save_state = SaveState(runid, self.model)
+        #save_state = SaveState(runid, self.model)
         
 
         fac_list = []
@@ -52,7 +51,7 @@ class Processor():
         success = False
         for facid in fac_list:
             
-            save_state.save_model(facid)
+            
 
             if self.abort.is_set():
                 Logger.logMessage("Aborting processing...")
@@ -86,6 +85,11 @@ class Processor():
                 # dataframes or cache the last processed facility so that when 
                 # restart we know which faciltiy we want to start on
                 # increment facility count
+                
+                #check if there is more than one facility, only save if there are
+                if len(faclist) > 1:
+                    self.model.save.save_model(facid)
+                
                 num += 1
                 success = True
                 

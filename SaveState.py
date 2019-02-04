@@ -9,6 +9,7 @@ import traceback
 import os
 from model.Model import *
 
+
 class SaveState():
     
     def __init__(self, runid, model):
@@ -18,11 +19,11 @@ class SaveState():
         
         #create folder to save files in 
        #set output folder
-        self.save_folder = "/"+self.runid + "/"
-        print(self.save_folder)
+        save_folder = "save/"+self.runid + "/"
+        self.save_folder = save_folder
        
         try:
-            os.makedirs(self.save_folder)
+            os.makedirs(save_folder)
             
         except Exception as ex:
 
@@ -33,13 +34,18 @@ class SaveState():
             message = "An error occurred while running a facility:\n" + fullStackInfo
             print(message)
            
-        
+        else:
+            print("created", self.save_folder)
         
         
 
     def save_model(self, facid):
         
-        attr_list = ['faclist', 'emisloc', 'hapemis', 'multipoly', 'multibuoy', 'ureceptr', 'haplib', 'bldgdw', 'partdep', 'landuse', 'seasons', 'emisvar']
+        print("removing fac id:", facid)
+        
+        attr_list = (['faclist', 'emisloc', 'hapemis', 'multipoly', 'multibuoy',
+                      'ureceptr', 'haplib', 'bldgdw', 'partdep', 'landuse', 
+                      'seasons', 'emisvar'])
         #get list of attributes and write them 
         
         #print("model attributes", self.model.__dict__)
@@ -48,10 +54,18 @@ class SaveState():
         
             if k in attr_list and v is not None:
                 
-                print("pickle this!")
-                    
+               #remove the faclist row then pickle
+               
+               remaining = v.dataframe[v.dataframe['fac_id'] != facid]
+               
+               #pikle
+               remaining.to_pickle(f"{self.save_folder}/{k}.pkl")
+               
+               
+               print(k, 'pickled')
                 
         
+            
 #            pass
 #        else:
 #            os.makedirs(save_folder)

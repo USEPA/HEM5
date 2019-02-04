@@ -18,7 +18,7 @@ from tkinter import messagebox
 from tkinter import scrolledtext
 from tkinter import ttk
 from tkinter.simpledialog import Dialog, Toplevel
-
+import datetime
 from Processor import Processor
 from log.Logger import Logger
 from model.Model import Model
@@ -27,6 +27,8 @@ from tkinter.filedialog import askopenfilename
 from checker.InputChecker import InputChecker
 from check_dep import check_dep
 from writer.kml.KMLWriter import KMLWriter
+from SaveState import SaveState 
+
 
 
 #%% Hem4 GUI
@@ -1117,7 +1119,16 @@ class Hem4():
             if override:
                 global instruction_instance
                 instruction_instance.set("Hem4 Running, check the log tab for updates")
+                
+                #create run id for saving model
+                runid = datetime.datetime.now().strftime("%B-%d-%Y-%H-%M-%p")
+                #print(runid)
+                #create save model
+                save_state = SaveState(runid, self.model)
+                self.model.save = save_state
                 self.process()
+                
+                 
 
     def process(self):
         """
