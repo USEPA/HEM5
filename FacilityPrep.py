@@ -287,6 +287,9 @@ class FacilityPrep():
         # Compute the coordinates of the facililty center
         cenx, ceny, cenlon, cenlat, max_srcdist, vertx_a, verty_a = fc.center(sourcelocs, facutmzone)
 
+        self.model.computedValues['cenlat'] = cenlat
+        self.model.computedValues['cenlon'] = cenlon
+
         #retrieve blocks
         maxdist = facops.get_value(0,max_dist)
         modeldist = facops.get_value(0,model_dist)
@@ -459,7 +462,10 @@ class FacilityPrep():
         runstream.build_co(runPhase, self.innerblks, self.outerblks)
         runstream.build_so(runPhase)
         runstream.build_re(self.innerblks, cenx, ceny, polar_df)
-        runstream.build_me(cenlat, cenlon)
+        metfile, distanceToMet = runstream.build_me(cenlat, cenlon)
+        self.model.computedValues['metfile'] = metfile
+        self.model.computedValues['distance'] = distanceToMet
+
         runstream.build_ou()
 
         return runstream
@@ -473,10 +479,10 @@ class FacilityPrep():
         ring_loc = -999
 
         # compute fractional sector number
-        s = (block_angle * num_sectors)/360.0 % num_sectors
+        s = ((block_angle * num_sectors)/360.0 % num_sectors) + 1
 
         # compute integer sector number
-        sector_int = int(s) + 1
+        sector_int = int(s)
 
         # Compute ring_loc. loop through ring distances in pairs of previous and current
         previous = ring_distances[0]

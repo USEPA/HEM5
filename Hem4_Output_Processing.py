@@ -12,6 +12,7 @@ from writer.csv.AllOuterReceptors import AllOuterReceptors
 from writer.csv.RingSummaryChronic import RingSummaryChronic
 from writer.csv.BlockSummaryChronic import *
 from writer.excel.CancerRiskExposure import CancerRiskExposure
+from writer.excel.FacilityMaxRiskandHI import FacilityMaxRiskandHI
 from writer.excel.InputSelectionOptions import InputSelectionOptions
 from writer.excel.MaximumIndividualRisks import MaximumIndividualRisks, value
 from writer.excel.MaximumOffsiteImpacts import MaximumOffsiteImpacts
@@ -138,17 +139,19 @@ class Process_outputs():
 
         #----------- create Ring_Summary_Chronic data -----------------
         ring_summary_chronic = RingSummaryChronic(self.outdir, self.facid, self.model, plot_df)
-        ring_summary_chronic.calculateOutputs()
-        ring_summary_chronic_df = ring_summary_chronic.dataframe
+        generator = ring_summary_chronic.generateOutputs()
+        for batch in generator:
+            ring_summary_chronic_df = ring_summary_chronic.dataframe
 
         if self.abort.is_set():
             Logger.logMessage("Terminating output processing...")
             return
 
         #----------- create Block_Summary_Chronic data -----------------      
-        block_summary_chronic = BlockSummaryChronic(self.outdir, self.facid, self.model, plot_df)
-        block_summary_chronic.calculateOutputs()
-        block_summary_chronic_df = block_summary_chronic.dataframe
+        block_summary_chronic = BlockSummaryChronic(self.outdir, self.facid, self.model, plot_df, all_outer_receptors.outerAgg)
+        generator = block_summary_chronic.generateOutputs()
+        for batch in generator:
+            block_summary_chronic_df = block_summary_chronic.dataframe
 
         if self.abort.is_set():
             Logger.logMessage("Terminating output processing...")
@@ -217,9 +220,18 @@ class Process_outputs():
 
 
         #----------- create Incidence output file ------------------------
-        incidence= Incidence(self.outdir, self.facid, self.model, plot_df)
+        #  first convert outerInc dictionary into a DF
+        outerInc_list = []
+        for key in all_outer_receptors.outerInc.keys():
+            insert_list = [key[0], key[1], key[2], all_outer_receptors.outerInc[key]]
+            outerInc_list.append(insert_list)
+        outerInc_df = pd.DataFrame(outerInc_list, columns=['source_id', 'pollutant', 'ems_type', 'inc'])
+        incidence= Incidence(self.outdir, self.facid, self.model, plot_df, outerInc_df)
         incidence.write()
-      
+
+        #----------- append to facility max risk output file ------------------
+        fac_max_risk = FacilityMaxRiskandHI("output/", self.facid, self.model, plot_df, incidence.dataframe)
+        fac_max_risk.writeWithoutHeader()
 
 #        #create facility kml
 #        Logger.logMessage("Writing KML file for " + self.facid)

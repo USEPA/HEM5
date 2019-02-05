@@ -1,6 +1,8 @@
+import os
 import threading
  from log import Logger
 from runner.FacilityRunner import FacilityRunner
+from writer.excel.FacilityMaxRiskandHI import FacilityMaxRiskandHI
 from writer.kml.KMLWriter import KMLWriter
 import traceback
 from collections import defaultdict
@@ -49,6 +51,11 @@ class Processor():
         Logger.log("The facilities ids being modeled:", fac_list, False)
 
         success = False
+
+        # Create output files with headers for any source-category outputs that will be appended
+        # to facility by facility. These won't have any data for now.
+        self.createSourceCategoryOutputs()
+
         for facid in fac_list:
             
             
@@ -108,3 +115,13 @@ class Processor():
                           " subfolder of the HEM4 folder.")
 
         return success
+
+    def createSourceCategoryOutputs(self):
+
+        #create fac folder
+        output_folder = "output/"
+        if not os.path.exists(output_folder):
+            os.makedirs(output_folder)
+
+        fac_max_risk = FacilityMaxRiskandHI(output_folder, None, self.model, None, None)
+        fac_max_risk.write()

@@ -55,6 +55,10 @@ class Model():
         self.model_optns = defaultdict()
         self.save = None
 
+        # Facility-specific values that are computed during the run - these are ephemeral
+        # and get overwritten when the next facility runs.
+        self.computedValues = {}
+
     @property
     def fac_ids(self):
         """Read-only array of facility ids"""
