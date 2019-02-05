@@ -220,7 +220,13 @@ class Process_outputs():
 
 
         #----------- create Incidence output file ------------------------
-        incidence= Incidence(self.outdir, self.facid, self.model, plot_df, all_outer_receptors.outerInc)
+        #  first convert outerInc dictionary into a DF
+        outerInc_list = []
+        for key in all_outer_receptors.outerInc.keys():
+            insert_list = [key[0], key[1], key[2], all_outer_receptors.outerInc[key]]
+            outerInc_list.append(insert_list)
+        outerInc_df = pd.DataFrame(outerInc_list, columns=['source_id', 'pollutant', 'ems_type', 'inc'])
+        incidence= Incidence(self.outdir, self.facid, self.model, plot_df, outerInc_df)
         incidence.write()
 
         #----------- append to facility max risk output file ------------------

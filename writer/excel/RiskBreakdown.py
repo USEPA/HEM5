@@ -193,23 +193,27 @@ class RiskBreakdown(ExcelWriter):
         # Change dtype of conc. This will be done upstream later.
         riskbkdn_df[conc] = pd.to_numeric(riskbkdn_df[conc])
         
-        # Create some aggregate rows
+        #....... Create some aggregate rows ..................
         
         # Sum Value by site_type, parameter, and pollutant to get Total source_id
         srctot = riskbkdn_df.groupby([site_type, parameter, pollutant, ure, rfc],
-                                     as_index=False)[value, value_rnd, conc, conc_rnd, emis_tpy].sum()
+                                     as_index=False)[value, conc, emis_tpy].sum()
         srctot[source_id] = "Total"
         srctot[ems_type] = "NA"
         srctot[ure] = 0
         srctot[rfc] = 0
+        srctot[value_rnd] = srctot[value].apply(lambda x: round(x, -int(math.floor(math.log10(abs(x))))) if x > 0 else 0)
+        srctot[conc_rnd] = srctot[conc].apply(lambda x: round(x, -int(math.floor(math.log10(abs(x))))) if x > 0 else 0)
             
         # Sum Value by site_type, parameter, and source_id to get Total pollutant
         polltot = riskbkdn_df.groupby([site_type, parameter, source_id],
-                                     as_index=False)[value, value_rnd, conc, conc_rnd, emis_tpy].sum()
+                                     as_index=False)[value, conc, emis_tpy].sum()
         polltot[pollutant] = "All modeled pollutants"
         polltot[ems_type] = "NA"
         polltot[ure] = 0
         polltot[rfc] = 0
+        polltot[value_rnd] = polltot[value].apply(lambda x: round(x, -int(math.floor(math.log10(abs(x))))) if x > 0 else 0)
+        polltot[conc_rnd] = polltot[conc].apply(lambda x: round(x, -int(math.floor(math.log10(abs(x))))) if x > 0 else 0)
 
         # Append aggregates, sort rows, and sort columns
         riskbkdn_df = riskbkdn_df.append(srctot, ignore_index=True)

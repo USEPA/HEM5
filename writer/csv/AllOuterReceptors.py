@@ -1,6 +1,5 @@
 import math
 import re
-import time
 
 import pandas as pd
 import numpy as np
@@ -40,16 +39,74 @@ class AllOuterReceptors(CsvWriter):
 
         self.filename = os.path.join(targetDir, facilityId + "_all_outer_receptors.csv")
 
-        # Local cache for URE/RFC values
+        # Fill local caches for URE/RFC and organ endpoint values
         self.riskCache = {}
-
-        # Local cache for organ endpoint values
         self.organCache = {}
 
+        for index, row in self.model.haplib.dataframe.iterrows():
+            
+            # Change rfcs of 0 to -1. This simplifies HI calculations. Don't have to worry about divide by 0.
+            if row[rfc] == 0:
+                rfcval = -1
+            else:
+                rfcval = row[rfc]
+                
+            self.riskCache[row[pollutant].lower()] = {ure : row[ure], rfc : rfcval}
+
+            # In order to get a case-insensitive exact match (i.e. matches exactly except for casing)
+            # we are using a regex that is specified to be the entire value. Since pollutant names can
+            # contain parentheses, escape them before constructing the pattern.
+            pattern = '^' + re.escape(row[pollutant]) + '$'
+            organrow = self.model.organs.dataframe.loc[
+                self.model.organs.dataframe[pollutant].str.contains(pattern, case=False, regex=True)]
+
+            if organrow.size == 0:
+                listed = []
+            else:
+                listed = organrow.values.tolist()
+
+            # Note: sometimes there is a pollutant with no effect on any organ (RFC == 0). In this case it will
+            # not appear in the organs library, and therefore 'listed' will be empty. We will just assign a
+            # dummy list in this case...
+            dummylist = [row[pollutant], ' ', 0, 0, 0, 0 , 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
+            organs = listed[0] if len(listed) > 0 else dummylist
+            self.organCache[row[pollutant].lower()] = organs
+        
         self.outerblocks = self.model.outerblks_df[[lat, lon, utme, utmn, hill]]
         self.outerAgg = None
         self.outerInc = None
 
+        # AllOuterReceptor DF columns
+        self.columns = [fips, block, lat, lon, source_id, ems_type, pollutant, conc, aconc, elev, population, overlap]
+
+        # Initialize max_riskhi dictionary. Keys are mir, and HIs. Values are
+        # lat, lon, and risk value. This dictionary identifies the lat/lon of the max receptor for 
+        # the mir and each HI.
+        self.max_riskhi = {}
+        self.riskhi_parms = [mir, hi_resp, hi_live, hi_neur, hi_deve, hi_repr, hi_kidn, hi_ocul,
+                       hi_endo, hi_hema, hi_immu, hi_skel, hi_sple, hi_thyr, hi_whol]
+        for icol in self.riskhi_parms:
+            self.max_riskhi[icol] = [0, 0, 0]
+        
+        # Initialize max_riskhi_bkdn dictionary. This dictionary identifies the Lat/lon of the max receptor for
+        # the mir and each HI, and has source/pollutant specific risk at that lat/lon.
+        # Keys are: parameter, source_id, pollutant, and emis_type. 
+        # Values are: lat, lon, and risk value.
+        self.srcpols = self.model.all_polar_receptors_df[[source_id, pollutant, ems_type]].drop_duplicates().values.tolist()
+        self.max_riskhi_bkdn = {}
+        self.outerInc = {}
+        for jparm in self.riskhi_parms:
+            for jsrcpol in self.srcpols:
+                self.max_riskhi_bkdn[(jparm, jsrcpol[0], jsrcpol[1], jsrcpol[2])] = [0, 0, 0]
+
+        # Initialize the outerInc dictionary. This dictionary contains cancer incidence by source, pollutant,
+        # and emis_type.
+        # Keys are: source_id, pollutant, and emis_type
+        # Value is: incidence
+        for jsrcpol in self.srcpols:
+            self.outerInc[(jsrcpol[0], jsrcpol[1], jsrcpol[2])] = 0
+         
+        
     def getHeader(self):
         return ['FIPs', 'Block', 'Latitude', 'Longitude', 'Source ID', 'Emission type', 'Pollutant',
                 'Conc (µg/m3)', 'Acute Conc (µg/m3)', 'Elevation (m)',
@@ -60,26 +117,13 @@ class AllOuterReceptors(CsvWriter):
         Interpolate polar pollutant concs to outer receptors.
         """
 
-        # Units conversion factor
-        self.cf = 2000*0.4536/3600/8760
-
-        columns = [fips, block, lat, lon, source_id, ems_type, pollutant, conc, aconc, elev, population, overlap]
-
-        #extract polar concs from Aermod plotfile and round the utm coordinates
-        polarplot_df = self.plot_df.query("net_id == 'POLGRID1'").copy()
-        polarplot_df.utme = polarplot_df.utme.round()
-        polarplot_df.utmn = polarplot_df.utmn.round()
-
-        #array of unique source_id's from polarplot DF
-        srcids = polarplot_df[source_id].unique().tolist()
+        #Define the number of polar grid sectors and rings
+        num_sectors = len(self.model.all_polar_receptors_df['sector'].unique())
+        num_rings = len(self.model.all_polar_receptors_df['ring'].unique())
 
 
-        #merge polarplot DF with polargrid DF and set an index
-        polargrid_concs = pd.merge(polarplot_df[['utme', 'utmn', 'source_id', 'result']],
-                                   self.model.polargrid[['utme', 'utmn', 'sector', 'ring']],
-                                   on=['utme', 'utmn'], how='left')
-        polargrid_concs.set_index(['source_id', 'sector', 'ring'], inplace=True, drop=False)
-        polargrid_concs.sort_index(inplace=True)
+        #Put all_polar_receptors DF into an array
+        polarconcs_m = self.model.all_polar_receptors_df.values
         
         
         #subset outer blocks DF to needed columns
@@ -89,117 +133,102 @@ class AllOuterReceptors(CsvWriter):
 
         #define sector/ring of 4 surrounding polar receptors for each outer receptor and set an index
         outerblks_subset[["s1", "s2", "r1", "r2"]] = outerblks_subset.apply(self.compute_s1s2r1r2, axis=1)
-        outerblks_subset.set_index(['s1', 's2', 'r1', 'r2'], inplace=True, drop=False)
-        outerblks_subset.sort_index(inplace=True)
 
+        #Put outerblks_subset DF into an array
+        outerblks_m = outerblks_subset.values
 
-        num_sectors = len(polargrid_concs['sector'].unique())
-        num_rings = len(polargrid_concs['ring'].unique())
-
-          
         dlist = []
-
-
-        #Process all outer blocks within a box defined by the corners (s1,r1), (s1,r2), (s1,r1), (s2,r2)
-        for isector in range(1, num_sectors):
+ 
+        #Process the outer blocks within a box defined by the corners (s1,r1), (s1,r2), (s1,r1), (s2,r2)
+        for isector in range(1, num_sectors+1):
             for iring in range(1, num_rings):
-                
-                #timer
-                box_starttime = time.clock()
-                
+
                 sector1 = isector
-                sector2 = isector + 1
+                sector2 = (isector % num_sectors) + 1
                 ring1 = iring
                 ring2 = iring + 1
                 
-                #If sector1,sector2,ring1,ring2 are in the index of outerblks_subset, then
-                #create a DF of outer blocks within this box. Otherwise go to next box.
-                if (sector1, sector2, ring1, ring2) in outerblks_subset.index:
-                    outerblks_touse = outerblks_subset.loc[sector1, sector2, ring1, ring2]
-                else:
+                #Get all outer receptors within this box. If none, then go to the next box.
+                box_truth = np.logical_and.reduce((outerblks_m[:, 10] == sector1,
+                                                     outerblks_m[:, 11] == sector2,
+                                                     outerblks_m[:, 12] == ring1,
+                                                     outerblks_m[:, 13] == ring2))
+                outerblks_touse = outerblks_m[box_truth]
+                if outerblks_touse.size == 0:                
                     continue
                 
-#                outerblks_touse = outerblks_subset.loc[(outerblks_subset['s1'] == sector1) & 
-#                                                       (outerblks_subset['s2'] == sector2) &
-#                                                       (outerblks_subset['r1'] == ring1) &
-#                                                       (outerblks_subset['r2'] == ring2)]
-#                
-#                #if no outer blocks, go to the next box
-#                if outerblks_touse.empty == True:
-#                    continue
+                #Get the polar source/pollutant concs for each corner of the box
+                s1r1 = np.logical_and(polarconcs_m[:, 6] == sector1, polarconcs_m[:, 7] == ring1 )
+                s1r2 = np.logical_and(polarconcs_m[:, 6] == sector1, polarconcs_m[:, 7] == ring2 )
+                s2r1 = np.logical_and(polarconcs_m[:, 6] == sector2, polarconcs_m[:, 7] == ring1 )
+                s2r2 = np.logical_and(polarconcs_m[:, 6] == sector2, polarconcs_m[:, 7] == ring2 )           
+                pconc_s1r1_m = polarconcs_m[s1r1]
+                pconc_s1r2_m = polarconcs_m[s1r2]
+                pconc_s2r1_m = polarconcs_m[s2r1]
+                pconc_s2r2_m = polarconcs_m[s2r2]
                 
-                #work on one source_id at a time to optimize retrieval time
-                for isrc in srcids:
-                    
-#                    #subset the polargrid_concs DF to this source_id and set of sectors and rings
-#                    sectorlist = [sector1, sector2]
-#                    ringlist = [ring1, ring2]
-#                    polargrid_concs_1srcid = polargrid_concs[['sector', 'ring', 'source_id', 'result']].query \
-#                        ('source_id == @isrc and sector == @sectorlist and ring == @ringlist')
-#                    polargrid_concs_1srcid.set_index(['sector', 'ring'], inplace=True)
-
-                    #subset the hapemis DF to this source_id
-                    hapemis_onesrcid = self.model.runstream_hapemis[[source_id,pollutant,emis_tpy]] \
-                                       .loc[self.model.runstream_hapemis[source_id] == isrc]
-                    
-                    #Interpolate polar Aermod concs to each outer block in this box
-                    #Also apply emissions to the interpolated conc
-                    for row_id, row in enumerate(outerblks_touse.values):
-                        d_fips = row[0]
-                        d_block = row[1][6:]
-                        d_lat = row[2]
-                        d_lon = row[3]
-                        d_elev = row[4]
-                        d_population = row[6]
-                        d_aconc = 0.0
-                        d_overlap = row[7]
-                        d_sourceid = isrc
-                        d_emistype = "C"
-                        ring_loc = row[9]
+                #Interpolate to each outer receptor in this box
+                for row in outerblks_touse:
+         
+                    l_fips = row[0]
+                    l_block = row[1][6:]
+                    l_lat = row[2]
+                    l_lon = row[3]
+                    l_elev = row[4]
+                    l_population = row[6]
+                    l_overlap = row[7]
+                    l_aconc = 0.0
+                                
+                    for iprow in range(0, len(pconc_s1r1_m)):
+                        l_sourceid = pconc_s1r1_m[iprow, 0]
+                        l_emistype = pconc_s1r1_m[iprow, 1]
+                        l_pollutant = pconc_s1r1_m[iprow, 2]
                         s = row[8]
-                        conc_interp = self.interpolate(polargrid_concs, isrc, sector1, sector2,
-                                                  ring1, ring2, s, ring_loc)
-                        #multiply pollutant specific emissions by interpolated conc
-                        for ipoll in hapemis_onesrcid.itertuples():
-                            d_pollutant = ipoll[2]
-                            d_conc = conc_interp * ipoll[3] * self.cf
-                            datalist = [d_fips, d_block, d_lat, d_lon, d_sourceid, d_emistype, d_pollutant, 
-                                        d_conc, d_aconc, d_elev, d_population, d_overlap]
-                            dlist.append(datalist)
-                
-                #timer
-                box_endtime = time.clock()
-                print("One box took ", box_endtime - box_starttime, " seconds")
-                
+                        ring_loc = row[9]
+                        pconc_s1r1 = pconc_s1r1_m[iprow, 3]
+                        pconc_s1r2 = pconc_s1r2_m[iprow, 3]
+                        pconc_s2r1 = pconc_s2r1_m[iprow, 3]
+                        pconc_s2r2 = pconc_s2r2_m[iprow, 3]
+                        
+                        if pconc_s1r1 == 0 or pconc_s1r2 == 0:
+                            R_s12 = max(pconc_s1r1, pconc_s1r2)
+                        else:
+                            Lnr_s12 = (math.log(pconc_s1r1) * (int(ring_loc)+1-ring_loc)) + (math.log(pconc_s1r2) * (ring_loc-int(ring_loc)))
+                            R_s12 = math.exp(Lnr_s12)
+                    
+                        if pconc_s2r1 == 0 or pconc_s2r2 == 0:
+                            R_s34 = max(pconc_s2r1, pconc_s2r2 )
+                        else:
+                            Lnr_s34 = (math.log(pconc_s2r1) * (int(ring_loc)+1-ring_loc)) + (math.log(pconc_s2r2 ) * (ring_loc-int(ring_loc)))
+                            R_s34 = math.exp(Lnr_s34)
+        
+                        l_conc = R_s12*(int(s)+1-s) + R_s34*(s-int(s))
+                        datalist = [l_fips, l_block, l_lat, l_lon, l_sourceid, l_emistype, l_pollutant, 
+                                    l_conc, l_aconc, l_elev, l_population, l_overlap]
+                        dlist.append(datalist)
+                                
                 # End of iteration for this box...time to check if we
-                # need to write a batch.
+                # need to write a batch and run the analyze function.
                 if len(dlist) >= self.batchSize:
-                    yield pd.DataFrame(dlist, columns=columns)
+                    yield pd.DataFrame(dlist, columns=self.columns)
                     dlist = []
-                
-                
-        outerconc_df = pd.DataFrame(dlist, columns=columns)
 
-        #Debug
-
-        #import pdb; pdb.set_trace()
 
         # dataframe to array
+        outerconc_df = pd.DataFrame(dlist, columns=self.columns)
         self.dataframe = outerconc_df
-        self.data = self.dataframe.values
+        self.data = self.dataframe.values       
         yield self.dataframe
+                 
+          
 
 
     def interpolate(self, pconcs, srcid, s1, s2, r1, r2, s, ring_loc):
-        conc_s1r1 = pconcs['result'].loc[srcid, s1, r1]
-        conc_s1r2 = pconcs['result'].loc[srcid, s1, r2]
-        conc_s2r1 = pconcs['result'].loc[srcid, s2, r1]
-        conc_s2r2 = pconcs['result'].loc[srcid, s2, r2]
+        conc_s1r1 = pconcs[srcid+str(s1)+str(r1)]
+        conc_s1r2 = pconcs[srcid+str(s1)+str(r2)]
+        conc_s2r1 = pconcs[srcid+str(s2)+str(r1)]
+        conc_s2r2 = pconcs[srcid+str(s2)+str(r2)]
 
-#        conc_s1r1 = pconcs['result'].loc[(pconcs['sector']==s1) & (pconcs['ring']==r1)].iat[0]
-#        conc_s1r2 = pconcs['result'].loc[(pconcs['sector']==s1) & (pconcs['ring']==r2)].iat[0]
-#        conc_s2r1 = pconcs['result'].loc[(pconcs['sector']==s2) & (pconcs['ring']==r1)].iat[0]
-#        conc_s2r2 = pconcs['result'].loc[(pconcs['sector']==s2) & (pconcs['ring']==r2)].iat[0]
         
         if conc_s1r1 == 0 or conc_s1r2 == 0:
             R_s12 = max(conc_s1r1, conc_s1r2)
@@ -216,29 +245,7 @@ class AllOuterReceptors(CsvWriter):
             R_s34 = math.exp(Lnr_s34)
 
         interp_conc = R_s12*(int(s)+1-s) + R_s34*(s-int(s))       
-        return interp_conc
-
-
-#    def interpolate(self, conc_s1r1, conc_s2r1, conc_s1r2, conc_s2r2, s, ring_loc):
-#        interp_conc = np.zeros(len(conc_s1r1))
-#        for i in np.arange(len(conc_s1r1)):
-#            if conc_s1r1[i] == 0 or conc_s1r2[i] == 0:
-#                R_s12 = max(conc_s1r1[i], conc_s1r2[i])
-#            else:
-#                Lnr_s12 = ((math.log(conc_s1r1[i]) * (int(ring_loc)+1-ring_loc)) + 
-#                          (math.log(conc_s1r2[i]) * (ring_loc-int(ring_loc))))
-#                R_s12 = math.exp(Lnr_s12)
-#    
-#            if conc_s2r1[i] == 0 or conc_s2r2[i] == 0:
-#                R_s34 = max(conc_s2r1[i], conc_s2r2[i] )
-#            else:
-#                Lnr_s34 = ((math.log(conc_s2r1[i]) * (int(ring_loc)+1-ring_loc)) + 
-#                          (math.log(conc_s2r2[i]) * (ring_loc-int(ring_loc))))
-#                R_s34 = math.exp(Lnr_s34)
-#    
-#            interp_conc[i] = R_s12*(int(s)+1-s) + R_s34*(s-int(s))       
-#        return interp_conc
-    
+        return interp_conc    
         
 
     def compute_s1s2r1r2(self, row):
@@ -261,150 +268,91 @@ class AllOuterReceptors(CsvWriter):
         
         
     def analyze(self, data):
-        columns = [pollutant, conc, lat, lon, fips, block, overlap, elev,
-           utme, utmn, population, hill]
 
-        allouter_df = data
+        # Skip if no data
+        if data.size > 0:
+            
+            # DF of Outer receptors in this box
+            box_receptors = pd.DataFrame(data, columns=self.columns)
+            
+            # compute risk and HI by sourceid/pollutant for each Outer receptor in this box
+            risks_df = self.calculateRisks(box_receptors[pollutant], box_receptors[conc])
+            box_receptors_wrisk = pd.concat([box_receptors, risks_df], axis=1)
+                        
+            # Merge box_receptors_wrisk with the outerblocks DF and select columns
+            blksumm_cols = [lat, lon, overlap, elev, fips, block, utme, utmn, hill, population,
+                            mir, hi_resp, hi_live, hi_neur, hi_deve, hi_repr, hi_kidn, hi_ocul,
+                            hi_endo, hi_hema, hi_immu, hi_skel, hi_sple, hi_thyr, hi_whol]
+            boxmerged = box_receptors_wrisk.merge(self.outerblocks, on=[lat, lon])[blksumm_cols]
+            
+    
+            #----------- Accumulate Outer receptor risks by lat/lon for later use in BlockSummaryChronic ----------------
+                        
+            blksumm_aggs = {lat:'first', lon:'first', overlap:'first', elev:'first', fips:'first', 
+                            block:'first', utme:'first', utmn:'first', hill:'first', population:'first',
+                            mir:'sum', hi_resp:'sum', hi_live:'sum', hi_neur:'sum', hi_deve:'sum',
+                            hi_repr:'sum', hi_kidn:'sum', hi_ocul:'sum', hi_endo:'sum', hi_hema:'sum',
+                            hi_immu:'sum', hi_skel:'sum', hi_sple:'sum', hi_thyr:'sum', hi_whol:'sum'}
+    
+            outeragg = boxmerged.groupby([lat, lon]).agg(blksumm_aggs)[blksumm_cols]
+    
+            if self.outerAgg is None:
+                storage = self.outerblocks.shape[0]
+                self.outerAgg = pd.DataFrame(columns=blksumm_cols, index=range(storage))
+            self.outerAgg = self.outerAgg.append(outeragg)
+                
+            
+            #----------- Keep track of maximum risk and HI ---------------------------------------
+            
+            # sum risk and HIs to lat/lon
+            aggs = {lat:'first', lon:'first',
+                    mir:'sum', hi_resp:'sum', hi_live:'sum', hi_neur:'sum', hi_deve:'sum',
+                    hi_repr:'sum', hi_kidn:'sum', hi_ocul:'sum', hi_endo:'sum', hi_hema:'sum',
+                    hi_immu:'sum', hi_skel:'sum', hi_sple:'sum', hi_thyr:'sum', hi_whol:'sum'}
+    
+            sum_columns = [lat, lon, mir, hi_resp, hi_live, hi_neur, hi_deve, hi_repr, hi_kidn, hi_ocul,
+                           hi_endo, hi_hema, hi_immu, hi_skel, hi_sple, hi_thyr, hi_whol]
+            riskhi_by_latlon = box_receptors_wrisk.groupby([lat, lon]).agg(aggs)[sum_columns]
+            
+            # Find max mir and each max HI for Outer receptors in this box. Update the max_riskhi and
+            # max_riskhi_bkdn dictionaries.
+            for iparm in self.riskhi_parms:
+                idx = riskhi_by_latlon[iparm].idxmax()
+                if riskhi_by_latlon[iparm].loc[idx] > self.max_riskhi[iparm][2]:
+                    # Update the  max_riskhi dictionary
+                    maxlat = riskhi_by_latlon[lat].loc[idx]
+                    maxlon = riskhi_by_latlon[lon].loc[idx]
+                    self.max_riskhi[iparm] = [maxlat, maxlon, riskhi_by_latlon[iparm].loc[idx]]
+                    # Update the max_riskhi_bkdn dictionary
+                    box_receptors_max = box_receptors_wrisk[(box_receptors_wrisk[lat]==maxlat) & (box_receptors_wrisk[lon]==maxlon)]
+                    for index, row in box_receptors_max.iterrows():
+                        self.max_riskhi_bkdn[(iparm, row[source_id], row[pollutant], row[ems_type])] = \
+                                             [maxlat, maxlon, row[iparm]]
+                
+            #--------------- Keep track of incidence -----------------------------------------
+                        
+            # Compute incidence for each Outer rececptor and then sum incidence by source_id and pollutant
+            box_receptors_wrisk['inc'] = box_receptors_wrisk.apply(lambda row: (row[mir] * row[population])/70, axis=1)
+            boxInc = box_receptors_wrisk.groupby([source_id, pollutant, ems_type], as_index=False)[[inc]].sum()
+    
+            # Update the outerInc incidence dictionary
+            for incdx, incrow in boxInc.iterrows():
+                self.outerInc[(incrow[source_id], incrow[pollutant], incrow[ems_type])] = \
+                      self.outerInc[(incrow[source_id], incrow[pollutant], incrow[ems_type])] + incrow['inc']
+            
 
-        # join outer receptor df with the outer block df and then select columns
-        Logger.logMessage("before allouter merge")
-        outermerged = allouter_df.merge(self.outerblocks, on=[lat, lon])[columns]
+    def calculateRisks(self, pollutants, concs):
 
-        Logger.logMessage("before outermerged apply")
-        outermerged[[mir, hi_resp, hi_live, hi_neur, hi_deve, hi_repr, hi_kidn, hi_ocul, hi_endo,
-                     hi_hema, hi_immu, hi_skel, hi_sple, hi_thyr, hi_whol]] = \
-            outermerged.apply(lambda row: self.calculateRisks(row[pollutant], row[conc]), axis=1)
-
-        aggs = {pollutant:'first', lat:'first', lon:'first', overlap:'first', elev:'first', utme:'first',
-                utmn:'first', hill:'first', conc:'first', fips:'first', block:'first', population:'first',
-                mir:'sum', hi_resp:'sum', hi_live:'sum', hi_neur:'sum', hi_deve:'sum',
-                hi_repr:'sum', hi_kidn:'sum', hi_ocul:'sum', hi_endo:'sum', hi_hema:'sum',
-                hi_immu:'sum', hi_skel:'sum', hi_sple:'sum', hi_thyr:'sum', hi_whol:'sum'}
-
-        columns = [lat, lon, overlap, elev, fips, block, utme, utmn, hill, population,
-                   mir, hi_resp, hi_live, hi_neur, hi_deve, hi_repr, hi_kidn, hi_ocul,
-                   hi_endo, hi_hema, hi_immu, hi_skel, hi_sple, hi_thyr, hi_whol]
-
-        Logger.logMessage("before outermerged groupby...size = " + str(outermerged.size))
-
-        outeragg = outermerged.groupby([lat, lon]).agg(aggs)[columns]
-
-        Logger.logMessage("before outerAgg append")
-        if self.outerAgg is None:
-            storage = self.model.outerblks_df.shape[0]
-            Logger.logMessage("STORAGE: " + str(storage))
-            self.outerAgg = pd.DataFrame(columns=columns, index=range(storage))
-        self.outerAgg = self.outerAgg.append(outeragg)
-
-
-        Logger.logMessage("before outerInc apply")
-        # compute incidence for each Outer rececptor row and then sum incidence by source_id and pollutant
-        allouter_df['inc'] = allouter_df.apply(lambda row: self.calculateMirRisk(row[pollutant],
-                                                                              row[conc]) * row[population]/70, axis=1)
-
-        Logger.logMessage("before outerInc groupby")
-        outerInc = allouter_df.groupby([source_id, pollutant, ems_type], as_index=False)[[inc]].sum()
-
-        Logger.logMessage("before outerInc append")
-        if self.outerInc is None:
-            storage = self.model.outerblks_df.shape[0]
-            self.outerInc = pd.DataFrame(columns=columns, index=range(storage))
-        self.outerInc = self.outerInc.append(outerInc)
-
-
-
-
-        # maxes = {mir: 0, hi_resp: 0, hi_live: 0, hi_neur: 0, hi_deve: 0, hi_repr: 0, hi_kidn: 0, hi_ocul: 0, hi_endo: 0,
-        #         hi_hema: 0, hi_immu: 0, hi_skel: 0, hi_sple: 0, hi_thyr: 0, hi_whol: 0}
-        #
-        # for index, row in outeragg.iterrows():
-        #     self.updateMaxes(maxes, row)
-
-    def calculateMirRisk(self, pollutant_name, conc):
-        URE = None
-
-        # In order to get a case-insensitive exact match (i.e. matches exactly except for casing)
-        # we are using a regex that is specified to be the entire value. Since pollutant names can
-        # contain parentheses, escape them before constructing the pattern.
-        pattern = '^' + re.escape(pollutant_name) + '$'
-
-        # Since it's relatively expensive to get this from the dose response library, cache them locally.
-        if pollutant_name in self.riskCache:
-            URE = self.riskCache[pollutant_name][ure]
-        else:
-            row = self.model.haplib.dataframe.loc[
-                self.model.haplib.dataframe[pollutant].str.contains(pattern, case=False, regex=True)]
-
-            if row.size == 0:
-                msg = 'Could not find pollutant ' + pollutant_name + ' in the haplib!'
-                Logger.logMessage(msg)
-                # Logger.log(msg, self.model.haplib.dataframe, False)
-                URE = 0
-            else:
-                URE = row.iloc[0][ure]
-
-            self.riskCache[pollutant_name] = {ure : URE}
-
-
-        mir = conc * URE
-        return mir
-
-    def calculateRisks(self, pollutant_name, conc):
-        URE = None
-        RFC = None
-
-        # In order to get a case-insensitive exact match (i.e. matches exactly except for casing)
-        # we are using a regex that is specified to be the entire value. Since pollutant names can
-        # contain parentheses, escape them before constructing the pattern.
-        pattern = '^' + re.escape(pollutant_name) + '$'
-
-        # Since it's relatively expensive to get these values from their respective libraries, cache them locally.
-        # Note that they are cached as a pair (i.e. if one is in there, the other one will be too...)
-        if pollutant_name in self.riskCache:
-            URE = self.riskCache[pollutant_name][ure]
-            RFC = self.riskCache[pollutant_name][rfc]
-        else:
-            row = self.model.haplib.dataframe.loc[
-                self.model.haplib.dataframe[pollutant].str.contains(pattern, case=False, regex=True)]
-
-            if row.size == 0:
-                msg = 'Could not find pollutant ' + pollutant_name + ' in the haplib!'
-                Logger.logMessage(msg)
-                # Logger.log(msg, self.model.haplib.dataframe, False)
-                URE = 0
-                RFC = 0
-            else:
-                URE = row.iloc[0][ure]
-                RFC = row.iloc[0][rfc]
-
-            self.riskCache[pollutant_name] = {ure : URE, rfc : RFC}
-
-        organs = None
-        if pollutant_name in self.organCache:
-            organs = self.organCache[pollutant_name]
-        else:
-            row = self.model.organs.dataframe.loc[
-                self.model.organs.dataframe[pollutant].str.contains(pattern, case=False, regex=True)]
-
-            if row.size == 0:
-                # Couldn't find the pollutant...set values to 0 and log message
-                # Logger.logMessage('Could not find pollutant ' + pollutant_name + ' in the target organs.')
-                listed = []
-            else:
-                listed = row.values.tolist()
-
-            # Note: sometimes there is a pollutant with no effect on any organ (RFC == 0). In this case it will
-            # not appear in the organs library, and therefore 'listed' will be empty. We will just assign a
-            # dummy list in this case...
-            organs = listed[0] if len(listed) > 0 else list(range(16))
-            self.organCache[pollutant_name] = organs
-
-        risks = []
-        MIR = conc * URE
-        risks.append(MIR)
-
-        # Note: indices 2-15 correspond to the organ response value columns in the organs library...
-        for i in range(2, 16):
-            hazard_index = (0 if RFC == 0 else (conc/RFC/1000)*organs[i])
-            risks.append(hazard_index)
-        return Series(risks)
+        risklist = []
+        riskcols = [mir, hi_resp, hi_live, hi_neur, hi_deve, hi_repr, hi_kidn, hi_ocul,
+                    hi_endo, hi_hema, hi_immu, hi_skel, hi_sple, hi_thyr, hi_whol]
+        
+        mirlist = [n * self.riskCache[m.lower()][ure] for m, n in zip(pollutants, concs)]
+        hilist = [((k/self.riskCache[j.lower()][rfc]/1000) * np.array(self.organCache[j.lower()][2:])).tolist() 
+                        for j, k in zip(pollutants, concs)] 
+                        
+        riskdf = pd.DataFrame(np.column_stack([mirlist, hilist]), columns=riskcols)
+        # change any negative HIs to 0
+        riskdf[riskdf < 0] = 0
+        return riskdf
+    

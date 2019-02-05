@@ -479,10 +479,10 @@ class FacilityPrep():
         ring_loc = -999
 
         # compute fractional sector number
-        s = (block_angle * num_sectors)/360.0 % num_sectors
+        s = ((block_angle * num_sectors)/360.0 % num_sectors) + 1
 
         # compute integer sector number
-        sector_int = int(s) + 1
+        sector_int = int(s)
 
         # Compute ring_loc. loop through ring distances in pairs of previous and current
         previous = ring_distances[0]
