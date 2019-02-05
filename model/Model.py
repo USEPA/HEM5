@@ -59,6 +59,9 @@ class Model():
         # and get overwritten when the next facility runs.
         self.computedValues = {}
 
+        # Initialize model options
+        self.initializeOptions()
+
     @property
     def fac_ids(self):
         """Read-only array of facility ids"""
@@ -91,3 +94,12 @@ class Model():
         self.gasparams = None
         self.model_optns = defaultdict()
         self.save = None
+
+        # Initialize model options
+        self.initializeOptions()
+
+
+    def initializeOptions(self):
+        self.model_optns['ureponly'] = False
+        self.model_optns['ureponly_nopop'] = False
+        self.model_optns['ureponly_flat'] = False

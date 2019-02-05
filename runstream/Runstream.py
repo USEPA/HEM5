@@ -69,8 +69,10 @@ class Runstream():
     # Elevations --------------------------------------------------------------
            
         self.eleva = self.facoptn_df['elev'][0]                        
-    
-        if self.eleva == "Y":
+
+        if self.model_optns['ureponly_flat']:
+            optel = " FLAT "
+        elif self.eleva == "Y":
             optel = " ELEV "
         else:
             optel = " FLAT "

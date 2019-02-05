@@ -7,15 +7,21 @@ Created on Mon Oct 23 12:43:52 2017
 
 from upload.TargetOrganEndpoints import *
 from upload.UserReceptors import rec_type
+from writer.csv.AllInnerReceptorsNonCensus import AllInnerReceptorsNonCensus
+from writer.csv.AllOuterReceptorsNonCensus import AllOuterReceptorsNonCensus
 from writer.csv.AllPolarReceptors import *
 from writer.csv.AllOuterReceptors import AllOuterReceptors
+from writer.csv.BlockSummaryChronicNonCensus import BlockSummaryChronicNonCensus
 from writer.csv.RingSummaryChronic import RingSummaryChronic
 from writer.csv.BlockSummaryChronic import *
 from writer.excel.CancerRiskExposure import CancerRiskExposure
 from writer.excel.FacilityMaxRiskandHI import FacilityMaxRiskandHI
+from writer.excel.FacilityMaxRiskandHINonCensus import FacilityMaxRiskandHINonCensus
 from writer.excel.InputSelectionOptions import InputSelectionOptions
 from writer.excel.MaximumIndividualRisks import MaximumIndividualRisks, value
+from writer.excel.MaximumIndividualRisksNonCensus import MaximumIndividualRisksNonCensus
 from writer.excel.MaximumOffsiteImpacts import MaximumOffsiteImpacts
+from writer.excel.MaximumOffsiteImpactsNonCensus import MaximumOffsiteImpactsNonCensus
 from writer.excel.NoncancerRiskExposure import NoncancerRiskExposure
 from writer.excel.RiskBreakdown import RiskBreakdown
 from writer.excel.Incidence import Incidence
@@ -119,8 +125,14 @@ class Process_outputs():
             Logger.logMessage("Terminating output processing...")
             return
 
+        # Was this facility run with user receptors only? If so, we need to use the output modules that do not
+        # reference census data fields like FIPs and block number.
+        ureponly = self.model.model_optns["ureponly"]
+        ureponly_nopop = self.model.model_optns["ureponly_nopop"]
+
         #----------- create All_Inner_Receptor output file -----------------
-        all_inner_receptors = AllInnerReceptors(self.outdir, self.facid, self.model, plot_df)
+        all_inner_receptors = AllInnerReceptorsNonCensus(self.outdir, self.facid, self.model, plot_df) if ureponly \
+                        else AllInnerReceptors(self.outdir, self.facid, self.model, plot_df)
         all_inner_receptors.write()
         self.model.all_inner_receptors_df = all_inner_receptors.dataframe
 
@@ -129,7 +141,8 @@ class Process_outputs():
             return
 
         #----------- create All_Outer_Receptor output file -----------------
-        all_outer_receptors = AllOuterReceptors(self.outdir, self.facid, self.model, plot_df)
+        all_outer_receptors = AllOuterReceptorsNonCensus(self.outdir, self.facid, self.model, plot_df) if ureponly \
+                        else AllOuterReceptors(self.outdir, self.facid, self.model, plot_df)
         all_outer_receptors.write()
         self.model.all_outer_receptors_df = all_outer_receptors.dataframe
 
@@ -147,8 +160,9 @@ class Process_outputs():
             Logger.logMessage("Terminating output processing...")
             return
 
-        #----------- create Block_Summary_Chronic data -----------------      
-        block_summary_chronic = BlockSummaryChronic(self.outdir, self.facid, self.model, plot_df, all_outer_receptors.outerAgg)
+        #----------- create Block_Summary_Chronic data -----------------
+        block_summary_chronic = BlockSummaryChronicNonCensus(self.outdir, self.facid, self.model, plot_df, all_outer_receptors.outerAgg) if ureponly else \
+            BlockSummaryChronic(self.outdir, self.facid, self.model, plot_df, all_outer_receptors.outerAgg)
         generator = block_summary_chronic.generateOutputs()
         for batch in generator:
             block_summary_chronic_df = block_summary_chronic.dataframe
@@ -189,14 +203,16 @@ class Process_outputs():
             return
           
         #----------- create Maximum_Individual_Risk output file ---------------
-        max_indiv_risk = MaximumIndividualRisks(self.outdir, self.facid, self.model, plot_df)
+        max_indiv_risk = MaximumIndividualRisksNonCensus(self.outdir, self.facid, self.model, plot_df) if ureponly \
+                else MaximumIndividualRisks(self.outdir, self.facid, self.model, plot_df)
         max_indiv_risk.write()
         self.model.max_indiv_risk_df = max_indiv_risk.dataframe
 
         #----------- create Maximum_Offsite_Impacts output file ---------------
         inner_recep_risk_df = block_summary_chronic_df[block_summary_chronic_df["rec_type"] == "I"]
-        max_offsite_impacts = MaximumOffsiteImpacts(self.outdir, self.facid, self.model, plot_df,
-                                                    ring_summary_chronic_df, inner_recep_risk_df)
+        max_offsite_impacts = MaximumOffsiteImpactsNonCensus(self.outdir, self.facid, self.model, plot_df,
+                                                    ring_summary_chronic_df, inner_recep_risk_df) if ureponly else \
+            MaximumOffsiteImpacts(self.outdir, self.facid, self.model, plot_df, ring_summary_chronic_df, inner_recep_risk_df)
         max_offsite_impacts.write()
 
 
@@ -220,17 +236,18 @@ class Process_outputs():
 
 
         #----------- create Incidence output file ------------------------
-        #  first convert outerInc dictionary into a DF
-        outerInc_list = []
-        for key in all_outer_receptors.outerInc.keys():
-            insert_list = [key[0], key[1], key[2], all_outer_receptors.outerInc[key]]
-            outerInc_list.append(insert_list)
-        outerInc_df = pd.DataFrame(outerInc_list, columns=['source_id', 'pollutant', 'ems_type', 'inc'])
-        incidence= Incidence(self.outdir, self.facid, self.model, plot_df, outerInc_df)
-        incidence.write()
+        if not ureponly_nopop:
+            outerInc_list = []
+            for key in all_outer_receptors.outerInc.keys():
+                insert_list = [key[0], key[1], key[2], all_outer_receptors.outerInc[key]]
+                outerInc_list.append(insert_list)
+            outerInc_df = pd.DataFrame(outerInc_list, columns=[source_id, pollutant, ems_type, inc])
+            incidence= Incidence(self.outdir, self.facid, self.model, plot_df, outerInc_df)
+            incidence.write()
 
         #----------- append to facility max risk output file ------------------
-        fac_max_risk = FacilityMaxRiskandHI("output/", self.facid, self.model, plot_df, incidence.dataframe)
+        fac_max_risk = FacilityMaxRiskandHINonCensus("output/", self.facid, self.model, plot_df, incidence.dataframe) if ureponly else \
+            FacilityMaxRiskandHI("output/", self.facid, self.model, plot_df, incidence.dataframe)
         fac_max_risk.writeWithoutHeader()
 
 #        #create facility kml

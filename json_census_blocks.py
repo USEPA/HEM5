@@ -1,8 +1,10 @@
-from FacilityPrep import *
+import math
+
+from log import Logger
 from support.UTM import *
 from model.Model import *
 
-rec_no = 'rec_no';
+rec_id = 'rec_id';
 fips = 'fips';
 idmarplot = 'idmarplot';
 population = 'population';
@@ -147,8 +149,8 @@ def in_box(modelblks, sourcelocs, modeldist, maxdist, overlap_dist):
         
         if len(indist) > 0:
             innerblks = innerblks.append(indist).reset_index(drop=True)
-            innerblks = innerblks[~innerblks[idmarplot].apply(tuple).duplicated()]
-            outerblks = outerblks[~outerblks[idmarplot].isin(innerblks[idmarplot])]
+            innerblks = innerblks[~innerblks[rec_id].duplicated()]
+            outerblks = outerblks[~outerblks[rec_id].isin(innerblks[rec_id])]
 
             #Do any of these inner or outer blocks overlap this source?
             innerblks['overlap'] = np.where(np.sqrt((innerblks[utme]-src_x)**2 + (innerblks[utmn]-src_y)**2) <= overlap_dist, "Y", "N")
@@ -167,8 +169,8 @@ def in_box(modelblks, sourcelocs, modeldist, maxdist, overlap_dist):
         indist = outerblks.query('utme >= @sw_x and utme <= @ne_x and utmn >= @sw_y and utmn <= @ne_y')
         if len(indist) > 0:
             innerblks = innerblks.append(indist).reset_index(drop=True)
-            innerblks = innerblks[~innerblks[idmarplot].apply(tuple).duplicated()]
-            outerblks = outerblks[~outerblks[idmarplot].isin(innerblks[idmarplot])]
+            innerblks = innerblks[~innerblks[rec_id].apply(tuple).duplicated()]
+            outerblks = outerblks[~outerblks[rec_id].isin(innerblks[rec_id])]
 
             #Do any of these inner or outer blocks overlap this source?
             sw_x = row[utme] - overlap_dist
@@ -195,8 +197,8 @@ def in_box(modelblks, sourcelocs, modeldist, maxdist, overlap_dist):
         indist = outerblks.query('inbox == True')
         if len(indist) > 0:
             innerblks = innerblks.append(indist).reset_index(drop=True)
-            innerblks = innerblks[~innerblks[idmarplot].apply(tuple).duplicated()]
-            outerblks = outerblks[~outerblks[idmarplot].isin(innerblks[idmarplot])]
+            innerblks = innerblks[~innerblks[rec_id].apply(tuple).duplicated()]
+            outerblks = outerblks[~outerblks[rec_id].isin(innerblks[rec_id])]
                   
     print("third innerblks size = ", innerblks.shape, " third outerblks size = ", outerblks.shape)
 
@@ -207,13 +209,13 @@ def in_box(modelblks, sourcelocs, modeldist, maxdist, overlap_dist):
     if len(polyvertices) > 1:
             
         # for tract polygons, any outerblks in the same tract as any polygon vertex will be counted as inner
-        outerblks["tract"] = outerblks[idmarplot].str[0:10]
+        outerblks["tract"] = outerblks[rec_id].str[0:10]
         polyvertices["tract"] = polyvertices[fac_id].str[1:11]
         intract = pd.merge(outerblks, polyvertices, how='inner', on='tract')
         if len(intract) > 0:
             innerblks = innerblks.append(intract).reset_index(drop=True)
-            innerblks = innerblks[~innerblks[idmarplot].apply(tuple).duplicated()]
-            outerblks = outerblks[~outerblks[idmarplot].isin(innerblks[idmarplot])]
+            innerblks = innerblks[~innerblks[rec_id].apply(tuple).duplicated()]
+            outerblks = outerblks[~outerblks[rec_id].isin(innerblks[rec_id])]
         
         # for non-tract polygons, are any blocks within the modeldist of any polygon side?
         #     process each source_id
@@ -227,18 +229,12 @@ def in_box(modelblks, sourcelocs, modeldist, maxdist, overlap_dist):
                 polyblks = outerblks.query('nearpoly == True')
                 if len(polyblks) > 0:
                     innerblks = innerblks.append(polyblks).reset_index(drop=True)
-                    innerblks = innerblks[~innerblks[idmarplot].apply(tuple).duplicated()]
-                    outerblks = outerblks[~outerblks[idmarplot].isin(innerblks[idmarplot])]
+                    innerblks = innerblks[~innerblks[rec_id].apply(tuple).duplicated()]
+                    outerblks = outerblks[~outerblks[rec_id].isin(innerblks[rec_id])]
 
     print("fourth innerblks size = ", innerblks.shape, " fourth outerblks size = ", outerblks.shape)
         
-    return innerblks, outerblks    
-    
-    
-
-    
-    
-    
+    return innerblks, outerblks
 
 #%%
 def read_json_file(path_to_file, dtype_dict):
@@ -305,6 +301,7 @@ def getblocks(cenx, ceny, cenlon, cenlat, utmzone, maxdist, modeldist, sourceloc
         dtype_dict = '{"REC_NO":int, "FIPS":object, "IDMARPLOT":object, "POPULATION":int, "LAT":float, "LON":float, "ELEV":float, "HILL":float, "MOVED":object, "URBAN_POP":int}'
         state_pd = read_json_file(state, dtype_dict)
         state_pd.columns = [x.lower() for x in state_pd.columns]
+        state_pd.rename(inplace=True, index=str, columns={'rec_no' : 'rec_id'})
 #        state_pd = pd.DataFrame.from_dict(state_data['data'], orient='columns')
         
         
@@ -339,7 +336,8 @@ def getblocks(cenx, ceny, cenlon, cenlat, utmzone, maxdist, modeldist, sourceloc
 
     # Split modelblks into inner and outer block receptors
     innerblks, outerblks = in_box(modelblks, sourcelocs, modeldist, maxdist, overlap_dist)
-        
+
+    Logger.log("OUTERBLOCKS", outerblks, False)
     
     # convert utme, utmn, utmz, and population to integers
     innerblks[utme] = innerblks[utme].astype(int)
