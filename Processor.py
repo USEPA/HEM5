@@ -1,6 +1,6 @@
 import os
 import threading
- from log import Logger
+from log import Logger
 from runner.FacilityRunner import FacilityRunner
 from writer.excel.FacilityMaxRiskandHI import FacilityMaxRiskandHI
 from writer.kml.KMLWriter import KMLWriter
@@ -94,7 +94,7 @@ class Processor():
                 # increment facility count
                 
                 #check if there is more than one facility, only save if there are
-                if len(faclist) > 1:
+                if len(fac_list) > 1:
                     self.model.save.save_model(facid)
                 
                 num += 1
