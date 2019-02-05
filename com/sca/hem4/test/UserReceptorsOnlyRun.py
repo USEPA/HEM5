@@ -1,9 +1,8 @@
 import unittest
-
-from test.SingleFacilityRun import SingleFacilityRun
 import os
 import shutil
-from test.TestHarness import TestHarness
+from com.sca.hem4.test.SingleFacilityRun import SingleFacilityRun
+from com.sca.hem4.test.TestHarness import TestHarness
 
 class UserReceptorsOnlyRun(SingleFacilityRun):
 

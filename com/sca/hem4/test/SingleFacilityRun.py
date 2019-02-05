@@ -3,7 +3,7 @@ import os
 import shutil
 import unittest
 import pandas as pd
-from test.TestHarness import TestHarness
+from com.sca.hem4.test.TestHarness import TestHarness
 from writer.csv.AllInnerReceptors import AllInnerReceptors
 from writer.csv.AllPolarReceptors import AllPolarReceptors
 from writer.csv.BlockSummaryChronic import BlockSummaryChronic
