@@ -127,7 +127,12 @@ class Runstream():
             urbanopt = "CO URBANOPT " + str(self.facoptn_df['urban_pop'].values[0]) + "\n"
             self.inp_f.write(urbanopt)
              
-        #check if there should be an urban option and set
+        #if rural is forced do nothing
+        elif self.facoptn_df['rural_urban'].values[0] == 'R':
+            
+            self.urban = False
+        
+        #check if there is nothing default is to determin an urban option and set
         else:
             #get shortest distance in innerblks and check for urban population
             if not innerblks.empty:
