@@ -122,9 +122,9 @@ class Runstream():
         self.inp_f.write(co4)
         
         #check for user specified urban option
-        if self.facoptn_df['rural_urban'][0] == 'U':
+        if self.facoptn_df['rural_urban'].values[0] == 'U':
             self.urban = True
-            urbanopt = "CO URBANOPT " + str(self.facoptn_df['urban_pop'][0]) + "\n"
+            urbanopt = "CO URBANOPT " + str(self.facoptn_df['urban_pop'].values[0]) + "\n"
             self.inp_f.write(urbanopt)
              
         #check if there should be an urban option and set
@@ -141,7 +141,7 @@ class Runstream():
                 closest = outerblks.nsmallest(1, 'distance')
                 if closest['urban_pop'].values[0] > 0:
                     self.urban = True
-                    urbanopt = "CO URBANOPT " + str(closest['urban_pop'][0]) + "\n"
+                    urbanopt = "CO URBANOPT " + str(closest['urban_pop'].values[0]) + "\n"
                     self.inp_f.write(urbanopt)
                 
             
