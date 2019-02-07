@@ -1,3 +1,4 @@
+from json_census_blocks import population
 from upload.DependentInputFile import DependentInputFile
 from tkinter import messagebox
 from upload.EmissionsLocations import *
@@ -17,11 +18,11 @@ class UserReceptors(DependentInputFile):
         faclist_df = self.dependency
 
         # Specify dtypes for all fields
-        self.numericColumns = [lon, lat, elev]
+        self.numericColumns = [lon, lat, elev, hill, population]
         self.strColumns = [fac_id,location_type, utmzone, rec_type, rec_id]
 
         ureceptor_df = self.readFromPath(
-            (fac_id, location_type, lon, lat, utmzone, elev, rec_type, rec_id))
+            (fac_id, location_type, lon, lat, utmzone, elev, rec_type, rec_id, hill, population))
 
         #check for unassigned user receptors
         check_receptor_assignment = ureceptor_df[fac_id]

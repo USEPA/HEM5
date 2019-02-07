@@ -18,14 +18,18 @@ class NoncancerRiskExposure(ExcelWriter):
         if x == 0:
             return 0;
 
+        if math.isnan(x):
+            return float('NaN')
+
         rounded = round(x, sig-int(floor(log10(abs(x))))-1)
         return rounded
 
-    def calculateOutputs(self):
+    def getHeader(self):
+        return ['Level', 'Respiratory HI', 'Liver HI', 'Neurological HI', 'Developmental HI',
+                'Reproductive HI', 'Kidney HI', 'Ocular HI', 'Endocrine HI', 'Hematological HI',
+                'Immunological HI', 'Skeletal HI', 'Spleen HI', 'Thyroid HI', 'Whole body HI']
 
-        self.headers = ['Level', 'Respiratory HI', 'Liver HI', 'Neurological HI', 'Developmental HI',
-                        'Reproductive HI', 'Kidney HI', 'Ocular HI', 'Endocrine HI', 'Hematological HI',
-                        'Immunological HI', 'Skeletal HI', 'Spleen HI', 'Thyroid HI', 'Whole body HI']
+    def generateOutputs(self):
 
         df = self.block_summary_chronic_df.copy()
         levels =[100, 50, 10, 1.0, 0.5, 0.2]
@@ -48,3 +52,4 @@ class NoncancerRiskExposure(ExcelWriter):
 
         self.dataframe = df
         self.data = self.dataframe.values
+        yield self.dataframe

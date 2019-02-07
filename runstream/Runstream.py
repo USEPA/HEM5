@@ -23,7 +23,7 @@ class Runstream():
     def __init__(self, facops_df, emislocs_df, hapemis_df, urecs_df = None, 
                  buoyant_df = None, polyver_df = None, bldgdw_df = None, 
                  partdia_df = None, landuse_df = None, seasons_df = None,
-                 emisvar_df = None, gas_params = None):
+                 emisvar_df = None, gas_params = None, model_optns = None):
         
         self.facoptn_df = facops_df
         self.emisloc_df = emislocs_df
@@ -38,6 +38,7 @@ class Runstream():
         self.emisvar_df = emisvar_df
         self.gas_params = gas_params
         self.urban = False
+        self.model_optns = model_optns
         
         #open file to write
         self.inp_f = open("aermod.inp", "w")
@@ -68,8 +69,10 @@ class Runstream():
     # Elevations --------------------------------------------------------------
            
         self.eleva = self.facoptn_df['elev'][0]                        
-    
-        if self.eleva == "Y":
+
+        if self.model_optns['ureponly_flat']:
+            optel = " FLAT "
+        elif self.eleva == "Y":
             optel = " ELEV "
         else:
             optel = " FLAT "
@@ -131,7 +134,7 @@ class Runstream():
                 closest = innerblks.nsmallest(1, 'distance')
                 if closest['urban_pop'].values[0] > 0:
                     self.urban = True
-                    urbanopt = "CO URBANOPT " + str(closest['urban_pop'][0]) + "\n"
+                    urbanopt = "CO URBANOPT  " + str(closest['urban_pop'].values[0]) + "\n"
                     self.inp_f.write(urbanopt)
                     
             else: #get shortest distance from outerblocks 
@@ -253,6 +256,7 @@ class Runstream():
                 
                 if self.urban == True:
                     urbanopt = "SO URBANSRC " + str(srid[index]) + "\n"
+                    self.inp_f.write(urbanopt)
 
                 if self.blddw == "Y":
                     self.get_blddw(srid[index])
@@ -292,6 +296,7 @@ class Runstream():
                 
                 if self.urban == True:
                     urbanopt = "SO URBANSRC " + str(srid[index]) + "\n"
+                    self.inp_f.write(urbanopt)
                 
                 if self.blddw == "Y":
                     self.get_blddw(srid[index])
@@ -330,6 +335,7 @@ class Runstream():
                 
                 if self.urban == True:
                     urbanopt = "SO URBANSRC " + str(srid[index]) + "\n"
+                    self.inp_f.write(urbanopt)
                 
                 if self.blddw == "Y":
                     self.get_blddw(srid[index])
@@ -369,6 +375,7 @@ class Runstream():
                 
                 if self.urban == True:
                     urbanopt = "SO URBANSRC " + str(srid[index]) + "\n"
+                    self.inp_f.write(urbanopt)
                 
                 if self.blddw == "Y":
                     self.get_blddw(srid[index])
@@ -407,6 +414,7 @@ class Runstream():
                 
                 if self.urban == True:
                     urbanopt = "SO URBANSRC " + str(srid[index]) + "\n"
+                    self.inp_f.write(urbanopt)
                 
                 if self.blddw == "Y":
                     self.get_blddw(srid[index])
@@ -485,6 +493,7 @@ class Runstream():
                     
                 if self.urban == True:
                     urbanopt = "SO URBANSRC " + str(srid[index]) + "\n"
+                    self.inp_f.write(urbanopt)
                 
                 if self.blddw == "Y":
                     self.get_blddw(srid[index])
@@ -528,6 +537,7 @@ class Runstream():
                 
                 if self.urban == True:
                     urbanopt = "SO URBANSRC " + str(srid[index]) + "\n"
+                    self.inp_f.write(urbanopt)
                 
                 if self.blddw == "Y":
                     self.get_blddw(srid[index])
@@ -579,6 +589,7 @@ class Runstream():
                 
                 if self.urban == True:
                     urbanopt = "SO URBANSRC " + str(srid[index]) + "\n"
+                    self.inp_f.write(urbanopt)
                 
                 if self.blddw == "Y":
                     self.get_blddw(srid[index])
@@ -713,7 +724,7 @@ class Runstream():
         Writes the ME section to aer.inp
         """
         
-        surf_file, upper_file, surfdata_str, uairdata_str, prof_base = fm.find_met(cenlat, cenlon)
+        surf_file, upper_file, surfdata_str, uairdata_str, prof_base, distance = fm.find_met(cenlat, cenlon)
     
         year = 2016 #How do we update this when we update the meteorology files?
     
@@ -741,6 +752,8 @@ class Runstream():
         self.inp_f.write(me_prb)
         # inp_f.write(me_day)
         self.inp_f.write(mef)
+
+        return surf_file, distance
         
     def build_ou(self):
         """
@@ -764,6 +777,9 @@ class Runstream():
         
         if acute == "Y":
             recacu = "OU RECTABLE" + " 1 " + str(self.hours) + " FIRST" + "\n"
+            #set in model options
+            self.model_optns['acute'] = True
+            
         
         ou = "OU FINISHED \n"
         self.inp_f.write(ou)

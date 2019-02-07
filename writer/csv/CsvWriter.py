@@ -9,24 +9,26 @@ class CsvWriter(Writer):
         self.model = model
         self.plot_df = plot_df
 
-    def writeToFile(self):
+    def appendToFile(self, dataframe):
         """
-
-        Write an array to a CSV file.
-
-        :param str name: Name of CSV file
-        :param list headers: A list of column names
-        :param array data: An array of data to write
-
+        Append the given data to a CSV file which is presumed to already exist.
         """
-
-        if self.filename is None:
-            raise RuntimeError("No file name set. Cannot write to file.")
-
-        with open(self.filename, 'w', encoding='UTF-8', newline='') as csvarchive:
-
+        data = dataframe.values
+        with open(self.filename, 'a', encoding='UTF-8', newline='') as csvarchive:
             writer = csv.writer(csvarchive, quoting=csv.QUOTE_NONNUMERIC)
-            writer.writerow(self.headers)
+            self.writeFormatted(writer, data)
 
-            for row in self.data:
-                writer.writerow([float('{:6.12}'.format(x)) if isinstance(x, float) else x for x in row])
+    def writeHeader(self):
+        with open(self.filename, 'w', encoding='UTF-8', newline='') as csvarchive:
+            writer = csv.writer(csvarchive, quoting=csv.QUOTE_NONNUMERIC)
+            writer.writerow(self.getHeader())
+
+    def analyze(self, data):
+        pass
+
+    def writeFormatted(self, writer, data):
+        """
+        Write a row of data using preset formatting.
+        """
+        for row in data:
+            writer.writerow([float('{:6.12}'.format(x)) if isinstance(x, float) else x for x in row])

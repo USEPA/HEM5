@@ -1,3 +1,4 @@
+from collections import defaultdict
 
 fac_id = 'fac_id';
 source_id = 'source_id';
@@ -19,6 +20,14 @@ angle = 'angle';
 class Model():
 
     def __init__(self):
+        """
+        The following are inputs and have dataframe, msg, 
+        
+        faclist - facilities list options file 
+        emisloc
+        
+        
+        """
         self.faclist = None
         self.emisloc = None
         self.hapemis = None
@@ -43,7 +52,15 @@ class Model():
         self.max_indiv_risk_df = None
         self.sourcelocs = None
         self.gasparams = None
-        self.run_optns = {'ureceptr': False, 'phase': None, 'settings': None}
+        self.model_optns = defaultdict()
+        self.save = None
+
+        # Facility-specific values that are computed during the run - these are ephemeral
+        # and get overwritten when the next facility runs.
+        self.computedValues = {}
+
+        # Initialize model options
+        self.initializeOptions()
 
     @property
     def fac_ids(self):
@@ -75,4 +92,14 @@ class Model():
         self.max_indiv_risk_df = None
         self.sourcelocs = None
         self.gasparams = None
-        self.run_optns = {'ureceptr': False, 'phase': None, 'settings': None}
+        self.model_optns = defaultdict()
+        self.save = None
+
+        # Initialize model options
+        self.initializeOptions()
+
+
+    def initializeOptions(self):
+        self.model_optns['ureponly'] = False
+        self.model_optns['ureponly_nopop'] = False
+        self.model_optns['ureponly_flat'] = False
