@@ -19,6 +19,7 @@ from tkinter import messagebox
 from tkinter import scrolledtext
 from tkinter import ttk
 from tkinter.simpledialog import Dialog, Toplevel
+from ttkthemes import ThemedStyle
 
 from Processor import Processor
 from log.Logger import Logger
@@ -125,9 +126,9 @@ class Hem4(tk.Frame):
     
     
     #%% Set Quit, Run, and User Guide buttons        
-        self.quit = tk.Button(self.main, text="QUIT", fg="red",
+        self.quit_button = tk.Button(self.main, text="QUIT", fg="red",
                               command=self.quit_app)
-        self.quit.grid(row=10, column=0, sticky="W")
+        self.quit_button.grid(row=10, column=0, sticky="W")
         
         #run only appears once the required files have been set
         self.run_button = tk.Button(self.main, text='RUN', fg="green", 
@@ -189,7 +190,7 @@ class Hem4(tk.Frame):
         we don't ever destroy the GUI until all processing has stopped, which means
         it's -really- time to end!
         """
-        self.quit()
+        #self.quit()
         self.destroy()
         self.close()
         sys.exit()
@@ -668,7 +669,7 @@ class Hem4(tk.Frame):
         Function for creating row and upload widgets for user receptors
         """
         #create row for user receptors
-        self.s6 = tk.Frame(self.main, width=250, height=100, pady=10, padx=10)
+        self.s6 = tk.Frame(self.main, width=250, height=200, pady=10, padx=10)
         self.s6.grid(row=5, column=0, columnspan=2, sticky="nsew")
         
         #user recptors label
@@ -694,7 +695,12 @@ class Hem4(tk.Frame):
         #event handler for instructions (Button 1 is the left mouse click)
         self.urep_list_man.bind('<Button-1>', 
                                 lambda e:self.manual("instructions/urep_man.txt"))
-            
+         
+        self.check_ureponly = tk.BooleanVar()
+        self.urep_sel = tk.Checkbutton(self.s6, text="Use only these receptors",
+                                        variable = self.check_ureponly,
+                                        command = self.set_ureponly)
+        self.urep_sel.grid(row=3, column=0, sticky='E', padx = 85)
 
 
     def add_buoyant(self):
@@ -954,7 +960,10 @@ class Hem4(tk.Frame):
                     self.emisvar_label.destroy()
                     self.s13.destroy()
             
-            
+    def set_ureponly(self):
+        self.model.model_optns['ureponly'] = self.check_ureponly.get()
+        print("ureponly = " + str(self.model.model_optns['ureponly']))
+   
  #%% Event handlers for porting instructions
 
     #reset instructions space

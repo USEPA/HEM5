@@ -6,6 +6,8 @@ Created on Thu Nov 29 12:17:06 2018
 """
 
 import tkinter as tk
+from tkinter import ttk
+from ttkthemes import ThemedStyle
 from startpage import StartPage
 from navigation import Navigation
 from hem4Window import Hem4
