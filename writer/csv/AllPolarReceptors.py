@@ -15,7 +15,12 @@ class AllPolarReceptors(CsvWriter):
 
         self.polarCache = {}
 
-    def calculateOutputs(self):
+    def getHeader(self):
+        return ['Source ID', 'Emission type', 'Pollutant', 'Conc (µg/m3)',
+                'Distance (m)', 'Angle (from north)', 'Sector', 'Ring number', 'Elevation (m)',
+                'Latitude', 'Longitude', 'Overlap', 'Wet deposition (g/m2/yr)', 'Dry deposition (g/m2/yr)']
+
+    def generateOutputs(self):
         """
         Create the facility specific All Polar Receptor output file.
 
@@ -33,10 +38,6 @@ class AllPolarReceptors(CsvWriter):
             longitude
             overlap (Y/N)
         """
-
-        self.headers = ['Source ID', 'Emission type', 'Pollutant', 'Conc (µg/m3)',
-                        'Distance (m)', 'Angle (from north)', 'Sector', 'Ring number', 'Elevation (m)',
-                        'Latitude', 'Longitude', 'Overlap', 'Wet deposition (g/m2/yr)', 'Dry deposition (g/m2/yr)']
 
         # Units conversion factor
         self.cf = 2000*0.4536/3600/8760
@@ -92,3 +93,5 @@ class AllPolarReceptors(CsvWriter):
         #dataframe to array
         self.dataframe = all_polar_receptors_df
         self.data = self.dataframe.values
+
+        yield self.dataframe

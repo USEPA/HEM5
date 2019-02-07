@@ -19,7 +19,7 @@ class Incidence(ExcelWriter):
     as the incidence value for each source and each pollutant.
     """
 
-    def __init__(self, targetDir, facilityId, model, plot_df):
+    def __init__(self, targetDir, facilityId, model, plot_df, outerInc):
         ExcelWriter.__init__(self, model, plot_df)
 
         self.filename = os.path.join(targetDir, facilityId + "_incidence.xlsx")
@@ -27,28 +27,22 @@ class Incidence(ExcelWriter):
         # Local cache for URE values
         self.riskCache = {}
 
-    def calculateOutputs(self):
-        """
-        Do something with the model and plot data, setting self.headers and self.data in the process.
-        """
-        self.headers = ['Source ID', 'Pollutant', 'Emission type', 'Incidence', 'Incidence rounded']
+        self.outerInc = outerInc
+
+    def getHeader(self):
+        return ['Source ID', 'Pollutant', 'Emission type', 'Incidence', 'Incidence rounded']
+
+    def generateOutputs(self):
 
         allinner_df = self.model.all_inner_receptors_df.copy()
-        allouter_df = self.model.all_outer_receptors_df.copy()
-
 
         # compute incidence for each Inner rececptor row and then sum incidence by source_id and pollutant
         allinner_df[inc] = allinner_df.apply(lambda row: self.calculateRisk(row[pollutant],
                    row[conc]) * row[population]/70, axis=1)
         inner_inc = allinner_df.groupby([source_id, pollutant, ems_type], as_index=False)[[inc]].sum()
 
-        # compute incidence for each Outer rececptor row and then sum incidence by source_id and pollutant
-        allouter_df['inc'] = allouter_df.apply(lambda row: self.calculateRisk(row[pollutant],
-                   row[conc]) * row[population]/70, axis=1)
-        outer_inc = allouter_df.groupby([source_id, pollutant, ems_type], as_index=False)[[inc]].sum()
-
         # append inner_inc and outer_inc, and re-sum by source_id and pollutant
-        all_inc = inner_inc.append(outer_inc, ignore_index=True).groupby(
+        all_inc = inner_inc.append(self.outerInc, ignore_index=True).groupby(
                 [source_id, pollutant, ems_type], as_index=False)[[inc]].sum()
         
         # sum incidence by pollutant
@@ -72,7 +66,9 @@ class Incidence(ExcelWriter):
         combined_inc[inc_rnd] = combined_inc[inc].apply(self.roundIncidence)
         
         # Put final df into array
-        self.data = combined_inc.values
+        self.dataframe = combined_inc
+        self.data = self.dataframe.values
+        yield self.dataframe
  
     
     def roundIncidence(self, inc):
@@ -103,7 +99,7 @@ class Incidence(ExcelWriter):
             if row.size == 0:
                 msg = 'Could not find pollutant ' + pollutant_name + ' in the haplib!'
                 Logger.logMessage(msg)
-                Logger.log(msg, self.model.haplib.dataframe, False)
+                # Logger.log(msg, self.model.haplib.dataframe, False)
                 URE = 0
             else:
                 URE = row.iloc[0][ure]

@@ -26,13 +26,15 @@ class RiskBreakdown(ExcelWriter):
         self.organCache = {}
 
 
-    def calculateOutputs(self):
+    def getHeader(self):
+        return ['Site type', 'Parameter', 'Source ID', 'Pollutant', 'Emission type', 'Value', 'Value rounded',
+                'Conc (µg/m3)', 'Conc rounded (µg/m3)', 'Emissions (tpy)',
+                'URE 1/(µg/m3)', 'RFc (mg/m3)']
+
+    def generateOutputs(self):
         """
         Compute the sourceid and pollutant breakdown of each maximum risk and HI location.
         """
-        self.headers = ['Site type', 'Parameter', 'Source ID', 'Pollutant', 'Emission type', 'Value', 'Value rounded',
-                        'Conc (µg/m3)', 'Conc rounded (µg/m3)', 'Emissions (tpy)',
-                        'URE 1/(µg/m3)', 'RFc (mg/m3)']
 
         # Dictionary for mapping HI name to position in the target organ list
         self.hidict = {"Respiratory HI":2, "Liver HI":3, "Neurological HI":4,
@@ -87,10 +89,10 @@ class RiskBreakdown(ExcelWriter):
                                                               
                 # compute the value column (risk or HI)
                 if row[parameter] == "Cancer risk":
-                    bkdndata[value] = bkdndata.apply(lambda bkdnrow: self.calculateRisks(bkdnrow["pollutant"], 
+                    bkdndata[value] = bkdndata.apply(lambda bkdnrow: self.calculateRisks(bkdnrow[pollutant],
                                         bkdnrow[conc], "cancer"), axis=1)
                 else:
-                    bkdndata[value] = bkdndata.apply(lambda bkdnrow: self.calculateRisks(bkdnrow["pollutant"], 
+                    bkdndata[value] = bkdndata.apply(lambda bkdnrow: self.calculateRisks(bkdnrow[pollutant],
                                         bkdnrow[conc], row[parameter]), axis=1)
                 
                 # set the rounded value column
@@ -191,23 +193,27 @@ class RiskBreakdown(ExcelWriter):
         # Change dtype of conc. This will be done upstream later.
         riskbkdn_df[conc] = pd.to_numeric(riskbkdn_df[conc])
         
-        # Create some aggregate rows
+        #....... Create some aggregate rows ..................
         
         # Sum Value by site_type, parameter, and pollutant to get Total source_id
         srctot = riskbkdn_df.groupby([site_type, parameter, pollutant, ure, rfc],
-                                     as_index=False)[value, value_rnd, conc, conc_rnd, emis_tpy].sum()
+                                     as_index=False)[value, conc, emis_tpy].sum()
         srctot[source_id] = "Total"
         srctot[ems_type] = "NA"
         srctot[ure] = 0
         srctot[rfc] = 0
+        srctot[value_rnd] = srctot[value].apply(lambda x: round(x, -int(math.floor(math.log10(abs(x))))) if x > 0 else 0)
+        srctot[conc_rnd] = srctot[conc].apply(lambda x: round(x, -int(math.floor(math.log10(abs(x))))) if x > 0 else 0)
             
         # Sum Value by site_type, parameter, and source_id to get Total pollutant
         polltot = riskbkdn_df.groupby([site_type, parameter, source_id],
-                                     as_index=False)[value, value_rnd, conc, conc_rnd, emis_tpy].sum()
+                                     as_index=False)[value, conc, emis_tpy].sum()
         polltot[pollutant] = "All modeled pollutants"
         polltot[ems_type] = "NA"
         polltot[ure] = 0
         polltot[rfc] = 0
+        polltot[value_rnd] = polltot[value].apply(lambda x: round(x, -int(math.floor(math.log10(abs(x))))) if x > 0 else 0)
+        polltot[conc_rnd] = polltot[conc].apply(lambda x: round(x, -int(math.floor(math.log10(abs(x))))) if x > 0 else 0)
 
         # Append aggregates, sort rows, and sort columns
         riskbkdn_df = riskbkdn_df.append(srctot, ignore_index=True)
@@ -217,7 +223,9 @@ class RiskBreakdown(ExcelWriter):
         riskbkdn_df = riskbkdn_df[columns]
 
         # Done
-        self.data = riskbkdn_df.values
+        self.dataframe = riskbkdn_df
+        self.data = self.dataframe.values
+        yield self.dataframe
 
         
     def calculateRisks(self, pollutant_name, conc, risktype):
@@ -253,7 +261,7 @@ class RiskBreakdown(ExcelWriter):
             if row.size == 0:
                 msg = 'Could not find pollutant ' + pollutant_name + ' in the haplib!'
                 Logger.logMessage(msg)
-                Logger.log(msg, self.model.haplib.dataframe, False)
+                # Logger.log(msg, self.model.haplib.dataframe, False)
                 URE = 0
                 RFC = 0
             else:

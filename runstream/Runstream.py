@@ -69,8 +69,10 @@ class Runstream():
     # Elevations --------------------------------------------------------------
            
         self.eleva = self.facoptn_df['elev'][0]                        
-    
-        if self.eleva == "Y":
+
+        if self.model_optns['ureponly_flat']:
+            optel = " FLAT "
+        elif self.eleva == "Y":
             optel = " ELEV "
         else:
             optel = " FLAT "
@@ -722,7 +724,7 @@ class Runstream():
         Writes the ME section to aer.inp
         """
         
-        surf_file, upper_file, surfdata_str, uairdata_str, prof_base = fm.find_met(cenlat, cenlon)
+        surf_file, upper_file, surfdata_str, uairdata_str, prof_base, distance = fm.find_met(cenlat, cenlon)
     
         year = 2016 #How do we update this when we update the meteorology files?
     
@@ -750,6 +752,8 @@ class Runstream():
         self.inp_f.write(me_prb)
         # inp_f.write(me_day)
         self.inp_f.write(mef)
+
+        return surf_file, distance
         
     def build_ou(self):
         """

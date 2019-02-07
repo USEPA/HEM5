@@ -4,10 +4,10 @@ Created on Mon Oct  2 10:35:51 2017
 
 @author: dlindsey
 """
-
 import math
 import find_center as fc
 from json_census_blocks import *
+from log import Logger
 from runstream.Runstream import Runstream
 from upload.EmissionsLocations import *
 from upload.HAPEmissions import *
@@ -287,10 +287,20 @@ class FacilityPrep():
         # Compute the coordinates of the facililty center
         cenx, ceny, cenlon, cenlat, max_srcdist, vertx_a, verty_a = fc.center(sourcelocs, facutmzone)
 
+        self.model.computedValues['cenlat'] = cenlat
+        self.model.computedValues['cenlon'] = cenlon
+
         #retrieve blocks
         maxdist = facops.get_value(0,max_dist)
         modeldist = facops.get_value(0,model_dist)
-        self.innerblks, self.outerblks = getblocks(cenx, ceny, cenlon, cenlat, facutmzone, maxdist, modeldist, sourcelocs, op_overlap)
+
+        if self.model.model_optns['ureponly']:
+            self.innerblks, self.outerblks = self.getBlocksFromUrep(facid, cenx, ceny, cenlon, cenlat, facutmzone,
+                maxdist, modeldist, sourcelocs, op_overlap)
+
+        else:
+            self.innerblks, self.outerblks = getblocks(cenx, ceny, cenlon, cenlat, facutmzone, maxdist, modeldist,
+                sourcelocs, op_overlap)
 
 
         #%%----- Polar receptors ----------
@@ -459,24 +469,27 @@ class FacilityPrep():
         runstream.build_co(runPhase, self.innerblks, self.outerblks)
         runstream.build_so(runPhase)
         runstream.build_re(self.innerblks, cenx, ceny, polar_df)
-        runstream.build_me(cenlat, cenlon)
+        metfile, distanceToMet = runstream.build_me(cenlat, cenlon)
+        self.model.computedValues['metfile'] = metfile
+        self.model.computedValues['distance'] = distanceToMet
+
         runstream.build_ou()
 
         return runstream
         #no return statement since it will just need to build the file
         #return rs.Runstream(facops, emislocs, hapemis, cenlat, cenlon, cenx, ceny, self.innerblks, user_recs, buoyant_df, polyver_df, polar_df, bldgdw_df, partdia_df, landuse_df, seasons_df, gasparams_df)
 
-    #%% Calculate ring and sector of block receptors
 
+    #%% Calculate ring and sector of block receptors
     def calc_ring_sector(self, ring_distances, block_distance, block_angle, num_sectors):
 
         ring_loc = -999
 
         # compute fractional sector number
-        s = (block_angle * num_sectors)/360.0 % num_sectors
+        s = ((block_angle * num_sectors)/360.0 % num_sectors) + 1
 
         # compute integer sector number
-        sector_int = int(s) + 1
+        sector_int = int(s)
 
         # Compute ring_loc. loop through ring distances in pairs of previous and current
         previous = ring_distances[0]
@@ -495,7 +508,7 @@ class FacilityPrep():
 
         return sector_int, s, ring_int, ring_loc
 
-#%% Assign elevation and hill height to polar receptors
+    #%% Assign elevation and hill height to polar receptors
     def assign_polar_elev_step1(self, polar_row, innblks, outblks, maxdist):
 
         sector1 = polar_row[sector]
@@ -561,7 +574,7 @@ class FacilityPrep():
         #Note: the max elevation is returned as the elevation for this polar receptor
         return r_maxelev, r_hill
 
-#%% Assign elevation and hill height to polar receptors that still have missing elevations
+    #%% Assign elevation and hill height to polar receptors that still have missing elevations
     def assign_polar_elev_step2(self, polar_row, innblks, outblks, emislocs):
 
         d_nearelev = 99999
@@ -618,7 +631,7 @@ class FacilityPrep():
         #Note: the max elevation is returned as the elevation for this polar receptor
         return r_maxelev, r_hill
 
-#%% Compute the elevation to be used for all emission sources
+    #%% Compute the elevation to be used for all emission sources
     def compute_emisloc_elev(self, polars, num_rings):
 
         # The average of the average elevation for a ring will be used as the source elevation.
@@ -642,14 +655,11 @@ class FacilityPrep():
 
         return avgelev
 
-#%% Define polar receptor dataframe index
-
+    #%% Define polar receptor dataframe index
     def define_polar_idx(self, s, r):
         return "S" + str(s) + "R" + str(r)
 
-
-#%% Zone to use function
-
+    #%% Zone to use function
     def zone2use(self, el_df):
 
         """
@@ -693,8 +703,7 @@ class FacilityPrep():
         return utmZone
 
 
-#%% Check for polar receptors overlapping emission sources
-
+    #%% Check for polar receptors overlapping emission sources
     def polar_overlap(self, polar_utme, polar_utmn, sourcelocs_df, overlap_dist):
 
         """
@@ -707,7 +716,7 @@ class FacilityPrep():
         for index, row in sourcelocs_df.iterrows():
            if row[lengthx] > 0 or row[lengthy] > 0:
                # area source
-               inside_box = inbox(polar_utme, polar_utmn, row[utme], row[utmn],
+               inside_box = self.inbox(polar_utme, polar_utmn, row[utme], row[utmn],
                                   row[lengthx], row[lengthy], row[angle], overlap_dist)
                if inside_box == True:
                    overlap = "Y"
@@ -719,146 +728,124 @@ class FacilityPrep():
         return overlap
 
 
-#%% See if point is within a box
+    #%% See if point is within a box
+    def inbox(xt, yt, box_x, box_y, len_x, len_y, angle, df):
 
-def inbox(xt, yt, box_x, box_y, len_x, len_y, angle, df):
+        """
+        Determines whether a point (xt,yt) is within a fringe of df around a box
+        with origin (box_x,box_y), dimensions (Len_x,Len_y), and oriented at an given
+        "angle", measured clockwise from North.
+        """
 
-    """
-    Determines whether a point (xt,yt) is within a fringe of df around a box
-    with origin (box_x,box_y), dimensions (Len_x,Len_y), and oriented at an given
-    "angle", measured clockwise from North.
-    """
+        inbox = False
 
-    inbox = False
+        A_rad = math.radians(angle)
+        D_e = (yt-box_y)*math.cos(A_rad) + (xt-box_x)*math.sin(A_rad) - len_y
+        D_w = (box_y-yt)*math.cos(A_rad) + (box_x-xt)*math.sin(A_rad)
+        D_n = (xt-box_x)*math.cos(A_rad) + (yt-box_y)*math.sin(A_rad) - len_x
+        D_s = (box_x-xt)*math.cos(A_rad) + (box_y-yt)*math.sin(A_rad)
+        D_sw = math.sqrt((xt-box_x)**2 + (yt-box_y)**2)
+        D_se = (math.sqrt((box_x+len_x*math.cos(A_rad) - xt)**2
+                        + (box_y-len_x*math.sin(A_rad) - yt)**2))
+        D_ne = (math.sqrt((box_x+len_x*math.cos(A_rad)+len_y*math.sin(A_rad) - xt)**2
+                                        + (box_y+len_y*math.cos(A_rad)-len_x*math.sin(A_rad) - yt)**2))
+        D_nw = (math.sqrt((box_x+len_y*math.sin(A_rad) - xt)**2
+                                        + (box_y+len_y*math.cos(A_rad) - yt)**2))
+        if D_e <= 0 and D_w <= 0:
+            D_test = max(D_e, D_w, D_n, D_s)
+        elif D_n <= 0 and D_s <= 0:
+            D_test = max(D_e, D_w, D_n, D_s)
+        else:
+            D_test = min(D_ne, D_nw, D_se, D_sw)
 
-    A_rad = math.radians(angle)
-    D_e = (yt-box_y)*math.cos(A_rad) + (xt-box_x)*math.sin(A_rad) - len_y
-    D_w = (box_y-yt)*math.cos(A_rad) + (box_x-xt)*math.sin(A_rad)
-    D_n = (xt-box_x)*math.cos(A_rad) + (yt-box_y)*math.sin(A_rad) - len_x
-    D_s = (box_x-xt)*math.cos(A_rad) + (box_y-yt)*math.sin(A_rad)
-    D_sw = math.sqrt((xt-box_x)**2 + (yt-box_y)**2)
-    D_se = (math.sqrt((box_x+len_x*math.cos(A_rad) - xt)**2
-                    + (box_y-len_x*math.sin(A_rad) - yt)**2))
-    D_ne = (math.sqrt((box_x+len_x*math.cos(A_rad)+len_y*math.sin(A_rad) - xt)**2
-				                    + (box_y+len_y*math.cos(A_rad)-len_x*math.sin(A_rad) - yt)**2))
-    D_nw = (math.sqrt((box_x+len_y*math.sin(A_rad) - xt)**2
-				                    + (box_y+len_y*math.cos(A_rad) - yt)**2))
-    if D_e <= 0 and D_w <= 0:
-        D_test = max(D_e, D_w, D_n, D_s)
-    elif D_n <= 0 and D_s <= 0:
-        D_test = max(D_e, D_w, D_n, D_s)
-    else:
-        D_test = min(D_ne, D_nw, D_se, D_sw)
+        # First see if the point is in the rectangle
+        if  (xt < box_x + math.tan(A_rad)*(yt-box_y) + (len_x+df)/math.cos(A_rad)
+                                and xt > box_x + math.tan(A_rad)*(yt-box_y) - df/math.cos(A_rad)
+                                and yt < box_y - math.tan(A_rad)*(xt-box_x) + (len_y+df)/math.cos(A_rad)
+                                and yt > box_y - math.tan(A_rad)*(xt-box_x) - df/math.cos(A_rad)):
 
-    # First see if the point is in the rectangle
-    if  (xt < box_x + math.tan(A_rad)*(yt-box_y) + (len_x+df)/math.cos(A_rad)
-	                        and xt > box_x + math.tan(A_rad)*(yt-box_y) - df/math.cos(A_rad)
-	                        and yt < box_y - math.tan(A_rad)*(xt-box_x) + (len_y+df)/math.cos(A_rad)
-	                        and yt > box_y - math.tan(A_rad)*(xt-box_x) - df/math.cos(A_rad)):
+             # Now check the corners
+             if ((xt < box_x + math.tan(A_rad)*(yt-box_y)
+                                   and yt < box_y - math.tan(A_rad)*(xt-box_x)
+                                   and df < math.sqrt((box_x - xt)**2 + (box_y - yt)**2))
+                               or (xt > box_x + math.tan(A_rad)*(yt-box_y) + len_x/math.cos(A_rad)
+                                   and yt < box_y - math.tan(A_rad)*(xt-box_x)
+                                   and df < math.sqrt((box_x+len_x*math.cos(A_rad) - xt)*2
+                                    + (box_y-len_x*math.sin(A_rad) - yt)**2))
+                               or (xt > box_x + math.tan(A_rad)*(yt-box_y) + len_x/math.cos(A_rad)
+                                   and yt > box_y - math.tan(A_rad)*(xt-box_x) + len_y/math.cos(A_rad)
+                                   and df < math.sqrt((box_x+len_x*math.cos(A_rad)+len_y*math.sin(A_rad) - xt)**2
+                                    + (box_y+len_y*math.cos(A_rad)-len_x*math.sin(A_rad) - yt)**2))
+                               or (xt < box_x + math.tan(A_rad)*(yt-box_y)
+                                   and yt > box_y - math.tan(A_rad)*(xt-box_x) + len_y/math.cos(A_rad)
+                                   and df < math.sqrt((box_x+len_y*math.sin(A_rad) - xt)**2
+                                    + (box_y+len_y*math.cos(A_rad) - yt)**2))):
+                       inbox = False
+             else:
+                   inbox = True
 
-         # Now check the corners
-         if ((xt < box_x + math.tan(A_rad)*(yt-box_y)
-			                   and yt < box_y - math.tan(A_rad)*(xt-box_x)
-			                   and df < math.sqrt((box_x - xt)**2 + (box_y - yt)**2))
-		                   or (xt > box_x + math.tan(A_rad)*(yt-box_y) + len_x/math.cos(A_rad)
-			                   and yt < box_y - math.tan(A_rad)*(xt-box_x)
-			                   and df < math.sqrt((box_x+len_x*math.cos(A_rad) - xt)*2
-				                + (box_y-len_x*math.sin(A_rad) - yt)**2))
-		                   or (xt > box_x + math.tan(A_rad)*(yt-box_y) + len_x/math.cos(A_rad)
-			                   and yt > box_y - math.tan(A_rad)*(xt-box_x) + len_y/math.cos(A_rad)
-			                   and df < math.sqrt((box_x+len_x*math.cos(A_rad)+len_y*math.sin(A_rad) - xt)**2
-				                + (box_y+len_y*math.cos(A_rad)-len_x*math.sin(A_rad) - yt)**2))
-		                   or (xt < box_x + math.tan(A_rad)*(yt-box_y)
-			                   and yt > box_y - math.tan(A_rad)*(xt-box_x) + len_y/math.cos(A_rad)
-			                   and df < math.sqrt((box_x+len_y*math.sin(A_rad) - xt)**2
-				                + (box_y+len_y*math.cos(A_rad) - yt)**2))):
-                   inbox = False
-         else:
-               inbox = True
+        return inbox
 
-    return inbox
+    def copyUTMColumns(self, utmn, utme, utmz):
+        return [utmn, utme, utmz]
 
+    # Determine inner and outer blocks from the set of user receptors only.
+    def getBlocksFromUrep(self, facid, cenx, ceny, cenlon, cenlat, utmZone, maxdist, modeldist, sourcelocs, overlap_dist):
 
-#%% moved start_here to inside the prepare inputs object -- will be called seperately from another object but by moving it inside the other object which will take what was HEM 3 and pass facid
-#the object that calls this will need to be passed the fac_list df ids only so it can call them and run this loop.
+        # convert max outer ring distance from meters to degrees latitude
+        maxdist_deg = maxdist*39.36/36/2000/60
 
+        # Get all user receptors that correspond to the given fac id
+        urecs = self.model.ureceptr.dataframe.loc[self.model.ureceptr.dataframe[fac_id] == facid]
 
+        # If any population values are missing, we cannot create an Incidence report
+        self.model.model_optns['ureponly_nopop'] = urecs.isnull().any()[population]
+        urecs[population] = pd.to_numeric(urecs[population], errors='coerce').fillna(0)
 
-#%% RUN Start Here
-    # def run_facilities(self):
-    #     fac_list = []
-    #     for index, row in self.faclist_df.iterrows():
-    #
-    #         facid = row[0]
-    #         fac_list.append(facid)
-    #
-    #
-    #     for fac in fac_list:
-    #         facid = fac
-    #         #self.loc["textvariable"] = "Preparing " + facid
-    #         result = self.prep_facility(facid)
-    #
-    #         #self.loc["textvariable"]="Building Runstream File for " + facid
-    #         #messagebox.showinfo("", "Building Runstream File for " + facid)
-    #
-    #
-    #         result.build()
-    #
-    #         fac_folder = "output/"+ str(facid) + "/"
-    #         self.message = "starting aermod"
-    #         #run aermod
-    #         #self.loc["textvariable"] =  "Starting Aermod for " + facid
-    #
-    #         args = "aermod.exe aermod.inp"
-    #         subprocess.call(args, shell=False)
-    #
-    #         #self.loc["textvariable"] = "Aermod complete for " + facid
-    #
-    #         ## Check for successful aermod run:
-    #         check = open('aermod.out','r')
-    #         message = check.read()
-    #         if 'UNSUCCESSFUL' in message:
-    #             success = False
-    #         else:
-    #             success = True
-    #
-    #         check.close()
-    #
-    #         if success == True:
-    #
-    #         #move aermod.out to the fac output folder
-    #         #replace if one is already in there othewrwise will throw error
-    #
-    #             if os.path.isfile(fac_folder + 'aermod.out'):
-    #                 os.remove(fac_folder + 'aermod.out')
-    #                 shutil.move('aermod.out', fac_folder)
-    #
-    #             else:
-    #                 shutil.move('aermod.out', fac_folder)
-    #
-    #         #process outputs
-    #
-    #             process = po.Process_outputs(facid, self.haplib_df, result.hapemis, fac_folder, self.innerblks, self.polar_df)
-    #             process.process()
-    #
-    #         #self.loc["textvariable"] = "Analysis Complete"
-    #
-    #             messagebox.showinfo("", "HEM4 finished processing all facilities")
-#%% Testing the prepare inpusts object
+        # If any elevation or hill height values are missing, we must run in FLAT mode.
+        self.model.model_optns['ureponly_flat'] = urecs.isnull().any()[elev] or urecs.isnull().any()[hill]
+        urecs[elev] = pd.to_numeric(urecs[elev], errors='coerce').fillna(0)
+        urecs[hill] = pd.to_numeric(urecs[hill], errors='coerce').fillna(0)
 
-#fac_path = "C:\HEM3_V153\INPUTS_MULTI\TEMPLATE_MULTI_FACILITY_LIST_OPTIONS.XLSX"
-#hap_path = "C:\HEM3_V153\INPUTS_MULTI\TEMPLATE_MULTI_HAP_EMISSIONS.XLSX"
-#emisloc_path =  "C:\HEM3_V153\INPUTS_MULTI\TEMPLATE_MULTI_EMISSIONS_LOCATION.XLSX"
-#census = " "
-#poly_path = None
-#bouyant_path = "C:\HEM3_V153\INPUTS_MULTI\TEMPLATE_MULTI_BUOYANTLINEPARAMETERS.XLSX"
-#urep_path = None
-#bd_path = None
+        # Which location type is being used? If lat/lon, convert to UTM. Otherwise, just copy over
+        # the relevant values.
+        ltype = urecs.iloc[0][location_type]
+        if ltype == 'L':
+            urecs[utms] = urecs.apply(lambda row: UTM.ll2utm_alt(row[lat], row[lon], utmZone), axis=1)
+        else:
+            urecs[utms] = urecs.apply(lambda row: self.copyUTMColumns(row[lat], row[lon], utmZone), axis=1)
+
+        #split utms column into utmn, utme, utmz
+        urecs[[utmn, utme, utmz]] = pd.DataFrame(urecs.utms.values.tolist(), index= urecs.index)
+
+        del urecs[utms]
+
+        #coerce hill and elevation into floats
+        urecs[hill] = pd.to_numeric(urecs[hill], errors='coerce').fillna(0)
+        urecs[elev] = pd.to_numeric(urecs[elev], errors='coerce').fillna(0)
+
+        #compute distance and bearing (angle) from the center of the facility
+        urecs['distance'] = np.sqrt((cenx - urecs.utme)**2 + (ceny - urecs.utmn)**2)
+        urecs['angle'] = urecs.apply(lambda row: bearing(row[utme],row[utmn],cenx,ceny), axis=1)
+        urecs['urban_pop'] = 0
+
+        #subset the urecs dataframe to blocks that are within the modeling distance of the facility
+        modelblks = urecs.query('distance <= @maxdist')
+
+        # Split modelblks into inner and outer block receptors
+        innerblks, outerblks = in_box(modelblks, sourcelocs, modeldist, maxdist, overlap_dist)
 
 
-#test = Prepare_Inputs(fac_path, emisloc_path, hap_path, poly_path, bouyant_path, urep_path)
+        Logger.log("OUTERBLOCKS", outerblks, False)
 
+        # convert utme, utmn, utmz, and population to integers
+        innerblks[utme] = innerblks[utme].astype(int)
+        innerblks[utmn] = innerblks[utmn].astype(int)
+        innerblks[utmz] = innerblks[utmz].astype(int)
+        innerblks[population] = pd.to_numeric(innerblks[population], errors='coerce').astype(int)
+        outerblks[utme] = outerblks[utme].astype(int)
+        outerblks[utmn] = outerblks[utmn].astype(int)
+        outerblks[utmz] = outerblks[utmz].astype(int)
+        outerblks[population] = pd.to_numeric(outerblks[population], errors='coerce').astype(int)
 
-#test.run_facilities()
-
-
+        return innerblks, outerblks

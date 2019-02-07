@@ -1,7 +1,6 @@
 # -*- coding: utf-8 -*-
 """
 Created on Thu Nov  1 12:35:08 2018
-
 @author: 
 """
 import pandas as pd
@@ -153,7 +152,5 @@ class EmisVar(DependentInputFile):
                                 " ".join(var_source_ids))
             self.dataframe = emisvar_df
             
-        
-        
         
         

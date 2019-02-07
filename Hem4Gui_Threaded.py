@@ -18,7 +18,7 @@ from tkinter import messagebox
 from tkinter import scrolledtext
 from tkinter import ttk
 from tkinter.simpledialog import Dialog, Toplevel
-
+import datetime
 from Processor import Processor
 from log.Logger import Logger
 from model.Model import Model
@@ -27,6 +27,8 @@ from tkinter.filedialog import askopenfilename
 from checker.InputChecker import InputChecker
 from check_dep import check_dep
 from writer.kml.KMLWriter import KMLWriter
+from SaveState import SaveState 
+
 
 
 #%% Hem4 GUI
@@ -749,7 +751,7 @@ class Hem4():
         Function for creating row and upload widgets for user receptors
         """
         #create row for user receptors
-        self.s6 = tk.Frame(self.main, width=250, height=100, pady=10, padx=10)
+        self.s6 = tk.Frame(self.main, width=250, height=200, pady=10, padx=10)
         self.s6.grid(row=5, column=0, columnspan=2, sticky="nsew")
         
         #user recptors label
@@ -775,8 +777,12 @@ class Hem4():
         #event handler for instructions (Button 1 is the left mouse click)
         self.urep_list_man.bind('<Button-1>', 
                                 lambda e:self.manual("instructions/urep_man.txt"))
-            
 
+        self.check_ureponly = tk.BooleanVar()
+        self.urep_sel = tk.Checkbutton(self.s6, text="Use only these receptors",
+                                        variable = self.check_ureponly,
+                                        command = self.set_ureponly)
+        self.urep_sel.grid(row=3, column=0, sticky='E', padx = 85)
 
     def add_buoyant(self):
         """
@@ -1034,7 +1040,10 @@ class Hem4():
                     self.emisvar_on.destroy()
                     self.emisvar_label.destroy()
                     self.s13.destroy()
-            
+
+    def set_ureponly(self):
+        self.model.model_optns['ureponly'] = self.check_ureponly.get()
+        print("ureponly = " + str(self.model.model_optns['ureponly']))
             
  #%% Event handlers for porting instructions
 
@@ -1117,7 +1126,16 @@ class Hem4():
             if override:
                 global instruction_instance
                 instruction_instance.set("Hem4 Running, check the log tab for updates")
+                
+                #create run id for saving model
+                runid = datetime.datetime.now().strftime("%B-%d-%Y-%H-%M-%p")
+                #print(runid)
+                #create save model
+                save_state = SaveState(runid, self.model)
+                self.model.save = save_state
                 self.process()
+                
+                 
 
     def process(self):
         """

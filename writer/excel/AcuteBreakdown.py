@@ -13,12 +13,15 @@ class AcuteBreakdown(ExcelWriter):
 
         self.filename = os.path.join(targetDir, facilityId + "_acute_bkdn.xlsx")
 
-    def calculateOutputs(self):
+    def getHeader(self):
+        return ['pollutant', 'Source_id', 'Emis_type', 'maxcon_pop (µg/m3)', 'flag_1', 'maxcon_all (µg/m3)',
+                'Flag_2']
+
+    def generateOutputs(self):
         """
         Do something with the model and plot data, setting self.headers and self.data in the process.
         """
-        self.headers = ['pollutant', 'Source_id', 'Emis_type', 'maxcon_pop (µg/m3)', 'flag_1', 'maxcon_all (µg/m3)',
-                        'Flag_2']
 
         # TODO
         self.data = []
+        yield self.dataframe

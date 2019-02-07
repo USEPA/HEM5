@@ -1,5 +1,5 @@
 import os
-from writer.excel import ExcelWriter
+from writer.excel.ExcelWriter import ExcelWriter
 
 class OverlappingSourceReceptors(ExcelWriter):
     """
@@ -12,12 +12,15 @@ class OverlappingSourceReceptors(ExcelWriter):
 
         self.filename = os.path.join(targetDir, facilityId + "_overlapping_source_receptors.xlsx")
 
-    def calculateOutputs(self):
+    def getHeader(self):
+        return ['rec_type', 'fips', 'block', 'population', 'utm_east', 'utm_north', 'source_id', 'sw_corner',
+                'nw_corner', 'ne_corner', 'se_corner']
+
+    def generateOutputs(self):
         """
         Do something with the model and plot data, setting self.headers and self.data in the process.
         """
-        self.headers = ['rec_type', 'fips', 'block', 'population', 'utm_east', 'utm_north', 'source_id', 'sw_corner',
-                        'nw_corner', 'ne_corner', 'se_corner']
 
         # TODO
         self.data = []
+        yield self.dataframe

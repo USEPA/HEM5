@@ -17,15 +17,16 @@ class InputSelectionOptions(ExcelWriter):
         self.facilityId = facilityId
         self.filename = os.path.join(targetDir, facilityId + "_input_selection_options.xlsx")
 
-    def calculateOutputs(self):
+    def getHeader(self):
+        return ['title1', 'title2', 'hap_phase', 'rural_urban', 'dep_yn', 'depl_yn', 'part_vap', 'dep', 'depl',
+                'incl_elev', 'incl_hour', 'model status', 'hr_ratio', 'incl_bldg_dw', 'incl_size','user_rcpt', 'max_rad', 'min_rad', 'blk_dist',
+                'ovrlap_dist', 'conc_cir', 'radials', 'emis_file', 'hap_emis_file', 'user_rcpt_file', 'part_size_file',
+                'bldg_file', 'acute', 'acute hours', 'poll_type', 'done', 'num_of_runs', 'facil_number', 'multi_file',
+                'all_receptors', 'pop_size', 'first_ring', 'landuse_file', 'season_file', 'vertex_file', 'diurnal', 'time_blks',
+                'seas_var', 'emis_var', 'emis_var_file', 'results_temporal', 'fastall', 'flagpole', 'hremis_file', 'bldg_dw_so',
+                'hour_emis', 'prefix', 'prefixyn', 'blp_file', 'reset']
 
-        self.headers = ['title1', 'title2', 'hap_phase', 'rural_urban', 'dep_yn', 'depl_yn', 'part_vap', 'dep', 'depl',
-                        'incl_elev', 'incl_hour', 'model status', 'hr_ratio', 'incl_bldg_dw', 'incl_size','user_rcpt', 'max_rad', 'min_rad', 'blk_dist',
-                        'ovrlap_dist', 'conc_cir', 'radials', 'emis_file', 'hap_emis_file', 'user_rcpt_file', 'part_size_file',
-                        'bldg_file', 'acute', 'acute hours', 'poll_type', 'done', 'num_of_runs', 'facil_number', 'multi_file',
-                        'all_receptors', 'pop_size', 'first_ring', 'landuse_file', 'season_file', 'vertex_file', 'diurnal', 'time_blks',
-                        'seas_var', 'emis_var', 'emis_var_file', 'results_temporal', 'fastall', 'flagpole', 'hremis_file', 'bldg_dw_so',
-                        'hour_emis', 'prefix', 'prefixyn', 'blp_file', 'reset']
+    def generateOutputs(self):
 
         faclist = self.model.faclist.dataframe
         facoptions = faclist.loc[faclist.fac_id == self.facilityId].iloc[0]
@@ -88,3 +89,4 @@ class InputSelectionOptions(ExcelWriter):
         df.replace(to_replace='nan', value='', inplace=True)
 
         self.data = df.values
+        yield self.dataframe
