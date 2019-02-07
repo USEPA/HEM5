@@ -1,8 +1,7 @@
 .idea
 .gitignore
-aermod.exe
-aermod.inp
-resources/plotfile.plt
+aermod/aermod.inp
+aermod/plotfile.plt
 kml_source_loc.txt
 Inputs
 /output
