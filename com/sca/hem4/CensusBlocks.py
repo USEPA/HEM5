@@ -197,7 +197,7 @@ def in_box(modelblks, sourcelocs, modeldist, maxdist, overlap_dist):
         indist = outerblks.query('inbox == True')
         if len(indist) > 0:
             innerblks = innerblks.append(indist).reset_index(drop=True)
-            innerblks = innerblks[~innerblks[rec_id].apply(tuple).duplicated()]
+            innerblks = innerblks[~innerblks[rec_id].duplicated()]
             outerblks = outerblks[~outerblks[rec_id].isin(innerblks[rec_id])]
                   
     print("third innerblks size = ", innerblks.shape, " third outerblks size = ", outerblks.shape)
@@ -214,7 +214,7 @@ def in_box(modelblks, sourcelocs, modeldist, maxdist, overlap_dist):
         intract = pd.merge(outerblks, polyvertices, how='inner', on='tract')
         if len(intract) > 0:
             innerblks = innerblks.append(intract).reset_index(drop=True)
-            innerblks = innerblks[~innerblks[rec_id].apply(tuple).duplicated()]
+            innerblks = innerblks[~innerblks[rec_id].duplicated()]
             outerblks = outerblks[~outerblks[rec_id].isin(innerblks[rec_id])]
         
         # for non-tract polygons, are any blocks within the modeldist of any polygon side?
@@ -229,7 +229,7 @@ def in_box(modelblks, sourcelocs, modeldist, maxdist, overlap_dist):
                 polyblks = outerblks.query('nearpoly == True')
                 if len(polyblks) > 0:
                     innerblks = innerblks.append(polyblks).reset_index(drop=True)
-                    innerblks = innerblks[~innerblks[rec_id].apply(tuple).duplicated()]
+                    innerblks = innerblks[~innerblks[rec_id].duplicated()]
                     outerblks = outerblks[~outerblks[rec_id].isin(innerblks[rec_id])]
 
     print("fourth innerblks size = ", innerblks.shape, " fourth outerblks size = ", outerblks.shape)

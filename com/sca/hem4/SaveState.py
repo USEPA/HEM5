@@ -54,82 +54,21 @@ class SaveState():
             if k in attr_list and v is not None:
                 
                #remove the faclist row then pickle
-               
-               remaining = v.dataframe[v.dataframe['fac_id'] != facid]
+               try:
+                   
+                   remaining = v.dataframe[v.dataframe['fac_id'] != facid]
+                   
+               except:
+                   
+                   #means its does response or some other df
+                   pass
+                   
+               else:
                
                #pikle
-               remaining.to_pickle(f"{self.save_folder}/{k}.pkl")
+                   remaining.to_pickle(f"{self.save_folder}/{k}.pkl")
                
                
-               print(k, 'pickled')
+                   print(k, 'pickled')
                 
         
-            
-#            pass
-#        else:
-#            os.makedirs(save_folder)
-#        
-            
-        
-        #remove facid row from all source inputs
-        
-#        faclist = model.faclist.dataframe
-#        
-#        emisloc = model.emisloc.dataframe
-#        
-#        hapemis = model.hapemis.dataframe
-#        
-#        
-#         #%%---------- Optional User Receptors -----------------------------------------
-#    
-#        if hasattr(model.ureceptr, "dataframe"):
-#            pass
-#    
-#        
-#         #%%---------- Optional Buoyant Line Parameters ----------------------------------------- 
-#    
-#        if hasattr(model.multibuoy, "dataframe"):
-#    
-#            buoyant_df = model.multibuoy.dataframe.loc[ model.multibuoy.dataframe[fac_id] == facid].copy()
-#    
-#        #%%---------- Optional Polygon Vertex File ----------------------------------------- 
-#    
-#    
-#        if hasattr(model.multipoly, "dataframe"):
-#            pass
-#        
-#           #%%---------- Optional Building Downwash -------------------------------------
-#        
-#        if hasattr(model.bldgdw, "dataframe"):
-#    
-#                bldgdw_df = model.bldgdw.dataframe.loc[model.bldgdw.dataframe[fac_id] == facid].copy()
-#    
-#    
-#            #%% ------ Optional Particle Data -------------------------------------
-#    
-#        if hasattr(model.partdep, "dataframe"):
-#    
-#            partdia_df = model.partdep.dataframe.loc[model.partdep.dataframe[fac_id] == facid].copy()
-#    
-#    
-#    
-#        #%% -- Optional Land Use ----------------------------------------------
-#    
-#        if hasattr(model.landuse, "dataframe"):
-#            landuse_df = model.landuse.dataframe.loc[model.landuse.dataframe[fac_id] == facid].copy()
-#    
-#    
-#    
-#        #%% --- Optional Seasons ---------------------------------------------
-#    
-#        if hasattr(model.seasons, "dataframe"):
-#            seasons_df = model.seasons.dataframe.loc[model.seasons.dataframe[fac_id] == facid].copy()
-#    
-#    
-#        #%% --- Optional Emissions Variations --------------------------------
-#    
-#        if hasattr(model.emisvar, "dataframe"):
-#            
-#           pass
-#    
-#       

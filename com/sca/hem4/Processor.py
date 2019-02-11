@@ -93,18 +93,14 @@ class Processor():
                 # increment facility count
                 
                 #check if there is more than one facility, only save if there are
-                if len(fac_list) > 1:
-                    self.model.save.save_model(facid)
+              
                 
                 num += 1
                 success = True
                 
-                
-                
-                
-                
+
                 #reset model options aftr facility
-                self.model.model_optns = defaultdict
+                self.model.model_optns = defaultdict()
                 
                 
 

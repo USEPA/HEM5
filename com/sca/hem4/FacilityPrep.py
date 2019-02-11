@@ -293,7 +293,7 @@ class FacilityPrep():
         maxdist = facops.get_value(0,max_dist)
         modeldist = facops.get_value(0,model_dist)
 
-        if self.model.model_optns['ureponly']:
+        if self.model.model_optns.get('ureponly', None):
             self.innerblks, self.outerblks = self.getBlocksFromUrep(facid, cenx, ceny, cenlon, cenlat, facutmzone,
                 maxdist, modeldist, sourcelocs, op_overlap)
 

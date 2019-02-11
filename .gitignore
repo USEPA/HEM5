@@ -17,5 +17,6 @@ working
 working_kml
 build
 dist
+save
 *.pyc
 **/__pycache__/*.pyc
