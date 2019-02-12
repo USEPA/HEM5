@@ -728,7 +728,7 @@ class FacilityPrep():
 
 
     #%% See if point is within a box
-    def inbox(xt, yt, box_x, box_y, len_x, len_y, angle, df):
+    def inbox(self, xt, yt, box_x, box_y, len_x, len_y, angle, df):
 
         """
         Determines whether a point (xt,yt) is within a fringe of df around a box

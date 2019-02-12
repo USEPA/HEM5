@@ -219,10 +219,10 @@ class Process_outputs():
         replacement = self.model.max_indiv_risk_df[value].values
         ringrows = np.where(ring_summary_chronic_df[overlap] == 'Y')[0]
         if len(ringrows) > 0:
-            ring_summary_chronic.data[ringrows, 10:24] = replacement
+            ring_summary_chronic.data[ringrows, 7:22] = replacement
         blockrows = np.where(block_summary_chronic_df[overlap] == 'Y')[0]
         if len(blockrows) > 0:
-            block_summary_chronic.data[blockrows, 7:22] = replacement
+            block_summary_chronic.data[blockrows, 10:25] = replacement
 
         ring_summary_chronic.write()
         block_summary_chronic.write()
