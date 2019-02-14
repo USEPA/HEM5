@@ -7,6 +7,7 @@ Created on Sat Jan 19 23:10:19 2019
 """
 import traceback
 import os
+import shutil
 
 
 class SaveState():
@@ -49,26 +50,35 @@ class SaveState():
         
         #print("model attributes", self.model.__dict__)
         
-        for k, v in self.model.__dict__.items():
+        #if faclist is greater than 1 fac_id then save
+        if len(self.model.faclist.dataframe[fac_id]) > 1:
+            #loop through dataframes
         
-            if k in attr_list and v is not None:
+            for k, v in self.model.__dict__.items():
+            
+                if k in attr_list and v is not None:
+
+                   #remove the faclist row then pickle
+                   try:
+                       
+                       remaining = v.dataframe[v.dataframe['fac_id'] != facid]
+                       
+                   except:
+                       
+                       #means its does response or some other df
+                       pass
+                       
+                   else:
+                   
+                   #pikle
+                       remaining.to_pickle(f"{self.save_folder}/{k}.pkl")
+                       print(k, 'pickled')
+                       
+      
+            
                 
-               #remove the faclist row then pickle
-               try:
-                   
-                   remaining = v.dataframe[v.dataframe['fac_id'] != facid]
-                   
-               except:
-                   
-                   #means its does response or some other df
-                   pass
-                   
-               else:
-               
-               #pikle
-                   remaining.to_pickle(f"{self.save_folder}/{k}.pkl")
-               
-               
-                   print(k, 'pickled')
-                
+    def remove_folder(self):
+        
+        #remove save folder and everythign else
+        shutil.rmtree(self.save_folder)
         

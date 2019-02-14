@@ -32,7 +32,7 @@ class FacilityRunner():
         else:
             self.model.model_optns['phase'] = fac['phase'].tolist()[0]
 
-
+        
         #create fac folder
         fac_folder = "output/"+ self.facilityId + "/"
         if os.path.exists(fac_folder):
