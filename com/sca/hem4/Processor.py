@@ -32,13 +32,7 @@ class Processor():
 
         Logger.logMessage("Preparing Inputs for " + str(
             self.model.facids.count()) + " facilities")
-        
-        #create run id for saving model
-        #runid = datetime.datetime.now().strftime("%B-%d-%Y-%H-%M-%p")
-        #print(runid)
-        #create save model
-        #save_state = SaveState(runid, self.model)
-        
+                
 
         fac_list = []
         for index, row in self.model.faclist.dataframe.iterrows():
@@ -93,18 +87,14 @@ class Processor():
                 # increment facility count
                 
                 #check if there is more than one facility, only save if there are
-                if len(fac_list) > 1:
-                    self.model.save.save_model(facid)
+              
                 
                 num += 1
                 success = True
                 
-                
-                
-                
-                
+
                 #reset model options aftr facility
-                self.model.model_optns = defaultdict
+                self.model.model_optns = defaultdict()
                 
                 
 
@@ -112,7 +102,14 @@ class Processor():
                           " facilities. Check the log tab for error messages."+
                           " Modeling results are located in the Output"+
                           " subfolder of the HEM4 folder.")
-
+        
+        #remove save folder after a completed run
+        try:  
+            self.model.save.remove_folder
+        except:
+            pass
+        
+    
         return success
 
     def createSourceCategoryOutputs(self):

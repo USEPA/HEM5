@@ -32,7 +32,7 @@ class FacilityRunner():
         else:
             self.model.model_optns['phase'] = fac['phase'].tolist()[0]
 
-
+        
         #create fac folder
         fac_folder = "output/"+ self.facilityId + "/"
         if os.path.exists(fac_folder):
@@ -159,6 +159,9 @@ class FacilityRunner():
 
             else:
                 shutil.move(output, fac_folder)
+                
+            #if successful save state
+            self.model.save.save_model(self.facilityId)
                 
             return success
 

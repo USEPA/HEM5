@@ -21,12 +21,44 @@ class Model():
 
     def __init__(self):
         """
-        The following are inputs and have dataframe, msg, 
+        The model contains all information for all facilties used in HEM4 runs
         
+        The following attributes house HEM4 inputs for ALL facilities: 
+       
         faclist - facilities list options file 
-        emisloc
+        emisloc - emissions location file
+        hapemis - hap emissions file
+        multipoly - polyvertex file
+        mulitbuoy - buoyant line file
+        ureceptr - user provided receptors
+        haplib - HAP library
+        bldgdw - building downwas file
+        partdep - particle size file
+        landuse - land use file
+        seasons - seasons file
+        emisvar - emissions variation file
+        facids - ALL facility ids
+        depdeplt- deposition and depletion options for ALL facilties
+        gasparams - 
         
-        
+        extensions include:
+            - .dataframe: contains csv converted to dataframe for input file
+            - .msg: contains message passed to queue about input upload, or 
+            internal input checks
+            
+        The following attributes are facility-specific:
+            
+        computedValues - facility specific values computed during the run
+        model_optns - default dictionary for storing model options like phase, 
+                      elevation, urban, user receptors, acute 
+        save- contains the SaveState model for saving facility runs
+        organs - 
+        riskfacs_df - 
+        all_polar_receptors_df - 
+        all_inner_receptors_df - 
+        all_outer_receptors_df - 
+        risk_by_latlon - 
+        max_indiv_risk_df - 
         """
         self.faclist = None
         self.emisloc = None
@@ -43,6 +75,15 @@ class Model():
         self.facids = None
         self.depdeplt = None
         self.polargrid = None
+        self.sourcelocs = None
+        
+
+        # Facility-specific values that are computed during the run - these are ephemeral
+        # and get overwritten when the next facility runs.
+        self.computedValues = {}
+        self.gasparams = None
+        self.model_optns = defaultdict() 
+        self.save = None
         self.organs = None
         self.riskfacs_df = None
         self.all_polar_receptors_df = None
@@ -50,14 +91,6 @@ class Model():
         self.all_outer_receptors_df = None
         self.risk_by_latlon = None
         self.max_indiv_risk_df = None
-        self.sourcelocs = None
-        self.gasparams = None
-        self.model_optns = defaultdict()
-        self.save = None
-
-        # Facility-specific values that are computed during the run - these are ephemeral
-        # and get overwritten when the next facility runs.
-        self.computedValues = {}
 
         # Initialize model options
         self.initializeOptions()
