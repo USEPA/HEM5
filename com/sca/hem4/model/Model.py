@@ -93,7 +93,7 @@ class Model():
         self.max_indiv_risk_df = None
 
         # Initialize model options
-        self.initializeOptions()
+        self.initializeUrepOnlyOptions()
 
     @property
     def fac_ids(self):
@@ -129,10 +129,11 @@ class Model():
         self.save = None
 
         # Initialize model options
-        self.initializeOptions()
+        self.initializeUrepOnlyOptions()
 
 
-    def initializeOptions(self):
-        self.model_optns['ureponly'] = False
-        self.model_optns['ureponly_nopop'] = False
-        self.model_optns['ureponly_flat'] = False
+    def initializeUrepOnlyOptions(self):
+        self.urepOnly_optns = defaultdict()
+        self.urepOnly_optns['ureponly'] = False
+        self.urepOnly_optns['ureponly_nopop'] = False
+        self.urepOnly_optns['ureponly_flat'] = False

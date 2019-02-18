@@ -13,7 +13,6 @@ from threading import Event
 from tkinter import messagebox
 from tkinter import scrolledtext
 from tkinter import ttk
-import datetime
 from com.sca.hem4.Processor import Processor
 from com.sca.hem4.log import Logger
 from com.sca.hem4.model.Model import Model
@@ -21,7 +20,7 @@ from com.sca.hem4.upload.FileUploader import FileUploader
 from tkinter.filedialog import askopenfilename
 from com.sca.hem4.checker.InputChecker import InputChecker
 from com.sca.hem4.DepositionDepletion import check_dep
-from com.sca.hem4.SaveState import SaveState
+
 
 
 
@@ -1036,8 +1035,8 @@ class Hem4():
                     self.s13.destroy()
 
     def set_ureponly(self):
-        self.model.model_optns['ureponly'] = self.check_ureponly.get()
-        print("ureponly = " + str(self.model.model_optns['ureponly']))
+        self.model.urepOnly_optns['ureponly'] = self.check_ureponly.get()
+        print("ureponly = " + str(self.model.urepOnly_optns['ureponly']))
             
  #%% Event handlers for porting instructions
 
@@ -1120,16 +1119,8 @@ class Hem4():
             if override:
                 global instruction_instance
                 instruction_instance.set("Hem4 Running, check the log tab for updates")
-                
-                #create run id for saving model
-                runid = datetime.datetime.now().strftime("%B-%d-%Y-%H-%M-%p")
-                #print(runid)
-                #create save model
-                save_state = SaveState(runid, self.model)
-                self.model.save = save_state
+
                 self.process()
-                
-                 
 
     def process(self):
         """

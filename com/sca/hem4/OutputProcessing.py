@@ -125,8 +125,8 @@ class Process_outputs():
 
         # Was this facility run with user receptors only? If so, we need to use the output modules that do not
         # reference census data fields like FIPs and block number.
-        ureponly = self.model.model_optns.get("ureponly", None)
-        ureponly_nopop = self.model.model_optns.get("ureponly_nopop", None)
+        ureponly = self.model.urepOnly_optns.get("ureponly", None)
+        ureponly_nopop = self.model.urepOnly_optns.get("ureponly_nopop", None)
 
         #----------- create All_Inner_Receptor output file -----------------
         all_inner_receptors = AllInnerReceptorsNonCensus(self.outdir, self.facid, self.model, plot_df) if ureponly \

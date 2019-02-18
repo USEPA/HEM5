@@ -293,7 +293,7 @@ class FacilityPrep():
         maxdist = facops.get_value(0,max_dist)
         modeldist = facops.get_value(0,model_dist)
 
-        if self.model.model_optns.get('ureponly', None):
+        if self.model.urepOnly_optns.get('ureponly', None):
             self.innerblks, self.outerblks = self.getBlocksFromUrep(facid, cenx, ceny, cenlon, cenlat, facutmzone,
                 maxdist, modeldist, sourcelocs, op_overlap)
 
@@ -463,8 +463,7 @@ class FacilityPrep():
 
         runstream = Runstream(facops, emislocs, hapemis, user_recs, buoyant_df,
                               polyver_df, bldgdw_df, partdia_df, landuse_df,
-                              seasons_df, emisvar_df,
-                              self.model.gasparams.dataframe, self.model.model_optns)
+                              seasons_df, emisvar_df, self.model)
         runstream.build_co(runPhase, self.innerblks, self.outerblks)
         runstream.build_so(runPhase)
         runstream.build_re(self.innerblks, cenx, ceny, polar_df)
@@ -798,11 +797,11 @@ class FacilityPrep():
         urecs = self.model.ureceptr.dataframe.loc[self.model.ureceptr.dataframe[fac_id] == facid]
 
         # If any population values are missing, we cannot create an Incidence report
-        self.model.model_optns['ureponly_nopop'] = urecs.isnull().any()[population]
+        self.model.urepOnly_optns['ureponly_nopop'] = urecs.isnull().any()[population]
         urecs[population] = pd.to_numeric(urecs[population], errors='coerce').fillna(0)
 
         # If any elevation or hill height values are missing, we must run in FLAT mode.
-        self.model.model_optns['ureponly_flat'] = urecs.isnull().any()[elev] or urecs.isnull().any()[hill]
+        self.model.urepOnly_optns['ureponly_flat'] = urecs.isnull().any()[elev] or urecs.isnull().any()[hill]
         urecs[elev] = pd.to_numeric(urecs[elev], errors='coerce').fillna(0)
         urecs[hill] = pd.to_numeric(urecs[hill], errors='coerce').fillna(0)
 

@@ -23,7 +23,7 @@ class TestHarness:
         self.model = Model()
 
         if ureponly:
-            self.model.model_optns['ureponly'] = True
+            self.model.urepOnly_optns['ureponly'] = True
 
         uploader = FileUploader(self.model)
 

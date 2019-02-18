@@ -1,5 +1,7 @@
 import os
 import threading
+import datetime
+from com.sca.hem4.SaveState import SaveState
 from com.sca.hem4.log import Logger
 from com.sca.hem4.runner.FacilityRunner import FacilityRunner
 from com.sca.hem4.writer.excel.FacilityMaxRiskandHI import FacilityMaxRiskandHI
@@ -21,6 +23,13 @@ class Processor():
         self.abort.set()
 
     def process(self):
+
+        #create run id for saving model
+        runid = datetime.datetime.now().strftime("%B-%d-%Y-%H-%M-%p")
+        #print(runid)
+        #create save model
+        save_state = SaveState(runid, self.model)
+        self.model.save = save_state
 
         threadLocal.abort = False
 
