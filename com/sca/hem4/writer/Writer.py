@@ -15,11 +15,7 @@ class Writer(ABC):
         for data in self.generateOutputs():
             if data is not None:
                 self.appendToFile(data)
-
-                print("data size: " + str(data.size))
-
                 self.analyze(data)
-
 
     @abstractmethod
     def writeHeader(self):
