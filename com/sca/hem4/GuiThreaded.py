@@ -280,8 +280,7 @@ class Hem4():
         self.s2 = tk.Frame(self.main, width=250, height=100)
         self.s3 = tk.Frame(self.main, width=250, height=100, pady=10, padx=10)
         self.s4 = tk.Frame(self.main, width=250, height=100, pady=10, padx=10)
-        self.s5 = tk.Frame(self.main, width=250, height=100, pady=10, padx=10)
-        
+        self.s5 = tk.Frame(self.main, width=250, height=150, pady=10, padx=10)
 
         self.s1.grid(row=0)
         self.s2.grid(row=1, column=0, sticky="nsew")
@@ -333,8 +332,8 @@ class Hem4():
         
         
         
-# %% Setting up each file upload space (includes browse button, and manual text entry for file path)         
-        
+# %% Setting up each file upload space (includes browse button, and manual text entry for file path)
+
         #facilities label
         fac_label = tk.Label(self.s3, font="-size 10", 
                              text="Please select a Facilities List Options file:")
@@ -416,7 +415,13 @@ class Hem4():
                                           variable = self.check_emisvar,
                                           command = self.add_variation)
         self.emisvar_sel.grid(row=3, column=0, sticky='E', padx = 85)
-        
+
+        self.check_ureponly = tk.BooleanVar()
+        self.ureponly_sel = tk.Checkbutton(self.s5, text="Use my own receptors",
+                                           variable = self.check_ureponly,
+                                           command = self.set_ureponly)
+        self.ureponly_sel.grid(row=4, column=0, sticky='W')
+
         
     def is_excel(self, filepath):
         """
@@ -459,8 +464,8 @@ class Hem4():
             self.fac_list.set(fullpath)
             [self.scr.insert(tk.INSERT, msg) for msg in self.model.faclist.log]
             
-            #trigger additional inputs fo user recptors
-            if 'Y' in self.model.faclist.dataframe['user_rcpt'].tolist():
+            #trigger additional inputs fo user recptors, assuming we are not in "user receptors only" mode
+            if 'Y' in self.model.faclist.dataframe['user_rcpt'].tolist() and not self.model.urepOnly_optns['ureponly']:
                 #create user receptors
                 self.add_ur()
                 
@@ -771,12 +776,6 @@ class Hem4():
         self.urep_list_man.bind('<Button-1>', 
                                 lambda e:self.manual("instructions/urep_man.txt"))
 
-        self.check_ureponly = tk.BooleanVar()
-        self.urep_sel = tk.Checkbutton(self.s6, text="Use only these receptors",
-                                        variable = self.check_ureponly,
-                                        command = self.set_ureponly)
-        self.urep_sel.grid(row=3, column=0, sticky='E', padx = 85)
-
     def add_buoyant(self):
         """
         Function for creating row and buoyant line parameter upload widgets
@@ -1036,7 +1035,14 @@ class Hem4():
 
     def set_ureponly(self):
         self.model.urepOnly_optns['ureponly'] = self.check_ureponly.get()
-        print("ureponly = " + str(self.model.urepOnly_optns['ureponly']))
+
+        if self.model.urepOnly_optns['ureponly']:
+            self.add_ur()
+        else:
+            self.urep.destroy()
+            self.urep_list_man.destroy()
+            self.ur_label.destroy()
+            self.s6.destroy()
             
  #%% Event handlers for porting instructions
 
