@@ -39,14 +39,19 @@ class FacilityPrep():
             facops[model_dist] = 3000
 
         # Replace NaN with blank, No or 0
-        facops = facops.fillna({met_station:"", rural_urban:"", radial:0, circles:0,
-                                overlap_dist:0, acute:"N", hours:0, elev:"N", multiplier:0,
-                                ring1:0, dep:"", depl:"N", phase:"", pdep:"N", pdepl:"N",
-                                vdep:"N", vdepl:"N", all_rcpts:"N", user_rcpt:"N", bldg_dw:"N",
-                                urban_pop:0, fastall:"N"})
+        # Note: use of elevations is defaulted to Y
+        facops = facops.fillna({radial:0, circles:0, overlap_dist:0, hours:0, multiplier:0,
+                                ring1:0, urban_pop:0})
+        facops.replace(to_replace={met_station:{"nan":"N"}, rural_urban:{"nan":""}, elev:{"nan":"Y"}, 
+                                   dep:{"nan":""}, depl:{"nan":"N"}, phase:{"nan":""}, pdep:{"nan":"N"}, 
+                                   pdepl:{"nan":"N"}, vdep:{"nan":"N"}, vdepl:{"nan":"N"}, 
+                                   all_rcpts:{"nan":"N"}, user_rcpt:{"nan":"N"}, bldg_dw:{"nan":"N"}, 
+                                   fastall:{"nan":"N"}, acute:{"nan":"N"}}, inplace=True)
 
         facops = facops.reset_index(drop = True)
 
+        
+        
         #----- Default missing or out of range facility options --------
 
         #  Maximum Distance
@@ -299,28 +304,30 @@ class FacilityPrep():
 
         else:
             self.innerblks, self.outerblks = getblocks(cenx, ceny, cenlon, cenlat, facutmzone, maxdist, modeldist,
-                sourcelocs, op_overlap)
+                sourcelocs, op_overlap, self.model)
 
 
         #%%----- Polar receptors ----------
 
-        # compute inner polar radius
-        # If there is a polygon, find smallest circle fitting inside it and then move out almost to modeling distance
-        if any(sourcelocs[source_type] == "I") == True:
-            inrad = max_srcdist/2
-            for i in range(0, len(vertx_a)-1):
-                for j in range(0, len(verty_a)-1):
-                    dist_cen = math.sqrt((vertx_a[i] - cenx)**2 + (verty_a[j] - ceny)**2)
-                    inrad = min(inrad, dist_cen)
-            inrad = max(inrad+modeldist-10, 100)
-        else:
+        #..... Compute the first polar ring distance ......
+        
+        # First step is to find the farthest distance to any source.
+        # If the only source is a polygon, find smallest circle fitting inside the 
+        # polygon and then move out almost to modeling distance.
+        if sourcelocs[source_type].nunique() > 1:
             inrad = 0
-            for i in range(0, len(vertx_a)-1):
-                for j in range(0, len(verty_a)-1):
-                    dist_cen = math.sqrt((vertx_a[i] - cenx)**2 + (verty_a[j] - ceny)**2)
-                    inrad = max(inrad, dist_cen)
-
-        # set the first polar ring distance (list item 0), do not override if user selected first ring > 100m
+            for i in range(0, len(vertx_a)):
+                dist_cen = math.sqrt((vertx_a[i] - cenx)**2 + (verty_a[i] - ceny)**2)
+                inrad = max(inrad, dist_cen)
+        else:
+            inrad = max_srcdist/2
+            for i in range(0, len(vertx_a)):
+                dist_cen = math.sqrt((vertx_a[i] - cenx)**2 + (verty_a[i] - ceny)**2)
+                inrad = min(inrad, dist_cen)
+            inrad = max(inrad+modeldist-10, 100)
+                        
+        # Second step is to check the user provided first ring (if any).
+        # If user provided first ring is > 100m, then use it as first ring distance.
         if facops[ring1][0] <= 100:
             ring1a = max(inrad+op_overlap, 100)
             ring1b = min(ring1a, op_maxdist)
@@ -330,7 +337,8 @@ class FacilityPrep():
         polar_dist = []
         polar_dist.append(firstring)
 
-        # compute the rest of the polar ring distances (logarithmically spaced)
+        
+        #.... Compute the rest of the polar ring distances (logarithmically spaced) .......
 
         # first handle ring distances inside the modeling distance
         k = 1
@@ -429,7 +437,6 @@ class FacilityPrep():
         self.outerblks.to_excel(outerblks_con,'Sheet1')
         outerblks_con.save()
 
-
         #%%------ Elevations and hill height ---------
 
         # if the facility will use elevations, assign them to emission sources and polar receptors
@@ -458,6 +465,7 @@ class FacilityPrep():
         emislocs.to_excel(emislocs_con,'Sheet1')
         emislocs_con.save()
 
+        
         #%% this is where runstream file will be compiled
         #new logic to be
 
@@ -578,8 +586,8 @@ class FacilityPrep():
 
         d_nearelev = 99999
         d_nearhill = 99999
-        r_maxelev = 88888
-        r_hill = 88888
+        r_maxelev = -88888
+        r_hill = -88888
 
         if polar_row[elev] == -999:
 
@@ -604,9 +612,8 @@ class FacilityPrep():
                 r_maxelev = r_nearelev
                 r_avgelev = r_nearelev
                 r_popelev = r_nearelev
-            if d_test <= d_nearhill:
-                d_nearhill = d_test
-                r_hill = innblks.get_value(mindist_index, hill)
+                r_nearhill = innblks[hill].iloc[mindist_index]
+                r_hill = r_nearhill
 
             #check outer blocks
             outer_dist = np.sqrt((outblks[utme] - polar_row[utme])**2 + (outblks[utmn] - polar_row[utmn])**2)
@@ -618,10 +625,11 @@ class FacilityPrep():
                 r_maxelev = r_nearelev
                 r_avgelev = r_nearelev
                 r_popelev = r_nearelev
-            if d_test <= d_nearhill:
-                d_nearhill = d_test
-                r_hill = outblks[hill].iloc[mindist_index]
+                r_nearhill = outblks[hill].iloc[mindist_index]
+                r_hill = r_nearhill
 
+            r_hill = max(r_hill, r_maxelev)
+            
         else:
 
             r_maxelev = polar_row[elev]

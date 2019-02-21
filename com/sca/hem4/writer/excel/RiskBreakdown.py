@@ -192,20 +192,21 @@ class RiskBreakdown(ExcelWriter):
         #TODO
         # Change dtype of conc. This will be done upstream later.
         riskbkdn_df[conc] = pd.to_numeric(riskbkdn_df[conc])
-
+        
+        
         #....... Create some aggregate rows ..................
 
-        # Sum Value by site_type, parameter, and pollutant to get Total source_id
+        # Sum Value by site_type, parameter, and pollutant to get Total by pollutant
         srctot = riskbkdn_df.groupby([site_type, parameter, pollutant, ure, rfc],
                                      as_index=False)[value, conc, emis_tpy].sum()
-        srctot[source_id] = "Total"
+        srctot[source_id] = "Total by pollutant all sources"
         srctot[ems_type] = "NA"
         srctot[ure] = 0
         srctot[rfc] = 0
         srctot[value_rnd] = srctot[value].apply(lambda x: round(x, -int(math.floor(math.log10(abs(x))))) if x > 0 else 0)
         srctot[conc_rnd] = srctot[conc].apply(lambda x: round(x, -int(math.floor(math.log10(abs(x))))) if x > 0 else 0)
 
-        # Sum Value by site_type, parameter, and source_id to get Total pollutant
+        # Sum Value by site_type, parameter, and source_id to get Total by source_id
         polltot = riskbkdn_df.groupby([site_type, parameter, source_id],
                                       as_index=False)[value, conc, emis_tpy].sum()
         polltot[pollutant] = "All modeled pollutants"
@@ -215,13 +216,27 @@ class RiskBreakdown(ExcelWriter):
         polltot[value_rnd] = polltot[value].apply(lambda x: round(x, -int(math.floor(math.log10(abs(x))))) if x > 0 else 0)
         polltot[conc_rnd] = polltot[conc].apply(lambda x: round(x, -int(math.floor(math.log10(abs(x))))) if x > 0 else 0)
 
-        # Append aggregates, sort rows, and sort columns
+        # Sum Value by site_type and parameter to get Total by parameter
+        alltot = riskbkdn_df.groupby([site_type, parameter],
+                                      as_index=False)[value, conc, emis_tpy].sum()
+        alltot[source_id] = "Total"
+        alltot[pollutant] = "All pollutants all sources"
+        alltot[ems_type] = "NA"
+        alltot[ure] = 0
+        alltot[rfc] = 0
+        alltot[value_rnd] = alltot[value].apply(lambda x: round(x, -int(math.floor(math.log10(abs(x))))) if x > 0 else 0)
+        alltot[conc_rnd] = alltot[conc].apply(lambda x: round(x, -int(math.floor(math.log10(abs(x))))) if x > 0 else 0)
+
+        # Append aggregates
         riskbkdn_df = riskbkdn_df.append(srctot, ignore_index=True)
         riskbkdn_df = riskbkdn_df.append(polltot, ignore_index=True)
-        riskbkdn_df.sort_values([site_type, parameter, source_id, pollutant],
-                                ascending=[True, True, True, True], inplace=True)
+        riskbkdn_df = riskbkdn_df.append(alltot, ignore_index=True)
+        
+        # Sort rows
+        riskbkdn_df.sort_values([parameter, site_type, source_id, value],
+                                ascending=[True, True, True, False], inplace=True)
         riskbkdn_df = riskbkdn_df[columns]
-
+        
         # Done
         self.dataframe = riskbkdn_df
         self.data = self.dataframe.values
