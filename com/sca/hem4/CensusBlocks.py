@@ -132,7 +132,7 @@ def rotatedbox(xt, yt, box_x, box_y, len_x, len_y, angle, fringe, overlap_dist):
 
 #%%    
 
-def in_box(modelblks, sourcelocs, modeldist, maxdist, overlap_dist):
+def in_box(modelblks, sourcelocs, modeldist, maxdist, overlap_dist, model):
 
     ## This function determines if a block within modelblks is within a fringe of any source ##
     
@@ -208,17 +208,19 @@ def in_box(modelblks, sourcelocs, modeldist, maxdist, overlap_dist):
     polyvertices = sourcelocs.query("source_type in ('I')")
     if len(polyvertices) > 1:
             
-        # for tract polygons, any outerblks in the same tract as any polygon vertex will be counted as inner
-        outerblks["tract"] = outerblks[rec_id].str[0:10]
-        polyvertices["tract"] = polyvertices[fac_id].str[1:11]
-        intract = pd.merge(outerblks, polyvertices, how='inner', on='tract')
-        if len(intract) > 0:
-            innerblks = innerblks.append(intract).reset_index(drop=True)
-            innerblks = innerblks[~innerblks[rec_id].duplicated()]
-            outerblks = outerblks[~outerblks[rec_id].isin(innerblks[rec_id])]
+        # If this polygon is a census tract (e.g. NATA application), then any outer receptor within tract will be
+        # considered an inner receptor. Do not perform this check for the user receptor only application.
+        if not model.model_optns["ureponly"]:
+            outerblks["tract"] = outerblks[idmarplot].str[1:11]
+            polyvertices["tract"] = polyvertices[fac_id].str[0:10]
+            intract = pd.merge(outerblks, polyvertices, how='inner', on='tract')
+            if len(intract) > 0:
+                innerblks = innerblks.append(intract).reset_index(drop=True)
+                innerblks = innerblks[~innerblks[rec_id].duplicated()]
+                outerblks = outerblks[~outerblks[rec_id].isin(innerblks[rec_id])]
         
-        # for non-tract polygons, are any blocks within the modeldist of any polygon side?
-        #     process each source_id
+        # Are any blocks within the modeldist of any polygon side?
+        # Process each source_id
         for grp,df in polyvertices.groupby(source_id):
             # loop over each row of the source_id specific dataframe (df)
             for i in range(0, df.shape[0]-1):
@@ -252,7 +254,7 @@ def cntyinzone(lat_min, lon_min, lat_max, lon_max, cenlat, cenlon, maxdist_deg):
     return inzone
 
 #%%
-def getblocks(cenx, ceny, cenlon, cenlat, utmzone, maxdist, modeldist, sourcelocs, overlap_dist):
+def getblocks(cenx, ceny, cenlon, cenlat, utmzone, maxdist, modeldist, sourcelocs, overlap_dist, model):
     
 
     # convert max outer ring distance from meters to degrees latitude
@@ -335,7 +337,7 @@ def getblocks(cenx, ceny, cenlon, cenlat, utmzone, maxdist, modeldist, sourceloc
     modelblks = censusblks.query('distance <= @maxdist')
 
     # Split modelblks into inner and outer block receptors
-    innerblks, outerblks = in_box(modelblks, sourcelocs, modeldist, maxdist, overlap_dist)
+    innerblks, outerblks = in_box(modelblks, sourcelocs, modeldist, maxdist, overlap_dist, model)
 
     Logger.log("OUTERBLOCKS", outerblks, False)
     

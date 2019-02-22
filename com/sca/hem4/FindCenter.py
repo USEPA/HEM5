@@ -71,12 +71,10 @@ def center(sourcelocs, utmz):
 #            vertx_l.append(utme2)
 #            verty_l.append(utmn2)
 #        
-        # If a polygon source, read the polygon vertex file
         
     # Find the two vertices that are the farthest apart
     # Also find the corners of the modeling domain
-    vertx_a = np.array(vertx_l)
-    
+    vertx_a = np.array(vertx_l)   
     verty_a = np.array(verty_l)
    
     max_sqdist = 0
@@ -100,10 +98,10 @@ def center(sourcelocs, utmz):
                     ymax1 = verty_a[i]
                     xmax2 = vertx_a[k]
                     ymax2 = verty_a[k]
-   
+           
         # Calculate the center of the facility in utm coordinates
-        cenx = (xmax1 + xmax2) / 2
-        ceny = (ymax1 + ymax2) / 2
+        cenx = round((xmax1 + xmax2) / 2)
+        ceny = round((ymax1 + ymax2) / 2)
     
         # Compute the lat/lon of the center
         sceny = pd.Series([ceny])
@@ -117,8 +115,8 @@ def center(sourcelocs, utmz):
     else: #single source
         
        # Calculate the center of the facility in utm coordinates
-        cenx = max_x
-        ceny = max_y
+        cenx = round(max_x)
+        ceny = round(max_y)
     
         # Compute the lat/lon of the center
         sceny = pd.Series([ceny])
