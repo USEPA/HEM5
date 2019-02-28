@@ -58,6 +58,8 @@ class Incidence(ExcelWriter):
         emistype_inc[source_id] = "Total"
         emistype_inc[pollutant] = "All modeled pollutants"
 
+        all_inc = all_inc[all_inc['inc'] != 0]
+
         # combine all, poll, sourceid, and emistype incidence dfs into one and store in data
         combined_inc = emistype_inc.append([all_inc, poll_inc, sourceid_inc], ignore_index=True)
         combined_inc = combined_inc[[source_id, pollutant, ems_type, inc]]
