@@ -423,12 +423,12 @@ class Hem4():
         self.ureponly_sel.grid(row=4, column=0, sticky='W')
 
         
-    def is_excel(self, filepath):
+    def is_valid_extension(self, filepath):
         """
-        Function checks to make sure excel files are selected for inputs
+        Function checks to make sure excel/csv files are selected for inputs
         
         """
-        extensions = [".xls", ".xlsx", ".XLS"]
+        extensions = [".xls", ".xlsx", ".XLS", ".csv", ".CSV"]
         return any(ext in filepath for ext in extensions)
 
     def openFile(self, filename):
@@ -441,9 +441,9 @@ class Hem4():
             # upload was canceled
             print("Canceled!")
             return None
-        elif not self.is_excel(filename):
+        elif not self.is_valid_extension(filename):
             messagebox.showinfo("Invalid file format", 
-                                "Not a valid file format, please upload an excel file.")
+                                "Not a valid file format, please upload an excel/csv file as per the instructions.")
             return None
         else:
             return os.path.abspath(filename)
@@ -467,7 +467,7 @@ class Hem4():
             #trigger additional inputs fo user recptors, assuming we are not in "user receptors only" mode
             if 'Y' in self.model.faclist.dataframe['user_rcpt'].tolist() and not self.model.urepOnly_optns['ureponly']:
                 #create user receptors
-                self.add_ur()
+                self.add_ur(False)
                 
             else:
                 
@@ -744,10 +744,15 @@ class Hem4():
             self.emisvar_list.set(fullpath)
             [self.scr.insert(tk.INSERT, msg) for msg in self.model.emisvar.log]
     
-    def add_ur(self):
+    def add_ur(self, urepalt):
         """
         Function for creating row and upload widgets for user receptors
         """
+
+        # set the appropriate instructions text, based on the csv or xlsx case
+        browse = "instructions/urepalt_browse.txt" if urepalt else "instructions/urep_browse.txt"
+        man = "instructions/urepalt_man.txt" if urepalt else "instructions/urep_man.txt"
+
         #create row for user receptors
         self.s6 = tk.Frame(self.main, width=250, height=200, pady=10, padx=10)
         self.s6.grid(row=5, column=0, columnspan=2, sticky="nsew")
@@ -764,7 +769,7 @@ class Hem4():
         self.urep["text"] = "Browse"
         self.urep.grid(row=1, column=0, sticky="W")
         self.urep.bind('<Enter>', 
-                       lambda e:self.browse("instructions/urep_browse.txt"))
+                       lambda e:self.browse(browse))
         
         #user receptor text entry
         self.urep_list = tk.StringVar(self.s6)
@@ -774,7 +779,7 @@ class Hem4():
         self.urep_list_man.grid(row=1, column=0, sticky='E', padx=85)
         #event handler for instructions (Button 1 is the left mouse click)
         self.urep_list_man.bind('<Button-1>', 
-                                lambda e:self.manual("instructions/urep_man.txt"))
+                                lambda e:self.manual(man))
 
     def add_buoyant(self):
         """
@@ -1037,7 +1042,7 @@ class Hem4():
         self.model.urepOnly_optns['ureponly'] = self.check_ureponly.get()
 
         if self.model.urepOnly_optns['ureponly']:
-            self.add_ur()
+            self.add_ur(True)
         else:
             self.urep.destroy()
             self.urep_list_man.destroy()

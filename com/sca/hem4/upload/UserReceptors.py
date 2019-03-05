@@ -9,8 +9,8 @@ rec_id = 'rec_id';
 
 class UserReceptors(DependentInputFile):
 
-    def __init__(self, path, dependency):
-        DependentInputFile.__init__(self, path, dependency)
+    def __init__(self, path, dependency, csvFormat):
+        DependentInputFile.__init__(self, path, dependency, csvFormat=csvFormat)
 
     def createDataframe(self):
 
@@ -21,8 +21,12 @@ class UserReceptors(DependentInputFile):
         self.numericColumns = [lon, lat, elev, hill, population]
         self.strColumns = [fac_id,location_type, utmzone, rec_type, rec_id]
 
-        ureceptor_df = self.readFromPath(
-            (fac_id, location_type, lon, lat, utmzone, elev, rec_type, rec_id, hill, population))
+        if self.csvFormat:
+            ureceptor_df = self.readFromPathCsv(
+                (fac_id, location_type, lon, lat, utmzone, elev, rec_type, rec_id, hill, population))
+        else:
+            ureceptor_df = self.readFromPath(
+                (fac_id, location_type, lon, lat, utmzone, elev, rec_type, rec_id, hill, population))
 
         #check for unassigned user receptors
         check_receptor_assignment = ureceptor_df[fac_id]

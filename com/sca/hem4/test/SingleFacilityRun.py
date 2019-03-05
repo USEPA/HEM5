@@ -149,7 +149,7 @@ class SingleFacilityRun(unittest.TestCase):
         Verify that the risk breakdown output file is identical to the test fixture.
         """
         for facid in self.testHarness.model.facids:
-            fixture = pd.read_excel("fixtures/output/" + facid + "_risk_breakdown.xlsx")
+            fixture = pd.read_excel(self.outputFixturePrefix + facid + "_risk_breakdown.xlsx")
             produced = pd.read_excel("output/" + facid + "/" + facid + "_risk_breakdown.xlsx")
 
             self.assertTrue(fixture.equals(produced), "The contents of the output file are inconsistent with the test fixture.")

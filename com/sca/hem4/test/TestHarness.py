@@ -37,7 +37,7 @@ class TestHarness:
         uploader.upload("hapemis", "fixtures/input/hapemis.xlsx")
         uploader.upload("emisloc", "fixtures/input/emisloc.xlsx")
 
-        urepFile = "fixtures/input/urec_only.xlsx" if ureponly else "fixtures/input/urec.xlsx"
+        urepFile = "fixtures/input/urec_only.csv" if ureponly else "fixtures/input/urec.xlsx"
         uploader.uploadDependent("user receptors", urepFile,
                                  self.model.faclist.dataframe)
 
