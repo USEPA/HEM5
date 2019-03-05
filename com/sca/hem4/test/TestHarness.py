@@ -43,4 +43,5 @@ class TestHarness:
 
         processor = Processor(self.model, Event())
         self.success = processor.process()
+        
         Logger.close(True)

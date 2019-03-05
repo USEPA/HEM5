@@ -177,8 +177,7 @@ class FacilityRunner():
                                                self.model, self.prep_fac,
                                                self.runstream, self.abort)
             outputProcess.process()
-            
-            
+                        
 
             pace =  str(time.time()- self.start) + 'seconds'
             Logger.logMessage("Finished calculations for " + self.facilityId + 

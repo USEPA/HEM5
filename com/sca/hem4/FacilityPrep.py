@@ -839,7 +839,7 @@ class FacilityPrep():
         modelblks = urecs.query('distance <= @maxdist')
 
         # Split modelblks into inner and outer block receptors
-        innerblks, outerblks = in_box(modelblks, sourcelocs, modeldist, maxdist, overlap_dist)
+        innerblks, outerblks = in_box(modelblks, sourcelocs, modeldist, maxdist, overlap_dist, self.model)
 
 
         Logger.log("OUTERBLOCKS", outerblks, False)

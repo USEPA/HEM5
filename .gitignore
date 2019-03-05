@@ -2,6 +2,7 @@
 .gitignore
 aermod/aermod.inp
 aermod/plotfile.plt
+aermod/maxhour.plt
 kml_source_loc.txt
 Inputs
 /output
