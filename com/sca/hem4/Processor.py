@@ -71,7 +71,7 @@ class Processor():
             #save version of this gui as is? constantly overwrite it once each facility is done?
             Logger.logMessage("Running facility " + str(num) + " of " +
                               str(len(fac_list)))
-
+            
             success = False
             try:
                 runner = FacilityRunner(facid, self.model, self.abort)

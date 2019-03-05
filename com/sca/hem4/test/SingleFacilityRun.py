@@ -48,7 +48,7 @@ class SingleFacilityRun(unittest.TestCase):
             self.assertEqual(checksum_expected, checksum_generated,
                  "The contents of the AllPolarReceptors output file are inconsistent with the test fixture:" +
                  checksum_expected + " != " + checksum_generated)
-
+        
     def test_all_inner_receptors(self):
         """
         Verify that the all inner receptors output file is identical to the test fixture.
