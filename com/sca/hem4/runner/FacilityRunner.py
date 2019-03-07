@@ -159,6 +159,7 @@ class FacilityRunner():
 
             else:
                 shutil.move(output, fac_folder)
+                self.model.save.save_model(self.facilityId)
                 
             return success
 

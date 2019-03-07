@@ -92,10 +92,7 @@ class Processor():
                 # restart we know which faciltiy we want to start on
                 # increment facility count
                 
-                #check if there is more than one facility, only save if there are
-                if len(fac_list) > 1:
-                    self.model.save.save_model(facid)
-                
+    
                 num += 1
                 success = True
                 

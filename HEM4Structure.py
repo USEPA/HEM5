@@ -16,7 +16,7 @@ import queue
 messageQueue = queue.Queue()
 callbackQueue = queue.Queue()
 
-LARGE_FONT= ("Verdana", 12)
+LARGE_FONT= ("Verdana", 20)
 
 
 class HEM4Structure(tk.Tk):
@@ -33,7 +33,8 @@ class HEM4Structure(tk.Tk):
 
         container.grid_rowconfigure(0, weight=1)
         container.grid_columnconfigure(0, weight=1)
-
+        
+        
         self.frames = {}
 
         for F in (StartPage, Navigation, Hem4):

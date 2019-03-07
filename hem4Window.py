@@ -5,30 +5,27 @@ Created on Mon Jan 14 10:06:16 2019
 @author: David Lindsey
 """
 
-import asyncio
 import os
 import queue
-import sched
 import sys
 import tkinter as tk
-import traceback
 from concurrent.futures import ThreadPoolExecutor
-from threading import Event, current_thread, main_thread
-from time import sleep, time
+from threading import Event
 from tkinter import messagebox
 from tkinter import scrolledtext
 from tkinter import ttk
+import datetime
+from com.sca.hem4.Processor import Processor
+from com.sca.hem4.log import Logger
+from com.sca.hem4.model.Model import Model
+from com.sca.hem4.upload.FileUploader import FileUploader
+from tkinter.filedialog import askopenfilename
+from com.sca.hem4.checker.InputChecker import InputChecker
+from com.sca.hem4.DepositionDepletion import check_dep
+from com.sca.hem4.SaveState import SaveState
 from tkinter.simpledialog import Dialog, Toplevel
 from ttkthemes import ThemedStyle
 
-from Processor import Processor
-from log.Logger import Logger
-from model.Model import Model
-from upload.FileUploader import FileUploader
-from tkinter.filedialog import askopenfilename
-from checker.InputChecker import InputChecker
-from check_dep import check_dep
-from writer.kml.KMLWriter import KMLWriter
 
 
 
@@ -1045,6 +1042,9 @@ class Hem4(tk.Frame):
             if override:
                 global instruction_instance
                 instruction_instance.set("Hem4 Running, check the log tab for updates")
+                #create save model
+                save_state = SaveState(runid, self.model)
+                self.model.save = save_state
                 self.process()
 
     def process(self):

@@ -22,11 +22,11 @@ class Navigation(tk.Frame):
         tk.Frame.__init__(self, parent)
         
          #create grid
-        self.s1 = tk.Frame(self, width=500, height=50)
-        self.s2 = tk.Frame(self, width=500, height=100)
-        self.s3 = tk.Frame(self, width=500, height=100, pady=10, padx=10)
-        self.s4 = tk.Frame(self, width=500, height=100, pady=10, padx=10)
-        self.s5 = tk.Frame(self, width=500, height=100, pady=10, padx=10)
+        self.s1 = tk.Frame(self, width=1000, height=150)
+        self.s2 = tk.Frame(self, width=1000, height=150)
+        self.s3 = tk.Frame(self, width=1000, height=150, pady=10, padx=10)
+        self.s4 = tk.Frame(self, width=1000, height=150, pady=10, padx=10)
+        self.s5 = tk.Frame(self, width=1000, height=150, pady=10, padx=10)
         
 
         self.s1.grid(row=0)
