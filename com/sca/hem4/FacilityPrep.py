@@ -802,7 +802,7 @@ class FacilityPrep():
         maxdist_deg = maxdist*39.36/36/2000/60
 
         # Get all user receptors that correspond to the given fac id
-        urecs = self.model.ureceptr.dataframe.loc[self.model.ureceptr.dataframe[fac_id] == facid]
+        urecs = self.model.altreceptr.dataframe.loc[self.model.altreceptr.dataframe[fac_id] == facid]
 
         # If any population values are missing, we cannot create an Incidence report
         self.model.urepOnly_optns['ureponly_nopop'] = urecs.isnull().any()[population]

@@ -51,9 +51,11 @@ class FileUploader():
             self.model.multibuoy = BuoyantLine(path, dependency)
 
         elif filetype == "user receptors":
-            csvFormat = self.model.urepOnly_optns['ureponly']
-            self.model.ureceptr = UserReceptors(path, dependency, csvFormat)
-            
+            self.model.ureceptr = UserReceptors(path, dependency, False)
+
+        elif filetype == "alt receptors":
+            self.model.altreceptr = UserReceptors(path, dependency, True)
+
         elif filetype ==  "building downwash":
             self.model.bldgdw = Downwash(path, dependency)
 

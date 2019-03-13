@@ -66,6 +66,7 @@ class Model():
         self.multipoly = None
         self.multibuoy = None
         self.ureceptr = None
+        self.altreceptr = None
         self.haplib = None
         self.bldgdw = None
         self.partdep = None
@@ -107,6 +108,7 @@ class Model():
         self.multipoly = None
         self.multibuoy = None
         self.ureceptr = None
+        self.altreceptr = None
         self.haplib = None
         self.bldgdw = None
         self.partdep = None
