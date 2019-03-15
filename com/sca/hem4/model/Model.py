@@ -109,7 +109,6 @@ class Model():
         self.multibuoy = None
         self.ureceptr = None
         self.altreceptr = None
-        self.haplib = None
         self.bldgdw = None
         self.partdep = None
         self.landuse = None
@@ -118,7 +117,6 @@ class Model():
         self.facids = None
         self.depdeplt = None
         self.polargrid = None
-        self.organs = None
         self.riskfacs_df = None
         self.all_polar_receptors_df = None
         self.all_inner_receptors_df = None
@@ -129,6 +127,10 @@ class Model():
         self.gasparams = None
         self.model_optns = defaultdict()
         self.save = None
+
+        # These two should not be reset...they are loaded when the app loads, one time only!
+        #self.haplib = None
+        #self.organs = None
 
         # Initialize model options
         self.initializeUrepOnlyOptions()

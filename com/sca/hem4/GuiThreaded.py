@@ -61,6 +61,7 @@ class Hem4():
         self.hap_up = None
         self.emisloc_up = None
         self.urep = None
+        self.urepaltButton = None
         self.poly_up = None
         self.buoyant_up = None
         self.bldgdw_up = None
@@ -125,7 +126,7 @@ class Hem4():
 
         if self.urep is not None:
             self.enable_widgets(self.urep, False)
-        if self.alturep is not None:
+        if self.urepaltButton is not None:
             self.enable_widgets(self.urepaltButton, False)
         if self.poly_up is not None:
             self.enable_widgets(self.poly_up, False)
@@ -148,7 +149,7 @@ class Hem4():
 
         if self.urep is not None:
             self.enable_widgets(self.urep, True)
-        if self.alturep is not None:
+        if self.urepaltButton is not None:
             self.enable_widgets(self.urepaltButton, True)
         if self.poly_up is not None:
             self.enable_widgets(self.poly_up, True)
@@ -1106,9 +1107,10 @@ class Hem4():
         if self.model.urepOnly_optns['ureponly']:
             self.add_urepalt()
         else:
-            self.urepaltButton.destroy()
-            self.urepalt_list_man.destroy()
-            self.urepalt_label.destroy()
+            if self.urepaltButton is not None:
+                self.urepaltButton.destroy()
+                self.urepalt_list_man.destroy()
+                self.urepalt_label.destroy()
             
  #%% Event handlers for porting instructions
 
