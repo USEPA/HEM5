@@ -129,7 +129,7 @@ class Hem4(tk.Frame):
          #back button
         back_button = tk.Button(self, text="Back", font=TEXT_FONT,
                             command=lambda: controller.show_frame(navigation.Navigation))
-        back_button.grid(row=15, column=3)
+        back_button.grid(row=15, column=0, padx=100)
     
     #%% Set Quit, Run, and User Guide buttons        
         self.quit_button = tk.Button(self.main, text="QUIT", fg="red",
@@ -139,10 +139,10 @@ class Hem4(tk.Frame):
         #run only appears once the required files have been set
         self.run_button = tk.Button(self, text='RUN', fg="green", font=TEXT_FONT,
                                      command=self.run)
-        self.run_button.grid(row=15, column=0, sticky="W")
+        self.run_button.grid(row=15, column=0, padx=50)
         
         self.guide = tk.Button(self, text="User Guide", font=TEXT_FONT, 
-                               command=self.user_guide)
+                               command=self.user_guide, padx=20)
         self.guide.grid(row=0, column=0)
 #%% Setting up  directions text space
 
@@ -150,7 +150,7 @@ class Hem4(tk.Frame):
         global instruction_instance
         instruction_instance = tk.StringVar(self.s2)
         instruction_instance.set(" ")
-        self.dynamic_inst = ttk.Label(self.s2, wraplength=375, font="-size 9")
+        self.dynamic_inst = ttk.Label(self.s2, wraplength=700, font=TEXT_FONT)
         
         self.dynamic_inst["textvariable"] = instruction_instance 
         self.dynamic_inst.grid(row = 2, sticky='ew', padx = 10)
@@ -1051,7 +1051,10 @@ class Hem4(tk.Frame):
             if override:
                 global instruction_instance
                 instruction_instance.set("Hem4 Running, check the log tab for updates")
-                runid = 
+                
+                #create run id for saving model
+                runid = datetime.datetime.now().strftime("%B-%d-%Y-%H-%M-%p")
+                #print(runid)
                 #create save model
                 save_state = SaveState(runid, self.model)
                 self.model.save = save_state

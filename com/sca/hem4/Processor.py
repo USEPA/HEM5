@@ -109,6 +109,14 @@ class Processor():
                           " facilities. Check the log tab for error messages."+
                           " Modeling results are located in the Output"+
                           " subfolder of the HEM4 folder.")
+        
+        
+         #remove save folder after a completed run
+        try:  
+            self.model.save.remove_folder
+        except:
+            pass
+        
 
         return success
 
