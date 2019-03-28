@@ -11,7 +11,7 @@ import navigation
 
 
 TITLE_FONT= ("Verdana", 20)
-TEXT_FONT = ("Verdana", 16)
+TEXT_FONT = ("Verdana", 15)
 
 def hyperlink1(event):
     webbrowser.open_new(r"https://www.epa.gov/fera/risk-assessment-and-"+

@@ -26,6 +26,10 @@ from com.sca.hem4.SaveState import SaveState
 from tkinter.simpledialog import Dialog, Toplevel
 from ttkthemes import ThemedStyle
 
+import navigation
+
+TITLE_FONT= ("Verdana", 20)
+TEXT_FONT = ("Verdana", 12)
 
 
 
@@ -79,7 +83,7 @@ class Hem4(tk.Frame):
         tab2 = ttk.Frame(self.tabControl)            # Add a second tab
         self.tabControl.add(tab2, text='Log')      # Make second tab visible
 
-        self.tabControl.pack(expand=1, fill="both")  # Pack to make visible
+        #self.tabControl.pack(expand=1, fill="both")  # Pack to make visible
         
          # Create container frame to hold all other widgets
         self.main = ttk.LabelFrame(tab1, text='Human Exposure Model,'+
@@ -88,11 +92,13 @@ class Hem4(tk.Frame):
         self.main.grid(column=0, row=1)
         
         #create discreet sections for GUI in tab1
-        self.s1 = tk.Frame(self.main, width=250, height=50)
-        self.s2 = tk.Frame(self.main, width=250, height=100)
-        self.s3 = tk.Frame(self.main, width=250, height=100, pady=10, padx=10)
-        self.s4 = tk.Frame(self.main, width=250, height=100, pady=10, padx=10)
-        self.s5 = tk.Frame(self.main, width=250, height=100, pady=10, padx=10)
+        self.s1 = tk.Frame(self, width=1000, height=150)
+        self.s2 = tk.Frame(self, width=1000, height=150)
+        self.s3 = tk.Frame(self, width=1000, height=150, pady=10, padx=10)
+        self.s4 = tk.Frame(self, width=1000, height=150, pady=10, padx=10)
+        self.s5 = tk.Frame(self, width=1000, height=150, pady=10, padx=10)
+        
+        
         
 
         self.s1.grid(row=0)
@@ -120,7 +126,10 @@ class Hem4(tk.Frame):
                                              height=scrolH, wrap=tk.WORD)
         self.scr.grid(column=0, row=3, sticky='WE', columnspan=3)
         
-    
+         #back button
+        back_button = tk.Button(self, text="Back", font=TEXT_FONT,
+                            command=lambda: controller.show_frame(navigation.Navigation))
+        back_button.grid(row=15, column=3)
     
     #%% Set Quit, Run, and User Guide buttons        
         self.quit_button = tk.Button(self.main, text="QUIT", fg="red",
@@ -128,13 +137,13 @@ class Hem4(tk.Frame):
         self.quit_button.grid(row=10, column=0, sticky="W")
         
         #run only appears once the required files have been set
-        self.run_button = tk.Button(self.main, text='RUN', fg="green", 
-                                    command=self.run)
-        self.run_button.grid(row=10, column=1, sticky="E")
+        self.run_button = tk.Button(self, text='RUN', fg="green", font=TEXT_FONT,
+                                     command=self.run)
+        self.run_button.grid(row=15, column=0, sticky="W")
         
-        self.guide = tk.Button(self.main, text="User Guide", 
+        self.guide = tk.Button(self, text="User Guide", font=TEXT_FONT, 
                                command=self.user_guide)
-        self.guide.grid(row=0, column=0, sticky='W')
+        self.guide.grid(row=0, column=0)
 #%% Setting up  directions text space
 
         #Dynamic instructions place holder
@@ -259,7 +268,7 @@ class Hem4(tk.Frame):
         # %% Setting up each file upload space (includes browse button, and manual text entry for file path)         
         
         #facilities label
-        fac_label = tk.Label(self.s3, font="-size 10", 
+        fac_label = tk.Label(self.s3, font=TEXT_FONT, 
                              text="Please select a Facilities List Options file:")
         fac_label.grid(row=1, sticky="W")
         
@@ -274,7 +283,7 @@ class Hem4(tk.Frame):
         #facilities text entry
         self.fac_list = tk.StringVar(self.s3)
         self.fac_list_man = ttk.Entry(self.s3)
-        self.fac_list_man["width"] = 55
+        self.fac_list_man["width"] = 100
         self.fac_list_man["textvariable"]= self.fac_list
         self.fac_list_man.grid(row=2, column=0, sticky='E', padx=85)
         #event handler for instructions (Button 1 is the left mouse click)
@@ -283,7 +292,7 @@ class Hem4(tk.Frame):
         
                 
         #Hap emissions label
-        hap_label = tk.Label(self.s4, font="-size 10",  
+        hap_label = tk.Label(self.s4, font=TEXT_FONT,  
                              text="Please select the associated HAP Emissions file:")
         hap_label.grid(row=1, sticky="W")
         
@@ -299,7 +308,7 @@ class Hem4(tk.Frame):
         #hap emission text entry
         self.hap_list = tk.StringVar(self.s4)
         self.hap_list_man = ttk.Entry(self.s4)
-        self.hap_list_man["width"] = 55
+        self.hap_list_man["width"] = 100
         self.hap_list_man["textvariable"]= self.hap_list
         self.hap_list_man.grid(row=2, column=0, sticky='E', padx=85)
         #event handler for instructions (Button 1 is the left mouse click)
@@ -308,7 +317,7 @@ class Hem4(tk.Frame):
         
         
         #Emissions location label
-        emisloc_label = tk.Label(self.s5, font="-size 10",  
+        emisloc_label = tk.Label(self.s5, font=TEXT_FONT,  
                                  text="Please select the associated Emissions" +
                                  " Locations file:")
         emisloc_label.grid(row=1, sticky="W")
@@ -325,7 +334,7 @@ class Hem4(tk.Frame):
         #emission loccation file text entry
         self.emisloc_list = tk.StringVar(self.s5)
         self.emisloc_list_man = ttk.Entry(self.s5)
-        self.emisloc_list_man["width"] = 55
+        self.emisloc_list_man["width"] = 100
         self.emisloc_list_man["textvariable"]= self.emisloc_list
         self.emisloc_list_man.grid(row=2, column=0, sticky='E', padx=85)
         #event handler for instructions (Button 1 is the left mouse click)
@@ -670,7 +679,7 @@ class Hem4(tk.Frame):
         self.s6.grid(row=5, column=0, columnspan=2, sticky="nsew")
         
         #user recptors label
-        self.ur_label = tk.Label(self.s6, font="-size 10", 
+        self.ur_label = tk.Label(self.s6, font=TEXT_FONT, 
                              text="Please select an associated User Receptor"+
                              " file:")
         self.ur_label.grid(row=0, sticky="W")
@@ -686,7 +695,7 @@ class Hem4(tk.Frame):
         #user receptor text entry
         self.urep_list = tk.StringVar(self.s6)
         self.urep_list_man = ttk.Entry(self.s6)
-        self.urep_list_man["width"] = 55
+        self.urep_list_man["width"] = 100
         self.urep_list_man["textvariable"]= self.urep_list
         self.urep_list_man.grid(row=1, column=0, sticky='E', padx=85)
         #event handler for instructions (Button 1 is the left mouse click)
@@ -710,7 +719,7 @@ class Hem4(tk.Frame):
         
         
         #Buoyant Line  label
-        self.b_label = tk.Label(self.s7, font="-size 10",  
+        self.b_label = tk.Label(self.s7, font=TEXT_FONT,  
                                  text="Please select associated Buoyant Line"+
                                  " Source Parameter file:")
         self.b_label.grid(row=1, sticky="W")
@@ -728,7 +737,7 @@ class Hem4(tk.Frame):
         #buoyant line file text entry
         self.buoyant_list = tk.StringVar(self.s7)
         self.buoyant_list_man = ttk.Entry(self.s7)
-        self.buoyant_list_man["width"] = 55
+        self.buoyant_list_man["width"] = 100
         self.buoyant_list_man["textvariable"]= self.buoyant_list
         self.buoyant_list_man.grid(row=2, column=0, sticky='E', padx=85)
         #event handler for instructions (Button 1 is the left mouse click)
@@ -746,7 +755,7 @@ class Hem4(tk.Frame):
         self.s8.grid(row=7, column=0, columnspan=2, sticky="nsew")
         
         #Polygon sources label
-        self.poly_label = tk.Label(self.s8, font="-size 10",  
+        self.poly_label = tk.Label(self.s8, font=TEXT_FONT,  
                               text="Please select associated Polyvertex file.")
         self.poly_label.grid(row=1, sticky="W")
         
@@ -762,7 +771,7 @@ class Hem4(tk.Frame):
         #polygon sources loccation file text entry
         self.poly_list = tk.StringVar(self.s8)
         self.poly_list_man = ttk.Entry(self.s8)
-        self.poly_list_man["width"] = 55
+        self.poly_list_man["width"] = 100
         self.poly_list_man["textvariable"]= self.poly_list
         self.poly_list_man.grid(row=2, column=0, sticky='E', padx=85)
         #event handler for instructions (Button 1 is the left mouse click)
@@ -796,7 +805,7 @@ class Hem4(tk.Frame):
         #polygon sources loccation file text entry
         self.bldgdw_list = tk.StringVar(self.s9)
         self.bldgdw_list_man = ttk.Entry(self.s9)
-        self.bldgdw_list_man["width"] = 55
+        self.bldgdw_list_man["width"] = 100
         self.bldgdw_list_man["textvariable"]= self.bldgdw_list
         self.bldgdw_list_man.grid(row=2, column=0, sticky='E', padx=85)
         #event handler for instructions (Button 1 is the left mouse click)
@@ -815,7 +824,7 @@ class Hem4(tk.Frame):
         self.s12.grid(row=2, column=2, columnspan=2, sticky="nsew")
         
         #particle size label
-        part_label = tk.Label(self.s12, font="-size 10", 
+        part_label = tk.Label(self.s12, font=TEXT_FONT, 
                               text="Upload the file containing size information for particle matter emissions:")
         part_label.grid(row=1, sticky="W")
     
@@ -830,7 +839,7 @@ class Hem4(tk.Frame):
         #particle size file text entry
         self.dep_part = tk.StringVar(self.s12)
         self.dep_part_man = ttk.Entry(self.s12)
-        self.dep_part_man["width"] = 55
+        self.dep_part_man["width"] = 100
         self.dep_part_man["textvariable"]= self.dep_part
         self.dep_part_man.grid(row=2, column=0, sticky='E', padx=85)
         #event handler for instructions (Button 1 is the left mouse click)
@@ -849,7 +858,7 @@ class Hem4(tk.Frame):
         self.s12.grid(row=3, column=2, columnspan=2, sticky="nsew")
         
         #land use size label
-        land_label = tk.Label(self.s12, font="-size 10", 
+        land_label = tk.Label(self.s12, font=TEXT_FONT, 
                               text="Upload the file containing land use information:")
         land_label.grid(row=1, sticky="W")
     
@@ -864,7 +873,7 @@ class Hem4(tk.Frame):
         #land use file text entry
         self.dep_land = tk.StringVar(self.s12)
         self.dep_land_man = ttk.Entry(self.s12)
-        self.dep_land_man["width"] = 55
+        self.dep_land_man["width"] = 100
         self.dep_land_man["textvariable"]= self.dep_land
         self.dep_land_man.grid(row=2, column=0, sticky='E', padx=85)
         #event handler for instructions (Button 1 is the left mouse click)
@@ -882,7 +891,7 @@ class Hem4(tk.Frame):
         self.s12.grid(row=4, column=2, columnspan=2, sticky="nsew")
         
         #land use size label
-        seasons_label = tk.Label(self.s12, font="-size 10", 
+        seasons_label = tk.Label(self.s12, font=TEXT_FONT, 
                              text="Upload the file containing seasonal vegetation information:")
         seasons_label.grid(row=1, sticky="W")
     
@@ -897,7 +906,7 @@ class Hem4(tk.Frame):
         #land use file text entry
         self.dep_seasons = tk.StringVar(self.s12)
         self.dep_seasons_man = ttk.Entry(self.s12)
-        self.dep_seasons_man["width"] = 55
+        self.dep_seasons_man["width"] = 100
         self.dep_seasons_man["textvariable"]= self.dep_seasons
         self.dep_seasons_man.grid(row=2, column=0, sticky='E', padx=85)
         #event handler for instructions (Button 1 is the left mouse click)
@@ -918,7 +927,7 @@ class Hem4(tk.Frame):
                 self.s13.grid(row=9, column=0, columnspan=2, sticky="nsew")
                 
                 #emissions variation label
-                self.emisvar_label = tk.Label(self.s13, font="-size 10", 
+                self.emisvar_label = tk.Label(self.s13, font=TEXT_FONT, 
                                      text="Please select an Emissions Variation"+
                                      " file:")
                 self.emisvar_label.grid(row=0, sticky="W")
@@ -934,7 +943,7 @@ class Hem4(tk.Frame):
                 #emissions variation text entry
                 self.emisvar_list = tk.StringVar(self.s13)
                 self.emisvar_list_man = ttk.Entry(self.s13)
-                self.emisvar_list_man["width"] = 55
+                self.emisvar_list_man["width"] = 100
                 self.emisvar_list_man["textvariable"]= self.emisvar_list
                 self.emisvar_list_man.grid(row=1, column=0, sticky='E', padx=85)
                 #event handler for instructions (Button 1 is the left mouse click)
@@ -1042,6 +1051,7 @@ class Hem4(tk.Frame):
             if override:
                 global instruction_instance
                 instruction_instance.set("Hem4 Running, check the log tab for updates")
+                runid = 
                 #create save model
                 save_state = SaveState(runid, self.model)
                 self.model.save = save_state

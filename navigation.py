@@ -11,8 +11,8 @@ import os
 import startpage
 import hem4Window as hem4
 
-TITLE_FONT= ("Verdana", 12)
-TEXT_FONT = ("Verdana", 10)
+TITLE_FONT= ("Verdana", 20)
+TEXT_FONT = ("Verdana", 15)
 
 
 
@@ -54,7 +54,7 @@ class Navigation(tk.Frame):
         completed_facs = os.listdir("output")
         sum_var = tk.StringVar(self.s3).set(completed_facs[1])
         popupMenu = tk.OptionMenu(self.s3, sum_var, *completed_facs)
-        summary= tk.Label(self.s3, text="Run Risk Summary on completed facility").grid(row = 1)
+        summary= tk.Label(self.s3, text="Run Risk Summary on completed facility", font=TEXT_FONT).grid(row = 1)
         popupMenu.grid(row = 2)
         
         #back button
