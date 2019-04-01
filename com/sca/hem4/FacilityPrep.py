@@ -80,11 +80,11 @@ class FacilityPrep():
         elif facops[overlap_dist][0] > 500:
             facops.loc[:, overlap_dist] = 30
 
-        op_maxdist = facops.get_value(0,max_dist)
-        op_modeldist = facops.get_value(0,model_dist)
-        op_circles = facops.get_value(0,circles)
-        op_radial = facops.get_value(0,radial)
-        op_overlap = facops.get_value(0,overlap_dist)
+        op_maxdist = facops[max_dist][0]
+        op_modeldist = facops[model_dist][0]
+        op_circles = facops[circles][0]
+        op_radial = facops[radial][0]
+        op_overlap = facops[overlap_dist][0]
 
         #%%---------- Emission Locations --------------------------------------
 
@@ -295,8 +295,8 @@ class FacilityPrep():
         self.model.computedValues['cenlon'] = cenlon
 
         #retrieve blocks
-        maxdist = facops.get_value(0,max_dist)
-        modeldist = facops.get_value(0,model_dist)
+        maxdist = facops[max_dist][0]
+        modeldist = facops[model_dist][0]
 
         if self.model.urepOnly_optns.get('ureponly', None):
             self.innerblks, self.outerblks = self.getBlocksFromUrep(facid, cenx, ceny, cenlon, cenlat, facutmzone,
@@ -310,26 +310,16 @@ class FacilityPrep():
         #%%----- Polar receptors ----------
 
         #..... Compute the first polar ring distance ......
-        
-        # First step is to find the farthest distance to any source.
-        # If the only source is a polygon, find smallest circle fitting inside the 
-        # polygon and then move out almost to modeling distance.
-        if sourcelocs[source_type].nunique() > 1:
-            inrad = 0
-            for i in range(0, len(vertx_a)):
-                dist_cen = math.sqrt((vertx_a[i] - cenx)**2 + (verty_a[i] - ceny)**2)
-                inrad = max(inrad, dist_cen)
-        else:
-            inrad = max_srcdist/2
-            for i in range(0, len(vertx_a)):
-                dist_cen = math.sqrt((vertx_a[i] - cenx)**2 + (verty_a[i] - ceny)**2)
-                inrad = min(inrad, dist_cen)
-            inrad = max(inrad+modeldist-10, 100)
-                        
-        # Second step is to check the user provided first ring (if any).
-        # If user provided first ring is > 100m, then use it as first ring distance.
+                
+        # First find the farthest distance to any source.
+        maxsrcd = 0
+        for i in range(0, len(vertx_a)):
+            dist_cen = math.sqrt((vertx_a[i] - cenx)**2 + (verty_a[i] - ceny)**2)
+            maxsrcd = max(maxsrcd, dist_cen)
+
+        # If user first ring is > 100m, then use it, else first ring is maxsrcd + overlap.
         if facops[ring1][0] <= 100:
-            ring1a = max(inrad+op_overlap, 100)
+            ring1a = max(maxsrcd+op_overlap, 100)
             ring1b = min(ring1a, op_maxdist)
             firstring = round(max(ring1b, 100))
         else:
@@ -350,7 +340,6 @@ class FacilityPrep():
             N_in = round(math.log(op_modeldist/polar_dist[0])/math.log(op_maxdist/polar_dist[0]) * (op_circles - 1))
             while k < N_in:
                 next_dist = round(polar_dist[k-1] * ((op_modeldist/polar_dist[0])**(1/N_in)), -1)
-                # Add code to check if next_dist is the same as the previous distance?  Code is in input_ringdist
                 polar_dist.append(next_dist)
                 k = k + 1
             next_dist = op_modeldist
@@ -365,10 +354,9 @@ class FacilityPrep():
             polar_dist.append(next_dist)
             k = k + 1
 
-        # set the last distance to the modeling distance
+        # set the last ring distance to the modeling distance
         polar_dist.append(op_maxdist)
 
-        # equally spaced - polar_dist = np.linspace(op_maxdist/op_circles,op_maxdist,op_circles).tolist()
 
         # setup list of polar angles
         start = 0.
@@ -385,9 +373,9 @@ class FacilityPrep():
         # create dist and angl lists of length op_circle*op_radial
         polar_dist2 = [i for i in polar_dist for j in polar_angl]
         polar_angl2 = [j for i in polar_dist for j in polar_angl]
-
+        
         # sector and ring lists
-        polar_sect = [(int((a*op_radial/360)+0.5 % op_radial)) + 1 for a in polar_angl2]
+        polar_sect = [int(((a*op_radial/360) % op_radial)+1) for a in polar_angl2]
         polar_ring = []
         remring = polar_dist2[0]
         ringcount = 1
@@ -398,12 +386,12 @@ class FacilityPrep():
                 remring = polar_dist2[i]
                 ringcount = ringcount + 1
                 polar_ring.append(ringcount)
-
+        
         # construct the polar dataframe
         dfitems = [("id",polar_id), ("distance",polar_dist2), (angle,polar_angl2), (utme,polar_utme),
                    (utmn,polar_utmn), ("utmz",polar_utmz), (lon,polar_lon), (lat,polar_lat),
                    ("sector",polar_sect), ("ring",polar_ring)]
-        polar_df = pd.DataFrame.from_items(dfitems)
+        polar_df = pd.DataFrame.from_dict(dict(dfitems))
 
         # define the index of polar_df as concatenation of sector and ring
         polar_idx = polar_df.apply(lambda row: self.define_polar_idx(row[sector], row[ring]), axis=1)
@@ -414,7 +402,6 @@ class FacilityPrep():
 
          # Assign the polar grid data frame to the model
         self.model.polargrid = polar_df
-
 
         #%%----- Add sector and ring to inner and outer receptors ----------
 
@@ -440,7 +427,7 @@ class FacilityPrep():
         #%%------ Elevations and hill height ---------
 
         # if the facility will use elevations, assign them to emission sources and polar receptors
-        if facops.get_value(0,elev).upper() == "Y":
+        if facops[elev][0].upper() == "Y":
             polar_df[elev], polar_df[hill] = zip(*polar_df.apply(lambda row: self.assign_polar_elev_step1(row,self.innerblks,self.outerblks,maxdist), axis=1))
             if emislocs[elev].max() == 0 and emislocs[elev].min() == 0:
                 emislocs[elev] = self.compute_emisloc_elev(polar_df,op_circles)
@@ -492,12 +479,15 @@ class FacilityPrep():
         ring_loc = -999
 
         # compute fractional sector number
-        s = ((block_angle * num_sectors)/360.0 % num_sectors) + 1
+        s = round(((block_angle * num_sectors)/360.0 % num_sectors), 2) + 1
 
         # compute integer sector number
-        sector_int = int(s)
+        # .... these go from halfway between two radials to halfway between the next set of two radials, clockwise
+        sector_int = int(((((block_angle * num_sectors)/360.0) + 0.5) % num_sectors) + 1)
+        if sector_int == 0:
+            sector_int = num_sectors
 
-        # Compute ring_loc. loop through ring distances in pairs of previous and current
+        # Compute fractional, log weighted ring_loc. loop through ring distances in pairs of previous and current
         previous = ring_distances[0]
         i = 0
         for ring in ring_distances[1:]:
@@ -510,7 +500,7 @@ class FacilityPrep():
             previous = ring
 
         # Compute integer ring number
-        ring_int = math.floor(ring_loc)
+        ring_int = int(ring_loc + 0.5)
 
         return sector_int, s, ring_int, ring_loc
 
@@ -576,9 +566,8 @@ class FacilityPrep():
         else:
             r_popelev = -999
 
-
         #Note: the max elevation is returned as the elevation for this polar receptor
-        return r_maxelev, r_hill
+        return int(round(r_maxelev)), int(round(r_hill))
 
     #%% Assign elevation and hill height to polar receptors that still have missing elevations
     def assign_polar_elev_step2(self, polar_row, innblks, outblks, emislocs):
@@ -635,7 +624,7 @@ class FacilityPrep():
             r_hill = polar_row[hill]
 
         #Note: the max elevation is returned as the elevation for this polar receptor
-        return r_maxelev, r_hill
+        return int(round(r_maxelev)), int(round(r_hill))
 
     #%% Compute the elevation to be used for all emission sources
     def compute_emisloc_elev(self, polars, num_rings):
@@ -659,7 +648,7 @@ class FacilityPrep():
             print("Error! No elevation computed for the emission sources.")
             sys.exit()
 
-        return avgelev
+        return int(round(avgelev))
 
     #%% Define polar receptor dataframe index
     def define_polar_idx(self, s, r):

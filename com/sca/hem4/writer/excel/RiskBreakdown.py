@@ -101,7 +101,7 @@ class RiskBreakdown(ExcelWriter):
             else:
 
                 # Max risk or HI value = 0. Get source/pollutant breakdown from hapemis.
-                bkdndata = self.model.runstream_hapemis[["source_id","pollutant","emis_tpy"]]
+                bkdndata = self.model.runstream_hapemis[["source_id","pollutant","emis_tpy"]].copy()
                 bkdndata[value] = 0
                 bkdndata[value_rnd] = 0
                 bkdndata[conc] = 0
@@ -169,7 +169,7 @@ class RiskBreakdown(ExcelWriter):
             else:
 
                 # Max off-site risk or HI value = 0. Get source/pollutant breakdown from hapemis.
-                bkdndata = self.model.runstream_hapemis[[source_id,pollutant,emis_tpy]]
+                bkdndata = self.model.runstream_hapemis[[source_id,pollutant,emis_tpy]].copy()
                 bkdndata[value] = 0
                 bkdndata[value_rnd] = 0
                 bkdndata[conc] = 0

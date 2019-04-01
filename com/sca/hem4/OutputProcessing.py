@@ -31,7 +31,7 @@ class Process_outputs():
     
     def __init__(self, outdir, facid, model, prep, runstream, abort):
         self.facid = facid
-        self.haplib_m = model.haplib.dataframe.as_matrix()
+        self.haplib_m = model.haplib.dataframe.values
         self.hapemis = runstream.hapemis
         self.outdir = outdir
         self.model = model
@@ -174,7 +174,7 @@ class Process_outputs():
                       hi_endo, hi_hema, hi_immu, hi_skel, hi_sple, hi_thyr, hi_whol, overlap]
         block_columns = ring_columns + [rec_type]
         
-        ring_risk = ring_summary_chronic_df[ring_columns]
+        ring_risk = ring_summary_chronic_df[ring_columns].copy()
         ring_risk[rec_type] = 'P'
         
         block_risk = block_summary_chronic_df[block_columns]
