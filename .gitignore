@@ -19,5 +19,6 @@ working_kml
 build
 dist
 save
+com/sca/hem4/HEM4_UserConc_2.py
 *.pyc
 **/__pycache__/*.pyc
