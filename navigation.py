@@ -45,16 +45,28 @@ class Navigation(tk.Frame):
         title.grid(row=1)
         
         #new facility run
-        new_run = tk.Button(self.s2, text= "Run a new Facility", font=TEXT_FONT,
+        new_run = tk.Button(self.s2, text= "Run a new facility", font=TEXT_FONT,
                             command=lambda:controller.show_frame(hem4.Hem4))
         new_run.grid(row=1)
-
+        
+        #resume a facility run
+        #first get all incomplete runs
+        incomplete_facs = os.listdir("save")
+        resume_var = tk.StringVar(self.s3).set(incomplete_facs[1])
+        resumeMenu = tk.OptionMenu(self.s3, resume_var, *incomplete_facs)
+        resume = tk.Label(self.s3, text= "Resume a previous facility run", 
+                               font=TEXT_FONT).grid(row=1)
+        resumeMenu.grid(row=2)
+        
         #summarize risk
-        #fist get all facilities in output 
         completed_facs = os.listdir("output")
-        sum_var = tk.StringVar(self.s3).set(completed_facs[1])
-        popupMenu = tk.OptionMenu(self.s3, sum_var, *completed_facs)
-        summary= tk.Label(self.s3, text="Run Risk Summary on completed facility", font=TEXT_FONT).grid(row = 1)
+        ignore = ['HAP_ignored.log', 'hem4.log', 'SC_max_risk_and_hi.xlsx']
+        folders = [x for x in completed_facs if x not in ignore]
+        
+        sum_var = tk.StringVar(self.s4).set(folders[1])
+        popupMenu = tk.OptionMenu(self.s4, sum_var, *folders)
+        summary= tk.Label(self.s4, text="Run Risk Summary on completed facility", 
+                          font=TEXT_FONT).grid(row = 1)
         popupMenu.grid(row = 2)
         
         #back button

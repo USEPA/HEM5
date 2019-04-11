@@ -1,9 +1,0 @@
-SO W319      42        SRCQA: No Sources Included in Specified Source Group:         RV000001
-SO W319      42        SRCQA: No Sources Included in Specified Source Group:         RV000002
-SO W319      42        SRCQA: No Sources Included in Specified Source Group:         RV000003
-SO W319      42        SRCQA: No Sources Included in Specified Source Group:         RV000004
-SO W319      42        SRCQA: No Sources Included in Specified Source Group:         MS000001
-ME W186     159       MEOPEN: THRESH_1MIN 1-min ASOS wind speed threshold used           0.50
-ME W187     159       MEOPEN: ADJ_U* Option for Low Winds used in AERMET                     
-OU W540     173        OUTQA: No RECTABLE/MAXTABLE/DAYTABLE for Average Period         001-HR
-MX I440      20       CHKCLM: Calm Hour Identified in Meteorology Data File at     2016010120

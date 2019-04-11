@@ -108,10 +108,16 @@ class Hem4(tk.Frame):
         self.s5.grid(row=4, column=0, columnspan=2, sticky="nsew")
 
 
-        self.main.grid_rowconfigure(8, weight=4)
-        self.main.grid_columnconfigure(2, weight=1)
-        self.s2.grid_propagate(0)
+#        self.main.grid_rowconfigure(8, weight=0)
+#        self.main.grid_columnconfigure(2, weight=0)
+#        self.main.grid_propagate()
         #self.s1.grid_propagate(0)
+        
+        for frame in [self.s1, self.s2, self.s3, self.s4, self.s5]:
+            frame.rowconfigure(0, weight=0)
+            frame.columnconfigure(0, weight=0)
+            frame.grid_propagate(0)
+        
         
         #create widgets
         self.createWidgets()
@@ -129,31 +135,34 @@ class Hem4(tk.Frame):
          #back button
         back_button = tk.Button(self, text="Back", font=TEXT_FONT,
                             command=lambda: controller.show_frame(navigation.Navigation))
-        back_button.grid(row=15, column=0, padx=100)
+        back_button.grid(row=0, sticky="W", padx=10)
     
     #%% Set Quit, Run, and User Guide buttons        
-        self.quit_button = tk.Button(self.main, text="QUIT", fg="red",
-                              command=self.quit_app)
-        self.quit_button.grid(row=10, column=0, sticky="W")
+        #self.quit_button = tk.Button(self.main, text="QUIT", fg="red",
+                              #command=self.quit_app)
+        #self.quit_button.grid(row=10, column=0, sticky="W")
         
         #run only appears once the required files have been set
         self.run_button = tk.Button(self, text='RUN', fg="green", font=TEXT_FONT,
                                      command=self.run)
-        self.run_button.grid(row=15, column=0, padx=50)
+        self.run_button.grid(row=0, sticky="E", padx=20)
         
         self.guide = tk.Button(self, text="User Guide", font=TEXT_FONT, 
                                command=self.user_guide, padx=20)
         self.guide.grid(row=0, column=0)
+        
+        
+
 #%% Setting up  directions text space
 
         #Dynamic instructions place holder
         global instruction_instance
-        instruction_instance = tk.StringVar(self.s2)
+        instruction_instance = tk.StringVar(self)
         instruction_instance.set(" ")
-        self.dynamic_inst = ttk.Label(self.s2, wraplength=700, font=TEXT_FONT)
+        self.dynamic_inst = ttk.Label(self, wraplength=600, font=TEXT_FONT)
         
         self.dynamic_inst["textvariable"] = instruction_instance 
-        self.dynamic_inst.grid(row = 2, sticky='ew', padx = 10)
+        self.dynamic_inst.grid(row=1, column=0)
         
 
     def close(self):
@@ -267,16 +276,28 @@ class Hem4(tk.Frame):
         
         # %% Setting up each file upload space (includes browse button, and manual text entry for file path)         
         
+        #group facility name
+        group_label = tk.Label(self.s3, font=TEXT_FONT, 
+                             text="Name Run Group (optional):")
+        group_label.grid(row=0, sticky="W")
+        #group text entry
+        self.group_list = tk.StringVar(self.s3)
+        self.group_list_man = ttk.Entry(self.s3)
+        self.group_list_man["width"] = 25
+        self.group_list_man["textvariable"]= self.group_list
+        self.group_list_man.grid(row=1, column=0, sticky='W', pady=20)
+        
+        
         #facilities label
         fac_label = tk.Label(self.s3, font=TEXT_FONT, 
                              text="Please select a Facilities List Options file:")
-        fac_label.grid(row=1, sticky="W")
+        fac_label.grid(row=3, sticky="W")
         
         #facilities upload button
         self.fac_up = ttk.Button(self.s3, 
                                  command = lambda: self.uploadFacilitiesList())
         self.fac_up["text"] = "Browse"
-        self.fac_up.grid(row=2, column=0, sticky="W")
+        self.fac_up.grid(row=4, column=0, sticky="W")
         self.fac_up.bind('<Enter>', 
                          lambda e:self.browse("instructions/fac_browse.txt"))
        
@@ -285,7 +306,7 @@ class Hem4(tk.Frame):
         self.fac_list_man = ttk.Entry(self.s3)
         self.fac_list_man["width"] = 100
         self.fac_list_man["textvariable"]= self.fac_list
-        self.fac_list_man.grid(row=2, column=0, sticky='E', padx=85)
+        self.fac_list_man.grid(row=4, column=0, sticky='E', padx=85)
         #event handler for instructions (Button 1 is the left mouse click)
         self.fac_list_man.bind('<Button-1>', 
                                lambda e:self.manual("instructions/fac_man.txt"))
@@ -320,13 +341,13 @@ class Hem4(tk.Frame):
         emisloc_label = tk.Label(self.s5, font=TEXT_FONT,  
                                  text="Please select the associated Emissions" +
                                  " Locations file:")
-        emisloc_label.grid(row=1, sticky="W")
+        emisloc_label.grid(row=0, sticky="W")
         
         #emissions location upload button
         self.emisloc_up = ttk.Button(self.s5, 
                                      command= lambda: self.uploadEmissionLocations())
         self.emisloc_up["text"] = "Browse"
-        self.emisloc_up.grid(row=2, column=0, sticky='W')
+        self.emisloc_up.grid(row=1, column=0, sticky='W')
         #event handler for instructions (Button 1 is the left mouse click)
         self.emisloc_up.bind('<Enter>', 
                              lambda e:self.browse("instructions/emis_browse.txt"))
@@ -336,7 +357,7 @@ class Hem4(tk.Frame):
         self.emisloc_list_man = ttk.Entry(self.s5)
         self.emisloc_list_man["width"] = 100
         self.emisloc_list_man["textvariable"]= self.emisloc_list
-        self.emisloc_list_man.grid(row=2, column=0, sticky='E', padx=85)
+        self.emisloc_list_man.grid(row=1, column=0, sticky='E', padx=85)
         #event handler for instructions (Button 1 is the left mouse click)
         self.emisloc_list_man.bind('<Button-1>', 
                                    lambda e:self.manual("instructions/emis_man.txt"))
@@ -347,7 +368,7 @@ class Hem4(tk.Frame):
         self.emisvar_sel = tk.Checkbutton(self.s5, text="Add Emissions Variations", 
                                           variable = self.check_emisvar,
                                           command = self.add_variation)
-        self.emisvar_sel.grid(row=3, column=0, sticky='E', padx = 85)
+        self.emisvar_sel.grid(row=2, column=0, sticky='E', padx = 85)
         
     def is_excel(self, filepath):
         """
