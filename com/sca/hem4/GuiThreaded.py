@@ -16,6 +16,7 @@ from tkinter import ttk
 from com.sca.hem4.Processor import Processor
 from com.sca.hem4.log import Logger
 from com.sca.hem4.model.Model import Model
+from com.sca.hem4.tools.CensusUpdater import CensusUpdater
 from com.sca.hem4.upload.FileUploader import FileUploader
 from tkinter.filedialog import askopenfilename
 from com.sca.hem4.checker.InputChecker import InputChecker
@@ -256,7 +257,31 @@ class Hem4():
     
                 
 #%%Create Widgets
-    
+
+    def update_census(self):
+        """
+        Function creates thread for running HEM4 concurrently with tkinter GUI
+        """
+        executor = ThreadPoolExecutor(max_workers=1)
+
+        self.processor = Processor(self.model, Event())
+        future = executor.submit(self.censusupdater.update, self.censusUpdatePath)
+        future.add_done_callback(self.update_census_finish)
+
+    def update_census_finish(self, future):
+        self.callbackQueue.put(self.finish_census_update)
+
+    def finish_census_update(self):
+        self.cu_list.set("")
+
+    def uploadCensusUpdates(self):
+        self.censusupdater = CensusUpdater()
+        fullpath = self.openFile(askopenfilename())
+        if fullpath is not None:
+            self.censusUpdatePath = fullpath
+            self.cu_list.set(fullpath)
+
+
     def createWidgets(self):
         """
         Function creates the main tab structure and required inputs,
@@ -274,8 +299,51 @@ class Hem4():
         tab2 = ttk.Frame(self.tabControl)            # Add a second tab
         self.tabControl.add(tab2, text='Log')      # Make second tab visible
 
+        tab3 = ttk.Frame(self.tabControl)            # Add a third tab
+        self.tabControl.add(tab3, text='Census')      # Make third tab visible
+
         self.tabControl.pack(expand=1, fill="both")  # Pack to make visible
-        
+
+        # Create container frame to hold census update stuff
+        self.censusupdates = ttk.LabelFrame(tab3, text='Census updates',
+                                   labelanchor="n")
+        self.censusupdates.grid(column=0, row=1)
+
+        #create discreet sections for GUI in tab3
+        self.cu1 = tk.Frame(self.censusupdates, width=250, height=200)
+        self.cu1.grid(row=0)
+
+        # census update label
+        cu_label = tk.Label(self.cu1, font="-size 10",
+                             text="Please select a census update file:")
+        cu_label.grid(row=1, sticky="W")
+
+        # census update upload button
+        self.cu_up = ttk.Button(self.cu1,
+                                 command = lambda: self.uploadCensusUpdates())
+        self.cu_up["text"] = "Browse"
+        self.cu_up.grid(row=2, column=0, sticky="W")
+
+        # census update text entry
+        self.cu_list = tk.StringVar(self.cu1)
+        self.cu_list_man = ttk.Entry(self.cu1)
+        self.cu_list_man["width"] = 55
+        self.cu_list_man["textvariable"]= self.cu_list
+        self.cu_list_man.grid(row=2, column=0, sticky='E', padx=85)
+
+        self.cu_update = tk.Button(self.cu1, text="UPDATE", fg="green",
+                              command=self.update_census)
+        self.cu_update.grid(row=3, column=0, sticky="W", padx=85, pady=20)
+
+
+
+
+
+
+
+
+
+
          # Create container frame to hold all other widgets
         self.main = ttk.LabelFrame(tab1, text='Human Exposure Model,'+
                                    ' open-source (HEM4), Version 1.0', 
