@@ -19,7 +19,24 @@ class CensusUpdater():
             '26':'MI','27':'MN','29':'MO','28':'MS','30':'MT','37':'NC','38':'ND','31':'NE','33':'NH','34':'NJ',
             '35':'NM','32':'NV','36':'NY','39':'OH','40':'OK','41':'OR','42':'PA','44':'RI','45':'SC','46':'SD',
             '47':'TN','48':'TX','49':'UT','51':'VA','50':'VT','53':'WA','55':'WI','54':'WV','56':'WY','02':'AK',
-            '15':'HI','72':'PR'} #,'78':'VI'}
+            '15':'HI','72':'PR','78':'VI'}
+
+    def migrate(self):
+
+        for state in self.stateCodeMap.values():
+
+            Logger.logMessage("Opening " + state + " for migration...")
+            pathToFile = 'C:\\Users\Chris Stolte\IdeaProjects\HEM\census\\Blks_' + state + '.json'
+
+            with open(pathToFile, "r") as read_file:
+                data = json.load(read_file)
+
+                replaced = [self.migrateRecord(x) for x in data]
+
+            # Open the file again and re-write it using the updated json.
+            with open(pathToFile, "w") as write_file:
+                json.dump(replaced, write_file, indent=4)
+
 
     def update(self, changesetFilepath):
         changeset_df = self.readFromPath(changesetFilepath)
@@ -148,6 +165,20 @@ class CensusUpdater():
                 "LAT_MIN" : minLat, "LAT_MAX" : maxLat, "LON_MIN" : minLon, "LON_MAX" : maxLon,
                 "ELEV_MAX" : int(round(maxElev)), "YEAR" : "1",}
 
+    def migrateRecord(self, record):
+        record.pop('MOVED', None)
+
+        id = record['IDMARPLOT']
+
+        if len(id) > 15 and id.startswith('0'):
+            record['IDMARPLOT'] = id[1:]
+            print("Chopped leading zero: " + id)
+        elif 'U' in id and id.startswith('0'):
+            print("Chopped leading zero: " + id)
+            record['IDMARPLOT'] = id[1:]
+
+        return record
+
     def mutate(self, record, operation, row):
         if operation == 'Move':
             Logger.logMessage("Moving block " + record["IDMARPLOT"] + " to [" + str(row['lat']) + "," + str(row['lon']) + "]")
@@ -170,3 +201,4 @@ class CensusUpdater():
 
     def getStateForCode(self, code):
         return self.stateCodeMap[code]
+
