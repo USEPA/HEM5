@@ -202,6 +202,6 @@ class CensusUpdater():
     def getStateForCode(self, code):
         return self.stateCodeMap[code]
 
-updater = CensusUpdater()
-updater.migrate()
+# updater = CensusUpdater()
+# updater.migrate()
 
