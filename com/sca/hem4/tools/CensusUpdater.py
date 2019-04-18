@@ -173,7 +173,7 @@ class CensusUpdater():
         if len(id) > 15 and id.startswith('0'):
             record['IDMARPLOT'] = id[1:]
             print("Chopped leading zero: " + id)
-        elif 'U' in id and id.startswith('0'):
+        elif 'U' in id:
             print("Chopped leading zero: " + id)
             record['IDMARPLOT'] = id[1:]
 

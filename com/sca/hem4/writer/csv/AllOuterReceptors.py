@@ -171,7 +171,7 @@ class AllOuterReceptors(CsvWriter):
                 for row in outerblks_touse:
 
                     l_fips = row[0]
-                    l_block = row[1][6:]
+                    l_block = row[1][5:]
                     l_lat = row[2]
                     l_lon = row[3]
                     l_elev = row[4]

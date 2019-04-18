@@ -211,7 +211,7 @@ def in_box(modelblks, sourcelocs, modeldist, maxdist, overlap_dist, model):
         # If this polygon is a census tract (e.g. NATA application), then any outer receptor within tract will be
         # considered an inner receptor. Do not perform this check for the user receptor only application.
         if not model.model_optns["ureponly"]:
-            outerblks["tract"] = outerblks[idmarplot].str[0:11]
+            outerblks["tract"] = outerblks[idmarplot].str[1:11]
             polyvertices["tract"] = polyvertices[fac_id].str[0:10]
             intract = pd.merge(outerblks, polyvertices, how='inner', on='tract')
             if len(intract) > 0:
