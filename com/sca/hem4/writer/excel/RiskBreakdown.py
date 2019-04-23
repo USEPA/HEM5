@@ -197,6 +197,7 @@ class RiskBreakdown(ExcelWriter):
         #....... Create some aggregate rows ..................
 
         # Sum Value by site_type, parameter, and pollutant to get Total by pollutant
+        riskbkdn_df[value] = pd.to_numeric(riskbkdn_df[value], errors='coerce')
         srctot = riskbkdn_df.groupby([site_type, parameter, pollutant, ure, rfc],
                                      as_index=False)[value, conc, emis_tpy].sum()
         srctot[source_id] = "Total by pollutant all sources"
