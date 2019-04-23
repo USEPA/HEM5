@@ -169,7 +169,7 @@ def in_box(modelblks, sourcelocs, modeldist, maxdist, overlap_dist, model):
         indist = outerblks.query('utme >= @sw_x and utme <= @ne_x and utmn >= @sw_y and utmn <= @ne_y')
         if len(indist) > 0:
             innerblks = innerblks.append(indist).reset_index(drop=True)
-            innerblks = innerblks[~innerblks[rec_id].apply(tuple).duplicated()]
+            innerblks = innerblks[~innerblks[rec_id].duplicated()]
             outerblks = outerblks[~outerblks[rec_id].isin(innerblks[rec_id])]
 
             #Do any of these inner or outer blocks overlap this source?

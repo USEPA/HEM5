@@ -169,11 +169,16 @@ class CensusUpdater():
         record.pop('MOVED', None)
 
         id = record['IDMARPLOT']
+        population = record['POPULATION']
+
+        if population is None:
+            print("Found null population for block id " + record['IDMARPLOT'])
+            record['POPULATION'] = 0
 
         if len(id) > 15 and id.startswith('0'):
             record['IDMARPLOT'] = id[1:]
             print("Chopped leading zero: " + id)
-        elif 'U' in id:
+        elif 'U' in id and id.startswith('0'):
             print("Chopped leading zero: " + id)
             record['IDMARPLOT'] = id[1:]
 
