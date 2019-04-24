@@ -17,14 +17,16 @@ class AllInnerReceptors(CsvWriter, InputFile):
     inner receptor information.
     """
 
-    def __init__(self, targetDir=None, facilityId=None, model=None, plot_df=None):
-        # Initialization for CSV reading/writing
-        filename = os.path.join(targetDir, facilityId + "_all_inner_receptors.csv")
+    def __init__(self, targetDir=None, facilityId=None, model=None, plot_df=None, filenameOverride=None):
+        # Initialization for CSV reading/writing. If no file name override, use the
+        # default construction.
+        filename = facilityId + "_all_inner_receptors.csv" if filenameOverride is None else filenameOverride
+        path = os.path.join(targetDir, filename)
 
         CsvWriter.__init__(self, model, plot_df)
-        InputFile.__init__(self, filename)
+        InputFile.__init__(self, path)
 
-        self.filename = filename
+        self.filename = path
         self.innerBlocksCache = {}
 
         # Initialization for CSV reading
