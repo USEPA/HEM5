@@ -18,12 +18,12 @@ class SummaryManager():
 
         module = self.availableReports[reportName]
         if module is None:
-            print("oops. couldn't find your report module.")
+            print("Oops. HEM4 couldn't find your report module.")
             return
 
         class_ = getattr(module, reportName)
         instance = class_()
-        instance.create()
+        instance.create(categoryFolder, self.facilityIds)
 
     def findFacilities(self, folder):
 
