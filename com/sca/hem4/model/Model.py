@@ -16,6 +16,8 @@ avg_time = 'avg_time';
 num_yrs = 'num_yrs';
 net_id = 'net_id';
 angle = 'angle';
+concdate = 'concdate';
+rank = 'rank';
 
 class Model():
 
@@ -59,6 +61,7 @@ class Model():
         all_outer_receptors_df - 
         risk_by_latlon - 
         max_indiv_risk_df - 
+        facops - facility specific options from faclist
         """
         self.faclist = None
         self.emisloc = None
@@ -66,7 +69,6 @@ class Model():
         self.multipoly = None
         self.multibuoy = None
         self.ureceptr = None
-        self.altreceptr = None
         self.haplib = None
         self.bldgdw = None
         self.partdep = None
@@ -86,12 +88,12 @@ class Model():
         self.model_optns = defaultdict() 
         self.save = None
         self.organs = None
-        self.riskfacs_df = None
         self.all_polar_receptors_df = None
         self.all_inner_receptors_df = None
         self.all_outer_receptors_df = None
         self.risk_by_latlon = None
         self.max_indiv_risk_df = None
+        self.facops = None
 
         # Initialize model options
         self.initializeUrepOnlyOptions()
@@ -108,7 +110,7 @@ class Model():
         self.multipoly = None
         self.multibuoy = None
         self.ureceptr = None
-        self.altreceptr = None
+        self.haplib = None
         self.bldgdw = None
         self.partdep = None
         self.landuse = None
@@ -117,6 +119,7 @@ class Model():
         self.facids = None
         self.depdeplt = None
         self.polargrid = None
+        self.organs = None
         self.riskfacs_df = None
         self.all_polar_receptors_df = None
         self.all_inner_receptors_df = None
@@ -127,10 +130,6 @@ class Model():
         self.gasparams = None
         self.model_optns = defaultdict()
         self.save = None
-
-        # These two should not be reset...they are loaded when the app loads, one time only!
-        #self.haplib = None
-        #self.organs = None
 
         # Initialize model options
         self.initializeUrepOnlyOptions()

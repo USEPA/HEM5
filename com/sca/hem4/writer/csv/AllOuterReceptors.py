@@ -158,10 +158,10 @@ class AllOuterReceptors(CsvWriter):
                     continue
 
                 #Get the polar source/pollutant concs for each corner of the box
-                s1r1 = np.logical_and(polarconcs_m[:, 6] == sector1, polarconcs_m[:, 7] == ring1 )
-                s1r2 = np.logical_and(polarconcs_m[:, 6] == sector1, polarconcs_m[:, 7] == ring2 )
-                s2r1 = np.logical_and(polarconcs_m[:, 6] == sector2, polarconcs_m[:, 7] == ring1 )
-                s2r2 = np.logical_and(polarconcs_m[:, 6] == sector2, polarconcs_m[:, 7] == ring2 )
+                s1r1 = np.logical_and(polarconcs_m[:, 7] == sector1, polarconcs_m[:, 8] == ring1 )
+                s1r2 = np.logical_and(polarconcs_m[:, 7] == sector1, polarconcs_m[:, 8] == ring2 )
+                s2r1 = np.logical_and(polarconcs_m[:, 7] == sector2, polarconcs_m[:, 8] == ring1 )
+                s2r2 = np.logical_and(polarconcs_m[:, 7] == sector2, polarconcs_m[:, 8] == ring2 )
                 pconc_s1r1_m = polarconcs_m[s1r1]
                 pconc_s1r2_m = polarconcs_m[s1r2]
                 pconc_s2r1_m = polarconcs_m[s2r1]
@@ -177,7 +177,6 @@ class AllOuterReceptors(CsvWriter):
                     l_elev = row[4]
                     l_population = row[6]
                     l_overlap = row[7]
-                    l_aconc = 0.0
 
                     for iprow in range(0, len(pconc_s1r1_m)):
                         l_sourceid = pconc_s1r1_m[iprow, 0]
@@ -185,26 +184,45 @@ class AllOuterReceptors(CsvWriter):
                         l_pollutant = pconc_s1r1_m[iprow, 2]
                         s = row[8]
                         ring_loc = row[9]
-                        pconc_s1r1 = pconc_s1r1_m[iprow, 3]
-                        pconc_s1r2 = pconc_s1r2_m[iprow, 3]
-                        pconc_s2r1 = pconc_s2r1_m[iprow, 3]
-                        pconc_s2r2 = pconc_s2r2_m[iprow, 3]
+                        pcconc_s1r1 = pconc_s1r1_m[iprow, 3] # chronic
+                        pcconc_s1r2 = pconc_s1r2_m[iprow, 3] # chronic
+                        pcconc_s2r1 = pconc_s2r1_m[iprow, 3] # chronic
+                        pcconc_s2r2 = pconc_s2r2_m[iprow, 3] # chronic
+                        paconc_s1r1 = pconc_s1r1_m[iprow, 4] # acute
+                        paconc_s1r2 = pconc_s1r2_m[iprow, 4] # acute
+                        paconc_s2r1 = pconc_s2r1_m[iprow, 4] # acute
+                        paconc_s2r2 = pconc_s2r2_m[iprow, 4] # acute
 
-                        if pconc_s1r1 == 0 or pconc_s1r2 == 0:
-                            R_s12 = max(pconc_s1r1, pconc_s1r2)
+                        # Interpolate chronic concs
+                        if pcconc_s1r1 == 0 or pcconc_s1r2 == 0:
+                            R_s12 = max(pcconc_s1r1, pcconc_s1r2)
                         else:
-                            Lnr_s12 = (math.log(pconc_s1r1) * (int(ring_loc)+1-ring_loc)) + (math.log(pconc_s1r2) * (ring_loc-int(ring_loc)))
+                            Lnr_s12 = (math.log(pcconc_s1r1) * (int(ring_loc)+1-ring_loc)) + (math.log(pcconc_s1r2) * (ring_loc-int(ring_loc)))
                             R_s12 = math.exp(Lnr_s12)
 
-                        if pconc_s2r1 == 0 or pconc_s2r2 == 0:
-                            R_s34 = max(pconc_s2r1, pconc_s2r2 )
+                        if pcconc_s2r1 == 0 or pcconc_s2r2 == 0:
+                            R_s34 = max(pcconc_s2r1, pcconc_s2r2 )
                         else:
-                            Lnr_s34 = (math.log(pconc_s2r1) * (int(ring_loc)+1-ring_loc)) + (math.log(pconc_s2r2 ) * (ring_loc-int(ring_loc)))
+                            Lnr_s34 = (math.log(pcconc_s2r1) * (int(ring_loc)+1-ring_loc)) + (math.log(pcconc_s2r2 ) * (ring_loc-int(ring_loc)))
                             R_s34 = math.exp(Lnr_s34)
+                        l_cconc = R_s12*(int(s)+1-s) + R_s34*(s-int(s))
 
-                        l_conc = R_s12*(int(s)+1-s) + R_s34*(s-int(s))
+                        # Interpolate acute concs
+                        if paconc_s1r1 == 0 or paconc_s1r2 == 0:
+                            R_s12 = max(paconc_s1r1, paconc_s1r2)
+                        else:
+                            Lnr_s12 = (math.log(paconc_s1r1) * (int(ring_loc)+1-ring_loc)) + (math.log(paconc_s1r2) * (ring_loc-int(ring_loc)))
+                            R_s12 = math.exp(Lnr_s12)
+
+                        if paconc_s2r1 == 0 or paconc_s2r2 == 0:
+                            R_s34 = max(paconc_s2r1, paconc_s2r2 )
+                        else:
+                            Lnr_s34 = (math.log(paconc_s2r1) * (int(ring_loc)+1-ring_loc)) + (math.log(paconc_s2r2 ) * (ring_loc-int(ring_loc)))
+                            R_s34 = math.exp(Lnr_s34)
+                        l_aconc = R_s12*(int(s)+1-s) + R_s34*(s-int(s))
+                        
                         datalist = [l_fips, l_block, l_lat, l_lon, l_sourceid, l_emistype, l_pollutant,
-                                    l_conc, l_aconc, l_elev, l_population, l_overlap]
+                                    l_cconc, l_aconc, l_elev, l_population, l_overlap]
                         dlist.append(datalist)
 
                 # End of iteration for this box...time to check if we

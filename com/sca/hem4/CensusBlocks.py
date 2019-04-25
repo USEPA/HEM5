@@ -10,6 +10,10 @@ idmarplot = 'idmarplot';
 population = 'population';
 moved = 'moved';
 urban_pop = 'urban_pop';
+rec_type = 'rec_type';
+distance = 'distance';
+angle = 'angle';
+
 
 
 #%% compute a bearing from the center of a facility to a census receptor
@@ -169,7 +173,7 @@ def in_box(modelblks, sourcelocs, modeldist, maxdist, overlap_dist, model):
         indist = outerblks.query('utme >= @sw_x and utme <= @ne_x and utmn >= @sw_y and utmn <= @ne_y')
         if len(indist) > 0:
             innerblks = innerblks.append(indist).reset_index(drop=True)
-            innerblks = innerblks[~innerblks[rec_id].apply(tuple).duplicated()]
+            innerblks = innerblks[~innerblks[rec_id].duplicated()]
             outerblks = outerblks[~outerblks[rec_id].isin(innerblks[rec_id])]
 
             #Do any of these inner or outer blocks overlap this source?
@@ -330,8 +334,8 @@ def getblocks(cenx, ceny, cenlon, cenlat, utmzone, maxdist, modeldist, sourceloc
     censusblks[elev] = pd.to_numeric(censusblks[elev], errors='coerce').fillna(0)
 
     #compute distance and bearing (angle) from the center of the facility
-    censusblks['distance'] = np.sqrt((cenx - censusblks.utme)**2 + (ceny - censusblks.utmn)**2)
-    censusblks['angle'] = censusblks.apply(lambda row: bearing(row[utme],row[utmn],cenx,ceny), axis=1)
+    censusblks[distance] = np.sqrt((cenx - censusblks.utme)**2 + (ceny - censusblks.utmn)**2)
+    censusblks[angle] = censusblks.apply(lambda row: bearing(row[utme],row[utmn],cenx,ceny), axis=1)
 
     #subset the censusblks dataframe to blocks that are within the modeling distance of the facility 
     modelblks = censusblks.query('distance <= @maxdist')
@@ -340,7 +344,7 @@ def getblocks(cenx, ceny, cenlon, cenlat, utmzone, maxdist, modeldist, sourceloc
     innerblks, outerblks = in_box(modelblks, sourcelocs, modeldist, maxdist, overlap_dist, model)
 
     Logger.log("OUTERBLOCKS", outerblks, False)
-    
+        
     # convert utme, utmn, utmz, and population to integers
     innerblks[utme] = innerblks[utme].astype(int)
     innerblks[utmn] = innerblks[utmn].astype(int)
@@ -350,6 +354,11 @@ def getblocks(cenx, ceny, cenlon, cenlat, utmzone, maxdist, modeldist, sourceloc
     outerblks[utmn] = outerblks[utmn].astype(int)
     outerblks[utmz] = outerblks[utmz].astype(int)
     outerblks[population] = pd.to_numeric(outerblks[population], errors='coerce').astype(int)
+    
+    # Set the rec_type field. For any receptor from the census files it is C.
+    innerblks[rec_type] = 'C'
+    outerblks[rec_type] = 'C'
+    
 
     return innerblks, outerblks
 

@@ -764,6 +764,7 @@ class Runstream():
         """
         
         acute = self.facoptn_df['acute'][0] #move to ou
+        acute_hrs = self.facoptn_df['hours'][0]
         if acute == "":
             acute = "N"
         
@@ -779,7 +780,13 @@ class Runstream():
             self.inp_f.write(ou)
         
         if acute == "Y":
-            recacu = "OU RECTABLE" + " 1 " + str(self.hours) + " FIRST" + "\n"
+            recacu = "OU RECTABLE "  + str(acute_hrs) + " FIRST" + "\n"
+            self.inp_f.write(recacu)
+            for k in np.arange(len(self.uniqsrcs)):  
+                acuou = ("OU PLOTFILE " + str(acute_hrs) + " " + self.uniqsrcs[k] + 
+                      " FIRST maxhour.plt 40 \n")
+                self.inp_f.write(acuou)
+
             #set in model options
             self.model.model_optns['acute'] = True
             
