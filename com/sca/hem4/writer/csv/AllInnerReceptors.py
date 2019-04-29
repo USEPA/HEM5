@@ -1,6 +1,7 @@
 from com.sca.hem4.CensusBlocks import *
 from com.sca.hem4.writer.csv.CsvWriter import CsvWriter
 from com.sca.hem4.upload.HAPEmissions import *
+from com.sca.hem4.upload.FacilityList import *
 import os
 
 ems_type = 'ems_type';
@@ -8,6 +9,7 @@ block = 'block';
 drydep = 'drydep';
 wetdep = 'wetdep';
 aconc = 'aconc';
+aresult = 'aresult';
 
 class AllInnerReceptors(CsvWriter):
     """
@@ -21,8 +23,9 @@ class AllInnerReceptors(CsvWriter):
 
         self.filename = os.path.join(targetDir, facilityId + "_all_inner_receptors.csv")
 
-        self.innerBlocksCache = {}
-
+        # initialize cache for inner census block data
+        self.innblkCache = {}
+        
     def getHeader(self):
         return ['FIPs', 'Block', 'Latitude', 'Longitude', 'Source ID', 'Emission type', 'Pollutant',
                 'Conc (µg/m3)', 'Acute Conc (µg/m3)', 'Elevation (m)',
@@ -36,10 +39,35 @@ class AllInnerReceptors(CsvWriter):
         # Units conversion factor
         self.cf = 2000*0.4536/3600/8760
 
-        #extract inner concs from plotfile and round the utm coordinates
-        innerplot_df = self.plot_df.query("net_id != 'POLGRID1'").copy()
-        innerplot_df.utme = innerplot_df.utme.round()
-        innerplot_df.utmn = innerplot_df.utmn.round()
+        # If acute was run for this facility, read the acute plotfile
+        if self.model.facops.iloc[0][acute] == 'Y':
+            apfile = open("aermod/maxhour.plt", "r")
+            self.aplot_df = pd.read_table(apfile, delim_whitespace=True, header=None, 
+                names=[utme,utmn,aresult,elev,hill,flag,avg_time,source_id,num_yrs,net_id],
+                usecols=[0,1,2,3,4,5,6,7,8,9], 
+                converters={utme:np.float64,utmn:np.float64,aresult:np.float64,elev:np.float64,hill:np.float64
+                       ,flag:np.float64,avg_time:np.str,source_id:np.str,rank:np.str,net_id:np.str
+                       ,concdate:np.str},
+                comment='*')          
+
+        # Extract Chronic inner concs from Chronic plotfile and round the utm coordinates
+        innercplot_df = self.plot_df.query("net_id != 'POLGRID1'").copy()
+        innercplot_df.utme = innercplot_df.utme.round()
+        innercplot_df.utmn = innercplot_df.utmn.round()
+
+        # If acute was run for this facility, extract inner concs from acute plotfile and join to
+        # Chronic inner concs.
+        # Otherwise, add column of 0's for acute result
+        if self.model.facops.iloc[0][acute] == 'Y':
+            inneraplot_df = self.aplot_df.query("net_id != 'POLGRID1'").copy()
+            inneraplot_df.utme = inneraplot_df.utme.round()
+            inneraplot_df.utmn = inneraplot_df.utmn.round()
+            innerplot_df = pd.merge(innercplot_df, inneraplot_df[[source_id, utme, utmn, aresult]], 
+                                    how='inner', on = [source_id, utme, utmn])
+        else:
+            innerplot_df = innercplot_df.copy()
+            innerplot_df[aresult] = 0
+  
 
         # create array of unique source_id's
         srcids = innerplot_df[source_id].unique().tolist()
@@ -50,18 +78,18 @@ class AllInnerReceptors(CsvWriter):
 
         # process inner concs one source_id at a time
         for x in srcids:
-            innerplot_onesrcid = innerplot_df[[utme,utmn,source_id,result]].loc[innerplot_df[source_id] == x]
+            innerplot_onesrcid = innerplot_df[[utme,utmn,source_id,result,aresult]].loc[innerplot_df[source_id] == x]
             hapemis_onesrcid = self.model.runstream_hapemis[[source_id,pollutant,emis_tpy]].loc[self.model.runstream_hapemis[source_id] == x]
             for row1 in innerplot_onesrcid.itertuples():
                 for row2 in hapemis_onesrcid.itertuples():
-
+                    
                     record = None
                     key = (row1[1], row1[2])
-                    if key in self.innerBlocksCache:
-                        record = self.innerBlocksCache.get(key)
+                    if key in self.innblkCache:
+                        record = self.innblkCache.get(key)
                     else:
                         record = self.model.innerblks_df.loc[(self.model.innerblks_df[utme] == row1[1]) & (self.model.innerblks_df[utmn] == row1[2])]
-                        self.innerBlocksCache[key] = record
+                        self.innblkCache[key] = record
 
                     d_fips = record[fips].values[0]
                     d_idmarplot = record[idmarplot].values[0]
@@ -72,7 +100,7 @@ class AllInnerReceptors(CsvWriter):
                     d_emistype = "C"
                     d_pollutant = row2[2]
                     d_conc = row1[4] * row2[3] * self.cf
-                    d_aconc = ""
+                    d_aconc = row1[5] * row2[3] * self.cf * self.model.facops.iloc[0][multiplier]
                     d_elev = record[elev].values[0]
                     d_drydep = ""
                     d_wetdep = ""

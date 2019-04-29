@@ -29,62 +29,64 @@ class FacilityPrep():
 
         #%%---------- Facility Options --------------------------------------
 
-        facops = self.model.faclist.dataframe.loc[self.model.faclist.dataframe[fac_id] == facid]
+        self.model.facops = self.model.faclist.dataframe.loc[self.model.faclist.dataframe[fac_id] == facid]
 
         # Set defaults of the facility options
-        if facops[max_dist].isnull().sum() > 0 or facops[max_dist] > 50000:
-            facops[max_dist] = 50000
+        if self.model.facops[max_dist].isnull().sum() > 0 or self.model.facops[max_dist] > 50000:
+            self.model.facops[max_dist] = 50000
 
-        if facops[model_dist].isnull().sum() > 0:
-            facops[model_dist] = 3000
+        if self.model.facops[model_dist].isnull().sum() > 0:
+            self.model.facops[model_dist] = 3000
 
         # Replace NaN with blank, No or 0
-        # Note: use of elevations is defaulted to Y
-        facops = facops.fillna({radial:0, circles:0, overlap_dist:0, hours:0, multiplier:0,
+        # Note: use of elevations is defaulted to Y, acute hours is defaulted to 1
+        #       and acute multiplier is defaulted to 1
+        self.model.facops = self.model.facops.fillna({radial:0, circles:0, overlap_dist:0, hours:1, multiplier:1,
                                 ring1:0, urban_pop:0})
-        facops.replace(to_replace={met_station:{"nan":"N"}, rural_urban:{"nan":""}, elev:{"nan":"Y"}, 
+        self.model.facops.replace(to_replace={met_station:{"nan":"N"}, rural_urban:{"nan":""}, elev:{"nan":"Y"}, 
                                    dep:{"nan":""}, depl:{"nan":"N"}, phase:{"nan":""}, pdep:{"nan":"N"}, 
                                    pdepl:{"nan":"N"}, vdep:{"nan":"N"}, vdepl:{"nan":"N"}, 
                                    all_rcpts:{"nan":"N"}, user_rcpt:{"nan":"N"}, bldg_dw:{"nan":"N"}, 
                                    fastall:{"nan":"N"}, acute:{"nan":"N"}}, inplace=True)
 
-        facops = facops.reset_index(drop = True)
+        self.model.facops = self.model.facops.reset_index(drop = True)
 
         
         
         #----- Default missing or out of range facility options --------
 
         #  Maximum Distance
-        if facops[max_dist][0] >= 50000:
-            facops.loc[:, max_dist] = 50000
-        elif facops[max_dist][0] == 0:
-            facops.loc[:, max_dist] = 50000
+        if self.model.facops[max_dist][0] >= 50000:
+            self.model.facops.loc[:, max_dist] = 50000
+        elif self.model.facops[max_dist][0] == 0:
+            self.model.facops.loc[:, max_dist] = 50000
 
         # Modeled Distance of Receptors
-        if facops[model_dist][0] == 0:
-            facops.loc[:, model_dist] = 3000
+        if self.model.facops[model_dist][0] == 0:
+            self.model.facops.loc[:, model_dist] = 3000
 
         # Radials
-        if facops[radial][0] == 0:
-            facops.loc[:, radial] = 16
+        if self.model.facops[radial][0] == 0:
+            self.model.facops.loc[:, radial] = 16
 
         # Circles
-        if facops[circles][0] == 0:
-            facops.loc[:, circles] = 13
+        if self.model.facops[circles][0] == 0:
+            self.model.facops.loc[:, circles] = 13
 
         # Overlap Distance
-        if facops[overlap_dist][0] == 0:
-            facops.loc[:, overlap_dist] = 30
-        elif facops[overlap_dist][0] < 1:
-            facops.loc[:, overlap_dist] = 30
-        elif facops[overlap_dist][0] > 500:
-            facops.loc[:, overlap_dist] = 30
+        if self.model.facops[overlap_dist][0] == 0:
+            self.model.facops.loc[:, overlap_dist] = 30
+        elif self.model.facops[overlap_dist][0] < 1:
+            self.model.facops.loc[:, overlap_dist] = 30
+        elif self.model.facops[overlap_dist][0] > 500:
+            self.model.facops.loc[:, overlap_dist] = 30
+        
 
-        op_maxdist = facops[max_dist][0]
-        op_modeldist = facops[model_dist][0]
-        op_circles = facops[circles][0]
-        op_radial = facops[radial][0]
-        op_overlap = facops[overlap_dist][0]
+        op_maxdist = self.model.facops[max_dist][0]
+        op_modeldist = self.model.facops[model_dist][0]
+        op_circles = self.model.facops[circles][0]
+        op_radial = self.model.facops[radial][0]
+        op_overlap = self.model.facops[overlap_dist][0]
 
         #%%---------- Emission Locations --------------------------------------
 
@@ -295,8 +297,8 @@ class FacilityPrep():
         self.model.computedValues['cenlon'] = cenlon
 
         #retrieve blocks
-        maxdist = facops[max_dist][0]
-        modeldist = facops[model_dist][0]
+        maxdist = self.model.facops[max_dist][0]
+        modeldist = self.model.facops[model_dist][0]
 
         if self.model.urepOnly_optns.get('ureponly', None):
             self.innerblks, self.outerblks = self.getBlocksFromUrep(facid, cenx, ceny, cenlon, cenlat, facutmzone,
@@ -318,12 +320,12 @@ class FacilityPrep():
             maxsrcd = max(maxsrcd, dist_cen)
 
         # If user first ring is > 100m, then use it, else first ring is maxsrcd + overlap.
-        if facops[ring1][0] <= 100:
+        if self.model.facops[ring1][0] <= 100:
             ring1a = max(maxsrcd+op_overlap, 100)
             ring1b = min(ring1a, op_maxdist)
             firstring = round(max(ring1b, 100))
         else:
-            firstring = facops[ring1][0]
+            firstring = self.model.facops[ring1][0]
         polar_dist = []
         polar_dist.append(firstring)
 
@@ -400,8 +402,8 @@ class FacilityPrep():
         # determine if polar receptors overlap any emission sources
         polar_df[overlap] = polar_df.apply(lambda row: self.polar_overlap(row[utme], row[utmn], sourcelocs, op_overlap), axis=1)
 
-         # Assign the polar grid data frame to the model
-        self.model.polargrid = polar_df
+        # set rec_type of polar receptors
+        polar_df[rec_type] = 'PG'
 
         #%%----- Add sector and ring to inner and outer receptors ----------
 
@@ -427,7 +429,7 @@ class FacilityPrep():
         #%%------ Elevations and hill height ---------
 
         # if the facility will use elevations, assign them to emission sources and polar receptors
-        if facops[elev][0].upper() == "Y":
+        if self.model.facops[elev][0].upper() == "Y":
             polar_df[elev], polar_df[hill] = zip(*polar_df.apply(lambda row: self.assign_polar_elev_step1(row,self.innerblks,self.outerblks,maxdist), axis=1))
             if emislocs[elev].max() == 0 and emislocs[elev].min() == 0:
                 emislocs[elev] = self.compute_emisloc_elev(polar_df,op_circles)
@@ -438,6 +440,10 @@ class FacilityPrep():
             polar_df[hill] = 0
             emislocs[elev] = 0
             emislocs[hill] = 0
+
+        
+        # Assign the polar grid data frame to the model
+        self.model.polargrid = polar_df
 
 
         # export polar_df to an Excel file in the Working directory
@@ -456,7 +462,7 @@ class FacilityPrep():
         #%% this is where runstream file will be compiled
         #new logic to be
 
-        runstream = Runstream(facops, emislocs, hapemis, user_recs, buoyant_df,
+        runstream = Runstream(self.model.facops, emislocs, hapemis, user_recs, buoyant_df,
                               polyver_df, bldgdw_df, partdia_df, landuse_df,
                               seasons_df, emisvar_df, self.model)
         runstream.build_co(runPhase, self.innerblks, self.outerblks)
@@ -470,7 +476,7 @@ class FacilityPrep():
 
         return runstream
         #no return statement since it will just need to build the file
-        #return rs.Runstream(facops, emislocs, hapemis, cenlat, cenlon, cenx, ceny, self.innerblks, user_recs, buoyant_df, polyver_df, polar_df, bldgdw_df, partdia_df, landuse_df, seasons_df, gasparams_df)
+        #return rs.Runstream(self.model.facops, emislocs, hapemis, cenlat, cenlon, cenx, ceny, self.innerblks, user_recs, buoyant_df, polyver_df, polar_df, bldgdw_df, partdia_df, landuse_df, seasons_df, gasparams_df)
 
 
     #%% Calculate ring and sector of block receptors

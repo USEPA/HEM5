@@ -35,7 +35,7 @@ class RingSummaryChronic(CsvWriter):
         # join with the polar grid df and then select columns
         columns = [pollutant, conc, lat, lon, overlap, elev, utme, utmn, hill, distance, angle, sector]
         merged = allpolar_df.merge(self.model.polargrid, on=[lat, lon, elev, distance, angle, sector, overlap])[columns]
-
+        
         # get a URE value for each row, by joining with the dose response library (on pollutant)
         merged[[mir, hi_resp, hi_live, hi_neur, hi_deve, hi_repr, hi_kidn, hi_ocul
             , hi_endo, hi_hema, hi_immu, hi_skel, hi_sple, hi_thyr, hi_whol]] = \

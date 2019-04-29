@@ -23,6 +23,9 @@ from com.sca.hem4.writer.excel.MaximumOffsiteImpactsNonCensus import MaximumOffs
 from com.sca.hem4.writer.excel.NoncancerRiskExposure import NoncancerRiskExposure
 from com.sca.hem4.writer.excel.RiskBreakdown import RiskBreakdown
 from com.sca.hem4.writer.excel.Incidence import Incidence
+from com.sca.hem4.writer.excel.AcuteChemicalPopulated import AcuteChemicalPopulated
+from com.sca.hem4.writer.excel.AcuteChemicalUnpopulated import AcuteChemicalUnpopulated
+from com.sca.hem4.writer.excel.AcuteBreakdown import AcuteBreakdown
 #from com.sca.hem4.writer.kml.KMLWriter import KMLWriter
 from com.sca.hem4.support.UTM import *
 from com.sca.hem4.model.Model import *
@@ -55,39 +58,24 @@ class Process_outputs():
             else:
                 quotient[i] = 0
         return quotient
-    
-    
-    def create_riskfacs(self):
-        """
-        Combine the dose response and target organ tables into one dataframe. Also create noncancer endpoint
-        specific factors (multipliers) that are defined as (endpoint factor)/rfc.
-        """
         
-        riskfacs_df = pd.merge(self.model.haplib.dataframe[[pollutant,ure,rfc]], self.model.organs.dataframe[[pollutant,
-                          resp,liver,neuro,dev,reprod,kidney,ocular,endoc,hemato,immune,
-                          skeletal,spleen,thyroid,wholebod]], on=pollutant, how="inner")
-        riskfacs_df["resp_fac"] = self.nodivby0(riskfacs_df[resp], riskfacs_df[rfc])
-        riskfacs_df["live_fac"] = self.nodivby0(riskfacs_df[liver], riskfacs_df[rfc])
-        riskfacs_df["neur_fac"] = self.nodivby0(riskfacs_df[neuro], riskfacs_df[rfc])
-        riskfacs_df["deve_fac"] = self.nodivby0(riskfacs_df[dev], riskfacs_df[rfc])
-        riskfacs_df["repr_fac"] = self.nodivby0(riskfacs_df[reprod], riskfacs_df[rfc])
-        riskfacs_df["kidn_fac"] = self.nodivby0(riskfacs_df[kidney], riskfacs_df[rfc])
-        riskfacs_df["ocul_fac"] = self.nodivby0(riskfacs_df[ocular], riskfacs_df[rfc])
-        riskfacs_df["endo_fac"] = self.nodivby0(riskfacs_df[endoc], riskfacs_df[rfc])
-        riskfacs_df["hema_fac"] = self.nodivby0(riskfacs_df[hemato], riskfacs_df[rfc])
-        riskfacs_df["immu_fac"] = self.nodivby0(riskfacs_df[immune], riskfacs_df[rfc])
-        riskfacs_df["skel_fac"] = self.nodivby0(riskfacs_df[skeletal], riskfacs_df[rfc])
-        riskfacs_df["sple_fac"] = self.nodivby0(riskfacs_df[spleen], riskfacs_df[rfc])
-        riskfacs_df["thyr_fac"] = self.nodivby0(riskfacs_df[thyroid], riskfacs_df[rfc])
-        riskfacs_df["whol_fac"] = self.nodivby0(riskfacs_df[wholebod], riskfacs_df[rfc])
-        riskfacs_df.drop([resp,liver,neuro,dev,reprod,kidney,ocular,endoc,hemato,immune,
-                          skeletal,spleen,thyroid,wholebod], axis=1, inplace=True)
-               
-        return riskfacs_df
-    
 
     def process(self):
-        #        start = time.time()
+        
+        # Read chronic plotfile and put into dataframe
+        pfile = open("aermod/plotfile.plt", "r")
+        plot_df = pd.read_table(pfile, delim_whitespace=True, header=None, 
+            names=[utme,utmn,result,elev,hill,flag,avg_time,source_id,num_yrs,net_id],
+            usecols=[0,1,2,3,4,5,6,7,8,9], 
+            converters={utme:np.float64,utmn:np.float64,result:np.float64,elev:np.float64,hill:np.float64
+                   ,flag:np.float64,avg_time:np.str,source_id:np.str,num_yrs:np.int64,net_id:np.str},
+            comment='*')
+
+        if self.abort.is_set():
+            Logger.logMessage("Terminating output processing...")
+            return
+
+                    
 
         #----------- create input selection file -----------------
         input_selection = InputSelectionOptions(self.outdir, self.facid, self.model, None)
@@ -97,22 +85,6 @@ class Process_outputs():
             Logger.logMessage("Terminating output processing...")
             return
 
-        # Read plotfile and put into dataframe
-        pfile = open("aermod/plotfile.plt", "r")
-        plot_df = pd.read_table(pfile, delim_whitespace=True, header=None, 
-            names=[utme,utmn,result,elev,hill,flag,avg_time,source_id,num_yrs,net_id],
-            usecols=[0,1,2,3,4,5,6,7,8,9], 
-            converters={utme:np.float64,utmn:np.float64,result:np.float64,elev:np.float64,hill:np.float64
-                   ,flag:np.float64,avg_time:np.str,source_id:np.str,num_yrs:np.int64,net_id:np.str},
-            comment='*')
-
-
-        if self.abort.is_set():
-            Logger.logMessage("Terminating output processing...")
-            return
-
-        # Combine the dose response and target organ tables into one and create noncancer factors (multipliers)
-        self.model.riskfacs_df = self.create_riskfacs()
         
         #----------- create All_Polar_Receptor output file -----------------
         all_polar_receptors = AllPolarReceptors(self.outdir, self.facid, self.model, plot_df)
@@ -174,7 +146,7 @@ class Process_outputs():
                       hi_endo, hi_hema, hi_immu, hi_skel, hi_sple, hi_thyr, hi_whol, overlap]
         block_columns = ring_columns + [rec_type]
         
-        ring_risk = ring_summary_chronic_df[ring_columns].copy()
+        ring_risk = ring_summary_chronic_df[ring_columns]
         ring_risk[rec_type] = 'P'
         
         block_risk = block_summary_chronic_df[block_columns]
@@ -247,6 +219,42 @@ class Process_outputs():
         fac_max_risk = FacilityMaxRiskandHINonCensus("output/", self.facid, self.model, plot_df, incidence.dataframe) if ureponly else \
             FacilityMaxRiskandHI("output/", self.facid, self.model, plot_df, incidence.dataframe)
         fac_max_risk.writeWithoutHeader()
+
+
+
+        #=================== Acute processing ==============================================
+        
+        # If acute was run for this facility, read the acute plotfile and create the acute outputs
+
+        if self.runstream.facoptn_df.iloc[0][acute] == 'Y':
+
+            apfile = open("aermod/maxhour.plt", "r")
+            aplot_df = pd.read_table(apfile, delim_whitespace=True, header=None, 
+                names=[utme,utmn,result,elev,hill,flag,avg_time,source_id,num_yrs,net_id],
+                usecols=[0,1,2,3,4,5,6,7,8,9], 
+                converters={utme:np.float64,utmn:np.float64,result:np.float64,elev:np.float64,hill:np.float64
+                       ,flag:np.float64,avg_time:np.str,source_id:np.str,rank:np.str,net_id:np.str
+                       ,concdate:np.str},
+                comment='*')
+    
+            if self.abort.is_set():
+                Logger.logMessage("Terminating output processing...")
+                return
+
+            #----------- create Acute Chemical Populated output file ------------------------
+            acutechempop = AcuteChemicalPopulated(self.outdir, self.facid, self.model, aplot_df)
+            acutechempop.write()
+
+            #----------- create Acute Chemical Unpopulated output file ------------------------
+            acutechemunpop = AcuteChemicalUnpopulated(self.outdir, self.facid, self.model, aplot_df)
+            acutechemunpop.write()
+
+            #----------- create Acute Breakdown output file ------------------------
+            acutebkdn = AcuteBreakdown(self.outdir, self.facid, self.model, aplot_df,
+                                       acutechempop.dataframe, acutechemunpop.dataframe)
+            acutebkdn.write()
+            
+
 
 #        #create facility kml
 #        Logger.logMessage("Writing KML file for " + self.facid)

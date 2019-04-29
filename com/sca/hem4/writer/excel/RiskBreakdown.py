@@ -102,10 +102,10 @@ class RiskBreakdown(ExcelWriter):
 
                 # Max risk or HI value = 0. Get source/pollutant breakdown from hapemis.
                 bkdndata = self.model.runstream_hapemis[["source_id","pollutant","emis_tpy"]].copy()
-                bkdndata[value] = 0
-                bkdndata[value_rnd] = 0
-                bkdndata[conc] = 0
-                bkdndata[conc_rnd] = 0
+                bkdndata[value] = 0.0
+                bkdndata[value_rnd] = 0.0
+                bkdndata[conc] = 0.0
+                bkdndata[conc_rnd] = 0.0
                 bkdndata[ems_type] = "NA"
 
             # set the remaining columns in bkdndata
@@ -147,7 +147,8 @@ class RiskBreakdown(ExcelWriter):
                     concdata = self.model.all_polar_receptors_df[[lat,lon,source_id,pollutant,ems_type,conc]] \
                         [(self.model.all_polar_receptors_df[lat] == mr_lat) &
                          (self.model.all_polar_receptors_df[lon] == mr_lon)]
-                    # for consistency and ease of use, change some column names
+                
+                # for consistency and ease of use, change some column names
                 concdata.rename(columns={source_id:"source_id", pollutant:"pollutant",
                                          ems_type:ems_type, conc:conc}, inplace=True)
 
@@ -170,10 +171,10 @@ class RiskBreakdown(ExcelWriter):
 
                 # Max off-site risk or HI value = 0. Get source/pollutant breakdown from hapemis.
                 bkdndata = self.model.runstream_hapemis[[source_id,pollutant,emis_tpy]].copy()
-                bkdndata[value] = 0
-                bkdndata[value_rnd] = 0
-                bkdndata[conc] = 0
-                bkdndata[conc_rnd] = 0
+                bkdndata[value] = 0.0
+                bkdndata[value_rnd] = 0.0
+                bkdndata[conc] = 0.0
+                bkdndata[conc_rnd] = 0.0
                 bkdndata[ems_type] = "NA"
 
             # set the remaining columns in bkdndata
@@ -201,8 +202,9 @@ class RiskBreakdown(ExcelWriter):
                                      as_index=False)[value, conc, emis_tpy].sum()
         srctot[source_id] = "Total by pollutant all sources"
         srctot[ems_type] = "NA"
-        srctot[ure] = 0
-        srctot[rfc] = 0
+        srctot[ure] = 0.0
+        srctot[rfc] = 0.0
+                
         srctot[value_rnd] = srctot[value].apply(lambda x: round(x, -int(math.floor(math.log10(abs(x))))) if x > 0 else 0)
         srctot[conc_rnd] = srctot[conc].apply(lambda x: round(x, -int(math.floor(math.log10(abs(x))))) if x > 0 else 0)
 
@@ -211,8 +213,8 @@ class RiskBreakdown(ExcelWriter):
                                       as_index=False)[value, conc, emis_tpy].sum()
         polltot[pollutant] = "All modeled pollutants"
         polltot[ems_type] = "NA"
-        polltot[ure] = 0
-        polltot[rfc] = 0
+        polltot[ure] = 0.0
+        polltot[rfc] = 0.0
         polltot[value_rnd] = polltot[value].apply(lambda x: round(x, -int(math.floor(math.log10(abs(x))))) if x > 0 else 0)
         polltot[conc_rnd] = polltot[conc].apply(lambda x: round(x, -int(math.floor(math.log10(abs(x))))) if x > 0 else 0)
 
@@ -222,8 +224,8 @@ class RiskBreakdown(ExcelWriter):
         alltot[source_id] = "Total"
         alltot[pollutant] = "All pollutants all sources"
         alltot[ems_type] = "NA"
-        alltot[ure] = 0
-        alltot[rfc] = 0
+        alltot[ure] = 0.0
+        alltot[rfc] = 0.0
         alltot[value_rnd] = alltot[value].apply(lambda x: round(x, -int(math.floor(math.log10(abs(x))))) if x > 0 else 0)
         alltot[conc_rnd] = alltot[conc].apply(lambda x: round(x, -int(math.floor(math.log10(abs(x))))) if x > 0 else 0)
 
@@ -256,8 +258,8 @@ class RiskBreakdown(ExcelWriter):
 
 
     def getRiskParms(self, pollutant_name):
-        URE = 0
-        RFC = 0
+        URE = 0.0
+        RFC = 0.0
 
         # In order to get a case-insensitive exact match (i.e. matches exactly except for casing)
         # we are using a regex that is specified to be the entire value. Since pollutant names can
@@ -277,8 +279,8 @@ class RiskBreakdown(ExcelWriter):
                 msg = 'Could not find pollutant ' + pollutant_name + ' in the haplib!'
                 Logger.logMessage(msg)
                 # Logger.log(msg, self.model.haplib.dataframe, False)
-                URE = 0
-                RFC = 0
+                URE = 0.0
+                RFC = 0.0
             else:
                 URE = row.iloc[0][ure]
                 RFC = row.iloc[0][rfc]

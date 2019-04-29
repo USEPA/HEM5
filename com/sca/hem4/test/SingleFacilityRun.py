@@ -154,6 +154,36 @@ class SingleFacilityRun(unittest.TestCase):
 
             self.assertTrue(fixture.equals(produced), "The contents of the output file are inconsistent with the test fixture.")
 
+    def test_acute_breakdown(self):
+        """
+        Verify that the acute breakdown output file is identical to the test fixture.
+        """
+        for facid in self.testHarness.model.facids:
+            fixture = pd.read_excel(self.outputFixturePrefix + facid + "_acute_bkdn.xlsx")
+            produced = pd.read_excel("output/" + facid + "/" + facid + "_acute_bkdn.xlsx")
+
+            self.assertTrue(fixture.equals(produced), "The contents of the output file are inconsistent with the test fixture.")
+
+    def test_acute_chem_pop(self):
+        """
+        Verify that the acute chemical populated output file is identical to the test fixture.
+        """
+        for facid in self.testHarness.model.facids:
+            fixture = pd.read_excel(self.outputFixturePrefix + facid + "_acute_chem_pop.xlsx")
+            produced = pd.read_excel("output/" + facid + "/" + facid + "_acute_chem_pop.xlsx")
+
+            self.assertTrue(fixture.equals(produced), "The contents of the output file are inconsistent with the test fixture.")
+
+    def test_acute_chem_unpop(self):
+        """
+        Verify that the acute chemical all output file is identical to the test fixture.
+        """
+        for facid in self.testHarness.model.facids:
+            fixture = pd.read_excel(self.outputFixturePrefix + facid + "_acute_chem_unpop.xlsx")
+            produced = pd.read_excel("output/" + facid + "/" + facid + "_acute_chem_unpop.xlsx")
+
+            self.assertTrue(fixture.equals(produced), "The contents of the output file are inconsistent with the test fixture.")
+
     def hashFile(self, filename):
         """
         Calculate the md5 checksum for a given file and return the result.

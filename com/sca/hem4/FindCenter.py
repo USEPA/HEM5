@@ -81,8 +81,8 @@ def center(sourcelocs, utmz):
     max_dist = 0
     max_x = min_x = vertx_a[0]
     max_y = min_y = verty_a[0]
-    
-    if len(vertx_a) > 1: #more than one source
+        
+    if (len(np.unique(vertx_a)) > 1) or (len(np.unique(verty_a)) > 1): #more than one source location
         for i in range(0, len(vertx_a)):
             max_x = max(max_x,vertx_a[i])
             max_y = max(max_y,verty_a[i])
@@ -112,7 +112,7 @@ def center(sourcelocs, utmz):
         cenlon = acenlon[0]
         cenlat = acenlat[0]
         
-    else: #single source
+    else: # sources are all co-located
         
        # Calculate the center of the facility in utm coordinates
         cenx = round(max_x)
