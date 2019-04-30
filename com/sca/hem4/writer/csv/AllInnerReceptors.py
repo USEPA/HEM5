@@ -29,10 +29,6 @@ class AllInnerReceptors(CsvWriter, InputFile):
         self.filename = path
         self.innerBlocksCache = {}
 
-        # Initialization for CSV reading
-        self.numericColumns = [lat, lon, conc, aconc, elev, drydep, wetdep, population]
-        self.strColumns = [fips, block, source_id, ems_type, pollutant, overlap]
-
     def getHeader(self):
         return ['FIPs', 'Block', 'Latitude', 'Longitude', 'Source ID', 'Emission type', 'Pollutant',
                 'Conc (µg/m3)', 'Acute Conc (µg/m3)', 'Elevation (m)',
@@ -104,5 +100,9 @@ class AllInnerReceptors(CsvWriter, InputFile):
         yield self.dataframe
 
     def createDataframe(self):
+        # Type setting for CSV reading
+        self.numericColumns = [lat, lon, conc, aconc, elev, drydep, wetdep, population]
+        self.strColumns = [fips, block, source_id, ems_type, pollutant, overlap]
+
         df = self.readFromPathCsv(self.getColumns())
         return df.fillna("")

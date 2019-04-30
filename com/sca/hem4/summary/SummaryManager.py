@@ -1,4 +1,3 @@
-from com.sca.hem4.summary.MaxRiskSummary import MaxRiskSummary
 import importlib
 
 class SummaryManager():
@@ -6,9 +5,10 @@ class SummaryManager():
     def __init__(self):
         self.facilityIds = []
 
-        maxRiskReportModule = importlib.import_module("com.sca.hem4.summary.MaxRiskSummary")
+        maxRiskReportModule = importlib.import_module("com.sca.hem4.writer.excel.summary.MaxRiskSummary")
 
         self.availableReports = {'MaxRiskSummary' : maxRiskReportModule}
+
     def createReport(self, categoryFolder, reportName):
 
         # Figure out which facilities will be included in the report
@@ -21,9 +21,9 @@ class SummaryManager():
             print("Oops. HEM4 couldn't find your report module.")
             return
 
-        class_ = getattr(module, reportName)
-        instance = class_()
-        instance.create(categoryFolder, self.facilityIds)
+        reportClass = getattr(module, reportName)
+        instance = reportClass(categoryFolder, self.facilityIds)
+        instance.write()
 
     def findFacilities(self, folder):
 
@@ -36,4 +36,4 @@ class SummaryManager():
                 '36091110000324435', '39153110041418338', '48039110008170237', '54107110000586081']
 
 manager = SummaryManager()
-manager.createReport("HCL2", "MaxRiskSummary")
+manager.createReport("output/HCL2", "MaxRiskSummary")

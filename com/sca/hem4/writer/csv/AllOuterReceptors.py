@@ -50,10 +50,6 @@ class AllOuterReceptors(CsvWriter, InputFile):
         self.riskCache = {}
         self.organCache = {}
 
-        # Initialization for CSV reading
-        self.numericColumns = [lat, lon, conc, aconc, elev, population]
-        self.strColumns = [fips, block, source_id, ems_type, pollutant, overlap]
-
         # No need to go further if we are instantiating this class to read in a CSV file...
         if self.model is None:
             return
@@ -316,7 +312,7 @@ class AllOuterReceptors(CsvWriter, InputFile):
 
             if self.outerAgg is None:
                 storage = self.outerblocks.shape[0]
-                self.outerAgg = pd.DataFrame(columns=blksumm_cols, index=range(storage))
+                self.outerAgg = pd.DataFrame(columns=blksumm_cols)
             self.outerAgg = self.outerAgg.append(outeragg)
 
 
@@ -375,5 +371,9 @@ class AllOuterReceptors(CsvWriter, InputFile):
         return riskdf
 
     def createDataframe(self):
+        # Type setting for CSV reading
+        self.numericColumns = [lat, lon, conc, aconc, elev, population]
+        self.strColumns = [fips, block, source_id, ems_type, pollutant, overlap]
+
         df = self.readFromPathCsv(self.getColumns())
         return df.fillna("")
