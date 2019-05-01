@@ -13,15 +13,15 @@ from threading import Event
 from tkinter import messagebox
 from tkinter import scrolledtext
 from tkinter import ttk
-import datetime
 from com.sca.hem4.Processor import Processor
 from com.sca.hem4.log import Logger
 from com.sca.hem4.model.Model import Model
+from com.sca.hem4.tools.CensusUpdater import CensusUpdater
 from com.sca.hem4.upload.FileUploader import FileUploader
 from tkinter.filedialog import askopenfilename
 from com.sca.hem4.checker.InputChecker import InputChecker
 from com.sca.hem4.DepositionDepletion import check_dep
-from com.sca.hem4.SaveState import SaveState
+
 
 
 
@@ -62,6 +62,7 @@ class Hem4(tk.Frame):
         self.hap_up = None
         self.emisloc_up = None
         self.urep = None
+        self.urepaltButton = None
         self.poly_up = None
         self.buoyant_up = None
         self.bldgdw_up = None
@@ -126,6 +127,8 @@ class Hem4(tk.Frame):
 
         if self.urep is not None:
             self.enable_widgets(self.urep, False)
+        if self.urepaltButton is not None:
+            self.enable_widgets(self.urepaltButton, False)
         if self.poly_up is not None:
             self.enable_widgets(self.poly_up, False)
         if self.buoyant_up is not None:
@@ -138,7 +141,7 @@ class Hem4(tk.Frame):
             self.enable_widgets(self.dep_land_up, False)
         if self.dep_seasons_up is not None:
             self.enable_widgets(self.dep_seasons_up, False)
-            
+
     def enable_buttons(self):
         self.enable_widgets(self.run_button, True)
         self.enable_widgets(self.fac_up, True)
@@ -147,6 +150,8 @@ class Hem4(tk.Frame):
 
         if self.urep is not None:
             self.enable_widgets(self.urep, True)
+        if self.urepaltButton is not None:
+            self.enable_widgets(self.urepaltButton, True)
         if self.poly_up is not None:
             self.enable_widgets(self.poly_up, True)
         if self.buoyant_up is not None:
@@ -191,6 +196,9 @@ class Hem4(tk.Frame):
         self.fac_list.set('')
         self.hap_list.set('')
         self.emisloc_list.set('')
+
+        self.check_ureponly.set(False)
+        self.set_ureponly()
 
         if hasattr(self, 's6'):
             self.urep.destroy()
@@ -237,7 +245,6 @@ class Hem4(tk.Frame):
             self.s12.destroy()
 
         self.win.after(100, self.enable_buttons)
-        #self.enable_buttons()
 
 #%% Open HEM4 User Guide
     def user_guide(self):
@@ -250,7 +257,31 @@ class Hem4(tk.Frame):
     
                 
 #%%Create Widgets
-    
+
+    def update_census(self):
+        """
+        Function creates thread for running HEM4 concurrently with tkinter GUI
+        """
+        executor = ThreadPoolExecutor(max_workers=1)
+
+        self.processor = Processor(self.model, Event())
+        future = executor.submit(self.censusupdater.update, self.censusUpdatePath)
+        future.add_done_callback(self.update_census_finish)
+
+    def update_census_finish(self, future):
+        self.callbackQueue.put(self.finish_census_update)
+
+    def finish_census_update(self):
+        self.cu_list.set("")
+
+    def uploadCensusUpdates(self):
+        self.censusupdater = CensusUpdater()
+        fullpath = self.openFile(askopenfilename())
+        if fullpath is not None:
+            self.censusUpdatePath = fullpath
+            self.cu_list.set(fullpath)
+
+
     def createWidgets(self):
         """
         Function creates the main tab structure and required inputs,
@@ -268,8 +299,51 @@ class Hem4(tk.Frame):
         tab2 = ttk.Frame(self.tabControl)            # Add a second tab
         self.tabControl.add(tab2, text='Log')      # Make second tab visible
 
+        tab3 = ttk.Frame(self.tabControl)            # Add a third tab
+        self.tabControl.add(tab3, text='Census')      # Make third tab visible
+
         self.tabControl.pack(expand=1, fill="both")  # Pack to make visible
-        
+
+        # Create container frame to hold census update stuff
+        self.censusupdates = ttk.LabelFrame(tab3, text='Census updates',
+                                   labelanchor="n")
+        self.censusupdates.grid(column=0, row=1)
+
+        #create discreet sections for GUI in tab3
+        self.cu1 = tk.Frame(self.censusupdates, width=250, height=200)
+        self.cu1.grid(row=0)
+
+        # census update label
+        cu_label = tk.Label(self.cu1, font="-size 10",
+                             text="Please select a census update file:")
+        cu_label.grid(row=1, sticky="W")
+
+        # census update upload button
+        self.cu_up = ttk.Button(self.cu1,
+                                 command = lambda: self.uploadCensusUpdates())
+        self.cu_up["text"] = "Browse"
+        self.cu_up.grid(row=2, column=0, sticky="W")
+
+        # census update text entry
+        self.cu_list = tk.StringVar(self.cu1)
+        self.cu_list_man = ttk.Entry(self.cu1)
+        self.cu_list_man["width"] = 55
+        self.cu_list_man["textvariable"]= self.cu_list
+        self.cu_list_man.grid(row=2, column=0, sticky='E', padx=85)
+
+        self.cu_update = tk.Button(self.cu1, text="UPDATE", fg="green",
+                              command=self.update_census)
+        self.cu_update.grid(row=3, column=0, sticky="W", padx=85, pady=20)
+
+
+
+
+
+
+
+
+
+
          # Create container frame to hold all other widgets
         self.main = ttk.LabelFrame(tab1, text='Human Exposure Model,'+
                                    ' open-source (HEM4), Version 1.0', 
@@ -281,14 +355,15 @@ class Hem4(tk.Frame):
         self.s2 = tk.Frame(self.main, width=250, height=100)
         self.s3 = tk.Frame(self.main, width=250, height=100, pady=10, padx=10)
         self.s4 = tk.Frame(self.main, width=250, height=100, pady=10, padx=10)
-        self.s5 = tk.Frame(self.main, width=250, height=100, pady=10, padx=10)
-        
+        self.s5 = tk.Frame(self.main, width=250, height=150, pady=10, padx=10)
+        self.alturep = tk.Frame(self.main, width=250, height=250, pady=10, padx=10)
 
         self.s1.grid(row=0)
         self.s2.grid(row=1, column=0, sticky="nsew")
-        self.s3.grid(row=2, column=0, columnspan=2, sticky="nsew")
-        self.s4.grid(row=3, column=0, columnspan=2, sticky="nsew")
-        self.s5.grid(row=4, column=0, columnspan=2, sticky="nsew")
+        self.alturep.grid(row=2, column=0, columnspan=2, sticky="nsew")
+        self.s3.grid(row=3, column=0, columnspan=2, sticky="nsew")
+        self.s4.grid(row=4, column=0, columnspan=2, sticky="nsew")
+        self.s5.grid(row=5, column=0, columnspan=2, sticky="nsew")
 
 
         self.main.grid_rowconfigure(8, weight=4)
@@ -332,8 +407,14 @@ class Hem4(tk.Frame):
         
         
         
-# %% Setting up each file upload space (includes browse button, and manual text entry for file path)         
-        
+# %% Setting up each file upload space (includes browse button, and manual text entry for file path)
+
+        self.check_ureponly = tk.BooleanVar()
+        self.ureponly_sel = tk.Checkbutton(self.alturep, text="Use alternate receptors",
+                                           variable = self.check_ureponly,
+                                           command = self.set_ureponly)
+        self.ureponly_sel.grid(row=0, column=0, sticky='W')
+
         #facilities label
         fac_label = tk.Label(self.s3, font="-size 10", 
                              text="Please select a Facilities List Options file:")
@@ -415,14 +496,14 @@ class Hem4(tk.Frame):
                                           variable = self.check_emisvar,
                                           command = self.add_variation)
         self.emisvar_sel.grid(row=3, column=0, sticky='E', padx = 85)
+
         
-        
-    def is_excel(self, filepath):
+    def is_valid_extension(self, filepath):
         """
-        Function checks to make sure excel files are selected for inputs
+        Function checks to make sure excel/csv files are selected for inputs
         
         """
-        extensions = [".xls", ".xlsx", ".XLS"]
+        extensions = [".xls", ".xlsx", ".XLS", ".csv", ".CSV"]
         return any(ext in filepath for ext in extensions)
 
     def openFile(self, filename):
@@ -435,9 +516,9 @@ class Hem4(tk.Frame):
             # upload was canceled
             print("Canceled!")
             return None
-        elif not self.is_excel(filename):
+        elif not self.is_valid_extension(filename):
             messagebox.showinfo("Invalid file format", 
-                                "Not a valid file format, please upload an excel file.")
+                                "Not a valid file format, please upload an excel/csv file as per the instructions.")
             return None
         else:
             return os.path.abspath(filename)
@@ -458,13 +539,12 @@ class Hem4(tk.Frame):
             self.fac_list.set(fullpath)
             [self.scr.insert(tk.INSERT, msg) for msg in self.model.faclist.log]
             
-            #trigger additional inputs fo user recptors
+            #trigger additional inputs fo user recptors, assuming we are not in "user receptors only" mode
             if 'Y' in self.model.faclist.dataframe['user_rcpt'].tolist():
                 #create user receptors
                 self.add_ur()
                 
             else:
-                
                 if hasattr(self, 's6'):
                     self.urep.destroy()
                     self.urep_list_man.destroy()
@@ -629,13 +709,15 @@ class Hem4(tk.Frame):
         Function for uploading user receptors
         """
 
-        if self.model.faclist.dataframe is None:
+        if self.model.faclist is None:
             messagebox.showinfo("Facilities List Option File Missing",
                 "Please upload a Facilities List Options file before selecting"+
                 " a User Receptors file.")
+            return
 
         fullpath = self.openFile(askopenfilename())
         if fullpath is not None:
+
             self.uploader.uploadDependent("user receptors", fullpath, 
                                           self.model.faclist.dataframe)
             
@@ -643,8 +725,28 @@ class Hem4(tk.Frame):
             # Update the UI
             self.urep_list.set(fullpath)
             [self.scr.insert(tk.INSERT, msg) for msg in self.model.ureceptr.log]
-                            
-            
+
+    def uploadAltReceptors(self):
+        """
+        Function for uploading user receptors
+        """
+
+        if self.model.faclist is None:
+            messagebox.showinfo("Facilities List Option File Missing",
+                                "Please upload a Facilities List Options file before selecting"+
+                                " a User Receptors file.")
+            return
+
+        fullpath = self.openFile(askopenfilename())
+        if fullpath is not None:
+
+            self.uploader.uploadDependent("alt receptors", fullpath,
+                                          self.model.faclist.dataframe)
+
+            # Update the UI
+            self.urepalt_list.set(fullpath)
+            [self.scr.insert(tk.INSERT, msg) for msg in self.model.altreceptr.log]
+
     def uploadBuildingDownwash(self):
         """ 
         Function for uploading building downwash
@@ -742,9 +844,14 @@ class Hem4(tk.Frame):
         """
         Function for creating row and upload widgets for user receptors
         """
+
+        # set the appropriate instructions text
+        browse = "instructions/urep_browse.txt"
+        man = "instructions/urep_man.txt"
+
         #create row for user receptors
         self.s6 = tk.Frame(self.main, width=250, height=200, pady=10, padx=10)
-        self.s6.grid(row=5, column=0, columnspan=2, sticky="nsew")
+        self.s6.grid(row=6, column=0, columnspan=2, sticky="nsew")
         
         #user recptors label
         self.ur_label = tk.Label(self.s6, font="-size 10", 
@@ -758,7 +865,7 @@ class Hem4(tk.Frame):
         self.urep["text"] = "Browse"
         self.urep.grid(row=1, column=0, sticky="W")
         self.urep.bind('<Enter>', 
-                       lambda e:self.browse("instructions/urep_browse.txt"))
+                       lambda e:self.browse(browse))
         
         #user receptor text entry
         self.urep_list = tk.StringVar(self.s6)
@@ -768,13 +875,40 @@ class Hem4(tk.Frame):
         self.urep_list_man.grid(row=1, column=0, sticky='E', padx=85)
         #event handler for instructions (Button 1 is the left mouse click)
         self.urep_list_man.bind('<Button-1>', 
-                                lambda e:self.manual("instructions/urep_man.txt"))
+                                lambda e:self.manual(man))
 
-        self.check_ureponly = tk.BooleanVar()
-        self.urep_sel = tk.Checkbutton(self.s6, text="Use only these receptors",
-                                        variable = self.check_ureponly,
-                                        command = self.set_ureponly)
-        self.urep_sel.grid(row=3, column=0, sticky='E', padx = 85)
+    def add_urepalt(self):
+        """
+        Function for creating row and upload widgets for alternate user receptors
+        """
+
+        # set the appropriate instructions text
+        browse = "instructions/urepalt_browse.txt"
+        man = "instructions/urepalt_man.txt"
+
+        #user recptors label
+        self.urepalt_label = tk.Label(self.alturep, font="-size 10",
+                                 text="Please select an alternate User Receptor"+
+                                      " CSV file:")
+        self.urepalt_label.grid(row=1, sticky="W")
+
+        #user recptors upload button
+        self.urepaltButton = ttk.Button(self.alturep,
+                               command = lambda: self.uploadAltReceptors())
+        self.urepaltButton["text"] = "Browse"
+        self.urepaltButton.grid(row=2, column=0, sticky="W")
+        self.urepaltButton.bind('<Enter>',
+                       lambda e:self.browse(browse))
+
+        #user receptor text entry
+        self.urepalt_list = tk.StringVar(self.alturep)
+        self.urepalt_list_man = ttk.Entry(self.alturep)
+        self.urepalt_list_man["width"] = 55
+        self.urepalt_list_man["textvariable"]= self.urepalt_list
+        self.urepalt_list_man.grid(row=2, column=0, sticky='E', padx=85)
+        #event handler for instructions (Button 1 is the left mouse click)
+        self.urepalt_list_man.bind('<Button-1>',
+                                lambda e:self.manual(man))
 
     def add_buoyant(self):
         """
@@ -1034,8 +1168,15 @@ class Hem4(tk.Frame):
                     self.s13.destroy()
 
     def set_ureponly(self):
-        self.model.model_optns['ureponly'] = self.check_ureponly.get()
-        print("ureponly = " + str(self.model.model_optns['ureponly']))
+        self.model.urepOnly_optns['ureponly'] = self.check_ureponly.get()
+
+        if self.model.urepOnly_optns['ureponly']:
+            self.add_urepalt()
+        else:
+            if self.urepaltButton is not None:
+                self.urepaltButton.destroy()
+                self.urepalt_list_man.destroy()
+                self.urepalt_label.destroy()
             
  #%% Event handlers for porting instructions
 
@@ -1118,16 +1259,8 @@ class Hem4(tk.Frame):
             if override:
                 global instruction_instance
                 instruction_instance.set("Hem4 Running, check the log tab for updates")
-                
-                #create run id for saving model
-                runid = datetime.datetime.now().strftime("%B-%d-%Y-%H-%M-%p")
-                #print(runid)
-                #create save model
-                save_state = SaveState(runid, self.model)
-                self.model.save = save_state
+
                 self.process()
-                
-                 
 
     def process(self):
         """
@@ -1137,7 +1270,7 @@ class Hem4(tk.Frame):
 
         self.running = True
         self.disable_buttons()
-        
+
         self.processor = Processor(self.model, Event())
         future = executor.submit(self.processor.process)
         future.add_done_callback(self.processing_finish)

@@ -1,1 +1,1 @@
-Enter the name and location of the Microsoft Excel file containing additional user-defined receptors to be modeled. See User’s Guide for file requirements and guidelines.
+Enter the name and location of the Microsoft Excel file containing additional user-defined receptors to be modeled. See Users Guide for file requirements and guidelines.

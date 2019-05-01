@@ -23,7 +23,7 @@ class TestHarness:
         self.model = Model()
 
         if ureponly:
-            self.model.model_optns['ureponly'] = True
+            self.model.urepOnly_optns['ureponly'] = True
 
         uploader = FileUploader(self.model)
 
@@ -37,10 +37,14 @@ class TestHarness:
         uploader.upload("hapemis", "fixtures/input/hapemis.xlsx")
         uploader.upload("emisloc", "fixtures/input/emisloc.xlsx")
 
-        urepFile = "fixtures/input/urec_only.xlsx" if ureponly else "fixtures/input/urec.xlsx"
-        uploader.uploadDependent("user receptors", urepFile,
+        uploader.uploadDependent("user receptors", "fixtures/input/urec.xlsx",
                                  self.model.faclist.dataframe)
+
+        if ureponly:
+            uploader.uploadDependent("alt receptors", "fixtures/input/urec_only.csv",
+                                     self.model.faclist.dataframe)
 
         processor = Processor(self.model, Event())
         self.success = processor.process()
+        
         Logger.close(True)

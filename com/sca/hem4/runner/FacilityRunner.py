@@ -32,7 +32,7 @@ class FacilityRunner():
         else:
             self.model.model_optns['phase'] = fac['phase'].tolist()[0]
 
-
+        
         #create fac folder
         fac_folder = "output/"+ self.facilityId + "/"
         if os.path.exists(fac_folder):
@@ -161,6 +161,9 @@ class FacilityRunner():
                 shutil.move(output, fac_folder)
                 self.model.save.save_model(self.facilityId)
                 
+            #if successful save state
+            self.model.save.save_model(self.facilityId)
+                
             return success
 
 
@@ -175,8 +178,7 @@ class FacilityRunner():
                                                self.model, self.prep_fac,
                                                self.runstream, self.abort)
             outputProcess.process()
-            
-            
+                        
 
             pace =  str(time.time()- self.start) + 'seconds'
             Logger.logMessage("Finished calculations for " + self.facilityId + 

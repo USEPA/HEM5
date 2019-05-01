@@ -48,7 +48,7 @@ class SingleFacilityRun(unittest.TestCase):
             self.assertEqual(checksum_expected, checksum_generated,
                  "The contents of the AllPolarReceptors output file are inconsistent with the test fixture:" +
                  checksum_expected + " != " + checksum_generated)
-
+        
     def test_all_inner_receptors(self):
         """
         Verify that the all inner receptors output file is identical to the test fixture.
@@ -149,8 +149,38 @@ class SingleFacilityRun(unittest.TestCase):
         Verify that the risk breakdown output file is identical to the test fixture.
         """
         for facid in self.testHarness.model.facids:
-            fixture = pd.read_excel("fixtures/output/" + facid + "_risk_breakdown.xlsx")
+            fixture = pd.read_excel(self.outputFixturePrefix + facid + "_risk_breakdown.xlsx")
             produced = pd.read_excel("output/" + facid + "/" + facid + "_risk_breakdown.xlsx")
+
+            self.assertTrue(fixture.equals(produced), "The contents of the output file are inconsistent with the test fixture.")
+
+    def test_acute_breakdown(self):
+        """
+        Verify that the acute breakdown output file is identical to the test fixture.
+        """
+        for facid in self.testHarness.model.facids:
+            fixture = pd.read_excel(self.outputFixturePrefix + facid + "_acute_bkdn.xlsx")
+            produced = pd.read_excel("output/" + facid + "/" + facid + "_acute_bkdn.xlsx")
+
+            self.assertTrue(fixture.equals(produced), "The contents of the output file are inconsistent with the test fixture.")
+
+    def test_acute_chem_pop(self):
+        """
+        Verify that the acute chemical populated output file is identical to the test fixture.
+        """
+        for facid in self.testHarness.model.facids:
+            fixture = pd.read_excel(self.outputFixturePrefix + facid + "_acute_chem_pop.xlsx")
+            produced = pd.read_excel("output/" + facid + "/" + facid + "_acute_chem_pop.xlsx")
+
+            self.assertTrue(fixture.equals(produced), "The contents of the output file are inconsistent with the test fixture.")
+
+    def test_acute_chem_unpop(self):
+        """
+        Verify that the acute chemical all output file is identical to the test fixture.
+        """
+        for facid in self.testHarness.model.facids:
+            fixture = pd.read_excel(self.outputFixturePrefix + facid + "_acute_chem_unpop.xlsx")
+            produced = pd.read_excel("output/" + facid + "/" + facid + "_acute_chem_unpop.xlsx")
 
             self.assertTrue(fixture.equals(produced), "The contents of the output file are inconsistent with the test fixture.")
 

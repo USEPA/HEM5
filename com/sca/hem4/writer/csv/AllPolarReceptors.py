@@ -1,6 +1,8 @@
 from com.sca.hem4.FacilityPrep import *
 from com.sca.hem4.writer.csv.AllInnerReceptors import *
 
+aresult = 'aresult';
+
 class AllPolarReceptors(CsvWriter):
     """
     Provides the annual average concentration modeled at every census block within the modeling cutoff distance,
@@ -14,9 +16,9 @@ class AllPolarReceptors(CsvWriter):
         self.filename = os.path.join(targetDir, facilityId + "_all_polar_receptors.csv")
 
         self.polarCache = {}
-
+            
     def getHeader(self):
-        return ['Source ID', 'Emission type', 'Pollutant', 'Conc (µg/m3)',
+        return ['Source ID', 'Emission type', 'Pollutant', 'Conc (µg/m3)', 'Acute conc (ug/m3)',
                 'Distance (m)', 'Angle (from north)', 'Sector', 'Ring number', 'Elevation (m)',
                 'Latitude', 'Longitude', 'Overlap', 'Wet deposition (g/m2/yr)', 'Dry deposition (g/m2/yr)']
 
@@ -41,28 +43,54 @@ class AllPolarReceptors(CsvWriter):
         # Units conversion factor
         self.cf = 2000*0.4536/3600/8760
 
-        #extract polar concs from plotfile and round the utm coordinates
-        polarplot_df = self.plot_df.query("net_id == 'POLGRID1'").copy()
-        polarplot_df.utme = polarplot_df.utme.round()
-        polarplot_df.utmn = polarplot_df.utmn.round()
+        # If acute was run for this facility, read the acute plotfile
+        if self.model.facops.iloc[0][acute] == 'Y':
+            apfile = open("aermod/maxhour.plt", "r")
+            self.aplot_df = pd.read_table(apfile, delim_whitespace=True, header=None, 
+                names=[utme,utmn,aresult,elev,hill,flag,avg_time,source_id,num_yrs,net_id],
+                usecols=[0,1,2,3,4,5,6,7,8,9], 
+                converters={utme:np.float64,utmn:np.float64,aresult:np.float64,elev:np.float64,hill:np.float64
+                       ,flag:np.float64,avg_time:np.str,source_id:np.str,rank:np.str,net_id:np.str
+                       ,concdate:np.str},
+                comment='*') 
+
+        #extract Chronic polar concs from the Chronic plotfile and round the utm coordinates
+        polarcplot_df = self.plot_df.query("net_id == 'POLGRID1'").copy()
+        polarcplot_df.utme = polarcplot_df.utme.round()
+        polarcplot_df.utmn = polarcplot_df.utmn.round()
+
+        # If acute was run for this facility, extract polar concs from Acute plotfile and join to
+        # Chronic polar concs.
+        # Otherwise, add column of 0's for acute result
+        if self.model.facops.iloc[0][acute] == 'Y':
+            polaraplot_df = self.aplot_df.query("net_id == 'POLGRID1'").copy()
+            polaraplot_df.utme = polaraplot_df.utme.round()
+            polaraplot_df.utmn = polaraplot_df.utmn.round()
+            polarplot_df = pd.merge(polarcplot_df, polaraplot_df[[source_id, utme, utmn, aresult]], 
+                                    how='inner', on = [source_id, utme, utmn])
+        else:
+            polarplot_df = polarcplot_df.copy()
+            polarplot_df[aresult] = 0
 
         # array of unique source_id's
         srcids = polarplot_df[source_id].unique().tolist()
 
         dlist = []
-        columns = [source_id, ems_type, pollutant, conc, distance, angle, sector, ring, elev, lat, lon, overlap, wetdep,
+        columns = [source_id, ems_type, pollutant, conc, aconc, distance, angle, sector, ring, elev, lat, lon, overlap, wetdep,
                    drydep]
 
         # process polar concs one source_id at a time
         for x in srcids:
-            polarplot_onesrcid = polarplot_df[[utme,utmn,source_id,result]].loc[polarplot_df[source_id] == x]
+            polarplot_onesrcid = polarplot_df[[utme,utmn,source_id,result,aresult]].loc[polarplot_df[source_id] == x]
             hapemis_onesrcid = self.model.runstream_hapemis[[source_id,pollutant,emis_tpy]].loc[self.model.runstream_hapemis[source_id] == x]
+            
             for row1 in polarplot_onesrcid.itertuples():
                 for row2 in hapemis_onesrcid.itertuples():
                     d_sourceid = row1[3]
                     d_emistype = "C"
                     d_pollutant = row2[2]
                     d_conc = row1[4] * row2[3] * self.cf
+                    d_aconc = row1[5] * row2[3] * self.cf * self.model.facops.iloc[0][multiplier]                    
 
                     record = None
                     key = (row1[1], row1[2])
@@ -82,7 +110,8 @@ class AllPolarReceptors(CsvWriter):
                     d_overlap = record[overlap].values[0]
                     d_drydep = ""
                     d_wetdep = ""
-                    datalist = [d_sourceid, d_emistype, d_pollutant, d_conc, d_distance, d_angle, d_sector, d_ring_no,
+                    datalist = [d_sourceid, d_emistype, d_pollutant, d_conc, d_aconc,
+                                d_distance, d_angle, d_sector, d_ring_no,
                                 d_elev, d_lat, d_lon, d_overlap, d_wetdep, d_drydep]
 
                     dlist.append(dict(zip(columns, datalist)))

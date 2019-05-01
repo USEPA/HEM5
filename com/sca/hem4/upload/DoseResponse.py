@@ -41,3 +41,5 @@ class DoseResponse(InputFile):
         self.dataframe = self.readFromPath(
             (pollutant,group,cas_no,ure,rfc,aegl_1_1h,aegl_1_8h,aegl_2_1h,aegl_2_8h,erpg_1,erpg_2,
              mrl,rel,idlh_10,teel_0,teel_1,comments,drvalues,group_ure,tef,acute_con))
+        
+        self.dataframe.fillna(0, inplace=True)

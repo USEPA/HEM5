@@ -1,5 +1,7 @@
 import os
 import threading
+import datetime
+from com.sca.hem4.SaveState import SaveState
 from com.sca.hem4.log import Logger
 from com.sca.hem4.runner.FacilityRunner import FacilityRunner
 from com.sca.hem4.writer.excel.FacilityMaxRiskandHI import FacilityMaxRiskandHI
@@ -22,6 +24,13 @@ class Processor():
 
     def process(self):
 
+        #create run id for saving model
+        runid = datetime.datetime.now().strftime("%B-%d-%Y-%H-%M-%p")
+        #print(runid)
+        #create save model
+        save_state = SaveState(runid, self.model)
+        self.model.save = save_state
+
         threadLocal.abort = False
 
         #create a Google Earth KML of all sources to be modeled
@@ -32,13 +41,7 @@ class Processor():
 
         Logger.logMessage("Preparing Inputs for " + str(
             self.model.facids.count()) + " facilities")
-        
-        #create run id for saving model
-        #runid = datetime.datetime.now().strftime("%B-%d-%Y-%H-%M-%p")
-        #print(runid)
-        #create save model
-        #save_state = SaveState(runid, self.model)
-        
+                
 
         fac_list = []
         for index, row in self.model.faclist.dataframe.iterrows():
@@ -68,7 +71,7 @@ class Processor():
             #save version of this gui as is? constantly overwrite it once each facility is done?
             Logger.logMessage("Running facility " + str(num) + " of " +
                               str(len(fac_list)))
-
+            
             success = False
             try:
                 runner = FacilityRunner(facid, self.model, self.abort)
@@ -91,17 +94,15 @@ class Processor():
                 # dataframes or cache the last processed facility so that when 
                 # restart we know which faciltiy we want to start on
                 # increment facility count
-                
-    
+            
+              
+
                 num += 1
                 success = True
                 
-                
-                
-                
-                
+
                 #reset model options aftr facility
-                self.model.model_optns = defaultdict
+                self.model.model_optns = defaultdict()
                 
                 
 
@@ -109,9 +110,10 @@ class Processor():
                           " facilities. Check the log tab for error messages."+
                           " Modeling results are located in the Output"+
                           " subfolder of the HEM4 folder.")
-        
+
         
          #remove save folder after a completed run
+
         try:  
             self.model.save.remove_folder
         except:

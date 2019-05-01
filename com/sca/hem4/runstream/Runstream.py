@@ -21,7 +21,7 @@ class Runstream():
     def __init__(self, facops_df, emislocs_df, hapemis_df, urecs_df = None, 
                  buoyant_df = None, polyver_df = None, bldgdw_df = None, 
                  partdia_df = None, landuse_df = None, seasons_df = None,
-                 emisvar_df = None, gas_params = None, model_optns = None):
+                 emisvar_df = None, model = None):
         
         self.facoptn_df = facops_df
         self.emisloc_df = emislocs_df
@@ -34,9 +34,9 @@ class Runstream():
         self.landuse_df = landuse_df
         self.seasons_df = seasons_df
         self.emisvar_df = emisvar_df
-        self.gas_params = gas_params
+        self.model = model
         self.urban = False
-        self.model_optns = model_optns
+
         
         #open file to write
         self.inp_f = open(os.path.join("aermod", "aermod.inp"), "w")
@@ -68,7 +68,7 @@ class Runstream():
            
         self.eleva = self.facoptn_df['elev'][0]                        
 
-        if self.model_optns['ureponly_flat']:
+        if self.model.urepOnly_optns.get('ureponly_flat', None):
             optel = " FLAT "
         elif self.eleva == "Y":
             optel = " ELEV "
@@ -764,6 +764,7 @@ class Runstream():
         """
         
         acute = self.facoptn_df['acute'][0] #move to ou
+        acute_hrs = self.facoptn_df['hours'][0]
         if acute == "":
             acute = "N"
         
@@ -779,9 +780,15 @@ class Runstream():
             self.inp_f.write(ou)
         
         if acute == "Y":
-            recacu = "OU RECTABLE" + " 1 " + str(self.hours) + " FIRST" + "\n"
+            recacu = "OU RECTABLE "  + str(acute_hrs) + " FIRST" + "\n"
+            self.inp_f.write(recacu)
+            for k in np.arange(len(self.uniqsrcs)):  
+                acuou = ("OU PLOTFILE " + str(acute_hrs) + " " + self.uniqsrcs[k] + 
+                      " FIRST maxhour.plt 40 \n")
+                self.inp_f.write(acuou)
+
             #set in model options
-            self.model_optns['acute'] = True
+            self.model.model_optns['acute'] = True
             
         
         ou = "OU FINISHED \n"
@@ -869,7 +876,7 @@ class Runstream():
         pollutants = (self.hapemis[self.hapemis['source_id'] == 
                                    srid]['pollutant'].str.lower().tolist())
         
-        params = self.gas_params[self.gas_params['pollutant'] == pollutants[0]]
+        params = self.model.gas_params[self.model.gas_params['pollutant'] == pollutants[0]]
     #write values if they exist in the 
         #so there should only be one pollutant per source id for vapor/gas deposition to work
         #currently default values if the size of pollutant list is greater than 1

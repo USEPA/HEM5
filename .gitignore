@@ -2,6 +2,7 @@
 .gitignore
 aermod/aermod.inp
 aermod/plotfile.plt
+aermod/maxhour.plt
 kml_source_loc.txt
 Inputs
 /output
@@ -17,5 +18,7 @@ working
 working_kml
 build
 dist
+save
+com/sca/hem4/HEM4_UserConc_2.py
 *.pyc
 **/__pycache__/*.pyc

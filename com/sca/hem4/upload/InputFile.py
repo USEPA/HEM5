@@ -28,6 +28,18 @@ class InputFile(ABC):
             df = df.astype(dtype=types)
             return df
 
+    # Read values in from a source .csv file. Note that we initially read everything in as a string,
+    # and then convert columns which have been specified as numeric to a float64. That way, all empty
+    # values in the resultant dataframe become NaN values. All values will either be strings or float64s.
+    def readFromPathCsv(self, colnames):
+        with open(self.path, "rb") as f:
+            self.skiprows = 1
+            df = pd.read_csv(f, skiprows=self.skiprows, names=colnames, dtype=str, na_values=[''], keep_default_na=False)
+            df = df.astype(str).applymap(self.convertEmptyToNaN)
+            types = self.get_column_types()
+            df = df.astype(dtype=types)
+            return df
+
     # This method is being applied to every cell to guard against values which
     # have only whitespace.
     def convertEmptyToNaN(self, x):

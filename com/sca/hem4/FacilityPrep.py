@@ -29,57 +29,64 @@ class FacilityPrep():
 
         #%%---------- Facility Options --------------------------------------
 
-        facops = self.model.faclist.dataframe.loc[self.model.faclist.dataframe[fac_id] == facid]
+        self.model.facops = self.model.faclist.dataframe.loc[self.model.faclist.dataframe[fac_id] == facid]
 
         # Set defaults of the facility options
-        if facops[max_dist].isnull().sum() > 0 or facops[max_dist] > 50000:
-            facops[max_dist] = 50000
+        if self.model.facops[max_dist].isnull().sum() > 0 or self.model.facops[max_dist] > 50000:
+            self.model.facops[max_dist] = 50000
 
-        if facops[model_dist].isnull().sum() > 0:
-            facops[model_dist] = 3000
+        if self.model.facops[model_dist].isnull().sum() > 0:
+            self.model.facops[model_dist] = 3000
 
         # Replace NaN with blank, No or 0
-        facops = facops.fillna({met_station:"", rural_urban:"", radial:0, circles:0,
-                                overlap_dist:0, acute:"N", hours:0, elev:"N", multiplier:0,
-                                ring1:0, dep:"", depl:"N", phase:"", pdep:"N", pdepl:"N",
-                                vdep:"N", vdepl:"N", all_rcpts:"N", user_rcpt:"N", bldg_dw:"N",
-                                urban_pop:0, fastall:"N"})
+        # Note: use of elevations is defaulted to Y, acute hours is defaulted to 1
+        #       and acute multiplier is defaulted to 1
+        self.model.facops = self.model.facops.fillna({radial:0, circles:0, overlap_dist:0, hours:1, multiplier:1,
+                                ring1:0, urban_pop:0})
+        self.model.facops.replace(to_replace={met_station:{"nan":"N"}, rural_urban:{"nan":""}, elev:{"nan":"Y"}, 
+                                   dep:{"nan":""}, depl:{"nan":"N"}, phase:{"nan":""}, pdep:{"nan":"N"}, 
+                                   pdepl:{"nan":"N"}, vdep:{"nan":"N"}, vdepl:{"nan":"N"}, 
+                                   all_rcpts:{"nan":"N"}, user_rcpt:{"nan":"N"}, bldg_dw:{"nan":"N"}, 
+                                   fastall:{"nan":"N"}, acute:{"nan":"N"}}, inplace=True)
 
-        facops = facops.reset_index(drop = True)
+        self.model.facops = self.model.facops.reset_index(drop = True)
 
+        
+        
         #----- Default missing or out of range facility options --------
 
         #  Maximum Distance
-        if facops[max_dist][0] >= 50000:
-            facops.loc[:, max_dist] = 50000
-        elif facops[max_dist][0] == 0:
-            facops.loc[:, max_dist] = 50000
+        if self.model.facops[max_dist][0] >= 50000:
+            self.model.facops.loc[:, max_dist] = 50000
+        elif self.model.facops[max_dist][0] == 0:
+            self.model.facops.loc[:, max_dist] = 50000
 
         # Modeled Distance of Receptors
-        if facops[model_dist][0] == 0:
-            facops.loc[:, model_dist] = 3000
+        if self.model.facops[model_dist][0] == 0:
+            self.model.facops.loc[:, model_dist] = 3000
 
         # Radials
-        if facops[radial][0] == 0:
-            facops.loc[:, radial] = 16
+        if self.model.facops[radial][0] == 0:
+            self.model.facops.loc[:, radial] = 16
 
         # Circles
-        if facops[circles][0] == 0:
-            facops.loc[:, circles] = 13
+        if self.model.facops[circles][0] == 0:
+            self.model.facops.loc[:, circles] = 13
 
         # Overlap Distance
-        if facops[overlap_dist][0] == 0:
-            facops.loc[:, overlap_dist] = 30
-        elif facops[overlap_dist][0] < 1:
-            facops.loc[:, overlap_dist] = 30
-        elif facops[overlap_dist][0] > 500:
-            facops.loc[:, overlap_dist] = 30
+        if self.model.facops[overlap_dist][0] == 0:
+            self.model.facops.loc[:, overlap_dist] = 30
+        elif self.model.facops[overlap_dist][0] < 1:
+            self.model.facops.loc[:, overlap_dist] = 30
+        elif self.model.facops[overlap_dist][0] > 500:
+            self.model.facops.loc[:, overlap_dist] = 30
+        
 
-        op_maxdist = facops.get_value(0,max_dist)
-        op_modeldist = facops.get_value(0,model_dist)
-        op_circles = facops.get_value(0,circles)
-        op_radial = facops.get_value(0,radial)
-        op_overlap = facops.get_value(0,overlap_dist)
+        op_maxdist = self.model.facops[max_dist][0]
+        op_modeldist = self.model.facops[model_dist][0]
+        op_circles = self.model.facops[circles][0]
+        op_radial = self.model.facops[radial][0]
+        op_overlap = self.model.facops[overlap_dist][0]
 
         #%%---------- Emission Locations --------------------------------------
 
@@ -290,47 +297,40 @@ class FacilityPrep():
         self.model.computedValues['cenlon'] = cenlon
 
         #retrieve blocks
-        maxdist = facops.get_value(0,max_dist)
-        modeldist = facops.get_value(0,model_dist)
+        maxdist = self.model.facops[max_dist][0]
+        modeldist = self.model.facops[model_dist][0]
 
-        if self.model.model_optns['ureponly']:
+        if self.model.urepOnly_optns.get('ureponly', None):
             self.innerblks, self.outerblks = self.getBlocksFromUrep(facid, cenx, ceny, cenlon, cenlat, facutmzone,
                 maxdist, modeldist, sourcelocs, op_overlap)
 
         else:
             self.innerblks, self.outerblks = getblocks(cenx, ceny, cenlon, cenlat, facutmzone, maxdist, modeldist,
-                sourcelocs, op_overlap)
+                sourcelocs, op_overlap, self.model)
 
 
         #%%----- Polar receptors ----------
 
-        # compute inner polar radius
-        # If there is a polygon, find smallest circle fitting inside it and then move out almost to modeling distance
-        if any(sourcelocs[source_type] == "I") == True:
-            inrad = max_srcdist/2
-            for i in range(0, len(vertx_a)-1):
-                for j in range(0, len(verty_a)-1):
-                    dist_cen = math.sqrt((vertx_a[i] - cenx)**2 + (verty_a[j] - ceny)**2)
-                    inrad = min(inrad, dist_cen)
-            inrad = max(inrad+modeldist-10, 100)
-        else:
-            inrad = 0
-            for i in range(0, len(vertx_a)-1):
-                for j in range(0, len(verty_a)-1):
-                    dist_cen = math.sqrt((vertx_a[i] - cenx)**2 + (verty_a[j] - ceny)**2)
-                    inrad = max(inrad, dist_cen)
+        #..... Compute the first polar ring distance ......
+                
+        # First find the farthest distance to any source.
+        maxsrcd = 0
+        for i in range(0, len(vertx_a)):
+            dist_cen = math.sqrt((vertx_a[i] - cenx)**2 + (verty_a[i] - ceny)**2)
+            maxsrcd = max(maxsrcd, dist_cen)
 
-        # set the first polar ring distance (list item 0), do not override if user selected first ring > 100m
-        if facops[ring1][0] <= 100:
-            ring1a = max(inrad+op_overlap, 100)
+        # If user first ring is > 100m, then use it, else first ring is maxsrcd + overlap.
+        if self.model.facops[ring1][0] <= 100:
+            ring1a = max(maxsrcd+op_overlap, 100)
             ring1b = min(ring1a, op_maxdist)
             firstring = round(max(ring1b, 100))
         else:
-            firstring = facops[ring1][0]
+            firstring = self.model.facops[ring1][0]
         polar_dist = []
         polar_dist.append(firstring)
 
-        # compute the rest of the polar ring distances (logarithmically spaced)
+        
+        #.... Compute the rest of the polar ring distances (logarithmically spaced) .......
 
         # first handle ring distances inside the modeling distance
         k = 1
@@ -342,7 +342,6 @@ class FacilityPrep():
             N_in = round(math.log(op_modeldist/polar_dist[0])/math.log(op_maxdist/polar_dist[0]) * (op_circles - 1))
             while k < N_in:
                 next_dist = round(polar_dist[k-1] * ((op_modeldist/polar_dist[0])**(1/N_in)), -1)
-                # Add code to check if next_dist is the same as the previous distance?  Code is in input_ringdist
                 polar_dist.append(next_dist)
                 k = k + 1
             next_dist = op_modeldist
@@ -357,10 +356,9 @@ class FacilityPrep():
             polar_dist.append(next_dist)
             k = k + 1
 
-        # set the last distance to the modeling distance
+        # set the last ring distance to the modeling distance
         polar_dist.append(op_maxdist)
 
-        # equally spaced - polar_dist = np.linspace(op_maxdist/op_circles,op_maxdist,op_circles).tolist()
 
         # setup list of polar angles
         start = 0.
@@ -377,9 +375,9 @@ class FacilityPrep():
         # create dist and angl lists of length op_circle*op_radial
         polar_dist2 = [i for i in polar_dist for j in polar_angl]
         polar_angl2 = [j for i in polar_dist for j in polar_angl]
-
+        
         # sector and ring lists
-        polar_sect = [(int((a*op_radial/360)+0.5 % op_radial)) + 1 for a in polar_angl2]
+        polar_sect = [int(((a*op_radial/360) % op_radial)+1) for a in polar_angl2]
         polar_ring = []
         remring = polar_dist2[0]
         ringcount = 1
@@ -390,12 +388,12 @@ class FacilityPrep():
                 remring = polar_dist2[i]
                 ringcount = ringcount + 1
                 polar_ring.append(ringcount)
-
+        
         # construct the polar dataframe
         dfitems = [("id",polar_id), ("distance",polar_dist2), (angle,polar_angl2), (utme,polar_utme),
                    (utmn,polar_utmn), ("utmz",polar_utmz), (lon,polar_lon), (lat,polar_lat),
                    ("sector",polar_sect), ("ring",polar_ring)]
-        polar_df = pd.DataFrame.from_items(dfitems)
+        polar_df = pd.DataFrame.from_dict(dict(dfitems))
 
         # define the index of polar_df as concatenation of sector and ring
         polar_idx = polar_df.apply(lambda row: self.define_polar_idx(row[sector], row[ring]), axis=1)
@@ -404,9 +402,8 @@ class FacilityPrep():
         # determine if polar receptors overlap any emission sources
         polar_df[overlap] = polar_df.apply(lambda row: self.polar_overlap(row[utme], row[utmn], sourcelocs, op_overlap), axis=1)
 
-         # Assign the polar grid data frame to the model
-        self.model.polargrid = polar_df
-
+        # set rec_type of polar receptors
+        polar_df[rec_type] = 'PG'
 
         #%%----- Add sector and ring to inner and outer receptors ----------
 
@@ -429,11 +426,10 @@ class FacilityPrep():
         self.outerblks.to_excel(outerblks_con,'Sheet1')
         outerblks_con.save()
 
-
         #%%------ Elevations and hill height ---------
 
         # if the facility will use elevations, assign them to emission sources and polar receptors
-        if facops.get_value(0,elev).upper() == "Y":
+        if self.model.facops[elev][0].upper() == "Y":
             polar_df[elev], polar_df[hill] = zip(*polar_df.apply(lambda row: self.assign_polar_elev_step1(row,self.innerblks,self.outerblks,maxdist), axis=1))
             if emislocs[elev].max() == 0 and emislocs[elev].min() == 0:
                 emislocs[elev] = self.compute_emisloc_elev(polar_df,op_circles)
@@ -444,6 +440,10 @@ class FacilityPrep():
             polar_df[hill] = 0
             emislocs[elev] = 0
             emislocs[hill] = 0
+
+        
+        # Assign the polar grid data frame to the model
+        self.model.polargrid = polar_df
 
 
         # export polar_df to an Excel file in the Working directory
@@ -458,13 +458,13 @@ class FacilityPrep():
         emislocs.to_excel(emislocs_con,'Sheet1')
         emislocs_con.save()
 
+        
         #%% this is where runstream file will be compiled
         #new logic to be
 
-        runstream = Runstream(facops, emislocs, hapemis, user_recs, buoyant_df,
+        runstream = Runstream(self.model.facops, emislocs, hapemis, user_recs, buoyant_df,
                               polyver_df, bldgdw_df, partdia_df, landuse_df,
-                              seasons_df, emisvar_df,
-                              self.model.gasparams.dataframe, self.model.model_optns)
+                              seasons_df, emisvar_df, self.model)
         runstream.build_co(runPhase, self.innerblks, self.outerblks)
         runstream.build_so(runPhase)
         runstream.build_re(self.innerblks, cenx, ceny, polar_df)
@@ -476,7 +476,7 @@ class FacilityPrep():
 
         return runstream
         #no return statement since it will just need to build the file
-        #return rs.Runstream(facops, emislocs, hapemis, cenlat, cenlon, cenx, ceny, self.innerblks, user_recs, buoyant_df, polyver_df, polar_df, bldgdw_df, partdia_df, landuse_df, seasons_df, gasparams_df)
+        #return rs.Runstream(self.model.facops, emislocs, hapemis, cenlat, cenlon, cenx, ceny, self.innerblks, user_recs, buoyant_df, polyver_df, polar_df, bldgdw_df, partdia_df, landuse_df, seasons_df, gasparams_df)
 
 
     #%% Calculate ring and sector of block receptors
@@ -485,12 +485,15 @@ class FacilityPrep():
         ring_loc = -999
 
         # compute fractional sector number
-        s = ((block_angle * num_sectors)/360.0 % num_sectors) + 1
+        s = round(((block_angle * num_sectors)/360.0 % num_sectors), 2) + 1
 
         # compute integer sector number
-        sector_int = int(s)
+        # .... these go from halfway between two radials to halfway between the next set of two radials, clockwise
+        sector_int = int(((((block_angle * num_sectors)/360.0) + 0.5) % num_sectors) + 1)
+        if sector_int == 0:
+            sector_int = num_sectors
 
-        # Compute ring_loc. loop through ring distances in pairs of previous and current
+        # Compute fractional, log weighted ring_loc. loop through ring distances in pairs of previous and current
         previous = ring_distances[0]
         i = 0
         for ring in ring_distances[1:]:
@@ -503,7 +506,7 @@ class FacilityPrep():
             previous = ring
 
         # Compute integer ring number
-        ring_int = math.floor(ring_loc)
+        ring_int = int(ring_loc + 0.5)
 
         return sector_int, s, ring_int, ring_loc
 
@@ -569,17 +572,16 @@ class FacilityPrep():
         else:
             r_popelev = -999
 
-
         #Note: the max elevation is returned as the elevation for this polar receptor
-        return r_maxelev, r_hill
+        return int(round(r_maxelev)), int(round(r_hill))
 
     #%% Assign elevation and hill height to polar receptors that still have missing elevations
     def assign_polar_elev_step2(self, polar_row, innblks, outblks, emislocs):
 
         d_nearelev = 99999
         d_nearhill = 99999
-        r_maxelev = 88888
-        r_hill = 88888
+        r_maxelev = -88888
+        r_hill = -88888
 
         if polar_row[elev] == -999:
 
@@ -604,9 +606,8 @@ class FacilityPrep():
                 r_maxelev = r_nearelev
                 r_avgelev = r_nearelev
                 r_popelev = r_nearelev
-            if d_test <= d_nearhill:
-                d_nearhill = d_test
-                r_hill = innblks.get_value(mindist_index, hill)
+                r_nearhill = innblks[hill].iloc[mindist_index]
+                r_hill = r_nearhill
 
             #check outer blocks
             outer_dist = np.sqrt((outblks[utme] - polar_row[utme])**2 + (outblks[utmn] - polar_row[utmn])**2)
@@ -618,17 +619,18 @@ class FacilityPrep():
                 r_maxelev = r_nearelev
                 r_avgelev = r_nearelev
                 r_popelev = r_nearelev
-            if d_test <= d_nearhill:
-                d_nearhill = d_test
-                r_hill = outblks[hill].iloc[mindist_index]
+                r_nearhill = outblks[hill].iloc[mindist_index]
+                r_hill = r_nearhill
 
+            r_hill = max(r_hill, r_maxelev)
+            
         else:
 
             r_maxelev = polar_row[elev]
             r_hill = polar_row[hill]
 
         #Note: the max elevation is returned as the elevation for this polar receptor
-        return r_maxelev, r_hill
+        return int(round(r_maxelev)), int(round(r_hill))
 
     #%% Compute the elevation to be used for all emission sources
     def compute_emisloc_elev(self, polars, num_rings):
@@ -652,7 +654,7 @@ class FacilityPrep():
             print("Error! No elevation computed for the emission sources.")
             sys.exit()
 
-        return avgelev
+        return int(round(avgelev))
 
     #%% Define polar receptor dataframe index
     def define_polar_idx(self, s, r):
@@ -795,14 +797,14 @@ class FacilityPrep():
         maxdist_deg = maxdist*39.36/36/2000/60
 
         # Get all user receptors that correspond to the given fac id
-        urecs = self.model.ureceptr.dataframe.loc[self.model.ureceptr.dataframe[fac_id] == facid]
+        urecs = self.model.altreceptr.dataframe.loc[self.model.altreceptr.dataframe[fac_id] == facid]
 
         # If any population values are missing, we cannot create an Incidence report
-        self.model.model_optns['ureponly_nopop'] = urecs.isnull().any()[population]
+        self.model.urepOnly_optns['ureponly_nopop'] = urecs.isnull().any()[population]
         urecs[population] = pd.to_numeric(urecs[population], errors='coerce').fillna(0)
 
         # If any elevation or hill height values are missing, we must run in FLAT mode.
-        self.model.model_optns['ureponly_flat'] = urecs.isnull().any()[elev] or urecs.isnull().any()[hill]
+        self.model.urepOnly_optns['ureponly_flat'] = urecs.isnull().any()[elev] or urecs.isnull().any()[hill]
         urecs[elev] = pd.to_numeric(urecs[elev], errors='coerce').fillna(0)
         urecs[hill] = pd.to_numeric(urecs[hill], errors='coerce').fillna(0)
 
@@ -832,7 +834,7 @@ class FacilityPrep():
         modelblks = urecs.query('distance <= @maxdist')
 
         # Split modelblks into inner and outer block receptors
-        innerblks, outerblks = in_box(modelblks, sourcelocs, modeldist, maxdist, overlap_dist)
+        innerblks, outerblks = in_box(modelblks, sourcelocs, modeldist, maxdist, overlap_dist, self.model)
 
 
         Logger.log("OUTERBLOCKS", outerblks, False)
