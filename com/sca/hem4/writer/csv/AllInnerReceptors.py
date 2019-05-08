@@ -19,14 +19,15 @@ class AllInnerReceptors(CsvWriter, InputFile):
     inner receptor information.
     """
 
-    def __init__(self, targetDir=None, facilityId=None, model=None, plot_df=None, filenameOverride=None):
+    def __init__(self, targetDir=None, facilityId=None, model=None, plot_df=None, filenameOverride=None,
+                 createDataframe=False):
         # Initialization for CSV reading/writing. If no file name override, use the
         # default construction.
         filename = facilityId + "_all_inner_receptors.csv" if filenameOverride is None else filenameOverride
         path = os.path.join(targetDir, filename)
 
         CsvWriter.__init__(self, model, plot_df)
-        InputFile.__init__(self, path)
+        InputFile.__init__(self, path, createDataframe)
 
         # initialize cache for inner census block data
         self.innblkCache = {}

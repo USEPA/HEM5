@@ -8,14 +8,15 @@ class BlockSummaryChronic(CsvWriter, InputFile):
     Provides the risk and each TOSHI for every census block modeled, as well as additional block information.
     """
 
-    def __init__(self, targetDir=None, facilityId=None, model=None, plot_df=None, outerAgg=None, filenameOverride=None):
+    def __init__(self, targetDir=None, facilityId=None, model=None, plot_df=None, outerAgg=None, filenameOverride=None,
+                 createDataframe=False):
         # Initialization for CSV reading/writing. If no file name override, use the
         # default construction.
         filename = facilityId + "_block_summary_chronic.csv" if filenameOverride is None else filenameOverride
         path = os.path.join(targetDir, filename)
 
         CsvWriter.__init__(self, model, plot_df)
-        InputFile.__init__(self, path)
+        InputFile.__init__(self, path, createDataframe)
 
         self.filename = path
 
@@ -64,7 +65,9 @@ class BlockSummaryChronic(CsvWriter, InputFile):
                 hi_repr:'sum', hi_kidn:'sum', hi_ocul:'sum', hi_endo:'sum', hi_hema:'sum',
                 hi_immu:'sum', hi_skel:'sum', hi_sple:'sum', hi_thyr:'sum', hi_whol:'sum'}
 
-        newcolumns = self.getColumns()
+        newcolumns = [lat, lon, overlap, elev, fips, block, utme, utmn, hill, population,
+                      mir, hi_resp, hi_live, hi_neur, hi_deve, hi_repr, hi_kidn, hi_ocul,
+                      hi_endo, hi_hema, hi_immu, hi_skel, hi_sple, hi_thyr, hi_whol]
 
         inneragg = innermerged.groupby([lat, lon]).agg(aggs)[newcolumns]
 

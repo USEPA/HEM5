@@ -117,7 +117,7 @@ class MaxRiskSummary(ExcelWriter):
         for facilityId in self.facilityIds:
             targetDir = self.categoryFolder + "/" + facilityId
 
-            blockSummaryChronic = BlockSummaryChronic(targetDir=targetDir, facilityId=facilityId)
+            blockSummaryChronic = BlockSummaryChronic(targetDir=targetDir, facilityId=facilityId, createDataframe=True)
             bsc_df = blockSummaryChronic.createDataframe()
             loc = bsc_df.loc[(bsc_df[fips] == fipsValue) & (bsc_df[block] == blockValue)]
             if loc.size > 0:
