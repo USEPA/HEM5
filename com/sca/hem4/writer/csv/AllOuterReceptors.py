@@ -27,21 +27,32 @@ hi_sple = 'hi_sple';
 hi_thyr = 'hi_thyr';
 hi_whol = 'hi_whol';
 
-class AllOuterReceptors(CsvWriter):
+class AllOuterReceptors(CsvWriter, InputFile):
     """
     Provides the annual average concentration interpolated at every census block beyond the modeling cutoff distance but
     within the modeling domain, specific to each source ID and pollutant, along with receptor information, and acute
-    concentration (if modeled) and wet and dry deposition flux (if modeled).
+    concentration (if modeled) and wet and dry deposition flux (if modeled). This class can act as both a writer and a
+    reader of the csv file that holds outer receptor information.
     """
 
-    def __init__(self, targetDir, facilityId, model, plot_df):
-        CsvWriter.__init__(self, model, plot_df)
+    def __init__(self, targetDir=None, facilityId=None, model=None, plot_df=None, filenameOverride=None):
+        # Initialization for CSV reading/writing. If no file name override, use the
+        # default construction.
+        filename = facilityId + "_all_outer_receptors.csv" if filenameOverride is None else filenameOverride
+        path = os.path.join(targetDir, filename)
 
-        self.filename = os.path.join(targetDir, facilityId + "_all_outer_receptors.csv")
+        CsvWriter.__init__(self, model, plot_df)
+        InputFile.__init__(self, path)
+
+        self.filename = path
 
         # Fill local caches for URE/RFC and organ endpoint values
         self.riskCache = {}
         self.organCache = {}
+
+        # No need to go further if we are instantiating this class to read in a CSV file...
+        if self.model is None:
+            return
 
         for index, row in self.model.haplib.dataframe.iterrows():
 
@@ -77,7 +88,7 @@ class AllOuterReceptors(CsvWriter):
         self.outerInc = None
 
         # AllOuterReceptor DF columns
-        self.columns = [fips, block, lat, lon, source_id, ems_type, pollutant, conc, aconc, elev, population, overlap]
+        self.columns = self.getColumns()
 
         # Initialize max_riskhi dictionary. Keys are mir, and HIs. Values are
         # lat, lon, and risk value. This dictionary identifies the lat/lon of the max receptor for
@@ -111,6 +122,9 @@ class AllOuterReceptors(CsvWriter):
         return ['FIPs', 'Block', 'Latitude', 'Longitude', 'Source ID', 'Emission type', 'Pollutant',
                 'Conc (µg/m3)', 'Acute Conc (µg/m3)', 'Elevation (m)',
                 'Population', 'Overlap']
+
+    def getColumns(self):
+        return [fips, block, lat, lon, source_id, ems_type, pollutant, conc, aconc, elev, population, overlap]
 
     def generateOutputs(self):
         """
@@ -316,7 +330,7 @@ class AllOuterReceptors(CsvWriter):
 
             if self.outerAgg is None:
                 storage = self.outerblocks.shape[0]
-                self.outerAgg = pd.DataFrame(columns=blksumm_cols, index=range(storage))
+                self.outerAgg = pd.DataFrame(columns=blksumm_cols)
             self.outerAgg = self.outerAgg.append(outeragg)
 
 
@@ -373,3 +387,11 @@ class AllOuterReceptors(CsvWriter):
         # change any negative HIs to 0
         riskdf[riskdf < 0] = 0
         return riskdf
+
+    def createDataframe(self):
+        # Type setting for CSV reading
+        self.numericColumns = [lat, lon, conc, aconc, elev, population]
+        self.strColumns = [fips, block, source_id, ems_type, pollutant, overlap]
+
+        df = self.readFromPathCsv(self.getColumns())
+        return df.fillna("")

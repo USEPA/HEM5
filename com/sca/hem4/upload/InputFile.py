@@ -1,3 +1,4 @@
+import os
 from abc import ABC
 from abc import abstractmethod
 import pandas as pd
@@ -11,7 +12,9 @@ class InputFile(ABC):
         self.numericColumns = []
         self.strColumns = []
         self.skiprows = 0
-        self.createDataframe()
+
+        if os.path.isfile(self.path):
+            self.createDataframe()
 
     @abstractmethod
     def createDataframe(self):
