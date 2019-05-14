@@ -25,13 +25,15 @@ from com.sca.hem4.DepositionDepletion import check_dep
 from com.sca.hem4.SaveState import SaveState
 from tkinter.simpledialog import Dialog, Toplevel
 from ttkthemes import ThemedStyle
-
+import logging
 import navigation
+from LogWindow import LogWindow
+from LogWindow import MyHandlerText
 
 TITLE_FONT= ("Verdana", 20)
 TEXT_FONT = ("Verdana", 12)
 
-
+module_logger = logging.getLogger(__name__)
 
 class Hem4(tk.Frame):
     def __init__(self, parent, controller, messageQueue, callbackQueue):
@@ -75,21 +77,21 @@ class Hem4(tk.Frame):
         
         
          # Tab Control introduced here --------------------------------------
-        self.tabControl = ttk.Notebook(self)     # Create Tab Control
-
-        tab1 = ttk.Frame(self.tabControl)            # Create a tab
-        self.tabControl.add(tab1, text='HEM4')      # Add the tab
-
-        tab2 = ttk.Frame(self.tabControl)            # Add a second tab
-        self.tabControl.add(tab2, text='Log')      # Make second tab visible
+#        self.tabControl = ttk.Notebook(self)     # Create Tab Control
+#
+#        tab1 = ttk.Frame(self.tabControl)            # Create a tab
+#        self.tabControl.add(tab1, text='HEM4')      # Add the tab
+#
+#        tab2 = ttk.Frame(self.tabControl)            # Add a second tab
+#        self.tabControl.add(tab2, text='Log')      # Make second tab visible
 
         #self.tabControl.pack(expand=1, fill="both")  # Pack to make visible
         
          # Create container frame to hold all other widgets
-        self.main = ttk.LabelFrame(tab1, text='Human Exposure Model,'+
+        self.main = ttk.LabelFrame(self, text='Human Exposure Model,'+
                                    ' open-source (HEM4), Version 1.0', 
                                    labelanchor="n")
-        self.main.grid(column=0, row=1)
+        self.main.grid(column=0, row=0)
         
         #create discreet sections for GUI in tab1
         self.s1 = tk.Frame(self, width=1000, height=150)
@@ -123,14 +125,15 @@ class Hem4(tk.Frame):
         self.createWidgets()
     
         # create container frame to hold log
-        self.log = ttk.LabelFrame(tab2, text=' Hem4 Progress Log ')
-        self.log.grid(column=0, row=0)
+        self.top = LogWindow()
         
-        # Adding a Textbox Entry widget
-        scrolW  = 65; scrolH  =  25
-        self.scr = scrolledtext.ScrolledText(self.log, width=scrolW, 
-                                             height=scrolH, wrap=tk.WORD)
-        self.scr.grid(column=0, row=3, sticky='WE', columnspan=3)
+        stderrHandler = logging.StreamHandler()  # no arguments => stderr
+        module_logger.addHandler(stderrHandler)
+        guiHandler = MyHandlerText(self.top.scr)
+        module_logger.addHandler(guiHandler)
+        module_logger.setLevel(logging.INFO)
+        module_logger.info("from main")  
+        
         
          #back button
         back_button = tk.Button(self, text="Back", font=TEXT_FONT,
@@ -192,7 +195,7 @@ class Hem4(tk.Frame):
             self.quit_gui()
 
     def display_app_quit(self):
-        self.enable_widgets(self.main, False)
+        self.enable_widgets(self, False)
 
         message = "HEM4 is stopping. Please wait."
         tk.Label(self, text=message).pack()
@@ -409,11 +412,12 @@ class Hem4(tk.Frame):
 
             # Update the UI
             self.fac_list.set(fullpath)
-            [self.scr.insert(tk.INSERT, msg) for msg in self.model.faclist.log]
+            #[self.scr.insert(tk.INSERT, msg) for msg in self.model.faclist.log]
             
             #trigger additional inputs fo user recptors
             if 'Y' in self.model.faclist.dataframe['user_rcpt'].tolist():
                 #create user receptors
+                print("user receptor")
                 self.add_ur()
                 
             else:
@@ -497,7 +501,7 @@ class Hem4(tk.Frame):
 
             # Update the UI
             self.hap_list.set(fullpath)
-            [self.scr.insert(tk.INSERT, msg) for msg in self.model.hapemis.log]
+#            [self.scr.insert(tk.INSERT, msg) for msg in self.model.hapemis.log]
 
     def uploadEmissionLocations(self):
         """
@@ -511,7 +515,7 @@ class Hem4(tk.Frame):
 
             # Update the UI
             self.emisloc_list.set(fullpath)
-            [self.scr.insert(tk.INSERT, msg) for msg in self.model.emisloc.log]
+#            [self.scr.insert(tk.INSERT, msg) for msg in self.model.emisloc.log]
             
             #trigger additional inputs for buoyant line and polyvertex
             if 'I' in self.model.emisloc.dataframe['source_type'].tolist():
@@ -556,7 +560,7 @@ class Hem4(tk.Frame):
 
             # Update the UI
             self.poly_list.set(fullpath)
-            [self.scr.insert(tk.INSERT, msg) for msg in self.model.multipoly.log]
+#            [self.scr.insert(tk.INSERT, msg) for msg in self.model.multipoly.log]
 
     def uploadbuoyant(self):
         """
@@ -575,7 +579,7 @@ class Hem4(tk.Frame):
 
             # Update the UI
             self.buoyant_list.set(fullpath)
-            [self.scr.insert(tk.INSERT, msg) for msg in self.model.multibuoy.log]
+#            [self.scr.insert(tk.INSERT, msg) for msg in self.model.multibuoy.log]
 
     def uploadUserReceptors(self):
         """
@@ -595,7 +599,7 @@ class Hem4(tk.Frame):
             #self.model.model_optns['ureceptr'] = True
             # Update the UI
             self.urep_list.set(fullpath)
-            [self.scr.insert(tk.INSERT, msg) for msg in self.model.ureceptr.log]
+#            [self.scr.insert(tk.INSERT, msg) for msg in self.model.ureceptr.log]
                             
             
     def uploadBuildingDownwash(self):
@@ -614,7 +618,7 @@ class Hem4(tk.Frame):
 
             # Update the UI
             self.bldgdw_list.set(fullpath)
-            [self.scr.insert(tk.INSERT, msg) for msg in self.model.bldgdw.log]
+#            [self.scr.insert(tk.INSERT, msg) for msg in self.model.bldgdw.log]
     
 
 
@@ -635,7 +639,7 @@ class Hem4(tk.Frame):
 
             # Update the UI
             self.dep_part.set(fullpath)
-            [self.scr.insert(tk.INSERT, msg) for msg in self.model.partdep.log]
+#            [self.scr.insert(tk.INSERT, msg) for msg in self.model.partdep.log]
             
     
     
@@ -655,7 +659,7 @@ class Hem4(tk.Frame):
 
             # Update the UI
             self.dep_land.set(fullpath)
-            [self.scr.insert(tk.INSERT, msg) for msg in self.model.landuse.log]
+#            [self.scr.insert(tk.INSERT, msg) for msg in self.model.landuse.log]
             
     
     def uploadSeasons(self):
@@ -674,7 +678,7 @@ class Hem4(tk.Frame):
 
             # Update the UI
             self.dep_seasons.set(fullpath)
-            [self.scr.insert(tk.INSERT, msg) for msg in self.model.seasons.log]
+#            [self.scr.insert(tk.INSERT, msg) for msg in self.model.seasons.log]
     
     
     
@@ -689,14 +693,14 @@ class Hem4(tk.Frame):
             
              # Update the UI
             self.emisvar_list.set(fullpath)
-            [self.scr.insert(tk.INSERT, msg) for msg in self.model.emisvar.log]
+#            [self.scr.insert(tk.INSERT, msg) for msg in self.model.emisvar.log]
     
     def add_ur(self):
         """
         Function for creating row and upload widgets for user receptors
         """
         #create row for user receptors
-        self.s6 = tk.Frame(self.main, width=250, height=200, pady=10, padx=10)
+        self.s6 = tk.Frame(self, width=250, height=200, padx=10 )
         self.s6.grid(row=5, column=0, columnspan=2, sticky="nsew")
         
         #user recptors label
@@ -735,7 +739,7 @@ class Hem4(tk.Frame):
         Function for creating row and buoyant line parameter upload widgets
         """
          #create row for buoyant line input
-        self.s7 = tk.Frame(self.main, width=250, height=100, pady=10, padx=10)
+        self.s7 = tk.Frame(self, width=250, height=100, padx=10)
         self.s7.grid(row=6, column=0, columnspan=2, sticky="nsew")
         
         
@@ -772,7 +776,7 @@ class Hem4(tk.Frame):
         Function for creating row and polyvertex file upload widgets
         """
         #create row for poly
-        self.s8 = tk.Frame(self.main, width=250, height=100, pady=10, padx=10)
+        self.s8 = tk.Frame(self, width=250, height=100, padx=10)
         self.s8.grid(row=7, column=0, columnspan=2, sticky="nsew")
         
         #Polygon sources label
@@ -805,7 +809,7 @@ class Hem4(tk.Frame):
         Function for creating row and building downwash file upload widgets
         """
         #create row for building downwash
-        self.s9 = tk.Frame(self.main, width=250, height=100, padx=10)
+        self.s9 = tk.Frame(self, width=250, height=100, padx=10)
         self.s9.grid(row=8, column=0, columnspan=2, sticky="nsew")
         
         # building dw labels
@@ -841,7 +845,7 @@ class Hem4(tk.Frame):
         """
         
         #create column for particle size file
-        self.s12 = tk.Frame(self.main, width=250, height=100, pady=10, padx=10)
+        self.s12 = tk.Frame(self, width=250, height=100, padx=10)
         self.s12.grid(row=2, column=2, columnspan=2, sticky="nsew")
         
         #particle size label
@@ -875,7 +879,7 @@ class Hem4(tk.Frame):
         """
         
         #create column for land use file
-        self.s12 = tk.Frame(self.main, width=250, height=100, pady=10, padx=10)
+        self.s12 = tk.Frame(self, width=250, height=100, pady=10, padx=10)
         self.s12.grid(row=3, column=2, columnspan=2, sticky="nsew")
         
         #land use size label
@@ -908,7 +912,7 @@ class Hem4(tk.Frame):
         """
         
         #create column for land use file
-        self.s12 = tk.Frame(self.main, width=250, height=100, pady=10, padx=10)
+        self.s12 = tk.Frame(self, width=250, height=100, pady=10, padx=10)
         self.s12.grid(row=4, column=2, columnspan=2, sticky="nsew")
         
         #land use size label
@@ -943,7 +947,7 @@ class Hem4(tk.Frame):
             
             if hasattr(self.model.emisloc, 'dataframe'):
                 #create row for emissions variation
-                self.s13 = tk.Frame(self.main, width=250, height=100, pady=10, 
+                self.s13 = tk.Frame(self, width=250, height=100, pady=10, 
                                     padx=10)
                 self.s13.grid(row=9, column=0, columnspan=2, sticky="nsew")
                 
@@ -1073,12 +1077,21 @@ class Hem4(tk.Frame):
                 global instruction_instance
                 instruction_instance.set("Hem4 Running, check the log tab for updates")
                 
-                #create run id for saving model
-                runid = datetime.datetime.now().strftime("%B-%d-%Y-%H-%M-%p")
-                #print(runid)
-                #create save model
-                save_state = SaveState(runid, self.model)
-                self.model.save = save_state
+                module_logger.info("starting HEM4")
+#                self.log = tk.Tk()
+#                self.log.title("HEM4 Log")
+#                self.log.geometry("500x500")
+#                
+#                #create log window
+#                
+##
+##                 # Adding a Textbox Entry widget
+#                scrolW  = 65; scrolH  =  25
+#                self.scr = scrolledtext.ScrolledText(self.log, width=scrolW, 
+#                                                     height=scrolH, wrap=tk.WORD)
+#                self.scr.grid(column=0, row=0, sticky='WE', columnspan=3)
+                
+                
                 self.process()
 
     def process(self):
@@ -1141,6 +1154,7 @@ class Hem4(tk.Frame):
         """
         try:
             message = self.messageQueue.get(block=False)
+            print("found message")
         except queue.Empty:
             # let's try again later
             self.after(25, self.after_callback)
@@ -1148,8 +1162,9 @@ class Hem4(tk.Frame):
 
         print('after_callback got', message)
         if message is not None:
-            self.scr.configure(state='normal')
-            self.scr.insert(tk.INSERT, message)
-            self.scr.insert(tk.INSERT, "\n")
-            self.scr.configure(state='disabled')
-            self.after(25, self.after_callback)
+            module_logger.info(message)
+#            self.top.scr.configure(state='normal')
+#            self.top.scr.insert(tk.INSERT, message)
+#            self.top.scr.insert(tk.INSERT, "\n")
+#            self.top.scr.configure(state='disabled')
+            #Sself.after(25, self.after_callback)

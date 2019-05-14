@@ -13,11 +13,13 @@ from navigation import Navigation
 from hem4Window import Hem4
 
 import queue
+
 messageQueue = queue.Queue()
 callbackQueue = queue.Queue()
 
 LARGE_FONT= ("Verdana", 20)
 TEXT_FONT= ("Verdana", 15)
+
 
 
 class HEM4Structure(tk.Tk):
@@ -64,7 +66,10 @@ class HEM4Structure(tk.Tk):
         frame = self.frames[cont]
         frame.tkraise()
 
-        
 
-app = HEM4Structure()
-app.mainloop()
+if __name__ == "__main__":
+
+    app = HEM4Structure()
+    app.title('HEM4')
+    
+    app.mainloop()
