@@ -1,7 +1,14 @@
 import re
+import os, fnmatch
+import pandas as pd
+import sys
 from com.sca.hem4.log import Logger
 from com.sca.hem4.upload.DoseResponse import *
 from com.sca.hem4.writer.excel.MaximumIndividualRisks import *
+from com.sca.hem4.model.Model import *
+from com.sca.hem4.support.UTM import *
+from com.sca.hem4.FacilityPrep import *
+from com.sca.hem4.log import Logger
 
 site_type = 'site_type';
 conc_rnd = 'conc_rnd';
@@ -18,6 +25,7 @@ class RiskBreakdown(ExcelWriter):
         ExcelWriter.__init__(self, model, plot_df)
 
         self.filename = os.path.join(targetDir, facilityId + "_risk_breakdown.xlsx")
+        self.targetDir = targetDir
 
         # Local cache for URE/RFC values
         self.riskCache = {}
@@ -75,11 +83,40 @@ class RiskBreakdown(ExcelWriter):
                         [(self.model.all_polar_receptors_df[lat]==row[lat]) &
                          (self.model.all_polar_receptors_df[lon]==row[lon])]
                 else:
-                    concdata = self.model.all_outer_receptors_df[[lat,lon,source_id,pollutant,ems_type,conc]] \
-                        [(self.model.all_outer_receptors_df[lat]==row[lat]) &
-                         (self.model.all_outer_receptors_df[lon]==row[lon])]
+                    # Receptor type is interpolated
 
-                    # for consistency and ease of use, change some column names
+                    # Get a list of the all_outer_receptor files (could be more than one)
+                    listOuter = []
+                    listDirfiles = os.listdir(self.targetDir)
+                    pattern = "*_all_outer_receptors*.csv"
+                    for entry in listDirfiles:
+                        if fnmatch.fnmatch(entry, pattern):
+                            listOuter.append(entry)
+                    
+                    # Search each outer receptor file for the lat/lon in row
+                    foundit = 0
+                    outercolumns = [fips, block, lat, lon, source_id, ems_type, pollutant, conc, 
+                                    aconc, elev, population, overlap]
+                    for f in listOuter:
+                        outerfname = os.path.join(self.targetDir, f)
+                        outconcs = pd.read_csv(outerfname, skiprows=1, names=outercolumns, dtype=str)
+                        typedict = {fips:str, block:str, lat:pd.np.float64, lon:pd.np.float64,
+                                    source_id:str, ems_type:str, pollutant:str, conc:pd.np.float64,
+                                    aconc:pd.np.float64, elev:pd.np.float64, population:pd.np.float64,
+                                    overlap:str}
+                        outconcs = outconcs.astype(dtype=typedict)
+                        concdata = outconcs[[lat,lon,source_id,pollutant,ems_type,conc]] \
+                                            [(outconcs[lat]==row[lat]) & (outconcs[lon]==row[lon])]
+                        if not concdata.empty:
+                            foundit = 1
+                            break
+                    if foundit == 0:
+                        errmessage = """An error has happened while computing the Risk Breakdown. A max risk/HI
+                                      occured at an interpolated receptor but could not be found in the All Outer Receptor files """
+                        Logger.logMessage(errmessage)
+                        sys.exit()
+
+                # for consistency and ease of use, change some column names
                 # concdata.rename(columns={source_id:"source_id", pollutant:"pollutant",
                 #                          ems_type:ems_type, conc:conc}, inplace=True)
 
