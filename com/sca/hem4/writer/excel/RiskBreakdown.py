@@ -6,7 +6,7 @@ from com.sca.hem4.writer.excel.MaximumIndividualRisks import *
 site_type = 'site_type';
 conc_rnd = 'conc_rnd';
 
-class RiskBreakdown(ExcelWriter):
+class RiskBreakdown(ExcelWriter, InputFile):
 
     """
     Provides the max cancer risk and max TOSHI values at populated block (“MIR”) sites and at any (“max offsite impact”)
@@ -14,10 +14,17 @@ class RiskBreakdown(ExcelWriter):
     the pollutant concentration, URE and RfC values.
     """
 
-    def __init__(self, targetDir, facilityId, model, plot_df):
-        ExcelWriter.__init__(self, model, plot_df)
+    def __init__(self, targetDir, facilityId, model, plot_df, filenameOverride=None,
+                 createDataframe=False):
+        # Initialization for file reading/writing. If no file name override, use the
+        # default construction.
+        filename = facilityId + "_risk_breakdown.xlsx" if filenameOverride is None else filenameOverride
+        path = os.path.join(targetDir, filename)
 
-        self.filename = os.path.join(targetDir, facilityId + "_risk_breakdown.xlsx")
+        ExcelWriter.__init__(self, model, plot_df)
+        InputFile.__init__(self, path, createDataframe)
+
+        self.filename = path
 
         # Local cache for URE/RFC values
         self.riskCache = {}
@@ -30,6 +37,10 @@ class RiskBreakdown(ExcelWriter):
         return ['Site type', 'Parameter', 'Source ID', 'Pollutant', 'Emission type', 'Value', 'Value rounded',
                 'Conc (µg/m3)', 'Conc rounded (µg/m3)', 'Emissions (tpy)',
                 'URE 1/(µg/m3)', 'RFc (mg/m3)']
+
+    def getColumns(self):
+        return [site_type, parameter, source_id, pollutant, ems_type, value, value_rnd, conc, conc_rnd, emis_tpy, ure,
+                rfc]
 
     def generateOutputs(self):
         """
@@ -44,9 +55,8 @@ class RiskBreakdown(ExcelWriter):
                        "Thyroid HI":14, "Whole body HI":15}
 
         # Initialize output dataframe
-        columns = [site_type, parameter, source_id, pollutant, ems_type, value, value_rnd, conc, conc_rnd, emis_tpy, ure, rfc]
+        columns = self.getColumns()
         riskbkdn_df = pd.DataFrame(columns=columns)
-
 
         # Dictionary for mapping cancer and HI names used in max_indiv_risk df to
         # those used in risk_by_latlon df
@@ -310,3 +320,15 @@ class RiskBreakdown(ExcelWriter):
             self.organCache[pollutant_name] = organs
 
         return URE, RFC, organs
+
+    def createDataframe(self):
+        # Type setting for XLS reading
+
+        [site_type, parameter, source_id, pollutant, ems_type, value, value_rnd, conc, conc_rnd, emis_tpy, ure,
+         rfc]
+
+        self.numericColumns = [value, value_rnd, conc, conc_rnd, emis_tpy, ure, rfc]
+        self.strColumns = [site_type, parameter, source_id, pollutant, ems_type]
+
+        df = self.readFromPath(self.getColumns())
+        return df.fillna("")
