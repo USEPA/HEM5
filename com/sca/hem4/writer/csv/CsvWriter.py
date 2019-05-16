@@ -50,7 +50,10 @@ class CsvWriter(Writer):
         filenameNoExtension = os.path.splitext(self.filename)[0]
 
         # Does the filename already end in a digit?
-        m = re.search(r'\d+$', self.filename)
-        part = m.group() if m is not None else 2
-
-        self.filename = filenameNoExtension + "_part" + str(part) + ".csv"
+        m = re.search(r'(\d+)$', filenameNoExtension)
+        if m is None:
+            self.filename = filenameNoExtension + "_part2.csv"
+        else:
+            part = int(m.group(1)) + 1
+            filenameNoExtension = re.sub(r"part\d+$", "part%s" % part, filenameNoExtension)
+            self.filename = filenameNoExtension + ".csv"
