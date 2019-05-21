@@ -32,11 +32,11 @@ class Processor():
         self.model.save = save_state
 
         threadLocal.abort = False
-
+        
         #create a Google Earth KML of all sources to be modeled
         kmlWriter = KMLWriter()
         if kmlWriter is not None:
-            #kmlWriter.write_kml_emis_loc(self.model)
+            kmlWriter.write_kml_emis_loc(self.model)
             pass
 
         Logger.logMessage("Preparing Inputs for " + str(

@@ -332,33 +332,42 @@ class FacilityPrep():
         
         #.... Compute the rest of the polar ring distances (logarithmically spaced) .......
 
-        # first handle ring distances inside the modeling distance
-        k = 1
-        if op_modeldist <= polar_dist[0]:
-            N_in = 0
-            N_out = op_circles
-            D_st2 = polar_dist[0]
+        if op_modeldist < op_maxdist:
+            # first handle ring distances inside the modeling distance
+            k = 1
+            if op_modeldist <= polar_dist[0]:
+                N_in = 0
+                N_out = op_circles
+                D_st2 = polar_dist[0]
+            else:            
+                N_in = round(math.log(op_modeldist/polar_dist[0])/math.log(op_maxdist/polar_dist[0]) * (op_circles - 2))
+                while k < N_in:
+                    next_dist = round(polar_dist[k-1] * ((op_modeldist/polar_dist[0])**(1/N_in)), -1)
+                    polar_dist.append(next_dist)
+                    k = k + 1
+                # set a ring at the modeling distance
+                next_dist = op_modeldist
+                polar_dist.append(next_dist)
+                k = k + 1
+                N_out = op_circles - 1 - N_in
+                D_st2 = op_modeldist
+            # next, handle ring distances outside the modeling distance
+            while k < op_circles - 1:
+                next_dist = round(polar_dist[k-1] * ((op_maxdist/D_st2)**(1/N_out)), -2)
+                polar_dist.append(next_dist)
+                k = k + 1
+            # set the last ring distance to the domain distance
+            polar_dist.append(op_maxdist)
         else:
+            # model distance = domain distance
+            k = 1
             N_in = round(math.log(op_modeldist/polar_dist[0])/math.log(op_maxdist/polar_dist[0]) * (op_circles - 1))
             while k < N_in:
                 next_dist = round(polar_dist[k-1] * ((op_modeldist/polar_dist[0])**(1/N_in)), -1)
                 polar_dist.append(next_dist)
                 k = k + 1
-            next_dist = op_modeldist
-            polar_dist.append(next_dist)
-            k = k + 1
-            N_out = op_circles - 1 - N_in
-            D_st2 = op_modeldist
-
-        # next, handle ring distances outside the modeling distance
-        while k < op_circles - 1:
-            next_dist = round(polar_dist[k-1] * ((op_maxdist/D_st2)**(1/N_out)), -2)
-            polar_dist.append(next_dist)
-            k = k + 1
-
-        # set the last ring distance to the modeling distance
-        polar_dist.append(op_maxdist)
-
+            # set the last ring distance to the domain distance
+            polar_dist.append(op_maxdist)            
 
         # setup list of polar angles
         start = 0.
@@ -404,7 +413,7 @@ class FacilityPrep():
 
         # set rec_type of polar receptors
         polar_df[rec_type] = 'PG'
-
+        
         #%%----- Add sector and ring to inner and outer receptors ----------
 
         # assign sector and ring number (integers) to each inner receptor and compute fractional sector (s) and ring_loc (log weighted) numbers

@@ -667,7 +667,7 @@ class Hem4():
                     self.buoyant_up.destroy()
                     self.b_label.destroy()
                     self.s7.destroy()
-
+            
     def uploadPolyvertex(self):
         """
         Function for uploading polyvertex source file
@@ -1272,7 +1272,7 @@ class Hem4():
 
         self.running = True
         self.disable_buttons()
-
+        
         self.processor = Processor(self.model, Event())
         future = executor.submit(self.processor.process)
         future.add_done_callback(self.processing_finish)
