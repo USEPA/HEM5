@@ -21,7 +21,7 @@ class RiskBreakdown(ExcelWriter, InputFile):
     the pollutant concentration, URE and RfC values.
     """
 
-    def __init__(self, targetDir, facilityId, model, plot_df, filenameOverride=None,
+    def __init__(self, targetDir=None, facilityId=None, model=None, plot_df=None, filenameOverride=None,
                  createDataframe=False):
         # Initialization for file reading/writing. If no file name override, use the
         # default construction.
@@ -361,10 +361,6 @@ class RiskBreakdown(ExcelWriter, InputFile):
 
     def createDataframe(self):
         # Type setting for XLS reading
-
-        [site_type, parameter, source_id, pollutant, ems_type, value, value_rnd, conc, conc_rnd, emis_tpy, ure,
-         rfc]
-
         self.numericColumns = [value, value_rnd, conc, conc_rnd, emis_tpy, ure, rfc]
         self.strColumns = [site_type, parameter, source_id, pollutant, ems_type]
 
