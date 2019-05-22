@@ -14,8 +14,7 @@ from hem4Window import Hem4
 
 import queue
 
-messageQueue = queue.Queue()
-callbackQueue = queue.Queue()
+
 
 LARGE_FONT= ("Verdana", 20)
 TEXT_FONT= ("Verdana", 15)
@@ -68,6 +67,9 @@ class HEM4Structure(tk.Tk):
 
 
 if __name__ == "__main__":
+    
+    messageQueue = queue.Queue()
+    callbackQueue = queue.Queue()
 
     app = HEM4Structure()
     app.title('HEM4')

@@ -17,6 +17,7 @@ from tkinter import ttk
 import datetime
 from com.sca.hem4.Processor import Processor
 from com.sca.hem4.log import Logger
+from com.sca.hem4.tools.CensusUpdater import CensusUpdater
 from com.sca.hem4.model.Model import Model
 from com.sca.hem4.upload.FileUploader import FileUploader
 from tkinter.filedialog import askopenfilename
@@ -75,50 +76,20 @@ class Hem4(tk.Frame):
 
         Logger.messageQueue = messageQueue
         
-        
-         # Tab Control introduced here --------------------------------------
-#        self.tabControl = ttk.Notebook(self)     # Create Tab Control
-#
-#        tab1 = ttk.Frame(self.tabControl)            # Create a tab
-#        self.tabControl.add(tab1, text='HEM4')      # Add the tab
-#
-#        tab2 = ttk.Frame(self.tabControl)            # Add a second tab
-#        self.tabControl.add(tab2, text='Log')      # Make second tab visible
-
-        #self.tabControl.pack(expand=1, fill="both")  # Pack to make visible
-        
-         # Create container frame to hold all other widgets
-        self.main = ttk.LabelFrame(self, text='Human Exposure Model,'+
-                                   ' open-source (HEM4), Version 1.0', 
-                                   labelanchor="n")
-        self.main.grid(column=0, row=0)
-        
-        #create discreet sections for GUI in tab1
-        self.s1 = tk.Frame(self, width=1000, height=150)
-        self.s2 = tk.Frame(self, width=1000, height=150)
-        self.s3 = tk.Frame(self, width=1000, height=150, pady=10, padx=10)
-        self.s4 = tk.Frame(self, width=1000, height=150, pady=10, padx=10)
-        self.s5 = tk.Frame(self, width=1000, height=150, pady=10, padx=10)
+    
         
         
         
-
-        self.s1.grid(row=0)
-        self.s2.grid(row=1, column=0, sticky="nsew")
-        self.s3.grid(row=2, column=0, columnspan=2, sticky="nsew")
-        self.s4.grid(row=3, column=0, columnspan=2, sticky="nsew")
-        self.s5.grid(row=4, column=0, columnspan=2, sticky="nsew")
-
-
+     
 #        self.main.grid_rowconfigure(8, weight=0)
 #        self.main.grid_columnconfigure(2, weight=0)
 #        self.main.grid_propagate()
         #self.s1.grid_propagate(0)
         
-        for frame in [self.s1, self.s2, self.s3, self.s4, self.s5]:
-            frame.rowconfigure(0, weight=0)
-            frame.columnconfigure(0, weight=0)
-            frame.grid_propagate(0)
+#        for frame in [self.s1, self.s2, self.s3, self.s4, self.s5]:
+#            frame.rowconfigure(0, weight=0)
+#            frame.columnconfigure(0, weight=0)
+#            frame.grid_propagate(0)
         
         
         #create widgets
@@ -138,7 +109,7 @@ class Hem4(tk.Frame):
          #back button
         back_button = tk.Button(self, text="Back", font=TEXT_FONT,
                             command=lambda: controller.show_frame(navigation.Navigation))
-        back_button.grid(row=0, sticky="W", padx=10)
+        back_button.grid(row=2, sticky="W", padx=10)
     
     #%% Set Quit, Run, and User Guide buttons        
         #self.quit_button = tk.Button(self.main, text="QUIT", fg="red",
@@ -148,24 +119,9 @@ class Hem4(tk.Frame):
         #run only appears once the required files have been set
         self.run_button = tk.Button(self, text='RUN', fg="green", font=TEXT_FONT,
                                      command=self.run)
-        self.run_button.grid(row=0, sticky="E", padx=20)
-        
-        self.guide = tk.Button(self, text="User Guide", font=TEXT_FONT, 
-                               command=self.user_guide, padx=20)
-        self.guide.grid(row=0, column=0)
+        self.run_button.grid(row=2, sticky="E", padx=20)
         
         
-
-#%% Setting up  directions text space
-
-        #Dynamic instructions place holder
-        global instruction_instance
-        instruction_instance = tk.StringVar(self)
-        instruction_instance.set(" ")
-        self.dynamic_inst = ttk.Label(self, wraplength=600, font=TEXT_FONT)
-        
-        self.dynamic_inst["textvariable"] = instruction_instance 
-        self.dynamic_inst.grid(row=1, column=0)
         
 
     def close(self):
@@ -275,9 +231,133 @@ class Hem4(tk.Frame):
         
         os.startfile("userguide\Multi_HEM-3_Users_Guide.pdf")
     
-    def createWidgets(self):   
+    
+    def update_census(self):
+        """
+        Function creates thread for running HEM4 concurrently with tkinter GUI
+        """
+        executor = ThreadPoolExecutor(max_workers=1)
+
+        self.processor = Processor(self.model, Event())
+        future = executor.submit(self.censusupdater.update, self.censusUpdatePath)
+        future.add_done_callback(self.update_census_finish)
+
+    def update_census_finish(self, future):
+        self.callbackQueue.put(self.finish_census_update)
+
+    def finish_census_update(self):
+        self.cu_list.set("")
+
+    def uploadCensusUpdates(self):
+        self.censusupdater = CensusUpdater()
+        fullpath = self.openFile(askopenfilename())
+        if fullpath is not None:
+            self.censusUpdatePath = fullpath
+            self.cu_list.set(fullpath)
+
+    
+    
+    
+    def createWidgets(self):
         
+        self.tabControl = ttk.Notebook(self)     # Create Tab Control
+
+        tab1 = ttk.Frame(self.tabControl)            # Create a tab
+        self.tabControl.add(tab1, text='HEM4')      # Add the tab
+
+        tab2 = ttk.Frame(self.tabControl)            # Add a second tab
+        self.tabControl.add(tab2, text='Log')      # Make second tab visible
+
+        tab3 = ttk.Frame(self.tabControl)            # Add a third tab
+        self.tabControl.add(tab3, text='Census')      # Make third tab visible
+
+        #self.tabControl.pack(expand=1, fill="both")
+        self.tabControl.grid(row=0 )
+        
+        # Create container frame to hold census update stuff
+        self.censusupdates = ttk.LabelFrame(tab3, text='Census updates',
+                                   labelanchor="n")
+        self.censusupdates.grid(column=0, row=1)
+
+        #create discreet sections for GUI in tab3
+        self.cu1 = tk.Frame(self.censusupdates, width=250, height=200)
+        self.cu1.grid(row=0)
+
+        # census update label
+        cu_label = tk.Label(self.cu1, font="-size 10",
+                             text="Please select a census update file:")
+        cu_label.grid(row=1, sticky="W")
+
+        # census update upload button
+        self.cu_up = ttk.Button(self.cu1,
+                                 command = lambda: self.uploadCensusUpdates())
+        self.cu_up["text"] = "Browse"
+        self.cu_up.grid(row=2, column=0, sticky="W")
+
+        # census update text entry
+        self.cu_list = tk.StringVar(self.cu1)
+        self.cu_list_man = ttk.Entry(self.cu1)
+        self.cu_list_man["width"] = 55
+        self.cu_list_man["textvariable"]= self.cu_list
+        self.cu_list_man.grid(row=2, column=0, sticky='E', padx=85)
+
+        self.cu_update = tk.Button(self.cu1, text="UPDATE", fg="green",
+                              command=self.update_census)
+        self.cu_update.grid(row=3, column=0, sticky="W", padx=85, pady=20)
+        
+        # create container frame to hold log
+        self.log = ttk.LabelFrame(tab2, text=' Hem4 Progress Log ')
+        self.log.grid(column=0, row=0)
+        
+        # Adding a Textbox Entry widget
+        scrolW  = 65; scrolH  =  25
+        self.scr = scrolledtext.ScrolledText(self.log, width=scrolW, 
+                                             height=scrolH, wrap=tk.WORD)
+        self.scr.grid(column=0, row=3, sticky='WE', columnspan=3)
+        
+        # Create container frame to hold all other widgets
+        self.main = ttk.LabelFrame(tab1, text='Human Exposure Model,'+
+                                   ' open-source (HEM4), Version 1.0', 
+                                   labelanchor="n")
+        self.main.grid(column=0, row=0)
+        
+        
+        self.guide = tk.Button(self.main, text="User Guide", font=TEXT_FONT, 
+                               command=self.user_guide, padx=50)
+        self.guide.grid(row=0, column=0)
+        
+        
+
+#%% Setting up  directions text space
+
+        #Dynamic instructions place holder
+    
+        
+        #create discreet sections for GUI in tab1
+        self.s1 = tk.Frame(self.main, width=1000, height=150)
+        self.s2 = tk.Frame(self.main, width=1000, height=150)
+        self.s3 = tk.Frame(self.main, width=1000, height=150, pady=10, padx=10)
+        self.s4 = tk.Frame(self.main, width=1000, height=150, pady=10, padx=10)
+        self.s5 = tk.Frame(self.main, width=1000, height=150, pady=10, padx=10)
+        
+
+        self.s1.grid(row=1)
+        self.s2.grid(row=2, column=0, sticky="nsew")
+        self.s3.grid(row=3, column=0, columnspan=2, sticky="nsew")
+        self.s4.grid(row=4, column=0, columnspan=2, sticky="nsew")
+        self.s5.grid(row=5, column=0, columnspan=2, sticky="nsew")
         # %% Setting up each file upload space (includes browse button, and manual text entry for file path)         
+        
+        
+        global instruction_instance
+        instruction_instance = tk.StringVar(self)
+        instruction_instance.set(" ")
+        self.dynamic_inst = ttk.Label(self.s1, wraplength=600, font=TEXT_FONT)
+        
+        self.dynamic_inst["textvariable"] = instruction_instance 
+        self.dynamic_inst.grid(row=1, column=0)
+        
+        
         
         #group facility name
         group_label = tk.Label(self.s3, font=TEXT_FONT, 
@@ -1078,19 +1158,7 @@ class Hem4(tk.Frame):
                 instruction_instance.set("Hem4 Running, check the log tab for updates")
                 
                 module_logger.info("starting HEM4")
-#                self.log = tk.Tk()
-#                self.log.title("HEM4 Log")
-#                self.log.geometry("500x500")
-#                
-#                #create log window
-#                
-##
-##                 # Adding a Textbox Entry widget
-#                scrolW  = 65; scrolH  =  25
-#                self.scr = scrolledtext.ScrolledText(self.log, width=scrolW, 
-#                                                     height=scrolH, wrap=tk.WORD)
-#                self.scr.grid(column=0, row=0, sticky='WE', columnspan=3)
-                
+#               
                 
                 self.process()
 
@@ -1152,19 +1220,18 @@ class Hem4(tk.Frame):
         Function listens on thread RUnning HEM4 for error and completion messages
         logged via queue method
         """
+        
         try:
             message = self.messageQueue.get(block=False)
-            print("found message")
         except queue.Empty:
             # let's try again later
-            self.after(25, self.after_callback)
+            self.win.after(25, self.after_callback)
             return
 
         print('after_callback got', message)
         if message is not None:
-            module_logger.info(message)
-#            self.top.scr.configure(state='normal')
-#            self.top.scr.insert(tk.INSERT, message)
-#            self.top.scr.insert(tk.INSERT, "\n")
-#            self.top.scr.configure(state='disabled')
-            #Sself.after(25, self.after_callback)
+            self.scr.configure(state='normal')
+            self.scr.insert(tk.INSERT, message)
+            self.scr.insert(tk.INSERT, "\n")
+            self.scr.configure(state='disabled')
+            self.win.after(25, self.after_callback)
