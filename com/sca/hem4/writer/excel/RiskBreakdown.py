@@ -325,8 +325,8 @@ class RiskBreakdown(ExcelWriter, InputFile):
                 self.model.haplib.dataframe[pollutant].str.contains(pattern, case=False, regex=True)]
 
             if row.size == 0:
-                msg = 'Could not find pollutant ' + pollutant_name + ' in the haplib!'
-                Logger.logMessage(msg)
+#                msg = 'Could not find pollutant ' + pollutant_name + ' in the haplib!'
+#                Logger.logMessage(msg)
                 # Logger.log(msg, self.model.haplib.dataframe, False)
                 URE = 0.0
                 RFC = 0.0
@@ -346,7 +346,7 @@ class RiskBreakdown(ExcelWriter, InputFile):
 
             if row.size == 0:
                 # Couldn't find the pollutant...set values to 0 and log message
-                Logger.logMessage('Could not find pollutant ' + pollutant_name + ' in the target organs.')
+#                Logger.logMessage('Could not find pollutant ' + pollutant_name + ' in the target organs.')
                 listed = []
             else:
                 listed = row.values.tolist()

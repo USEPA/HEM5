@@ -52,7 +52,7 @@ class BlockSummaryChronic(CsvWriter, InputFile):
         # join inner receptor df with the inner block df and then select columns
         columns = [pollutant, conc, lat, lon, fips, block, overlap, elev, utme, utmn, population, hill]
         innermerged = allinner_df.merge(innerblocks, on=[lat, lon])[columns]
-
+        
         # compute cancer and noncancer values for each Inner rececptor row
         innermerged[[mir, hi_resp, hi_live, hi_neur, hi_deve, hi_repr, hi_kidn, hi_ocul, hi_endo,
                      hi_hema, hi_immu, hi_skel, hi_sple, hi_thyr, hi_whol]] = \
@@ -99,8 +99,8 @@ class BlockSummaryChronic(CsvWriter, InputFile):
                 self.model.haplib.dataframe[pollutant].str.contains(pattern, case=False, regex=True)]
 
             if row.size == 0:
-                msg = 'Could not find pollutant ' + pollutant_name + ' in the haplib!'
-                Logger.logMessage(msg)
+#                msg = 'Could not find pollutant ' + pollutant_name + ' in the haplib!'
+#                Logger.logMessage(msg)
                 # Logger.log(msg, self.model.haplib.dataframe, False)
                 URE = 0
                 RFC = 0
@@ -119,7 +119,7 @@ class BlockSummaryChronic(CsvWriter, InputFile):
 
             if row.size == 0:
                 # Couldn't find the pollutant...set values to 0 and log message
-                Logger.logMessage('Could not find pollutant ' + pollutant_name + ' in the target organs.')
+#                Logger.logMessage('Could not find pollutant ' + pollutant_name + ' in the target organs.')
                 listed = []
             else:
                 listed = row.values.tolist()

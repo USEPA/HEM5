@@ -246,7 +246,6 @@ class AllOuterReceptors(CsvWriter, InputFile):
                     yield pd.DataFrame(dlist, columns=self.columns)
                     dlist = []
 
-
         # dataframe to array
         outerconc_df = pd.DataFrame(dlist, columns=self.columns)
         self.dataframe = outerconc_df
@@ -333,7 +332,6 @@ class AllOuterReceptors(CsvWriter, InputFile):
                 storage = self.outerblocks.shape[0]
                 self.outerAgg = pd.DataFrame(columns=blksumm_cols)
             self.outerAgg = self.outerAgg.append(outeragg)
-
 
             #----------- Keep track of maximum risk and HI ---------------------------------------
 

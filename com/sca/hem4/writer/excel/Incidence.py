@@ -99,8 +99,8 @@ class Incidence(ExcelWriter):
                 self.model.haplib.dataframe[pollutant].str.contains(pattern, case=False, regex=True)]
 
             if row.size == 0:
-                msg = 'Could not find pollutant ' + pollutant_name + ' in the haplib!'
-                Logger.logMessage(msg)
+#                msg = 'Could not find pollutant ' + pollutant_name + ' in the haplib!'
+#                Logger.logMessage(msg)
                 # Logger.log(msg, self.model.haplib.dataframe, False)
                 URE = 0
             else:
