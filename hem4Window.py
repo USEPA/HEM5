@@ -28,13 +28,13 @@ from tkinter.simpledialog import Dialog, Toplevel
 from ttkthemes import ThemedStyle
 import logging
 import navigation
-from LogWindow import LogWindow
-from LogWindow import MyHandlerText
+#from LogWindow import LogWindow
+#from LogWindow import MyHandlerText
 
 TITLE_FONT= ("Verdana", 20)
 TEXT_FONT = ("Verdana", 12)
 
-module_logger = logging.getLogger(__name__)
+#module_logger = logging.getLogger(__name__)
 
 class Hem4(tk.Frame):
     def __init__(self, parent, controller, messageQueue, callbackQueue):
@@ -80,17 +80,17 @@ class Hem4(tk.Frame):
         self.createWidgets()
     
         # create container frame to hold log
-        self.top = LogWindow()
+#        self.top = LogWindow()
         
         self.after(25, self.after_callback)
         self.after(500, self.check_processing)
         
-        stderrHandler = logging.StreamHandler()  # no arguments => stderr
-        module_logger.addHandler(stderrHandler)
-        guiHandler = MyHandlerText(self.top.scr)
-        module_logger.addHandler(guiHandler)
-        module_logger.setLevel(logging.INFO)
-        module_logger.info("from main")  
+#        stderrHandler = logging.StreamHandler()  # no arguments => stderr
+#        module_logger.addHandler(stderrHandler)
+#        guiHandler = MyHandlerText(self.top.scr)
+#        module_logger.addHandler(guiHandler)
+#        module_logger.setLevel(logging.INFO)
+#        module_logger.info("from main")  
         
         
          #back button
@@ -114,7 +114,7 @@ class Hem4(tk.Frame):
     def close(self):
         Logger.close(True)
 
-
+    
 #%% Quit Function    
     def quit_app(self):
         """
@@ -138,23 +138,81 @@ class Hem4(tk.Frame):
             self.quit_gui()
 
     def display_app_quit(self):
-        self.enable_widgets(self, False)
+        self.enable_widgets(self.main, False)
 
         message = "HEM4 is stopping. Please wait."
-        tk.Label(self, text=message).pack()
-        
-        
-        
-    def quit_gui(self):
+        tk.Label(self.win, text=message).pack()
+
+    def disable_buttons(self):
+        self.enable_widgets(self.run_button, False)
+        self.enable_widgets(self.fac_up, False)
+        self.enable_widgets(self.hap_up, False)
+        self.enable_widgets(self.emisloc_up, False)
+
+        if self.urep is not None:
+            self.enable_widgets(self.urep, False)
+        if self.urepaltButton is not None:
+            self.enable_widgets(self.urepaltButton, False)
+        if self.poly_up is not None:
+            self.enable_widgets(self.poly_up, False)
+        if self.buoyant_up is not None:
+            self.enable_widgets(self.buoyant_up, False)
+        if self.bldgdw_up is not None:
+            self.enable_widgets(self.bldgdw_up, False)
+        if self.dep_part_up is not None:
+            self.enable_widgets(self.dep_part_up, False)
+        if self.dep_land_up is not None:
+            self.enable_widgets(self.dep_land_up, False)
+        if self.dep_seasons_up is not None:
+            self.enable_widgets(self.dep_seasons_up, False)
+
+    def enable_buttons(self):
+        self.enable_widgets(self.run_button, True)
+        self.enable_widgets(self.fac_up, True)
+        self.enable_widgets(self.hap_up, True)
+        self.enable_widgets(self.emisloc_up, True)
+
+        if self.urep is not None:
+            self.enable_widgets(self.urep, True)
+        if self.urepaltButton is not None:
+            self.enable_widgets(self.urepaltButton, True)
+        if self.poly_up is not None:
+            self.enable_widgets(self.poly_up, True)
+        if self.buoyant_up is not None:
+            self.enable_widgets(self.buoyant_up, True)
+        if self.bldgdw_up is not None:
+            self.enable_widgets(self.bldgdw_up, True)
+        if self.dep_part_up is not None:
+            self.enable_widgets(self.dep_part_up, True)
+        if self.dep_land_up is not None:
+            self.enable_widgets(self.dep_land_up, True)
+        if self.dep_seasons_up is not None:
+            self.enable_widgets(self.dep_seasons_up, True)
+            
+    def enable_widgets(self, root, enabled):
         """
-        Destroy the GUI, close the log, and exit. The latter two are OK here, because
-        we don't ever destroy the GUI until all processing has stopped, which means
-        it's -really- time to end!
+        Recursively disable widgets starting from the given root.
         """
-        #self.quit()
-        self.destroy()
-        self.close()
-        sys.exit()
+        if not root.winfo_exists():
+            return
+
+        state = 'normal' if enabled else 'disabled'
+        if "state" in root.keys():
+            root.configure(state=state)
+
+        for child in root.winfo_children():
+            self.enable_widgets(child, enabled)
+
+#    def quit_gui(self):
+#        """
+#        Destroy the GUI, close the log, and exit. The latter two are OK here, because
+#        we don't ever destroy the GUI until all processing has stopped, which means
+#        it's -really- time to end!
+#        """
+#        self.win.quit()
+#        self.win.destroy()
+#        self.close()
+#        sys.exit()
 
     def reset_gui(self):
         #reset all inputs if everything finished
@@ -162,6 +220,9 @@ class Hem4(tk.Frame):
         self.fac_list.set('')
         self.hap_list.set('')
         self.emisloc_list.set('')
+
+        self.check_ureponly.set(False)
+        self.set_ureponly()
 
         if hasattr(self, 's6'):
             self.urep.destroy()
@@ -208,7 +269,6 @@ class Hem4(tk.Frame):
             self.s12.destroy()
 
         self.after(100, self.enable_buttons)
-        
     #%% Open HEM4 User Guide
     def user_guide(self):
         """ 
@@ -242,9 +302,7 @@ class Hem4(tk.Frame):
             self.censusUpdatePath = fullpath
             self.cu_list.set(fullpath)
 
-    
-    
-    
+
     def createWidgets(self):
         
         self.tabControl = ttk.Notebook(self)     # Create Tab Control
@@ -326,13 +384,16 @@ class Hem4(tk.Frame):
         self.s3 = tk.Frame(self.main, width=1000, height=150, pady=10, padx=10)
         self.s4 = tk.Frame(self.main, width=1000, height=150, pady=10, padx=10)
         self.s5 = tk.Frame(self.main, width=1000, height=150, pady=10, padx=10)
-        
+        self.alturep = tk.Frame(self.main, width=250, height=250, pady=10, padx=10)
 
         self.s1.grid(row=1)
         self.s2.grid(row=2, column=0, sticky="nsew")
-        self.s3.grid(row=3, column=0, columnspan=2, sticky="nsew")
-        self.s4.grid(row=4, column=0, columnspan=2, sticky="nsew")
-        self.s5.grid(row=5, column=0, columnspan=2, sticky="nsew")
+        self.alturep.grid(row=3, column=0, columnspan=2, sticky="nsew")
+        self.s3.grid(row=4, column=0, columnspan=2, sticky="nsew")
+        self.s4.grid(row=5, column=0, columnspan=2, sticky="nsew")
+        self.s5.grid(row=6, column=0, columnspan=2, sticky="nsew")
+        
+        
         # %% Setting up each file upload space (includes browse button, and manual text entry for file path)         
         
         
@@ -357,6 +418,11 @@ class Hem4(tk.Frame):
         self.group_list_man["textvariable"]= self.group_list
         self.group_list_man.grid(row=1, column=0, sticky='W', pady=20)
         
+        self.check_ureponly = tk.BooleanVar()
+        self.ureponly_sel = tk.Checkbutton(self.alturep, text="Use alternate receptors",
+                                           variable = self.check_ureponly,
+                                           command = self.set_ureponly)
+        self.ureponly_sel.grid(row=0, column=0, sticky='W')
         
         #facilities label
         fac_label = tk.Label(self.s3, font=TEXT_FONT, 
@@ -668,7 +734,27 @@ class Hem4(tk.Frame):
             self.urep_list.set(fullpath)
 #            [self.scr.insert(tk.INSERT, msg) for msg in self.model.ureceptr.log]
                             
-            
+    def uploadAltReceptors(self):
+        """
+        Function for uploading user receptors
+        """
+
+        if self.model.faclist is None:
+            messagebox.showinfo("Facilities List Option File Missing",
+                                "Please upload a Facilities List Options file before selecting"+
+                                " a User Receptors file.")
+            return
+
+        fullpath = self.openFile(askopenfilename())
+        if fullpath is not None:
+
+            self.uploader.uploadDependent("alt receptors", fullpath,
+                                          self.model.faclist.dataframe)
+
+            # Update the UI
+            self.urepalt_list.set(fullpath)
+            [self.scr.insert(tk.INSERT, msg) for msg in self.model.altreceptr.log]
+        
     def uploadBuildingDownwash(self):
         """ 
         Function for uploading building downwash
@@ -800,7 +886,40 @@ class Hem4(tk.Frame):
                                         command = self.set_ureponly)
         self.urep_sel.grid(row=3, column=0, sticky='E', padx = 85)
 
+    def add_urepalt(self):
+        """
+        Function for creating row and upload widgets for alternate user receptors
+        """
 
+        # set the appropriate instructions text
+        browse = "instructions/urepalt_browse.txt"
+        man = "instructions/urepalt_man.txt"
+
+        #user recptors label
+        self.urepalt_label = tk.Label(self.alturep, font="-size 10",
+                                 text="Please select an alternate User Receptor"+
+                                      " CSV file:")
+        self.urepalt_label.grid(row=1, sticky="W")
+
+        #user recptors upload button
+        self.urepaltButton = ttk.Button(self.alturep,
+                               command = lambda: self.uploadAltReceptors())
+        self.urepaltButton["text"] = "Browse"
+        self.urepaltButton.grid(row=2, column=0, sticky="W")
+        self.urepaltButton.bind('<Enter>',
+                       lambda e:self.browse(browse))
+
+        #user receptor text entry
+        self.urepalt_list = tk.StringVar(self.alturep)
+        self.urepalt_list_man = ttk.Entry(self.alturep)
+        self.urepalt_list_man["width"] = 55
+        self.urepalt_list_man["textvariable"]= self.urepalt_list
+        self.urepalt_list_man.grid(row=2, column=0, sticky='E', padx=85)
+        #event handler for instructions (Button 1 is the left mouse click)
+        self.urepalt_list_man.bind('<Button-1>',
+                                lambda e:self.manual(man))
+
+    
     def add_buoyant(self):
         """
         Function for creating row and buoyant line parameter upload widgets
@@ -1059,9 +1178,15 @@ class Hem4(tk.Frame):
                     self.s13.destroy()
             
     def set_ureponly(self):
-        self.model.model_optns['ureponly'] = self.check_ureponly.get()
-        print("ureponly = " + str(self.model.model_optns['ureponly']))
-   
+        self.model.urepOnly_optns['ureponly'] = self.check_ureponly.get()
+
+        if self.model.urepOnly_optns['ureponly']:
+            self.add_urepalt()
+        else:
+            if self.urepaltButton is not None:
+                self.urepaltButton.destroy()
+                self.urepalt_list_man.destroy()
+                self.urepalt_label.destroy()
  #%% Event handlers for porting instructions
 
     #reset instructions space
@@ -1144,8 +1269,7 @@ class Hem4(tk.Frame):
                 global instruction_instance
                 instruction_instance.set("Hem4 Running, check the log tab for updates")
                 
-                module_logger.info("starting HEM4")
-#               
+ #               module_logger.info("starting HEM4")               
                 
                 self.process()
 
