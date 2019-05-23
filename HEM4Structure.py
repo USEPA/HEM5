@@ -26,7 +26,7 @@ class HEM4Structure(tk.Tk):
     This is the application structure for HEM4
     """
 
-    def __init__(self, *args, **kwargs):
+    def __init__(self, messageQueue, callbackQueue, *args, **kwargs):
         
         tk.Tk.__init__(self, *args, **kwargs)
         container = tk.Frame(self)
@@ -64,6 +64,28 @@ class HEM4Structure(tk.Tk):
 
         frame = self.frames[cont]
         frame.tkraise()
+        
+        
+    def after_callback(self):
+        """
+        Function listens on thread RUnning HEM4 for error and completion messages
+        logged via queue method
+        """
+        
+        try:
+            message = self.messageQueue.get(block=False)
+        except queue.Empty:
+            # let's try again later
+            self.after(25, self.after_callback)
+            return
+
+        print('after_callback got', message)
+        if message is not None:
+            self.scr.configure(state='normal')
+            self.scr.insert(tk.INSERT, message)
+            self.scr.insert(tk.INSERT, "\n")
+            self.scr.configure(state='disabled')
+            self.after(25, self.after_callback)
 
 
 if __name__ == "__main__":
@@ -71,7 +93,10 @@ if __name__ == "__main__":
     messageQueue = queue.Queue()
     callbackQueue = queue.Queue()
 
-    app = HEM4Structure()
+    app = HEM4Structure(messageQueue, callbackQueue)
     app.title('HEM4')
+    
+#    app.after(25, app.after_callback)
+#    app.after(500, app.check_processing)
     
     app.mainloop()

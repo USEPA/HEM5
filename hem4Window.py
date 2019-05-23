@@ -76,27 +76,14 @@ class Hem4(tk.Frame):
 
         Logger.messageQueue = messageQueue
         
-    
-        
-        
-        
-     
-#        self.main.grid_rowconfigure(8, weight=0)
-#        self.main.grid_columnconfigure(2, weight=0)
-#        self.main.grid_propagate()
-        #self.s1.grid_propagate(0)
-        
-#        for frame in [self.s1, self.s2, self.s3, self.s4, self.s5]:
-#            frame.rowconfigure(0, weight=0)
-#            frame.columnconfigure(0, weight=0)
-#            frame.grid_propagate(0)
-        
-        
         #create widgets
         self.createWidgets()
     
         # create container frame to hold log
         self.top = LogWindow()
+        
+        self.after(25, self.after_callback)
+        self.after(500, self.check_processing)
         
         stderrHandler = logging.StreamHandler()  # no arguments => stderr
         module_logger.addHandler(stderrHandler)
@@ -1225,7 +1212,7 @@ class Hem4(tk.Frame):
             message = self.messageQueue.get(block=False)
         except queue.Empty:
             # let's try again later
-            self.win.after(25, self.after_callback)
+            self.after(25, self.after_callback)
             return
 
         print('after_callback got', message)
@@ -1234,4 +1221,4 @@ class Hem4(tk.Frame):
             self.scr.insert(tk.INSERT, message)
             self.scr.insert(tk.INSERT, "\n")
             self.scr.configure(state='disabled')
-            self.win.after(25, self.after_callback)
+            self.after(25, self.after_callback)
