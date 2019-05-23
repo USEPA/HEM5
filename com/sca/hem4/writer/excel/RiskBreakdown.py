@@ -4,6 +4,7 @@ import pandas as pd
 import sys
 from com.sca.hem4.log import Logger
 from com.sca.hem4.upload.DoseResponse import *
+from com.sca.hem4.writer.csv.AllOuterReceptors import AllOuterReceptors
 from com.sca.hem4.writer.excel.MaximumIndividualRisks import *
 from com.sca.hem4.model.Model import *
 from com.sca.hem4.support.UTM import *
@@ -105,23 +106,17 @@ class RiskBreakdown(ExcelWriter, InputFile):
                             listOuter.append(entry)
                     
                     # Search each outer receptor file for the lat/lon in row
-                    foundit = 0
-                    outercolumns = [fips, block, lat, lon, source_id, ems_type, pollutant, conc, 
-                                    aconc, elev, population, overlap]
+                    foundit = False
                     for f in listOuter:
-                        outerfname = os.path.join(self.targetDir, f)
-                        outconcs = pd.read_csv(outerfname, skiprows=1, names=outercolumns, dtype=str)
-                        typedict = {fips:str, block:str, lat:pd.np.float64, lon:pd.np.float64,
-                                    source_id:str, ems_type:str, pollutant:str, conc:pd.np.float64,
-                                    aconc:pd.np.float64, elev:pd.np.float64, population:pd.np.float64,
-                                    overlap:str}
-                        outconcs = outconcs.astype(dtype=typedict)
+                        allouter = AllOuterReceptors(targetDir=self.targetDir, filenameOverride=f)
+                        outconcs = allouter.createDataframe()
+
                         concdata = outconcs[[lat,lon,source_id,pollutant,ems_type,conc]] \
                                             [(outconcs[lat]==row[lat]) & (outconcs[lon]==row[lon])]
                         if not concdata.empty:
-                            foundit = 1
+                            foundit = True
                             break
-                    if foundit == 0:
+                    if not foundit:
                         errmessage = """An error has happened while computing the Risk Breakdown. A max risk/HI
                                       occured at an interpolated receptor but could not be found in the All Outer Receptor files """
                         Logger.logMessage(errmessage)
