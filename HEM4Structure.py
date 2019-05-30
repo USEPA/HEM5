@@ -11,6 +11,7 @@ from ttkthemes import ThemedStyle
 from startpage import StartPage
 from navigation import Navigation
 from hem4Window import Hem4
+from riskSummary import Summary
 
 import queue
 
@@ -39,7 +40,7 @@ class HEM4Structure(tk.Tk):
         
         self.frames = {}
 
-        for F in (StartPage, Navigation, Hem4):
+        for F in (StartPage, Navigation, Hem4, Summary):
              if F == Hem4:
                 
                 frame = F(container, self, messageQueue, callbackQueue)

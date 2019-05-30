@@ -94,9 +94,9 @@ class Hem4(tk.Frame):
         
         
          #back button
-        back_button = tk.Button(self, text="Back", font=TEXT_FONT,
+        back_button = tk.Button(self.main, text="Back", font=TEXT_FONT,
                             command=lambda: controller.show_frame(navigation.Navigation))
-        back_button.grid(row=2, sticky="W", padx=10)
+        back_button.grid(row=14, sticky="W", padx=10, pady=10)
     
     #%% Set Quit, Run, and User Guide buttons        
         #self.quit_button = tk.Button(self.main, text="QUIT", fg="red",
@@ -104,9 +104,9 @@ class Hem4(tk.Frame):
         #self.quit_button.grid(row=10, column=0, sticky="W")
         
         #run only appears once the required files have been set
-        self.run_button = tk.Button(self, text='RUN', fg="green", font=TEXT_FONT,
+        self.run_button = tk.Button(self.main, text='RUN', fg="green", font=TEXT_FONT,
                                      command=self.run)
-        self.run_button.grid(row=2, sticky="E", padx=20)
+        self.run_button.grid(row=14, sticky="E", padx=20, pady=10)
         
         
         
@@ -302,6 +302,10 @@ class Hem4(tk.Frame):
             self.censusUpdatePath = fullpath
             self.cu_list.set(fullpath)
 
+    def conf(self, event):
+        self.tab_control.config(height=self.winfo_height(),width=self.winfo_width()-145)
+
+        self.bind("<Configure>",self.conf)
 
     def createWidgets(self):
         
@@ -605,18 +609,18 @@ class Hem4(tk.Frame):
                     if hasattr(self, 'dep_part'):
                         self.dep_part_up.destroy()
                         self.dep_part_man.destroy()
-                        self.dep_part.destroy()
+                        self.part_label.destroy()
                     #clear land
                     if hasattr(self, 'dep_land'):
                         self.dep_land_up.destroy()
                         self.dep_land_man.destroy()
-                        self.dep_land.destroy()
+                        self.land_label.destroy()
 
                     #clear vegetation
                     if hasattr(self, 'dep_seasons'):
                         self.dep_seasons_up.destroy()
                         self.dep_seasons_man.destroy()
-                        self.dep_seasons.destroy()
+                        self.seasons_label.destroy()
 
 
                     self.s12.destroy()                        
@@ -853,7 +857,7 @@ class Hem4(tk.Frame):
         Function for creating row and upload widgets for user receptors
         """
         #create row for user receptors
-        self.s6 = tk.Frame(self, width=250, height=200, padx=10 )
+        self.s6 = tk.Frame(self.main, width=250, height=200, padx=10 )
         self.s6.grid(row=5, column=0, columnspan=2, sticky="nsew")
         
         #user recptors label
@@ -925,7 +929,7 @@ class Hem4(tk.Frame):
         Function for creating row and buoyant line parameter upload widgets
         """
          #create row for buoyant line input
-        self.s7 = tk.Frame(self, width=250, height=100, padx=10)
+        self.s7 = tk.Frame(self.main, width=250, height=100, padx=10)
         self.s7.grid(row=6, column=0, columnspan=2, sticky="nsew")
         
         
@@ -962,7 +966,7 @@ class Hem4(tk.Frame):
         Function for creating row and polyvertex file upload widgets
         """
         #create row for poly
-        self.s8 = tk.Frame(self, width=250, height=100, padx=10)
+        self.s8 = tk.Frame(self.main, width=250, height=100, padx=10)
         self.s8.grid(row=7, column=0, columnspan=2, sticky="nsew")
         
         #Polygon sources label
@@ -995,7 +999,7 @@ class Hem4(tk.Frame):
         Function for creating row and building downwash file upload widgets
         """
         #create row for building downwash
-        self.s9 = tk.Frame(self, width=250, height=100, padx=10)
+        self.s9 = tk.Frame(self.main, width=250, height=100, padx=10)
         self.s9.grid(row=8, column=0, columnspan=2, sticky="nsew")
         
         # building dw labels
@@ -1031,13 +1035,13 @@ class Hem4(tk.Frame):
         """
         
         #create column for particle size file
-        self.s12 = tk.Frame(self, width=250, height=100, padx=10)
-        self.s12.grid(row=2, column=2, columnspan=2, sticky="nsew")
+        self.s12 = tk.Frame(self.main, width=250, height=100, padx=10)
+        self.s12.grid(row=9, column=0, columnspan=2, sticky="nsew")
         
         #particle size label
-        part_label = tk.Label(self.s12, font=TEXT_FONT, 
+        self.part_label = tk.Label(self.s12, font=TEXT_FONT, 
                               text="Upload the file containing size information for particle matter emissions:")
-        part_label.grid(row=1, sticky="W")
+        self.part_label.grid(row=1, sticky="W")
     
         #particle depositionsize file upload button
         self.dep_part_up = ttk.Button(self.s12, 
@@ -1065,13 +1069,13 @@ class Hem4(tk.Frame):
         """
         
         #create column for land use file
-        self.s12 = tk.Frame(self, width=250, height=100, pady=10, padx=10)
-        self.s12.grid(row=3, column=2, columnspan=2, sticky="nsew")
+        self.s12 = tk.Frame(self.main, width=250, height=100, pady=10, padx=10)
+        self.s12.grid(row=10, column=0, columnspan=2, sticky="nsew")
         
         #land use size label
-        land_label = tk.Label(self.s12, font=TEXT_FONT, 
+        self.land_label = tk.Label(self.s12, font=TEXT_FONT, 
                               text="Upload the file containing land use information:")
-        land_label.grid(row=1, sticky="W")
+        self.land_label.grid(row=1, sticky="W")
     
         #laand use file upload button
         self.dep_land_up = ttk.Button(self.s12, 
@@ -1098,13 +1102,13 @@ class Hem4(tk.Frame):
         """
         
         #create column for land use file
-        self.s12 = tk.Frame(self, width=250, height=100, pady=10, padx=10)
-        self.s12.grid(row=4, column=2, columnspan=2, sticky="nsew")
+        self.s12 = tk.Frame(self.main, width=250, height=100, pady=10, padx=10)
+        self.s12.grid(row=12, column=0, columnspan=2, sticky="nsew")
         
         #land use size label
-        seasons_label = tk.Label(self.s12, font=TEXT_FONT, 
+        self.seasons_label = tk.Label(self.s12, font=TEXT_FONT, 
                              text="Upload the file containing seasonal vegetation information:")
-        seasons_label.grid(row=1, sticky="W")
+        self.seasons_label.grid(row=1, sticky="W")
     
         #laand use file upload button
         self.dep_seasons_up = ttk.Button(self.s12, 
@@ -1133,9 +1137,9 @@ class Hem4(tk.Frame):
             
             if hasattr(self.model.emisloc, 'dataframe'):
                 #create row for emissions variation
-                self.s13 = tk.Frame(self, width=250, height=100, pady=10, 
+                self.s13 = tk.Frame(self.main, width=250, height=100, pady=10, 
                                     padx=10)
-                self.s13.grid(row=9, column=0, columnspan=2, sticky="nsew")
+                self.s13.grid(row=13, column=0, columnspan=2, sticky="nsew")
                 
                 #emissions variation label
                 self.emisvar_label = tk.Label(self.s13, font=TEXT_FONT, 
