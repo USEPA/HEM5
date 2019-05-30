@@ -7,7 +7,7 @@ import tkinter as tk
 import os
 
 #get navigation page
-from navigation import Navigation
+import navigation
 
 TITLE_FONT= ("Verdana", 20)
 TEXT_FONT = ("Verdana", 15)

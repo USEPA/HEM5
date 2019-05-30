@@ -10,6 +10,7 @@ import os
 #get other pages for navigation
 import startpage
 import hem4Window as hem4
+import riskSummary
 
 TITLE_FONT= ("Verdana", 20)
 TEXT_FONT = ("Verdana", 15)
@@ -58,16 +59,19 @@ class Navigation(tk.Frame):
                                font=TEXT_FONT).grid(row=1)
         resumeMenu.grid(row=2)
         
-        #summarize risk
-        completed_facs = os.listdir("output")
-        ignore = ['HAP_ignored.log', 'hem4.log', 'SC_max_risk_and_hi.xlsx']
-        folders = [x for x in completed_facs if x not in ignore]
+#        #summarize risk
+#        completed_facs = os.listdir("output")
+#        ignore = ['HAP_ignored.log', 'hem4.log', 'SC_max_risk_and_hi.xlsx']
+#        folders = [x for x in completed_facs if x not in ignore]
+#        
+#        sum_var = tk.StringVar(self.s4).set(folders[1])
+#        popupMenu = tk.OptionMenu(self.s4, sum_var, *folders)
+#        popupMenu.grid(row = 2)
         
-        sum_var = tk.StringVar(self.s4).set(folders[1])
-        popupMenu = tk.OptionMenu(self.s4, sum_var, *folders)
-        summary= tk.Label(self.s4, text="Run Risk Summary on completed facility", 
-                          font=TEXT_FONT).grid(row = 1)
-        popupMenu.grid(row = 2)
+         #new facility run
+        risk = tk.Button(self.s4, text= "Run risk summary", font=TEXT_FONT,
+                            command=lambda:controller.show_frame(riskSummary.Summary))
+        risk.grid(row=1)
         
         #back button
         back_button = tk.Button(self.s5, text="Back to Home", font=TEXT_FONT,

@@ -46,8 +46,11 @@ class StartPage(tk.Frame):
             frame.grid_propagate(0)
         
         #title in first grid space 
-        title = tk.Label(self.s1, text="Human Exposure Model 4", font=TITLE_FONT)
-        title.grid(row=1)
+        title1 = tk.Label(self.s1, text="HEM4", font=TITLE_FONT)
+        title1.grid(row=1)
+        
+        title2 = tk.Label(self.s1, text="Human Exposure Model 4", font=TEXT_FONT)
+        title2.grid(row=2)
         
         #some information
         some_info = tk.Label(self.s2, text="Some information about HEM4", 
