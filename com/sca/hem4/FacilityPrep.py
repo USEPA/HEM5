@@ -11,6 +11,7 @@ from com.sca.hem4.runstream.Runstream import Runstream
 from com.sca.hem4.upload.EmissionsLocations import *
 from com.sca.hem4.upload.HAPEmissions import *
 from com.sca.hem4.upload.FacilityList import *
+import sys
 
 distance = 'distance';
 angle = 'angle';
@@ -439,11 +440,13 @@ class FacilityPrep():
 
         # if the facility will use elevations, assign them to emission sources and polar receptors
         if self.model.facops[elev][0].upper() == "Y":
-            polar_df[elev], polar_df[hill] = zip(*polar_df.apply(lambda row: self.assign_polar_elev_step1(row,self.innerblks,self.outerblks,maxdist), axis=1))
+            polar_df[elev], polar_df[hill], polar_df['avgelev'] = zip(*polar_df.apply(lambda row: 
+                        self.assign_polar_elev_step1(row,self.innerblks,self.outerblks,maxdist), axis=1))
             if emislocs[elev].max() == 0 and emislocs[elev].min() == 0:
                 emislocs[elev] = self.compute_emisloc_elev(polar_df,op_circles)
             # if polar receptor still has missing elevation, fill it in
-            polar_df[elev], polar_df[hill] = zip(*polar_df.apply(lambda row: self.assign_polar_elev_step2(row,self.innerblks,self.outerblks,emislocs), axis=1))
+            polar_df[elev], polar_df[hill], polar_df['avgelev'] = zip(*polar_df.apply(lambda row: 
+                        self.assign_polar_elev_step2(row,self.innerblks,self.outerblks,emislocs), axis=1))
         else:
             polar_df[elev] = 0
             polar_df[hill] = 0
@@ -451,8 +454,8 @@ class FacilityPrep():
             emislocs[hill] = 0
 
         
-        # Assign the polar grid data frame to the model
-        self.model.polargrid = polar_df
+        # Assign the polar grid data frame to the model (exclude avgelev column)
+        self.model.polargrid = polar_df.drop('avgelev', axis=1)
 
 
         # export polar_df to an Excel file in the Working directory
@@ -490,9 +493,7 @@ class FacilityPrep():
 
     #%% Calculate ring and sector of block receptors
     def calc_ring_sector(self, ring_distances, block_distance, block_angle, num_sectors):
-
-        ring_loc = -999
-
+            
         # compute fractional sector number
         s = round(((block_angle * num_sectors)/360.0 % num_sectors), 2) + 1
 
@@ -503,6 +504,7 @@ class FacilityPrep():
             sector_int = num_sectors
 
         # Compute fractional, log weighted ring_loc. loop through ring distances in pairs of previous and current
+        ring_loc = 1
         previous = ring_distances[0]
         i = 0
         for ring in ring_distances[1:]:
@@ -580,9 +582,9 @@ class FacilityPrep():
             r_popelev = r_popelev/r_pop
         else:
             r_popelev = -999
-
+            
         #Note: the max elevation is returned as the elevation for this polar receptor
-        return int(round(r_maxelev)), int(round(r_hill))
+        return int(round(r_maxelev)), int(round(r_hill)), int(round(r_avgelev))
 
     #%% Assign elevation and hill height to polar receptors that still have missing elevations
     def assign_polar_elev_step2(self, polar_row, innblks, outblks, emislocs):
@@ -637,9 +639,10 @@ class FacilityPrep():
 
             r_maxelev = polar_row[elev]
             r_hill = polar_row[hill]
+            r_avgelev = -999
 
         #Note: the max elevation is returned as the elevation for this polar receptor
-        return int(round(r_maxelev)), int(round(r_hill))
+        return int(round(r_maxelev)), int(round(r_hill)), int(round(r_avgelev))
 
     #%% Compute the elevation to be used for all emission sources
     def compute_emisloc_elev(self, polars, num_rings):
@@ -652,17 +655,18 @@ class FacilityPrep():
         while D_selev == 0 and ringnum <= num_rings:
             polar_sub = polars.loc[polars[ring] == ringnum]
             for index, row in polar_sub.iterrows():
-                if row[elev] != -999:
-                    D_selev = D_selev + row[elev]
+                if row['avgelev'] != -999:
+                    D_selev = D_selev + row['avgelev']
                     N_selev = N_selev + 1
             ringnum = ringnum + 1
 
         if N_selev != 0:
             avgelev = D_selev / N_selev
         else:
-            print("Error! No elevation computed for the emission sources.")
+            Logger.logMessage("Error! No elevation was computed for the emission sources.")
+            #TODO Where should things be directed now?
             sys.exit()
-
+                
         return int(round(avgelev))
 
     #%% Define polar receptor dataframe index
