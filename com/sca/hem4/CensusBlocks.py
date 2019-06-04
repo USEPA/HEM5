@@ -30,7 +30,7 @@ def bearing(utme, utmn, cenx, ceny):
             angle = 90
         else:
             angle = 270
-    
+         
     return angle        
 
 
