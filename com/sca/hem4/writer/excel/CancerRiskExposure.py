@@ -43,7 +43,7 @@ class CancerRiskExposure(ExcelWriter):
         populations = []
 
         for level in levels:
-            indexed = df[df.apply(lambda x: (self.round_to_sigfig(scalingFactor*x[mir])) > level, axis=1)]
+            indexed = df[df.apply(lambda x: (self.round_to_sigfig(scalingFactor*x[mir])) >= level, axis=1)]
             populations.append(0 if indexed.empty else indexed[population].agg('sum'))
 
         buckets = list(zip(bucketHeaders, populations))
