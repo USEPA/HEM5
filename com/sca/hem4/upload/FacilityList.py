@@ -58,9 +58,9 @@ class FacilityList(InputFile):
         #value greater than zero
         urban = faclist_df[faclist_df[rural_urban] == 'U']
         missing_pop = [] 
-        for row in urban.iterrows():
-            if row[urban_pop][0] >= 0 or isnan(row[urban_pop][0]):
-                missing_pop.append(row[fac_id][0])
+        for index, row in urban.iterrows():
+            if row[urban_pop] == 0 or isnan(row[urban_pop]):
+                missing_pop.append(row[fac_id])
                 
     
         if len(missing_pop) == 0: 
