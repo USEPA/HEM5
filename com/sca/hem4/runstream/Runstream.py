@@ -76,11 +76,8 @@ class Runstream():
             optel = " FLAT "
     
     # deposition & depletion --------------------------------------------------
-
-        print('MODEL OPTIONS', phase)
         
-        
-        #logic for pahse setting in model options
+        #logic for phase setting in model options
         
         if phase['phase'] == 'P':
             optdp = phase['settings'][0]
@@ -95,7 +92,7 @@ class Runstream():
             optdp = ''
             titletwo = "CO TITLETWO  Combined particle and vapor-phase emissions \n"
     
-    # BUilding downwash option ------------------------------------------------
+    # Building downwash option ------------------------------------------------
         self.blddw = self.facoptn_df['bldg_dw'][0]
         
     # FASTALL Model Option for AERMOD -----------------------------------------
@@ -172,7 +169,7 @@ class Runstream():
     
     def build_so(self, phase):
         """
-        Function writes SO section of Aermod.inp names source types and 
+        Function writes SO section of Aermod.inp, names source types and 
         their parameters
         
         """
@@ -873,15 +870,16 @@ class Runstream():
         """
         Compiles and writes parameters for vapor deposition/depletion by source
         """
-        pollutants = (self.hapemis[self.hapemis['source_id'] == 
-                                   srid]['pollutant'].str.lower().tolist())
-        
-        params = self.model.gas_params[self.model.gas_params['pollutant'] == pollutants[0]]
-    #write values if they exist in the 
+        pollutants = (self.hapemis[(self.hapemis['source_id'] == srid)
+                                    & (self.hapemis['part_frac'] < 1)]['pollutant'].str.lower())
+            
+        params = self.model.gasparams.dataframe.loc[self.model.gasparams.dataframe['pollutant'].isin(pollutants)]
+                
+        #write values if they exist in the 
         #so there should only be one pollutant per source id for vapor/gas deposition to work
         #currently default values if the size of pollutant list is greater than 1
         
-        if len(pollutants) > 1 or len(params) == 0: ## check if len params works for empties
+        if len(params) != 1: ## check if len params works for empties
             #log message about defaulting 
             
             da    =    0.07

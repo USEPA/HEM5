@@ -182,7 +182,7 @@ class KMLWriter():
         """
 
         # Define the name of the output kml file
-        fackml_fname = outdir + "fac_" + str(facid) + "_source_risk.kml"
+        fackml_fname = outdir + str(facid) + "_source_risk.kml"
         
         # Setup a dictionary to hold the real names of the TOSHIs
         hinames = {'hi_resp':'respiratory', 'hi_live':'liver', 'hi_neur':'neurological',

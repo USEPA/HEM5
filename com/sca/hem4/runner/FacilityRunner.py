@@ -2,11 +2,12 @@ import os
 import time
 import subprocess
 import shutil
-from com.sca.hem4 import OutputProcessing as po
+import pandas as pd
+from com.sca.hem4.OutputProcessing import *
 from com.sca.hem4.FacilityPrep import FacilityPrep
 from com.sca.hem4.log import Logger
 from com.sca.hem4.DepositionDepletion import sort
-from com.sca.hem4.model.Model import fac_id
+from com.sca.hem4.model.Model import *
 
 
 class FacilityRunner():
@@ -20,14 +21,11 @@ class FacilityRunner():
     
     def setup(self):
         
-        #put phase in run_optns
-        ## need to fix this not pulling phase out correctly
+        #put phase in model_optns
         fac = self.model.faclist.dataframe.loc[self.model.faclist.dataframe[fac_id] == self.facilityId]
-        print('fac list:', fac['phase'].tolist()[0])
 
         if 'nan' in fac['phase'].tolist()[0]:
             self.model.model_optns['phase'] = None
-            print(self.model.model_optns['phase'])
 
         else:
             self.model.model_optns['phase'] = fac['phase'].tolist()[0]
@@ -43,63 +41,118 @@ class FacilityRunner():
         #do prep
         self.prep_fac = self.prep()
 
+        # phases dictionary
+        if self.model.model_optns['phase'] != None:
+            phases = sort(fac)
+
+        else:
+            phases = {'phase': None, 'settings': None}
+
+        
         #Single run model options
         if self.model.model_optns['phase'] != 'B':
 
-            if self.model.model_optns['phase'] != None:
-                phase = sort(fac)
-
-            else:
-                phase = {'phase': None, 'settings': None}
-
             #create runstream
-            self.runstream = self.prep_fac.createRunstream(self.facilityId, phase)
+            self.runstream = self.prep_fac.createRunstream(self.facilityId, phases)
 
+            # Set the runtype variable which indicates how Aermod is run (with or without deposition)
+            # and what columns will be in the Aermod plotfile
+            depoYN = self.model.facops['dep'][0]
+            if phases['phase'] == 'P':
+                depotype = self.model.facops['pdep'][0]
+            elif phases['phase'] == 'V':
+                depotype = self.model.facops['vdep'][0]
+            else:
+                depotype = 'NO'
+            runtype = self.set_runtype(depoYN, depotype)
+            self.model.model_optns['runtype'] = runtype
+            
+            
             #run aermod
             self.run(fac_folder)
 
-            #check aermod run and move aer.out file to facility folder
-            check = self.check_run(fac_folder)
+            #check aermod run and move aermod.out file to facility folder
+            check = self.check_run(fac_folder, None)
 
             if check == True:
 
-                #process outputs for single facility -- turn off for particle
-                self.process_outputs(fac_folder)
+                # Open the Aermod plotfile
+                pfile = open("aermod/plotfile.plt", "r")
+                
+                # Now put the plotfile into a dataframe
+                plot_df = self.readplotf(pfile, self.model.model_optns['runtype'])
+                
+                # Set the emis_type column in plot_df
+                if phases['phase'] == None:
+                    plot_df['emis_type'] = 'C'
+                else:
+                    plot_df['emis_type'] = phases['phase']
+                                
+                # Process outputs for single facility
+                self.process_outputs(fac_folder, plot_df)
 
         else:
-            #double run needs to create subfolder for particle and vapor
-            #also store the runstream objects for later use in processing
+            #double run for particle and vapor
 
             #let the sort get both phases then loop through each
             phases = sort(fac)
+                        
             runstreams = []
-
-
+            plot_df = pd.DataFrame()
+            
             for r in phases:
 
-                #log label for particle and vapor so easy to track
-
-                #Logger.logMessage(r + " run:")
-                print(phases)
-
-                #store run in subfolder
-                sub_folder = fac_folder + r['phase'] +"/"
-                if os.path.exists(sub_folder):
-                    pass
-                else:
-                    os.makedirs(sub_folder)
+                Logger.logMessage(r['phase'] + " run:")
                 
-                #run individual phase
+                # create runstream for individual phase
                 self.runstream = self.prep_fac.createRunstream(self.facilityId, r)
+ 
+                # Set the runtype variable which indicates how Aermod is run (with or without deposition)
+                # and what columns will be in the Aermod plotfile
+                depoYN = self.model.facops['dep'][0]
                 
+                # depotype can be WD (wet/dry), WO (wet only), DO (dry only), or NO (none)
+                if r['phase'] == 'P':
+                    depotype = self.model.facops['pdep'][0]
+                elif r['phase'] == 'V':
+                    depotype = self.model.facops['vdep'][0]
+                else:
+                    depotype = 'NO'
+                runtype = self.set_runtype(depoYN, depotype)
+                self.model.model_optns['runtype'] = runtype
+               
                 #store runstream objects for later use
                 runstreams.append(self.runstream)
+                                
+                #run individual phase
+                self.run(fac_folder)
                 
-                self.run(sub_folder)
-             
-                check = self.check_run(sub_folder)
+                #check aermod run, move aermod.out file to facility folder and rename
+                check = self.check_run(fac_folder, r['phase'])
                 
-                #currently process outputs has not been made for a double run
+                if check == True:
+    
+                    # Open the Aermod plotfile
+                    pfile = open("aermod/plotfile.plt", "r")
+                    
+                    # Put the plotfile into a dataframe
+                    temp_df = self.readplotf(pfile, self.model.model_optns['runtype'])
+                    
+                    # Set the emis_type column in temp_df
+                    temp_df['emis_type'] = r['phase']
+                    
+                    # Append temp_df to plot_df
+                    plot_df = plot_df.append(temp_df, ignore_index=True)
+ 
+            # For QA purposes, export plot_df to an Excel file in the Working directory
+            plotdf_path = "working/plot_df.xlsx"
+            plotdf_con = pd.ExcelWriter(plotdf_path)
+            plot_df.to_excel(plotdf_con,'Sheet1')
+            plotdf_con.save()
+    
+            # Process outputs for this facility
+            self.process_outputs(fac_folder, plot_df)
+               
     
     def prep(self):
         
@@ -133,7 +186,7 @@ class FacilityRunner():
                 
                 
                 
-    def check_run(self, fac_folder):
+    def check_run(self, fac_folder, phasetype):
 
         ## Check for successful aermod run:
         output = os.path.join("aermod", "aermod.out")
@@ -150,15 +203,20 @@ class FacilityRunner():
 
         if success == True:
 
-            #move aermod.out to the fac output folder
+            #move aermod.out to the fac output folder and rename using phasetype
             #replace if one is already in there othewrwise will throw error
 
             if os.path.isfile(fac_folder + 'aermod.out'):
                 os.remove(fac_folder + 'aermod.out')
-                shutil.move(output, fac_folder)
 
-            else:
-                shutil.move(output, fac_folder)
+            shutil.move(output, fac_folder)
+            
+            if phasetype != None:
+                oldname = os.path.join(fac_folder, 'aermod.out')
+                newname = os.path.join(fac_folder, 'aermod_' + phasetype + '.out')
+                if os.path.isfile(newname):
+                    os.remove(newname)
+                os.rename(oldname, newname)    
                 
             #if successful save state
             self.model.save.save_model(self.facilityId)
@@ -166,16 +224,73 @@ class FacilityRunner():
             return success
 
 
-    def process_outputs(self, fac_folder):
+    def set_runtype(self, depYN, deptype):
+        
+        if depYN == 'N':
+            # No deposition
+            runtype = 0
+        else:
+            if deptype == 'WD':
+                # Wet and dry deposition
+                runtype = 1
+            elif deptype == 'DO':
+                # Dry only deposition
+                runtype = 2
+            elif deptype == 'WO':
+                # Wet only deposition
+                runtype = 3
+            else:
+                # No deposition
+                runtype = 0
+                        
+        return runtype
+        
+        
+        
+    def readplotf(self, pfile, runtype):
+
+        if runtype == 0:
+            plotf_df = pd.read_table(pfile, delim_whitespace=True, header=None, 
+                names=[utme,utmn,result,elev,hill,flag,avg_time,source_id,num_yrs,net_id],
+                usecols=[0,1,2,3,4,5,6,7,8,9], 
+                converters={utme:np.float64,utmn:np.float64,result:np.float64,elev:np.float64,hill:np.float64
+                       ,flag:np.float64,avg_time:np.str,source_id:np.str,num_yrs:np.int64,net_id:np.str},
+                comment='*')
+        elif runtype == 1:
+            plotf_df = pd.read_table(pfile, delim_whitespace=True, header=None, 
+                names=[utme,utmn,result,ddp,wdp,elev,hill,flag,avg_time,source_id,num_yrs,net_id],
+                usecols=[0,1,2,3,4,5,6,7,8,9,10,11], 
+                converters={utme:np.float64,utmn:np.float64,result:np.float64,ddp:np.float64,wdp:np.float64,elev:np.float64,hill:np.float64
+                       ,flag:np.float64,avg_time:np.str,source_id:np.str,num_yrs:np.int64,net_id:np.str},
+                comment='*')
+        elif runtype == 2:
+            plotf_df = pd.read_table(pfile, delim_whitespace=True, header=None, 
+                names=[utme,utmn,result,ddp,elev,hill,flag,avg_time,source_id,num_yrs,net_id],
+                usecols=[0,1,2,3,4,5,6,7,8,9,10], 
+                converters={utme:np.float64,utmn:np.float64,result:np.float64,ddp:np.float64,elev:np.float64,hill:np.float64
+                       ,flag:np.float64,avg_time:np.str,source_id:np.str,num_yrs:np.int64,net_id:np.str},
+                comment='*')
+        elif runtype == 3:
+            plotf_df = pd.read_table(pfile, delim_whitespace=True, header=None, 
+                names=[utme,utmn,result,wdp,elev,hill,flag,avg_time,source_id,num_yrs,net_id],
+                usecols=[0,1,2,3,4,5,6,7,8,9,10], 
+                converters={utme:np.float64,utmn:np.float64,result:np.float64,wdp:np.float64,elev:np.float64,hill:np.float64
+                       ,flag:np.float64,avg_time:np.str,source_id:np.str,num_yrs:np.int64,net_id:np.str},
+                comment='*')
+        
+        return plotf_df
+    
+
+    def process_outputs(self, fac_folder, plot_df):
            
             # check length of fac_folder
             
             
             #process outputs
             Logger.logMessage("Processing Outputs for " + self.facilityId)
-            outputProcess = po.Process_outputs(fac_folder, self.facilityId, 
-                                               self.model, self.prep_fac,
-                                               self.runstream, self.abort)
+            outputProcess = Process_outputs(fac_folder, self.facilityId, 
+                                            self.model, self.prep_fac,
+                                            self.runstream, plot_df, self.abort)
             outputProcess.process()
                         
 

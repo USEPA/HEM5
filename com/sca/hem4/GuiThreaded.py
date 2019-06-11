@@ -229,18 +229,21 @@ class Hem4():
             if hasattr(self, 'dep_part'):
                 self.dep_part_up.destroy()
                 self.dep_part_man.destroy()
-                self.dep_part.destroy()
+                self.dep_part.set('')
+#                self.dep_part.destroy()
             #clear land
             if hasattr(self, 'dep_land'):
                 self.dep_land_up.destroy()
                 self.dep_land_man.destroy()
-                self.dep_land.destroy()
+                self.dep_land.set('')
+#                self.dep_land.destroy()
 
             #clear vegetation
             if hasattr(self, 'dep_veg'):
                 self.dep_veg_up.destroy()
                 self.dep_veg_man.destroy()
-                self.dep_veg.destroy()
+                self.dep_veg.set('')
+#                self.dep_veg.destroy()
 
             self.s12.destroy()
 
@@ -597,18 +600,21 @@ class Hem4():
                     if hasattr(self, 'dep_part'):
                         self.dep_part_up.destroy()
                         self.dep_part_man.destroy()
-                        self.dep_part.destroy()
+                        self.dep_part.set('')
+#                        self.dep_part.destroy()
                     #clear land
                     if hasattr(self, 'dep_land'):
                         self.dep_land_up.destroy()
                         self.dep_land_man.destroy()
-                        self.dep_land.destroy()
+                        self.dep_land.set('')
+#                        self.dep_land.destroy()
 
                     #clear vegetation
                     if hasattr(self, 'dep_seasons'):
                         self.dep_seasons_up.destroy()
                         self.dep_seasons_man.destroy()
-                        self.dep_seasons.destroy()
+                        self.dep_seasons.set('')
+#                        self.dep_seasons.destroy()
 
 
                     self.s12.destroy()                        

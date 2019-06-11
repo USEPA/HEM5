@@ -23,12 +23,17 @@ class Particle(DependentInputFile):
     def createDataframe(self):
 
         faclist_df = self.dependency
-
+        facid_list = faclist_df[fac_id].tolist()
+        
         # Specify dtypes for all fields
         self.numericColumns = [part_diam,mass_frac,part_dens]
         self.strColumns = [fac_id,source_id]
 
-        particle_df = self.readFromPath((fac_id, source_id, part_diam,mass_frac, part_dens))
+        # Read the particle file
+        particle_allfacs = self.readFromPath((fac_id, source_id, part_diam,mass_frac, part_dens))
+        
+        # Subset the particle data to the facilities being modeled
+        particle_df = particle_allfacs.loc[particle_allfacs[fac_id].isin(facid_list)]
 
         particle_df[mass_frac] = particle_df[mass_frac] / 100
 
@@ -60,8 +65,7 @@ class Particle(DependentInputFile):
 
 
             if check_particle_assignment != set(self.facilities):
-                particle_unassigned = (check_particle_assignment -
-                                       set(self.facilities)).tolist()
+                particle_unassigned = check_particle_assignment - set(self.facilities)
 
                 messagebox.showinfo("Unassigned particle size parameters", "" +
                                     " Line parameters for " +

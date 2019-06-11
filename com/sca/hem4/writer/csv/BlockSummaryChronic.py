@@ -54,9 +54,13 @@ class BlockSummaryChronic(CsvWriter, InputFile):
         innermerged = allinner_df.merge(innerblocks, on=[lat, lon])[columns]
         
         # compute cancer and noncancer values for each Inner rececptor row
-        innermerged[[mir, hi_resp, hi_live, hi_neur, hi_deve, hi_repr, hi_kidn, hi_ocul, hi_endo,
-                     hi_hema, hi_immu, hi_skel, hi_sple, hi_thyr, hi_whol]] = \
-            innermerged.apply(lambda row: self.calculateRisks(row[pollutant], row[conc]), axis=1)
+        riskcols = [mir, hi_resp, hi_live, hi_neur, hi_deve, hi_repr, hi_kidn, hi_ocul, hi_endo,
+                    hi_hema, hi_immu, hi_skel, hi_sple, hi_thyr, hi_whol]
+        if innermerged.empty == False:
+            innermerged[riskcols] = innermerged.apply(lambda row: self.calculateRisks(row[pollutant], row[conc]), axis=1)
+        else:
+            scalar_dict = { c : None for c in riskcols }
+            innermerged = innermerged.assign(**scalar_dict)
 
         # For the Inner and Outer receptors, group by lat,lon and then aggregate each group by summing the mir and hazard index fields
         aggs = {pollutant:'first', lat:'first', lon:'first', overlap:'first', elev:'first', utme:'first',
@@ -99,9 +103,6 @@ class BlockSummaryChronic(CsvWriter, InputFile):
                 self.model.haplib.dataframe[pollutant].str.contains(pattern, case=False, regex=True)]
 
             if row.size == 0:
-#                msg = 'Could not find pollutant ' + pollutant_name + ' in the haplib!'
-#                Logger.logMessage(msg)
-                # Logger.log(msg, self.model.haplib.dataframe, False)
                 URE = 0
                 RFC = 0
             else:
@@ -118,8 +119,6 @@ class BlockSummaryChronic(CsvWriter, InputFile):
                 self.model.organs.dataframe[pollutant].str.contains(pattern, case=False, regex=True)]
 
             if row.size == 0:
-                # Couldn't find the pollutant...set values to 0 and log message
-#                Logger.logMessage('Could not find pollutant ' + pollutant_name + ' in the target organs.')
                 listed = []
             else:
                 listed = row.values.tolist()
