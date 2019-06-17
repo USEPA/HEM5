@@ -96,7 +96,7 @@ class Hem4(tk.Frame):
          #back button
         back_button = tk.Button(self.main, text="Back", font=TEXT_FONT,
                             command=lambda: controller.show_frame(navigation.Navigation))
-        back_button.grid(row=14, sticky="W", padx=10, pady=10)
+        back_button.grid(row=15, sticky="W", padx=10, pady=10)
     
     #%% Set Quit, Run, and User Guide buttons        
         #self.quit_button = tk.Button(self.main, text="QUIT", fg="red",
@@ -106,7 +106,7 @@ class Hem4(tk.Frame):
         #run only appears once the required files have been set
         self.run_button = tk.Button(self.main, text='RUN', fg="green", font=TEXT_FONT,
                                      command=self.run)
-        self.run_button.grid(row=14, sticky="E", padx=20, pady=10)
+        self.run_button.grid(row=15, sticky="E", padx=20, pady=10)
         
         
         
@@ -316,6 +316,7 @@ class Hem4(tk.Frame):
 
         tab2 = ttk.Frame(self.tabControl)            # Add a second tab
         self.tabControl.add(tab2, text='Log')      # Make second tab visible
+        
 
         tab3 = ttk.Frame(self.tabControl)            # Add a third tab
         self.tabControl.add(tab3, text='Census')      # Make third tab visible
@@ -356,13 +357,12 @@ class Hem4(tk.Frame):
         
         # create container frame to hold log
         self.log = ttk.LabelFrame(tab2, text=' Hem4 Progress Log ')
-        self.log.grid(column=0, row=0)
+        self.log.pack()
         
         # Adding a Textbox Entry widget
-        scrolW  = 65; scrolH  =  25
-        self.scr = scrolledtext.ScrolledText(self.log, width=scrolW, 
-                                             height=scrolH, wrap=tk.WORD)
-        self.scr.grid(column=0, row=3, sticky='WE', columnspan=3)
+#        scrolW  = 65; scrolH  =  25
+        self.scr = scrolledtext.ScrolledText(self.log, wrap=tk.WORD)
+        self.scr.pack()
         
         # Create container frame to hold all other widgets
         self.main = ttk.LabelFrame(tab1, text='Human Exposure Model,'+
@@ -858,7 +858,7 @@ class Hem4(tk.Frame):
         """
         #create row for user receptors
         self.s6 = tk.Frame(self.main, width=250, height=200, padx=10 )
-        self.s6.grid(row=5, column=0, columnspan=2, sticky="nsew")
+        self.s6.grid(row=7 , column=0, columnspan=2, sticky="nsew")
         
         #user recptors label
         self.ur_label = tk.Label(self.s6, font=TEXT_FONT, 
@@ -930,7 +930,7 @@ class Hem4(tk.Frame):
         """
          #create row for buoyant line input
         self.s7 = tk.Frame(self.main, width=250, height=100, padx=10)
-        self.s7.grid(row=6, column=0, columnspan=2, sticky="nsew")
+        self.s7.grid(row=8, column=0, columnspan=2, sticky="nsew")
         
         
         #Buoyant Line  label
@@ -967,7 +967,7 @@ class Hem4(tk.Frame):
         """
         #create row for poly
         self.s8 = tk.Frame(self.main, width=250, height=100, padx=10)
-        self.s8.grid(row=7, column=0, columnspan=2, sticky="nsew")
+        self.s8.grid(row=9, column=0, columnspan=2, sticky="nsew")
         
         #Polygon sources label
         self.poly_label = tk.Label(self.s8, font=TEXT_FONT,  
@@ -1000,7 +1000,7 @@ class Hem4(tk.Frame):
         """
         #create row for building downwash
         self.s9 = tk.Frame(self.main, width=250, height=100, padx=10)
-        self.s9.grid(row=8, column=0, columnspan=2, sticky="nsew")
+        self.s9.grid(row=10, column=0, columnspan=2, sticky="nsew")
         
         # building dw labels
         self.bldgdw_label = tk.Label(self.s9,
@@ -1036,7 +1036,7 @@ class Hem4(tk.Frame):
         
         #create column for particle size file
         self.s12 = tk.Frame(self.main, width=250, height=100, padx=10)
-        self.s12.grid(row=9, column=0, columnspan=2, sticky="nsew")
+        self.s12.grid(row=11, column=0, columnspan=2, sticky="nsew")
         
         #particle size label
         self.part_label = tk.Label(self.s12, font=TEXT_FONT, 
@@ -1070,7 +1070,7 @@ class Hem4(tk.Frame):
         
         #create column for land use file
         self.s12 = tk.Frame(self.main, width=250, height=100, pady=10, padx=10)
-        self.s12.grid(row=10, column=0, columnspan=2, sticky="nsew")
+        self.s12.grid(row=12, column=0, columnspan=2, sticky="nsew")
         
         #land use size label
         self.land_label = tk.Label(self.s12, font=TEXT_FONT, 
@@ -1103,7 +1103,7 @@ class Hem4(tk.Frame):
         
         #create column for land use file
         self.s12 = tk.Frame(self.main, width=250, height=100, pady=10, padx=10)
-        self.s12.grid(row=12, column=0, columnspan=2, sticky="nsew")
+        self.s12.grid(row=13, column=0, columnspan=2, sticky="nsew")
         
         #land use size label
         self.seasons_label = tk.Label(self.s12, font=TEXT_FONT, 
@@ -1273,6 +1273,9 @@ class Hem4(tk.Frame):
                 global instruction_instance
                 instruction_instance.set("Hem4 Running, check the log tab for updates")
                 
+                #set run name
+                if self.group_list != None:
+                    self.model.group_name = self.group_list
  #               module_logger.info("starting HEM4")               
                 
                 self.process()

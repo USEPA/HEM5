@@ -53,7 +53,8 @@ class StartPage(tk.Frame):
         title2.grid(row=2)
         
         #some information
-        some_info = tk.Label(self.s2, text="Some information about HEM4", 
+        some_info = tk.Label(self.s2, text="Prepared for: \n\nAir Toxics" +
+                            " Assessment Group \nU.S. EPA \nResearch ", 
                              font=TEXT_FONT)
         some_info.grid(row=1)
                 

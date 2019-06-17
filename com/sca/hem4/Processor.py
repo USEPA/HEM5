@@ -24,8 +24,14 @@ class Processor():
 
     def process(self):
 
-        #create run id for saving model
-        runid = datetime.datetime.now().strftime("%B-%d-%Y-%H-%M-%p")
+        #create run id for saving model default to cat_timestamp if no group
+        
+        if self.model.group_name != None:
+            runid = self.model.group_name
+            
+        else:
+        
+            runid = "cat_" + datetime.datetime.now().strftime("%B-%d-%Y-%H-%M-%p")
         #print(runid)
         #create save model
         save_state = SaveState(runid, self.model)

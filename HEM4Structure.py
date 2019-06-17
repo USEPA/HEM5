@@ -44,7 +44,7 @@ class HEM4Structure(tk.Tk):
              if F == Hem4:
                 
                 frame = F(container, self, messageQueue, callbackQueue)
-                
+                 
                 self.frames[F] = frame
 
                 frame.grid(row=0, column=0, sticky="nsew")
