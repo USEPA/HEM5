@@ -26,7 +26,7 @@ class CensusUpdater():
         for state in self.stateCodeMap.values():
 
             Logger.logMessage("Opening " + state + " for migration...")
-            pathToFile = 'C:\\Users\Chris Stolte\IdeaProjects\HEM\census\\Blks_' + state + '.json'
+            pathToFile = r'C:\Users\Steve Fudge\OneDrive - SC&A, Inc\Projects\HEM4\census\Blks_' + state + '.json'
 
             with open(pathToFile, "r") as read_file:
                 data = json.load(read_file)
@@ -178,7 +178,7 @@ class CensusUpdater():
         if len(id) > 15 and id.startswith('0'):
             record['IDMARPLOT'] = id[1:]
             print("Chopped leading zero: " + id)
-        elif 'U' in id and id.startswith('0'):
+        elif 'U' in id and len(id.rpartition("U")[0]) > 5:
             print("Chopped leading zero: " + id)
             record['IDMARPLOT'] = id[1:]
 
@@ -207,6 +207,6 @@ class CensusUpdater():
     def getStateForCode(self, code):
         return self.stateCodeMap[code]
 
-# updater = CensusUpdater()
-# updater.migrate()
+#updater = CensusUpdater()
+#updater.migrate()
 

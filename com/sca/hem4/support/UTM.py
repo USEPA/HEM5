@@ -68,6 +68,8 @@ class UTM:
 
         for i in np.arange(len(utmn)):
 
+            # If passed northing is less than 180 and passed easting is less than 90, then
+            # this coodinate is a lat/lon and return as such.
             if utmn[i] < 180 and utme[i] < 90:
                 lat[i] = utmn[i]
                 lon[i] = utme[i]

@@ -1,12 +1,20 @@
 import re
+import os, fnmatch
+import pandas as pd
+import sys
 from com.sca.hem4.log import Logger
 from com.sca.hem4.upload.DoseResponse import *
+from com.sca.hem4.writer.csv.AllOuterReceptors import AllOuterReceptors
 from com.sca.hem4.writer.excel.MaximumIndividualRisks import *
+from com.sca.hem4.model.Model import *
+from com.sca.hem4.support.UTM import *
+from com.sca.hem4.FacilityPrep import *
+from com.sca.hem4.log import Logger
 
 site_type = 'site_type';
 conc_rnd = 'conc_rnd';
 
-class RiskBreakdown(ExcelWriter):
+class RiskBreakdown(ExcelWriter, InputFile):
 
     """
     Provides the max cancer risk and max TOSHI values at populated block (“MIR”) sites and at any (“max offsite impact”)
@@ -14,10 +22,19 @@ class RiskBreakdown(ExcelWriter):
     the pollutant concentration, URE and RfC values.
     """
 
-    def __init__(self, targetDir, facilityId, model, plot_df):
-        ExcelWriter.__init__(self, model, plot_df)
+    def __init__(self, targetDir=None, facilityId=None, model=None, plot_df=None, filenameOverride=None,
+                 createDataframe=False):
+        # Initialization for file reading/writing. If no file name override, use the
+        # default construction.
+        filename = facilityId + "_risk_breakdown.xlsx" if filenameOverride is None else filenameOverride
+        path = os.path.join(targetDir, filename)
 
-        self.filename = os.path.join(targetDir, facilityId + "_risk_breakdown.xlsx")
+        ExcelWriter.__init__(self, model, plot_df)
+        InputFile.__init__(self, path, createDataframe)
+
+        self.filename = path
+        self.targetDir = targetDir
+
 
         # Local cache for URE/RFC values
         self.riskCache = {}
@@ -30,6 +47,10 @@ class RiskBreakdown(ExcelWriter):
         return ['Site type', 'Parameter', 'Source ID', 'Pollutant', 'Emission type', 'Value', 'Value rounded',
                 'Conc (µg/m3)', 'Conc rounded (µg/m3)', 'Emissions (tpy)',
                 'URE 1/(µg/m3)', 'RFc (mg/m3)']
+
+    def getColumns(self):
+        return [site_type, parameter, source_id, pollutant, ems_type, value, value_rnd, conc, conc_rnd, emis_tpy, ure,
+                rfc]
 
     def generateOutputs(self):
         """
@@ -44,9 +65,8 @@ class RiskBreakdown(ExcelWriter):
                        "Thyroid HI":14, "Whole body HI":15}
 
         # Initialize output dataframe
-        columns = [site_type, parameter, source_id, pollutant, ems_type, value, value_rnd, conc, conc_rnd, emis_tpy, ure, rfc]
+        columns = self.getColumns()
         riskbkdn_df = pd.DataFrame(columns=columns)
-
 
         # Dictionary for mapping cancer and HI names used in max_indiv_risk df to
         # those used in risk_by_latlon df
@@ -75,11 +95,34 @@ class RiskBreakdown(ExcelWriter):
                         [(self.model.all_polar_receptors_df[lat]==row[lat]) &
                          (self.model.all_polar_receptors_df[lon]==row[lon])]
                 else:
-                    concdata = self.model.all_outer_receptors_df[[lat,lon,source_id,pollutant,ems_type,conc]] \
-                        [(self.model.all_outer_receptors_df[lat]==row[lat]) &
-                         (self.model.all_outer_receptors_df[lon]==row[lon])]
+                    # Receptor type is interpolated
 
-                    # for consistency and ease of use, change some column names
+                    # Get a list of the all_outer_receptor files (could be more than one)
+                    listOuter = []
+                    listDirfiles = os.listdir(self.targetDir)
+                    pattern = "*_all_outer_receptors*.csv"
+                    for entry in listDirfiles:
+                        if fnmatch.fnmatch(entry, pattern):
+                            listOuter.append(entry)
+                    
+                    # Search each outer receptor file for the lat/lon in row
+                    foundit = False
+                    for f in listOuter:
+                        allouter = AllOuterReceptors(targetDir=self.targetDir, filenameOverride=f)
+                        outconcs = allouter.createDataframe()
+
+                        concdata = outconcs[[lat,lon,source_id,pollutant,ems_type,conc]] \
+                                            [(outconcs[lat]==row[lat]) & (outconcs[lon]==row[lon])]
+                        if not concdata.empty:
+                            foundit = True
+                            break
+                    if not foundit:
+                        errmessage = """An error has happened while computing the Risk Breakdown. A max risk/HI
+                                      occured at an interpolated receptor but could not be found in the All Outer Receptor files """
+                        Logger.logMessage(errmessage)
+                        sys.exit()
+
+                # for consistency and ease of use, change some column names
                 # concdata.rename(columns={source_id:"source_id", pollutant:"pollutant",
                 #                          ems_type:ems_type, conc:conc}, inplace=True)
 
@@ -198,6 +241,7 @@ class RiskBreakdown(ExcelWriter):
         #....... Create some aggregate rows ..................
 
         # Sum Value by site_type, parameter, and pollutant to get Total by pollutant
+        riskbkdn_df[value] = pd.to_numeric(riskbkdn_df[value], errors='coerce')
         srctot = riskbkdn_df.groupby([site_type, parameter, pollutant, ure, rfc],
                                      as_index=False)[value, conc, emis_tpy].sum()
         srctot[source_id] = "Total by pollutant all sources"
@@ -276,8 +320,8 @@ class RiskBreakdown(ExcelWriter):
                 self.model.haplib.dataframe[pollutant].str.contains(pattern, case=False, regex=True)]
 
             if row.size == 0:
-                msg = 'Could not find pollutant ' + pollutant_name + ' in the haplib!'
-                Logger.logMessage(msg)
+#                msg = 'Could not find pollutant ' + pollutant_name + ' in the haplib!'
+#                Logger.logMessage(msg)
                 # Logger.log(msg, self.model.haplib.dataframe, False)
                 URE = 0.0
                 RFC = 0.0
@@ -297,7 +341,7 @@ class RiskBreakdown(ExcelWriter):
 
             if row.size == 0:
                 # Couldn't find the pollutant...set values to 0 and log message
-                Logger.logMessage('Could not find pollutant ' + pollutant_name + ' in the target organs.')
+#                Logger.logMessage('Could not find pollutant ' + pollutant_name + ' in the target organs.')
                 listed = []
             else:
                 listed = row.values.tolist()
@@ -309,3 +353,11 @@ class RiskBreakdown(ExcelWriter):
             self.organCache[pollutant_name] = organs
 
         return URE, RFC, organs
+
+    def createDataframe(self):
+        # Type setting for XLS reading
+        self.numericColumns = [value, value_rnd, conc, conc_rnd, emis_tpy, ure, rfc]
+        self.strColumns = [site_type, parameter, source_id, pollutant, ems_type]
+
+        df = self.readFromPath(self.getColumns())
+        return df.fillna("")

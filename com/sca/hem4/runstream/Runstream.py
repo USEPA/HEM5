@@ -51,15 +51,14 @@ class Runstream():
         facid = self.facoptn_df['fac_id'][0]                 
    
     # Hours -------------------------------------------------------------------
-        
+                
         self.hours = self.facoptn_df['hours'][0]                      
-    
-        if np.isnan(self.hours) == 1:
-            self.hours = str(1) + " ANNUAL "
     
         av_t = [1,2,3,4,6,8,12,24]          # Possible Averaging Time Periods
     
-        if (self.hours in av_t) == 1:
+        if self.facoptn_df['acute'][0] == 'N':
+            self.hours = " ANNUAL "
+        elif (self.hours in av_t) == 1:
             self.hours = str(self.hours) + " ANNUAL "
         else:
             self. hours = str(1) + " ANNUAL "

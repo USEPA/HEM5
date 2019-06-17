@@ -1,17 +1,21 @@
+import os
 from abc import ABC
 from abc import abstractmethod
 import pandas as pd
 
 class InputFile(ABC):
 
-    def __init__(self, path):
+    def __init__(self, path, createDataframe=True):
         self.path = path
         self.dataframe = None
         self.log = []
         self.numericColumns = []
         self.strColumns = []
         self.skiprows = 0
-        self.createDataframe()
+
+        if createDataframe:
+            print(self.path)
+            self.createDataframe()
 
     @abstractmethod
     def createDataframe(self):

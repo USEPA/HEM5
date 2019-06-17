@@ -11,25 +11,36 @@ wetdep = 'wetdep';
 aconc = 'aconc';
 aresult = 'aresult';
 
-class AllInnerReceptors(CsvWriter):
+class AllInnerReceptors(CsvWriter, InputFile):
     """
     Provides the annual average concentration modeled at every census block within the modeling cutoff distance,
     specific to each source ID and pollutant, along with receptor information, and acute concentration (if modeled) and
-    wet and dry deposition flux (if modeled).
+    wet and dry deposition flux (if modeled). This class can act as both a writer and a reader of the csv file that holds
+    inner receptor information.
     """
 
-    def __init__(self, targetDir, facilityId, model, plot_df):
-        CsvWriter.__init__(self, model, plot_df)
+    def __init__(self, targetDir=None, facilityId=None, model=None, plot_df=None, filenameOverride=None,
+                 createDataframe=False):
+        # Initialization for CSV reading/writing. If no file name override, use the
+        # default construction.
+        filename = facilityId + "_all_inner_receptors.csv" if filenameOverride is None else filenameOverride
+        path = os.path.join(targetDir, filename)
 
-        self.filename = os.path.join(targetDir, facilityId + "_all_inner_receptors.csv")
+        CsvWriter.__init__(self, model, plot_df)
+        InputFile.__init__(self, path, createDataframe)
 
         # initialize cache for inner census block data
         self.innblkCache = {}
-        
+        self.filename = path
+
     def getHeader(self):
         return ['FIPs', 'Block', 'Latitude', 'Longitude', 'Source ID', 'Emission type', 'Pollutant',
                 'Conc (µg/m3)', 'Acute Conc (µg/m3)', 'Elevation (m)',
                 'Dry deposition (g/m2/yr)', 'Wet deposition (g/m2/yr)', 'Population', 'Overlap']
+
+    def getColumns(self):
+        return [fips, block, lat, lon, source_id, ems_type, pollutant, conc, aconc,
+                elev, drydep, wetdep, population, overlap]
 
     def generateOutputs(self):
         """
@@ -73,8 +84,7 @@ class AllInnerReceptors(CsvWriter):
         srcids = innerplot_df[source_id].unique().tolist()
 
         dlist = []
-        columns = [fips, block, lat, lon, source_id, ems_type, pollutant, conc, aconc,
-                   elev, drydep, wetdep, population, overlap]
+        columns = self.getColumns()
 
         # process inner concs one source_id at a time
         for x in srcids:
@@ -117,3 +127,11 @@ class AllInnerReceptors(CsvWriter):
         self.data = self.dataframe.values
 
         yield self.dataframe
+
+    def createDataframe(self):
+        # Type setting for CSV reading
+        self.numericColumns = [lat, lon, conc, aconc, elev, drydep, wetdep, population]
+        self.strColumns = [fips, block, source_id, ems_type, pollutant, overlap]
+
+        df = self.readFromPathCsv(self.getColumns())
+        return df.fillna("")

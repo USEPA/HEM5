@@ -54,10 +54,10 @@ class SingleFacilityRun(unittest.TestCase):
         Verify that the all inner receptors output file is identical to the test fixture.
         """
         for facid in self.testHarness.model.facids:
-            fixture = AllInnerReceptors(self.outputFixturePrefix, facid, None, None)
+            fixture = AllInnerReceptors(self.outputFixturePrefix, facid)
             checksum_expected = self.hashFile(fixture.filename)
 
-            generated = AllInnerReceptors("output/"+facid, facid, None, None)
+            generated = AllInnerReceptors("output/"+facid, facid)
             checksum_generated = self.hashFile(generated.filename)
             self.assertEqual(checksum_expected, checksum_generated,
                              "The contents of the output file are inconsistent with the test fixture:" +
@@ -95,10 +95,10 @@ class SingleFacilityRun(unittest.TestCase):
         Verify that the block summary chronic output file is identical to the test fixture.
         """
         for facid in self.testHarness.model.facids:
-            fixture = BlockSummaryChronic(self.outputFixturePrefix, facid, None, None, None)
+            fixture = BlockSummaryChronic(targetDir=self.outputFixturePrefix, facilityId=facid)
             checksum_expected = self.hashFile(fixture.filename)
 
-            generated = BlockSummaryChronic("output/"+facid, facid, None, None, None)
+            generated = BlockSummaryChronic(targetDir="output/"+facid, facilityId=facid)
             checksum_generated = self.hashFile(generated.filename)
             self.assertEqual(checksum_expected, checksum_generated,
                              "The contents of the output file are inconsistent with the test fixture:" +

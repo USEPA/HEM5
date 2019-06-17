@@ -26,7 +26,7 @@ from com.sca.hem4.writer.excel.Incidence import Incidence
 from com.sca.hem4.writer.excel.AcuteChemicalPopulated import AcuteChemicalPopulated
 from com.sca.hem4.writer.excel.AcuteChemicalUnpopulated import AcuteChemicalUnpopulated
 from com.sca.hem4.writer.excel.AcuteBreakdown import AcuteBreakdown
-#from com.sca.hem4.writer.kml.KMLWriter import KMLWriter
+from com.sca.hem4.writer.kml.KMLWriter import KMLWriter
 from com.sca.hem4.support.UTM import *
 from com.sca.hem4.model.Model import *
 
@@ -171,7 +171,9 @@ class Process_outputs():
         if self.abort.is_set():
             Logger.logMessage("Terminating output processing...")
             return
-          
+
+        Logger.logMessage("Finished creating Cancer Risk Exposure for " + self.facid)          
+        
         #----------- create Maximum_Individual_Risk output file ---------------
         max_indiv_risk = MaximumIndividualRisksNonCensus(self.outdir, self.facid, self.model, plot_df) if ureponly \
                 else MaximumIndividualRisks(self.outdir, self.facid, self.model, plot_df)
@@ -256,10 +258,11 @@ class Process_outputs():
             
 
 
-#        #create facility kml
-#        Logger.logMessage("Writing KML file for " + self.facid)
-#        kmlWriter = KMLWriter()
-#        kmlWriter.write_facility_kml(self.facid, self.runstream.cenlat, self.runstream.cenlon, self.outdir)
+        #create facility kml
+        Logger.logMessage("Writing KML file for " + self.facid)
+        kmlWriter = KMLWriter()
+        kmlWriter.write_facility_kml(self.facid, self.model.computedValues['cenlat'], 
+                                     self.model.computedValues['cenlon'], self.outdir, self.model)
 
 #        return local_vars
     

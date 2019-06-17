@@ -14,7 +14,11 @@ from pygeoif import LinearRing, LineString
 from xml.sax.saxutils import unescape
 from operator import itemgetter
 from collections import OrderedDict
-from shutil import copyfile
+import zipfile
+from os.path import basename
+import math
+import os
+from itertools import combinations
 
 from com.sca.hem4.support.UTM import UTM
 
@@ -29,11 +33,17 @@ class KMLWriter():
 
     def write_kml_emis_loc(self, model):
         """
-        Create KML of all sources. This method creates multiple files - one for the entire
-        application run and one for each facility that is processed.
+        Create KML of all sources from all facilities. 
         """
-        srcmap = self.create_sourcemap(model)
-
+ 
+        # Define the name of the output kml file
+        # TODO - this will need the name of the output folder
+        allkml_fname = "Output/AllFacility_source_locations.kml"
+       
+        # Create a dataframe of emission source locations for all facilities being modeled
+        srcmap = self.create_sourcemap(model, None)
+        
+        # Define kml object
         kml_source_loc = kml.KML()
 
         document = kml.Document(ns=self.ns, id='emisloc', name='srcmap', description='Exported from HEM4')
@@ -50,29 +60,49 @@ class KMLWriter():
         # Ptsrc style...
         document.append_style(self.getPtSrcStyle())
 
-        # s20 style...
-        document.append_style(self.getS20Style())
-
-        # b20 style...
-        document.append_style(self.getB20Style())
-
-        kml_source_loc.append(document)
-
-        # Fac_id - create source file for each facility
-        # Read array to get facility id, source ids, source type and location parameters
+        # center style...
+        document.append_style(self.getCenterStyle())
+        
+        # Iterate over srcmap DF to get facility id, source ids, source type and location parameters
         for facid, group in srcmap.groupby(["fac_id"]):
-            fname = str(facid)
-
-            fac_source_loc = kml.KML()
-            docWithHeader = self.createDocumentWithHeader()
-
-            es_folder = kml.Folder(ns=self.ns, name="Emission sources")
-            fac_folder = kml.Folder(ns=self.ns, name="Facility " + fname)
-
-            # create groups by source id and source type
-            # src_df = srcmap.groupby(['source_id','src_type'])
+            
+            # Subset srcmap to this facility
             sub_map = srcmap.loc[srcmap.fac_id==facid]
 
+            # Determine an approximate average of this facility's source locations (lat/lons)
+            # This will represent the center of the facility
+            faclatlons = sub_map[['lat', 'lon']].values.tolist()
+            latlon_array = np.array(faclatlons)
+            lats = latlon_array[:,0:1]
+            lons = latlon_array[:,1:2]
+            if (len(np.unique(lats)) > 1) or (len(np.unique(lons)) > 1): #more than one source location
+                maxdist = 0.0
+                for pair in combinations(faclatlons, 2):
+                    firstpair = tuple(pair[0])
+                    secondpair = tuple(pair[1])
+                    d = self.distance(firstpair, secondpair)
+                    if d > maxdist:
+                        maxdist = d
+                        maxpair = pair
+                avglat, avglon = self.midpoint(maxpair[0], maxpair[1])
+            else:
+                avglat = latlon_array[0,0]
+                avglon = latlon_array[0,1]
+
+            # Setup an Emission Sources folder for this facility
+            name_str = "Facility " + facid + " Emission sources"
+            es_folder = kml.Folder(ns=self.ns, name=name_str)
+  
+            # Facility center placemark
+            placemark = kml.Placemark(ns=self.ns, name="Facility center",
+                                      description=CDATA("<div align='center'>Center of facility " +
+                                                        facid + " </div>"),
+                                      styleUrl="#center")
+            point = Point(avglon, avglat, 0.0)
+            placemark.geometry = Geometry(ns=self.ns, altitude_mode="relativeToGround", geometry=point)
+            es_folder.append(placemark)
+          
+            
             for name, group in sub_map.groupby(["source_id","source_type"]):
                 sname = name[0]
                 stype = name[1]
@@ -88,38 +118,35 @@ class KMLWriter():
                     placemark.geometry = Geometry(ns=self.ns, altitude_mode="relativeToGround", geometry=point)
 
                     es_folder.append(placemark)
-                    fac_folder.append(placemark)
 
                 # Area, Volume or Polygon
                 elif stype == 'A' or stype == 'V' or stype == 'I':
-
+                    
                     placemark = kml.Placemark(ns=self.ns, name=sname,
                                               description=CDATA("<div align='center'>" + sname + "</div>"),
                                               styleUrl="#Areasrc")
-
+                    
                     simpleData = Data(name="SourceId", value=sname)
                     data = [simpleData]
                     schemaData = SchemaData(ns=self.ns, schema_url="#Source_map_schema", data=data)
                     elements = [schemaData]
                     placemark.extended_data = ExtendedData(ns=self.ns, elements=elements)
 
-                    coords = []
+                    latlons = []
                     for index, row in group.iterrows():
                         coord = (row["lon"], row["lat"], 0)
-                        coords.append(coord)
+                        latlons.append(coord)
 
-                    linearRing = LinearRing(coordinates=coords)
-                    polygon = Polygon(shell=linearRing)
+                    linearRing = LinearRing(coordinates=latlons)
+                    polygon = Polygon(shell=linearRing.coords)
                     placemark.geometry = Geometry(ns=self.ns, extrude=0, altitude_mode="clampToGround", tessellate=1,
                                                   geometry=polygon)
 
                     es_folder.append(placemark)
-                    fac_folder.append(placemark)
-
 
                 # Line or Bouyant Line
                 elif stype == 'N' or stype == 'B':
-
+                    
                     placemark = kml.Placemark(ns=self.ns, name=sname,
                                               description=CDATA("<div align='center'>" + sname + "</div>"),
                                               styleUrl="#Linesrc")
@@ -129,94 +156,205 @@ class KMLWriter():
                     ps_style.append_style(style)
                     placemark.append_style(ps_style)
 
-                    lineString = LineString(group.iloc[0]['lon'], group.iloc[0]['lat'] + group.iloc[0]['lon_x2'],
-                                            group.iloc[0]['lat_y2'])
+                    lineString = LineString([(group.iloc[0]['lon'], group.iloc[0]['lat']), (group.iloc[0]['lon_x2'],
+                                            group.iloc[0]['lat_y2'])])
                     placemark.geometry = Geometry(ns=self.ns, altitude_mode="clampToGround", geometry=lineString)
 
                     es_folder.append(placemark)
-                    fac_folder.append(placemark)
 
+            # Append emission source folder for this facility
+            document.append(es_folder)
 
-            kml_source_loc.append(fac_folder)
+        # Finished
+        kml_source_loc.append(document)
+        # Write the KML file
+        self.writeToFile(allkml_fname, kml_source_loc)
+        
+        # Create KMZ file
+        kmztype = 'allsources'
+        allkmz_fname = allkml_fname.replace('.kml', '.kmz')
+        self.createKMZ(kmztype, allkml_fname, allkmz_fname)
+        
 
-            # This will get appended to the facility specific file(s)
-            docWithHeader.append(es_folder)
-
-            fac_source_loc.append(docWithHeader)
-
-            self.writeToFile("working_kml/fac_" + fname + "_source.kml", fac_source_loc)
-
-        self.writeToFile("kml_source_loc.kml", kml_source_loc)
-
-    def write_facility_kml(self, facid, faccen_lat, faccen_lon, outdir):
+    def write_facility_kml(self, facid, faccen_lat, faccen_lon, outdir, model):
         """
-        Create the KML file for a given facility
+        Create the source/risk KML file for a given facility
         """
 
-        pxl = pd.ExcelFile(outdir + "polar_risk.xlsx")
-        allpolar = pd.read_excel(pxl)
-        allpolar['toshi'] = np.nan
-        allpolar['total_hi'] = np.nan
-        allpolar['pll_hi'] = np.nan
+        # Define the name of the output kml file
+        fackml_fname = outdir + "fac_" + str(facid) + "_source_risk.kml"
+        
+        # Setup a dictionary to hold the real names of the TOSHIs
+        hinames = {'hi_resp':'respiratory', 'hi_live':'liver', 'hi_neur':'neurological',
+                  'hi_deve':'developmental', 'hi_repr':'reproductive', 'hi_kidn':'kidney', 
+                  'hi_ocul':'ocular', 'hi_endo':'endocrine', 'hi_hema':'hematological',
+                  'hi_immu':'immunological', 'hi_skel':'skeletal', 'hi_sple':'spleen',
+                  'hi_thyr':'thyroid', 'hi_whol':'wholebody'}
 
-        # access inner_risk.xlxs for facility
-        inxl = pd.ExcelFile(outdir + "inner_risk.xlsx")
-        allinner = pd.read_excel(inxl)
-        allinner['block'] = allinner['IDMARPLOT'][5:]
 
-        # Get the source KML file for this facility and copy it to the output folder as the facility KML
-        srckml_fname = "working_kml/fac_" + str(facid) + "_source.kml"
-        fackml_fname = outdir + "fac_" + str(facid) + "_srcrec.kml"
-        copyfile(srckml_fname, fackml_fname)
+        # Create a dataframe of polar receptor risk by receptor and pollutant        
+        polarsum = model.all_polar_receptors_df.groupby(['distance', 'angle', 'lat', 'lon', 'pollutant'],
+                                                        as_index=False)[['conc']].sum()
+        polarmerge1  = polarsum.merge(model.haplib.dataframe, on='pollutant')[['distance', 'angle',
+                                     'lat','lon','pollutant','conc','ure','rfc']]
+        polarmerge2  = polarmerge1.merge(model.organs.dataframe, on='pollutant')[['distance', 'angle',
+                                     'lat','lon','pollutant','conc','ure','rfc','resp','liver',
+                                     'neuro','dev','reprod','kidney','ocular','endoc','hemato','immune',
+                                     'skeletal','spleen','thyroid','wholebod']]
+        polarmerge2['risk'] = polarmerge2['conc'] * polarmerge2['ure']
+        hilist = (('hi_resp','resp'), ('hi_live','liver'), ('hi_neur','neuro'), ('hi_deve','dev'),
+                  ('hi_repr','reprod'), ('hi_kidn','kidney'), ('hi_ocul','ocular'), ('hi_endo','endoc'),
+                  ('hi_hema','hemato'), ('hi_immu','immune'), ('hi_skel','skeletal'), ('hi_sple','spleen'),
+                  ('hi_thyr','thyroid'), ('hi_whol','wholebod'))
+        for his in hilist:
+            polarmerge2[his[0]] = polarmerge2.apply(lambda row: self.calcHI(row['conc'], 
+                                 row['rfc'], row[his[1]]), axis=1)
 
-        inp_file = open("risks.kml","w")
+        # Create a dataframe of inner receptor risk by receptor and pollutant
+        innersum = model.all_inner_receptors_df.groupby(['fips', 'block', 'lat', 'lon', 'pollutant'],
+                                                        as_index=False)[['conc']].sum()
+        innermerge1  = innersum.merge(model.haplib.dataframe, on='pollutant')[['fips','block'
+                                     ,'lat','lon','pollutant','conc','ure','rfc']]
+        innermerge2  = innermerge1.merge(model.organs.dataframe, on='pollutant')[['fips','block',
+                                     'lat','lon','pollutant','conc','ure','rfc','resp',
+                                     'liver','neuro','dev','reprod','kidney','ocular',
+                                     'endoc','hemato','immune','skeletal','spleen',
+                                     'thyroid','wholebod']]
+        innermerge2['risk'] = innermerge2['conc'] * innermerge2['ure']
+        for his in hilist:
+            innermerge2[his[0]] = innermerge2.apply(lambda row: self.calcHI(row['conc'], 
+                                 row['rfc'], row[his[1]]), axis=1)
 
-        fac_kml = kml.KML()
+                
+        # Create KML object and define the document
+        fac_kml = kml.KML()        
+        docWithHeader = self.createDocumentWithHeader()
 
-        document = kml.Document(ns=self.ns)
-        document.isopen = 1
+        # Create the sourcemap dataframe for this facility (emission source locations)
+        srcmap = self.create_sourcemap(model, facid)
 
-        # facility center defined
-        folder = kml.Folder(ns=self.ns, name="Domain center")
-        folder.isopen = 0
+        # Define an emission source folder and populate it
+        es_folder = kml.Folder(ns=self.ns, name="Emission sources")
+        
+        for name, group in srcmap.groupby(["source_id","source_type"]):
+            sname = name[0]
+            stype = name[1]
+
+            # Emission sources  Point, Capped, Horizontal
+            if stype == 'P' or stype == 'C' or stype == 'H':
+
+                placemark = kml.Placemark(ns=self.ns, name=sname,
+                                          description=CDATA("<div align='center'>" + sname + "</div>"),
+                                          styleUrl="#Ptsrc")
+
+                point = Point(group.iloc[0]['lon'], group.iloc[0]['lat'], 0.0)
+                placemark.geometry = Geometry(ns=self.ns, altitude_mode="relativeToGround", geometry=point)
+
+                es_folder.append(placemark)
+
+            # Area, Volume or Polygon
+            elif stype == 'A' or stype == 'V' or stype == 'I':
+
+                placemark = kml.Placemark(ns=self.ns, name=sname,
+                                          description=CDATA("<div align='center'>" + sname + "</div>"),
+                                          styleUrl="#Areasrc")
+
+                simpleData = Data(name="SourceId", value=sname)
+                data = [simpleData]
+                schemaData = SchemaData(ns=self.ns, schema_url="#Source_map_schema", data=data)
+                elements = [schemaData]
+                placemark.extended_data = ExtendedData(ns=self.ns, elements=elements)
+
+                latlons = []
+                for index, row in group.iterrows():
+                    coord = (row["lon"], row["lat"], 0)
+                    latlons.append(coord)
+                    
+                linearRing = LinearRing(coordinates=latlons)                               
+                polygon = Polygon(shell=linearRing.coords)
+                placemark.geometry = Geometry(ns=self.ns, extrude=0, altitude_mode="clampToGround", tessellate=1,
+                                              geometry=polygon)
+
+                es_folder.append(placemark)
+
+            # Line or Bouyant Line
+            elif stype == 'N' or stype == 'B':
+
+                placemark = kml.Placemark(ns=self.ns, name=sname,
+                                          description=CDATA("<div align='center'>" + sname + "</div>"),
+                                          styleUrl="#Linesrc")
+
+                ps_style = kml.Style(ns=self.ns)
+                style = LineStyle(ns=self.ns, width=group.iloc[0]['line_width'], color="7c8080ff")
+                ps_style.append_style(style)
+                placemark.append_style(ps_style)
+
+                lineString = LineString([(group.iloc[0]['lon'], group.iloc[0]['lat']), (group.iloc[0]['lon_x2'],
+                                        group.iloc[0]['lat_y2'])])
+                placemark.geometry = Geometry(ns=self.ns, altitude_mode="clampToGround", geometry=lineString)
+
+                es_folder.append(placemark)
+
+        docWithHeader.append(es_folder)
+
+        # Facility center folder
+        cen_folder = kml.Folder(ns=self.ns, name="Domain center")
+        cen_folder.isopen = 0
 
         placemark = kml.Placemark(ns=self.ns, name="Domain center",
                                   description=CDATA("<div align='center'>Plant center</div>"),
-                                  styleUrl="#s100")
+                                  styleUrl="#center")
         point = Point(faccen_lon, faccen_lat, 0.0)
         placemark.geometry = Geometry(ns=self.ns, altitude_mode="relativeToGround", geometry=point)
-        folder.append(placemark)
-        document.append(folder)
+        cen_folder.append(placemark)
+        docWithHeader.append(cen_folder)
 
-        # Determine if there are any user receptors
-        urcr_folder = None
-        for block, group in allinner.groupby(["block"]):
-            user_rcpt = block
-            ublock = group.iloc[0]['block']
-            ulat = group.iloc[0]['LAT']
-            ulon = group.iloc[0]['LON']
-            u = 0
-            if user_rcpt == 'U':
+        # Facility MIR folder
+        mir_info = model.max_indiv_risk_df[model.max_indiv_risk_df['parameter']=='Cancer risk'][[
+                                            'parameter','value','distance','rec_type',
+                                            'lat','lon']].reset_index(drop=True)
+        mirrnd = round(mir_info.at[0,'value']*1000000, 2)
+        mirtype = mir_info.at[0,'rec_type']
+        mirdist = round(mir_info.at[0,'distance'], 2)
+        mirlat = mir_info.at[0,'lat']
+        mirlon = mir_info.at[0,'lon']
 
-                if urcr_folder is None:
-                    urcr_folder = kml.Folder(ns=self.ns, name="User receptor cancer risk")
-                    urcr_folder.isopen = 0
+        mir_folder = kml.Folder(ns=self.ns, name="MIR")
+        mir_folder.isopen = 0
+        placemark = kml.Placemark(ns=self.ns, name="MIR",
+                                  description=CDATA("<div align='center'><B>MIR Receptor</B><br />" + \
+                                  "<B>Receptor type: "+mirtype+"</B><br />" + \
+                                  "<B>Distance from facility (m): "+str(mirdist)+"</B><br /><br />" + \
+                                  "MIR (in a million) = " +str(mirrnd)+"<br /></div>"),
+                                  styleUrl="#mir")
+        point = Point(mirlon, mirlat, 0.0)
+        placemark.geometry = Geometry(ns=self.ns, altitude_mode="relativeToGround", geometry=point)
+        mir_folder.append(placemark)
+        docWithHeader.append(mir_folder)
+        
+        
+        #-------------- User receptor cancer risk -------------------------------------
+        urec_df = innermerge2.loc[innermerge2['block'].str.upper().str.contains('U')]
+        if not urec_df.empty:
+            urcr_folder = kml.Folder(ns=self.ns, name="User receptor cancer risk")
+            urcr_folder.isopen = 0
+            for block, group in urec_df.groupby(["block"]):
+                ublock = group.iloc[0]['block']
+                ulat = group.iloc[0]['lat']
+                ulon = group.iloc[0]['lon']
 
-                urtot = group.iloc[0]['risk'] * 1000000
+                urtot = group['risk'].sum() * 1000000
                 urrnd = round(urtot,2)
-
-                description = "<div align='center'><B> Discrete Receptor</B> <br />" + \
+                
+                description = "<div align='center'><B>User Receptor</B> <br />" + \
                               "<B> ID: " + ublock + "</B> <br /> \n" + \
                               "<B> HEM4 Estimated Cancer Risk (in a million) </B> <br /> \n" + \
                               "    " + "Total = " + str(urrnd) + "<br /><br /> \n"
-
                 if urrnd > 0:
                     description += "    " + "<U> Top Pollutants Contributing to Total Cancer Risk </U> <br /> \n"
-
                     # create dictionary to hold summed risk of each pollutant
                     urhap_sum = {}
                     for index, row in group.iterrows():
-
                         if row["pollutant"] not in urhap_sum:
                             urhap_sum[row["pollutant"]] = row["risk"]
                         else:
@@ -224,42 +362,116 @@ class KMLWriter():
                             risksum = row["risk"] + pol
                             urhap_sum[row["pollutant"]] = risksum
 
-                    #sort the dictionary by value
-                    sorted_urhap_sum = OrderedDict(sorted(urhap_sum.items(), key=itemgetter(1)))
+                    #sort the dictionary by descending value
+                    sorted_urhap_sum = OrderedDict(sorted(urhap_sum.items(), key=itemgetter(1),
+                                                          reverse=True))
 
                     # check to make sure large enough value to keep
                     for k, x in sorted_urhap_sum.items():
-                        z = x * 1000000     # risk in a million 0.005
+                        z = round(x*1000000, 2)     # risk in a million
                         if z > 0.005:
-                            zrnd = round(z,2)
-                            description = description + "    " + format(k) + " = " + format(zrnd) + "<br /> \n"
+                            description = description + "    " + format(k) + " = " + format(z) + "<br /> \n"
 
                 description += "</div>"
+                
+                # Choose style based on risk level
+                if urrnd <= 20:
+                    styletag = "#u20"
+                elif (urrnd > 20) & (urrnd < 100):
+                    styletag = "#u20to100"
+                else:
+                    styletag = "#u100"
+                
                 ur_placemark = kml.Placemark(ns=self.ns, name="User Receptor: " + ublock,
                                              description=CDATA(description),
-                                             styleUrl="#u20")
+                                             styleUrl=styletag)
                 point = Point(ulon, ulat, 0.000)
                 ur_placemark.geometry = Geometry(ns=self.ns, altitude_mode="clampToGround", geometry=point)
                 urcr_folder.append(ur_placemark)
 
-            # First user receptor processed
-            u += 1
+            docWithHeader.append(urcr_folder)
 
-            if user_rcpt != 'U':
-                if urcr_folder is not None:
-                    document.append(urcr_folder)
-                break
 
-        # Write inner receptors
+        #------------------------ User receptor TOSHI -----------------------------
+        if not urec_df.empty:
+            urt_folder = kml.Folder(ns=self.ns, name="User receptor TOSHI")
+            urt_folder.isopen = 0
+            for block, group in urec_df.groupby(["block"]):
+                ublock = group.iloc[0]['block']
+                ulat = group.iloc[0]['lat']
+                ulon = group.iloc[0]['lon']
+
+                # Sum each toshi in this group
+                ug = group[['hi_resp','hi_live','hi_neur','hi_deve','hi_repr','hi_kidn',
+                            'hi_ocul','hi_endo','hi_hema','hi_immu','hi_skel','hi_sple',
+                            'hi_thyr','hi_whol']].sum(axis=0)
+                
+                # Identify the max toshi
+                maxi = ug.idxmax()
+                maxtoshi = hinames[maxi]
+                maxtoshival = round(ug[maxi], 2)
+
+                
+                description = "<div align='center'><B> User Receptor</B> <br /> \n" + \
+                              "    " + "<B> ID: " + ublock + "</B> <br /> \n" + \
+                              "    " + "<B> HEM4 Estimated Maximum TOSHI (" + maxtoshi + ") </B> <br /> \n" + \
+                              "    " + "Total = " + str(maxtoshival) + "<br /><br /> \n"
+                              
+                if maxtoshival > 0:
+                    description += "    " + "<U> Top Pollutants Contributing to TOSHI </U> <br /> \n"
+                    # create dictionary to hold summed non-cancer of each pollutant
+                    urhap_sum = {}
+                    for index, row in group.iterrows():
+                        if row["pollutant"] not in urhap_sum:
+                            urhap_sum[row["pollutant"]] = row["risk"]
+                        else:
+                            pol = urhap_sum[row["pollutant"]]
+                            risksum = row["risk"] + pol
+                            urhap_sum[row["pollutant"]] = risksum
+
+                    #sort the dictionary by descending value
+                    sorted_urhap_sum = OrderedDict(sorted(urhap_sum.items(), key=itemgetter(1),
+                                                          reverse=True))
+
+                    # check to make sure large enough value to keep
+                    for k, x in sorted_urhap_sum.items():
+                        z = round(x, 3)
+                        if z > 0.001:
+                            description = description + "    " + format(k) + " = " + format(z) + "<br /> \n"
+
+                description += "</div>"
+                
+                # Choose style based on risk level
+                if maxtoshival <= 1:
+                    styletag = "#u20"
+                elif (maxtoshival > 1) & (maxtoshival < 10):
+                    styletag = "#u20to100"
+                else:
+                    styletag = "#u100"
+                
+                ur_placemark = kml.Placemark(ns=self.ns, name="User Receptor: " + ublock,
+                                             description=CDATA(description),
+                                             styleUrl=styletag)
+                point = Point(ulon, ulat, 0.000)
+                ur_placemark.visibility = 0
+                ur_placemark.geometry = Geometry(ns=self.ns, altitude_mode="clampToGround", geometry=point)
+                urt_folder.append(ur_placemark)
+
+            docWithHeader.append(urt_folder)
+
+
+        #------------------ Inner census block receptor cancer risk ------------------------------
         ir_folder = kml.Folder(ns=self.ns, name="Census block cancer risk")
         ir_folder.isopen = 0
-
-        for loc, group in allinner.groupby(["LAT","LON"]):
+        
+        # Exclude user receptors
+        cblks = innermerge2.loc[~innermerge2['block'].str.upper().str.contains('U')]
+        for loc, group in cblks.groupby(["lat","lon"]):
             slat = loc[0]
             slon = loc[1]
             sBlock = group.iloc[0]['block']
 
-            cbtot = group.iloc[0]['risk'] * 1000000
+            cbtot = group['risk'].sum() * 1000000
             cbrnd = round(cbtot,2)
 
             description = "<div align='center'><B> Census Block Receptor</B> <br /> \n" + \
@@ -283,95 +495,119 @@ class KMLWriter():
                         risksum = row["risk"] + pol
                         cbhap_sum[row["pollutant"]] = risksum
 
-                #sort the dictionary by value
-                sorted_cbhap_sum = OrderedDict(sorted(cbhap_sum.items(), key=itemgetter(1)))
+                #sort the dictionary by descending value
+                sorted_cbhap_sum = OrderedDict(sorted(cbhap_sum.items(), key=itemgetter(1),
+                                                      reverse=True))
 
                 # check to make sure large enough value to keep
                 for k, v in sorted_cbhap_sum.items():
-                    w = v * 1000000     # risk in a million 0.005
+                    w = round(v*1000000, 2)     # risk in a million
                     if w > 0.005:
-                        wrnd = round(w,2)
-                        p01 = "    " + format(k) + " = " + format(wrnd) + "<br /> \n"
-                        inp_file.write(p01)
+                        description += "    " + format(k) + " = " + format(w) + "<br /> \n"
 
             description += "</div>"
 
+            # Choose style based on risk level
+            if cbrnd <= 20:
+                styletag = "#b20"
+            elif (cbrnd > 20) & (cbrnd < 100):
+                styletag = "#b20to100"
+            else:
+                styletag = "#b100"
+                
             point = Point(slon, slat, 0.0000)
             placemark = kml.Placemark(ns=self.ns, name="Block Receptor " + str(sBlock),
                                       description=CDATA(description),
-                                      styleUrl="#b20")
-
+                                      styleUrl=styletag)
             placemark.geometry = Geometry(ns=self.ns, altitude_mode="clampToGround", geometry=point)
             ir_folder.append(placemark)
 
-        document.append(ir_folder)
+        docWithHeader.append(ir_folder)
 
-        # Write toshi for inner receptors
+
+        #------------------------ Inner census block receptor TOSHI -----------------------------
         irt_folder = kml.Folder(ns=self.ns, name="Census block TOSHI")
         irt_folder.isopen = 0
 
-        for loc, group in allinner.groupby(["LAT","LON"]):
+        for loc, group in cblks.groupby(["lat","lon"]):
             slat = loc[0]
             slon = loc[1]
-            sBlock = group.iloc[0]['block']
+            sfips = group.iloc[0]['fips']
+            sblock = group.iloc[0]['block']
 
-            hitot = group.iloc[0]['resp_hi']
-            hirnd = round(hitot,2)
+            # Sum each toshi in this group
+            sg = group[['hi_resp','hi_live','hi_neur','hi_deve','hi_repr','hi_kidn',
+                        'hi_ocul','hi_endo','hi_hema','hi_immu','hi_skel','hi_sple',
+                        'hi_thyr','hi_whol']].sum(axis=0)
+            
+            # Identify the max toshi
+            maxi = sg.idxmax()
+            maxtoshi = hinames[maxi]
+            maxtoshival = round(sg[maxi], 2)
+                        
             description = "<div align='center'><B> Census Block Receptor</B> <br /> \n" + \
-                          "    " + "<B> Block: " + str(group.iloc[0]['block']) + "</B> <br /> \n" + \
-                          "    " + "<B> HEM4 Estimated Maximum TOSHI (Respiratory) </B> <br /> \n" + \
-                          "    " + "Total = " + str(hirnd) + "<br /><br /> \n"
+                          "    " + "<B> FIPs: " + sfips + " Block: " + sblock + "</B> <br /> \n" + \
+                          "    " + "<B> HEM4 Estimated Maximum TOSHI (" + maxtoshi + ") </B> <br /> \n" + \
+                          "    " + "Total = " + str(maxtoshival) + "<br /><br /> \n"
 
-            if hirnd > 0:
+            if maxtoshival > 0:
                 description += "    " + "<U> Top Pollutants Contributing to TOSHI </U> <br /> \n"
 
-                # create dictionary to hold summed risk of each pollutant
+                # create dictionary to hold summed non-cancer of each pollutant
                 cbhap_sum = {}
                 for index, row in group.iterrows():
 
                     #keys = cbhap_sum.keys()
                     if row["pollutant"] not in cbhap_sum:
-                        cbhap_sum[row["pollutant"]] = row["resp_hi"]
+                        cbhap_sum[row["pollutant"]] = row[maxi]
                         #inp_file.write(row["pollutant"])
                     else:
                         pol = cbhap_sum[row["pollutant"]]
-                        risksum = row["resp_hi"] + pol
+                        risksum = row[maxi] + pol
                         cbhap_sum[row["pollutant"]] = risksum
 
-                #sort the dictionary by value
-                sorted_cbhap_sum = OrderedDict(sorted(cbhap_sum.items(), key=itemgetter(1)))
+                #sort the dictionary by descending value
+                sorted_cbhap_sum = OrderedDict(sorted(cbhap_sum.items(), key=itemgetter(1),
+                                                      reverse=True))
 
                 # check to make sure large enough value to keep
                 for k, v in sorted_cbhap_sum.items():
-                    w = v * 1000000     # risk in a million 0.005
-                    if w > 0.005:
-                        wrnd = round(w,2)
-                        description += "    " + format(k) + " = " + format(wrnd) + "<br /> \n"
+                    if v > 0.001:
+                        vrnd = round(v,3)
+                        description += "    " + format(k) + " = " + format(vrnd) + "<br /> \n"
 
             description += "</div>"
+
+            # Choose style based on HI level
+            if maxtoshival <= 1:
+                styletag = "#b20"
+            elif (maxtoshival > 1) & (maxtoshival < 10):
+                styletag = "#b20to100"
+            else:
+                styletag = "#b100"
 
             point = Point(slon, slat, 0.0000)
             placemark = kml.Placemark(ns=self.ns, name="Block Receptor " + str(sBlock),
                                       description=CDATA(description),
-                                      styleUrl="#b20")
+                                      styleUrl=styletag)
             placemark.visibility = 0
             placemark.geometry = Geometry(ns=self.ns, altitude_mode="clampToGround", geometry=point)
             irt_folder.append(placemark)
 
-        document.append(irt_folder)
+        docWithHeader.append(irt_folder)
 
-        # start polar receptors cancer risk folder
+
+        #---------------- Polar receptor cancer risk ------------------------------------
         pr_folder = kml.Folder(ns=self.ns, name="Polar receptor cancer risk")
         pr_folder.isopen = 0
 
-        # Write polar grid rings for cancer risk
-        for loc, group in allpolar.groupby(["lat","lon"]):
+        for loc, group in polarmerge2.groupby(["lat","lon"]):
             slat = loc[0]
             slon = loc[1]
             pg_dist = str(round(group.iloc[0]['distance'],0))
             pg_angle = str(round(group.iloc[0]['angle'],0))
 
-            pgtot = group.iloc[0]['risk'] * 1000000
+            pgtot = group['risk'].sum() * 1000000
             pgrnd = round(pgtot,2)
 
             description = "<div align='center'><B> Polar Receptor</B> <br />" + \
@@ -385,55 +621,70 @@ class KMLWriter():
                 # create dictionary to hold summed risk of each pollutant
                 pghap_sum = {}
                 for index, row in group.iterrows():
-
                     if row["pollutant"] not in pghap_sum:
                         pghap_sum[row["pollutant"]] = row["risk"]
-
                     else:
                         pol = pghap_sum[row["pollutant"]]
                         risksum = row["risk"] + pol
                         pghap_sum[row["pollutant"]] = risksum
-                        #sort the dictionary by value
-                    sorted_pghap_sum = OrderedDict(sorted(pghap_sum.items(), key=itemgetter(1)))
+                        
+                #sort the dictionary by descending value
+                sorted_pghap_sum = OrderedDict(sorted(pghap_sum.items(), key=itemgetter(1),
+                                                      reverse=True))
 
-                    # check to make sure large enough value to keep
-                    for k, v in sorted_pghap_sum.items():
-                        z = v * 1000000     # risk in a million
-                        if z > 0.005:
-                            zrnd = round(v,2)
-                            description += "    " + format(k) + " = " + format(zrnd) + "<br /> \n"
+                # check to make sure large enough value to keep
+                for k, v in sorted_pghap_sum.items():
+                    z = round(v*1000000, 2)     # risk in a million
+                    if z > 0.005:
+                        description += "    " + format(k) + " = " + format(z) + "<br /> \n"
 
             description += "</div>"
+
+            # Choose style based on risk level
+            if pgrnd <= 20:
+                styletag = "#s20"
+            elif (pgrnd > 20) & (pgrnd < 100):
+                styletag = "#s20to100"
+            else:
+                styletag = "#s100"
 
             point = Point(slon, slat, 0.0000)
             placemark = kml.Placemark(ns=self.ns, name="Polar Receptor Distance: " + pg_dist + " Angle: " + str(group.iloc[0]['angle']),
                                       description=CDATA(description),
-                                      styleUrl="#s20")
+                                      styleUrl=styletag)
             placemark.visibility = 0
             placemark.geometry = Geometry(ns=self.ns, altitude_mode="clampToGround", geometry=point)
             pr_folder.append(placemark)
 
-        document.append(pr_folder)
+        docWithHeader.append(pr_folder)
 
-        # start polar receptors TOSHI outputs
+
+        #---------------- Polar receptor TOSHI -----------------------------------------
         prt_folder = kml.Folder(ns=self.ns, name="Polar TOSHI")
         prt_folder.isopen = 0
 
-        for loc, group in allpolar.groupby(["lat","lon"]):
+        for loc, group in polarmerge2.groupby(["lat","lon"]):
             slat = loc[0]
             slon = loc[1]
             pg_dist = str(round(group.iloc[0]['distance'],0))
             pg_angle = str(round(group.iloc[0]['angle'],0))
 
-            pgtothi = group.iloc[0]['total_hi']
-            pgrndhi = round(pgtothi,2)
+            # Sum each toshi in this group
+            sg = group[['hi_resp','hi_live','hi_neur','hi_deve','hi_repr','hi_kidn',
+                        'hi_ocul','hi_endo','hi_hema','hi_immu','hi_skel','hi_sple',
+                        'hi_thyr','hi_whol']].sum(axis=0)
+            
+            # Identify the max toshi
+            maxi = sg.idxmax()
+            maxtoshi = hinames[maxi]
+            maxtoshival = round(sg[maxi], 2)
 
             description = "<div align='center'><B> Polar Receptor</B> <br /> \n" + \
                           "    " + "<B> Distance: " + pg_dist + " Angle: " + pg_angle + "</B> <br /> \n" + \
-                          "    " + "<B> HEM4 Estimated Max TOSHI (" + str(group.iloc[0]['toshi']) + ") </B> <br /> \n" + \
-                          "    " + "Total = " + str(pgrndhi) + "<br /><br /> \n"
+                          "    " + "<B> HEM4 Estimated Max TOSHI (" + maxtoshi + ") </B> <br /> \n" + \
+                          "    " + "Total = " + str(maxtoshival) + "<br /><br /> \n"
 
-            if pgrndhi > 0:
+            if maxtoshival > 0:
                 description += "    " + "<U> Top Pollutants Contributing to TOSHI </U> <br /> \n"
 
                 # create dictionary to hold summed toshi of each pollutant
@@ -441,35 +692,59 @@ class KMLWriter():
                 for index, row in group.iterrows():
 
                     if row["pollutant"] not in pghi_sum:
-                        pghi_sum[row["pollutant"]] = row["poll_hi"]
+                        pghi_sum[row["pollutant"]] = row[maxi]
                     else:
                         pol = pghi_sum[row["pollutant"]]
-                        toshisum = row["poll_hi"] + pol
+                        toshisum = row[maxi] + pol
                         pghi_sum[row["pollutant"]] = toshisum
 
-                        #sort the dictionary by value
-                    sorted_pghi_sum = OrderedDict(sorted(pghi_sum.items(), key=itemgetter(1)))
+                #sort the dictionary by descending value
+                sorted_pghi_sum = OrderedDict(sorted(pghi_sum.items(), key=itemgetter(1),
+                                                     reverse=True))
 
-                    # check to make sure large enough value to keep
-                    for k, v in sorted_pghi_sum.items():
-                        if v > 0.005:
-                            vrnd = round(v,2)
-                            description += "    " + format(k) + " = " + format(vrnd) + "<br /> \n"
+                # check to make sure large enough value to keep
+                for k, v in sorted_pghi_sum.items():
+                    if v > 0.001:
+                        vrnd = round(v,3)
+                        description += "    " + format(k) + " = " + format(vrnd) + "<br /> \n"
 
             description += "</div>"
+
+            # Choose style based on HI level
+            if maxtoshival <= 1:
+                styletag = "#s20"
+            elif (maxtoshival > 1) & (maxtoshival < 10):
+                styletag = "#s20to100"
+            else:
+                styletag = "#s100"
 
             point = Point(slon, slat, 0.0000)
             placemark = kml.Placemark(ns=self.ns, name="Polar Receptor Distance: " + pg_dist + " Angle: " + pg_angle,
                                       description=CDATA(description),
-                                      styleUrl="#s20")
+                                      styleUrl=styletag)
             placemark.visibility = 0
             placemark.geometry = Geometry(ns=self.ns, altitude_mode="clampToGround", geometry=point)
             prt_folder.append(placemark)
 
-        document.append(prt_folder)
-        fac_kml.append(document)
-        self.writeToFile("risks.kml", fac_kml)
+        docWithHeader.append(prt_folder)
+        fac_kml.append(docWithHeader)
+        
+        # Finished, write the kml file
+        self.writeToFile(fackml_fname, fac_kml)
 
+        # Create KMZ file
+        kmztype = 'facilityrisk'
+        fackmz_fname = fackml_fname.replace('.kml', '.kmz')
+        self.createKMZ(kmztype, fackml_fname, fackmz_fname)
+
+        
+    def calcHI(self, conc, rfc, endpoint):
+        """
+        Compute a specific HI value
+        """
+        hazard_index = (0 if rfc == 0 else (conc/rfc/1000)*endpoint)
+        return hazard_index
+        
     def writeToFile(self, filename, kml):
         """
         Write a KML instance to a file.
@@ -480,6 +755,33 @@ class KMLWriter():
         file.write(unescape(kml.to_string(prettyprint=True)))
         file.close()
 
+    def createKMZ(self, ftype, kmlfname, kmzfname):
+        """
+        Zip a KML file into a KMZ file.
+        :param ftype: type of KML to zip, either all sources or facility risk
+        :param kmlname: KML filename
+        :param kmzname: KMZ filename
+        """
+        if ftype == 'allsources':
+            zf = zipfile.ZipFile(kmzfname, mode='w')
+            zf.write(kmlfname, basename(kmlfname))
+            zf.write('resources/drawCircle.png', 'drawCircle.png')
+            zf.write('resources/drawCenter.png', 'drawCenter.png')
+            zf.close()
+        else:
+            zf = zipfile.ZipFile(kmzfname, mode='w')
+            zf.write(kmlfname, basename(kmlfname))
+            zf.write('resources/drawCircle.png', 'drawCircle.png')
+            zf.write('resources/drawRectangle.png', 'drawRectangle.png')
+            zf.write('resources/drawRectangle_ur.png', 'drawRectangle_ur.png')
+            zf.write('resources/drawCenter.png', 'drawCenter.png')
+            zf.write('resources/drawCross.png', 'drawCross.png')
+            zf.close()
+        
+        # Delete the KML file
+        os.remove(kmlfname)
+            
+            
     def set_width(self, row, buoy_linwid):
         """
         Set the width of a line or buoyant line source.
@@ -496,25 +798,64 @@ class KMLWriter():
 
         return linwid
 
-    def create_sourcemap(self, model):
+    def distance(self, origin, destination):
+        """
+        Compute the distance in km between two pairs of lat/lons
+        :param origin: first pair of lat/lon (tuple)
+        :param destination: second pair of lat/lon (tuple)
+        :return: distance in km
+        """
+        lat1, lon1 = origin
+        lat2, lon2 = destination
+        radius = 6371 # earth radius in km
+
+        dlat = math.radians(lat2-lat1)
+        dlon = math.radians(lon2-lon1)
+        a = math.sin(dlat/2) * math.sin(dlat/2) + math.cos(math.radians(lat1)) \
+            * math.cos(math.radians(lat2)) * math.sin(dlon/2) * math.sin(dlon/2)
+        c = 2 * math.atan2(math.sqrt(a), math.sqrt(1-a))
+        d = radius * c
+        
+        return d
+
+    def midpoint(self, p1, p2):
+        """
+        Compute the midpoint between two pairs of lat/lons
+        :param p1: first lat/lon
+        :param p2: second lat/lon
+        :return: lat/lon of midpoint
+        """
+        lat1, lon1 = p1
+        lat2, lon2 = p2
+        lat1, lon1, lat2, lon2 = map(math.radians, (lat1, lon1, lat2, lon2))
+        dlon = lon2 - lon1
+        dx = math.cos(lat2) * math.cos(dlon)
+        dy = math.cos(lat2) * math.sin(dlon)
+        lat3 = math.atan2(math.sin(lat1) + math.sin(lat2), math.sqrt((math.cos(lat1) + dx) * (math.cos(lat1) + dx) + dy * dy))
+        lon3 = lon1 + math.atan2(dy, math.cos(lat1) + dx)
+        return(math.degrees(lat3), math.degrees(lon3))
+
+    def create_sourcemap(self, model, facil_id):
         """
         Create the source map dataframe needed for the source location KML.
         :return: dataframe of emission locations
         """
-
-        # Create an array of all facility ids
-        faclist = model.emisloc.dataframe.fac_id.unique()
+        if facil_id == None:
+            # Create an array of all facility ids being modeled
+            faclist = model.faclist.dataframe.fac_id.values
+        else:
+            faclist = [facil_id]
 
         # Loop over all facility ids and populate the sourcemap dataframe
-
         source_map = pd.DataFrame()
 
         for row in faclist:
 
             # Emission location info for one facility. Keep certain columns.
             emislocs = model.emisloc.dataframe.loc[model.emisloc.dataframe.fac_id == row]
-            [["fac_id","source_id","source_type","lon","lat","utmzone","x2","y2","location_type","lengthx"]]
-
+            [["fac_id","source_id","source_type","lon","lat","utmzone","x2","y2",
+              "location_type","lengthx","lengthy","angle"]]
+            
             # If facility has a polygon source, get the vertices for this facility and append to emislocs
             if any(emislocs.source_type == "I") == True:
                 polyver = model.multipoly.dataframe.loc[model.multipoly.dataframe.fac_id == row]
@@ -574,11 +915,159 @@ class KMLWriter():
             emislocs["utme_x2"] = autme.tolist()
             emislocs["utmn_y2"] = autmn.tolist()
 
+            # Pull out any area/volume sources and create vertices of each corner
+            areavol = emislocs[(emislocs.source_type=="A") | (emislocs.source_type=="V")]
+
+            if areavol.empty == False:
+                new_rows = []
+                for index, row in areavol.iterrows():                    
+                    newrow = row.copy()
+                    if row["source_type"] == "A":
+                        # Area sources
+                        new_rows.append(newrow.tolist())  # vertex 1
+                        newrow["utme"] = row["utme"] + row["lengthx"] * np.cos(row["angle"])
+                        newrow["utmn"] = row["utmn"] - row["lengthx"] * np.sin(row["angle"])
+                        lat_array, lon_array = UTM.utm2ll([newrow["utmn"]], [newrow["utme"]], [facutmzone])
+                        newrow["lat"] = lat_array[0]
+                        newrow["lon"] = lon_array[0]
+                        new_rows.append(newrow.tolist())  # vertex 2
+                        newrow["utme"] = row["utme"] + row["lengthx"] * np.cos(row["angle"]) \
+                                                        + row["lengthy"] * np.sin(row["angle"])
+                        newrow["utmn"] = row["utmn"] - row["lengthx"] * np.sin(row["angle"]) \
+                                                        + row["lengthy"] * np.cos(row["angle"])
+                        lat_array, lon_array = UTM.utm2ll([newrow["utmn"]], [newrow["utme"]], [facutmzone])
+                        newrow["lat"] = lat_array[0]
+                        newrow["lon"] = lon_array[0]
+                        new_rows.append(newrow.tolist())  # vertex 3
+                        newrow["utme"] = row["utme"] + row["lengthy"] * np.sin(row["angle"])
+                        newrow["utmn"] = row["utmn"] + row["lengthy"] * np.cos(row["angle"])
+                        lat_array, lon_array = UTM.utm2ll([newrow["utmn"]], [newrow["utme"]], [facutmzone])
+                        newrow["lat"] = lat_array[0]
+                        newrow["lon"] = lon_array[0]
+                        new_rows.append(newrow.tolist())  # vertex 4
+                        newrow["utme"] = row["utme"]
+                        newrow["utmn"] = row["utmn"]
+                        newrow["lat"] = row["lat"]
+                        newrow["lon"] = row["lon"]
+                        new_rows.append(newrow.tolist())  # repeat vertex 1
+                    else:
+                        # Volume sources
+                        newrow["utme"] = row["utme"] - row["horzdim"]/2
+                        newrow["utmn"] = row["utmn"] - row["horzdim"]/2
+                        lat_array, lon_array = UTM.utm2ll([newrow["utmn"]], [newrow["utme"]], [facutmzone])
+                        newrow["lat"] = lat_array[0]
+                        newrow["lon"] = lon_array[0]
+                        new_rows.append(newrow.tolist())  # vertex 1
+                        newrow["utme"] = row["utme"] + row["horzdim"]/2
+                        newrow["utmn"] = row["utmn"] - row["horzdim"]/2
+                        lat_array, lon_array = UTM.utm2ll([newrow["utmn"]], [newrow["utme"]], [facutmzone])
+                        newrow["lat"] = lat_array[0]
+                        newrow["lon"] = lon_array[0]
+                        new_rows.append(newrow.tolist())  # vertex 2
+                        newrow["utme"] = row["utme"] + row["horzdim"]/2
+                        newrow["utmn"] = row["utmn"] + row["horzdim"]/2
+                        lat_array, lon_array = UTM.utm2ll([newrow["utmn"]], [newrow["utme"]], [facutmzone])
+                        newrow["lat"] = lat_array[0]
+                        newrow["lon"] = lon_array[0]
+                        new_rows.append(newrow.tolist())  # vertex 3
+                        newrow["utme"] = row["utme"] - row["horzdim"]/2
+                        newrow["utmn"] = row["utmn"] + row["horzdim"]/2
+                        lat_array, lon_array = UTM.utm2ll([newrow["utmn"]], [newrow["utme"]], [facutmzone])
+                        newrow["lat"] = lat_array[0]
+                        newrow["lon"] = lon_array[0]
+                        new_rows.append(newrow.tolist())  # vertex 4
+                        newrow["utme"] = row["utme"] - row["horzdim"]/2
+                        newrow["utmn"] = row["utmn"] - row["horzdim"]/2
+                        lat_array, lon_array = UTM.utm2ll([newrow["utmn"]], [newrow["utme"]], [facutmzone])
+                        newrow["lat"] = lat_array[0]
+                        newrow["lon"] = lon_array[0]
+                        new_rows.append(newrow.tolist())  # repeat vertex 1
+                              
+                # Remove the area/volume rows from emislocs and append the area/volume vertices list
+                emislocs = emislocs[(emislocs.source_type != "A") & (emislocs.source_type != "V")]
+                emislocs = emislocs.append(pd.DataFrame(new_rows, columns=emislocs.columns)).reset_index()
+                            
             # Append to source_map
             source_map = source_map.append(emislocs)
 
         return source_map
 
+    def create_facility_sourcemap(self, facid, model):
+        """
+        Create the source map dataframe needed for the source locations of a particular facility.
+        :return: dataframe of emission locations
+        """
+
+        fac_source_map = pd.DataFrame()
+
+        # Emission location info for one facility. Keep certain columns.
+        emislocs = model.emisloc.dataframe.loc[model.emisloc.dataframe.fac_id == facid]
+        [["fac_id","source_id","source_type","lon","lat","utmzone","x2","y2","location_type","lengthx"]]
+
+        # If facility has a polygon source, get the vertices for this facility and append to emislocs
+        if any(emislocs.source_type == "I") == True:
+            polyver = model.multipoly.dataframe.loc[model.multipoly.dataframe.fac_id == facid]
+            [["fac_id","source_id","lon","lat","utmzone","location_type"]]
+            # Assign source_type
+            polyver["source_type"] = "I"
+            # remove the I source_type rows from emislocs before appending polyver to avoid duplicate rows
+            emislocs = emislocs[emislocs.source_type != "I"]
+            # Append polyver to emislocs
+            emislocs = emislocs.append(polyver)
+
+        # If facility has a buoyant line source, get the line width
+        if any(emislocs.source_type == "B") == True:
+            buoy_linwid = model.multibuoy.dataframe.loc[model.multibuoy.dataframe.fac_id == facid]
+            [["fac_id","avglin_wid"]]
+        else:
+            buoy_linwid = pd.DataFrame()
+
+        # Create a line width column for line and buoyant line sources
+        emislocs["line_width"] = emislocs.apply(lambda row: self.set_width(row,buoy_linwid), axis=1)
+
+        # Replace NaN with blank or 0 in emislocs
+        emislocs = emislocs.fillna({"utmzone":0, "source_type":"", "x2":0, "y2":0})
+
+        # Determine the common utm zone to use for this facility
+        facutmzone = UTM.zone2use(emislocs)
+
+        # Convert all lat/lon coordinates to UTM and UTM coordinates to lat/lon
+
+        slat = emislocs["lat"].values
+        slon = emislocs["lon"].values
+        sutmzone = emislocs["utmzone"].values
+
+        # First compute lat/lon coors using whatever zone was provided
+        alat, alon = UTM.utm2ll(slat, slon, sutmzone)
+        emislocs["lat"] = alat.tolist()
+        emislocs["lon"] = alon.tolist()
+
+        # Next compute UTM coors using the common zone
+        sutmzone = facutmzone*np.ones(len(emislocs["lat"]))
+        autmn, autme, autmz = UTM.ll2utm(slat, slon, sutmzone)
+        emislocs["utme"] = autme.tolist()
+        emislocs["utmn"] = autmn.tolist()
+        emislocs["utmzone"] = autmz.tolist()
+
+        # Compute UTM of any x2 and y2 coordinates and add to emislocs
+        slat = emislocs["y2"].values
+        slon = emislocs["x2"].values
+        sutmzone = emislocs["utmzone"].values
+
+        alat, alon = UTM.utm2ll(slat, slon, sutmzone)
+        emislocs["lat_y2"] = alat.tolist()
+        emislocs["lon_x2"] = alon.tolist()
+
+        sutmzone = facutmzone*np.ones(len(emislocs["lat"]))
+        autmn, autme, autmz = UTM.ll2utm(slat, slon, sutmzone)
+        emislocs["utme_x2"] = autme.tolist()
+        emislocs["utmn_y2"] = autmn.tolist()
+
+        # Append to source_map
+        fac_source_map = fac_source_map.append(emislocs)
+
+        return fac_source_map
+    
     def createDocumentWithHeader(self):
         """
         Create a KML Document object with preset styles and schema.
@@ -598,17 +1087,22 @@ class KMLWriter():
         # Ptsrc style...
         document.append_style(self.getPtSrcStyle())
 
+        # center style...
+        center_style = self.getBaseStyle(id="center")
+        center_style.append_style(IconStyle(ns=self.ns, color="ff0000ff", icon_href="drawCenter.png"))
+        document.append_style(center_style)
+
         # s20 style...
         document.append_style(self.getS20Style())
 
         # s20to100 style...
         s20to100_style = self.getBaseStyle(id="s20to100")
-        s20to100_style.append_style(IconStyle(ns=self.ns, color="ff00ffff", icon_href="drawcircle.png"))
+        s20to100_style.append_style(IconStyle(ns=self.ns, color="ff00ffff", icon_href="drawCircle.png"))
         document.append_style(s20to100_style)
 
         # s100 style...
         s100_style = self.getBaseStyle(id="s100")
-        s100_style.append_style(IconStyle(ns=self.ns, color="ff0000ff", icon_href="drawcircle.png"))
+        s100_style.append_style(IconStyle(ns=self.ns, color="ff0000ff", icon_href="drawCircle.png"))
         document.append_style(s100_style)
 
         # b20 style...
@@ -641,7 +1135,7 @@ class KMLWriter():
 
         # mir style...
         mir_style = self.getBaseStyle(id="mir")
-        mir_style.append_style(IconStyle(ns=self.ns, icon_href="cross.png"))
+        mir_style.append_style(IconStyle(ns=self.ns, icon_href="drawCross.png"))
         document.append_style(mir_style)
 
         return document
@@ -655,12 +1149,17 @@ class KMLWriter():
 
     def getPtSrcStyle(self):
         ps_style = self.getBaseStyle(id="Ptsrc")
-        ps_style.append_style(IconStyle(ns=self.ns, color="ff8080ff", icon_href="drawcircle.png"))
+        ps_style.append_style(IconStyle(ns=self.ns, color="ff8080ff", icon_href="drawCircle.png"))
         return ps_style
+
+    def getCenterStyle(self):
+        center_style = self.getBaseStyle(id="center")
+        center_style.append_style(IconStyle(ns=self.ns, color="ff0000ff", icon_href="drawCenter.png"))
+        return center_style
 
     def getS20Style(self):
         s20_style = self.getBaseStyle(id="s20")
-        s20_style.append_style(IconStyle(ns=self.ns, color="ff00ff00", icon_href="drawcircle.png"))
+        s20_style.append_style(IconStyle(ns=self.ns, color="ff00ff00", icon_href="drawCircle.png"))
         return s20_style
 
     def getB20Style(self):

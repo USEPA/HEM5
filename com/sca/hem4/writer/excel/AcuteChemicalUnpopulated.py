@@ -1,5 +1,7 @@
 import os, fnmatch
 import pandas as pd
+
+from com.sca.hem4.writer.csv.AllOuterReceptors import AllOuterReceptors
 from com.sca.hem4.writer.excel.ExcelWriter import ExcelWriter
 from com.sca.hem4.upload.HAPEmissions import *
 from com.sca.hem4.upload.FacilityList import *
@@ -101,13 +103,9 @@ class AcuteChemicalUnpopulated(ExcelWriter):
         # is larger than the stored value
         for p in pols:
             for f in listOuter:
-                outerfname = os.path.join(self.targetDir, f)
-                outconcs = pd.read_csv(outerfname, skiprows=1, names=outercolumns, dtype=str)
-                typedict = {fips:str, block:str, lat:pd.np.float64, lon:pd.np.float64,
-                            source_id:str, ems_type:str, pollutant:str, conc:pd.np.float64,
-                            aconc:pd.np.float64, elev:pd.np.float64, population:pd.np.float64,
-                            overlap:str}
-                outconcs = outconcs.astype(dtype=typedict)
+                allouter = AllOuterReceptors(targetDir=self.targetDir, filenameOverride=f)
+                outconcs = allouter.createDataframe()
+
                 # Sum acute conc to unique lat/lons
                 outsum = outconcs.groupby([pollutant, lat, lon]).agg(aggs)[newcolumns]                
                 max_idx = outsum[outsum[pollutant].str.lower() == p][aconc].idxmax()
