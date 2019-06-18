@@ -1,9 +1,4 @@
-import os
-
-from com.sca.hem4.log import Logger
-from com.sca.hem4.writer.excel.ExcelWriter import ExcelWriter
 from com.sca.hem4.writer.excel.RiskBreakdown import *
-from com.sca.hem4.writer.excel.summary.MaxRiskSummary import risk
 
 risk_contrib = 'risk_contrib'
 

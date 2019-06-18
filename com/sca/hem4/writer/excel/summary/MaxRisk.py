@@ -3,7 +3,7 @@ from com.sca.hem4.writer.csv.BlockSummaryChronic import *
 
 risktype = 'risktype'
 risk = 'risk'
-class MaxRiskSummary(ExcelWriter):
+class MaxRisk(ExcelWriter):
 
     def __init__(self, targetDir, facilityIds):
         self.name = "Maximum Risk Summary"
@@ -98,7 +98,7 @@ class MaxRiskSummary(ExcelWriter):
 
     # Override the default write() method in order to add bottom section of report
     def write(self):
-        super(MaxRiskSummary, self).write()
+        super(MaxRisk, self).write()
 
         faclist = {}
         facilityHeaders = []
