@@ -36,10 +36,14 @@ class Incidence(ExcelWriter):
 
         allinner_df = self.model.all_inner_receptors_df.copy()
 
-        # compute incidence for each Inner rececptor row and then sum incidence by source_id and pollutant
-        allinner_df[inc] = allinner_df.apply(lambda row: self.calculateRisk(row[pollutant],
-                                                                            row[conc]) * row[population]/70, axis=1)
-        inner_inc = allinner_df.groupby([source_id, pollutant, ems_type], as_index=False)[[inc]].sum()
+        if allinner_df.empty == False:
+            # compute incidence for each Inner rececptor row and then sum incidence by source_id and pollutant
+            allinner_df[inc] = allinner_df.apply(lambda row: self.calculateRisk(row[pollutant],
+                                                 row[conc]) * row[population]/70, axis=1)
+            inner_inc = allinner_df.groupby([source_id, pollutant, ems_type], as_index=False)[[inc]].sum()
+        else:
+            inner_inc = allinner_df
+            inner_inc[inc] = None
 
         # append inner_inc and outer_inc, and re-sum by source_id and pollutant
         all_inc = inner_inc.append(self.outerInc, ignore_index=True).groupby(
@@ -99,9 +103,6 @@ class Incidence(ExcelWriter):
                 self.model.haplib.dataframe[pollutant].str.contains(pattern, case=False, regex=True)]
 
             if row.size == 0:
-#                msg = 'Could not find pollutant ' + pollutant_name + ' in the haplib!'
-#                Logger.logMessage(msg)
-                # Logger.log(msg, self.model.haplib.dataframe, False)
                 URE = 0
             else:
                 URE = row.iloc[0][ure]

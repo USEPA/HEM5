@@ -11,6 +11,8 @@ hill = 'hill';
 overlap = 'overlap';
 conc = 'conc'
 result = 'result';
+ddp = 'ddp';
+wdp = 'wdp';
 flag = 'flag';
 avg_time = 'avg_time';
 num_yrs = 'num_yrs';
@@ -41,7 +43,7 @@ class Model():
         emisvar - emissions variation file
         facids - ALL facility ids
         depdeplt- deposition and depletion options for ALL facilties
-        gasparams - 
+        gasparams - gaseous dry depostion parameters
         
         extensions include:
             - .dataframe: contains csv converted to dataframe for input file
