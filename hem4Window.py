@@ -67,6 +67,7 @@ class Hem4(tk.Frame):
         self.hap_up = None
         self.emisloc_up = None
         self.urep = None
+        self.urepaltButton = None
         self.poly_up = None
         self.buoyant_up = None
         self.bldgdw_up = None
@@ -94,9 +95,9 @@ class Hem4(tk.Frame):
         
         
          #back button
-        back_button = tk.Button(self.main, text="Back", font=TEXT_FONT,
+        back_button = tk.Button(self, text="Back", font=TEXT_FONT,
                             command=lambda: controller.show_frame(navigation.Navigation))
-        back_button.grid(row=15, sticky="W", padx=10, pady=10)
+        back_button.grid(row=15, sticky="SW", padx=10, pady=10)
     
     #%% Set Quit, Run, and User Guide buttons        
         #self.quit_button = tk.Button(self.main, text="QUIT", fg="red",
@@ -104,9 +105,9 @@ class Hem4(tk.Frame):
         #self.quit_button.grid(row=10, column=0, sticky="W")
         
         #run only appears once the required files have been set
-        self.run_button = tk.Button(self.main, text='RUN', fg="green", font=TEXT_FONT,
+        self.run_button = tk.Button(self, text='RUN', fg="green", font=TEXT_FONT,
                                      command=self.run)
-        self.run_button.grid(row=15, sticky="E", padx=20, pady=10)
+        self.run_button.grid(row=15, sticky="SE", padx=20, pady=10)
         
         
         
@@ -384,7 +385,7 @@ class Hem4(tk.Frame):
         
         #create discreet sections for GUI in tab1
         self.s1 = tk.Frame(self.main, width=1000, height=150)
-        self.s2 = tk.Frame(self.main, width=1000, height=150)
+        self.s2 = tk.Frame(self.main, width=1000, height=50)
         self.s3 = tk.Frame(self.main, width=1000, height=150, pady=10, padx=10)
         self.s4 = tk.Frame(self.main, width=1000, height=150, pady=10, padx=10)
         self.s5 = tk.Frame(self.main, width=1000, height=150, pady=10, padx=10)
@@ -404,7 +405,8 @@ class Hem4(tk.Frame):
         global instruction_instance
         instruction_instance = tk.StringVar(self)
         instruction_instance.set(" ")
-        self.dynamic_inst = ttk.Label(self.s1, wraplength=600, font=TEXT_FONT)
+        self.dynamic_inst = tk.Label(self.s1, wraplength=600, font=TEXT_FONT, pady=10) 
+        self.dynamic_inst.config(height=4)
         
         self.dynamic_inst["textvariable"] = instruction_instance 
         self.dynamic_inst.grid(row=1, column=0)
