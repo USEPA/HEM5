@@ -72,19 +72,20 @@ class AcuteChemicalUnpopulated(ExcelWriter):
         
         # 2) Next search the discrete (inner) receptors for the max acute conc per pollutant.
         
-        innconcs = self.model.all_inner_receptors_df.copy()
-        # Sum acute conc to unique lat/lons
-        innsum = innconcs.groupby([pollutant, lat, lon]).agg(aggs)[newcolumns]
-        
-        # loop over each pollutant and find the discrete receptor with the max acute conc
-        #    If inner acute conc is larger than stored value, replace stored value.
-        for p in pols:
-            max_idx = innsum[innsum[pollutant].str.lower() == p][aconc].idxmax()
-            if innsum[aconc].loc[max_idx] > maxconc_df[aconc].loc[p]:
-                maxconc_df[aconc].loc[p] = innsum[aconc].loc[max_idx]
-                maxconc_df[lon].loc[p] = innsum[lon].loc[max_idx]
-                maxconc_df[lat].loc[p] = innsum[lat].loc[max_idx]
-                maxconc_df[notes].loc[p] = 'Discrete'
+        if self.model.all_inner_receptors_df.empty == False:
+            innconcs = self.model.all_inner_receptors_df.copy()
+            # Sum acute conc to unique lat/lons
+            innsum = innconcs.groupby([pollutant, lat, lon]).agg(aggs)[newcolumns]
+            
+            # loop over each pollutant and find the discrete receptor with the max acute conc
+            #    If inner acute conc is larger than stored value, replace stored value.
+            for p in pols:
+                max_idx = innsum[innsum[pollutant].str.lower() == p][aconc].idxmax()
+                if innsum[aconc].loc[max_idx] > maxconc_df[aconc].loc[p]:
+                    maxconc_df[aconc].loc[p] = innsum[aconc].loc[max_idx]
+                    maxconc_df[lon].loc[p] = innsum[lon].loc[max_idx]
+                    maxconc_df[lat].loc[p] = innsum[lat].loc[max_idx]
+                    maxconc_df[notes].loc[p] = 'Discrete'
         
         # 3) Finally, search the outer receptors
 

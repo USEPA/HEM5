@@ -173,7 +173,7 @@ def sort(facops):
 
     ##order matters for pahse 'B'-- particle first, then vapor
 
-##order matters for pahse 'B'-- particle first, then vapor
+##order matters for phase 'B'-- particle first, then vapor
 def single_phase(phase, depos, deple, vdepo, pdepo, vdepl, pdepl):
 
     opts = []

@@ -16,6 +16,16 @@ class AllPolarReceptors(CsvWriter):
         self.filename = os.path.join(targetDir, facilityId + "_all_polar_receptors.csv")
 
         self.polarCache = {}
+        
+        # Aermod runtype (with or without deposition) determines what columns are in the aermod plotfile.
+        # Set accordingly in a dictionary.
+        self.rtype = self.model.model_optns['runtype']
+        self.plotcols = {0: [utme,utmn,source_id,result,aresult,'emis_type']}
+        self.plotcols[1] = [utme,utmn,source_id,result,ddp,wdp,aresult,'emis_type']
+        self.plotcols[2] = [utme,utmn,source_id,result,ddp,aresult,'emis_type']
+        self.plotcols[3] = [utme,utmn,source_id,result,wdp,aresult,'emis_type']
+            
+        
             
     def getHeader(self):
         return ['Source ID', 'Emission type', 'Pollutant', 'Conc (µg/m3)', 'Acute conc (ug/m3)',
@@ -53,15 +63,14 @@ class AllPolarReceptors(CsvWriter):
                        ,flag:np.float64,avg_time:np.str,source_id:np.str,rank:np.str,net_id:np.str
                        ,concdate:np.str},
                 comment='*') 
-
+        
         #extract Chronic polar concs from the Chronic plotfile and round the utm coordinates
         polarcplot_df = self.plot_df.query("net_id == 'POLGRID1'").copy()
         polarcplot_df.utme = polarcplot_df.utme.round()
         polarcplot_df.utmn = polarcplot_df.utmn.round()
 
         # If acute was run for this facility, extract polar concs from Acute plotfile and join to
-        # Chronic polar concs.
-        # Otherwise, add column of 0's for acute result
+        # chronic polar concs, otherwise, add column of 0's for acute result
         if self.model.facops.iloc[0][acute] == 'Y':
             polaraplot_df = self.aplot_df.query("net_id == 'POLGRID1'").copy()
             polaraplot_df.utme = polaraplot_df.utme.round()
@@ -70,7 +79,7 @@ class AllPolarReceptors(CsvWriter):
                                     how='inner', on = [source_id, utme, utmn])
         else:
             polarplot_df = polarcplot_df.copy()
-            polarplot_df[aresult] = 0
+            polarplot_df[aresult] = 0.0
 
         # array of unique source_id's
         srcids = polarplot_df[source_id].unique().tolist()
@@ -81,23 +90,24 @@ class AllPolarReceptors(CsvWriter):
 
         # process polar concs one source_id at a time
         for x in srcids:
-            polarplot_onesrcid = polarplot_df[[utme,utmn,source_id,result,aresult]].loc[polarplot_df[source_id] == x]
+            polarplot_onesrcid = polarplot_df[self.plotcols[self.rtype]].loc[polarplot_df[source_id] == x]
             hapemis_onesrcid = self.model.runstream_hapemis[[source_id,pollutant,emis_tpy]].loc[self.model.runstream_hapemis[source_id] == x]
             
             for row1 in polarplot_onesrcid.itertuples():
                 for row2 in hapemis_onesrcid.itertuples():
-                    d_sourceid = row1[3]
-                    d_emistype = "C"
-                    d_pollutant = row2[2]
-                    d_conc = row1[4] * row2[3] * self.cf
-                    d_aconc = row1[5] * row2[3] * self.cf * self.model.facops.iloc[0][multiplier]                    
+                                        
+                    d_sourceid = row1.source_id
+                    d_emistype = row1.emis_type
+                    d_pollutant = row2.pollutant
+                    d_conc = row1.result * row2.emis_tpy * self.cf
+                    d_aconc = row1.aresult * row2.emis_tpy * self.cf * self.model.facops.iloc[0][multiplier]                    
 
                     record = None
-                    key = (row1[1], row1[2])
+                    key = (row1.utme, row1.utmn)
                     if key in self.polarCache:
                         record = self.polarCache.get(key)
                     else:
-                        record = self.model.polargrid.loc[(self.model.polargrid[utme] == row1[1]) & (self.model.polargrid[utmn] == row1[2])]
+                        record = self.model.polargrid.loc[(self.model.polargrid[utme] == row1.utme) & (self.model.polargrid[utmn] == row1.utmn)]
                         self.polarCache[key] = record
 
                     d_distance = record[distance].values[0]
@@ -108,8 +118,8 @@ class AllPolarReceptors(CsvWriter):
                     d_lat = record[lat].values[0]
                     d_lon = record[lon].values[0]
                     d_overlap = record[overlap].values[0]
-                    d_drydep = ""
-                    d_wetdep = ""
+                    d_drydep = "" if self.rtype in [0,3] else row1.ddp * row2.emis_tpy * self.cf
+                    d_wetdep = "" if self.rtype in [0,2] else row1.wdp * row2.emis_tpy * self.cf
                     datalist = [d_sourceid, d_emistype, d_pollutant, d_conc, d_aconc,
                                 d_distance, d_angle, d_sector, d_ring_no,
                                 d_elev, d_lat, d_lon, d_overlap, d_wetdep, d_drydep]

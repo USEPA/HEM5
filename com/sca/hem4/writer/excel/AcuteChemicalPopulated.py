@@ -53,24 +53,26 @@ class AcuteChemicalPopulated(ExcelWriter):
         polinfo[pollutant] = polinfo.apply(lambda x: x[pollutant].lower(), axis=1)
         polinfo.set_index([pollutant], inplace=True, drop=False)
         
+        # Define aggregation columns and new column names
+        aggs = {pollutant:'first', lat:'first', lon:'first', population:'first', aconc:'sum'}
+        newcolumns = [pollutant, lat, lon, population, aconc]
         
         # 1) First search the discrete (inner) receptors for the max acute conc per pollutant
         #    Note: population at receptor must be > 0 to be considered
         
-        inner_df = self.model.all_inner_receptors_df.copy()
-        # Sum acute conc to unique lat/lons
-        aggs = {pollutant:'first', lat:'first', lon:'first', population:'first', aconc:'sum'}
-        newcolumns = [pollutant, lat, lon, population, aconc]
-        innsum = inner_df.groupby([pollutant, lat, lon]).agg(aggs)[newcolumns]
-                
-        # loop over each pollutant and find the discrete receptor with the max acute conc
-        for x in pols:
-            max_idx = innsum[((innsum[pollutant].str.lower() == x)
-                               & (innsum[population] > 0))][aconc].idxmax()
-            maxconc_df[aconc].loc[x] = innsum[aconc].loc[max_idx]
-            maxconc_df[lon].loc[x] = innsum[lon].loc[max_idx]
-            maxconc_df[lat].loc[x] = innsum[lat].loc[max_idx]
-            maxconc_df[notes].loc[x] = 'Discrete'
+        if self.model.all_inner_receptors_df.empty == False:
+            inner_df = self.model.all_inner_receptors_df.copy()
+            # Sum acute conc to unique lat/lons
+            innsum = inner_df.groupby([pollutant, lat, lon]).agg(aggs)[newcolumns]
+                    
+            # loop over each pollutant and find the discrete receptor with the max acute conc
+            for x in pols:
+                max_idx = innsum[((innsum[pollutant].str.lower() == x)
+                                   & (innsum[population] > 0))][aconc].idxmax()
+                maxconc_df[aconc].loc[x] = innsum[aconc].loc[max_idx]
+                maxconc_df[lon].loc[x] = innsum[lon].loc[max_idx]
+                maxconc_df[lat].loc[x] = innsum[lat].loc[max_idx]
+                maxconc_df[notes].loc[x] = 'Discrete'
         
         # 2) Next, search the outer receptor concs
 

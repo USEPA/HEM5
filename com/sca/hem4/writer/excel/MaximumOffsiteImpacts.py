@@ -45,8 +45,13 @@ class MaximumOffsiteImpacts(ExcelWriter):
         ring_risk[rec_type] = "P"
 
         # add distance and angle from the inner blocks df to the inner risk df
-        innrisk = pd.merge(inner_risk, self.model.innerblks_df[[lat, lon, distance, angle]],
-                           on=[lat, lon])
+        if self.model.innerblks_df.empty == False:
+            innrisk = pd.merge(inner_risk, self.model.innerblks_df[[lat, lon, distance, angle]],
+                               on=[lat, lon])
+        else:
+            innrisk = inner_risk
+            innrisk[distance] = None
+            innrisk[angle] = None
 
         # append ring risk to inner risk to make one risk df
         allrisk = innrisk.append(ring_risk, sort=True).reset_index(drop=True).infer_objects().fillna('')

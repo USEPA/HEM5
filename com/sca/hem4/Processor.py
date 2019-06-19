@@ -48,7 +48,6 @@ class Processor():
         Logger.logMessage("Preparing Inputs for " + str(
             self.model.facids.count()) + " facilities")
                 
-
         fac_list = []
         for index, row in self.model.faclist.dataframe.iterrows():
 

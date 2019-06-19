@@ -33,6 +33,15 @@ class AllInnerReceptors(CsvWriter, InputFile):
         self.innblkCache = {}
         self.filename = path
 
+        # Aermod runtype (with or without deposition) determines what columns are in the aermod plotfile.
+        # Set accordingly in a dictionary.
+        self.rtype = self.model.model_optns['runtype']
+        self.plotcols = {0: [utme,utmn,source_id,result,aresult,'emis_type']}
+        self.plotcols[1] = [utme,utmn,source_id,result,ddp,wdp,aresult,'emis_type']
+        self.plotcols[2] = [utme,utmn,source_id,result,ddp,aresult,'emis_type']
+        self.plotcols[3] = [utme,utmn,source_id,result,wdp,aresult,'emis_type']
+
+
     def getHeader(self):
         return ['FIPs', 'Block', 'Latitude', 'Longitude', 'Source ID', 'Emission type', 'Pollutant',
                 'Conc (µg/m3)', 'Acute Conc (µg/m3)', 'Elevation (m)',
@@ -88,13 +97,13 @@ class AllInnerReceptors(CsvWriter, InputFile):
 
         # process inner concs one source_id at a time
         for x in srcids:
-            innerplot_onesrcid = innerplot_df[[utme,utmn,source_id,result,aresult]].loc[innerplot_df[source_id] == x]
+            innerplot_onesrcid = innerplot_df[self.plotcols[self.rtype]].loc[innerplot_df[source_id] == x]
             hapemis_onesrcid = self.model.runstream_hapemis[[source_id,pollutant,emis_tpy]].loc[self.model.runstream_hapemis[source_id] == x]
             for row1 in innerplot_onesrcid.itertuples():
                 for row2 in hapemis_onesrcid.itertuples():
                     
                     record = None
-                    key = (row1[1], row1[2])
+                    key = (row1.utme, row1.utmn)
                     if key in self.innblkCache:
                         record = self.innblkCache.get(key)
                     else:
@@ -106,14 +115,14 @@ class AllInnerReceptors(CsvWriter, InputFile):
                     d_block = d_idmarplot[-10:]
                     d_lat = record[lat].values[0]
                     d_lon = record[lon].values[0]
-                    d_sourceid = row1[3]
-                    d_emistype = "C"
-                    d_pollutant = row2[2]
-                    d_conc = row1[4] * row2[3] * self.cf
-                    d_aconc = row1[5] * row2[3] * self.cf * self.model.facops.iloc[0][multiplier]
+                    d_sourceid = row1.source_id
+                    d_emistype = row1.emis_type
+                    d_pollutant = row2.pollutant
+                    d_conc = row1.result * row2.emis_tpy * self.cf
+                    d_aconc = row1.aresult * row2.emis_tpy * self.cf * self.model.facops.iloc[0][multiplier]
                     d_elev = record[elev].values[0]
-                    d_drydep = ""
-                    d_wetdep = ""
+                    d_drydep = "" if self.rtype in [0,3] else row1.ddp * row2.emis_tpy * self.cf
+                    d_wetdep = "" if self.rtype in [0,2] else row1.wdp * row2.emis_tpy * self.cf
                     d_population = record[population].values[0]
                     d_overlap = record[overlap].values[0]
                     datalist = [d_fips, d_block, d_lat, d_lon, d_sourceid, d_emistype, d_pollutant, d_conc,

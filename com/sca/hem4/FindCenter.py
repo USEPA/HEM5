@@ -102,7 +102,7 @@ def center(sourcelocs, utmz):
         # Calculate the center of the facility in utm coordinates
         cenx = round((xmax1 + xmax2) / 2)
         ceny = round((ymax1 + ymax2) / 2)
-    
+            
         # Compute the lat/lon of the center
         sceny = pd.Series([ceny])
         scenx = pd.Series([cenx])

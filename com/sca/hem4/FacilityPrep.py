@@ -12,6 +12,7 @@ from com.sca.hem4.upload.EmissionsLocations import *
 from com.sca.hem4.upload.HAPEmissions import *
 from com.sca.hem4.upload.FacilityList import *
 import sys
+import math
 
 distance = 'distance';
 angle = 'angle';
@@ -418,10 +419,15 @@ class FacilityPrep():
         #%%----- Add sector and ring to inner and outer receptors ----------
 
         # assign sector and ring number (integers) to each inner receptor and compute fractional sector (s) and ring_loc (log weighted) numbers
-        self.innerblks[sector], self.innerblks["s"], self.innerblks[ring], self.innerblks["ring_loc"] = zip(*self.innerblks.apply(lambda row: self.calc_ring_sector(polar_dist,row[distance],row[angle],op_radial), axis=1))
-
+        if self.innerblks.empty == False:
+            self.innerblks[sector], self.innerblks["s"], self.innerblks[ring], self.innerblks["ring_loc"] = \
+                 zip(*self.innerblks.apply(lambda row: self.calc_ring_sector(polar_dist,row[distance],row[angle],op_radial), axis=1))
+        else:
+            self.innerblks[sector], self.innerblks["s"], self.innerblks[ring], self.innerblks["ring_loc"] = None, None, None, None
+            
         # assign sector and ring number (integers) to each outer receptor and compute fractional sector (s) and ring_loc (log weighted) numbers
-        self.outerblks[sector], self.outerblks["s"], self.outerblks[ring], self.outerblks["ring_loc"] = zip(*self.outerblks.apply(lambda row: self.calc_ring_sector(polar_dist,row[distance],row[angle],op_radial), axis=1))
+        self.outerblks[sector], self.outerblks["s"], self.outerblks[ring], self.outerblks["ring_loc"] = \
+             zip(*self.outerblks.apply(lambda row: self.calc_ring_sector(polar_dist,row[distance],row[angle],op_radial), axis=1))
 
 
         # export innerblks to an Excel file in the Working directory
@@ -445,8 +451,8 @@ class FacilityPrep():
             if emislocs[elev].max() == 0 and emislocs[elev].min() == 0:
                 emislocs[elev] = self.compute_emisloc_elev(polar_df,op_circles)
             # if polar receptor still has missing elevation, fill it in
-            polar_df[elev], polar_df[hill], polar_df['avgelev'] = zip(*polar_df.apply(lambda row: 
-                        self.assign_polar_elev_step2(row,self.innerblks,self.outerblks,emislocs), axis=1))
+            polar_df[elev], polar_df[hill] = zip(*polar_df.apply(lambda row: self.assign_polar_elev_step2(row,self.innerblks,self.outerblks,emislocs), axis=1))
+
         else:
             polar_df[elev] = 0
             polar_df[hill] = 0
@@ -491,15 +497,25 @@ class FacilityPrep():
         #return rs.Runstream(self.model.facops, emislocs, hapemis, cenlat, cenlon, cenx, ceny, self.innerblks, user_recs, buoyant_df, polyver_df, polar_df, bldgdw_df, partdia_df, landuse_df, seasons_df, gasparams_df)
 
 
+    #%% Truncate a floating point number to a fixed number (n) of decimal places
+    def truncate(self, f, n):
+        """
+        f - floating point number
+        n - number of decimals to keep
+        """
+        return math.floor(f*10**n)/10**n
+    
+    
     #%% Calculate ring and sector of block receptors
     def calc_ring_sector(self, ring_distances, block_distance, block_angle, num_sectors):
             
         # compute fractional sector number
-        s = round(((block_angle * num_sectors)/360.0 % num_sectors), 2) + 1
+        # Note: sectors go from 1 to num_sectors beginning at due north (zero degrees)
+        long_s = ((block_angle * num_sectors)/360.0 % num_sectors) + 1
+        s = self.truncate(long_s, 2)
 
         # compute integer sector number
-        # .... these go from halfway between two radials to halfway between the next set of two radials, clockwise
-        sector_int = int(((((block_angle * num_sectors)/360.0) + 0.5) % num_sectors) + 1)
+        sector_int = int((((block_angle * num_sectors)/360.0) % num_sectors) + 1)
         if sector_int == 0:
             sector_int = num_sectors
 
@@ -582,7 +598,7 @@ class FacilityPrep():
             r_popelev = r_popelev/r_pop
         else:
             r_popelev = -999
-            
+
         #Note: the max elevation is returned as the elevation for this polar receptor
         return int(round(r_maxelev)), int(round(r_hill)), int(round(r_avgelev))
 
@@ -608,17 +624,18 @@ class FacilityPrep():
                 r_popelev = r_nearelev
 
             #check inner blocks
-            inner_dist = np.sqrt((innblks[utme] - polar_row[utme])**2 + (innblks[utmn] - polar_row[utmn])**2)
-            mindist_index = inner_dist.values.argmin()
-            d_test = inner_dist.iloc[mindist_index]
-            if d_test <= d_nearelev:
-                d_nearelev = d_test
-                r_nearelev = innblks[elev].iloc[mindist_index]
-                r_maxelev = r_nearelev
-                r_avgelev = r_nearelev
-                r_popelev = r_nearelev
-                r_nearhill = innblks[hill].iloc[mindist_index]
-                r_hill = r_nearhill
+            if innblks.empty == False:
+                inner_dist = np.sqrt((innblks[utme] - polar_row[utme])**2 + (innblks[utmn] - polar_row[utmn])**2)
+                mindist_index = inner_dist.values.argmin()
+                d_test = inner_dist.iloc[mindist_index]
+                if d_test <= d_nearelev:
+                    d_nearelev = d_test
+                    r_nearelev = innblks[elev].iloc[mindist_index]
+                    r_maxelev = r_nearelev
+                    r_avgelev = r_nearelev
+                    r_popelev = r_nearelev
+                    r_nearhill = innblks[hill].iloc[mindist_index]
+                    r_hill = r_nearhill
 
             #check outer blocks
             outer_dist = np.sqrt((outblks[utme] - polar_row[utme])**2 + (outblks[utmn] - polar_row[utmn])**2)

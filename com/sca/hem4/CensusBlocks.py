@@ -141,7 +141,8 @@ def in_box(modelblks, sourcelocs, modeldist, maxdist, overlap_dist, model):
     ## This function determines if a block within modelblks is within a fringe of any source ##
     
     outerblks = modelblks.copy()
-    innerblks = pd.DataFrame([])
+    colnames = list(modelblks.columns)
+    innerblks = pd.DataFrame([], columns=colnames)
     
     #...... Find blocks within modeldist of point sources.........
     
@@ -314,12 +315,8 @@ def getblocks(cenx, ceny, cenlon, cenlat, utmzone, maxdist, modeldist, sourceloc
         check = state_pd[state_pd[fips].isin(locations)]
         frames.append(check)
 
-    #combine dataframes to modelblks
+    #combine all frames df's
     censusblks = pd.concat(frames)
-
-    #lowercase column names
-    #censusblks.columns = map(str.lower, censusblks.columns)
-    #print(censusblks)
 
     #convert to utm if necessary
     censusblks[utms] = censusblks.apply(lambda row: UTM.ll2utm_alt(row[lat], row[lon], utmzone), axis=1)
@@ -340,6 +337,9 @@ def getblocks(cenx, ceny, cenlon, cenlat, utmzone, maxdist, modeldist, sourceloc
     #subset the censusblks dataframe to blocks that are within the modeling distance of the facility 
     modelblks = censusblks.query('distance <= @maxdist')
 
+    # Add overlap column and default to N
+    modelblks[overlap] = 'N'
+    
     # Split modelblks into inner and outer block receptors
     innerblks, outerblks = in_box(modelblks, sourcelocs, modeldist, maxdist, overlap_dist, model)
 
@@ -358,8 +358,7 @@ def getblocks(cenx, ceny, cenlon, cenlat, utmzone, maxdist, modeldist, sourceloc
     # Set the rec_type field. For any receptor from the census files it is C.
     innerblks[rec_type] = 'C'
     outerblks[rec_type] = 'C'
-    
-
+        
     return innerblks, outerblks
 
 

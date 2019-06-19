@@ -55,6 +55,7 @@ class AllOuterReceptors(CsvWriter, InputFile):
         if self.model is None:
             return
 
+
         for index, row in self.model.haplib.dataframe.iterrows():
 
             # Change rfcs of 0 to -1. This simplifies HI calculations. Don't have to worry about divide by 0.
