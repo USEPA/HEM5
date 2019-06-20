@@ -451,8 +451,8 @@ class FacilityPrep():
             if emislocs[elev].max() == 0 and emislocs[elev].min() == 0:
                 emislocs[elev] = self.compute_emisloc_elev(polar_df,op_circles)
             # if polar receptor still has missing elevation, fill it in
-            polar_df[elev], polar_df[hill] = zip(*polar_df.apply(lambda row: self.assign_polar_elev_step2(row,self.innerblks,self.outerblks,emislocs), axis=1))
-
+            polar_df[elev], polar_df[hill], polar_df['avgelev'] = zip(*polar_df.apply(lambda row: 
+                        self.assign_polar_elev_step2(row,self.innerblks,self.outerblks,emislocs), axis=1))
         else:
             polar_df[elev] = 0
             polar_df[hill] = 0
@@ -510,12 +510,11 @@ class FacilityPrep():
     def calc_ring_sector(self, ring_distances, block_distance, block_angle, num_sectors):
             
         # compute fractional sector number
-        # Note: sectors go from 1 to num_sectors beginning at due north (zero degrees)
-        long_s = ((block_angle * num_sectors)/360.0 % num_sectors) + 1
-        s = self.truncate(long_s, 2)
+        s = round(((block_angle * num_sectors)/360.0 % num_sectors), 2) + 1
 
         # compute integer sector number
-        sector_int = int((((block_angle * num_sectors)/360.0) % num_sectors) + 1)
+        # .... these go from halfway between two radials to halfway between the next set of two radials, clockwise
+        sector_int = int(((((block_angle * num_sectors)/360.0) + 0.5) % num_sectors) + 1)
         if sector_int == 0:
             sector_int = num_sectors
 
