@@ -46,7 +46,7 @@ class FacilityPrep():
         self.model.facops = self.model.facops.fillna({radial:0, circles:0, overlap_dist:0, hours:1, multiplier:1,
                                 ring1:0, urban_pop:0})
         self.model.facops.replace(to_replace={met_station:{"nan":"N"}, rural_urban:{"nan":""}, elev:{"nan":"Y"}, 
-                                   dep:{"nan":""}, depl:{"nan":"N"}, phase:{"nan":""}, pdep:{"nan":"N"}, 
+                                   dep:{"nan":"N"}, depl:{"nan":"N"}, phase:{"nan":""}, pdep:{"nan":"N"}, 
                                    pdepl:{"nan":"N"}, vdep:{"nan":"N"}, vdepl:{"nan":"N"}, 
                                    all_rcpts:{"nan":"N"}, user_rcpt:{"nan":"N"}, bldg_dw:{"nan":"N"}, 
                                    fastall:{"nan":"N"}, acute:{"nan":"N"}}, inplace=True)
@@ -451,8 +451,8 @@ class FacilityPrep():
             if emislocs[elev].max() == 0 and emislocs[elev].min() == 0:
                 emislocs[elev] = self.compute_emisloc_elev(polar_df,op_circles)
             # if polar receptor still has missing elevation, fill it in
-            polar_df[elev], polar_df[hill] = zip(*polar_df.apply(lambda row: self.assign_polar_elev_step2(row,self.innerblks,self.outerblks,emislocs), axis=1))
-
+            polar_df[elev], polar_df[hill], polar_df['avgelev'] = zip(*polar_df.apply(lambda row: 
+                        self.assign_polar_elev_step2(row,self.innerblks,self.outerblks,emislocs), axis=1))
         else:
             polar_df[elev] = 0
             polar_df[hill] = 0

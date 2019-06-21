@@ -17,15 +17,6 @@ class AllPolarReceptors(CsvWriter):
 
         self.polarCache = {}
         
-        # Aermod runtype (with or without deposition) determines what columns are in the aermod plotfile.
-        # Set accordingly in a dictionary.
-        self.rtype = self.model.model_optns['runtype']
-        self.plotcols = {0: [utme,utmn,source_id,result,aresult,'emis_type']}
-        self.plotcols[1] = [utme,utmn,source_id,result,ddp,wdp,aresult,'emis_type']
-        self.plotcols[2] = [utme,utmn,source_id,result,ddp,aresult,'emis_type']
-        self.plotcols[3] = [utme,utmn,source_id,result,wdp,aresult,'emis_type']
-            
-        
             
     def getHeader(self):
         return ['Source ID', 'Emission type', 'Pollutant', 'Conc (µg/m3)', 'Acute conc (ug/m3)',
@@ -52,6 +43,15 @@ class AllPolarReceptors(CsvWriter):
 
         # Units conversion factor
         self.cf = 2000*0.4536/3600/8760
+
+        # Aermod runtype (with or without deposition) determines what columns are in the aermod plotfile.
+        # Set accordingly in a dictionary.
+        self.rtype = self.model.model_optns['runtype']
+        self.plotcols = {0: [utme,utmn,source_id,result,aresult,'emis_type']}
+        self.plotcols[1] = [utme,utmn,source_id,result,ddp,wdp,aresult,'emis_type']
+        self.plotcols[2] = [utme,utmn,source_id,result,ddp,aresult,'emis_type']
+        self.plotcols[3] = [utme,utmn,source_id,result,wdp,aresult,'emis_type']
+
 
         # If acute was run for this facility, read the acute plotfile
         if self.model.facops.iloc[0][acute] == 'Y':

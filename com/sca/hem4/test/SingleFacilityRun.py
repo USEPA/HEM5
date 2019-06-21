@@ -54,7 +54,7 @@ class SingleFacilityRun(unittest.TestCase):
         Verify that the all inner receptors output file is identical to the test fixture.
         """
         for facid in self.testHarness.model.facids:
-            fixture = AllInnerReceptors(self.outputFixturePrefix, facid)
+            fixture = AllInnerReceptors(self.outputFixturePrefix, facid, None, None, None, None)
             checksum_expected = self.hashFile(fixture.filename)
 
             generated = AllInnerReceptors("output/"+facid, facid)
