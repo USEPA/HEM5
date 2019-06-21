@@ -53,11 +53,14 @@ class Navigation(tk.Frame):
         #resume a facility run
         #first get all incomplete runs
         incomplete_facs = os.listdir("save")
-        resume_var = tk.StringVar(self.s3).set(incomplete_facs[1])
-        resumeMenu = tk.OptionMenu(self.s3, resume_var, *incomplete_facs)
         resume = tk.Label(self.s3, text= "Resume a previous facility run", 
                                font=TEXT_FONT).grid(row=1)
-        resumeMenu.grid(row=2)
+        
+        if len(incomplete_facs) > 1:
+            resume_var = tk.StringVar(self.s3).set(incomplete_facs[1])
+            resumeMenu = tk.OptionMenu(self.s3, resume_var, *incomplete_facs)
+            
+            resumeMenu.grid(row=2)
         
 #        #summarize risk
 #        completed_facs = os.listdir("output")

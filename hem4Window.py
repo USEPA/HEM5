@@ -1277,7 +1277,7 @@ class Hem4(tk.Frame):
                 
                 #set run name
                 if self.group_list != None:
-                    self.model.group_name = self.group_list
+                    self.model.group_name = self.group_list.get()
  #               module_logger.info("starting HEM4")               
                 
                 self.process()
@@ -1311,6 +1311,8 @@ class Hem4(tk.Frame):
         whether or not the processing finished naturally or was aborted.
         :return: None
         """
+        
+        print("finished run")
         self.running = False
 
         if self.aborted:

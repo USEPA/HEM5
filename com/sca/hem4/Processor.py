@@ -18,6 +18,7 @@ class Processor():
         self.model = model
         self.abort = abort
         self.exception = None
+        print("processor starting")
 
     def abortProcessing(self):
         self.abort.set()
@@ -28,10 +29,13 @@ class Processor():
         
         if self.model.group_name != None:
             runid = self.model.group_name
+            print('runid', runid)
             
         else:
         
-            runid = "cat_" + datetime.datetime.now().strftime("%B-%d-%Y-%H-%M-%p")
+            runid = str(datetime.datetime.now().strftime("%B-%d-%Y-%H-%M-%p"))
+            print(runid)
+            
         #print(runid)
         #create save model
         save_state = SaveState(runid, self.model)
@@ -41,8 +45,10 @@ class Processor():
         
         #create a Google Earth KML of all sources to be modeled
         kmlWriter = KMLWriter()
+        print("kml created")
         if kmlWriter is not None:
             kmlWriter.write_kml_emis_loc(self.model)
+            print("kml completed")
             pass
 
         Logger.logMessage("Preparing Inputs for " + str(
@@ -50,13 +56,14 @@ class Processor():
                 
         fac_list = []
         for index, row in self.model.faclist.dataframe.iterrows():
-
+            
             facid = row[0]
+            #print(facid)
             fac_list.append(facid)
             num = 1
 
-        Logger.log("The facilities ids being modeled:", fac_list, False)
-
+#        Logger.logMessage("The facility ids being modeled: , False)
+        print("The facility ids being modeled: " + ", ".join(fac_list))
         success = False
 
         # Create output files with headers for any source-category outputs that will be appended
@@ -64,12 +71,11 @@ class Processor():
         self.createSourceCategoryOutputs()
 
         for facid in fac_list:
-            
-            
-
+            print(facid)
             if self.abort.is_set():
                 Logger.logMessage("Aborting processing...")
-                return
+                print("abort")
+#                return
             
             
             

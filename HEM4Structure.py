@@ -67,26 +67,26 @@ class HEM4Structure(tk.Tk):
         frame.tkraise()
         
         
-    def after_callback(self):
-        """
-        Function listens on thread RUnning HEM4 for error and completion messages
-        logged via queue method
-        """
-        
-        try:
-            message = self.messageQueue.get(block=False)
-        except queue.Empty:
-            # let's try again later
-            self.after(25, self.after_callback)
-            return
-
-        print('after_callback got', message)
-        if message is not None:
-            self.scr.configure(state='normal')
-            self.scr.insert(tk.INSERT, message)
-            self.scr.insert(tk.INSERT, "\n")
-            self.scr.configure(state='disabled')
-            self.after(25, self.after_callback)
+#    def after_callback(self):
+#        """
+#        Function listens on thread RUnning HEM4 for error and completion messages
+#        logged via queue method
+#        """
+#        
+#        try:
+#            message = self.messageQueue.get(block=False)
+#        except queue.Empty:
+#            # let's try again later
+#            self.after(25, self.after_callback)
+#            return
+#
+#        print('after_callback got', message)
+#        if message is not None:
+#            self.scr.configure(state='normal')
+#            self.scr.insert(tk.INSERT, message)
+#            self.scr.insert(tk.INSERT, "\n")
+#            self.scr.configure(state='disabled')
+#            self.after(25, self.after_callback)
 
 
 if __name__ == "__main__":
