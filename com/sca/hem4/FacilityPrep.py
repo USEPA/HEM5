@@ -496,30 +496,23 @@ class FacilityPrep():
         #no return statement since it will just need to build the file
         #return rs.Runstream(self.model.facops, emislocs, hapemis, cenlat, cenlon, cenx, ceny, self.innerblks, user_recs, buoyant_df, polyver_df, polar_df, bldgdw_df, partdia_df, landuse_df, seasons_df, gasparams_df)
 
-
-    #%% Truncate a floating point number to a fixed number (n) of decimal places
-    def truncate(self, f, n):
-        """
-        f - floating point number
-        n - number of decimals to keep
-        """
-        return math.floor(f*10**n)/10**n
     
     
     #%% Calculate ring and sector of block receptors
     def calc_ring_sector(self, ring_distances, block_distance, block_angle, num_sectors):
             
-        # compute fractional sector number
-        # Note: sectors go from 1 to num_sectors beginning at due north (zero degrees)
-        long_s = ((block_angle * num_sectors)/360.0 % num_sectors) + 1
-        s = self.truncate(long_s, 2)
+        # Compute fractional sector number that will be used for interpolation
+        # Note: sectors for interpolation go from 1 to num_sectors beginning at due north (zero degrees)
+        s = ((block_angle * num_sectors)/360.0 % num_sectors) + 1
 
-        # compute integer sector number
-        sector_int = int((((block_angle * num_sectors)/360.0) % num_sectors) + 1)
+        # Compute integer sector number that will be used for assigning elevations to polar receptors
+        # .... these go from halfway between two radials to halfway between the next set of two radials, clockwise
+        sector_int = int(((((block_angle * num_sectors)/360.0) + 0.5) % num_sectors) + 1)
         if sector_int == 0:
             sector_int = num_sectors
 
-        # Compute fractional, log weighted ring_loc. loop through ring distances in pairs of previous and current
+        # Compute fractional, log weighted ring value that will be used for interpolation. 
+        # loop through ring distances in pairs of previous and current.
         ring_loc = 1
         previous = ring_distances[0]
         i = 0
@@ -532,7 +525,7 @@ class FacilityPrep():
                 break
             previous = ring
 
-        # Compute integer ring number
+        # Compute integer ring number that will be used for assigning elevations to polar receptors
         ring_int = int(ring_loc + 0.5)
 
         return sector_int, s, ring_int, ring_loc
