@@ -57,7 +57,7 @@ class FacilityRunner():
         
         #Single run model options
         if self.model.model_optns['phase'] != 'B':
-
+            
             #create runstream
             self.runstream = self.prep_fac.createRunstream(self.facilityId, phases)
 

@@ -10,12 +10,14 @@ class SummaryManager():
         hazardIndexDriversReportModule = importlib.import_module("com.sca.hem4.writer.excel.summary.HazardIndexDrivers")
         histogramModule = importlib.import_module("com.sca.hem4.writer.excel.summary.Histogram")
         hiHistogramModule = importlib.import_module("com.sca.hem4.writer.excel.summary.HI_Histogram")
+        incidenceDriversReportModule = importlib.import_module("com.sca.hem4.writer.excel.summary.IncidenceDrivers")
 
         self.availableReports = {'MaxRisk' : maxRiskReportModule,
                                  'CancerDrivers' : cancerDriversReportModule,
                                  'HazardIndexDrivers' : hazardIndexDriversReportModule,
                                  'Histogram' : histogramModule,
-                                 'HI_Histogram' : hiHistogramModule}
+                                 'HI_Histogram' : hiHistogramModule,
+                                 'IncidenceDrivers' : incidenceDriversReportModule}
 
     def createReport(self, categoryFolder, reportName):
 
@@ -56,4 +58,4 @@ class SummaryManager():
         #         '36091110000324435', '39153110041418338', '48039110008170237', '54107110000586081']
 
 manager = SummaryManager()
-manager.createReport("output/ALDT", "HI_Histogram")
+manager.createReport("output/ALDT", "IncidenceDrivers")

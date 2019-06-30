@@ -6,6 +6,7 @@ from math import log10
 from com.sca.hem4.CensusBlocks import population
 from com.sca.hem4.log import Logger
 from com.sca.hem4.upload.DoseResponse import ure
+from com.sca.hem4.upload.InputFile import InputFile
 from com.sca.hem4.writer.csv.AllInnerReceptors import ems_type
 from com.sca.hem4.writer.excel.ExcelWriter import ExcelWriter
 from com.sca.hem4.model.Model import *
@@ -13,16 +14,24 @@ from com.sca.hem4.model.Model import *
 inc = 'inc';
 inc_rnd = 'inc_rnd';
 
-class Incidence(ExcelWriter):
+class Incidence(ExcelWriter, InputFile):
     """
     Provides the incidence value for the total of all sources and all modeled pollutants as well
     as the incidence value for each source and each pollutant.
     """
 
-    def __init__(self, targetDir, facilityId, model, plot_df, outerInc):
-        ExcelWriter.__init__(self, model, plot_df)
+    def __init__(self, targetDir=None, facilityId=None, model=None, plot_df=None, outerInc=None,
+                 filenameOverride=None, createDataframe=False):
+        # Initialization for file reading/writing. If no file name override, use the
+        # default construction.
+        filename = facilityId + "_incidence.xlsx" if filenameOverride is None else filenameOverride
+        path = os.path.join(targetDir, filename)
 
-        self.filename = os.path.join(targetDir, facilityId + "_incidence.xlsx")
+        ExcelWriter.__init__(self, model, plot_df)
+        InputFile.__init__(self, path, createDataframe)
+
+        self.filename = path
+        self.targetDir = targetDir
 
         # Local cache for URE values
         self.riskCache = {}
@@ -31,6 +40,9 @@ class Incidence(ExcelWriter):
 
     def getHeader(self):
         return ['Source ID', 'Pollutant', 'Emission type', 'Incidence', 'Incidence rounded']
+
+    def getColumns(self):
+        return [source_id, pollutant, ems_type, inc, inc_rnd]
 
     def generateOutputs(self):
 
@@ -112,3 +124,11 @@ class Incidence(ExcelWriter):
 
         mir = conc * URE
         return mir
+
+    def createDataframe(self):
+        # Type setting for XLS reading
+        self.numericColumns = [inc, inc_rnd]
+        self.strColumns = [source_id, pollutant, ems_type]
+
+        df = self.readFromPath(self.getColumns())
+        return df.fillna("")

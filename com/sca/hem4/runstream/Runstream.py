@@ -174,25 +174,25 @@ class Runstream():
         """
       
         
-        srid = self.emisloc_df['source_id'][:]           # Source ID
-        cord = self.emisloc_df['location_type'][:]       # Coordinate System
-        xco1 = self.emisloc_df['utme'][:]                # X-Coordinate
-        yco1 = self.emisloc_df['utmn'][:]                # Y-Coordinate
-        utmz = self.emisloc_df['utmzone'][:]             # UTM Zone
-        srct = self.emisloc_df['source_type'][:]         # Source Type
-        lenx = self.emisloc_df['lengthx'][:]             # Length in X-Direction
-        leny = self.emisloc_df['lengthy'][:]             # Length in Y-Direction
-        angl = self.emisloc_df['angle'][:]               # Angle of Emission Location
-        latr = self.emisloc_df['horzdim'][:]             # Initial Lateral/Horizontal Emission
-        vert = self.emisloc_df['vertdim'][:]             # Initial Vertical Emission
-        relh = self.emisloc_df['areavolrelhgt'][:]       # Release Height
-        stkh = self.emisloc_df['stkht'][:]               # Stack Height
-        diam = self.emisloc_df['stkdia'][:]              # Stack Diameter
-        emiv = self.emisloc_df['stkvel'][:]              # Stack Exit Velocity
-        temp = self.emisloc_df['stktemp'][:]             # Stack Exit Temperature
-        elev = self.emisloc_df['elev'][:]                # Elevation of Source Location
-        xco2 = self.emisloc_df['utme_x2'][:]             # Second X-Coordinate
-        yco2 = self.emisloc_df['utmn_y2'][:]             # Second Y-Coordinate
+        srid = self.emisloc_df['source_id'][:]                           # Source ID
+        cord = self.emisloc_df['location_type'][:]                       # Coordinate System
+        xco1 = round(self.emisloc_df['utme'][:]).astype(int)             # X-Coordinate
+        yco1 = round(self.emisloc_df['utmn'][:]).astype(int)             # Y-Coordinate
+        utmz = self.emisloc_df['utmzone'][:]                             # UTM Zone
+        srct = self.emisloc_df['source_type'][:]                         # Source Type
+        lenx = self.emisloc_df['lengthx'][:]                             # Length in X-Direction
+        leny = self.emisloc_df['lengthy'][:]                             # Length in Y-Direction
+        angl = self.emisloc_df['angle'][:]                               # Angle of Emission Location
+        latr = self.emisloc_df['horzdim'][:]                             # Initial Lateral/Horizontal Emission
+        vert = round(self.emisloc_df['vertdim'][:],2)                    # Initial Vertical Emission
+        relh = round(self.emisloc_df['areavolrelhgt'][:],2)              # Release Height
+        stkh = round(self.emisloc_df['stkht'][:],3)                      # Stack Height
+        diam = round(self.emisloc_df['stkdia'][:],3)                     # Stack Diameter
+        emiv = round(self.emisloc_df['stkvel'][:],7)                     # Stack Exit Velocity
+        temp = round(self.emisloc_df['stktemp'][:],2)                    # Stack Exit Temperature
+        elev = self.emisloc_df['elev'][:]                                # Elevation of Source Location
+        xco2 = round(self.emisloc_df['utme_x2'][:]).astype(int)          # Second X-Coordinate
+        yco2 = round(self.emisloc_df['utmn_y2'][:]).astype(int)          # Second Y-Coordinate
     
     # initialize variable used to determine the first buoyant line source (if there is one)
         first_buoyant = 0
@@ -527,7 +527,7 @@ class Runstream():
                                       (yco1[index] - yco2[index])**2))
                 
                 soparam = ("SO SRCPARAM " + str(srid[index]) + " " + 
-                           str( 1000 / ( lenx[index] * line_len ) ) + " " + 
+                           str( round(1000 / ( lenx[index] * line_len ), 10 ) ) + " " + 
                            str(relh[index]) + " " + str(lenx[index]) + " " + 
                            str(vert[index]) + "\n")
                 

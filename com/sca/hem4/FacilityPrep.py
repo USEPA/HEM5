@@ -46,7 +46,7 @@ class FacilityPrep():
         self.model.facops = self.model.facops.fillna({radial:0, circles:0, overlap_dist:0, hours:1, multiplier:1,
                                 ring1:0, urban_pop:0})
         self.model.facops.replace(to_replace={met_station:{"nan":"N"}, rural_urban:{"nan":""}, elev:{"nan":"Y"}, 
-                                   dep:{"nan":""}, depl:{"nan":"N"}, phase:{"nan":""}, pdep:{"nan":"N"}, 
+                                   dep:{"nan":"N"}, depl:{"nan":"N"}, phase:{"nan":""}, pdep:{"nan":"N"}, 
                                    pdepl:{"nan":"N"}, vdep:{"nan":"N"}, vdepl:{"nan":"N"}, 
                                    all_rcpts:{"nan":"N"}, user_rcpt:{"nan":"N"}, bldg_dw:{"nan":"N"}, 
                                    fastall:{"nan":"N"}, acute:{"nan":"N"}}, inplace=True)
@@ -451,8 +451,8 @@ class FacilityPrep():
             if emislocs[elev].max() == 0 and emislocs[elev].min() == 0:
                 emislocs[elev] = self.compute_emisloc_elev(polar_df,op_circles)
             # if polar receptor still has missing elevation, fill it in
-            polar_df[elev], polar_df[hill] = zip(*polar_df.apply(lambda row: self.assign_polar_elev_step2(row,self.innerblks,self.outerblks,emislocs), axis=1))
-
+            polar_df[elev], polar_df[hill], polar_df['avgelev'] = zip(*polar_df.apply(lambda row: 
+                        self.assign_polar_elev_step2(row,self.innerblks,self.outerblks,emislocs), axis=1))
         else:
             polar_df[elev] = 0
             polar_df[hill] = 0
@@ -496,30 +496,23 @@ class FacilityPrep():
         #no return statement since it will just need to build the file
         #return rs.Runstream(self.model.facops, emislocs, hapemis, cenlat, cenlon, cenx, ceny, self.innerblks, user_recs, buoyant_df, polyver_df, polar_df, bldgdw_df, partdia_df, landuse_df, seasons_df, gasparams_df)
 
-
-    #%% Truncate a floating point number to a fixed number (n) of decimal places
-    def truncate(self, f, n):
-        """
-        f - floating point number
-        n - number of decimals to keep
-        """
-        return math.floor(f*10**n)/10**n
     
     
     #%% Calculate ring and sector of block receptors
     def calc_ring_sector(self, ring_distances, block_distance, block_angle, num_sectors):
             
-        # compute fractional sector number
-        # Note: sectors go from 1 to num_sectors beginning at due north (zero degrees)
-        long_s = ((block_angle * num_sectors)/360.0 % num_sectors) + 1
-        s = self.truncate(long_s, 2)
+        # Compute fractional sector number that will be used for interpolation
+        # Note: sectors for interpolation go from 1 to num_sectors beginning at due north (zero degrees)
+        s = ((block_angle * num_sectors)/360.0 % num_sectors) + 1
 
-        # compute integer sector number
-        sector_int = int((((block_angle * num_sectors)/360.0) % num_sectors) + 1)
+        # Compute integer sector number that will be used for assigning elevations to polar receptors
+        # .... these go from halfway between two radials to halfway between the next set of two radials, clockwise
+        sector_int = int(((((block_angle * num_sectors)/360.0) + 0.5) % num_sectors) + 1)
         if sector_int == 0:
             sector_int = num_sectors
 
-        # Compute fractional, log weighted ring_loc. loop through ring distances in pairs of previous and current
+        # Compute fractional, log weighted ring value that will be used for interpolation. 
+        # loop through ring distances in pairs of previous and current.
         ring_loc = 1
         previous = ring_distances[0]
         i = 0
@@ -532,7 +525,7 @@ class FacilityPrep():
                 break
             previous = ring
 
-        # Compute integer ring number
+        # Compute integer ring number that will be used for assigning elevations to polar receptors
         ring_int = int(ring_loc + 0.5)
 
         return sector_int, s, ring_int, ring_loc
