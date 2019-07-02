@@ -65,7 +65,9 @@ class Particle(DependentInputFile):
 
 
             if check_particle_assignment != set(self.facilities):
-                particle_unassigned = check_particle_assignment - set(self.facilities)
+                particle_unassigned = (check_particle_assignment -
+                                       set(self.facilities))
+
 
                 messagebox.showinfo("Unassigned particle size parameters", "" +
                                     " Line parameters for " +

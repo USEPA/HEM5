@@ -3,6 +3,7 @@ import time
 import subprocess
 import shutil
 import pandas as pd
+import datetime
 from com.sca.hem4.OutputProcessing import *
 from com.sca.hem4.FacilityPrep import FacilityPrep
 from com.sca.hem4.log import Logger
@@ -30,9 +31,17 @@ class FacilityRunner():
         else:
             self.model.model_optns['phase'] = fac['phase'].tolist()[0]
 
+        if self.model.group_name != None:
+            output = "output/"+self.model.group_name+"/"
+            fac_folder =  output + self.facilityId + "/"
+            
+#        else:
+#            output = "output/" + str(datetime.datetime.now().strftime("%B-%d-%Y-%H-%M-%p"))+"/" 
+        else:
         
         #create fac folder
-        fac_folder = "output/"+ self.facilityId + "/"
+            fac_folder =  "output/"+self.facilityId + "/"
+        
         if os.path.exists(fac_folder):
             pass
         else:
@@ -157,6 +166,7 @@ class FacilityRunner():
     def prep(self):
         
         prep = FacilityPrep(self.model)
+        print("building runstream")
         
         Logger.logMessage("Building runstream for facility " + self.facilityId)
         
