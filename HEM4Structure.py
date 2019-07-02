@@ -91,11 +91,14 @@ class HEM4Structure(tk.Tk):
 
 if __name__ == "__main__":
     
+
+    
     messageQueue = queue.Queue()
     callbackQueue = queue.Queue()
 
     app = HEM4Structure(messageQueue, callbackQueue)
     app.title('HEM4')
+    app.configure(background='green')
     
 #    app.after(25, app.after_callback)
 #    app.after(500, app.check_processing)

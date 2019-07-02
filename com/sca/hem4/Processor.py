@@ -8,6 +8,7 @@ from com.sca.hem4.writer.excel.FacilityMaxRiskandHI import FacilityMaxRiskandHI
 from com.sca.hem4.writer.kml.KMLWriter import KMLWriter
 import traceback
 from collections import defaultdict
+import uuid
 
 threadLocal = threading.local()
 
@@ -31,10 +32,10 @@ class Processor():
             runid = self.model.group_name
             print('runid', runid)
             
-        else:
-        
-            runid = str(datetime.datetime.now().strftime("%B-%d-%Y-%H-%M-%p"))
-            print(runid)
+        else: 
+            runid = str(uuid.uuid4())[:7]
+#            runid = datetime.datetime.now().strftime("%Y-%H-%M-%p")
+#            print(runid)
             
         #print(runid)
         #create save model

@@ -5,6 +5,7 @@
 """
 import tkinter as tk
 import os
+from tkinter import ttk
 
 #get navigation page
 import navigation
@@ -41,6 +42,24 @@ class Summary(tk.Frame):
         #title
         title = tk.Label(self.s1, text="Risk Summary", font=TITLE_FONT)
         title.grid(row=1)
+        
+         #modeling group label
+        group_label = tk.Label(self.s2, font=TEXT_FONT, 
+                             text="Please select a modeling group:")
+        group_label.grid(row=1, sticky="W")
+        
+        #facilities upload button
+        self.group_up = ttk.Button(self.s2)
+        self.group_up["text"] = "Browse"
+        self.group_up.grid(row=2, column=0, sticky="W")
+        
+        #facilities text entry
+        self.group_list = tk.StringVar(self.s2)
+        self.group_list_man = ttk.Entry(self.s2)
+        self.group_list_man["width"] = 100
+        self.group_list_man["textvariable"]= self.group_list
+        self.group_list_man.grid(row=2, column=0, sticky='E', padx=20)
+       
         
         
         #back button

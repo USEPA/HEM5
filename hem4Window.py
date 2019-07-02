@@ -1276,8 +1276,12 @@ class Hem4(tk.Frame):
                 instruction_instance.set("Hem4 Running, check the log tab for updates")
                 
                 #set run name
-                if self.group_list != None:
+                if len(self.group_list.get()) > 0:
                     self.model.group_name = self.group_list.get()
+                    
+                else:
+                    
+                    self.modelt = None
  #               module_logger.info("starting HEM4")               
                 
                 self.process()

@@ -33,12 +33,15 @@ class FacilityRunner():
 
         if self.model.group_name != None:
             output = "output/"+self.model.group_name+"/"
+            fac_folder =  output + self.facilityId + "/"
             
+#        else:
+#            output = "output/" + str(datetime.datetime.now().strftime("%B-%d-%Y-%H-%M-%p"))+"/" 
         else:
-            output = "output/" + str(datetime.datetime.now().strftime("%B-%d-%Y-%H-%M-%p"))+"/" 
         
         #create fac folder
-        fac_folder =  output + self.facilityId + "/"
+            fac_folder =  "output/"+self.facilityId + "/"
+        
         if os.path.exists(fac_folder):
             pass
         else:
