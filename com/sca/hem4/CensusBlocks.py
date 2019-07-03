@@ -163,6 +163,11 @@ def in_box(modelblks, sourcelocs, modeldist, maxdist, overlap_dist, model):
     
     print("first innerblks size = ", innerblks.shape, " first outerblks size = ", outerblks.shape)
 
+    #Debug
+    if '220890601001037' in innerblks.idmarplot.values:
+        import pdb; pdb.set_trace()
+    
+
     #....... Find blocks within modeldist of area sources with angle 0..........
     
     area0sources = sourcelocs.query("source_type in ('A') and angle == 0")
@@ -187,6 +192,7 @@ def in_box(modelblks, sourcelocs, modeldist, maxdist, overlap_dist, model):
             
     print("second innerblks size = ", innerblks.shape, " second outerblks size = ", outerblks.shape)
 
+
     #....... Find blocks within modeldist of area sources with non-zero angle..........
 
     areasources = sourcelocs.query("source_type in ('A') and angle > 0")
@@ -206,6 +212,10 @@ def in_box(modelblks, sourcelocs, modeldist, maxdist, overlap_dist, model):
             outerblks = outerblks[~outerblks[rec_id].isin(innerblks[rec_id])]
                   
     print("third innerblks size = ", innerblks.shape, " third outerblks size = ", outerblks.shape)
+
+    #Debug
+    if '220890601001037' in innerblks.idmarplot.values:
+        import pdb; pdb.set_trace()
 
 
     #....... If there are polygon sources, find blocks within modeldist of any polygon side ..........
@@ -346,12 +356,12 @@ def getblocks(cenx, ceny, cenlon, cenlat, utmzone, maxdist, modeldist, sourceloc
     Logger.log("OUTERBLOCKS", outerblks, False)
         
     # convert utme, utmn, utmz, and population to integers
-    innerblks[utme] = innerblks[utme].astype(int)
-    innerblks[utmn] = innerblks[utmn].astype(int)
+    innerblks[utme] = innerblks[utme].astype(np.int64)
+    innerblks[utmn] = innerblks[utmn].astype(np.int64)
     innerblks[utmz] = innerblks[utmz].astype(int)
     innerblks[population] = pd.to_numeric(innerblks[population], errors='coerce').astype(int)
-    outerblks[utme] = outerblks[utme].astype(int)
-    outerblks[utmn] = outerblks[utmn].astype(int)
+    outerblks[utme] = outerblks[utme].astype(np.int64)
+    outerblks[utmn] = outerblks[utmn].astype(np.int64)
     outerblks[utmz] = outerblks[utmz].astype(int)
     outerblks[population] = pd.to_numeric(outerblks[population], errors='coerce').astype(int)
     

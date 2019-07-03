@@ -54,7 +54,7 @@ class Processor():
 
         Logger.logMessage("Preparing Inputs for " + str(
             self.model.facids.count()) + " facilities")
-                
+        
         fac_list = []
         for index, row in self.model.faclist.dataframe.iterrows():
             
@@ -65,6 +65,7 @@ class Processor():
 
 #        Logger.logMessage("The facility ids being modeled: , False)
         print("The facility ids being modeled: " + ", ".join(fac_list))
+
         success = False
 
         # Create output files with headers for any source-category outputs that will be appended
