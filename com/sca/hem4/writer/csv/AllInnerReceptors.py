@@ -96,13 +96,14 @@ class AllInnerReceptors(CsvWriter, InputFile):
         dlist = []
         columns = self.getColumns()
 
+
         # process inner concs one source_id at a time
         for x in srcids:
             innerplot_onesrcid = innerplot_df[self.plotcols[self.rtype]].loc[innerplot_df[source_id] == x]
             hapemis_onesrcid = self.model.runstream_hapemis[[source_id,pollutant,emis_tpy]].loc[self.model.runstream_hapemis[source_id] == x]
             for row1 in innerplot_onesrcid.itertuples():
                 for row2 in hapemis_onesrcid.itertuples():
-                    
+                   
                     record = None
                     key = (row1.utme, row1.utmn)
                     if key in self.innblkCache:
@@ -131,6 +132,7 @@ class AllInnerReceptors(CsvWriter, InputFile):
                     dlist.append(dict(zip(columns, datalist)))
 
         innerconc_df = pd.DataFrame(dlist, columns=columns)
+
 
         # dataframe to array
         self.dataframe = innerconc_df

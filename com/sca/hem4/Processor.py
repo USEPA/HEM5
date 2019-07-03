@@ -41,7 +41,7 @@ class Processor():
 
         Logger.logMessage("Preparing Inputs for " + str(
             self.model.facids.count()) + " facilities")
-                
+        
         fac_list = []
         for index, row in self.model.faclist.dataframe.iterrows():
 
@@ -49,7 +49,7 @@ class Processor():
             fac_list.append(facid)
             num = 1
 
-        Logger.log("The facilities ids being modeled:", fac_list, False)
+        Logger.logMessage("The facilities ids being modeled: " + str(fac_list))
 
         success = False
 

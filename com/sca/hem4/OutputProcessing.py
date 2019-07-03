@@ -51,6 +51,7 @@ class Process_outputs():
         # Units conversion factor
         self.cf = 2000*0.4536/3600/8760
 
+        
     def nodivby0(self, n, d):
         quotient = np.zeros(len(n))
         for i in np.arange(len(n)):
