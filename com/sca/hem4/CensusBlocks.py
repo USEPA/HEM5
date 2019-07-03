@@ -178,10 +178,6 @@ def in_box(modelblks, sourcelocs, modeldist, maxdist, overlap_dist, model):
         ne_y = row[utmn] + row["lengthy"] + modeldist
         indist = outerblks.query('utme >= @sw_x and utme <= @ne_x and utmn >= @sw_y and utmn <= @ne_y')
         if len(indist) > 0:
-            #Debug
-            if '220890601001037' in indist.idmarplot.values:
-                import pdb; pdb.set_trace()
-
             innerblks = innerblks.append(indist).reset_index(drop=True)
             innerblks = innerblks[~innerblks[rec_id].duplicated()]
             outerblks = outerblks[~outerblks[rec_id].isin(innerblks[rec_id])]
