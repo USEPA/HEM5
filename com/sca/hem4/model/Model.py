@@ -96,6 +96,7 @@ class Model():
         self.risk_by_latlon = None
         self.max_indiv_risk_df = None
         self.facops = None
+        self.group_name = None
 
         # Initialize model options
         self.initializeUrepOnlyOptions()
@@ -132,6 +133,7 @@ class Model():
         self.gasparams = None
         self.model_optns = defaultdict()
         self.save = None
+        self.group_name = None
 
         # Initialize model options
         self.initializeUrepOnlyOptions()

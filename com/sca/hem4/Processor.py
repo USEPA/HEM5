@@ -8,6 +8,7 @@ from com.sca.hem4.writer.excel.FacilityMaxRiskandHI import FacilityMaxRiskandHI
 from com.sca.hem4.writer.kml.KMLWriter import KMLWriter
 import traceback
 from collections import defaultdict
+import uuid
 
 threadLocal = threading.local()
 
@@ -18,14 +19,24 @@ class Processor():
         self.model = model
         self.abort = abort
         self.exception = None
+        print("processor starting")
 
     def abortProcessing(self):
         self.abort.set()
 
     def process(self):
 
-        #create run id for saving model
-        runid = datetime.datetime.now().strftime("%B-%d-%Y-%H-%M-%p")
+        #create run id for saving model default to cat_timestamp if no group
+        
+        if self.model.group_name != None:
+            runid = self.model.group_name
+            print('runid', runid)
+            
+        else: 
+            runid = str(uuid.uuid4())[:7]
+#            runid = datetime.datetime.now().strftime("%Y-%H-%M-%p")
+#            print(runid)
+            
         #print(runid)
         #create save model
         save_state = SaveState(runid, self.model)
@@ -35,8 +46,10 @@ class Processor():
         
         #create a Google Earth KML of all sources to be modeled
         kmlWriter = KMLWriter()
+        print("kml created")
         if kmlWriter is not None:
             kmlWriter.write_kml_emis_loc(self.model)
+            print("kml completed")
             pass
 
         Logger.logMessage("Preparing Inputs for " + str(
@@ -44,12 +57,14 @@ class Processor():
         
         fac_list = []
         for index, row in self.model.faclist.dataframe.iterrows():
-
+            
             facid = row[0]
+            #print(facid)
             fac_list.append(facid)
             num = 1
 
-        Logger.logMessage("The facilities ids being modeled: " + str(fac_list))
+#        Logger.logMessage("The facility ids being modeled: , False)
+        print("The facility ids being modeled: " + ", ".join(fac_list))
 
         success = False
 
@@ -58,12 +73,11 @@ class Processor():
         self.createSourceCategoryOutputs()
 
         for facid in fac_list:
-            
-            
-
+            print(facid)
             if self.abort.is_set():
                 Logger.logMessage("Aborting processing...")
-                return
+                print("abort")
+#                return
             
             
             
@@ -93,10 +107,9 @@ class Processor():
                 # dataframes or cache the last processed facility so that when 
                 # restart we know which faciltiy we want to start on
                 # increment facility count
-                
-                #check if there is more than one facility, only save if there are
+            
               
-                
+
                 num += 1
                 success = True
                 
@@ -110,14 +123,16 @@ class Processor():
                           " facilities. Check the log tab for error messages."+
                           " Modeling results are located in the Output"+
                           " subfolder of the HEM4 folder.")
+
         
-        #remove save folder after a completed run
+         #remove save folder after a completed run
+
         try:  
             self.model.save.remove_folder
         except:
             pass
         
-    
+
         return success
 
     def createSourceCategoryOutputs(self):
