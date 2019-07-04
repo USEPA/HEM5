@@ -16,17 +16,24 @@ notes = 'notes';
 aconc_sci = 'aconc_sci';
 
 
-class AcuteChemicalUnpopulated(ExcelWriter):
+class AcuteChemicalUnpopulated(ExcelWriter, InputFile):
     """
     Provides the maximum acute concentration for each modeled pollutant occurring anywhere offsite, whether at a
     populated (census block or user-defined) receptor or an unpopulated (polar grid) receptor, the acute benchmarks
     associated with each pollutant, and other max receptor information.
     """
 
-    def __init__(self, targetDir, facilityId, model, plot_df):
-        ExcelWriter.__init__(self, model, plot_df)
+    def __init__(self, targetDir=None, facilityId=None, model=None, plot_df=None, filenameOverride=None,
+                 createDataframe=False):
+        # Initialization for file reading/writing. If no file name override, use the
+        # default construction.
+        filename = facilityId + "_acute_chem_unpop.xlsx" if filenameOverride is None else filenameOverride
+        path = os.path.join(targetDir, filename)
 
-        self.filename = os.path.join(targetDir, facilityId + "_acute_chem_unpop.xlsx")
+        ExcelWriter.__init__(self, model, plot_df)
+        InputFile.__init__(self, path, createDataframe)
+
+        self.filename = path
         self.targetDir = targetDir
 
     def getHeader(self):
@@ -35,6 +42,11 @@ class AcuteChemicalUnpopulated(ExcelWriter):
                 'Mrl (mg/m3)', 'Rel (mg/m3)', 'Teel_0 (mg/m3)', 'Teel_1 (mg/m3)', 'Population',
                 'Distance (in meters)', 'Angle (from north)', 'Elevation (in meters)', 'Hill Height (in meters)',
                 'Fips', 'Block', 'Utm easting', 'Utm northing', 'Latitude', 'Longitude', 'Receptor type', 'Notes']
+
+    def getColumns(self):
+        return [pollutant, aconc, aconc_sci, aegl_1_1h,aegl_1_8h,aegl_2_1h,aegl_2_8h,erpg_1,erpg_2,
+                mrl,rel,idlh_10,teel_0,teel_1, population, distance, angle, elev, hill, fips, block,
+                utme, utmn, lat, lon, rec_type, notes]
 
     def generateOutputs(self):
 
@@ -197,3 +209,12 @@ class AcuteChemicalUnpopulated(ExcelWriter):
         self.dataframe = acute_df
         self.data = self.dataframe.values
         yield self.dataframe
+
+    def createDataframe(self):
+        # Type setting for XLS reading
+        self.numericColumns = [aconc, aconc_sci, aegl_1_1h,aegl_1_8h,aegl_2_1h,aegl_2_8h,erpg_1,erpg_2,mrl,rel,idlh_10,
+                               teel_0,teel_1, population, distance, angle, elev, hill, utme, utmn, lat, lon]
+        self.strColumns = [pollutant, fips, block, rec_type, notes]
+
+        df = self.readFromPath(self.getColumns())
+        return df.fillna("")
