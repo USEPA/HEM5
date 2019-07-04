@@ -11,6 +11,7 @@ import os
 from com.sca.hem4 import FindMet as fm
 from com.sca.hem4.model.Model import *
 from com.sca.hem4.support.UTM import *
+from com.sca.hem4.support.NormalRounding import *
 
 class Runstream():
     """
@@ -18,7 +19,7 @@ class Runstream():
     
     """
     
-    def __init__(self, facops_df, emislocs_df, hapemis_df, urecs_df = None, 
+    def __init__(self, facops_df, emislocs_df, hapemis_df,  
                  buoyant_df = None, polyver_df = None, bldgdw_df = None, 
                  partdia_df = None, landuse_df = None, seasons_df = None,
                  emisvar_df = None, model = None):
@@ -26,7 +27,6 @@ class Runstream():
         self.facoptn_df = facops_df
         self.emisloc_df = emislocs_df
         self.hapemis = hapemis_df
-        self.user_recs = urecs_df
         self.buoyant_df = buoyant_df
         self.polyver_df = polyver_df
         self.bldgdw_df = bldgdw_df
@@ -128,16 +128,19 @@ class Runstream():
         
         #check if there is nothing default is to determin an urban option and set
         else:
-            #get shortest distance in innerblks and check for urban population
+            # Get shortest distance in innerblks and check for urban population
+            # Exclude user-supplied receptors and user receptors already in the census data
             if not innerblks.empty:
-                closest = innerblks.nsmallest(1, 'distance')
+                inn_wo_ur = innerblks[~innerblks['idmarplot'].str.contains('U')]
+                closest = inn_wo_ur.nsmallest(1, 'distance')
                 if closest['urban_pop'].values[0] > 0:
                     self.urban = True
                     urbanopt = "CO URBANOPT  " + str(closest['urban_pop'].values[0]) + "\n"
                     self.inp_f.write(urbanopt)
                     
             else: #get shortest distance from outerblocks 
-                closest = outerblks.nsmallest(1, 'distance')
+                out_wo_ur = outerblks[~outerblks['idmarplot'].str.contains('U')]
+                closest = out_wo_ur.nsmallest(1, 'distance')
                 if closest['urban_pop'].values[0] > 0:
                     self.urban = True
                     urbanopt = "CO URBANOPT " + str(closest['urban_pop'].values[0]) + "\n"
@@ -172,27 +175,26 @@ class Runstream():
         their parameters
         
         """
-      
-        
-        srid = self.emisloc_df['source_id'][:]           # Source ID
-        cord = self.emisloc_df['location_type'][:]       # Coordinate System
-        xco1 = self.emisloc_df['utme'][:]                # X-Coordinate
-        yco1 = self.emisloc_df['utmn'][:]                # Y-Coordinate
-        utmz = self.emisloc_df['utmzone'][:]             # UTM Zone
-        srct = self.emisloc_df['source_type'][:]         # Source Type
-        lenx = self.emisloc_df['lengthx'][:]             # Length in X-Direction
-        leny = self.emisloc_df['lengthy'][:]             # Length in Y-Direction
-        angl = self.emisloc_df['angle'][:]               # Angle of Emission Location
-        latr = self.emisloc_df['horzdim'][:]             # Initial Lateral/Horizontal Emission
-        vert = self.emisloc_df['vertdim'][:]             # Initial Vertical Emission
-        relh = self.emisloc_df['areavolrelhgt'][:]       # Release Height
-        stkh = self.emisloc_df['stkht'][:]               # Stack Height
-        diam = self.emisloc_df['stkdia'][:]              # Stack Diameter
-        emiv = self.emisloc_df['stkvel'][:]              # Stack Exit Velocity
-        temp = self.emisloc_df['stktemp'][:]             # Stack Exit Temperature
-        elev = self.emisloc_df['elev'][:]                # Elevation of Source Location
-        xco2 = self.emisloc_df['utme_x2'][:]             # Second X-Coordinate
-        yco2 = self.emisloc_df['utmn_y2'][:]             # Second Y-Coordinate
+         
+        srid = self.emisloc_df['source_id'][:]                           # Source ID
+        cord = self.emisloc_df['location_type'][:]                       # Coordinate System
+        xco1 = self.emisloc_df['utme'].apply(lambda x: normal_round(x))  # X-Coordinate
+        yco1 = self.emisloc_df['utmn'].apply(lambda x: normal_round(x))  # Y-Coordinate
+        utmz = self.emisloc_df['utmzone'][:]                             # UTM Zone
+        srct = self.emisloc_df['source_type'][:]                         # Source Type
+        lenx = self.emisloc_df['lengthx'][:]                             # Length in X-Direction
+        leny = self.emisloc_df['lengthy'][:]                             # Length in Y-Direction
+        angl = self.emisloc_df['angle'][:]                               # Angle of Emission Location
+        latr = self.emisloc_df['horzdim'][:]                             # Initial Lateral/Horizontal Emission
+        vert = round(self.emisloc_df['vertdim'][:],2)                    # Initial Vertical Emission
+        relh = round(self.emisloc_df['areavolrelhgt'][:],2)              # Release Height
+        stkh = round(self.emisloc_df['stkht'][:],3)                      # Stack Height
+        diam = round(self.emisloc_df['stkdia'][:],3)                     # Stack Diameter
+        emiv = round(self.emisloc_df['stkvel'][:],7)                     # Stack Exit Velocity
+        temp = round(self.emisloc_df['stktemp'][:],2)                    # Stack Exit Temperature
+        elev = self.emisloc_df['elev'][:]                                # Elevation of Source Location
+        xco2 = self.emisloc_df['utme_x2'].apply(lambda x: normal_round(x))  # Second X-Coordinate
+        yco2 = self.emisloc_df['utmn_y2'].apply(lambda x: normal_round(x))  # Second Y-Coordinate
     
     # initialize variable used to determine the first buoyant line source (if there is one)
         first_buoyant = 0
@@ -527,7 +529,7 @@ class Runstream():
                                       (yco1[index] - yco2[index])**2))
                 
                 soparam = ("SO SRCPARAM " + str(srid[index]) + " " + 
-                           str( 1000 / ( lenx[index] * line_len ) ) + " " + 
+                           str( round(1000 / ( lenx[index] * line_len ), 10 ) ) + " " + 
                            str(relh[index]) + " " + str(lenx[index]) + " " + 
                            str(vert[index]) + "\n")
                 
@@ -571,7 +573,7 @@ class Runstream():
                 blemis = 1000 
                 soparam = ("SO SRCPARAM " + str(srid[index]) + " " + 
                            str(blemis) + " " + str(relh[index]) + "\n")
-
+                
                 if first_buoyant == 0:
                     sobuopa = ("SO BLPINPUT " + str(self.buoyant_df['avgbld_len'][0]) + 
                                " " + str(self.buoyant_df['avgbld_hgt'][0]) + 
@@ -646,8 +648,8 @@ class Runstream():
         for i in np.arange(len(recx)):
             if self.eleva == "Y":
                 redec = ("RE DISCCART  " + str(recx[i]) + " " + str(recy[i]) + 
-                         " " + str(int(round(rece[i]))) + " " + 
-                         str(int(round(rech[i]))) + "\n")
+                         " " + str(normal_round(rece[i])) + " " + 
+                         str(normal_round(rech[i])) + "\n")
             else:
                 redec = "RE DISCCART  " + str(recx[i]) + " " + str(recy[i]) + "\n"
             self.inp_f.write(redec)
@@ -871,8 +873,10 @@ class Runstream():
         """
         pollutants = (self.hapemis[(self.hapemis['source_id'] == srid)
                                     & (self.hapemis['part_frac'] < 1)]['pollutant'].str.lower())
+        pollutants.reset_index(drop=True, inplace=True)
             
         params = self.model.gasparams.dataframe.loc[self.model.gasparams.dataframe['pollutant'].isin(pollutants)]
+        params.reset_index(drop=True, inplace=True)
                 
         #write values if they exist in the 
         #so there should only be one pollutant per source id for vapor/gas deposition to work

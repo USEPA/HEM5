@@ -3,11 +3,13 @@ import time
 import subprocess
 import shutil
 import pandas as pd
+import datetime
 from com.sca.hem4.OutputProcessing import *
 from com.sca.hem4.FacilityPrep import FacilityPrep
 from com.sca.hem4.log import Logger
 from com.sca.hem4.DepositionDepletion import sort
 from com.sca.hem4.model.Model import *
+from datetime import datetime
 
 
 class FacilityRunner():
@@ -30,9 +32,17 @@ class FacilityRunner():
         else:
             self.model.model_optns['phase'] = fac['phase'].tolist()[0]
 
+        if self.model.group_name != None:
+            output = "output/"+self.model.group_name+"/"
+            fac_folder =  output + self.facilityId + "/"
+            
+#        else:
+#            output = "output/" + str(datetime.datetime.now().strftime("%B-%d-%Y-%H-%M-%p"))+"/" 
+        else:
         
         #create fac folder
-        fac_folder = "output/"+ self.facilityId + "/"
+            fac_folder =  "output/"+self.facilityId + "/"
+        
         if os.path.exists(fac_folder):
             pass
         else:
@@ -157,6 +167,7 @@ class FacilityRunner():
     def prep(self):
         
         prep = FacilityPrep(self.model)
+        print("building runstream")
         
         Logger.logMessage("Building runstream for facility " + self.facilityId)
         
@@ -166,7 +177,9 @@ class FacilityRunner():
     def run(self, fac_folder):
 
         #run aermod
-        Logger.logMessage("Running Aermod for " + self.facilityId)
+        now = datetime.now().time()
+        current_time = now.strftime("%H:%M:%S")
+        Logger.logMessage("Running Aermod for " + self.facilityId + " starting at time " + current_time)
 
         # Start aermod asynchronously and then monitor it, with the possibility
         # of terminating it midstream (i.e. if the thread is asked to die...)
@@ -192,13 +205,16 @@ class FacilityRunner():
         output = os.path.join("aermod", "aermod.out")
         check = open(output, 'r')
         message = check.read()
+        now = datetime.now().time()
+        current_time = now.strftime("%H:%M:%S")
         if 'AERMOD Finishes UN-successfully' in message:
             success = False
             Logger.logMessage("Aermod ran unsuccessfully. Please check the "+
-                              "error section of the aermod.out file.")
+                              "error section of the aermod.out file. Ended at time "+
+                              current_time)
         else:
             success = True
-            Logger.logMessage("Aermod ran successfully.")
+            Logger.logMessage("Aermod ran successfully. Ended at time " + current_time)
         check.close()
 
         if success == True:
