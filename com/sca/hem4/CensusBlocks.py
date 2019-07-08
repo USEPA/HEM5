@@ -55,11 +55,11 @@ def polygonbox(vertex1, vertex2, blkcoor, modeldist):
 
 def rotatedbox(xt, yt, box_x, box_y, len_x, len_y, angle, fringe, overlap_dist):
 
-    # Determines whether a rececptor point (xt,yt) is within a fringe of width F around a box
-    #	with origin (Box_x,Box_y), dimensions (Len_x,Len_y), and oriented at an given
+    # Determines whether a rececptor point (xt,yt) is within a fringe around a box
+    #	with southwest corner (box_x,box_y), dimensions (Len_x,Len_y), and oriented at a given
     #   "Angle", measured clockwise from North.
     # Also determine if this box overlaps the point.
-
+        
     inbox = False
     overlap = "N"
         
@@ -81,6 +81,7 @@ def rotatedbox(xt, yt, box_x, box_y, len_x, len_y, angle, fringe, overlap_dist):
         D_test = max(D_e, D_w, D_n, D_s)
     else:
         D_test = min(D_ne, D_nw, D_se, D_sw)
+
            
     # First see if the point is in the rectangle
     if  (xt < box_x + math.tan(A_rad)*(yt-box_y) + (len_x+fringe)/math.cos(A_rad)
@@ -94,7 +95,7 @@ def rotatedbox(xt, yt, box_x, box_y, len_x, len_y, angle, fringe, overlap_dist):
 			                   and fringe < math.sqrt((box_x - xt)**2 + (box_y - yt)**2))
 		                   or (xt > box_x + math.tan(A_rad)*(yt-box_y) + len_x/math.cos(A_rad)
 			                   and yt < box_y - math.tan(A_rad)*(xt-box_x)
-			                   and fringe < math.sqrt((box_x+len_x*math.cos(A_rad) - xt)*2
+			                   and fringe < math.sqrt((box_x+len_x*math.cos(A_rad) - xt)**2
 				                + (box_y-len_x*math.sin(A_rad) - yt)**2))
 		                   or (xt > box_x + math.tan(A_rad)*(yt-box_y) + len_x/math.cos(A_rad)
 			                   and yt > box_y - math.tan(A_rad)*(xt-box_x) + len_y/math.cos(A_rad)
@@ -107,6 +108,7 @@ def rotatedbox(xt, yt, box_x, box_y, len_x, len_y, angle, fringe, overlap_dist):
                    inbox = False
          else:
                inbox = True
+
 
     # Check for overlap
     if  (xt < box_x + math.tan(A_rad)*(yt-box_y) + (len_x+overlap_dist)/math.cos(A_rad)
@@ -162,40 +164,36 @@ def in_box(modelblks, sourcelocs, modeldist, maxdist, overlap_dist, model):
             outerblks['overlap'] = np.where(np.sqrt((outerblks[utme]-src_x)**2 + (outerblks[utmn]-src_y)**2) <= overlap_dist, "Y", "N")
     
     print("first innerblks size = ", innerblks.shape, " first outerblks size = ", outerblks.shape)
-
-    #Debug
-    if '220890601001037' in innerblks.idmarplot.values:
-        import pdb; pdb.set_trace()
     
 
-    #....... Find blocks within modeldist of area sources with angle 0..........
-    
-    area0sources = sourcelocs.query("source_type in ('A') and angle == 0")
-    for index, row in area0sources.iterrows():
-        sw_x = row[utme] - modeldist
-        sw_y = row[utmn] - modeldist
-        ne_x = row[utme] + row["lengthx"] + modeldist
-        ne_y = row[utmn] + row["lengthy"] + modeldist
-        indist = outerblks.query('utme >= @sw_x and utme <= @ne_x and utmn >= @sw_y and utmn <= @ne_y')
-        if len(indist) > 0:
-            innerblks = innerblks.append(indist).reset_index(drop=True)
-            innerblks = innerblks[~innerblks[rec_id].duplicated()]
-            outerblks = outerblks[~outerblks[rec_id].isin(innerblks[rec_id])]
+#    #....... Find blocks within modeldist of area sources with angle 0..........
+#    
+#    area0sources = sourcelocs.query("source_type in ('A') and angle == 0")
+#    for index, row in area0sources.iterrows():
+#        sw_x = row[utme] - modeldist
+#        sw_y = row[utmn] - modeldist
+#        ne_x = row[utme] + row["lengthx"] + modeldist
+#        ne_y = row[utmn] + row["lengthy"] + modeldist
+#        indist = outerblks.query('utme >= @sw_x and utme <= @ne_x and utmn >= @sw_y and utmn <= @ne_y')
+#        if len(indist) > 0:
+#            innerblks = innerblks.append(indist).reset_index(drop=True)
+#            innerblks = innerblks[~innerblks[rec_id].duplicated()]
+#            outerblks = outerblks[~outerblks[rec_id].isin(innerblks[rec_id])]
+#
+#            #Do any of these inner or outer blocks overlap this source?
+#            sw_x = row[utme] - overlap_dist
+#            sw_y = row[utmn] - overlap_dist
+#            ne_x = row[utme] + row["lengthx"] + overlap_dist
+#            ne_y = row[utmn] + row["lengthy"] + overlap_dist
+#            innerblks[overlap] = np.where((innerblks[utme] >= sw_x) & (innerblks[utme] <= ne_x) & (innerblks[utmn] >= sw_y) & (innerblks[utmn] <= ne_y), "Y", "N")
+#            outerblks[overlap] = np.where((outerblks[utme] >= sw_x) & (outerblks[utme] <= ne_x) & (outerblks[utmn] >= sw_y) & (outerblks[utmn] <= ne_y), "Y", "N")
+#            
+#    print("second innerblks size = ", innerblks.shape, " second outerblks size = ", outerblks.shape)
 
-            #Do any of these inner or outer blocks overlap this source?
-            sw_x = row[utme] - overlap_dist
-            sw_y = row[utmn] - overlap_dist
-            ne_x = row[utme] + row["lengthx"] + overlap_dist
-            ne_y = row[utmn] + row["lengthy"] + overlap_dist
-            innerblks[overlap] = np.where((innerblks[utme] >= sw_x) & (innerblks[utme] <= ne_x) & (innerblks[utmn] >= sw_y) & (innerblks[utmn] <= ne_y), "Y", "N")
-            outerblks[overlap] = np.where((outerblks[utme] >= sw_x) & (outerblks[utme] <= ne_x) & (outerblks[utmn] >= sw_y) & (outerblks[utmn] <= ne_y), "Y", "N")
-            
-    print("second innerblks size = ", innerblks.shape, " second outerblks size = ", outerblks.shape)
 
+    #....... Find blocks within modeldist of area sources ..........
 
-    #....... Find blocks within modeldist of area sources with non-zero angle..........
-
-    areasources = sourcelocs.query("source_type in ('A') and angle > 0")
+    areasources = sourcelocs.query("source_type in ('A')")
     for index, row in areasources.iterrows():
         box_x = row[utme]
         box_y = row[utmn]
@@ -211,11 +209,7 @@ def in_box(modelblks, sourcelocs, modeldist, maxdist, overlap_dist, model):
             innerblks = innerblks[~innerblks[rec_id].duplicated()]
             outerblks = outerblks[~outerblks[rec_id].isin(innerblks[rec_id])]
                   
-    print("third innerblks size = ", innerblks.shape, " third outerblks size = ", outerblks.shape)
-
-    #Debug
-    if '220890601001037' in innerblks.idmarplot.values:
-        import pdb; pdb.set_trace()
+    print("second innerblks size = ", innerblks.shape, " second outerblks size = ", outerblks.shape)
 
 
     #....... If there are polygon sources, find blocks within modeldist of any polygon side ..........
@@ -249,7 +243,7 @@ def in_box(modelblks, sourcelocs, modeldist, maxdist, overlap_dist, model):
                     innerblks = innerblks[~innerblks[rec_id].duplicated()]
                     outerblks = outerblks[~outerblks[rec_id].isin(innerblks[rec_id])]
 
-    print("fourth innerblks size = ", innerblks.shape, " fourth outerblks size = ", outerblks.shape)
+    print("third innerblks size = ", innerblks.shape, " third outerblks size = ", outerblks.shape)
         
     return innerblks, outerblks
 
