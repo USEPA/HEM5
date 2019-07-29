@@ -12,6 +12,7 @@ class SummaryManager():
         hiHistogramModule = importlib.import_module("com.sca.hem4.writer.excel.summary.HI_Histogram")
         incidenceDriversReportModule = importlib.import_module("com.sca.hem4.writer.excel.summary.IncidenceDrivers")
         acuteImpactsReportModule = importlib.import_module("com.sca.hem4.writer.excel.summary.AcuteImpacts")
+        sourceTypeRiskHistogram = importlib.import_module("com.sca.hem4.writer.excel.summary.SourceTypeRiskHistogram")
 
         self.availableReports = {'MaxRisk' : maxRiskReportModule,
                                  'CancerDrivers' : cancerDriversReportModule,
@@ -19,9 +20,10 @@ class SummaryManager():
                                  'Histogram' : histogramModule,
                                  'HI_Histogram' : hiHistogramModule,
                                  'IncidenceDrivers' : incidenceDriversReportModule,
-                                 'AcuteImpacts' : acuteImpactsReportModule}
+                                 'AcuteImpacts' : acuteImpactsReportModule,
+                                 'SourceTypeRiskHistogram' : sourceTypeRiskHistogram}
 
-    def createReport(self, categoryFolder, reportName):
+    def createReport(self, categoryFolder, reportName, arguments):
 
         # Figure out which facilities will be included in the report
         self.facilityIds = self.findFacilities(categoryFolder)
@@ -34,7 +36,7 @@ class SummaryManager():
             return
 
         reportClass = getattr(module, reportName)
-        instance = reportClass(categoryFolder, self.facilityIds)
+        instance = reportClass(categoryFolder, self.facilityIds, arguments)
         instance.write()
 
     def findFacilities(self, folder):
@@ -60,4 +62,4 @@ class SummaryManager():
         #         '36091110000324435', '39153110041418338', '48039110008170237', '54107110000586081']
 
 manager = SummaryManager()
-manager.createReport("output/ALDT", "AcuteImpacts")
+manager.createReport("output/ALDT", "SourceTypeRiskHistogram", [2,2])

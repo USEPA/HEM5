@@ -12,7 +12,7 @@ repr_facilitycount = 'repr_facilitycount'
 
 class HI_Histogram(ExcelWriter):
 
-    def __init__(self, targetDir, facilityIds):
+    def __init__(self, targetDir, facilityIds, parameters=None):
         self.name = "Non-cancer Histogram"
         self.categoryFolder = targetDir
         self.facilityIds = facilityIds

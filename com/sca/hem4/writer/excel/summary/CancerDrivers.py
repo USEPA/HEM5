@@ -4,7 +4,7 @@ risk_contrib = 'risk_contrib'
 
 class CancerDrivers(ExcelWriter):
 
-    def __init__(self, targetDir, facilityIds):
+    def __init__(self, targetDir, facilityIds, parameters=None):
         self.name = "Cancer Drivers Summary"
         self.categoryFolder = targetDir
         self.facilityIds = facilityIds

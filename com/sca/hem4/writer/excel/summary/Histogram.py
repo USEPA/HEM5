@@ -6,7 +6,7 @@ risklevel = 'risklevel'
 facilitycount = 'facilitycount'
 class Histogram(ExcelWriter):
 
-    def __init__(self, targetDir, facilityIds):
+    def __init__(self, targetDir, facilityIds, parameters=None):
         self.name = "Cancer Histogram"
         self.categoryFolder = targetDir
         self.facilityIds = facilityIds

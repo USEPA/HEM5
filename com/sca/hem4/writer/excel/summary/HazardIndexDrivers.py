@@ -10,7 +10,7 @@ from com.sca.hem4.writer.excel.summary.CancerDrivers import risk_contrib
 
 class HazardIndexDrivers(ExcelWriter):
 
-    def __init__(self, targetDir, facilityIds):
+    def __init__(self, targetDir, facilityIds, parameters=None):
         self.name = "Hazard Index Drivers Summary"
         self.categoryFolder = targetDir
         self.facilityIds = facilityIds

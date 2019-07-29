@@ -10,7 +10,7 @@ hq_erpg2 = 'hq_erpg2'
 
 class AcuteImpacts(ExcelWriter):
 
-    def __init__(self, targetDir, facilityIds):
+    def __init__(self, targetDir, facilityIds, parameters=None):
         self.name = "Acute Impacts Summary"
         self.categoryFolder = targetDir
         self.facilityIds = facilityIds

@@ -5,7 +5,7 @@ inc_contrib = 'inc_contrib'
 
 class IncidenceDrivers(ExcelWriter):
 
-    def __init__(self, targetDir, facilityIds):
+    def __init__(self, targetDir, facilityIds, parameters=None):
         self.name = "Incidence Drivers Summary"
         self.categoryFolder = targetDir
         self.facilityIds = facilityIds

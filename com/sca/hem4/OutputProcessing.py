@@ -118,7 +118,12 @@ class Process_outputs():
             Logger.logMessage("Terminating output processing...")
             return
 
-                    
+
+        #----------- copy input files used to the output directory for posterity --------
+        # Note: the copies must be named in a standard way so that they can be found by the
+        # summary report which needs them:
+        # faclist.xlsx, emisloc.xlsx, hapemis.xlsx
+        # TODO
 
         #----------- create input selection file -----------------
         input_selection = InputSelectionOptions(self.outdir, self.facid, self.model, None)
