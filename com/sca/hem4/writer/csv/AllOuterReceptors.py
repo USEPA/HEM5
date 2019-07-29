@@ -450,8 +450,7 @@ class AllOuterReceptors(CsvWriter, InputFile):
         interp_aconc = 0
         
         #Debug
-        profile.print_stats()
-        import pdb; pdb.set_trace()
+        #import pdb; pdb.set_trace()
         
         return interp_cconc, interp_aconc
 

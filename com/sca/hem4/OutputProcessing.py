@@ -168,6 +168,9 @@ class Process_outputs():
             Logger.logMessage("Terminating output processing...")
             return
 
+        fp = open('C:\HEM-inputs\ALDT\profile-results.txt', 'a')
+        profile.print_stats(stream=fp)
+
         #----------- create Ring_Summary_Chronic data -----------------
         ring_summary_chronic = RingSummaryChronic(self.outdir, self.facid, self.model, self.plot_df)
         generator = ring_summary_chronic.generateOutputs()
