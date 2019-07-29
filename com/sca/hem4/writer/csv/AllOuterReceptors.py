@@ -11,6 +11,12 @@ from com.sca.hem4.upload.DoseResponse import *
 from com.sca.hem4.writer.csv.AllInnerReceptors import *
 from com.sca.hem4.writer.excel.Incidence import inc
 
+import line_profiler
+profile = line_profiler.LineProfiler()
+
+import timeit
+
+
 mir = 'mir';
 hi_resp = 'hi_resp';
 hi_live = 'hi_live';
@@ -137,148 +143,317 @@ class AllOuterReceptors(CsvWriter, InputFile):
         num_sectors = len(self.model.all_polar_receptors_df['sector'].unique())
         num_rings = len(self.model.all_polar_receptors_df['ring'].unique())
 
-
-        #Put all_polar_receptors DF into an array
-        polarconcs_m = self.model.all_polar_receptors_df.values
+        # Create a working copy of all_polar_receptors_df and define an index
+        self.allpolar_work = self.model.all_polar_receptors_df.copy()
+        self.allpolar_work['newindex'] = self.allpolar_work['sector'].apply(str) \
+                                         + self.allpolar_work['ring'].apply(str) \
+                                         + self.allpolar_work['ems_type'] \
+                                         + self.allpolar_work['source_id'] \
+                                         + self.allpolar_work['pollutant']
+        self.allpolar_work.set_index(['newindex'], inplace=True)
+        
+#        # Generate a list of unique combinations of ems_type, source_id, and pollutant
+#        srcpols = self.allpolar_work[['source_id', 'ems_type', 'pollutant']].drop_duplicates().values.tolist()
+#        interpconcs = pd.DataFrame(srcpols, columns=['source_id', 'ems_type', 'pollutant'])
+#        interpconcs['conc'] = 0.0
+#        interpconcs['aconc'] = 0.0
+#        interpconcs['fips'] = ''
+#        interpconcs['block'] = ''
+#        interpconcs['lat'] = 0.0
+#        interpconcs['lon'] = 0.0
+#        interpconcs['elev'] = 0.0
+#        interpconcs['population'] = 0
+#        interpconcs['overlap'] = ''
+#        interpconcs = interpconcs[self.columns]
+        
+#        #Put all_polar_receptors DF into an array
+#        polarconcs_m = self.model.all_polar_receptors_df.values
 
 
         #subset outer blocks DF to needed columns
         outerblks_subset = self.model.outerblks_df[[fips, idmarplot, lat, lon, elev,
                                                     'angle', population, overlap, 's',
                                                     'ring_loc']].copy()
+        outerblks_subset['block'] = outerblks_subset['idmarplot'].str[4:]
 
-        #define sector/ring of 4 surrounding polar receptors for each outer receptor and set an index
+        #define sector/ring of 4 surrounding polar receptors for each outer receptor
         outerblks_subset[["s1", "s2", "r1", "r2"]] = outerblks_subset.apply(self.compute_s1s2r1r2, axis=1)
 
-        #Put outerblks_subset DF into an array
-        outerblks_m = outerblks_subset.values
+        #Debug
+        start_time = timeit.default_timer()
 
         dlist = []
-
+        
         #Process the outer blocks within a box defined by the corners (s1,r1), (s1,r2), (s1,r1), (s2,r2)
-        for isector in range(1, num_sectors+1):
+        for isector in range(1, num_sectors):
             for iring in range(1, num_rings):
 
-                sector1 = isector
-                sector2 = (isector % num_sectors) + 1
-                ring1 = iring
-                ring2 = iring + 1
+                is1 = isector
+                is2 = isector + 1
+                ir1 = iring
+                ir2 = iring + 1
 
                 #Get all outer receptors within this box. If none, then go to the next box.
-                box_truth = np.logical_and.reduce((outerblks_m[:, 10] == sector1,
-                                                   outerblks_m[:, 11] == sector2,
-                                                   outerblks_m[:, 12] == ring1,
-                                                   outerblks_m[:, 13] == ring2))
-                outerblks_touse = outerblks_m[box_truth]
-                if outerblks_touse.size == 0:
+                outerblks_inbox = outerblks_subset.query('s1==@is1 and s2==@is2 and r1==@ir1 and r2==@ir2')
+                if outerblks_inbox.size == 0:
                     continue
+                                
+                qry_s1r1 = self.allpolar_work.query('(sector==@is1 and ring==@ir1)')
+                qry_s1r1['idxcol'] = 's1r1'
+                qry_s1r2 = self.allpolar_work.query('(sector==@is1 and ring==@ir2)')
+                qry_s1r2['idxcol'] = 's1r2'
+                qry_s2r1 = self.allpolar_work.query('(sector==@is2 and ring==@ir1)')
+                qry_s2r1['idxcol'] = 's2r1'
+                qry_s2r2 = self.allpolar_work.query('(sector==@is2 and ring==@ir2)')
+                qry_s2r2['idxcol'] = 's2r2'
+                qry_all = pd.concat([qry_s1r1, qry_s1r2, qry_s2r1, qry_s2r2])
+                qry_pivot = pd.pivot_table(qry_all, values='conc', index=['ems_type', 'source_id', 'pollutant'],
+                                                    columns = 'idxcol')
+                qry_pivot.reset_index(inplace=True)
 
-                #Get the polar source/pollutant concs for each corner of the box
-                s1r1 = np.logical_and(polarconcs_m[:, 7] == sector1, polarconcs_m[:, 8] == ring1 )
-                s1r2 = np.logical_and(polarconcs_m[:, 7] == sector1, polarconcs_m[:, 8] == ring2 )
-                s2r1 = np.logical_and(polarconcs_m[:, 7] == sector2, polarconcs_m[:, 8] == ring1 )
-                s2r2 = np.logical_and(polarconcs_m[:, 7] == sector2, polarconcs_m[:, 8] == ring2 )
-                pconc_s1r1_m = polarconcs_m[s1r1]
-                pconc_s1r2_m = polarconcs_m[s1r2]
-                pconc_s2r1_m = polarconcs_m[s2r1]
-                pconc_s2r2_m = polarconcs_m[s2r2]
+                # merge outerblks_inbox with qry_pivot as one to all
+                outerblks_inbox['key'] = 1
+                qry_pivot['key'] = 1
+                outerplus = pd.merge(outerblks_inbox, qry_pivot, on='key').drop('key', axis=1)
+                
+                # interpolate
+                outerplus['conc'], outerplus['aconc'] = zip(*outerplus.apply(lambda row:
+                                self.interpolate(row['s1r1'], row['s1r2'], row['s2r1'], 
+                                                 row['s2r2'], row['s'], row['ring_loc']),
+                                axis=1))
 
-                #Interpolate to each outer receptor in this box
-                for row in outerblks_touse:
+                datalist = outerplus[['fips', 'block', 'lat', 'lon', 'source_id', 'ems_type',
+                                      'pollutant', 'conc', 'aconc', 'elev', 'population', 'overlap']].values.tolist()
+                dlist.extend(datalist)
 
-                    l_fips = row[0]
-                    l_block = row[1][5:]
-                    l_lat = row[2]
-                    l_lon = row[3]
-                    l_elev = row[4]
-                    l_population = row[6]
-                    l_overlap = row[7]
-
-                    for iprow in range(0, len(pconc_s1r1_m)):
-                        l_sourceid = pconc_s1r1_m[iprow, 0]
-                        l_emistype = pconc_s1r1_m[iprow, 1]
-                        l_pollutant = pconc_s1r1_m[iprow, 2]
-                        s = row[8]
-                        ring_loc = row[9]
-                        pcconc_s1r1 = pconc_s1r1_m[iprow, 3] # chronic
-                        pcconc_s1r2 = pconc_s1r2_m[iprow, 3] # chronic
-                        pcconc_s2r1 = pconc_s2r1_m[iprow, 3] # chronic
-                        pcconc_s2r2 = pconc_s2r2_m[iprow, 3] # chronic
-                        paconc_s1r1 = pconc_s1r1_m[iprow, 4] # acute
-                        paconc_s1r2 = pconc_s1r2_m[iprow, 4] # acute
-                        paconc_s2r1 = pconc_s2r1_m[iprow, 4] # acute
-                        paconc_s2r2 = pconc_s2r2_m[iprow, 4] # acute
-
-                        # Interpolate chronic concs
-                        if pcconc_s1r1 == 0 or pcconc_s1r2 == 0:
-                            R_s12 = max(pcconc_s1r1, pcconc_s1r2)
-                        else:
-                            Lnr_s12 = (math.log(pcconc_s1r1) * (int(ring_loc)+1-ring_loc)) + (math.log(pcconc_s1r2) * (ring_loc-int(ring_loc)))
-                            R_s12 = math.exp(Lnr_s12)
-
-                        if pcconc_s2r1 == 0 or pcconc_s2r2 == 0:
-                            R_s34 = max(pcconc_s2r1, pcconc_s2r2 )
-                        else:
-                            Lnr_s34 = (math.log(pcconc_s2r1) * (int(ring_loc)+1-ring_loc)) + (math.log(pcconc_s2r2 ) * (ring_loc-int(ring_loc)))
-                            R_s34 = math.exp(Lnr_s34)
-                        l_cconc = R_s12*(int(s)+1-s) + R_s34*(s-int(s))
-
-                        # Interpolate acute concs
-                        if paconc_s1r1 == 0 or paconc_s1r2 == 0:
-                            R_s12 = max(paconc_s1r1, paconc_s1r2)
-                        else:
-                            Lnr_s12 = (math.log(paconc_s1r1) * (int(ring_loc)+1-ring_loc)) + (math.log(paconc_s1r2) * (ring_loc-int(ring_loc)))
-                            R_s12 = math.exp(Lnr_s12)
-
-                        if paconc_s2r1 == 0 or paconc_s2r2 == 0:
-                            R_s34 = max(paconc_s2r1, paconc_s2r2 )
-                        else:
-                            Lnr_s34 = (math.log(paconc_s2r1) * (int(ring_loc)+1-ring_loc)) + (math.log(paconc_s2r2 ) * (ring_loc-int(ring_loc)))
-                            R_s34 = math.exp(Lnr_s34)
-                        l_aconc = R_s12*(int(s)+1-s) + R_s34*(s-int(s))
-                        
-                        datalist = [l_fips, l_block, l_lat, l_lon, l_sourceid, l_emistype, l_pollutant,
-                                    l_cconc, l_aconc, l_elev, l_population, l_overlap]
-                        dlist.append(datalist)
-
-                # End of iteration for this box...time to check if we
-                # need to write a batch and run the analyze function.
+                # Finished this box
+                # Check if we need to write a batch and run the analyze function.            
                 if len(dlist) >= self.batchSize:
+                    #Debug
+                    elapsed = timeit.default_timer() - start_time
+                    print("Interpolation time ", elapsed)
+    
                     yield pd.DataFrame(dlist, columns=self.columns)
                     dlist = []
 
-        # dataframe to array
+        # Done. Dataframe to array
         outerconc_df = pd.DataFrame(dlist, columns=self.columns)
         self.dataframe = outerconc_df
         self.data = self.dataframe.values
         yield self.dataframe
+                
+#                l_fips = outerblks_subset.at[i, 'fips']
+#                l_block = outerblks_subset.at[i, 'idmarplot'][4:]
+#                l_lat = outerblks_subset.at[i, 'lat']
+#                l_lon = outerblks_subset.at[i, 'lon']
+#                l_elev = outerblks_subset.at[i, 'elev']
+#                l_population = outerblks_subset.at[i, 'population']
+#                l_overlap = outerblks_subset.at[i, 'overlap']
+#                s1 = outerblks_subset.at[i, 's1']
+#                s2 = outerblks_subset.at[i, 's2']
+#                r1 = outerblks_subset.at[i, 'r1']
+#                r2 = outerblks_subset.at[i, 'r2']
+#                s = outerblks_subset.at[i, 's']
+#                ring_loc = outerblks_subset.at[i, 'ring_loc']
+#                first_list = [l_fips, l_block, l_lat, l_lon]
+#                second_list = [l_elev, l_population, l_overlap]
+#                
+#                # put multi-index into columns and make a list of lists
+#                qry_pivot = qry_pivot.reset_index()
+#                interplist = qry_pivot[['source_id', 'ems_type', 'pollutant', 'conc', 'aconc']].values.tolist()
+#                datalist = [first_list + k + second_list for k in interplist]
+#                dlist.extend(datalist)
+            
+                        
+
+#            for j in interplist:
+#                datalist = j[:0] + [l_fips, l_block, l_lat, l_lon] + j[0:]
+#                datalist.extend([l_elev, l_population, l_overlap])
+#                dlist.append(datalist)            
+
+            
+#            # Check if we need to write a batch and run the analyze function.            
+#            if len(dlist) >= self.batchSize:
+#                #Debug
+#                elapsed = timeit.default_timer() - start_time
+#                print("Interpolation time ", elapsed)
+#
+#                yield pd.DataFrame(dlist, columns=self.columns)
+#                dlist = []
+            
+                     
+#        #Put outerblks_subset DF into an array
+#        outerblks_m = outerblks_subset.values
+#
+#
+#        
+#        #Process the outer blocks within a box defined by the corners (s1,r1), (s1,r2), (s1,r1), (s2,r2)
+#        for isector in range(1, num_sectors+1):
+#            for iring in range(1, num_rings):
+#
+#                sector1 = isector
+#                sector2 = (isector % num_sectors) + 1
+#                ring1 = iring
+#                ring2 = iring + 1
+#
+#                #Get all outer receptors within this box. If none, then go to the next box.
+#                box_truth = np.logical_and.reduce((outerblks_m[:, 10] == sector1,
+#                                                   outerblks_m[:, 11] == sector2,
+#                                                   outerblks_m[:, 12] == ring1,
+#                                                   outerblks_m[:, 13] == ring2))
+#                outerblks_touse = outerblks_m[box_truth]
+#                if outerblks_touse.size == 0:
+#                    continue
+#
+#                #Get the polar source/pollutant concs for each corner of the box
+#                s1r1 = np.logical_and(polarconcs_m[:, 7] == sector1, polarconcs_m[:, 8] == ring1 )
+#                s1r2 = np.logical_and(polarconcs_m[:, 7] == sector1, polarconcs_m[:, 8] == ring2 )
+#                s2r1 = np.logical_and(polarconcs_m[:, 7] == sector2, polarconcs_m[:, 8] == ring1 )
+#                s2r2 = np.logical_and(polarconcs_m[:, 7] == sector2, polarconcs_m[:, 8] == ring2 )
+#                pconc_s1r1_m = polarconcs_m[s1r1]
+#                pconc_s1r2_m = polarconcs_m[s1r2]
+#                pconc_s2r1_m = polarconcs_m[s2r1]
+#                pconc_s2r2_m = polarconcs_m[s2r2]
+#
+#                #Interpolate to each outer receptor in this box
+#                for row in outerblks_touse:
+#
+#                    l_fips = row[0]
+#                    l_block = row[1][5:]
+#                    l_lat = row[2]
+#                    l_lon = row[3]
+#                    l_elev = row[4]
+#                    l_population = row[6]
+#                    l_overlap = row[7]
+#                    s = row[8]
+#                    ring_loc = row[9]
+#
+#                    for iprow in range(0, len(pconc_s1r1_m)):
+#                        l_sourceid = pconc_s1r1_m[iprow, 0]
+#                        l_emistype = pconc_s1r1_m[iprow, 1]
+#                        l_pollutant = pconc_s1r1_m[iprow, 2]
+#                        pcconc_s1r1 = pconc_s1r1_m[iprow, 3] # chronic
+#                        pcconc_s1r2 = pconc_s1r2_m[iprow, 3] # chronic
+#                        pcconc_s2r1 = pconc_s2r1_m[iprow, 3] # chronic
+#                        pcconc_s2r2 = pconc_s2r2_m[iprow, 3] # chronic
+#                        paconc_s1r1 = pconc_s1r1_m[iprow, 4] # acute
+#                        paconc_s1r2 = pconc_s1r2_m[iprow, 4] # acute
+#                        paconc_s2r1 = pconc_s2r1_m[iprow, 4] # acute
+#                        paconc_s2r2 = pconc_s2r2_m[iprow, 4] # acute
+#
+#                        # Interpolate chronic concs
+#                        if pcconc_s1r1 == 0 or pcconc_s1r2 == 0:
+#                            R_s12 = max(pcconc_s1r1, pcconc_s1r2)
+#                        else:
+#                            Lnr_s12 = (math.log(pcconc_s1r1) * (int(ring_loc)+1-ring_loc)) + (math.log(pcconc_s1r2) * (ring_loc-int(ring_loc)))
+#                            R_s12 = math.exp(Lnr_s12)
+#
+#                        if pcconc_s2r1 == 0 or pcconc_s2r2 == 0:
+#                            R_s34 = max(pcconc_s2r1, pcconc_s2r2 )
+#                        else:
+#                            Lnr_s34 = (math.log(pcconc_s2r1) * (int(ring_loc)+1-ring_loc)) + (math.log(pcconc_s2r2 ) * (ring_loc-int(ring_loc)))
+#                            R_s34 = math.exp(Lnr_s34)
+#                        l_cconc = R_s12*(int(s)+1-s) + R_s34*(s-int(s))
+#
+#                        # Interpolate acute concs
+#                        if paconc_s1r1 == 0 or paconc_s1r2 == 0:
+#                            R_s12 = max(paconc_s1r1, paconc_s1r2)
+#                        else:
+#                            Lnr_s12 = (math.log(paconc_s1r1) * (int(ring_loc)+1-ring_loc)) + (math.log(paconc_s1r2) * (ring_loc-int(ring_loc)))
+#                            R_s12 = math.exp(Lnr_s12)
+#
+#                        if paconc_s2r1 == 0 or paconc_s2r2 == 0:
+#                            R_s34 = max(paconc_s2r1, paconc_s2r2 )
+#                        else:
+#                            Lnr_s34 = (math.log(paconc_s2r1) * (int(ring_loc)+1-ring_loc)) + (math.log(paconc_s2r2 ) * (ring_loc-int(ring_loc)))
+#                            R_s34 = math.exp(Lnr_s34)
+#                        l_aconc = R_s12*(int(s)+1-s) + R_s34*(s-int(s))
+#                        
+#                        datalist = [l_fips, l_block, l_lat, l_lon, l_sourceid, l_emistype, l_pollutant,
+#                                    l_cconc, l_aconc, l_elev, l_population, l_overlap]
+#                        dlist.append(datalist)
+#
+#                # End of iteration for this box...time to check if we
+#                # need to write a batch and run the analyze function.
+#                if len(dlist) >= self.batchSize:
+#                    yield pd.DataFrame(dlist, columns=self.columns)
+#                    dlist = []
+
+        
 
 
 
+    @profile
+    def interpolate(self, cconc_s1r1, cconc_s1r2, cconc_s2r1, cconc_s2r2, s, ring_loc):
 
-    def interpolate(self, pconcs, srcid, s1, s2, r1, r2, s, ring_loc):
-        conc_s1r1 = pconcs[srcid+str(s1)+str(r1)]
-        conc_s1r2 = pconcs[srcid+str(s1)+str(r2)]
-        conc_s2r1 = pconcs[srcid+str(s2)+str(r1)]
-        conc_s2r2 = pconcs[srcid+str(s2)+str(r2)]
-
-
-        if conc_s1r1 == 0 or conc_s1r2 == 0:
-            R_s12 = max(conc_s1r1, conc_s1r2)
+#        idx_s1r1 = str(s1) + str(r1) + ems_type + srcid + poll
+#        idx_s1r2 = str(s1) + str(r2) + ems_type + srcid + poll
+#        idx_s2r1 = str(s2) + str(r1) + ems_type + srcid + poll
+#        idx_s2r2 = str(s2) + str(r2) + ems_type + srcid + poll
+                                
+#        # ....... chronic ..........................
+#        cconc_s1r1 = self.allpolar_work.loc[idx_s1r1, 'conc']
+#        cconc_s1r2 = self.allpolar_work.loc[idx_s1r2, 'conc']
+#        cconc_s2r1 = self.allpolar_work.loc[idx_s2r1, 'conc']
+#        cconc_s2r2 = self.allpolar_work.loc[idx_s2r2, 'conc']
+        
+        if cconc_s1r1 == 0 or cconc_s1r2 == 0:
+            R_s12 = max(cconc_s1r1, cconc_s1r2)
         else:
-            Lnr_s12 = ((math.log(conc_s1r1) * (int(ring_loc)+1-ring_loc)) +
-                       (math.log(conc_s1r2) * (ring_loc-int(ring_loc))))
+            Lnr_s12 = ((math.log(cconc_s1r1) * (int(ring_loc)+1-ring_loc)) +
+                       (math.log(cconc_s1r2) * (ring_loc-int(ring_loc))))
             R_s12 = math.exp(Lnr_s12)
 
-        if conc_s2r1 == 0 or conc_s2r2 == 0:
-            R_s34 = max(conc_s2r1, conc_s2r2 )
+        if cconc_s2r1 == 0 or cconc_s2r2 == 0:
+            R_s34 = max(cconc_s2r1, cconc_s2r2 )
         else:
-            Lnr_s34 = ((math.log(conc_s2r1) * (int(ring_loc)+1-ring_loc)) +
-                       (math.log(conc_s2r2) * (ring_loc-int(ring_loc))))
+            Lnr_s34 = ((math.log(cconc_s2r1) * (int(ring_loc)+1-ring_loc)) +
+                       (math.log(cconc_s2r2) * (ring_loc-int(ring_loc))))
             R_s34 = math.exp(Lnr_s34)
 
-        interp_conc = R_s12*(int(s)+1-s) + R_s34*(s-int(s))
-        return interp_conc
+        interp_cconc = R_s12*(int(s)+1-s) + R_s34*(s-int(s))
+
+#        #Debug
+#        start_time2 = timeit.default_timer()
+#
+#        # ....... acute ..........................
+#        aconc_s1r1 = self.allpolar_work.loc[idx_s1r1, 'aconc']
+#        aconc_s1r2 = self.allpolar_work.loc[idx_s1r2, 'aconc']
+#        aconc_s2r1 = self.allpolar_work.loc[idx_s2r1, 'aconc']
+#        aconc_s2r2 = self.allpolar_work.loc[idx_s2r2, 'aconc']
+#
+#        #Debug
+#        elapsed = timeit.default_timer() - start_time2
+#        print("Acute lookup time ", elapsed)
+#        
+#        if aconc_s1r1 == 0 or aconc_s1r2 == 0:
+#            R_s12 = max(aconc_s1r1, aconc_s1r2)
+#        else:
+#            Lnr_s12 = ((math.log(aconc_s1r1) * (int(ring_loc)+1-ring_loc)) +
+#                       (math.log(aconc_s1r2) * (ring_loc-int(ring_loc))))
+#            R_s12 = math.exp(Lnr_s12)
+#
+#        if aconc_s2r1 == 0 or aconc_s2r2 == 0:
+#            R_s34 = max(aconc_s2r1, aconc_s2r2 )
+#        else:
+#            Lnr_s34 = ((math.log(aconc_s2r1) * (int(ring_loc)+1-ring_loc)) +
+#                       (math.log(aconc_s2r2) * (ring_loc-int(ring_loc))))
+#            R_s34 = math.exp(Lnr_s34)
+#
+#        interp_aconc = R_s12*(int(s)+1-s) + R_s34*(s-int(s))
+#
+#        #Debug
+#        elapsed = timeit.default_timer() - start_time0
+#        print("Total interpolate time ", elapsed)
+#        import pdb; pdb.set_trace() 
+
+        interp_aconc = 0
+        
+        #Debug
+        profile.print_stats()
+        import pdb; pdb.set_trace()
+        
+        return interp_cconc, interp_aconc
 
 
     def compute_s1s2r1r2(self, row):
