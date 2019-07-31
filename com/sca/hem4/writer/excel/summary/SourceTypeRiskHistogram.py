@@ -1,16 +1,8 @@
+import fnmatch
 from math import log10, floor
-
 from com.sca.hem4.upload.EmissionsLocations import EmissionsLocations
 from com.sca.hem4.writer.csv.BlockSummaryChronic import *
 from com.sca.hem4.writer.excel.ExcelWriter import ExcelWriter
-
-risklevel = 'risklevel'
-resp_population = 'resp_population'
-resp_facilitycount = 'resp_facilitycount'
-neuro_population = 'neuro_population'
-neuro_facilitycount = 'neuro_facilitycount'
-repr_population = 'repr_population'
-repr_facilitycount = 'repr_facilitycount'
 
 class SourceTypeRiskHistogram(ExcelWriter):
 
@@ -18,9 +10,12 @@ class SourceTypeRiskHistogram(ExcelWriter):
         self.name = "Source Type Risk Histogram"
         self.categoryFolder = targetDir
         self.facilityIds = facilityIds
+
+        # These specify which part of the source id contains the code
         self.codePosition = parameters[0]
         self.codeLength = parameters[1]
-
+        self.sourceTypes = None
+        self.header = None
         self.haplib_df = DoseResponse().dataframe
         self.filename = os.path.join(targetDir, "source_type_risk.xlsx")
 
@@ -35,28 +30,26 @@ class SourceTypeRiskHistogram(ExcelWriter):
 
         sourceIds = emisloc.dataframe[source_id].unique()
         sourceTypes = [id[self.codePosition:self.codePosition+self.codeLength] for id in sourceIds]
-        sourceTypes = list(set(sourceTypes))
-        header.extend(sourceTypes)
+        self.sourceTypes = list(set(sourceTypes))
+        header.extend(self.sourceTypes)
         self.header = header
         return self.header
 
     def generateOutputs(self):
         Logger.log("Creating " + self.name + " report...", None, False)
 
-        # Create a list that's the same length as the headers
-        maximum = list(map(lambda x: 0, self.header))
-        maximum[0] = 'Maximum (in 1 million)'
-        hundo = list(map(lambda x: 100, self.header))
-        hundo[0] = '>= 100 in 1 million'
-        ten = list(map(lambda x: 10, self.header))
-        ten[0] = '>= 10 in 1 million'
-        one = list(map(lambda x: 1, self.header))
-        one[0] = '>= 1 in 1 million'
-        incidences = list(map(lambda x: 45, self.header))
-        incidences[0] = 'Incidence'
+        # Create a list to hold the values for each bucket
+        maximum = ['Maximum (in 1 million)']
+        hundo = ['>= 100 in 1 million']
+        ten = ['>= 10 in 1 million']
+        one = ['>= 1 in 1 million']
+        incidences = ['Incidence']
 
-        blocksummary_df = pd.DataFrame()
+        codes = {}
+        codes['overall'] = [0, 0, 0, 0, 0]
+
         for facilityId in self.facilityIds:
+            print("handling facility " + facilityId)
             targetDir = self.categoryFolder + "/" + facilityId
 
             allinner = AllInnerReceptors(targetDir=targetDir, facilityId=facilityId)
@@ -67,54 +60,108 @@ class SourceTypeRiskHistogram(ExcelWriter):
             # convert source ids to the code part only, and then group and sum
             allinner_df[source_id] = allinner_df[source_id].apply(lambda x: x[self.codePosition:self.codePosition+self.codeLength])
 
-            aggs = {fips:'first', block:'first', lat:'first', lon:'first', source_id:'first', ems_type:'first',
-                    pollutant:'first', conc:'first', aconc:'first', elev:'first', drydep:'first', wetdep:'first',
+            aggs = {lat:'first', lon:'first', ems_type:'first',
+                    pollutant:'first', conc:'sum', aconc:'first', elev:'first', drydep:'first', wetdep:'first',
                     population:'first', overlap:'first', 'risk':'sum'}
 
             # Aggregate concentration, grouped by FIPS/block
-            inner_summed = allinner_df.groupby([fips, block, source_id]).agg(aggs)[
-                [fips, block, lat, lon, source_id, ems_type, pollutant, conc, aconc, elev, drydep, wetdep, population,
-                 overlap, 'risk']]
+            inner_summed = allinner_df.groupby(by=[fips, block, source_id], as_index=False).agg(aggs).reset_index(drop=True)
 
-            print("hey")
+            for index, row in inner_summed.iterrows():
+                code = row[source_id]
+                risk = row['risk']
+                pop = row[population]
+
+                if not code in codes:
+                    codes[code] = [0, 0, 0, 0, 0]
+
+                # Update the 'overall' code
+                codelist = codes['overall']
+                if risk > codelist[0]:
+                    codelist[0] = risk
+                if risk >= 0.0001:
+                    codelist[1] += pop
+                if risk >= 0.00001:
+                    codelist[2] += pop
+                if risk >= 0.000001:
+                    codelist[3] += pop
+                codelist[4] += (risk * pop) / 70
+
+                # Update the code for this source
+                codelist = codes[code]
+                if risk > codelist[0]:
+                    codelist[0] = risk
+                if risk >= 0.0001:
+                    codelist[1] += pop
+                if risk >= 0.00001:
+                    codelist[2] += pop
+                if risk >= 0.000001:
+                    codelist[3] += pop
+                codelist[4] += (risk * pop) / 70
 
             # Get a list of the all_outer_receptor files (could be more than one)
-            # listOuter = []
-            # listDirfiles = os.listdir(self.targetDir)
-            # pattern = "*_all_outer_receptors*.csv"
-            # for entry in listDirfiles:
-            #     if fnmatch.fnmatch(entry, pattern):
-            #         listOuter.append(entry)
-            #
-            # # Search each outer receptor file for the lat/lon in row
-            # foundit = False
-            # for f in listOuter:
-            #     allouter = AllOuterReceptors(targetDir=self.targetDir, filenameOverride=f)
-            #     outconcs = allouter.createDataframe()
-            #
-            #     concdata = outconcs[[lat,lon,source_id,pollutant,ems_type,conc]] \
-            #         [(outconcs[lat]==row[lat]) & (outconcs[lon]==row[lon])]
-            #     if not concdata.empty:
-            #         foundit = True
-            #         break
-            # if not foundit:
-            #     errmessage = """An error has happened while computing the Risk Breakdown. A max risk/HI
-            #                           occured at an interpolated receptor but could not be found in the All Outer Receptor files """
-            #     Logger.logMessage(errmessage)
-            #     sys.exit()
+            listOuter = []
+            listDirfiles = os.listdir(targetDir)
+            pattern = "*_all_outer_receptors*.csv"
+            for entry in listDirfiles:
+                if fnmatch.fnmatch(entry, pattern):
+                    listOuter.append(entry)
 
-            blocksummary_df = blocksummary_df.append(bsc_df)
+            for f in listOuter:
+                allouter = AllOuterReceptors(targetDir=targetDir, filenameOverride=f)
+                allouter_df = allouter.createDataframe()
 
-            blocksummary_df.drop_duplicates().reset_index(drop=True)
+                allouter_df['risk'] = allouter_df.apply(lambda x: self.calculateRisk(x[pollutant], x[conc]), axis=1)
 
-            aggs = {lat:'first', lon:'first', overlap:'first', elev:'first', utme:'first', rec_type:'first',
-                    utmn:'first', hill:'first', fips:'first', block:'first', population:'first',
-                    mir:'sum', hi_resp:'sum', hi_live:'sum', hi_neur:'sum', hi_deve:'sum',
-                    hi_repr:'sum', hi_kidn:'sum', hi_ocul:'sum', hi_endo:'sum', hi_hema:'sum',
-                    hi_immu:'sum', hi_skel:'sum', hi_sple:'sum', hi_thyr:'sum', hi_whol:'sum'}
+                # convert source ids to the code part only, and then group and sum
+                allouter_df[source_id] = allouter_df[source_id].apply(lambda x: x[self.codePosition:self.codePosition+self.codeLength])
 
-            # Aggregate concentration, grouped by FIPS/block
-            risk_summed = blocksummary_df.groupby([fips, block]).agg(aggs)[blockSummaryChronic.getColumns()]
+                aggs = {lat:'first', lon:'first', ems_type:'first', pollutant:'first', conc:'sum', aconc:'first',
+                        elev:'first', population:'first', overlap:'first', 'risk':'sum'}
+    
+                # Aggregate concentration, grouped by FIPS/block
+                outer_summed = allouter_df.groupby(by=[fips, block, source_id], as_index=False).agg(aggs).reset_index(drop=True)
+    
+                for index, row in outer_summed.iterrows():
+                    code = row[source_id]
+                    risk = row['risk']
+                    pop = row[population]
+    
+                    if not code in codes:
+                        codes[code] = [0, 0, 0, 0]
+
+                    # Update the 'overall' code
+                    codelist = codes['overall']
+                    if risk > codelist[0]:
+                        codelist[0] = risk
+                    if risk >= 0.0001:
+                        codelist[1] += pop
+                    if risk >= 0.00001:
+                        codelist[2] += pop
+                    if risk >= 0.000001:
+                        codelist[3] += pop
+                    codelist[4] += (risk * pop) / 70
+
+                    # Update the code for this source
+                    codelist = codes[code]
+                    if risk > codelist[0]:
+                        codelist[0] = risk
+                    if risk >= 0.0001:
+                        codelist[1] += pop
+                    if risk >= 0.00001:
+                        codelist[2] += pop
+                    if risk >= 0.000001:
+                        codelist[3] += pop
+                    codelist[4] += (risk * pop) / 70
+
+        self.sourceTypes.insert(0, 'overall')
+        for code in self.sourceTypes:
+            codelist = codes[code]
+            maximum.append(self.round_to_sigfig(codelist[0]*1000000))
+            hundo.append(codelist[1])
+            ten.append(codelist[2])
+            one.append(codelist[3])
+            incidences.append(self.round_to_sigfig(codelist[4]))
 
         allvalues = [['Cancer Risk'], maximum, ['Number of people'], hundo, ten, one, [''], incidences]
 
@@ -127,8 +174,6 @@ class SourceTypeRiskHistogram(ExcelWriter):
 
     def calculateRisk(self, pollutant_name, conc):
         URE = self.getRiskParams(pollutant_name)
-
-        print("[conc:ure]= " + str(conc) + ":" + str(URE))
         return conc * URE
 
     def getRiskParams(self, pollutant_name):
@@ -144,6 +189,7 @@ class SourceTypeRiskHistogram(ExcelWriter):
         if pollutant_name in self.riskCache:
             URE = self.riskCache[pollutant_name][ure]
         else:
+            print("cache miss for pollutant " + pollutant_name)
             row = self.haplib_df.loc[
                 self.haplib_df[pollutant].str.contains(pattern, case=False, regex=True)]
 
