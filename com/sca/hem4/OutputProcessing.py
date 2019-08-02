@@ -48,6 +48,8 @@ class Process_outputs():
 
         self.abort = abort
 
+        self.acute_yn = self.runstream.facoptn_df.iloc[0][acute]
+        
         # Units conversion factor
         self.cf = 2000*0.4536/3600/8760
 
@@ -158,8 +160,8 @@ class Process_outputs():
             return
 
         #----------- create All_Outer_Receptor output file -----------------
-        all_outer_receptors = AllOuterReceptorsNonCensus(self.outdir, self.facid, self.model, self.plot_df) if ureponly \
-                        else AllOuterReceptors(self.outdir, self.facid, self.model, self.plot_df)
+        all_outer_receptors = AllOuterReceptorsNonCensus(self.outdir, self.facid, self.model, self.plot_df, self.acute_yn) if ureponly \
+                        else AllOuterReceptors(self.outdir, self.facid, self.model, self.plot_df, self.acute_yn)
         all_outer_receptors.write()
         self.model.all_outer_receptors_df = all_outer_receptors.dataframe
         Logger.logMessage("Completed AllOuterReceptors output")
@@ -168,7 +170,7 @@ class Process_outputs():
             Logger.logMessage("Terminating output processing...")
             return
 
-        fp = open('C:\HEM-inputs\ALDT\profile-results.txt', 'a')
+        fp = open('C:\\temp\\profile-results_ETH_generateOutputs_v4.txt', 'wt')
         profile.print_stats(stream=fp)
 
         #----------- create Ring_Summary_Chronic data -----------------
@@ -199,7 +201,7 @@ class Process_outputs():
                       hi_endo, hi_hema, hi_immu, hi_skel, hi_sple, hi_thyr, hi_whol, overlap]
         block_columns = ring_columns + [rec_type]
         
-        ring_risk = ring_summary_chronic_df[ring_columns]
+        ring_risk = ring_summary_chronic_df[ring_columns].copy()
         ring_risk[rec_type] = 'P'
         
         block_risk = block_summary_chronic_df[block_columns]
@@ -242,6 +244,7 @@ class Process_outputs():
                                                     ring_summary_chronic_df, inner_recep_risk_df) if ureponly else \
             MaximumOffsiteImpacts(self.outdir, self.facid, self.model, self.plot_df, ring_summary_chronic_df, inner_recep_risk_df)
         max_offsite_impacts.write()
+        Logger.logMessage("Completed MaximumOffsiteImpacts output")
 
 
         # For any rows in ring_summary_chronic and block_summary_chronic where overlap = Y, 
@@ -287,7 +290,7 @@ class Process_outputs():
         
         # If acute was run for this facility, read the acute plotfile and create the acute outputs
 
-        if self.runstream.facoptn_df.iloc[0][acute] == 'Y':
+        if self.acute_yn == 'Y':
 
             apfile = open("aermod/maxhour.plt", "r")
             aplot_df = pd.read_table(apfile, delim_whitespace=True, header=None, 
