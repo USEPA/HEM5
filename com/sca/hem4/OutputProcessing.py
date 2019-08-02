@@ -175,8 +175,6 @@ class Process_outputs():
             Logger.logMessage("Terminating output processing...")
             return
 
-        fp = open('C:\\temp\\profile-results_ETH_generateOutputs_v4.txt', 'wt')
-        profile.print_stats(stream=fp)
 
         #----------- create Ring_Summary_Chronic data -----------------
         ring_summary_chronic = RingSummaryChronic(self.outdir, self.facid, self.model, self.plot_df)
