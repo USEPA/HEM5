@@ -157,11 +157,13 @@ def in_box(modelblks, sourcelocs, modeldist, maxdist, overlap_dist, model):
         if len(indist) > 0:
             innerblks = innerblks.append(indist).reset_index(drop=True)
             innerblks = innerblks[~innerblks[rec_id].duplicated()]
-            outerblks = outerblks[~outerblks[rec_id].isin(innerblks[rec_id])]
+            outerblks = outerblks[~outerblks[rec_id].isin(innerblks[rec_id])].copy()
 
             #Do any of these inner or outer blocks overlap this source?
-            innerblks['overlap'] = np.where(np.sqrt((innerblks[utme]-src_x)**2 + (innerblks[utmn]-src_y)**2) <= overlap_dist, "Y", "N")
-            outerblks['overlap'] = np.where(np.sqrt((outerblks[utme]-src_x)**2 + (outerblks[utmn]-src_y)**2) <= overlap_dist, "Y", "N")
+            innerblks['overlap'] = np.where(np.sqrt((innerblks[utme]-src_x)**2 + 
+                                           (innerblks[utmn]-src_y)**2) <= overlap_dist, "Y", "N")
+            outerblks['overlap'] = np.where(np.sqrt((outerblks[utme]-src_x)**2 + 
+                                           (outerblks[utmn]-src_y)**2) <= overlap_dist, "Y", "N")
     
     print("first innerblks size = ", innerblks.shape, " first outerblks size = ", outerblks.shape)
     
@@ -339,7 +341,7 @@ def getblocks(cenx, ceny, cenlon, cenlat, utmzone, maxdist, modeldist, sourceloc
     censusblks[angle] = censusblks.apply(lambda row: bearing(row[utme],row[utmn],cenx,ceny), axis=1)
 
     #subset the censusblks dataframe to blocks that are within the modeling distance of the facility 
-    modelblks = censusblks.query('distance <= @maxdist')
+    modelblks = censusblks.query('distance <= @maxdist').copy()
 
     # Add overlap column and default to N
     modelblks[overlap] = 'N'

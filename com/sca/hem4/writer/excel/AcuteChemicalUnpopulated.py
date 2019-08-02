@@ -76,10 +76,10 @@ class AcuteChemicalUnpopulated(ExcelWriter, InputFile):
         # loop over each pollutant and find the polar receptor with the max acute conc
         for x in pols:
             max_idx = polarsum[polarsum[pollutant].str.lower() == x][aconc].idxmax()
-            maxconc_df[aconc].loc[x] = polarsum[aconc].loc[max_idx]
-            maxconc_df[lon].loc[x] = polarsum[lon].loc[max_idx]
-            maxconc_df[lat].loc[x] = polarsum[lat].loc[max_idx]
-            maxconc_df[notes].loc[x] = 'Polar'
+            maxconc_df.loc[x, aconc] = polarsum[aconc].loc[max_idx]
+            maxconc_df.loc[x, lon] = polarsum[lon].loc[max_idx]
+            maxconc_df.loc[x, lat] = polarsum[lat].loc[max_idx]
+            maxconc_df.loc[x, notes] = 'Polar'
        
         
         # 2) Next search the discrete (inner) receptors for the max acute conc per pollutant.
@@ -94,10 +94,10 @@ class AcuteChemicalUnpopulated(ExcelWriter, InputFile):
             for p in pols:
                 max_idx = innsum[innsum[pollutant].str.lower() == p][aconc].idxmax()
                 if innsum[aconc].loc[max_idx] > maxconc_df[aconc].loc[p]:
-                    maxconc_df[aconc].loc[p] = innsum[aconc].loc[max_idx]
-                    maxconc_df[lon].loc[p] = innsum[lon].loc[max_idx]
-                    maxconc_df[lat].loc[p] = innsum[lat].loc[max_idx]
-                    maxconc_df[notes].loc[p] = 'Discrete'
+                    maxconc_df.loc[p, aconc] = innsum[aconc].loc[max_idx]
+                    maxconc_df.loc[p, lon] = innsum[lon].loc[max_idx]
+                    maxconc_df.loc[p, lat] = innsum[lat].loc[max_idx]
+                    maxconc_df.loc[p, notes] = 'Discrete'
         
         # 3) Finally, search the outer receptors
 
@@ -123,10 +123,10 @@ class AcuteChemicalUnpopulated(ExcelWriter, InputFile):
                 outsum = outconcs.groupby([pollutant, lat, lon]).agg(aggs)[newcolumns]                
                 max_idx = outsum[outsum[pollutant].str.lower() == p][aconc].idxmax()
                 if outsum[aconc].loc[max_idx] > maxconc_df[aconc].loc[p]:
-                    maxconc_df[aconc].loc[p] = outsum[aconc].loc[max_idx]
-                    maxconc_df[lon].loc[p] = outsum[lon].loc[max_idx]
-                    maxconc_df[lat].loc[p] = outsum[lat].loc[max_idx]
-                    maxconc_df[notes].loc[p] = 'Interpolated'
+                    maxconc_df.loc[p, aconc] = outsum[aconc].loc[max_idx]
+                    maxconc_df.loc[p, lon] = outsum[lon].loc[max_idx]
+                    maxconc_df.loc[p, lat] = outsum[lat].loc[max_idx]
+                    maxconc_df.loc[p, notes] = 'Interpolated'
         
         # 4) Build output dataframe
         acute_df = polinfo.join(maxconc_df, how='inner')

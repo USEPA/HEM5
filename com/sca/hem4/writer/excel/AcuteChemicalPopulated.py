@@ -69,10 +69,10 @@ class AcuteChemicalPopulated(ExcelWriter):
             for x in pols:
                 max_idx = innsum[((innsum[pollutant].str.lower() == x)
                                    & (innsum[population] > 0))][aconc].idxmax()
-                maxconc_df[aconc].loc[x] = innsum[aconc].loc[max_idx]
-                maxconc_df[lon].loc[x] = innsum[lon].loc[max_idx]
-                maxconc_df[lat].loc[x] = innsum[lat].loc[max_idx]
-                maxconc_df[notes].loc[x] = 'Discrete'
+                maxconc_df.loc[x, aconc] = innsum[aconc].loc[max_idx]
+                maxconc_df.loc[x, lon] = innsum[lon].loc[max_idx]
+                maxconc_df.loc[x, lat] = innsum[lat].loc[max_idx]
+                maxconc_df.loc[x, notes] = 'Discrete'
         
         # 2) Next, search the outer receptor concs
 
@@ -98,10 +98,10 @@ class AcuteChemicalPopulated(ExcelWriter):
                 outsum = outer_df.groupby([pollutant, lat, lon]).agg(aggs)[newcolumns]
                 max_idx = outsum[outsum[pollutant].str.lower() == p][aconc].idxmax()
                 if outsum[aconc].loc[max_idx] > maxconc_df[aconc].loc[p]:
-                    maxconc_df[aconc].loc[p] = outsum[aconc].loc[max_idx]
-                    maxconc_df[lon].loc[p] = outsum[lon].loc[max_idx]
-                    maxconc_df[lat].loc[p] = outsum[lat].loc[max_idx]
-                    maxconc_df[notes].loc[p] = 'Interpolated'
+                    maxconc_df.loc[p, aconc] = outsum[aconc].loc[max_idx]
+                    maxconc_df.loc[p, lon] = outsum[lon].loc[max_idx]
+                    maxconc_df.loc[p, lat] = outsum[lat].loc[max_idx]
+                    maxconc_df.loc[p, notes] = 'Interpolated'
         
         # 3) Build output dataframe
         acute_df = polinfo.join(maxconc_df, how='inner')

@@ -154,7 +154,7 @@ class FacilityRunner():
                     # Append temp_df to plot_df
                     plot_df = plot_df.append(temp_df, ignore_index=True)
  
-            # For QA purposes, export plot_df to an Excel file in the Working directory
+            #TODO: Remove the below 4 lines for production version. For QA only.
             plotdf_path = "working/plot_df.xlsx"
             plotdf_con = pd.ExcelWriter(plotdf_path)
             plot_df.to_excel(plotdf_con,'Sheet1')
