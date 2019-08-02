@@ -11,11 +11,6 @@ from com.sca.hem4.upload.DoseResponse import *
 from com.sca.hem4.writer.csv.AllInnerReceptors import *
 from com.sca.hem4.writer.excel.Incidence import inc
 
-import line_profiler
-profile = line_profiler.LineProfiler()
-
-import timeit
-
 
 mir = 'mir';
 hi_resp = 'hi_resp';
@@ -134,7 +129,7 @@ class AllOuterReceptors(CsvWriter, InputFile):
     def getColumns(self):
         return [fips, block, lat, lon, source_id, ems_type, pollutant, conc, aconc, elev, population, overlap]
 
-    @profile
+
     def generateOutputs(self):
         """
         Interpolate polar pollutant concs to outer receptors.
@@ -186,7 +181,7 @@ class AllOuterReceptors(CsvWriter, InputFile):
                 if outerblks_inbox.size == 0:
                     continue
                 
-                # Query allpolar for sector and ring and organize results in a pivot table
+                # Query allpolar for sector and ring
                 qry_s1r1 = self.allpolar_work.query('(sector==@is1 and ring==@ir1)').copy()
                 qry_s1r1['idxcol'] = 's1r1'
                 qry_s1r2 = self.allpolar_work.query('(sector==@is1 and ring==@ir2)').copy()
@@ -199,16 +194,17 @@ class AllOuterReceptors(CsvWriter, InputFile):
 
                 # --------- Handle chronic concs ------------------------
                 
+                # Organize chronic concs into a pivot table
                 qry_cpivot = pd.pivot_table(qry_all, values='conc', index=['ems_type', 'source_id', 'pollutant'],
                                                     columns = 'idxcol')
                 qry_cpivot.reset_index(inplace=True)
                 
-                # merge outerblks_inbox with qry_pivot as one to all
+                # merge outerblks_inbox with qry_cpivot as one to all
                 outerblks_inbox['key'] = 1
                 qry_cpivot['key'] = 1
                 outerplus = pd.merge(outerblks_inbox, qry_cpivot, on='key').drop('key', axis=1)
                 
-                # interpolate
+                # interpolate chronic concs
                 a_s1r1 = outerplus['s1r1'].values
                 a_s1r2 = outerplus['s1r2'].values
                 a_s2r1 = outerplus['s2r1'].values
@@ -218,7 +214,7 @@ class AllOuterReceptors(CsvWriter, InputFile):
                 int_conc = self.interpolate(a_s1r1, a_s1r2, a_s2r1, a_s2r2, a_s, a_ringloc)
                 outerplus['conc'] = int_conc.tolist()
  
-    
+                    
                 # --------- If necessary, handle acute concs ------------------------
               
                 if self.acute_yn == 'N':
@@ -227,25 +223,27 @@ class AllOuterReceptors(CsvWriter, InputFile):
                     
                 else:
                     
+                    # Organize acute concs into a pivot table
                     qry_apivot = pd.pivot_table(qry_all, values='aconc', index=['ems_type', 'source_id', 'pollutant'],
                                                         columns = 'idxcol')
                     qry_apivot.reset_index(inplace=True)
                     
-                    # merge outerblks_inbox with qry_pivot as one to all
-                    outerblks_inbox['key'] = 1
+                    # merge outerblks_inbox with qry_apivot as one to all
                     qry_apivot['key'] = 1
-                    outerplus = pd.merge(outerblks_inbox, qry_apivot, on='key').drop('key', axis=1)
+                    outerplus_a = pd.merge(outerblks_inbox, qry_apivot, on='key').drop('key', axis=1)
                     
-                    # interpolate
-                    a_s1r1 = outerplus['s1r1'].values
-                    a_s1r2 = outerplus['s1r2'].values
-                    a_s2r1 = outerplus['s2r1'].values
-                    a_s2r2 = outerplus['s2r2'].values
-                    a_s = outerplus['s'].values
-                    a_ringloc = outerplus['ring_loc'].values
+                    # interpolate acute concs
+                    a_s1r1 = outerplus_a['s1r1'].values
+                    a_s1r2 = outerplus_a['s1r2'].values
+                    a_s2r1 = outerplus_a['s2r1'].values
+                    a_s2r2 = outerplus_a['s2r2'].values
+                    a_s = outerplus_a['s'].values
+                    a_ringloc = outerplus_a['ring_loc'].values
                     int_aconc = self.interpolate(a_s1r1, a_s1r2, a_s2r1, a_s2r2, a_s, a_ringloc)
-                    outerplus['aconc'] = int_aconc.tolist()
-                   
+                    outerplus_a['aconc'] = int_aconc.tolist()
+                    
+                    # join aconc column to outerplus DF
+                    outerplus = outerplus.join(outerplus_a['aconc'])
                     
                 datalist = outerplus[['fips', 'block', 'lat', 'lon', 'source_id', 'ems_type',
                                       'pollutant', 'conc', 'aconc', 'elev', 'population', 'overlap']].values.tolist()
