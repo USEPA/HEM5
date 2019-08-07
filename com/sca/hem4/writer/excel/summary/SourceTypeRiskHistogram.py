@@ -202,6 +202,22 @@ class SourceTypeRiskHistogram(ExcelWriter):
 
         return URE
 
+    # Override the default write() method in order to add bottom section of report
+    def writeWithTimestamp(self):
+        super(SourceTypeRiskHistogram, self).writeWithTimestamp()
+
+        notes = ["Note: The Maximum Overall column lists the population at various risk levels attributable to all\n" + \
+        "source types/emission process groups combined, while the other columns list the population at various risk\n" + \
+        "levels attributable to each individual source type in isolation. The sum of the population tallies across\n" + \
+        "the individual source types may not necessarily equal the corresponding value in the maximum overall column,\n" + \
+        "at a given risk level, because: (a) two or more source types' impact in combination may be required to cause\n" + \
+        "a census block population to exceed a given risk level; or conversely (b) an individual source type's impact\n" + \
+        "in isolation may be enough to cause a census block population to exceed a given risk level, while other\n" + \
+        "source types may similarly impact the same census block population and also (in isolation) cause that\n" + \
+        "population to exceed the given risk level."]
+
+        self.appendHeaderAtLocation(headers=notes, startingrow=15, startingcol=0)
+
     def round_to_sigfig(self, x, sig=1):
         if x == 0:
             return 0;

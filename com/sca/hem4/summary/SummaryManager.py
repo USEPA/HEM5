@@ -23,7 +23,7 @@ class SummaryManager():
                                  'AcuteImpacts' : acuteImpactsReportModule,
                                  'SourceTypeRiskHistogram' : sourceTypeRiskHistogram}
 
-    def createReport(self, categoryFolder, reportName, arguments):
+    def createReport(self, categoryFolder, reportName, arguments=None):
 
         # Figure out which facilities will be included in the report
         self.facilityIds = self.findFacilities(categoryFolder)
@@ -37,7 +37,7 @@ class SummaryManager():
 
         reportClass = getattr(module, reportName)
         instance = reportClass(categoryFolder, self.facilityIds, arguments)
-        instance.write()
+        instance.writeWithTimestamp()
 
     def findFacilities(self, folder):
 

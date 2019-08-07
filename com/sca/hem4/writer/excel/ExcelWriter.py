@@ -1,3 +1,6 @@
+import datetime
+import os
+
 import xlsxwriter
 from openpyxl import load_workbook
 import pandas as pd
@@ -12,6 +15,28 @@ class ExcelWriter(Writer):
 
         self.model = model
         self.plot_df = plot_df
+
+    def writeWithTimestamp(self):
+        if os.path.exists(self.filename):
+            os.remove(self.filename)
+
+        # Create a blank workbook
+        workbook = xlsxwriter.Workbook(self.filename, {'constant_memory': True})
+        workbook.add_worksheet()
+        workbook.close()
+
+        self.insertTimestamp()
+        self.appendHeaderAtLocation(self.getHeader(), startingrow=3)
+        for data in self.generateOutputs():
+            if data is not None:
+                self.appendToFile(data)
+                self.analyze(data)
+
+    def insertTimestamp(self):
+        now = datetime.datetime.now()
+        timestamp = now.strftime('Created on %A, %B %d, %Y @ %I:%M %p')
+        timestamp_df = pd.DataFrame([timestamp])
+        self.appendToFileAtLocation(dataframe=timestamp_df)
 
     def appendToFile(self, dataframe):
         data = dataframe.values

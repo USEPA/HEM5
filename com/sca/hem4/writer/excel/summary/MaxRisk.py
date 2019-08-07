@@ -97,8 +97,8 @@ class MaxRisk(ExcelWriter):
         yield self.dataframe
 
     # Override the default write() method in order to add bottom section of report
-    def write(self):
-        super(MaxRisk, self).write()
+    def writeWithTimestamp(self):
+        super(MaxRisk, self).writeWithTimestamp()
 
         faclist = {}
         facilityHeaders = []
