@@ -44,6 +44,8 @@ class Model():
         facids - ALL facility ids
         depdeplt- deposition and depletion options for ALL facilties
         gasparams - gaseous dry depostion parameters
+        group_name - name assigned to all facilities being modeled
+        rootoutput - root output folder name
         
         extensions include:
             - .dataframe: contains csv converted to dataframe for input file
@@ -81,6 +83,8 @@ class Model():
         self.depdeplt = None
         self.polargrid = None
         self.sourcelocs = None
+        self.group_name = None
+        self.rootoutput = None
         
 
         # Facility-specific values that are computed during the run - these are ephemeral
@@ -93,10 +97,10 @@ class Model():
         self.all_polar_receptors_df = None
         self.all_inner_receptors_df = None
         self.all_outer_receptors_df = None
+        self.block_summary_chronic_df = None
         self.risk_by_latlon = None
         self.max_indiv_risk_df = None
         self.facops = None
-        self.group_name = None
 
         # Initialize model options
         self.initializeUrepOnlyOptions()
@@ -127,6 +131,7 @@ class Model():
         self.all_polar_receptors_df = None
         self.all_inner_receptors_df = None
         self.all_outer_receptors_df = None
+        self.block_summary_chronic_df = None
         self.risk_by_latlon = None
         self.max_indiv_risk_df = None
         self.sourcelocs = None
@@ -134,6 +139,7 @@ class Model():
         self.model_optns = defaultdict()
         self.save = None
         self.group_name = None
+        self.rootoutput = None
 
         # Initialize model options
         self.initializeUrepOnlyOptions()

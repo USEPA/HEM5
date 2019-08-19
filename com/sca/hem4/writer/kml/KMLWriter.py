@@ -37,8 +37,7 @@ class KMLWriter():
         """
  
         # Define the name of the output kml file
-        # TODO - this will need the name of the output folder
-        allkml_fname = "Output/AllFacility_source_locations.kml"
+        allkml_fname = model.rootoutput + "AllFacility_source_locations.kml"
        
         # Create a dataframe of emission source locations for all facilities being modeled
         srcmap = self.create_sourcemap(model, None)

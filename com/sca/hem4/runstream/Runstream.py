@@ -145,7 +145,10 @@ class Runstream():
                     self.urban = True
                     urbanopt = "CO URBANOPT " + str(closest['urban_pop'].values[0]) + "\n"
                     self.inp_f.write(urbanopt)
-                
+        
+        #set urban in model options
+        self.model.model_optns['urban'] = self.urban
+        
             
             # Landuse Options for Deposition
         if phase['phase'] == 'V' and 'DDEP' in optdp:

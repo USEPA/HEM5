@@ -35,7 +35,7 @@ class FacilityPrep():
         self.model.facops = self.model.faclist.dataframe.loc[self.model.faclist.dataframe[fac_id] == facid]
 
         # Set defaults of the facility options
-        if self.model.facops[max_dist].isnull().sum() > 0 or self.model.facops[max_dist] > 50000:
+        if self.model.facops[max_dist].isnull().sum() > 0 or self.model.facops.iloc[0][max_dist] > 50000:
             self.model.facops[max_dist] = 50000
 
         if self.model.facops[model_dist].isnull().sum() > 0:
