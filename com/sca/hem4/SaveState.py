@@ -25,6 +25,10 @@ class SaveState():
         self.save_folder = save_folder
        
         try:
+            
+            if os.path.exists(save_folder):
+                shutil.rmtree(save_folder)
+                
             os.makedirs(save_folder)
             
         except Exception as ex:

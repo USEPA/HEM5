@@ -31,17 +31,9 @@ class FacilityRunner():
 
         else:
             self.model.model_optns['phase'] = fac['phase'].tolist()[0]
-
-        if self.model.group_name != None:
-            output = "output/"+self.model.group_name+"/"
-            fac_folder =  output + self.facilityId + "/"
-            
-#        else:
-#            output = "output/" + str(datetime.datetime.now().strftime("%B-%d-%Y-%H-%M-%p"))+"/" 
-        else:
         
         #create fac folder
-            fac_folder =  "output/"+self.facilityId + "/"
+        fac_folder =  self.model.rootoutput + self.facilityId + "/"
         
         if os.path.exists(fac_folder):
             pass

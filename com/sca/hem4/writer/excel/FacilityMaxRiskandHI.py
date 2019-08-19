@@ -11,14 +11,18 @@ notes = 'notes';
 
 class FacilityMaxRiskandHI(ExcelWriter):
     """
-    Provides a listing of the facilities by ID, their lat/lons and the population
-    exposed to different cancer risk levels at each facility.
+    Provides a listing of the facilities by ID, their lat/lons and the population 
+    exposed to different cancer risk levels at each facility
     """
 
     def __init__(self, targetDir, facilityId, model, plot_df, incidence):
         ExcelWriter.__init__(self, model, plot_df)
 
-        self.filename = os.path.join(targetDir, "SC_max_risk_and_hi.xlsx")
+        if self.model.group_name != None:
+            outfile = self.model.group_name + "_facility_max_risk_and_hi.xlsx"
+        else:
+            outfile = "facility_max_risk_and_hi.xlsx"
+        self.filename = os.path.join(targetDir, outfile)
         self.facilityId = facilityId
         self.header = None
         self.incidence = incidence
@@ -67,7 +71,10 @@ class FacilityMaxRiskandHI(ExcelWriter):
                 riskrow.append(row['block'])
 
             # Population that is overlapped
-            riskrow.append("TODO")
+            inncnt = self.model.innerblks_df['population'].loc[self.model.innerblks_df['overlap'] == 'Y'].sum()
+            outcnt = self.model.outerblks_df['population'].loc[self.model.outerblks_df['overlap'] == 'Y'].sum()
+            ovlpcnt = inncnt + outcnt
+            riskrow.append(ovlpcnt)
 
             riskrow.append(self.incidence.iloc[0]['inc'])
             riskrow.append(self.model.computedValues['metfile'])
@@ -75,8 +82,12 @@ class FacilityMaxRiskandHI(ExcelWriter):
             riskrow.append(self.model.computedValues['cenlat'])
             riskrow.append(self.model.computedValues['cenlon'])
 
-            # rural or urban
-            riskrow.append("TODO")
+            # urban or rural
+            if self.model.model_optns['urban'] == True:
+                ur = "U"
+            else:
+                ur = "R"
+            riskrow.append(ur)
 
             risklist.append(riskrow)
             facrisk_df = pd.DataFrame(risklist)
