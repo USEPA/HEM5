@@ -3,13 +3,13 @@ import re
 
 from math import log10
 
-from com.sca.hem4.CensusBlocks import population
-from com.sca.hem4.log import Logger
-from com.sca.hem4.upload.DoseResponse import ure
-from com.sca.hem4.upload.InputFile import InputFile
-from com.sca.hem4.writer.csv.AllInnerReceptors import ems_type
-from com.sca.hem4.writer.excel.ExcelWriter import ExcelWriter
-from com.sca.hem4.model.Model import *
+from CensusBlocks import population
+from log.Logger import Logger
+from upload.DoseResponse import ure
+from upload.InputFile import InputFile
+from writer.csv.AllInnerReceptors import ems_type
+from writer.excel.ExcelWriter import ExcelWriter
+from model.Model import *
 
 inc = 'inc';
 inc_rnd = 'inc_rnd';

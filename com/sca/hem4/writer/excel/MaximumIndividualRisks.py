@@ -1,12 +1,12 @@
-from com.sca.hem4.upload.UserReceptors import rec_type
-from com.sca.hem4.writer.csv.BlockSummaryChronic import mir
-from com.sca.hem4.writer.csv.AllInnerReceptors import *
-from com.sca.hem4.writer.excel.ExcelWriter import ExcelWriter
-from com.sca.hem4.FacilityPrep import *
+from upload.UserReceptors import rec_type
+from writer.csv.BlockSummaryChronic import mir
+from writer.csv.AllInnerReceptors import *
+from writer.excel.ExcelWriter import ExcelWriter
+from FacilityPrep import *
 import pandas as pd
 import numpy as np
 from math import log10, floor
-from com.sca.hem4.model.Model import *
+from model.Model import *
 
 parameter = 'parameter';
 value = 'value';

@@ -1,11 +1,11 @@
 import os
 import pandas as pd
 
-from com.sca.hem4.log import Logger
-from com.sca.hem4.writer.excel.ExcelWriter import ExcelWriter
-from com.sca.hem4.writer.excel.RiskBreakdown import *
-from com.sca.hem4.writer.csv.AllOuterReceptors import *
-from com.sca.hem4.writer.excel.summary.CancerDrivers import risk_contrib
+from log.Logger import Logger
+from writer.excel.ExcelWriter import ExcelWriter
+from writer.excel.RiskBreakdown import *
+from writer.csv.AllOuterReceptors import *
+from writer.excel.summary.CancerDrivers import risk_contrib
 
 
 class HazardIndexDrivers(ExcelWriter):

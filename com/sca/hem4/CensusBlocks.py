@@ -1,8 +1,8 @@
 import math
 
-from com.sca.hem4.log import Logger
-from com.sca.hem4.support.UTM import *
-from com.sca.hem4.model.Model import *
+from log.Logger import Logger
+from support.UTM import *
+from model.Model import *
 
 rec_id = 'rec_id';
 fips = 'fips';

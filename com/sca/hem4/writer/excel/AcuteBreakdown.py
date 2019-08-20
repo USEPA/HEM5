@@ -1,14 +1,14 @@
 import os, fnmatch
 import pandas as pd
-from com.sca.hem4.writer.excel.ExcelWriter import ExcelWriter
-from com.sca.hem4.upload.HAPEmissions import *
-from com.sca.hem4.upload.FacilityList import *
-from com.sca.hem4.upload.DoseResponse import *
-from com.sca.hem4.upload.UserReceptors import *
-from com.sca.hem4.model.Model import *
-from com.sca.hem4.support.UTM import *
-from com.sca.hem4.FacilityPrep import *
-from com.sca.hem4.writer.csv.AllInnerReceptors import *
+from writer.excel.ExcelWriter import ExcelWriter
+from upload.HAPEmissions import *
+from upload.FacilityList import *
+from upload.DoseResponse import *
+from upload.UserReceptors import *
+from model.Model import *
+from support.UTM import *
+from FacilityPrep import *
+from writer.csv.AllInnerReceptors import *
 
 notes = 'notes';
 aconc_pop = 'aconc_pop';

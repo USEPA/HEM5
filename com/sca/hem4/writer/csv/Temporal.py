@@ -1,5 +1,5 @@
 import os
-from com.sca.hem4.writer.csv.CsvWriter import CsvWriter
+from writer.csv.CsvWriter import CsvWriter
 
 class Temporal(CsvWriter):
     """

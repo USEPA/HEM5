@@ -1,5 +1,5 @@
-from com.sca.hem4.upload.InputFile import InputFile
-from com.sca.hem4.model.Model import *
+from upload.InputFile import InputFile
+from model.Model import *
 
 ure = 'ure';
 rfc = 'rfc';

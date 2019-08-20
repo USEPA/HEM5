@@ -1,7 +1,7 @@
 import pandas as pd
 
-from com.sca.hem4.FacilityPrep import *
-from com.sca.hem4.writer.excel.ExcelWriter import ExcelWriter
+from FacilityPrep import *
+from writer.excel.ExcelWriter import ExcelWriter
 
 parameter = 'parameter';
 value = 'value';
