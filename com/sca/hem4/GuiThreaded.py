@@ -8,33 +8,56 @@ import os
 import queue
 import sys
 import tkinter as tk
+import tkinter.ttk as ttk
+
 from concurrent.futures import ThreadPoolExecutor
 from threading import Event
 from tkinter import messagebox
 from tkinter import scrolledtext
-from tkinter import ttk
-from com.sca.hem4.Processor import Processor
-from com.sca.hem4.log import Logger
-from com.sca.hem4.model.Model import Model
-from com.sca.hem4.tools.CensusUpdater import CensusUpdater
-from com.sca.hem4.upload.FileUploader import FileUploader
+
+import datetime
+from Processor import Processor
+from log.Logger import Logger
+from tools.CensusUpdater import CensusUpdater
+from model.Model import Model
+from upload.FileUploader import FileUploader
 from tkinter.filedialog import askopenfilename
-from com.sca.hem4.checker.InputChecker import InputChecker
-from com.sca.hem4.DepositionDepletion import check_dep
+from checker.InputChecker import InputChecker
+from DepositionDepletion import check_dep
+from SaveState import SaveState
+from tkinter.simpledialog import Dialog, Toplevel
+from ttkthemes import ThemedStyle
 
 
 
 
+TITLE_FONT= ("Verdana", 14)
+TEXT_FONT = ("Verdana", 10)
+LOG_FONT = ("Verdana", 12)
+
+class Page(tk.Frame):
+    def __init__(self, *args, **kwargs):
+        tk.Frame.__init__(self, *args, **kwargs)
+    def show(self):
+        self.lift()
 #%% Hem4 GUI
 
 
 
 class Hem4(tk.Frame):
 
-    def __init__ (self, messageQueue, callbackQueue):
+    def __init__ (self, container, messageQueue, callbackQueue, *args, **kwargs):
+        Page.__init__(self, master=container, *args, **kwargs)
+        
+        
         """
         The HEM4 class object builds the GUI for the HEM4 application.
         """
+        
+#        self.s=ttk.Style()
+#        print(self.s.theme_names())
+#        self.s.theme_use('clam')
+        
         self.running = False
         self.aborted = False
         self.ready = False
@@ -70,23 +93,29 @@ class Hem4(tk.Frame):
         self.dep_land_up = None
         self.dep_seasons_up = None
 
-        Logger.messageQueue = messageQueue
-
-
-    def start_gui(self):
-
-        #create window instance
-        self.win = tk.Tk()
-
-        #title
-        self.win.title("HEM4")
-        self.win.maxsize(1000, 1000)
 
         self.createWidgets()
+        
+        self.after(25, self.after_callback)
+        self.after(500, self.check_processing)
 
-        self.win.after(25, self.after_callback)
-        self.win.after(500, self.check_processing)
-        self.win.mainloop()
+        Logger.messageQueue = messageQueue
+
+#
+#    def start_gui(self):
+#
+#        #create window instance
+#        self = tk.Toplevel()
+#
+#        #title
+#        self.title("HEM4")
+#        self.maxsize(1000, 1000)
+#
+#        self.createWidgets()
+#
+#        self.after(25, self.after_callback)
+#        self.after(500, self.check_processing)
+#        self.mainloop()
 
     def close(self):
         Logger.close(True)
@@ -117,7 +146,7 @@ class Hem4(tk.Frame):
         self.enable_widgets(self.main, False)
 
         message = "HEM4 is stopping. Please wait."
-        tk.Label(self.win, text=message).pack()
+        tk.Label(self, text=message, font=TEXT_FONT, bg="palegreen3").pack()
 
     def disable_buttons(self):
         self.enable_widgets(self.run_button, False)
@@ -185,10 +214,10 @@ class Hem4(tk.Frame):
         we don't ever destroy the GUI until all processing has stopped, which means
         it's -really- time to end!
         """
-        self.win.quit()
-        self.win.destroy()
-        self.close()
-        sys.exit()
+#        self.quit()
+#        self.destroy()
+#        self.close()
+#        sys.exit()
 
     def reset_gui(self):
         #reset all inputs if everything finished
@@ -247,7 +276,7 @@ class Hem4(tk.Frame):
 
             self.s12.destroy()
 
-        self.win.after(100, self.enable_buttons)
+        self.after(100, self.enable_buttons)
 
 #%% Open HEM4 User Guide
     def user_guide(self):
@@ -293,16 +322,25 @@ class Hem4(tk.Frame):
         To create widgets, the widget must be assigned to a variable and then 
         placed on a grid or within a 'frame'.
         """
+        
+        self.noteStyler = ttk.Style()
+        self.noteStyler.configure("TNotebook", background="palegreen3", borderwidth=0)
+        self.noteStyler.configure("TNotebook.Tab", background="palegreen3", borderwidth=0)
+        self.noteStyler.configure("TFrame", background="palegreen3", borderwidth=0)
+
+        
         # Tab Control introduced here --------------------------------------
-        self.tabControl = ttk.Notebook(self.win)     # Create Tab Control
+        self.tabControl = ttk.Notebook(self, style='TNotebook')     # Create Tab Control
 
-        tab1 = ttk.Frame(self.tabControl)            # Create a tab
-        self.tabControl.add(tab1, text='HEM4')      # Add the tab
+        self.main = tk.Frame(self.tabControl, bg='palegreen3')            # Create a tab
+        self.tabControl.add(self.main, text='HEM4')      # Add the tab
 
-        tab2 = ttk.Frame(self.tabControl)            # Add a second tab
-        self.tabControl.add(tab2, text='Log')      # Make second tab visible
+        self.tab2 = tk.Frame(self.tabControl, bg='palegreen3')            # Add a second tab
+        self.tabControl.add(self.tab2, text='Log')      # Make second tab visible
 
-        tab3 = ttk.Frame(self.tabControl)            # Add a third tab
+
+
+        tab3 = tk.Frame(self.tabControl, bg='palegreen3')            # Add a third tab
         self.tabControl.add(tab3, text='Census')      # Make third tab visible
 
         self.tabControl.pack(expand=1, fill="both")  # Pack to make visible
@@ -313,16 +351,16 @@ class Hem4(tk.Frame):
         self.censusupdates.grid(column=0, row=1)
 
         #create discreet sections for GUI in tab3
-        self.cu1 = tk.Frame(self.censusupdates, width=250, height=200)
+        self.cu1 = tk.Frame(self.censusupdates, width=1000, height=200, background="palegreen3")
         self.cu1.grid(row=0)
 
         # census update label
-        cu_label = tk.Label(self.cu1, font="-size 10",
+        cu_label = tk.Label(self.cu1, font=TEXT_FONT, bg="palegreen3",
                              text="Please select a census update file:")
         cu_label.grid(row=1, sticky="W")
 
         # census update upload button
-        self.cu_up = ttk.Button(self.cu1,
+        self.cu_up = tk.Button(self.cu1, bg='lightgrey', relief='solid', borderwidth=2,
                                  command = lambda: self.uploadCensusUpdates())
         self.cu_up["text"] = "Browse"
         self.cu_up.grid(row=2, column=0, sticky="W")
@@ -330,39 +368,32 @@ class Hem4(tk.Frame):
         # census update text entry
         self.cu_list = tk.StringVar(self.cu1)
         self.cu_list_man = ttk.Entry(self.cu1)
-        self.cu_list_man["width"] = 55
+        self.cu_list_man["width"] = 100
         self.cu_list_man["textvariable"]= self.cu_list
         self.cu_list_man.grid(row=2, column=0, sticky='E', padx=85)
 
-        self.cu_update = tk.Button(self.cu1, text="UPDATE", fg="green",
+        self.cu_update = tk.Button(self.cu1, text="UPDATE", fg="green", bg='lightgrey', relief='solid', borderwidth=2,
                               command=self.update_census)
         self.cu_update.grid(row=3, column=0, sticky="W", padx=85, pady=20)
 
 
-
-
-
-
-
-
-
-
          # Create container frame to hold all other widgets
-        self.main = ttk.LabelFrame(tab1, text='Human Exposure Model,'+
-                                   ' open-source (HEM4), Version 1.0', 
-                                   labelanchor="n")
-        self.main.grid(column=0, row=1)
-        
+#        self.main = ttk.LabelFrame(tab1, text='Human Exposure Model,'+
+#                                   ' open-source (HEM4), Version 1.0', 
+#                                   labelanchor="n")
+#        self.main.grid(column=0, row=1)
+#        
         #create discreet sections for GUI in tab1
-        self.s1 = tk.Frame(self.main, width=250, height=50)
-        self.s2 = tk.Frame(self.main, width=250, height=100)
-        self.s3 = tk.Frame(self.main, width=250, height=100, pady=10, padx=10)
-        self.s4 = tk.Frame(self.main, width=250, height=100, pady=10, padx=10)
-        self.s5 = tk.Frame(self.main, width=250, height=150, pady=10, padx=10)
-        self.alturep = tk.Frame(self.main, width=250, height=250, pady=10, padx=10)
+        self.s1 = tk.Frame(self.main, width=750, height=50, bg="palegreen3")
+        self.s2 = tk.Frame(self.main, width=1000, height=50, bg="palegreen3")
+        self.s3 = tk.Frame(self.main, width=750, height=50, bg="palegreen3", pady=5, padx=5)
+        self.s4 = tk.Frame(self.main, width=750, height=50, bg="palegreen3", pady=5, padx=5)
+        self.s5 = tk.Frame(self.main, width=750, height=50, bg="palegreen3", pady=5, padx=5)
+        self.alturep = tk.Frame(self.main, width=250, height=250,  bg="palegreen3", pady=5, padx=5)
+
 
         self.s1.grid(row=0)
-        self.s2.grid(row=1, column=0, sticky="nsew")
+        self.s2.grid(row=1, column=0)
         self.alturep.grid(row=2, column=0, columnspan=2, sticky="nsew")
         self.s3.grid(row=3, column=0, columnspan=2, sticky="nsew")
         self.s4.grid(row=4, column=0, columnspan=2, sticky="nsew")
@@ -372,83 +403,112 @@ class Hem4(tk.Frame):
         self.main.grid_rowconfigure(8, weight=4)
         self.main.grid_columnconfigure(2, weight=1)
         self.s2.grid_propagate(0)
+        
+        
+        self.s10 = tk.Frame(self.main, width=750, height=50, pady=5, padx=5, bg="palegreen1")
+        self.s10.grid(row=10, column=2, columnspan=2, sticky="nsew")
+        
+        
+        
+        
         #self.s1.grid_propagate(0)
     
-        # create container frame to hold log
-        self.log = ttk.LabelFrame(tab2, text=' Hem4 Progress Log ')
-        self.log.grid(column=0, row=0)
+# create container frame to hold log
+        self.log = tk.Frame(self.tab2, bg="palegreen3")
+        self.log.pack()
         
         # Adding a Textbox Entry widget
-        scrolW  = 65; scrolH  =  25
-        self.scr = scrolledtext.ScrolledText(self.log, width=scrolW, 
-                                             height=scrolH, wrap=tk.WORD)
-        self.scr.grid(column=0, row=3, sticky='WE', columnspan=3)
+#        scrolW  = 65; scrolH  =  25
+        self.scr = scrolledtext.ScrolledText(self.log, wrap=tk.WORD, width=1000, height=1000, font=LOG_FONT)
+        self.scr.pack()
+#        
+#        # Adding a Textbox Entry widget
+#        scrolW  = 65; scrolH  =  25
+#        self.scr = scrolledtext.ScrolledText(self.log, width=scrolW, 
+#                                             height=scrolH, wrap=tk.WORD)
+##        self.scr.grid(column=0, row=3, sticky='WE', columnspan=3)
         
 #%% Set Quit, Run, and User Guide buttons        
-        self.quit = tk.Button(self.main, text="QUIT", fg="red",
-                              command=self.quit_app)
-        self.quit.grid(row=10, column=0, sticky="W")
+#        self.quit = tk.Button(self.main, text="STOP", fg="red", font=TEXT_FONT, bg='lightgrey', relief='solid', borderwidth=2,
+#                              command=self.quit_app)
+#        self.quit.grid(row=0, column=0, sticky="E", padx=5, pady=5)
+#        
+        self.back = tk.Button(self.main, text="BACK", font=TEXT_FONT, bg='lightgrey', relief='solid', borderwidth=2,
+                              command=self.lower)
+        self.back.grid(row=0, column=0, sticky="W", padx=5, pady=5)
+        
         
         #run only appears once the required files have been set
-        self.run_button = tk.Button(self.main, text='RUN', fg="green", 
-                                    command=self.run)
-        self.run_button.grid(row=10, column=1, sticky="E")
+        self.run_button = tk.Button(self.main, text='RUN', fg="green", bg='lightgrey', relief='solid', borderwidth=2,
+                                    command=self.run, font=TEXT_FONT)
+        self.run_button.grid(row=0, column=0, sticky="E", padx=5, pady=5)
         
-        self.guide = tk.Button(self.main, text="User Guide", 
+        self.guide = tk.Button(self.main, font=TEXT_FONT, text="User Guide", bg='lightgrey', relief='solid', borderwidth=2,
                                command=self.user_guide)
-        self.guide.grid(row=0, column=0, sticky='W')
+        self.guide.grid(row=1, column=0, pady=20)
 #%% Setting up  directions text space
 
         #Dynamic instructions place holder
         global instruction_instance
         instruction_instance = tk.StringVar(self.s2)
         instruction_instance.set(" ")
-        self.dynamic_inst = ttk.Label(self.s2, wraplength=375, font="-size 9")
+        self.dynamic_inst = tk.Label(self.s1, wraplength=600, font=TEXT_FONT, pady=5, bg='palegreen3') 
+        self.dynamic_inst.config(height=4)
         
         self.dynamic_inst["textvariable"] = instruction_instance 
-        self.dynamic_inst.grid(row = 2, sticky='ew', padx = 10)
+        self.dynamic_inst.grid(row=1, column=0)
         
         
         
 # %% Setting up each file upload space (includes browse button, and manual text entry for file path)
-
+        group_label = tk.Label(self.s3, font=TEXT_FONT, bg="palegreen3", 
+                             text="Name Run Group (optional):")
+        group_label.grid(row=0, sticky="W")
+        #group text entry
+        self.group_list = tk.StringVar(self.s3)
+        self.group_list_man = ttk.Entry(self.s3)
+        self.group_list_man["width"] = 25
+        self.group_list_man["textvariable"]= self.group_list
+        self.group_list_man.grid(row=1, column=0, sticky='W', pady=20)
+        
+        
         self.check_ureponly = tk.BooleanVar()
         self.ureponly_sel = tk.Checkbutton(self.alturep, text="Use alternate receptors",
-                                           variable = self.check_ureponly,
-                                           command = self.set_ureponly)
+                                           variable = self.check_ureponly, bg='palegreen3',
+                                           command = self.set_ureponly, font=TEXT_FONT)
         self.ureponly_sel.grid(row=0, column=0, sticky='W')
 
         #facilities label
-        fac_label = tk.Label(self.s3, font="-size 10", 
+        fac_label = tk.Label(self.s3, font=TEXT_FONT, bg="palegreen3", 
                              text="Please select a Facilities List Options file:")
-        fac_label.grid(row=1, sticky="W")
+        fac_label.grid(row=3, sticky="W")
         
         #facilities upload button
-        self.fac_up = ttk.Button(self.s3, 
+        self.fac_up = tk.Button(self.s3, font=TEXT_FONT, bg='lightgrey', relief='solid', borderwidth=2,
                                  command = lambda: self.uploadFacilitiesList())
         self.fac_up["text"] = "Browse"
-        self.fac_up.grid(row=2, column=0, sticky="W")
+        self.fac_up.grid(row=4, column=0, sticky="W")
         self.fac_up.bind('<Enter>', 
                          lambda e:self.browse("instructions/fac_browse.txt"))
        
         #facilities text entry
         self.fac_list = tk.StringVar(self.s3)
         self.fac_list_man = ttk.Entry(self.s3)
-        self.fac_list_man["width"] = 55
+        self.fac_list_man["width"] = 100
         self.fac_list_man["textvariable"]= self.fac_list
-        self.fac_list_man.grid(row=2, column=0, sticky='E', padx=85)
+        self.fac_list_man.grid(row=4, column=0, sticky='E', padx=85)
         #event handler for instructions (Button 1 is the left mouse click)
         self.fac_list_man.bind('<Button-1>', 
                                lambda e:self.manual("instructions/fac_man.txt"))
         
                 
         #Hap emissions label
-        hap_label = tk.Label(self.s4, font="-size 10",  
+        hap_label = tk.Label(self.s4, font=TEXT_FONT, bg="palegreen3",  
                              text="Please select the associated HAP Emissions file:")
         hap_label.grid(row=1, sticky="W")
         
         #hap emissions upload button
-        self.hap_up = ttk.Button(self.s4, 
+        self.hap_up = tk.Button(self.s4, font=TEXT_FONT, bg='lightgrey', relief='solid', borderwidth=2,
                                  command = lambda: self.uploadHAPEmissions())
         self.hap_up["text"] = "Browse"
         self.hap_up.grid(row=2, column=0, sticky='W')
@@ -459,7 +519,7 @@ class Hem4(tk.Frame):
         #hap emission text entry
         self.hap_list = tk.StringVar(self.s4)
         self.hap_list_man = ttk.Entry(self.s4)
-        self.hap_list_man["width"] = 55
+        self.hap_list_man["width"] = 100
         self.hap_list_man["textvariable"]= self.hap_list
         self.hap_list_man.grid(row=2, column=0, sticky='E', padx=85)
         #event handler for instructions (Button 1 is the left mouse click)
@@ -468,13 +528,13 @@ class Hem4(tk.Frame):
         
         
         #Emissions location label
-        emisloc_label = tk.Label(self.s5, font="-size 10",  
+        emisloc_label = tk.Label(self.s5, font=TEXT_FONT, bg="palegreen3",  
                                  text="Please select the associated Emissions" +
                                  " Locations file:")
         emisloc_label.grid(row=1, sticky="W")
         
         #emissions location upload button
-        self.emisloc_up = ttk.Button(self.s5, 
+        self.emisloc_up = tk.Button(self.s5, font=TEXT_FONT, bg='lightgrey', relief='solid', borderwidth=2,
                                      command= lambda: self.uploadEmissionLocations())
         self.emisloc_up["text"] = "Browse"
         self.emisloc_up.grid(row=2, column=0, sticky='W')
@@ -485,7 +545,7 @@ class Hem4(tk.Frame):
         #emission loccation file text entry
         self.emisloc_list = tk.StringVar(self.s5)
         self.emisloc_list_man = ttk.Entry(self.s5)
-        self.emisloc_list_man["width"] = 55
+        self.emisloc_list_man["width"] = 100
         self.emisloc_list_man["textvariable"]= self.emisloc_list
         self.emisloc_list_man.grid(row=2, column=0, sticky='E', padx=85)
         #event handler for instructions (Button 1 is the left mouse click)
@@ -496,15 +556,15 @@ class Hem4(tk.Frame):
         #add emissions variation checkbox
         self.check_emisvar = tk.IntVar()
         self.emisvar_sel = tk.Checkbutton(self.s5, text="Add Emissions Variations", 
-                                          variable = self.check_emisvar,
-                                          command = self.add_variation)
+                                          variable = self.check_emisvar, font=TEXT_FONT,
+                                          bg='palegreen3', command = self.add_variation)
         self.emisvar_sel.grid(row=3, column=0, sticky='E', padx = 85)
 
         
     def is_valid_extension(self, filepath):
         """
         Function checks to make sure excel/csv files are selected for inputs
-        
+          
         """
         extensions = [".xls", ".xlsx", ".XLS", ".csv", ".CSV"]
         return any(ext in filepath for ext in extensions)
@@ -856,17 +916,17 @@ class Hem4(tk.Frame):
         man = "instructions/urep_man.txt"
 
         #create row for user receptors
-        self.s6 = tk.Frame(self.main, width=250, height=200, pady=10, padx=10)
+        self.s6 = tk.Frame(self.main, width=250, height=50, pady=5, padx=5, bg="palegreen3")
         self.s6.grid(row=6, column=0, columnspan=2, sticky="nsew")
         
         #user recptors label
-        self.ur_label = tk.Label(self.s6, font="-size 10", 
+        self.ur_label = tk.Label(self.s6, font=TEXT_FONT, bg="palegreen3", 
                              text="Please select an associated User Receptor"+
                              " file:")
         self.ur_label.grid(row=0, sticky="W")
     
         #user recptors upload button
-        self.urep = ttk.Button(self.s6, 
+        self.urep = tk.Button(self.s6, font=TEXT_FONT, bg='lightgrey', relief='solid', borderwidth=2,
                                command = lambda: self.uploadUserReceptors())
         self.urep["text"] = "Browse"
         self.urep.grid(row=1, column=0, sticky="W")
@@ -876,7 +936,7 @@ class Hem4(tk.Frame):
         #user receptor text entry
         self.urep_list = tk.StringVar(self.s6)
         self.urep_list_man = ttk.Entry(self.s6)
-        self.urep_list_man["width"] = 55
+        self.urep_list_man["width"] = 100
         self.urep_list_man["textvariable"]= self.urep_list
         self.urep_list_man.grid(row=1, column=0, sticky='E', padx=85)
         #event handler for instructions (Button 1 is the left mouse click)
@@ -893,13 +953,13 @@ class Hem4(tk.Frame):
         man = "instructions/urepalt_man.txt"
 
         #user recptors label
-        self.urepalt_label = tk.Label(self.alturep, font="-size 10",
+        self.urepalt_label = tk.Label(self.alturep, font=TEXT_FONT, bg="palegreen3",
                                  text="Please select an alternate User Receptor"+
                                       " CSV file:")
         self.urepalt_label.grid(row=1, sticky="W")
 
         #user recptors upload button
-        self.urepaltButton = ttk.Button(self.alturep,
+        self.urepaltButton = tk.Button(self.alturep, font=TEXT_FONT, bg='lightgrey', relief='solid', borderwidth=2,
                                command = lambda: self.uploadAltReceptors())
         self.urepaltButton["text"] = "Browse"
         self.urepaltButton.grid(row=2, column=0, sticky="W")
@@ -909,7 +969,7 @@ class Hem4(tk.Frame):
         #user receptor text entry
         self.urepalt_list = tk.StringVar(self.alturep)
         self.urepalt_list_man = ttk.Entry(self.alturep)
-        self.urepalt_list_man["width"] = 55
+        self.urepalt_list_man["width"] = 100
         self.urepalt_list_man["textvariable"]= self.urepalt_list
         self.urepalt_list_man.grid(row=2, column=0, sticky='E', padx=85)
         #event handler for instructions (Button 1 is the left mouse click)
@@ -921,18 +981,18 @@ class Hem4(tk.Frame):
         Function for creating row and buoyant line parameter upload widgets
         """
          #create row for buoyant line input
-        self.s7 = tk.Frame(self.main, width=250, height=100, pady=10, padx=10)
+        self.s7 = tk.Frame(self.main, width=250, height=50, pady=5, padx=5, bg="palegreen3")
         self.s7.grid(row=6, column=0, columnspan=2, sticky="nsew")
         
         
         #Buoyant Line  label
-        self.b_label = tk.Label(self.s7, font="-size 10",  
+        self.b_label = tk.Label(self.s7, font=TEXT_FONT, bg="palegreen3",  
                                  text="Please select associated Buoyant Line"+
                                  " Source Parameter file:")
         self.b_label.grid(row=1, sticky="W")
         
         #buoyant line file upload button
-        self.buoyant_up = ttk.Button(self.s7, 
+        self.buoyant_up = tk.Button(self.s7, font=TEXT_FONT, bg='lightgrey', relief='solid', borderwidth=2,
                                      command = lambda: self.uploadbuoyant())
         self.buoyant_up["text"] = "Browse"
         self.buoyant_up.grid(row=2, column=0, sticky='W')
@@ -944,7 +1004,7 @@ class Hem4(tk.Frame):
         #buoyant line file text entry
         self.buoyant_list = tk.StringVar(self.s7)
         self.buoyant_list_man = ttk.Entry(self.s7)
-        self.buoyant_list_man["width"] = 55
+        self.buoyant_list_man["width"] = 100
         self.buoyant_list_man["textvariable"]= self.buoyant_list
         self.buoyant_list_man.grid(row=2, column=0, sticky='E', padx=85)
         #event handler for instructions (Button 1 is the left mouse click)
@@ -958,16 +1018,16 @@ class Hem4(tk.Frame):
         Function for creating row and polyvertex file upload widgets
         """
         #create row for poly
-        self.s8 = tk.Frame(self.main, width=250, height=100, pady=10, padx=10)
+        self.s8 = tk.Frame(self.main, width=250, height=50, pady=5, padx=5, bg="palegreen3")
         self.s8.grid(row=7, column=0, columnspan=2, sticky="nsew")
         
         #Polygon sources label
-        self.poly_label = tk.Label(self.s8, font="-size 10",  
+        self.poly_label = tk.Label(self.s8, font=TEXT_FONT, bg="palegreen3",  
                               text="Please select associated Polyvertex file.")
         self.poly_label.grid(row=1, sticky="W")
         
         #polygon sources upload button
-        self.poly_up = ttk.Button(self.s8, 
+        self.poly_up = tk.Button(self.s8, font=TEXT_FONT, bg='lightgrey', relief='solid', borderwidth=2,
                                   command = lambda: self.uploadPolyvertex())
         self.poly_up["text"] = "Browse"
         self.poly_up.grid(row=2, column=0, sticky="W")
@@ -978,7 +1038,7 @@ class Hem4(tk.Frame):
         #polygon sources loccation file text entry
         self.poly_list = tk.StringVar(self.s8)
         self.poly_list_man = ttk.Entry(self.s8)
-        self.poly_list_man["width"] = 55
+        self.poly_list_man["width"] = 100
         self.poly_list_man["textvariable"]= self.poly_list
         self.poly_list_man.grid(row=2, column=0, sticky='E', padx=85)
         #event handler for instructions (Button 1 is the left mouse click)
@@ -991,17 +1051,17 @@ class Hem4(tk.Frame):
         Function for creating row and building downwash file upload widgets
         """
         #create row for building downwash
-        self.s9 = tk.Frame(self.main, width=250, height=100, padx=10)
+        self.s9 = tk.Frame(self.main, width=250, height=50, padx=5, bg="palegreen3")
         self.s9.grid(row=8, column=0, columnspan=2, sticky="nsew")
         
         # building dw labels
         self.bldgdw_label = tk.Label(self.s9,
                                      text="Please select associated Building" + 
-                                     " Dimensions file")
+                                     " Dimensions file", font=TEXT_FONT, bg="palegreen3")
         self.bldgdw_label.grid(row=1, sticky="W")
         
         #building dw upload button
-        self.bldgdw_up = ttk.Button(self.s9, 
+        self.bldgdw_up = tk.Button(self.s9, font=TEXT_FONT, bg='lightgrey', relief='solid', borderwidth=2,
                                     command = lambda: self.uploadBuildingDownwash())
         self.bldgdw_up["text"] = "Browse"
         self.bldgdw_up.grid(row=2, column=0, sticky="W")
@@ -1012,7 +1072,7 @@ class Hem4(tk.Frame):
         #polygon sources loccation file text entry
         self.bldgdw_list = tk.StringVar(self.s9)
         self.bldgdw_list_man = ttk.Entry(self.s9)
-        self.bldgdw_list_man["width"] = 55
+        self.bldgdw_list_man["width"] = 100
         self.bldgdw_list_man["textvariable"]= self.bldgdw_list
         self.bldgdw_list_man.grid(row=2, column=0, sticky='E', padx=85)
         #event handler for instructions (Button 1 is the left mouse click)
@@ -1027,28 +1087,28 @@ class Hem4(tk.Frame):
         """
         
         #create column for particle size file
-        self.s12 = tk.Frame(self.main, width=250, height=100, pady=10, padx=10)
-        self.s12.grid(row=2, column=2, columnspan=2, sticky="nsew")
+        self.s10 = tk.Frame(self.main, width=250, height=50, pady=5, padx=5, bg="palegreen3")
+        self.s10.grid(row=10, column=0, columnspan=2, sticky="nsew")
         
         #particle size label
-        part_label = tk.Label(self.s12, font="-size 10", 
+        part_label = tk.Label(self.s10, font=TEXT_FONT, bg="palegreen3", 
                               text="Upload the file containing size information for particle matter emissions:")
-        part_label.grid(row=1, sticky="W")
+        part_label.grid(row=0, sticky="W")
     
         #particle depositionsize file upload button
-        self.dep_part_up = ttk.Button(self.s12, 
+        self.dep_part_up = tk.Button(self.s10, font=TEXT_FONT, bg='lightgrey', relief='solid', borderwidth=2,
                                       command = lambda: self.uploadParticle(self.model.depdeplt))
         self.dep_part_up["text"] = "Browse"
-        self.dep_part_up.grid(row=2, column=0, sticky="W")
+        self.dep_part_up.grid(row=1, column=0, sticky="W")
         self.dep_part_up.bind('<Enter>', 
                               lambda e:self.browse("instructions/dep_part_browse.txt"))
          
         #particle size file text entry
-        self.dep_part = tk.StringVar(self.s12)
-        self.dep_part_man = ttk.Entry(self.s12)
-        self.dep_part_man["width"] = 55
+        self.dep_part = tk.StringVar(self.s10)
+        self.dep_part_man = ttk.Entry(self.s10)
+        self.dep_part_man["width"] = 100
         self.dep_part_man["textvariable"]= self.dep_part
-        self.dep_part_man.grid(row=2, column=0, sticky='E', padx=85)
+        self.dep_part_man.grid(row=1, column=0, sticky='E', padx=85)
         #event handler for instructions (Button 1 is the left mouse click)
         self.dep_part_man.bind('<Button-1>', 
                                lambda e:self.manual("instructions/dep_part_man.txt"))
@@ -1061,28 +1121,28 @@ class Hem4(tk.Frame):
         """
         
         #create column for land use file
-        self.s12 = tk.Frame(self.main, width=250, height=100, pady=10, padx=10)
-        self.s12.grid(row=3, column=2, columnspan=2, sticky="nsew")
+        self.s11 = tk.Frame(self.main, width=250, height=50, pady=5, padx=5, bg="palegreen3")
+        self.s11.grid(row=11, column=0, columnspan=2, sticky="nsew")
         
         #land use size label
-        land_label = tk.Label(self.s12, font="-size 10", 
+        land_label = tk.Label(self.s11, font=TEXT_FONT, bg="palegreen3", 
                               text="Upload the file containing land use information:")
-        land_label.grid(row=1, sticky="W")
+        land_label.grid(row=0, sticky="W")
     
         #laand use file upload button
-        self.dep_land_up = ttk.Button(self.s12, 
+        self.dep_land_up = tk.Button(self.s11, font=TEXT_FONT, bg='lightgrey', relief='solid', borderwidth=2,
                                       command = lambda: self.uploadLandUse())
         self.dep_land_up["text"] = "Browse"
-        self.dep_land_up.grid(row=2, column=0, sticky="W")
+        self.dep_land_up.grid(row=1, column=0, sticky="W")
         self.dep_land_up.bind('<Enter>', 
                               lambda e:self.browse("instructions/dep_land_browse.txt"))
          
         #land use file text entry
-        self.dep_land = tk.StringVar(self.s12)
-        self.dep_land_man = ttk.Entry(self.s12)
-        self.dep_land_man["width"] = 55
+        self.dep_land = tk.StringVar(self.s11)
+        self.dep_land_man = ttk.Entry(self.s11)
+        self.dep_land_man["width"] = 100
         self.dep_land_man["textvariable"]= self.dep_land
-        self.dep_land_man.grid(row=2, column=0, sticky='E', padx=85)
+        self.dep_land_man.grid(row=1, column=0, sticky='E', padx=85)
         #event handler for instructions (Button 1 is the left mouse click)
         self.dep_land_man.bind('<Button-1>', 
                                lambda e:self.manual("instructions/dep_land_man.txt"))
@@ -1094,28 +1154,28 @@ class Hem4(tk.Frame):
         """
         
         #create column for land use file
-        self.s12 = tk.Frame(self.main, width=250, height=100, pady=10, padx=10)
-        self.s12.grid(row=4, column=2, columnspan=2, sticky="nsew")
+        self.s12 = tk.Frame(self.main, width=250, height=50, pady=5, padx=5, bg="palegreen3")
+        self.s12.grid(row=12, column=0, columnspan=2, sticky="nsew")
         
         #land use size label
-        seasons_label = tk.Label(self.s12, font="-size 10", 
+        seasons_label = tk.Label(self.s12, font=TEXT_FONT, bg="palegreen3", 
                              text="Upload the file containing seasonal vegetation information:")
-        seasons_label.grid(row=1, sticky="W")
+        seasons_label.grid(row=0, sticky="W")
     
         #laand use file upload button
-        self.dep_seasons_up = ttk.Button(self.s12, 
+        self.dep_seasons_up = tk.Button(self.s12, font=TEXT_FONT, bg='lightgrey', relief='solid', borderwidth=2,
                                      command = lambda: self.uploadSeasons())
         self.dep_seasons_up["text"] = "Browse"
-        self.dep_seasons_up.grid(row=2, column=0, sticky="W")
+        self.dep_seasons_up.grid(row=1, column=0, sticky="W")
         self.dep_seasons_up.bind('<Enter>', 
                              lambda e:self.browse("instructions/dep_veg_browse.txt"))
          
         #land use file text entry
         self.dep_seasons = tk.StringVar(self.s12)
         self.dep_seasons_man = ttk.Entry(self.s12)
-        self.dep_seasons_man["width"] = 55
+        self.dep_seasons_man["width"] = 100
         self.dep_seasons_man["textvariable"]= self.dep_seasons
-        self.dep_seasons_man.grid(row=2, column=0, sticky='E', padx=85)
+        self.dep_seasons_man.grid(row=1, column=0, sticky='E', padx=85)
         #event handler for instructions (Button 1 is the left mouse click)
         self.dep_seasons_man.bind('<Button-1>', 
                               lambda e:self.manual("instructions/dep_veg_man.txt"))
@@ -1129,18 +1189,18 @@ class Hem4(tk.Frame):
             
             if hasattr(self.model.emisloc, 'dataframe'):
                 #create row for emissions variation
-                self.s13 = tk.Frame(self.main, width=250, height=100, pady=10, 
-                                    padx=10)
+                self.s13 = tk.Frame(self.main, width=250, height=100, bg="palegreen3", pady=5, 
+                                    padx=5)
                 self.s13.grid(row=9, column=0, columnspan=2, sticky="nsew")
                 
                 #emissions variation label
-                self.emisvar_label = tk.Label(self.s13, font="-size 10", 
+                self.emisvar_label = tk.Label(self.s13, font=TEXT_FONT, bg="palegreen3", 
                                      text="Please select an Emissions Variation"+
                                      " file:")
                 self.emisvar_label.grid(row=0, sticky="W")
             
                 #emissions variation upload button
-                self.emisvar_on = ttk.Button(self.s13, 
+                self.emisvar_on = tk.Button(self.s13, font=TEXT_FONT, bg='lightgrey', relief='solid', borderwidth=2,
                                        command = lambda: self.uploadVariation())
                 self.emisvar_on["text"] = "Browse"
                 self.emisvar_on.grid(row=1, column=0, sticky="W")
@@ -1150,7 +1210,7 @@ class Hem4(tk.Frame):
                 #emissions variation text entry
                 self.emisvar_list = tk.StringVar(self.s13)
                 self.emisvar_list_man = ttk.Entry(self.s13)
-                self.emisvar_list_man["width"] = 55
+                self.emisvar_list_man["width"] = 100
                 self.emisvar_list_man["textvariable"]= self.emisvar_list
                 self.emisvar_list_man.grid(row=1, column=0, sticky='E', padx=85)
                 #event handler for instructions (Button 1 is the left mouse click)
@@ -1234,24 +1294,40 @@ class Hem4(tk.Frame):
 
         #Check inputs
         check_inputs = InputChecker(self.model)
-        required = check_inputs.check_required()
         
-        if 'ready' not in required['result']:
-            messagebox.showinfo('Error', required['result'])
-            self.ready = False
+        try:
+            required = check_inputs.check_required()
             
-        elif required['dependencies'] is not []:
-            optional = check_inputs.check_dependent(required['dependencies'])
-            
-            if 'ready' not in optional['result']:
-                messagebox.showinfo('Error', optional['result'])
+        except Exception as e:
+                
+                Logger.logMessage(str(e))
+                
+        else:
+            if 'ready' not in required['result']:
+                messagebox.showinfo('Error', required['result'])
                 self.ready = False
                 
+            elif required['dependencies'] is not []:
+                try:
+                    
+                    optional = check_inputs.check_dependent(required['dependencies'])
+                    
+                except Exception as e:
+                    
+                    Logger.logMessage(str(e))
+                    
+                else:
+                    
+                
+                    if 'ready' not in optional['result']:
+                        messagebox.showinfo('Error', optional['result'])
+                        self.ready = False
+                    
+                    else:
+                        self.ready = True
+            
             else:
                 self.ready = True
-        
-        else:
-            self.ready = True
         
 
        #%%if the object is ready
@@ -1265,8 +1341,33 @@ class Hem4(tk.Frame):
             if override:
                 global instruction_instance
                 instruction_instance.set("Hem4 Running, check the log tab for updates")
-
-                self.process()
+                self.tab2.lift()
+                Logger.logMessage("\nHEM4 is starting...")
+                
+                 #set run name
+                if len(self.group_list.get()) > 0:
+                    self.model.group_name = self.group_list.get()
+                    
+                    
+                else:
+                    
+                    self.model.group_name = None
+                    
+                
+                
+                
+                self.run_button.destroy()
+                self.quit = tk.Button(self.main, text="STOP", fg="red", font=TEXT_FONT, bg='lightgrey', relief='solid', borderwidth=2,
+                              command=self.quit_app)
+                self.quit.grid(row=0, column=0, sticky="E", padx=5, pady=5)
+        
+                try:
+                    self.process()
+                    
+                except Exception as e:
+                
+                    Logger.logMessage(str(e))
+                
 
     def process(self):
         """
@@ -1315,7 +1416,7 @@ class Hem4(tk.Frame):
         try:
             callback = self.callbackQueue.get(block=False)
         except queue.Empty: #raised when queue is empty
-            self.win.after(500, self.check_processing)
+            self.after(500, self.check_processing)
             return
 
         print("About to call callback...")
@@ -1330,7 +1431,7 @@ class Hem4(tk.Frame):
             message = self.messageQueue.get(block=False)
         except queue.Empty:
             # let's try again later
-            self.win.after(25, self.after_callback)
+            self.after(25, self.after_callback)
             return
 
         print('after_callback got', message)
@@ -1339,4 +1440,4 @@ class Hem4(tk.Frame):
             self.scr.insert(tk.INSERT, message)
             self.scr.insert(tk.INSERT, "\n")
             self.scr.configure(state='disabled')
-            self.win.after(25, self.after_callback)
+            self.after(25, self.after_callback)

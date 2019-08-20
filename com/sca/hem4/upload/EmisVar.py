@@ -4,9 +4,9 @@ Created on Thu Nov  1 12:35:08 2018
 @author: 
 """
 import pandas as pd
-from com.sca.hem4.upload.DependentInputFile import DependentInputFile
+from upload.DependentInputFile import DependentInputFile
 from tkinter import messagebox
-from com.sca.hem4.model.Model import *
+from model.Model import *
 
 class EmisVar(DependentInputFile):
 

@@ -1,1 +1,0 @@
-Enter the name and location of the spreadsheet containing dimensions of all buildings for which building downwash is to be modeled. The spreadsheet must be an MS Excel file.

@@ -12,7 +12,7 @@ import pandas as pd
 #import pandas as pd
 #import warnings
 #warnings.simplefilter("error", pd.core.common.SettingWithCopyWarning)
-from com.sca.hem4.support.UTM import UTM
+from support.UTM import UTM
 
 
 def center(sourcelocs, utmz):

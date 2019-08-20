@@ -6,7 +6,7 @@ from openpyxl import load_workbook
 import pandas as pd
 from openpyxl.styles import Font
 
-from com.sca.hem4.writer.Writer import Writer
+from writer.Writer import Writer
 
 class ExcelWriter(Writer):
 

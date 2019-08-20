@@ -3,8 +3,8 @@
 Created on Mon Oct 15 13:55:46 2018
 @author: dlindsey
 """
-from com.sca.hem4.model.Model import pollutant
-from com.sca.hem4.upload.InputFile import InputFile
+from model.Model import pollutant
+from upload.InputFile import InputFile
 
 da = 'da';
 dw = 'dw';

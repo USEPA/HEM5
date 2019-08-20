@@ -1,5 +1,5 @@
-from com.sca.hem4.model.Model import pollutant
-from com.sca.hem4.upload.InputFile import InputFile
+from model.Model import pollutant
+from upload.InputFile import InputFile
 
 epa_woe = 'epa_woe';
 resp = 'resp';

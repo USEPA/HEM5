@@ -6,10 +6,10 @@ import numpy as np
 from pandas import Series
 from functools import reduce
 
-from com.sca.hem4.log import Logger
-from com.sca.hem4.upload.DoseResponse import *
-from com.sca.hem4.writer.csv.AllInnerReceptors import *
-from com.sca.hem4.writer.excel.Incidence import inc
+from log.Logger import Logger
+from upload.DoseResponse import *
+from writer.csv.AllInnerReceptors import *
+from writer.excel.Incidence import inc
 
 
 mir = 'mir';

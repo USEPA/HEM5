@@ -1,5 +1,5 @@
-from com.sca.hem4.upload.UserReceptors import rec_type
-from com.sca.hem4.writer.csv.AllOuterReceptors import *
+from upload.UserReceptors import rec_type
+from writer.csv.AllOuterReceptors import *
 
 
 class BlockSummaryChronicNonCensus(CsvWriter):

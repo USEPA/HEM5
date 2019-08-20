@@ -3,6 +3,8 @@ from abc import ABC
 from abc import abstractmethod
 import pandas as pd
 
+from log.Logger import Logger
+
 class InputFile(ABC):
 
     def __init__(self, path, createDataframe=True):
@@ -26,23 +28,42 @@ class InputFile(ABC):
     # values in the resultant dataframe become NaN values. All values will either be strings or float64s.
     def readFromPath(self, colnames):
         with open(self.path, "rb") as f:
-            df = pd.read_excel(f, skiprows=self.skiprows, names=colnames, dtype=str, na_values=[''], keep_default_na=False)
-            df = df.astype(str).applymap(self.convertEmptyToNaN)
-            types = self.get_column_types()
-            df = df.astype(dtype=types)
-            return df
+            
+            try:
+                df = pd.read_excel(f, skiprows=self.skiprows, names=colnames, dtype=str, na_values=[''], keep_default_na=False)
+            
+            except Exception as e:
+                
+                Logger.logMessage(str(e))
+                
+            else:
+                df = df.astype(str).applymap(self.convertEmptyToNaN)
+                types = self.get_column_types()
+                df = df.astype(dtype=types)
+                return df
 
     # Read values in from a source .csv file. Note that we initially read everything in as a string,
     # and then convert columns which have been specified as numeric to a float64. That way, all empty
     # values in the resultant dataframe become NaN values. All values will either be strings or float64s.
     def readFromPathCsv(self, colnames):
         with open(self.path, "rb") as f:
+            
             self.skiprows = 1
-            df = pd.read_csv(f, skiprows=self.skiprows, names=colnames, dtype=str, na_values=[''], keep_default_na=False)
-            df = df.astype(str).applymap(self.convertEmptyToNaN)
-            types = self.get_column_types()
-            df = df.astype(dtype=types)
-            return df
+            
+            try:
+                
+                df = pd.read_csv(f, skiprows=self.skiprows, names=colnames, dtype=str, na_values=[''], keep_default_na=False)
+            
+            except Exception as e:
+                
+                Logger.logMessage(str(e))
+                
+            else:
+                
+                df = df.astype(str).applymap(self.convertEmptyToNaN)
+                types = self.get_column_types()
+                df = df.astype(dtype=types)
+                return df
 
     # This method is being applied to every cell to guard against values which
     # have only whitespace.
@@ -55,7 +76,17 @@ class InputFile(ABC):
 
     def read(self, path):
         with open(path, "rb") as f:
-            return pd.read_excel(f)
+            
+            try:
+                df = pd.read_excel(f)
+                
+            except Exception as e:
+                
+                Logger.logMessage(str(e))
+                
+            else:
+            
+                return df
 
     def get_column_types(self):
         floatTypes = {col: pd.np.float64 for col in self.numericColumns}
@@ -67,4 +98,15 @@ class InputFile(ABC):
         return dtypes
 
     def to_numeric(self, slice):
-        return pd.to_numeric(slice,errors="coerce")
+        
+        try:
+            
+            df = pd.to_numeric(slice,errors="coerce")
+            
+        except Exception as e:
+                
+                Logger.logMessage(str(e))
+                
+        else:
+            
+            return df

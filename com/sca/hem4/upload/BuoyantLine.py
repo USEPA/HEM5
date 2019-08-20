@@ -5,11 +5,11 @@ Created on Tue Jul  3 20:34:16 2018
 
 @author: d
 """
-from com.sca.hem4.model.Model import fac_id
-from com.sca.hem4.upload.DependentInputFile import DependentInputFile
+from model.Model import fac_id
+from upload.DependentInputFile import DependentInputFile
 from tkinter import messagebox
 
-from com.sca.hem4.upload.EmissionsLocations import source_type
+from upload.EmissionsLocations import source_type
 
 avgbld_len = 'avgbld_len';
 avgbld_hgt = 'avgbld_hgt';

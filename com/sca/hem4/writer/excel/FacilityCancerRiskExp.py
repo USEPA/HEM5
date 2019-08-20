@@ -1,8 +1,8 @@
 import pandas as pd
 from math import log10, floor
-
-from com.sca.hem4.FacilityPrep import *
-from com.sca.hem4.writer.excel.ExcelWriter import ExcelWriter
+import os
+from FacilityPrep import FacilityPrep
+from writer.excel.ExcelWriter import ExcelWriter
 
 parameter = 'parameter';
 value = 'value';
