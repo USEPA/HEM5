@@ -283,7 +283,8 @@ class Process_outputs():
 
 
         #----------- append to facility max risk output file ------------------
-        fac_max_risk = FacilityMaxRiskandHINonCensus("output/", self.facid, self.model, self.plot_df, incidence.dataframe) if ureponly else \
+        fac_max_risk = FacilityMaxRiskandHINonCensus(targetDir="output/", facilityId=self.facid, model=self.model,
+                             plot_df=self.plot_df, incidence=incidence.dataframe) if ureponly else \
             FacilityMaxRiskandHI("output/", self.facid, self.model, self.plot_df, incidence.dataframe)
         fac_max_risk.writeWithoutHeader()
 

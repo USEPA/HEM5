@@ -12,7 +12,8 @@ class SummaryManager():
         hiHistogramModule = importlib.import_module("com.sca.hem4.writer.excel.summary.HI_Histogram")
         incidenceDriversReportModule = importlib.import_module("com.sca.hem4.writer.excel.summary.IncidenceDrivers")
         acuteImpactsReportModule = importlib.import_module("com.sca.hem4.writer.excel.summary.AcuteImpacts")
-        sourceTypeRiskHistogram = importlib.import_module("com.sca.hem4.writer.excel.summary.SourceTypeRiskHistogram")
+        sourceTypeRiskHistogramModule = importlib.import_module("com.sca.hem4.writer.excel.summary.SourceTypeRiskHistogram")
+        multiPathwayModule = importlib.import_module("com.sca.hem4.writer.excel.summary.MultiPathway")
 
         self.availableReports = {'MaxRisk' : maxRiskReportModule,
                                  'CancerDrivers' : cancerDriversReportModule,
@@ -21,7 +22,8 @@ class SummaryManager():
                                  'HI_Histogram' : hiHistogramModule,
                                  'IncidenceDrivers' : incidenceDriversReportModule,
                                  'AcuteImpacts' : acuteImpactsReportModule,
-                                 'SourceTypeRiskHistogram' : sourceTypeRiskHistogram}
+                                 'SourceTypeRiskHistogram' : sourceTypeRiskHistogramModule,
+                                 'MultiPathway' : multiPathwayModule}
 
     def createReport(self, categoryFolder, reportName, arguments=None):
 
@@ -62,4 +64,4 @@ class SummaryManager():
         #         '36091110000324435', '39153110041418338', '48039110008170237', '54107110000586081']
 
 manager = SummaryManager()
-manager.createReport("output/ALDT", "SourceTypeRiskHistogram", [2,2])
+manager.createReport("output/ALDT", "MultiPathway")

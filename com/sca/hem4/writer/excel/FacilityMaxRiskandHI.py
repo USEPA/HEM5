@@ -9,16 +9,25 @@ value_rnd = 'value_rnd';
 value_sci = 'value_sci';
 notes = 'notes';
 
-class FacilityMaxRiskandHI(ExcelWriter):
+class FacilityMaxRiskandHI(ExcelWriter, InputFile):
     """
     Provides a listing of the facilities by ID, their lat/lons and the population
     exposed to different cancer risk levels at each facility.
     """
 
-    def __init__(self, targetDir, facilityId, model, plot_df, incidence):
-        ExcelWriter.__init__(self, model, plot_df)
+    def __init__(self, targetDir=None, facilityId=None, model=None, plot_df=None, filenameOverride=None,
+                 createDataframe=False, incidence=None):
 
-        self.filename = os.path.join(targetDir, "SC_max_risk_and_hi.xlsx")
+        # Initialization for file reading/writing. If no file name override, use the
+        # default construction.
+        filename = "SC_max_risk_and_hi.xlsx" if filenameOverride is None else filenameOverride
+        path = os.path.join(targetDir, filename)
+
+        ExcelWriter.__init__(self, model, plot_df)
+        InputFile.__init__(self, path, createDataframe)
+
+        self.filename = path
+        self.targetDir = targetDir
         self.facilityId = facilityId
         self.header = None
         self.incidence = incidence
@@ -38,6 +47,9 @@ class FacilityMaxRiskandHI(ExcelWriter):
                        'thyroid_hi_interptd', 'thyroid_rcpt_type', 'thyroid_blk', 'whole_body_hi', 'whole_hi_interptd',
                        'whole_rcpt_type', 'whole_blk', 'pop_overlp', 'incidence', 'metname', 'km_to_metstation',
                        'fac_center_latitude', 'fac_center_longitude', 'rural_urban']
+        return self.header
+
+    def getColumns(self):
         return self.header
 
     def writeWithoutHeader(self):
@@ -84,3 +96,26 @@ class FacilityMaxRiskandHI(ExcelWriter):
         self.dataframe = facrisk_df
         self.data = self.dataframe.values
         yield self.dataframe
+
+    def createDataframe(self):
+        # Type setting for XLS reading
+        self.numericColumns = ['mx_can_rsk', 'can_latitude', 'can_longitude', 'respiratory_hi', 'resp_latitude',
+                               'resp_longitude', 'liver_hi', 'neurological_hi', 'neuro_latitude', 'neuro_longitude',
+                               'developmental_hi', 'reproductive_hi', 'kidney_hi', 'ocular_hi', 'endocrine_hi',
+                               'hematological_hi', 'immunological_hi', 'skeletal_hi', 'spleen_hi', 'thyroid_hi',
+                               'whole_body_hi', 'incidence', 'km_to_metstation', 'fac_center_latitude',
+                               'fac_center_longitude', ]
+        self.strColumns = ['Facil_id', 'can_rsk_interpltd', 'can_rcpt_type', 'can_blk', 'resp_hi_interpltd',
+                           'resp_rcpt_type', 'resp_blk', 'liver_hi_interpltd', 'liver_rcpt_type', 'liver_blk',
+                           'neuro_hi_interpltd', 'neuro_rcpt_type', 'neuro_blk', 'devel_hi_interpltd',
+                           'devel_rcpt_type', 'devel_blk', 'repro_hi_interptd', 'repro_rcpt_type', 'repro_blk',
+                           'kidney_hi_interptd', 'kidney_rcpt_type', 'kidney_blk', 'ocular_hi_interptd',
+                           'ocular_rcpt_type', 'ocular_blk', 'endo_hi_interptd', 'endo_rcpt_type', 'endo_blk',
+                           'hema_hi_interptd', 'hema_rcpt_type', 'hema_blk', 'immun_hi_interptd',
+                           'immun_rcpt_type', 'immun_blk', 'skel_hi_interptd', 'skel_rcpt_type', 'skel_blk',
+                           'spleen_hi_interptd', 'spleen_rcpt_type', 'spleen_blk', 'thyroid_hi_interptd',
+                           'thyroid_rcpt_type', 'thyroid_blk', 'whole_hi_interptd', 'whole_rcpt_type', 'whole_blk',
+                           'pop_overlp', 'metname', 'rural_urban']
+
+        df = self.readFromPath(self.getColumns())
+        return df.fillna("")
