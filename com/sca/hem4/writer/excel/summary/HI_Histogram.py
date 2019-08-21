@@ -1,6 +1,6 @@
 from math import log10, floor
-from com.sca.hem4.writer.csv.BlockSummaryChronic import *
-from com.sca.hem4.writer.excel.ExcelWriter import ExcelWriter
+from writer.csv.BlockSummaryChronic import *
+from writer.excel.ExcelWriter import ExcelWriter
 
 risklevel = 'risklevel'
 resp_population = 'resp_population'

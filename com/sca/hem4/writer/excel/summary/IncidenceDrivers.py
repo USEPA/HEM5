@@ -1,5 +1,5 @@
-from com.sca.hem4.writer.excel.Incidence import Incidence, inc
-from com.sca.hem4.writer.excel.RiskBreakdown import *
+from writer.excel.Incidence import Incidence, inc
+from writer.excel.RiskBreakdown import *
 
 inc_contrib = 'inc_contrib'
 

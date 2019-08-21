@@ -1,6 +1,6 @@
 import unittest
 
-from com.sca.hem4.writer.csv.AllOuterReceptors import AllOuterReceptors
+from writer.csv.AllOuterReceptors import AllOuterReceptors
 
 """
 This test verifies the correctness of the algorithm that appends to file names

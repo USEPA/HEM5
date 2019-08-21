@@ -3,12 +3,11 @@ import time
 import subprocess
 import shutil
 import pandas as pd
-import datetime
-from com.sca.hem4.OutputProcessing import *
-from com.sca.hem4.FacilityPrep import FacilityPrep
-from com.sca.hem4.log import Logger
-from com.sca.hem4.DepositionDepletion import sort
-from com.sca.hem4.model.Model import *
+from OutputProcessing import *
+from FacilityPrep import FacilityPrep
+from log.Logger import Logger
+from DepositionDepletion import sort
+from model.Model import *
 from datetime import datetime
 
 
@@ -33,23 +32,35 @@ class FacilityRunner():
             self.model.model_optns['phase'] = fac['phase'].tolist()[0]
 
         if self.model.group_name != None:
+            
+            Logger.logMessage("RUN GROUP: " + self.model.group_name)
+            
             output = "output/"+self.model.group_name+"/"
             fac_folder =  output + self.facilityId + "/"
             
 #        else:
 #            output = "output/" + str(datetime.datetime.now().strftime("%B-%d-%Y-%H-%M-%p"))+"/" 
         else:
-        
+            
+            self.model.group_name = "rungroup_" + str(datetime.now().strftime('%Y_%m_%d_%H_%M_%S'))
+            Logger.logMessage("RUN GROUP: " + self.model.group_name)
+            
         #create fac folder
-            fac_folder =  "output/"+self.facilityId + "/"
-        
+            fac_folder =  "output/" + self.model.group_name +self.facilityId + "/"
+
         if os.path.exists(fac_folder):
             pass
         else:
             os.makedirs(fac_folder)
 
         #do prep
-        self.prep_fac = self.prep()
+        try:    
+            self.prep_fac = self.prep()
+            
+        except Exception as e:
+                
+                Logger.logMessage(str(e))
+                
 
         # phases dictionary
         if self.model.model_optns['phase'] != None:
@@ -63,7 +74,13 @@ class FacilityRunner():
         if self.model.model_optns['phase'] != 'B':
             
             #create runstream
-            self.runstream = self.prep_fac.createRunstream(self.facilityId, phases)
+            try:
+                self.runstream = self.prep_fac.createRunstream(self.facilityId, phases)
+                
+            except Exception as e:
+                
+                Logger.logMessage(str(e))
+                
 
             # Set the runtype variable which indicates how Aermod is run (with or without deposition)
             # and what columns will be in the Aermod plotfile
@@ -82,7 +99,14 @@ class FacilityRunner():
             self.run(fac_folder)
 
             #check aermod run and move aermod.out file to facility folder
-            check = self.check_run(fac_folder, None)
+            
+            try:
+                check = self.check_run(fac_folder, None)
+            
+            except Exception as e:
+                
+                Logger.logMessage(str(e))
+                
 
             if check == True:
 
@@ -99,7 +123,14 @@ class FacilityRunner():
                     plot_df['emis_type'] = phases['phase']
                                 
                 # Process outputs for single facility
-                self.process_outputs(fac_folder, plot_df)
+                try:
+                    
+                    self.process_outputs(fac_folder, plot_df)
+                    
+                except Exception as e:
+                
+                    Logger.logMessage(str(e))
+                
 
         else:
             #double run for particle and vapor
@@ -115,7 +146,14 @@ class FacilityRunner():
                 Logger.logMessage(r['phase'] + " run:")
                 
                 # create runstream for individual phase
-                self.runstream = self.prep_fac.createRunstream(self.facilityId, r)
+                
+                try:
+                    self.runstream = self.prep_fac.createRunstream(self.facilityId, r)
+                    
+                except Exception as e:
+                
+                    Logger.logMessage(str(e))
+                
  
                 # Set the runtype variable which indicates how Aermod is run (with or without deposition)
                 # and what columns will be in the Aermod plotfile
@@ -138,7 +176,13 @@ class FacilityRunner():
                 self.run(fac_folder)
                 
                 #check aermod run, move aermod.out file to facility folder and rename
-                check = self.check_run(fac_folder, r['phase'])
+                try:
+                    check = self.check_run(fac_folder, r['phase'])
+                    
+                except Exception as e:
+                
+                    Logger.logMessage(str(e))
+                
                 
                 if check == True:
     
@@ -161,15 +205,31 @@ class FacilityRunner():
             plotdf_con.save()
     
             # Process outputs for this facility
-            self.process_outputs(fac_folder, plot_df)
+            try:
+            
+                self.process_outputs(fac_folder, plot_df)
+                
+            except Exception as e:
+                
+                Logger.logMessage(str(e))
+                
+            
                
     
     def prep(self):
         
-        prep = FacilityPrep(self.model)
-        print("building runstream")
-        
         Logger.logMessage("Building runstream for facility " + self.facilityId)
+        
+        try:
+            prep = FacilityPrep(self.model)
+        
+#        print("building runstream")
+        
+        except Exception as e:
+                
+            Logger.logMessage(str(e))
+                
+        
         
         return prep
             

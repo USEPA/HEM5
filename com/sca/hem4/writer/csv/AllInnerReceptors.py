@@ -1,7 +1,7 @@
-from com.sca.hem4.CensusBlocks import *
-from com.sca.hem4.writer.csv.CsvWriter import CsvWriter
-from com.sca.hem4.upload.HAPEmissions import *
-from com.sca.hem4.upload.FacilityList import *
+from CensusBlocks import *
+from writer.csv.CsvWriter import CsvWriter
+from upload.HAPEmissions import *
+from upload.FacilityList import *
 import os
 
 ems_type = 'ems_type';

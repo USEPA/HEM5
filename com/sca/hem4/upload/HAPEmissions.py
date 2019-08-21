@@ -1,8 +1,8 @@
-from com.sca.hem4.upload.InputFile import InputFile
+from upload.InputFile import InputFile
 from tkinter import messagebox
 import os
 from datetime import datetime
-from com.sca.hem4.model.Model import *
+from model.Model import *
 
 emis_tpy = 'emis_tpy';
 part_frac = 'part_frac';

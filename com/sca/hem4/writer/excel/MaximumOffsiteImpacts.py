@@ -1,12 +1,12 @@
 from math import log10, floor
-from com.sca.hem4.writer.csv.RingSummaryChronic import *
+from writer.csv.RingSummaryChronic import *
 
 
-from com.sca.hem4.writer.excel.ExcelWriter import ExcelWriter
+from writer.excel.ExcelWriter import ExcelWriter
 from math import log10, floor
 
-from com.sca.hem4.writer.csv.RingSummaryChronic import *
-from com.sca.hem4.writer.excel.ExcelWriter import ExcelWriter
+from writer.csv.RingSummaryChronic import *
+from writer.excel.ExcelWriter import ExcelWriter
 
 
 class MaximumOffsiteImpacts(ExcelWriter):

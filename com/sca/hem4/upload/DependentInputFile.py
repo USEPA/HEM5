@@ -1,5 +1,5 @@
 import abc
-from com.sca.hem4.upload.InputFile import InputFile
+from upload.InputFile import InputFile
 
 
 class DependentInputFile(InputFile):

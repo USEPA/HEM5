@@ -1,11 +1,16 @@
 import os
+import shutil
 import threading
+
 import datetime
-from com.sca.hem4.SaveState import SaveState
-from com.sca.hem4.log import Logger
-from com.sca.hem4.runner.FacilityRunner import FacilityRunner
-from com.sca.hem4.writer.excel.FacilityMaxRiskandHI import FacilityMaxRiskandHI
-from com.sca.hem4.writer.kml.KMLWriter import KMLWriter
+from SaveState import SaveState
+from log.Logger import Logger
+from runner.FacilityRunner import FacilityRunner
+from writer.excel.FacilityMaxRiskandHI import FacilityMaxRiskandHI
+from writer.excel.FacilityCancerRiskExp import FacilityCancerRiskExp
+from writer.excel.FacilityTOSHIExp import FacilityTOSHIExp
+from writer.kml.KMLWriter import KMLWriter
+
 import traceback
 from collections import defaultdict
 import uuid
@@ -26,14 +31,20 @@ class Processor():
 
     def process(self):
 
-        #create run id for saving model default to cat_timestamp if no group
-        
+        # Create run id for saving model. Default to cat_timestamp if no group
+        # Also create a root output folder using the group name.
+        # If not group name, folder name will be Output       
         if self.model.group_name != None:
             runid = self.model.group_name
             print('runid', runid)
-            
+            self.model.rootoutput = "output/" + self.model.group_name + "/"
+            if os.path.exists(self.model.rootoutput):
+                shutil.rmtree(self.model.rootoutput)                
+            os.makedirs(self.model.rootoutput)
         else: 
             runid = str(uuid.uuid4())[:7]
+            self.model.rootoutput = "output/"
+            
 #            runid = datetime.datetime.now().strftime("%Y-%H-%M-%p")
 #            print(runid)
             
@@ -43,6 +54,7 @@ class Processor():
         self.model.save = save_state
 
         threadLocal.abort = False
+                
         
         #create a Google Earth KML of all sources to be modeled
         kmlWriter = KMLWriter()
@@ -71,7 +83,7 @@ class Processor():
         # Create output files with headers for any source-category outputs that will be appended
         # to facility by facility. These won't have any data for now.
         self.createSourceCategoryOutputs()
-
+        
         for facid in fac_list:
             print(facid)
             if self.abort.is_set():
@@ -137,10 +149,15 @@ class Processor():
 
     def createSourceCategoryOutputs(self):
 
-        #create fac folder
-        output_folder = "output/"
-        if not os.path.exists(output_folder):
-            os.makedirs(output_folder)
-
-        fac_max_risk = FacilityMaxRiskandHI(output_folder, None, self.model, None, None)
+        # Create Facility Max Risk and HI file
+        fac_max_risk = FacilityMaxRiskandHI(self.model.rootoutput, None, self.model, None, None)
         fac_max_risk.write()
+        
+        # Create Facility Cancer Risk Exposure file
+        fac_canexp = FacilityCancerRiskExp(self.model.rootoutput, None, self.model, None)
+        fac_canexp.write()
+        
+        # Create Facility TOSHI Exposure file
+        fac_hiexp = FacilityTOSHIExp(self.model.rootoutput, None, self.model, None)
+        fac_hiexp.write()
+        

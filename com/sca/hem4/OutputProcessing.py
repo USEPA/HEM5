@@ -5,30 +5,32 @@ Created on Mon Oct 23 12:43:52 2017
 @author: dlindsey
 """
 
-from com.sca.hem4.upload.TargetOrganEndpoints import *
-from com.sca.hem4.writer.csv.AllInnerReceptorsNonCensus import AllInnerReceptorsNonCensus
-from com.sca.hem4.writer.csv.AllOuterReceptorsNonCensus import AllOuterReceptorsNonCensus
-from com.sca.hem4.writer.csv.AllPolarReceptors import *
-from com.sca.hem4.writer.csv.BlockSummaryChronicNonCensus import BlockSummaryChronicNonCensus
-from com.sca.hem4.writer.csv.RingSummaryChronic import RingSummaryChronic
-from com.sca.hem4.writer.csv.BlockSummaryChronic import *
-from com.sca.hem4.writer.excel.CancerRiskExposure import CancerRiskExposure
-from com.sca.hem4.writer.excel.FacilityMaxRiskandHI import FacilityMaxRiskandHI
-from com.sca.hem4.writer.excel.FacilityMaxRiskandHINonCensus import FacilityMaxRiskandHINonCensus
-from com.sca.hem4.writer.excel.InputSelectionOptions import InputSelectionOptions
-from com.sca.hem4.writer.excel.MaximumIndividualRisks import MaximumIndividualRisks, value
-from com.sca.hem4.writer.excel.MaximumIndividualRisksNonCensus import MaximumIndividualRisksNonCensus
-from com.sca.hem4.writer.excel.MaximumOffsiteImpacts import MaximumOffsiteImpacts
-from com.sca.hem4.writer.excel.MaximumOffsiteImpactsNonCensus import MaximumOffsiteImpactsNonCensus
-from com.sca.hem4.writer.excel.NoncancerRiskExposure import NoncancerRiskExposure
-from com.sca.hem4.writer.excel.RiskBreakdown import RiskBreakdown
-from com.sca.hem4.writer.excel.Incidence import Incidence
-from com.sca.hem4.writer.excel.AcuteChemicalPopulated import AcuteChemicalPopulated
-from com.sca.hem4.writer.excel.AcuteChemicalUnpopulated import AcuteChemicalUnpopulated
-from com.sca.hem4.writer.excel.AcuteBreakdown import AcuteBreakdown
-from com.sca.hem4.writer.kml.KMLWriter import KMLWriter
-from com.sca.hem4.support.UTM import *
-from com.sca.hem4.model.Model import *
+from upload.TargetOrganEndpoints import *
+from writer.csv.AllInnerReceptorsNonCensus import AllInnerReceptorsNonCensus
+from writer.csv.AllOuterReceptorsNonCensus import AllOuterReceptorsNonCensus
+from writer.csv.AllPolarReceptors import *
+from writer.csv.BlockSummaryChronicNonCensus import BlockSummaryChronicNonCensus
+from writer.csv.RingSummaryChronic import RingSummaryChronic
+from writer.csv.BlockSummaryChronic import *
+from writer.excel.CancerRiskExposure import CancerRiskExposure
+from writer.excel.FacilityMaxRiskandHI import FacilityMaxRiskandHI
+from writer.excel.FacilityMaxRiskandHINonCensus import FacilityMaxRiskandHINonCensus
+from writer.excel.InputSelectionOptions import InputSelectionOptions
+from writer.excel.MaximumIndividualRisks import MaximumIndividualRisks, value
+from writer.excel.MaximumIndividualRisksNonCensus import MaximumIndividualRisksNonCensus
+from writer.excel.MaximumOffsiteImpacts import MaximumOffsiteImpacts
+from writer.excel.MaximumOffsiteImpactsNonCensus import MaximumOffsiteImpactsNonCensus
+from writer.excel.NoncancerRiskExposure import NoncancerRiskExposure
+from writer.excel.RiskBreakdown import RiskBreakdown
+from writer.excel.Incidence import Incidence
+from writer.excel.AcuteChemicalPopulated import AcuteChemicalPopulated
+from writer.excel.AcuteChemicalUnpopulated import AcuteChemicalUnpopulated
+from writer.excel.AcuteBreakdown import AcuteBreakdown
+from writer.kml.KMLWriter import KMLWriter
+from support.UTM import *
+from model.Model import *
+from writer.excel.FacilityCancerRiskExp import FacilityCancerRiskExp
+from writer.excel.FacilityTOSHIExp import FacilityTOSHIExp
 
 class Process_outputs():
     
@@ -192,7 +194,7 @@ class Process_outputs():
             BlockSummaryChronic(self.outdir, self.facid, self.model, self.plot_df, all_outer_receptors.outerAgg)
         generator = block_summary_chronic.generateOutputs()
         for batch in generator:
-            block_summary_chronic_df = block_summary_chronic.dataframe
+            self.model.block_summary_chronic_df = block_summary_chronic.dataframe
         Logger.logMessage("Completed BlockSummaryChronic output")
 
         if self.abort.is_set():
@@ -207,7 +209,7 @@ class Process_outputs():
         ring_risk = ring_summary_chronic_df[ring_columns].copy()
         ring_risk[rec_type] = 'P'
         
-        block_risk = block_summary_chronic_df[block_columns]
+        block_risk = self.model.block_summary_chronic_df[block_columns]
         self.model.risk_by_latlon = ring_risk.append(block_risk).reset_index(drop=True).infer_objects()
 
         if self.abort.is_set():
@@ -215,7 +217,7 @@ class Process_outputs():
             return
 
         #----------- create noncancer risk exposure output file -----------------
-        noncancer_risk_exposure = NoncancerRiskExposure(self.outdir, self.facid, self.model, self.plot_df, block_summary_chronic_df)
+        noncancer_risk_exposure = NoncancerRiskExposure(self.outdir, self.facid, self.model, self.plot_df, self.model.block_summary_chronic_df)
         noncancer_risk_exposure.write()
         Logger.logMessage("Completed NoncancerRiskExposure output")
 
@@ -224,7 +226,7 @@ class Process_outputs():
             return
 
         #----------- create cancer risk exposure output file -----------------
-        cancer_risk_exposure = CancerRiskExposure(self.outdir, self.facid, self.model, self.plot_df, block_summary_chronic_df)
+        cancer_risk_exposure = CancerRiskExposure(self.outdir, self.facid, self.model, self.plot_df, self.model.block_summary_chronic_df)
         cancer_risk_exposure.write()
         Logger.logMessage("Completed CancerRiskExposure output")
 
@@ -242,7 +244,7 @@ class Process_outputs():
         Logger.logMessage("Completed MaximumIndividualRisks output")
 
         #----------- create Maximum_Offsite_Impacts output file ---------------
-        inner_recep_risk_df = block_summary_chronic_df[block_summary_chronic_df["rec_type"] == "I"]
+        inner_recep_risk_df = self.model.block_summary_chronic_df[self.model.block_summary_chronic_df["rec_type"] == "I"]
         max_offsite_impacts = MaximumOffsiteImpactsNonCensus(self.outdir, self.facid, self.model, self.plot_df,
                                                     ring_summary_chronic_df, inner_recep_risk_df) if ureponly else \
             MaximumOffsiteImpacts(self.outdir, self.facid, self.model, self.plot_df, ring_summary_chronic_df, inner_recep_risk_df)
@@ -256,7 +258,7 @@ class Process_outputs():
         ringrows = np.where(ring_summary_chronic_df[overlap] == 'Y')[0]
         if len(ringrows) > 0:
             ring_summary_chronic.data[ringrows, 7:22] = replacement
-        blockrows = np.where(block_summary_chronic_df[overlap] == 'Y')[0]
+        blockrows = np.where(self.model.block_summary_chronic_df[overlap] == 'Y')[0]
         if len(blockrows) > 0:
             block_summary_chronic.data[blockrows, 10:25] = replacement
 
@@ -283,11 +285,18 @@ class Process_outputs():
 
 
         #----------- append to facility max risk output file ------------------
-        fac_max_risk = FacilityMaxRiskandHINonCensus(targetDir="output/", facilityId=self.facid, model=self.model,
-                             plot_df=self.plot_df, incidence=incidence.dataframe) if ureponly else \
-            FacilityMaxRiskandHI("output/", self.facid, self.model, self.plot_df, incidence.dataframe)
+
+        fac_max_risk = FacilityMaxRiskandHINonCensus(self.model.rootoutput, self.facid, self.model, self.plot_df, incidence.dataframe) if ureponly else \
+            FacilityMaxRiskandHI(self.model.rootoutput, self.facid, self.model, self.plot_df, incidence.dataframe)
         fac_max_risk.writeWithoutHeader()
 
+        #----------- append to facility cancer risk exposure output file ------------------
+        fac_risk_exp = FacilityCancerRiskExp(self.model.rootoutput, self.facid, self.model, self.plot_df)
+        fac_risk_exp.writeWithoutHeader()
+
+        #----------- append to facility TOSHI exposure output file ------------------
+        fac_toshi_exp = FacilityTOSHIExp(self.model.rootoutput, self.facid, self.model, self.plot_df)
+        fac_toshi_exp.writeWithoutHeader()
 
 
         #=================== Acute processing ==============================================

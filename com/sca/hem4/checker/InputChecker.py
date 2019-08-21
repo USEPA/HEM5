@@ -10,8 +10,8 @@ import pandas as pd
 from tkinter.filedialog import askopenfilename
 from tkinter import messagebox
 
-from com.sca.hem4.upload.EmissionsLocations import source_type
-from com.sca.hem4.upload.FacilityList import *
+from upload.EmissionsLocations import source_type
+from upload.FacilityList import *
 
 
 class InputChecker():

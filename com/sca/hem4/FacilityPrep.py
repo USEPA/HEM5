@@ -4,14 +4,14 @@ Created on Mon Oct  2 10:35:51 2017
 
 @author: dlindsey
 """
-from com.sca.hem4 import FindCenter as fc
-from com.sca.hem4.CensusBlocks import *
-from com.sca.hem4.log import Logger
-from com.sca.hem4.runstream.Runstream import Runstream
-from com.sca.hem4.upload.EmissionsLocations import *
-from com.sca.hem4.upload.HAPEmissions import *
-from com.sca.hem4.upload.FacilityList import *
-from com.sca.hem4.support.NormalRounding import *
+import FindCenter as fc
+from CensusBlocks import *
+from log.Logger import Logger
+from runstream.Runstream import Runstream
+from upload.EmissionsLocations import *
+from upload.HAPEmissions import *
+from upload.FacilityList import *
+from support.NormalRounding import *
 import sys
 import math
 
@@ -35,7 +35,7 @@ class FacilityPrep():
         self.model.facops = self.model.faclist.dataframe.loc[self.model.faclist.dataframe[fac_id] == facid]
 
         # Set defaults of the facility options
-        if self.model.facops[max_dist].isnull().sum() > 0 or self.model.facops[max_dist] > 50000:
+        if self.model.facops[max_dist].isnull().sum() > 0 or self.model.facops.iloc[0][max_dist] > 50000:
             self.model.facops[max_dist] = 50000
 
         if self.model.facops[model_dist].isnull().sum() > 0:

@@ -2,14 +2,14 @@ import re
 import os, fnmatch
 import pandas as pd
 import sys
-from com.sca.hem4.log import Logger
-from com.sca.hem4.upload.DoseResponse import *
-from com.sca.hem4.writer.csv.AllOuterReceptors import AllOuterReceptors
-from com.sca.hem4.writer.excel.MaximumIndividualRisks import *
-from com.sca.hem4.model.Model import *
-from com.sca.hem4.support.UTM import *
-from com.sca.hem4.FacilityPrep import *
-from com.sca.hem4.log import Logger
+from log.Logger import Logger
+from upload.DoseResponse import *
+from writer.csv.AllOuterReceptors import AllOuterReceptors
+from writer.excel.MaximumIndividualRisks import *
+from model.Model import *
+from support.UTM import *
+from FacilityPrep import *
+from log import Logger
 
 site_type = 'site_type';
 conc_rnd = 'conc_rnd';
