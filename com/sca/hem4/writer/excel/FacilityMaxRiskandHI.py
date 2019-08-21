@@ -29,7 +29,7 @@ class FacilityMaxRiskandHI(ExcelWriter, InputFile):
         else:
             outfile = "facility_max_risk_and_hi.xlsx"
 
-        filename = outgitfile if filenameOverride is None else filenameOverride
+        filename = outfile if filenameOverride is None else filenameOverride
         path = os.path.join(targetDir, filename)
 
         ExcelWriter.__init__(self, model, plot_df)
