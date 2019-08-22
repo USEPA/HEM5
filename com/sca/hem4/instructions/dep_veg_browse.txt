@@ -1,0 +1,1 @@
+Search your computer for the name and location of the spreadsheet describing seasonal (monthly) vegetative cover around facilities for which you wish to model dry vapor deposition. The file must be an MS Excel file. 
