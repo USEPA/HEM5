@@ -1,5 +1,5 @@
-from FacilityPrep import *
-from writer.csv.AllInnerReceptors import *
+from com.sca.hem4.FacilityPrep import *
+from com.sca.hem4.writer.csv.AllInnerReceptors import *
 
 aresult = 'aresult';
 

@@ -1,6 +1,6 @@
-from upload.InputFile import InputFile
-from model.Model import *
-from support.UTM import *
+from com.sca.hem4.upload.InputFile import InputFile
+from com.sca.hem4.model.Model import *
+from com.sca.hem4.support.UTM import *
 
 location_type = 'location_type';
 source_type = 'source_type';

@@ -2,9 +2,9 @@ import math
 import os
 from math import log10, floor
 from pandas import DataFrame
-from CensusBlocks import population
-from writer.csv.BlockSummaryChronic import mir
-from writer.excel.ExcelWriter import ExcelWriter
+from com.sca.hem4.CensusBlocks import population
+from com.sca.hem4.writer.csv.BlockSummaryChronic import mir
+from com.sca.hem4.writer.excel.ExcelWriter import ExcelWriter
 
 class CancerRiskExposure(ExcelWriter):
     """

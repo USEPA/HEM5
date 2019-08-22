@@ -3,7 +3,7 @@ import json
 
 import pandas as pd
 
-from log.Logger import Logger
+from com.sca.hem4.log.Logger import Logger
 
 
 class CensusUpdater():

@@ -17,10 +17,10 @@ from tkinter import scrolledtext
 
 import datetime
 from Processor import Processor
-from log.Logger import Logger
+from com.sca.hem4.log.Logger import Logger
 from tools.CensusUpdater import CensusUpdater
-from model.Model import Model
-from upload.FileUploader import FileUploader
+from com.sca.hem4.model.Model import Model
+from com.sca.hem4.upload.FileUploader import FileUploader
 from tkinter.filedialog import askopenfilename
 from checker.InputChecker import InputChecker
 from DepositionDepletion import check_dep

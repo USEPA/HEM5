@@ -8,10 +8,10 @@ Created on Thu Oct 18 10:23:14 2018
 import math
 import os
 
-import FindMet as fm
-from model.Model import *
-from support.UTM import *
-from support.NormalRounding import *
+import com.sca.hem4.FindMet as fm
+from com.sca.hem4.model.Model import *
+from com.sca.hem4.support.UTM import *
+from com.sca.hem4.support.NormalRounding import *
 
 class Runstream():
     """

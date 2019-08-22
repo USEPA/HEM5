@@ -4,10 +4,10 @@ import subprocess
 import shutil
 import pandas as pd
 from OutputProcessing import *
-from FacilityPrep import FacilityPrep
-from log.Logger import Logger
+from com.sca.hem4.FacilityPrep import FacilityPrep
+from com.sca.hem4.log.Logger import Logger
 from DepositionDepletion import sort
-from model.Model import *
+from com.sca.hem4.model.Model import *
 from datetime import datetime
 
 

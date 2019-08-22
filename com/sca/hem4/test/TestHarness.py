@@ -1,9 +1,9 @@
 from threading import Event
 
-from Processor import Processor
-from log.Logger import Logger
-from model.Model import Model
-from upload.FileUploader import FileUploader
+from com.sca.hem4.Processor import Processor
+from com.sca.hem4.log.Logger import Logger
+from com.sca.hem4.model.Model import Model
+from com.sca.hem4.upload.FileUploader import FileUploader
 import pkg_resources
 
 class TestHarness:

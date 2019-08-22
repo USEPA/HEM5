@@ -5,10 +5,10 @@ Created on Thu Jul 19 00:34:57 2018
 @author: d
 """
 
-from upload.DependentInputFile import DependentInputFile
+from com.sca.hem4.upload.DependentInputFile import DependentInputFile
 from tkinter import messagebox
 
-from upload.EmissionsLocations import *
+from com.sca.hem4.upload.EmissionsLocations import *
 
 numvert = 'numvert';
 area = 'area';

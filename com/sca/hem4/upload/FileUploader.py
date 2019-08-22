@@ -3,20 +3,20 @@ import pandas as pd
 from tkinter.filedialog import askopenfilename
 from tkinter import messagebox
 
-from upload.DoseResponse import DoseResponse
-from upload.EmissionsLocations import EmissionsLocations
-from upload.FacilityList import FacilityList
-from upload.HAPEmissions import HAPEmissions
-from upload.TargetOrganEndpoints import TargetOrganEndpoints
-from upload.UserReceptors import UserReceptors
-from upload.Polyvertex import Polyvertex
-from upload.BuoyantLine import BuoyantLine
-from upload.Downwash import Downwash
-from upload.Particle import Particle
-from upload.LandUse import LandUse
-from upload.Seasons import Seasons
-from upload.GasParams import GasParams
-from upload.EmisVar import EmisVar
+from com.sca.hem4.upload.DoseResponse import DoseResponse
+from com.sca.hem4.upload.EmissionsLocations import EmissionsLocations
+from com.sca.hem4.upload.FacilityList import FacilityList
+from com.sca.hem4.upload.HAPEmissions import HAPEmissions
+from com.sca.hem4.upload.TargetOrganEndpoints import TargetOrganEndpoints
+from com.sca.hem4.upload.UserReceptors import UserReceptors
+from com.sca.hem4.upload.Polyvertex import Polyvertex
+from com.sca.hem4.upload.BuoyantLine import BuoyantLine
+from com.sca.hem4.upload.Downwash import Downwash
+from com.sca.hem4.upload.Particle import Particle
+from com.sca.hem4.upload.LandUse import LandUse
+from com.sca.hem4.upload.Seasons import Seasons
+from com.sca.hem4.upload.GasParams import GasParams
+from com.sca.hem4.upload.EmisVar import EmisVar
 
 
 class FileUploader():

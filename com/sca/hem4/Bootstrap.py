@@ -1,6 +1,6 @@
 
 import queue
-from GuiThreaded import Hem4
+from com.sca.hem4.GuiThreaded import Hem4
 import tkinter as tk
 import tkinter.ttk as ttk
 

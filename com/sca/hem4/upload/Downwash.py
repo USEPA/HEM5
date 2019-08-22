@@ -5,10 +5,10 @@ Created on Mon Aug  6 11:21:13 2018
 @author: dlindsey
 """
 
-from upload.DependentInputFile import DependentInputFile
+from com.sca.hem4.upload.DependentInputFile import DependentInputFile
 from tkinter import messagebox
-from model.Model import *
-from upload.FacilityList import bldg_dw
+from com.sca.hem4.model.Model import *
+from com.sca.hem4.upload.FacilityList import bldg_dw
 
 section = 'section';
 keyword = 'keyword';

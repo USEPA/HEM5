@@ -1,5 +1,5 @@
-from writer.excel.AcuteChemicalUnpopulated import AcuteChemicalUnpopulated
-from writer.excel.RiskBreakdown import *
+from com.sca.hem4.writer.excel.AcuteChemicalUnpopulated import AcuteChemicalUnpopulated
+from com.sca.hem4.writer.excel.RiskBreakdown import *
 
 hq_rel = 'hq_rel'
 hq_aegl1 = 'hq_aegl1'

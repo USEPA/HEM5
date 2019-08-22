@@ -4,8 +4,8 @@
 Created on Fri Aug 31 20:13:09 2018
 @author: d
 """
-from model.Model import fac_id
-from upload.DependentInputFile import DependentInputFile
+from com.sca.hem4.model.Model import fac_id
+from com.sca.hem4.upload.DependentInputFile import DependentInputFile
 from tkinter import messagebox
 
 class Seasons(DependentInputFile):

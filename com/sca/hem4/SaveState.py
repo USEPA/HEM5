@@ -9,7 +9,7 @@ import traceback
 import os
 import shutil
 
-from model.Model import fac_id
+from com.sca.hem4.model.Model import fac_id
 
 
 class SaveState():

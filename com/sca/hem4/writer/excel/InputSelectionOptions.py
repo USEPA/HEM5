@@ -3,8 +3,8 @@ import os
 from numpy.core.multiarray import array
 from pandas import DataFrame
 
-from log.Logger import Logger
-from writer.excel.ExcelWriter import ExcelWriter
+from com.sca.hem4.log.Logger import Logger
+from com.sca.hem4.writer.excel.ExcelWriter import ExcelWriter
 
 class InputSelectionOptions(ExcelWriter):
     """

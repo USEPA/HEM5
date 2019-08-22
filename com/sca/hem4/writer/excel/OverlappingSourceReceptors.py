@@ -1,5 +1,5 @@
 import os
-from writer.excel.ExcelWriter import ExcelWriter
+from com.sca.hem4.writer.excel.ExcelWriter import ExcelWriter
 
 class OverlappingSourceReceptors(ExcelWriter):
     """

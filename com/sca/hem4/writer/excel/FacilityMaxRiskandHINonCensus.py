@@ -1,9 +1,9 @@
 import pandas as pd
 
-from FacilityPrep import *
-from model.Model import *
-from writer.excel.ExcelWriter import ExcelWriter
-from writer.excel.Incidence import inc
+from com.sca.hem4.FacilityPrep import *
+from com.sca.hem4.model.Model import *
+from com.sca.hem4.writer.excel.ExcelWriter import ExcelWriter
+from com.sca.hem4.writer.excel.Incidence import inc
 
 parameter = 'parameter';
 value = 'value';

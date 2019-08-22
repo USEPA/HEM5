@@ -20,7 +20,7 @@ import math
 import os
 from itertools import combinations
 
-from support.UTM import UTM
+from com.sca.hem4.support.UTM import UTM
 
 
 class KMLWriter():

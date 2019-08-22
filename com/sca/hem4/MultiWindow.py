@@ -9,7 +9,7 @@ import tkinter as tk
 import webbrowser
 import tkinter.ttk as ttk
 from functools import partial
-from GuiThreaded import Hem4
+from com.sca.hem4.GuiThreaded import Hem4
 import queue
 
 import os

@@ -1,4 +1,4 @@
-from writer.excel.RiskBreakdown import *
+from com.sca.hem4.writer.excel.RiskBreakdown import *
 
 risk_contrib = 'risk_contrib'
 

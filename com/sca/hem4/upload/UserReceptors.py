@@ -1,8 +1,8 @@
-from CensusBlocks import population
-from upload.DependentInputFile import DependentInputFile
+from com.sca.hem4.CensusBlocks import population
+from com.sca.hem4.upload.DependentInputFile import DependentInputFile
 from tkinter import messagebox
-from upload.EmissionsLocations import *
-from upload.FacilityList import *
+from com.sca.hem4.upload.EmissionsLocations import *
+from com.sca.hem4.upload.FacilityList import *
 
 rec_type = 'rec_type';
 rec_id = 'rec_id';

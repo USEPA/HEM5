@@ -3,6 +3,7 @@ from math import log10, floor
 from com.sca.hem4.upload.EmissionsLocations import EmissionsLocations
 from com.sca.hem4.writer.csv.BlockSummaryChronic import *
 from com.sca.hem4.writer.excel.ExcelWriter import ExcelWriter
+from com.sca.hem4.FacilityPrep import *
 
 class SourceTypeRiskHistogram(ExcelWriter):
 

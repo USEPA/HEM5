@@ -1,7 +1,7 @@
 from math import isnan
 
-from model.Model import *
-from upload.InputFile import InputFile
+from com.sca.hem4.model.Model import *
+from com.sca.hem4.upload.InputFile import InputFile
 from tkinter import messagebox
 
 met_station = 'met_station';

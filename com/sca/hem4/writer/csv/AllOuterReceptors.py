@@ -5,11 +5,11 @@ import pandas as pd
 import numpy as np
 from pandas import Series
 from functools import reduce
-
-from log.Logger import Logger
-from upload.DoseResponse import *
-from writer.csv.AllInnerReceptors import *
-from writer.excel.Incidence import inc
+from com.sca.hem4.FacilityPrep import *
+from com.sca.hem4.log.Logger import Logger
+from com.sca.hem4.upload.DoseResponse import *
+from com.sca.hem4.writer.csv.AllInnerReceptors import *
+from com.sca.hem4.writer.excel.Incidence import inc
 
 
 mir = 'mir';

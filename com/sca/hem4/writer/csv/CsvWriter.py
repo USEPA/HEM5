@@ -2,7 +2,7 @@ import csv
 import os
 import re
 
-from writer.Writer import Writer
+from com.sca.hem4.writer.Writer import Writer
 
 class CsvWriter(Writer):
 

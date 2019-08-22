@@ -3,11 +3,11 @@ from math import log10, floor
 import numpy as np
 import pandas as pd
 
-from FacilityPrep import *
-from model.Model import *
-from upload.UserReceptors import rec_type
-from writer.csv.BlockSummaryChronic import mir
-from writer.excel.ExcelWriter import ExcelWriter
+from com.sca.hem4.FacilityPrep import *
+from com.sca.hem4.model.Model import *
+from com.sca.hem4.upload.UserReceptors import rec_type
+from com.sca.hem4.writer.csv.BlockSummaryChronic import mir
+from com.sca.hem4.writer.excel.ExcelWriter import ExcelWriter
 
 parameter = 'parameter';
 value = 'value';
