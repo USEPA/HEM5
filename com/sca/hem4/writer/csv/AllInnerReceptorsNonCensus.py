@@ -1,6 +1,7 @@
 from CensusBlocks import *
 from writer.csv.CsvWriter import CsvWriter
 from upload.HAPEmissions import *
+from upload.FacilityList import *
 import os
 
 ems_type = 'ems_type';
@@ -8,6 +9,7 @@ block = 'block';
 drydep = 'drydep';
 wetdep = 'wetdep';
 aconc = 'aconc';
+aresult = 'aresult';
 
 class AllInnerReceptorsNonCensus(CsvWriter):
     """
@@ -37,6 +39,15 @@ class AllInnerReceptorsNonCensus(CsvWriter):
         # Units conversion factor
         self.cf = 2000*0.4536/3600/8760
 
+        # Aermod runtype (with or without deposition) determines what columns are in the aermod plotfile.
+        # Set accordingly in a dictionary.
+        self.rtype = self.model.model_optns['runtype']
+        self.plotcols = {0: [utme,utmn,source_id,result,aresult,'emis_type']}
+        self.plotcols[1] = [utme,utmn,source_id,result,ddp,wdp,aresult,'emis_type']
+        self.plotcols[2] = [utme,utmn,source_id,result,ddp,aresult,'emis_type']
+        self.plotcols[3] = [utme,utmn,source_id,result,wdp,aresult,'emis_type']
+
+
         # If acute was run for this facility, read the acute plotfile
         if self.model.facops.iloc[0][acute] == 'Y':
             apfile = open("aermod/maxhour.plt", "r")
@@ -48,6 +59,7 @@ class AllInnerReceptorsNonCensus(CsvWriter):
                        ,concdate:np.str},
                 comment='*')          
 
+        
         # Extract Chronic inner concs from Chronic plotfile and round the utm coordinates
         innercplot_df = self.plot_df.query("net_id != 'POLGRID1'").copy()
         innercplot_df.utme = innercplot_df.utme.round()
@@ -75,7 +87,7 @@ class AllInnerReceptorsNonCensus(CsvWriter):
 
         # process inner concs one source_id at a time
         for x in srcids:
-            innerplot_onesrcid = innerplot_df[[utme,utmn,source_id,result]].loc[innerplot_df[source_id] == x]
+            innerplot_onesrcid = innerplot_df[self.plotcols[self.rtype]].loc[innerplot_df[source_id] == x]
             hapemis_onesrcid = self.model.runstream_hapemis[[source_id,pollutant,emis_tpy]].loc[self.model.runstream_hapemis[source_id] == x]
             for row1 in innerplot_onesrcid.itertuples():
                 for row2 in hapemis_onesrcid.itertuples():
@@ -91,14 +103,14 @@ class AllInnerReceptorsNonCensus(CsvWriter):
                     d_recid = record[rec_id].values[0]
                     d_lat = record[lat].values[0]
                     d_lon = record[lon].values[0]
-                    d_sourceid = row1[3]
-                    d_emistype = "C"
-                    d_pollutant = row2[2]
+                    d_sourceid = row1.source_id
+                    d_emistype = row1.emis_type
+                    d_pollutant = row2.pollutant
                     d_conc = row1[4] * row2[3] * self.cf
                     d_aconc = row1[5] * row2[3] * self.cf * self.model.facops.iloc[0][multiplier]
                     d_elev = record[elev].values[0]
-                    d_drydep = ""
-                    d_wetdep = ""
+                    d_drydep = "" if self.rtype in [0,3] else row1.ddp * row2.emis_tpy * self.cf
+                    d_wetdep = "" if self.rtype in [0,2] else row1.wdp * row2.emis_tpy * self.cf
                     d_population = record[population].values[0]
                     d_overlap = record[overlap].values[0]
                     datalist = [d_recid, d_lat, d_lon, d_sourceid, d_emistype, d_pollutant, d_conc,
@@ -111,3 +123,12 @@ class AllInnerReceptorsNonCensus(CsvWriter):
         self.dataframe = innerconc_df
         self.data = self.dataframe.values
         yield self.dataframe
+
+
+    def createDataframe(self):
+        # Type setting for CSV reading
+        self.numericColumns = [lat, lon, conc, aconc, elev, drydep, wetdep, population]
+        self.strColumns = [rec_id, source_id, ems_type, pollutant, overlap]
+
+        df = self.readFromPathCsv(self.getColumns())
+        return df.fillna("")        

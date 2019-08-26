@@ -277,7 +277,7 @@ class FacilityPrep():
         maxdist = self.model.facops[max_dist][0]
         modeldist = self.model.facops[model_dist][0]
 
-        if self.model.urepOnly_optns.get('ureponly', None):
+        if self.model.altRec_optns.get('altrec', None):
             self.innerblks, self.outerblks = self.getBlocksFromUrep(facid, cenx, ceny, cenlon, cenlat, facutmzone,
                 maxdist, modeldist, sourcelocs, op_overlap)
 
@@ -351,12 +351,15 @@ class FacilityPrep():
                             
             
             # Add or remove columns to make user_recs compatible with innerblks
-            user_recs.drop('fac_id', inplace=True, axis=1)
-            user_recs['fips'] = 'U0000'
-            user_recs['idmarplot'] = 'U0000U' + user_recs['rec_id']
+#            user_recs.drop('fac_id', inplace=True, axis=1)
             user_recs['urban_pop'] = 0
             user_recs['population'] = 0
-
+            if self.model.altRec_optns.get('altrec', None):
+                user_recs['rec_id'] = 'U_' + user_recs['rec_id']
+            else:
+                user_recs['fips'] = 'U0000'
+                user_recs['idmarplot'] = 'U0000U' + user_recs['rec_id']
+            
             # Append user_recs to innerblks
             self.innerblks = self.innerblks.append(user_recs, ignore_index=True)
             
@@ -892,11 +895,11 @@ class FacilityPrep():
         urecs = self.model.altreceptr.dataframe.loc[self.model.altreceptr.dataframe[fac_id] == facid]
 
         # If any population values are missing, we cannot create an Incidence report
-        self.model.urepOnly_optns['ureponly_nopop'] = urecs.isnull().any()[population]
+        self.model.altRec_optns['altrec_nopop'] = urecs.isnull().any()[population]
         urecs[population] = pd.to_numeric(urecs[population], errors='coerce').fillna(0)
 
         # If any elevation or hill height values are missing, we must run in FLAT mode.
-        self.model.urepOnly_optns['ureponly_flat'] = urecs.isnull().any()[elev] or urecs.isnull().any()[hill]
+        self.model.altRec_optns['altrec_flat'] = urecs.isnull().any()[elev] or urecs.isnull().any()[hill]
         urecs[elev] = pd.to_numeric(urecs[elev], errors='coerce').fillna(0)
         urecs[hill] = pd.to_numeric(urecs[hill], errors='coerce').fillna(0)
 
@@ -929,7 +932,7 @@ class FacilityPrep():
         innerblks, outerblks = in_box(modelblks, sourcelocs, modeldist, maxdist, overlap_dist, self.model)
 
 
-        Logger.log("OUTERBLOCKS", outerblks, False)
+#        Logger.log("OUTERBLOCKS", outerblks, False)
 
         # convert utme, utmn, utmz, and population to integers
         innerblks[utme] = innerblks[utme].astype(int)
