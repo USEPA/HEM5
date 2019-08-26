@@ -1,5 +1,5 @@
 import pandas as pd
-from math import log10, floor
+from math import log10, floor, isnan
 import os
 from FacilityPrep import FacilityPrep
 from writer.excel.ExcelWriter import ExcelWriter
@@ -87,7 +87,7 @@ class FacilityTOSHIExp(ExcelWriter):
         if x == 0:
             return 0;
 
-        if math.isnan(x):
+        if isnan(x):
             return float('NaN')
 
         rounded = round(x, sig-int(floor(log10(abs(x))))-1)

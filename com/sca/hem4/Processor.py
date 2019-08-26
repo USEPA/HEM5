@@ -2,7 +2,7 @@ import os
 import shutil
 import threading
 
-import datetime
+from datetime import datetime
 from SaveState import SaveState
 from log.Logger import Logger
 from runner.FacilityRunner import FacilityRunner
@@ -32,19 +32,21 @@ class Processor():
     def process(self):
 
         # Create run id for saving model. Default to cat_timestamp if no group
-        # Also create a root output folder using the group name.
-        # If not group name, folder name will be Output       
+        # Also create a root output folder using the user supplied group name.
+        # If no group name, output folder name will use date/time stamp        
         if self.model.group_name != None:
             runid = self.model.group_name
-            print('runid', runid)
-            self.model.rootoutput = "output/" + self.model.group_name + "/"
-            if os.path.exists(self.model.rootoutput):
-                shutil.rmtree(self.model.rootoutput)                
-            os.makedirs(self.model.rootoutput)
         else: 
             runid = str(uuid.uuid4())[:7]
-            self.model.rootoutput = "output/"
-            
+            self.model.group_name = "rungroup_" + str(datetime.now().strftime('%Y_%m_%d_%H_%M_%S'))
+
+        self.model.rootoutput = "output/" + self.model.group_name + "/"
+        if os.path.exists(self.model.rootoutput):
+            shutil.rmtree(self.model.rootoutput)                
+        os.makedirs(self.model.rootoutput)
+       
+        Logger.logMessage("RUN GROUP: " + self.model.group_name)
+        
 #            runid = datetime.datetime.now().strftime("%Y-%H-%M-%p")
 #            print(runid)
             
@@ -148,7 +150,7 @@ class Processor():
         return success
 
     def createSourceCategoryOutputs(self):
-
+        
         # Create Facility Max Risk and HI file
         fac_max_risk = FacilityMaxRiskandHI(self.model.rootoutput, None, self.model, None, None)
         fac_max_risk.write()

@@ -46,7 +46,7 @@ class UserReceptors(DependentInputFile):
             facilities = set(receptor_unassigned)
             messagebox.showinfo("Unassigned User Receptors", "Receptors for " + ", ".join(facilities) + " have not been assigned. Please edit the 'user_rcpt' column in the facility options file.")
         else:
-            check_receptor_assignment = [str(facility) for facility in check_receptor_assignment]
+            check_receptor_assignment = [str(facility) for facility in check_receptor_assignment.unique()]
             self.log.append("Uploaded user receptors for " + " ".join(check_receptor_assignment) + "\n")
 
             self.dataframe = ureceptor_df ##moved this into the loop

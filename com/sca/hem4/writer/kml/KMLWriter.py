@@ -736,6 +736,568 @@ class KMLWriter():
         fackmz_fname = fackml_fname.replace('.kml', '.kmz')
         self.createKMZ(kmztype, fackml_fname, fackmz_fname)
 
+
+    def write_facility_kml_NonCensus(self, facid, faccen_lat, faccen_lon, outdir, model):
+        """
+        Create the source/risk KML file for a given facility that used Alternate Receptors
+        """
+
+        # Define the name of the output kml file
+        fackml_fname = outdir + str(facid) + "_source_risk.kml"
+        
+        # Setup a dictionary to hold the real names of the TOSHIs
+        hinames = {'hi_resp':'respiratory', 'hi_live':'liver', 'hi_neur':'neurological',
+                  'hi_deve':'developmental', 'hi_repr':'reproductive', 'hi_kidn':'kidney', 
+                  'hi_ocul':'ocular', 'hi_endo':'endocrine', 'hi_hema':'hematological',
+                  'hi_immu':'immunological', 'hi_skel':'skeletal', 'hi_sple':'spleen',
+                  'hi_thyr':'thyroid', 'hi_whol':'wholebody'}
+
+
+        # Create a dataframe of polar receptor risk by receptor and pollutant        
+        polarsum = model.all_polar_receptors_df.groupby(['distance', 'angle', 'lat', 'lon', 'pollutant'],
+                                                        as_index=False)[['conc']].sum()
+        polarmerge1  = polarsum.merge(model.haplib.dataframe, on='pollutant')[['distance', 'angle',
+                                     'lat','lon','pollutant','conc','ure','rfc']]
+        polarmerge2  = polarmerge1.merge(model.organs.dataframe, on='pollutant')[['distance', 'angle',
+                                     'lat','lon','pollutant','conc','ure','rfc','resp','liver',
+                                     'neuro','dev','reprod','kidney','ocular','endoc','hemato','immune',
+                                     'skeletal','spleen','thyroid','wholebod']]
+        polarmerge2['risk'] = polarmerge2['conc'] * polarmerge2['ure']
+        hilist = (('hi_resp','resp'), ('hi_live','liver'), ('hi_neur','neuro'), ('hi_deve','dev'),
+                  ('hi_repr','reprod'), ('hi_kidn','kidney'), ('hi_ocul','ocular'), ('hi_endo','endoc'),
+                  ('hi_hema','hemato'), ('hi_immu','immune'), ('hi_skel','skeletal'), ('hi_sple','spleen'),
+                  ('hi_thyr','thyroid'), ('hi_whol','wholebod'))
+        for his in hilist:
+            polarmerge2[his[0]] = polarmerge2.apply(lambda row: self.calcHI(row['conc'], 
+                                 row['rfc'], row[his[1]]), axis=1)
+
+        # Create a dataframe of inner receptor risk by receptor and pollutant
+        innersum = model.all_inner_receptors_df.groupby(['rec_id', 'lat', 'lon', 'pollutant'],
+                                                        as_index=False)[['conc']].sum()
+        innermerge1  = innersum.merge(model.haplib.dataframe, on='pollutant')[['rec_id',
+                                      'lat','lon','pollutant','conc','ure','rfc']]
+        innermerge2  = innermerge1.merge(model.organs.dataframe, on='pollutant')[['rec_id',
+                                     'lat','lon','pollutant','conc','ure','rfc','resp',
+                                     'liver','neuro','dev','reprod','kidney','ocular',
+                                     'endoc','hemato','immune','skeletal','spleen',
+                                     'thyroid','wholebod']]
+        innermerge2['risk'] = innermerge2['conc'] * innermerge2['ure']
+        for his in hilist:
+            innermerge2[his[0]] = innermerge2.apply(lambda row: self.calcHI(row['conc'], 
+                                 row['rfc'], row[his[1]]), axis=1)
+
+                
+        # Create KML object and define the document
+        fac_kml = kml.KML()        
+        docWithHeader = self.createDocumentWithHeader()
+
+        # Create the sourcemap dataframe for this facility (emission source locations)
+        srcmap = self.create_sourcemap(model, facid)
+
+        # Define an emission source folder and populate it
+        es_folder = kml.Folder(ns=self.ns, name="Emission sources")
+        
+        for name, group in srcmap.groupby(["source_id","source_type"]):
+            sname = name[0]
+            stype = name[1]
+
+            # Emission sources  Point, Capped, Horizontal
+            if stype == 'P' or stype == 'C' or stype == 'H':
+
+                placemark = kml.Placemark(ns=self.ns, name=sname,
+                                          description=CDATA("<div align='center'>" + sname + "</div>"),
+                                          styleUrl="#Ptsrc")
+
+                point = Point(group.iloc[0]['lon'], group.iloc[0]['lat'], 0.0)
+                placemark.geometry = Geometry(ns=self.ns, altitude_mode="relativeToGround", geometry=point)
+
+                es_folder.append(placemark)
+
+            # Area, Volume or Polygon
+            elif stype == 'A' or stype == 'V' or stype == 'I':
+
+                placemark = kml.Placemark(ns=self.ns, name=sname,
+                                          description=CDATA("<div align='center'>" + sname + "</div>"),
+                                          styleUrl="#Areasrc")
+
+                simpleData = Data(name="SourceId", value=sname)
+                data = [simpleData]
+                schemaData = SchemaData(ns=self.ns, schema_url="#Source_map_schema", data=data)
+                elements = [schemaData]
+                placemark.extended_data = ExtendedData(ns=self.ns, elements=elements)
+
+                latlons = []
+                for index, row in group.iterrows():
+                    coord = (row["lon"], row["lat"], 0)
+                    latlons.append(coord)
+                    
+                linearRing = LinearRing(coordinates=latlons)                               
+                polygon = Polygon(shell=linearRing.coords)
+                placemark.geometry = Geometry(ns=self.ns, extrude=0, altitude_mode="clampToGround", tessellate=1,
+                                              geometry=polygon)
+
+                es_folder.append(placemark)
+
+            # Line or Bouyant Line
+            elif stype == 'N' or stype == 'B':
+
+                placemark = kml.Placemark(ns=self.ns, name=sname,
+                                          description=CDATA("<div align='center'>" + sname + "</div>"),
+                                          styleUrl="#Linesrc")
+
+                ps_style = kml.Style(ns=self.ns)
+                style = LineStyle(ns=self.ns, width=group.iloc[0]['line_width'], color="7c8080ff")
+                ps_style.append_style(style)
+                placemark.append_style(ps_style)
+
+                lineString = LineString([(group.iloc[0]['lon'], group.iloc[0]['lat']), (group.iloc[0]['lon_x2'],
+                                        group.iloc[0]['lat_y2'])])
+                placemark.geometry = Geometry(ns=self.ns, altitude_mode="clampToGround", geometry=lineString)
+
+                es_folder.append(placemark)
+
+        docWithHeader.append(es_folder)
+
+        # Facility center folder
+        cen_folder = kml.Folder(ns=self.ns, name="Domain center")
+        cen_folder.isopen = 0
+
+        placemark = kml.Placemark(ns=self.ns, name="Domain center",
+                                  description=CDATA("<div align='center'>Plant center</div>"),
+                                  styleUrl="#center")
+        point = Point(faccen_lon, faccen_lat, 0.0)
+        placemark.geometry = Geometry(ns=self.ns, altitude_mode="relativeToGround", geometry=point)
+        cen_folder.append(placemark)
+        docWithHeader.append(cen_folder)
+
+        # Facility MIR folder
+        mir_info = model.max_indiv_risk_df[model.max_indiv_risk_df['parameter']=='Cancer risk'][[
+                                            'parameter','value','distance','rec_type',
+                                            'lat','lon']].reset_index(drop=True)
+        mirrnd = round(mir_info.at[0,'value']*1000000, 2)
+        mirtype = mir_info.at[0,'rec_type']
+        mirdist = round(mir_info.at[0,'distance'], 2)
+        mirlat = mir_info.at[0,'lat']
+        mirlon = mir_info.at[0,'lon']
+
+        mir_folder = kml.Folder(ns=self.ns, name="MIR")
+        mir_folder.isopen = 0
+        placemark = kml.Placemark(ns=self.ns, name="MIR",
+                                  description=CDATA("<div align='center'><B>MIR Receptor</B><br />" + \
+                                  "<B>Receptor type: "+mirtype+"</B><br />" + \
+                                  "<B>Distance from facility (m): "+str(mirdist)+"</B><br /><br />" + \
+                                  "MIR (in a million) = " +str(mirrnd)+"<br /></div>"),
+                                  styleUrl="#mir")
+        point = Point(mirlon, mirlat, 0.0)
+        placemark.geometry = Geometry(ns=self.ns, altitude_mode="relativeToGround", geometry=point)
+        mir_folder.append(placemark)
+        docWithHeader.append(mir_folder)
+        
+        
+        #-------------- User receptor cancer risk -------------------------------------        
+        urec_df = innermerge2.loc[innermerge2['rec_id'].str.upper().str.contains('U')]
+        if not urec_df.empty:
+            urcr_folder = kml.Folder(ns=self.ns, name="User receptor cancer risk")
+            urcr_folder.isopen = 0
+            for block, group in urec_df.groupby(['rec_id']):
+                uid = group.iloc[0]['rec_id']
+                ulat = group.iloc[0]['lat']
+                ulon = group.iloc[0]['lon']
+
+                urtot = group['risk'].sum() * 1000000
+                urrnd = round(urtot,2)
+                
+                description = "<div align='center'><B>User Receptor</B> <br />" + \
+                              "<B> ID: " + uid + "</B> <br /> \n" + \
+                              "<B> HEM4 Estimated Cancer Risk (in a million) </B> <br /> \n" + \
+                              "    " + "Total = " + str(urrnd) + "<br /><br /> \n"
+                if urrnd > 0:
+                    description += "    " + "<U> Top Pollutants Contributing to Total Cancer Risk </U> <br /> \n"
+                    # create dictionary to hold summed risk of each pollutant
+                    urhap_sum = {}
+                    for index, row in group.iterrows():
+                        if row["pollutant"] not in urhap_sum:
+                            urhap_sum[row["pollutant"]] = row["risk"]
+                        else:
+                            pol = urhap_sum[row["pollutant"]]
+                            risksum = row["risk"] + pol
+                            urhap_sum[row["pollutant"]] = risksum
+
+                    #sort the dictionary by descending value
+                    sorted_urhap_sum = OrderedDict(sorted(urhap_sum.items(), key=itemgetter(1),
+                                                          reverse=True))
+
+                    # check to make sure large enough value to keep
+                    for k, x in sorted_urhap_sum.items():
+                        z = round(x*1000000, 2)     # risk in a million
+                        if z > 0.005:
+                            description = description + "    " + format(k) + " = " + format(z) + "<br /> \n"
+
+                description += "</div>"
+                
+                # Choose style based on risk level
+                if urrnd <= 20:
+                    styletag = "#u20"
+                elif (urrnd > 20) & (urrnd < 100):
+                    styletag = "#u20to100"
+                else:
+                    styletag = "#u100"
+                
+                ur_placemark = kml.Placemark(ns=self.ns, name="User Receptor: " + uid,
+                                             description=CDATA(description),
+                                             styleUrl=styletag)
+                point = Point(ulon, ulat, 0.000)
+                ur_placemark.geometry = Geometry(ns=self.ns, altitude_mode="clampToGround", geometry=point)
+                urcr_folder.append(ur_placemark)
+
+            docWithHeader.append(urcr_folder)
+
+
+        #------------------------ User receptor TOSHI -----------------------------
+        if not urec_df.empty:
+            urt_folder = kml.Folder(ns=self.ns, name="User receptor TOSHI")
+            urt_folder.isopen = 0
+            for block, group in urec_df.groupby(['rec_id']):
+                uid = group.iloc[0]['rec_id']
+                ulat = group.iloc[0]['lat']
+                ulon = group.iloc[0]['lon']
+
+                # Sum each toshi in this group
+                ug = group[['hi_resp','hi_live','hi_neur','hi_deve','hi_repr','hi_kidn',
+                            'hi_ocul','hi_endo','hi_hema','hi_immu','hi_skel','hi_sple',
+                            'hi_thyr','hi_whol']].sum(axis=0)
+                
+                # Identify the max toshi
+                maxi = ug.idxmax()
+                maxtoshi = hinames[maxi]
+                maxtoshival = round(ug[maxi], 2)
+
+                
+                description = "<div align='center'><B> User Receptor</B> <br /> \n" + \
+                              "    " + "<B> ID: " + uid + "</B> <br /> \n" + \
+                              "    " + "<B> HEM4 Estimated Maximum TOSHI (" + maxtoshi + ") </B> <br /> \n" + \
+                              "    " + "Total = " + str(maxtoshival) + "<br /><br /> \n"
+                              
+                if maxtoshival > 0:
+                    description += "    " + "<U> Top Pollutants Contributing to TOSHI </U> <br /> \n"
+                    # create dictionary to hold summed non-cancer of each pollutant
+                    urhap_sum = {}
+                    for index, row in group.iterrows():
+                        if row["pollutant"] not in urhap_sum:
+                            urhap_sum[row["pollutant"]] = row["risk"]
+                        else:
+                            pol = urhap_sum[row["pollutant"]]
+                            risksum = row["risk"] + pol
+                            urhap_sum[row["pollutant"]] = risksum
+
+                    #sort the dictionary by descending value
+                    sorted_urhap_sum = OrderedDict(sorted(urhap_sum.items(), key=itemgetter(1),
+                                                          reverse=True))
+
+                    # check to make sure large enough value to keep
+                    for k, x in sorted_urhap_sum.items():
+                        z = round(x, 3)
+                        if z > 0.001:
+                            description = description + "    " + format(k) + " = " + format(z) + "<br /> \n"
+
+                description += "</div>"
+                
+                # Choose style based on risk level
+                if maxtoshival <= 1:
+                    styletag = "#u20"
+                elif (maxtoshival > 1) & (maxtoshival < 10):
+                    styletag = "#u20to100"
+                else:
+                    styletag = "#u100"
+                
+                ur_placemark = kml.Placemark(ns=self.ns, name="User Receptor: " + uid,
+                                             description=CDATA(description),
+                                             styleUrl=styletag)
+                point = Point(ulon, ulat, 0.000)
+                ur_placemark.visibility = 0
+                ur_placemark.geometry = Geometry(ns=self.ns, altitude_mode="clampToGround", geometry=point)
+                urt_folder.append(ur_placemark)
+
+            docWithHeader.append(urt_folder)
+
+
+        #------------------ Inner receptor cancer risk ------------------------------
+        ir_folder = kml.Folder(ns=self.ns, name="Inner receptor cancer risk")
+        ir_folder.isopen = 0
+        
+        # Exclude user receptors
+        cblks = innermerge2.loc[~innermerge2['rec_id'].str.upper().str.contains('U')]
+        for loc, group in cblks.groupby(["lat","lon"]):
+            slat = loc[0]
+            slon = loc[1]
+            srecid = group.iloc[0]['rec_id']
+
+            cbtot = group['risk'].sum() * 1000000
+            cbrnd = round(cbtot,2)
+
+            description = "<div align='center'><B> Inner Receptor</B> <br /> \n" + \
+                          "    " + "<B> Receptor ID: " + str(group.iloc[0]['rec_id']) + "</B> <br /> \n" + \
+                          "    " + "<B> HEM4 Estimated Cancer Risk (in a million) </B> <br /> \n" + \
+                          "    " + "Total = " + str(cbrnd) + "<br /><br /> \n"
+
+            if cbrnd > 0:
+                description += "    " + "<U> Top Pollutants Contributing to Total Cancer Risk </U> <br /> \n"
+
+                # create dictionary to hold summed risk of each pollutant
+                cbhap_sum = {}
+                for index, row in group.iterrows():
+
+                    #keys = cbhap_sum.keys()
+                    if row["pollutant"] not in cbhap_sum:
+                        cbhap_sum[row["pollutant"]] = row["risk"]
+                        #inp_file.write(row["pollutant"])
+                    else:
+                        pol = cbhap_sum[row["pollutant"]]
+                        risksum = row["risk"] + pol
+                        cbhap_sum[row["pollutant"]] = risksum
+
+                #sort the dictionary by descending value
+                sorted_cbhap_sum = OrderedDict(sorted(cbhap_sum.items(), key=itemgetter(1),
+                                                      reverse=True))
+
+                # check to make sure large enough value to keep
+                for k, v in sorted_cbhap_sum.items():
+                    w = round(v*1000000, 2)     # risk in a million
+                    if w > 0.005:
+                        description += "    " + format(k) + " = " + format(w) + "<br /> \n"
+
+            description += "</div>"
+
+            # Choose style based on risk level
+            if cbrnd <= 20:
+                styletag = "#b20"
+            elif (cbrnd > 20) & (cbrnd < 100):
+                styletag = "#b20to100"
+            else:
+                styletag = "#b100"
+                
+            point = Point(slon, slat, 0.0000)
+            placemark = kml.Placemark(ns=self.ns, name="Inner Receptor " + str(srecid),
+                                      description=CDATA(description),
+                                      styleUrl=styletag)
+            placemark.geometry = Geometry(ns=self.ns, altitude_mode="clampToGround", geometry=point)
+            ir_folder.append(placemark)
+
+        docWithHeader.append(ir_folder)
+
+
+        #------------------------ Inner receptor TOSHI -----------------------------
+        irt_folder = kml.Folder(ns=self.ns, name="Inner receptor TOSHI")
+        irt_folder.isopen = 0
+
+        for loc, group in cblks.groupby(["lat","lon"]):
+            slat = loc[0]
+            slon = loc[1]
+            srecid = group.iloc[0]['rec_id']
+
+            # Sum each toshi in this group
+            sg = group[['hi_resp','hi_live','hi_neur','hi_deve','hi_repr','hi_kidn',
+                        'hi_ocul','hi_endo','hi_hema','hi_immu','hi_skel','hi_sple',
+                        'hi_thyr','hi_whol']].sum(axis=0)
+            
+            # Identify the max toshi
+            maxi = sg.idxmax()
+            maxtoshi = hinames[maxi]
+            maxtoshival = round(sg[maxi], 2)
+                        
+            description = "<div align='center'><B> Inner Receptor</B> <br /> \n" + \
+                          "    " + "<B> Receptor ID: " + srecid + "</B> <br /> \n" + \
+                          "    " + "<B> HEM4 Estimated Maximum TOSHI (" + maxtoshi + ") </B> <br /> \n" + \
+                          "    " + "Total = " + str(maxtoshival) + "<br /><br /> \n"
+
+            if maxtoshival > 0:
+                description += "    " + "<U> Top Pollutants Contributing to TOSHI </U> <br /> \n"
+
+                # create dictionary to hold summed non-cancer of each pollutant
+                cbhap_sum = {}
+                for index, row in group.iterrows():
+
+                    #keys = cbhap_sum.keys()
+                    if row["pollutant"] not in cbhap_sum:
+                        cbhap_sum[row["pollutant"]] = row[maxi]
+                        #inp_file.write(row["pollutant"])
+                    else:
+                        pol = cbhap_sum[row["pollutant"]]
+                        risksum = row[maxi] + pol
+                        cbhap_sum[row["pollutant"]] = risksum
+
+                #sort the dictionary by descending value
+                sorted_cbhap_sum = OrderedDict(sorted(cbhap_sum.items(), key=itemgetter(1),
+                                                      reverse=True))
+
+                # check to make sure large enough value to keep
+                for k, v in sorted_cbhap_sum.items():
+                    if v > 0.001:
+                        vrnd = round(v,3)
+                        description += "    " + format(k) + " = " + format(vrnd) + "<br /> \n"
+
+            description += "</div>"
+
+            # Choose style based on HI level
+            if maxtoshival <= 1:
+                styletag = "#b20"
+            elif (maxtoshival > 1) & (maxtoshival < 10):
+                styletag = "#b20to100"
+            else:
+                styletag = "#b100"
+
+            point = Point(slon, slat, 0.0000)
+            placemark = kml.Placemark(ns=self.ns, name="Inner Receptor " + str(srecid),
+                                      description=CDATA(description),
+                                      styleUrl=styletag)
+            placemark.visibility = 0
+            placemark.geometry = Geometry(ns=self.ns, altitude_mode="clampToGround", geometry=point)
+            irt_folder.append(placemark)
+
+        docWithHeader.append(irt_folder)
+
+
+        #---------------- Polar receptor cancer risk ------------------------------------
+        pr_folder = kml.Folder(ns=self.ns, name="Polar receptor cancer risk")
+        pr_folder.isopen = 0
+
+        for loc, group in polarmerge2.groupby(["lat","lon"]):
+            slat = loc[0]
+            slon = loc[1]
+            pg_dist = str(round(group.iloc[0]['distance'],0))
+            pg_angle = str(round(group.iloc[0]['angle'],0))
+
+            pgtot = group['risk'].sum() * 1000000
+            pgrnd = round(pgtot,2)
+
+            description = "<div align='center'><B> Polar Receptor</B> <br />" + \
+                          "    " + "<B> Distance: " + pg_dist + " Angle: " + pg_angle + "</B> <br /> \n" + \
+                          "    " + "<B> HEM4 Estimated Cancer Risk (in a million) </B> <br /> \n" + \
+                          "    " + "Total = " + str(pgrnd) + "<br /><br /> \n"
+
+            if pgrnd > 0:
+                description += "    " + "<U> Top Pollutants Contributing to Total Cancer Risk </U> <br /> \n"
+
+                # create dictionary to hold summed risk of each pollutant
+                pghap_sum = {}
+                for index, row in group.iterrows():
+                    if row["pollutant"] not in pghap_sum:
+                        pghap_sum[row["pollutant"]] = row["risk"]
+                    else:
+                        pol = pghap_sum[row["pollutant"]]
+                        risksum = row["risk"] + pol
+                        pghap_sum[row["pollutant"]] = risksum
+                        
+                #sort the dictionary by descending value
+                sorted_pghap_sum = OrderedDict(sorted(pghap_sum.items(), key=itemgetter(1),
+                                                      reverse=True))
+
+                # check to make sure large enough value to keep
+                for k, v in sorted_pghap_sum.items():
+                    z = round(v*1000000, 2)     # risk in a million
+                    if z > 0.005:
+                        description += "    " + format(k) + " = " + format(z) + "<br /> \n"
+
+            description += "</div>"
+
+            # Choose style based on risk level
+            if pgrnd <= 20:
+                styletag = "#s20"
+            elif (pgrnd > 20) & (pgrnd < 100):
+                styletag = "#s20to100"
+            else:
+                styletag = "#s100"
+
+            point = Point(slon, slat, 0.0000)
+            placemark = kml.Placemark(ns=self.ns, name="Polar Receptor Distance: " + pg_dist + " Angle: " + str(group.iloc[0]['angle']),
+                                      description=CDATA(description),
+                                      styleUrl=styletag)
+            placemark.visibility = 0
+            placemark.geometry = Geometry(ns=self.ns, altitude_mode="clampToGround", geometry=point)
+            pr_folder.append(placemark)
+
+        docWithHeader.append(pr_folder)
+
+
+        #---------------- Polar receptor TOSHI -----------------------------------------
+        prt_folder = kml.Folder(ns=self.ns, name="Polar TOSHI")
+        prt_folder.isopen = 0
+
+        for loc, group in polarmerge2.groupby(["lat","lon"]):
+            slat = loc[0]
+            slon = loc[1]
+            pg_dist = str(round(group.iloc[0]['distance'],0))
+            pg_angle = str(round(group.iloc[0]['angle'],0))
+
+            # Sum each toshi in this group
+            sg = group[['hi_resp','hi_live','hi_neur','hi_deve','hi_repr','hi_kidn',
+                        'hi_ocul','hi_endo','hi_hema','hi_immu','hi_skel','hi_sple',
+                        'hi_thyr','hi_whol']].sum(axis=0)
+            
+            # Identify the max toshi
+            maxi = sg.idxmax()
+            maxtoshi = hinames[maxi]
+            maxtoshival = round(sg[maxi], 2)
+
+            description = "<div align='center'><B> Polar Receptor</B> <br /> \n" + \
+                          "    " + "<B> Distance: " + pg_dist + " Angle: " + pg_angle + "</B> <br /> \n" + \
+                          "    " + "<B> HEM4 Estimated Max TOSHI (" + maxtoshi + ") </B> <br /> \n" + \
+                          "    " + "Total = " + str(maxtoshival) + "<br /><br /> \n"
+
+            if maxtoshival > 0:
+                description += "    " + "<U> Top Pollutants Contributing to TOSHI </U> <br /> \n"
+
+                # create dictionary to hold summed toshi of each pollutant
+                pghi_sum = {}
+                for index, row in group.iterrows():
+
+                    if row["pollutant"] not in pghi_sum:
+                        pghi_sum[row["pollutant"]] = row[maxi]
+                    else:
+                        pol = pghi_sum[row["pollutant"]]
+                        toshisum = row[maxi] + pol
+                        pghi_sum[row["pollutant"]] = toshisum
+
+                #sort the dictionary by descending value
+                sorted_pghi_sum = OrderedDict(sorted(pghi_sum.items(), key=itemgetter(1),
+                                                     reverse=True))
+
+                # check to make sure large enough value to keep
+                for k, v in sorted_pghi_sum.items():
+                    if v > 0.001:
+                        vrnd = round(v,3)
+                        description += "    " + format(k) + " = " + format(vrnd) + "<br /> \n"
+
+            description += "</div>"
+
+            # Choose style based on HI level
+            if maxtoshival <= 1:
+                styletag = "#s20"
+            elif (maxtoshival > 1) & (maxtoshival < 10):
+                styletag = "#s20to100"
+            else:
+                styletag = "#s100"
+
+            point = Point(slon, slat, 0.0000)
+            placemark = kml.Placemark(ns=self.ns, name="Polar Receptor Distance: " + pg_dist + " Angle: " + pg_angle,
+                                      description=CDATA(description),
+                                      styleUrl=styletag)
+            placemark.visibility = 0
+            placemark.geometry = Geometry(ns=self.ns, altitude_mode="clampToGround", geometry=point)
+            prt_folder.append(placemark)
+
+        docWithHeader.append(prt_folder)
+        fac_kml.append(docWithHeader)
+        
+        # Finished, write the kml file
+        self.writeToFile(fackml_fname, fac_kml)
+
+        # Create KMZ file
+        kmztype = 'facilityrisk'
+        fackmz_fname = fackml_fname.replace('.kml', '.kmz')
+        self.createKMZ(kmztype, fackml_fname, fackmz_fname)
+        
+        
         
     def calcHI(self, conc, rfc, endpoint):
         """

@@ -48,8 +48,8 @@ class FacilityList(InputFile):
         # FacilityID|met_station|rural_urban|max_dist|model_dist|radials|circles|overlap_dist|acute|hours|elev|
         # multiplier|ring1|dep|depl|phase|pdep|pdepl|vdep|vdepl|All_rcpts|user_rcpt|bldg_dw|urban_pop|fastall
         faclist_df = self.readFromPath(
-            (fac_id,met_station,rural_urban,max_dist,model_dist,radial,circles,overlap_dist, acute,
-             hours,elev,multiplier,ring1,dep,depl,phase,pdep,pdepl,vdep,vdepl,all_rcpts,
+            (fac_id,met_station,rural_urban,max_dist,model_dist,radial,circles,overlap_dist, ring1, acute,
+             hours,multiplier,dep,depl,phase,pdep,pdepl,vdep,vdepl,elev,all_rcpts,
              user_rcpt,bldg_dw,urban_pop,fastall)
         )
             
