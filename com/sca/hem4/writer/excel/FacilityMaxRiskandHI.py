@@ -16,10 +16,11 @@ class FacilityMaxRiskandHI(ExcelWriter, InputFile):
 
     def __init__(self, targetDir=None, facilityId=None, model=None, plot_df=None, filenameOverride=None,
                  createDataframe=False, incidence=None):
+        ExcelWriter.__init__(self, model, plot_df)
 
         # Initialization for file reading/writing. If no file name override, use the
         # default construction.
-        if self.model.group_name != None:
+        if self.model is not None and self.model.group_name is not None:
             outfile = self.model.group_name + "_facility_max_risk_and_hi.xlsx"
         else:
             outfile = "facility_max_risk_and_hi.xlsx"
@@ -27,7 +28,7 @@ class FacilityMaxRiskandHI(ExcelWriter, InputFile):
         filename = outfile if filenameOverride is None else filenameOverride
         path = os.path.join(targetDir, filename)
 
-        ExcelWriter.__init__(self, model, plot_df)
+
         InputFile.__init__(self, path, createDataframe)
 
         self.filename = path

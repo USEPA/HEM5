@@ -3,10 +3,10 @@ import time
 import subprocess
 import shutil
 import pandas as pd
-from OutputProcessing import *
+from com.sca.hem4.OutputProcessing import *
 from com.sca.hem4.FacilityPrep import FacilityPrep
 from com.sca.hem4.log.Logger import Logger
-from DepositionDepletion import sort
+from com.sca.hem4.DepositionDepletion import sort
 from com.sca.hem4.model.Model import *
 from datetime import datetime
 
@@ -99,7 +99,7 @@ class FacilityRunner():
             self.run(fac_folder)
 
             #check aermod run and move aermod.out file to facility folder
-            
+            check = False
             try:
                 check = self.check_run(fac_folder, None)
             

@@ -287,7 +287,8 @@ class Process_outputs():
         #----------- append to facility max risk output file ------------------
 
         fac_max_risk = FacilityMaxRiskandHINonCensus(self.model.rootoutput, self.facid, self.model, self.plot_df, incidence.dataframe) if ureponly else \
-            FacilityMaxRiskandHI(self.model.rootoutput, self.facid, self.model, self.plot_df, incidence.dataframe)
+            FacilityMaxRiskandHI(targetDir=self.model.rootoutput, facilityId=self.facid, model=self.model,
+                                 plot_df=self.plot_df, incidence=incidence.dataframe)
         fac_max_risk.writeWithoutHeader()
 
         #----------- append to facility cancer risk exposure output file ------------------

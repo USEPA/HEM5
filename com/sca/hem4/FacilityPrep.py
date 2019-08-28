@@ -295,70 +295,72 @@ class FacilityPrep():
 
             user_recs = self.model.ureceptr.dataframe.loc[self.model.ureceptr.dataframe[fac_id] == facid].copy()
             user_recs.reset_index(inplace=True)
-            
-            # First compute lat/lon coors using whatever zone was provided
-            slat = user_recs[lat]
-            slon = user_recs[lon]
-            szone = user_recs[utmzone]
-            alat, alon = UTM.utm2ll(slat, slon, szone)
-            user_recs[lat] = alat.tolist()
-            user_recs[lon] = alon.tolist()
 
-            # Next compute UTM coors using the common zone
-            sutmzone = facutmzone*np.ones(len(user_recs[lat]))
-            autmn, autme, autmz = UTM.ll2utm(slat, slon, sutmzone)
-            user_recs[utme] = autme.tolist()
-            user_recs[utmn] = autmn.tolist()
-            user_recs[utmzone] = autmz.tolist()
+            if not user_recs.empty:
+            
+                # First compute lat/lon coors using whatever zone was provided
+                slat = user_recs[lat]
+                slon = user_recs[lon]
+                szone = user_recs[utmzone]
+                alat, alon = UTM.utm2ll(slat, slon, szone)
+                user_recs[lat] = alat.tolist()
+                user_recs[lon] = alon.tolist()
 
-            # Compute distance and bearing (angle) from the center of the facility
-            user_recs['distance'] = np.sqrt((cenx - user_recs.utme)**2 + (ceny - user_recs.utmn)**2)
-            user_recs['angle'] = user_recs.apply(lambda row: self.bearing(row[utme],row[utmn],cenx,ceny), axis=1)
-            
-            # If all user receptor elevations are NaN, then replace with closest block elevation.
-            # If at least one elevation is not NaN, then leave non-NaN alone and replace NaN with 0.
-            # If all hill heights are NaN, then replace with max of closest block hill, closest block elev,
-            # or max user provided elev.
-            maxelev = user_recs[elev].max(axis=0, skipna=True) \
-                            if math.isnan(user_recs[elev].max(axis=0, skipna=True)) == False \
-                            else 0
-            maxhill = user_recs[hill].max(axis=0, skipna=True) \
-                            if math.isnan(user_recs[hill].max(axis=0, skipna=True)) == False \
-                            else 0            
-            elev_allnan = user_recs[elev].all(axis=0)
-            hill_allnan = user_recs[hill].all(axis=0)
-            
-            if elev_allnan == True or hill_allnan == True:
-                for index, row in user_recs.iterrows():
-                    elev_close, hill_close = self.urec_elevs(row[utme], row[utmn], 
-                                                             self.innerblks, self.outerblks)
-                    if elev_allnan == True:
-                        user_recs.loc[index, elev] = elev_close
-                    if hill_allnan == True:
-                        user_recs.loc[index, hill] = max([maxelev, elev_close, hill_close])
-            
-            if elev_allnan == False:
-                # Not all elevs are NaN. Leave non-NaN alone and replace NaN with 0.
-                user_recs[elev].fillna(0, inplace=True)
-                
-            if hill_allnan == False:
-                # Not all hills are NaN. Leave non-NaN alone and replace NaN with 0.
-                user_recs[hill].fillna(0, inplace=True)
+                # Next compute UTM coors using the common zone
+                sutmzone = facutmzone*np.ones(len(user_recs[lat]))
+                autmn, autme, autmz = UTM.ll2utm(slat, slon, sutmzone)
+                user_recs[utme] = autme.tolist()
+                user_recs[utmn] = autmn.tolist()
+                user_recs[utmzone] = autmz.tolist()
 
-            # determine if the user receptors overlap any emission sources
-            user_recs[overlap] = user_recs.apply(lambda row: self.check_overlap(row[utme], 
-                                   row[utmn], sourcelocs, op_overlap), axis=1)
-                            
-            
-            # Add or remove columns to make user_recs compatible with innerblks
-            user_recs.drop('fac_id', inplace=True, axis=1)
-            user_recs['fips'] = 'U0000'
-            user_recs['idmarplot'] = 'U0000U' + user_recs['rec_id']
-            user_recs['urban_pop'] = 0
-            user_recs['population'] = 0
+                # Compute distance and bearing (angle) from the center of the facility
+                user_recs['distance'] = np.sqrt((cenx - user_recs.utme)**2 + (ceny - user_recs.utmn)**2)
+                user_recs['angle'] = user_recs.apply(lambda row: self.bearing(row[utme],row[utmn],cenx,ceny), axis=1)
 
-            # Append user_recs to innerblks
-            self.innerblks = self.innerblks.append(user_recs, ignore_index=True)
+                # If all user receptor elevations are NaN, then replace with closest block elevation.
+                # If at least one elevation is not NaN, then leave non-NaN alone and replace NaN with 0.
+                # If all hill heights are NaN, then replace with max of closest block hill, closest block elev,
+                # or max user provided elev.
+                maxelev = user_recs[elev].max(axis=0, skipna=True) \
+                                if math.isnan(user_recs[elev].max(axis=0, skipna=True)) == False \
+                                else 0
+                maxhill = user_recs[hill].max(axis=0, skipna=True) \
+                                if math.isnan(user_recs[hill].max(axis=0, skipna=True)) == False \
+                                else 0
+                elev_allnan = user_recs[elev].all(axis=0)
+                hill_allnan = user_recs[hill].all(axis=0)
+
+                if elev_allnan == True or hill_allnan == True:
+                    for index, row in user_recs.iterrows():
+                        elev_close, hill_close = self.urec_elevs(row[utme], row[utmn],
+                                                                 self.innerblks, self.outerblks)
+                        if elev_allnan == True:
+                            user_recs.loc[index, elev] = elev_close
+                        if hill_allnan == True:
+                            user_recs.loc[index, hill] = max([maxelev, elev_close, hill_close])
+
+                if elev_allnan == False:
+                    # Not all elevs are NaN. Leave non-NaN alone and replace NaN with 0.
+                    user_recs[elev].fillna(0, inplace=True)
+
+                if hill_allnan == False:
+                    # Not all hills are NaN. Leave non-NaN alone and replace NaN with 0.
+                    user_recs[hill].fillna(0, inplace=True)
+
+                # determine if the user receptors overlap any emission sources
+                user_recs[overlap] = user_recs.apply(lambda row: self.check_overlap(row[utme],
+                                       row[utmn], sourcelocs, op_overlap), axis=1)
+
+
+                # Add or remove columns to make user_recs compatible with innerblks
+                user_recs.drop('fac_id', inplace=True, axis=1)
+                user_recs['fips'] = 'U0000'
+                user_recs['idmarplot'] = 'U0000U' + user_recs['rec_id']
+                user_recs['urban_pop'] = 0
+                user_recs['population'] = 0
+
+                # Append user_recs to innerblks
+                self.innerblks = self.innerblks.append(user_recs, ignore_index=True)
             
 
         #%%----- Polar receptors ----------
