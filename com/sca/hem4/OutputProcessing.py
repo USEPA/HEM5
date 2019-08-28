@@ -70,56 +70,6 @@ class Process_outputs():
 
     def process(self):
         
-#        # Determine how Aermod was run (with or without deposition)
-#        if self.model.facops['dep'] == 'N':
-#            # No deposition
-#            self.model.model_optns['runtype'] = 0
-#        else:
-#            if self.model.facops['pdep'] == 'WD':
-#                # Wet and dry deposition
-#                self.model.model_optns['runtype'] = 1
-#            elif self.model.facops['pdep'] == 'DO':
-#                # Dry only deposition
-#                self.model.model_optns['runtype'] = 2
-#            elif self.model.facops['pdep'] == 'WO':
-#                # Wet only deposition
-#                self.model.model_optns['runtype'] = 3
-#            else:
-#                self.model.model_optns['runtype'] = 0
-#        
-#        # Read chronic plotfile and put into a dataframe
-#        pfile = open("aermod/plotfile.plt", "r")
-#        
-#        if runtype == 0:
-#            plot_df = pd.read_table(pfile, delim_whitespace=True, header=None, 
-#                names=[utme,utmn,result,elev,hill,flag,avg_time,source_id,num_yrs,net_id],
-#                usecols=[0,1,2,3,4,5,6,7,8,9], 
-#                converters={utme:np.float64,utmn:np.float64,result:np.float64,elev:np.float64,hill:np.float64
-#                       ,flag:np.float64,avg_time:np.str,source_id:np.str,num_yrs:np.int64,net_id:np.str},
-#                comment='*')
-#        elif runtype == 1:
-#            plot_df = pd.read_table(pfile, delim_whitespace=True, header=None, 
-#                names=[utme,utmn,result,ddp,wdp,elev,hill,flag,avg_time,source_id,num_yrs,net_id],
-#                usecols=[0,1,2,3,4,5,6,7,8,9], 
-#                converters={utme:np.float64,utmn:np.float64,result:np.float64,ddp:np.float64,wdp:np.float64,elev:np.float64,hill:np.float64
-#                       ,flag:np.float64,avg_time:np.str,source_id:np.str,num_yrs:np.int64,net_id:np.str},
-#                comment='*')
-#        elif runtype == 2:
-#            plot_df = pd.read_table(pfile, delim_whitespace=True, header=None, 
-#                names=[utme,utmn,result,ddp,elev,hill,flag,avg_time,source_id,num_yrs,net_id],
-#                usecols=[0,1,2,3,4,5,6,7,8,9], 
-#                converters={utme:np.float64,utmn:np.float64,result:np.float64,ddp:np.float64,elev:np.float64,hill:np.float64
-#                       ,flag:np.float64,avg_time:np.str,source_id:np.str,num_yrs:np.int64,net_id:np.str},
-#                comment='*')
-#        elif runtype == 3:
-#            plot_df = pd.read_table(pfile, delim_whitespace=True, header=None, 
-#                names=[utme,utmn,result,wdp,elev,hill,flag,avg_time,source_id,num_yrs,net_id],
-#                usecols=[0,1,2,3,4,5,6,7,8,9], 
-#                converters={utme:np.float64,utmn:np.float64,result:np.float64,wdp:np.float64,elev:np.float64,hill:np.float64
-#                       ,flag:np.float64,avg_time:np.str,source_id:np.str,num_yrs:np.int64,net_id:np.str},
-#                comment='*')
-            
-
         if self.abort.is_set():
             Logger.logMessage("Terminating output processing...")
             return

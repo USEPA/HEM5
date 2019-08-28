@@ -36,7 +36,7 @@ class Model():
         mulitbuoy - buoyant line file
         ureceptr - user provided receptors
         haplib - HAP library
-        bldgdw - building downwas file
+        bldgdw - building downwash file
         partdep - particle size file
         landuse - land use file
         seasons - seasons file
