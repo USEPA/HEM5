@@ -91,6 +91,8 @@ class Runstream():
             optdp = ''
             titletwo = "CO TITLETWO  Combined particle and vapor-phase emissions \n"
     
+        self.model.model_optns['titletwo'] = titletwo
+        
     # Building downwash option ------------------------------------------------
         self.blddw = self.facoptn_df['bldg_dw'][0]
         
