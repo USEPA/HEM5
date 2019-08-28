@@ -40,7 +40,7 @@ class Runstream():
         
         #open file to write
         self.inp_f = open(os.path.join("aermod", "aermod.inp"), "w")
-        
+                
     def build_co(self, phase, innerblks, outerblks):
         """
         Creates CO section of Aermod.inp file
@@ -67,7 +67,7 @@ class Runstream():
            
         self.eleva = self.facoptn_df['elev'][0]                        
 
-        if self.model.urepOnly_optns.get('ureponly_flat', None):
+        if self.model.altRec_optns.get('altrec_flat', None):
             optel = " FLAT "
         elif self.eleva == "Y":
             optel = " ELEV "
@@ -91,6 +91,8 @@ class Runstream():
             optdp = ''
             titletwo = "CO TITLETWO  Combined particle and vapor-phase emissions \n"
     
+        self.model.model_optns['titletwo'] = titletwo
+        
     # Building downwash option ------------------------------------------------
         self.blddw = self.facoptn_df['bldg_dw'][0]
         
@@ -115,36 +117,41 @@ class Runstream():
         self.inp_f.write(co3)
         self.inp_f.write(co4)
         
+        #determine alternate receptor status
+        altrec = self.model.altRec_optns.get("altrec", None)
+        
         #check for user specified urban option
         if self.facoptn_df['rural_urban'].values[0] == 'U':
             self.urban = True
             urbanopt = "CO URBANOPT " + str(self.facoptn_df['urban_pop'].values[0]) + "\n"
             self.inp_f.write(urbanopt)
              
-        #if rural is forced do nothing
+        #if rural is forced, leave urban as false
         elif self.facoptn_df['rural_urban'].values[0] == 'R':
             
             self.urban = False
         
-        #check if there is nothing default is to determin an urban option and set
+        #if there is nothing, default is to determine an urban option from the census data
+        # unless alternate receptors are being used then leave urban as false
         else:
-            # Get shortest distance in innerblks and check for urban population
-            # Exclude user-supplied receptors and user receptors already in the census data
-            if not innerblks.empty:
-                inn_wo_ur = innerblks[~innerblks['idmarplot'].str.contains('U')]
-                closest = inn_wo_ur.nsmallest(1, 'distance')
-                if closest['urban_pop'].values[0] > 0:
-                    self.urban = True
-                    urbanopt = "CO URBANOPT  " + str(closest['urban_pop'].values[0]) + "\n"
-                    self.inp_f.write(urbanopt)
-                    
-            else: #get shortest distance from outerblocks 
-                out_wo_ur = outerblks[~outerblks['idmarplot'].str.contains('U')]
-                closest = out_wo_ur.nsmallest(1, 'distance')
-                if closest['urban_pop'].values[0] > 0:
-                    self.urban = True
-                    urbanopt = "CO URBANOPT " + str(closest['urban_pop'].values[0]) + "\n"
-                    self.inp_f.write(urbanopt)
+            if not altrec:
+                # Get shortest distance in innerblks and check for urban population
+                # Exclude user-supplied receptors and user receptors already in the census data
+                if not innerblks.empty:
+                    inn_wo_ur = innerblks[~innerblks['idmarplot'].str.contains('U')]
+                    closest = inn_wo_ur.nsmallest(1, 'distance')
+                    if closest['urban_pop'].values[0] > 0:
+                        self.urban = True
+                        urbanopt = "CO URBANOPT  " + str(closest['urban_pop'].values[0]) + "\n"
+                        self.inp_f.write(urbanopt)
+                        
+                else: #get shortest distance from outerblocks 
+                    out_wo_ur = outerblks[~outerblks['idmarplot'].str.contains('U')]
+                    closest = out_wo_ur.nsmallest(1, 'distance')
+                    if closest['urban_pop'].values[0] > 0:
+                        self.urban = True
+                        urbanopt = "CO URBANOPT " + str(closest['urban_pop'].values[0]) + "\n"
+                        self.inp_f.write(urbanopt)
         
         #set urban in model options
         self.model.model_optns['urban'] = self.urban

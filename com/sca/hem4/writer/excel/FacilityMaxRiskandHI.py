@@ -102,7 +102,7 @@ class FacilityMaxRiskandHI(ExcelWriter, InputFile):
             else:
                 ur = "R"
             riskrow.append(ur)
-
+            
             risklist.append(riskrow)
             facrisk_df = pd.DataFrame(risklist)
 

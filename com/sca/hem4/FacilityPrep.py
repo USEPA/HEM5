@@ -47,8 +47,8 @@ class FacilityPrep():
         self.model.facops = self.model.facops.fillna({radial:0, circles:0, overlap_dist:0, hours:1, multiplier:1,
                                 ring1:0, urban_pop:0})
         self.model.facops.replace(to_replace={met_station:{"nan":"N"}, rural_urban:{"nan":""}, elev:{"nan":"Y"}, 
-                                   dep:{"nan":"N"}, depl:{"nan":"N"}, phase:{"nan":""}, pdep:{"nan":"N"}, 
-                                   pdepl:{"nan":"N"}, vdep:{"nan":"N"}, vdepl:{"nan":"N"}, 
+                                   dep:{"nan":"N"}, depl:{"nan":"N"}, phase:{"nan":""}, pdep:{"nan":"NO"}, 
+                                   pdepl:{"nan":"NO"}, vdep:{"nan":"NO"}, vdepl:{"nan":"NO"}, 
                                    all_rcpts:{"nan":"N"}, user_rcpt:{"nan":"N"}, bldg_dw:{"nan":"N"}, 
                                    fastall:{"nan":"N"}, acute:{"nan":"N"}}, inplace=True)
 
@@ -277,7 +277,7 @@ class FacilityPrep():
         maxdist = self.model.facops[max_dist][0]
         modeldist = self.model.facops[model_dist][0]
 
-        if self.model.urepOnly_optns.get('ureponly', None):
+        if self.model.altRec_optns.get('altrec', None):
             self.innerblks, self.outerblks = self.getBlocksFromUrep(facid, cenx, ceny, cenlon, cenlat, facutmzone,
                 maxdist, modeldist, sourcelocs, op_overlap)
 
@@ -297,7 +297,6 @@ class FacilityPrep():
             user_recs.reset_index(inplace=True)
 
             if not user_recs.empty:
-            
                 # First compute lat/lon coors using whatever zone was provided
                 slat = user_recs[lat]
                 slon = user_recs[lon]
@@ -322,11 +321,11 @@ class FacilityPrep():
                 # If all hill heights are NaN, then replace with max of closest block hill, closest block elev,
                 # or max user provided elev.
                 maxelev = user_recs[elev].max(axis=0, skipna=True) \
-                                if math.isnan(user_recs[elev].max(axis=0, skipna=True)) == False \
-                                else 0
+                    if math.isnan(user_recs[elev].max(axis=0, skipna=True)) == False \
+                    else 0
                 maxhill = user_recs[hill].max(axis=0, skipna=True) \
-                                if math.isnan(user_recs[hill].max(axis=0, skipna=True)) == False \
-                                else 0
+                    if math.isnan(user_recs[hill].max(axis=0, skipna=True)) == False \
+                    else 0
                 elev_allnan = user_recs[elev].all(axis=0)
                 hill_allnan = user_recs[hill].all(axis=0)
 
@@ -349,19 +348,22 @@ class FacilityPrep():
 
                 # determine if the user receptors overlap any emission sources
                 user_recs[overlap] = user_recs.apply(lambda row: self.check_overlap(row[utme],
-                                       row[utmn], sourcelocs, op_overlap), axis=1)
+                                                                                    row[utmn], sourcelocs, op_overlap), axis=1)
 
 
                 # Add or remove columns to make user_recs compatible with innerblks
-                user_recs.drop('fac_id', inplace=True, axis=1)
-                user_recs['fips'] = 'U0000'
-                user_recs['idmarplot'] = 'U0000U' + user_recs['rec_id']
+                #            user_recs.drop('fac_id', inplace=True, axis=1)
                 user_recs['urban_pop'] = 0
                 user_recs['population'] = 0
+                if self.model.altRec_optns.get('altrec', None):
+                    user_recs['rec_id'] = 'U_' + user_recs['rec_id']
+                else:
+                    user_recs['fips'] = 'U0000'
+                    user_recs['idmarplot'] = 'U0000U' + user_recs['rec_id']
 
                 # Append user_recs to innerblks
                 self.innerblks = self.innerblks.append(user_recs, ignore_index=True)
-            
+
 
         #%%----- Polar receptors ----------
 
@@ -894,11 +896,11 @@ class FacilityPrep():
         urecs = self.model.altreceptr.dataframe.loc[self.model.altreceptr.dataframe[fac_id] == facid]
 
         # If any population values are missing, we cannot create an Incidence report
-        self.model.urepOnly_optns['ureponly_nopop'] = urecs.isnull().any()[population]
+        self.model.altRec_optns['altrec_nopop'] = urecs.isnull().any()[population]
         urecs[population] = pd.to_numeric(urecs[population], errors='coerce').fillna(0)
 
         # If any elevation or hill height values are missing, we must run in FLAT mode.
-        self.model.urepOnly_optns['ureponly_flat'] = urecs.isnull().any()[elev] or urecs.isnull().any()[hill]
+        self.model.altRec_optns['altrec_flat'] = urecs.isnull().any()[elev] or urecs.isnull().any()[hill]
         urecs[elev] = pd.to_numeric(urecs[elev], errors='coerce').fillna(0)
         urecs[hill] = pd.to_numeric(urecs[hill], errors='coerce').fillna(0)
 
@@ -931,7 +933,7 @@ class FacilityPrep():
         innerblks, outerblks = in_box(modelblks, sourcelocs, modeldist, maxdist, overlap_dist, self.model)
 
 
-        Logger.log("OUTERBLOCKS", outerblks, False)
+#        Logger.log("OUTERBLOCKS", outerblks, False)
 
         # convert utme, utmn, utmz, and population to integers
         innerblks[utme] = innerblks[utme].astype(int)

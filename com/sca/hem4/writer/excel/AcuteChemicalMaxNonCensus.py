@@ -1,25 +1,26 @@
 import os, fnmatch
 import pandas as pd
 
-from com.sca.hem4.writer.csv.AllOuterReceptors import AllOuterReceptors
-from com.sca.hem4.writer.excel.ExcelWriter import ExcelWriter
-from com.sca.hem4.upload.HAPEmissions import *
-from com.sca.hem4.upload.FacilityList import *
-from com.sca.hem4.upload.DoseResponse import *
-from com.sca.hem4.upload.UserReceptors import *
-from com.sca.hem4.model.Model import *
-from com.sca.hem4.support.UTM import *
-from com.sca.hem4.FacilityPrep import *
-from com.sca.hem4.writer.csv.AllInnerReceptors import *
+from writer.csv.AllOuterReceptorsNonCensus import AllOuterReceptorsNonCensus
+from writer.excel.ExcelWriter import ExcelWriter
+from upload.HAPEmissions import *
+from upload.FacilityList import *
+from upload.DoseResponse import *
+from upload.UserReceptors import *
+from model.Model import *
+from support.UTM import *
+from FacilityPrep import *
+from writer.csv.AllInnerReceptorsNonCensus import *
 
 notes = 'notes';
 aconc_sci = 'aconc_sci';
+rec_id = 'rec_id';
 
 
-class AcuteChemicalUnpopulated(ExcelWriter, InputFile):
+class AcuteChemicalMaxNonCensus(ExcelWriter, InputFile):
     """
     Provides the maximum acute concentration for each modeled pollutant occurring anywhere offsite, whether at a
-    populated (census block or user-defined) receptor or an unpopulated (polar grid) receptor, the acute benchmarks
+    populated receptor or an unpopulated receptor, the acute benchmarks
     associated with each pollutant, and other max receptor information.
     """
 
@@ -27,7 +28,7 @@ class AcuteChemicalUnpopulated(ExcelWriter, InputFile):
                  createDataframe=False):
         # Initialization for file reading/writing. If no file name override, use the
         # default construction.
-        filename = facilityId + "_acute_chem_unpop.xlsx" if filenameOverride is None else filenameOverride
+        filename = facilityId + "_acute_chem_max.xlsx" if filenameOverride is None else filenameOverride
         path = os.path.join(targetDir, filename)
 
         ExcelWriter.__init__(self, model, plot_df)
@@ -41,11 +42,11 @@ class AcuteChemicalUnpopulated(ExcelWriter, InputFile):
                 'Aegl_2 1hr (mg/m3)', 'Aegl_2 8hr (mg/m3)', 'Erpg_1 (mg/m3)', 'Erpg_2 (mg/m3)', 'Idlh_10 (mg/m3)',
                 'Mrl (mg/m3)', 'Rel (mg/m3)', 'Teel_0 (mg/m3)', 'Teel_1 (mg/m3)', 'Population',
                 'Distance (in meters)', 'Angle (from north)', 'Elevation (in meters)', 'Hill Height (in meters)',
-                'Fips', 'Block', 'Utm easting', 'Utm northing', 'Latitude', 'Longitude', 'Receptor type', 'Notes']
+                'Receptor ID', 'Utm easting', 'Utm northing', 'Latitude', 'Longitude', 'Receptor type', 'Notes']
 
     def getColumns(self):
         return [pollutant, aconc, aconc_sci, aegl_1_1h,aegl_1_8h,aegl_2_1h,aegl_2_8h,erpg_1,erpg_2,
-                mrl,rel,idlh_10,teel_0,teel_1, population, distance, angle, elev, hill, fips, block,
+                mrl,rel,idlh_10,teel_0,teel_1, population, distance, angle, elev, hill, rec_id,
                 utme, utmn, lat, lon, rec_type, notes]
 
     def generateOutputs(self):
@@ -101,7 +102,7 @@ class AcuteChemicalUnpopulated(ExcelWriter, InputFile):
         
         # 3) Finally, search the outer receptors
 
-        outercolumns = [fips, block, lat, lon, source_id, ems_type, pollutant, conc, 
+        outercolumns = [rec_id, lat, lon, source_id, ems_type, pollutant, conc, 
                         aconc, elev, population, overlap]
         
         # Get a list of the all_outer_receptor files (could be more than one)
@@ -116,7 +117,7 @@ class AcuteChemicalUnpopulated(ExcelWriter, InputFile):
         # is larger than the stored value
         for p in pols:
             for f in listOuter:
-                allouter = AllOuterReceptors(targetDir=self.targetDir, filenameOverride=f)
+                allouter = AllOuterReceptorsNonCensus(targetDir=self.targetDir, filenameOverride=f)
                 outconcs = allouter.createDataframe()
 
                 # Sum acute conc to unique lat/lons
@@ -154,8 +155,7 @@ class AcuteChemicalUnpopulated(ExcelWriter, InputFile):
                                                (self.model.polargrid[lon] == row[lon]), utmn].values[0]
                 acute_df.at[index,utme] = self.model.polargrid.loc[(self.model.polargrid[lon] == row[lon]) & 
                                                (self.model.polargrid[lat] == row[lat]), utme].values[0]
-                acute_df.at[index,fips] = 'na'
-                acute_df.at[index,block] = 'na'
+                acute_df.at[index,rec_id] = 'na'
                 acute_df.at[index,rec_type] = self.model.polargrid.loc[(self.model.polargrid[lon] == row[lon]) & 
                                                (self.model.polargrid[lat] == row[lat]), rec_type].values[0]
             elif row[notes] == 'Discrete':
@@ -173,10 +173,8 @@ class AcuteChemicalUnpopulated(ExcelWriter, InputFile):
                                                (self.model.innerblks_df[lon] == row[lon]), utmn].values[0]
                 acute_df.at[index,utme] = self.model.innerblks_df.loc[(self.model.innerblks_df[lon] == row[lon]) & 
                                                (self.model.innerblks_df[lat] == row[lat]), lat].values[0]
-                acute_df.at[index,fips] = self.model.innerblks_df.loc[(self.model.innerblks_df[lon] == row[lon]) & 
-                                               (self.model.innerblks_df[lat] == row[lat]), fips].values[0]
-                acute_df.at[index,block] = self.model.innerblks_df[(self.model.innerblks_df[lon] == row[lon]) & 
-                                               (self.model.innerblks_df[lat] == row[lat])][idmarplot].values[0][-10:]
+                acute_df.at[index,rec_id] = self.model.innerblks_df.loc[(self.model.innerblks_df[lon] == row[lon]) & 
+                                               (self.model.innerblks_df[lat] == row[lat]), rec_id].values[0]
                 acute_df.at[index,rec_type] = self.model.innerblks_df.loc[(self.model.innerblks_df[lon] == row[lon]) & 
                                                (self.model.innerblks_df[lat] == row[lat]), rec_type].values[0]
             else:
@@ -194,15 +192,13 @@ class AcuteChemicalUnpopulated(ExcelWriter, InputFile):
                                                (self.model.outerblks_df[lon] == row[lon]), utmn].values[0]
                 acute_df.at[index,utme] = self.model.outerblks_df.loc[(self.model.outerblks_df[lon] == row[lon]) & 
                                                (self.model.outerblks_df[lat] == row[lat]), lat].values[0]
-                acute_df.at[index,fips] = self.model.outerblks_df.loc[(self.model.outerblks_df[lon] == row[lon]) & 
-                                               (self.model.outerblks_df[lat] == row[lat]), fips].values[0]
-                acute_df.at[index,block] = self.model.outerblks_df[(self.model.outerblks_df[lon] == row[lon]) & 
-                                               (self.model.outerblks_df[lat] == row[lat])][idmarplot].values[0][-10:]
+                acute_df.at[index,rec_id] = self.model.outerblks_df.loc[(self.model.outerblks_df[lon] == row[lon]) & 
+                                               (self.model.outerblks_df[lat] == row[lat]), rec_id].values[0]
                 acute_df.at[index,rec_type] = self.model.outerblks_df.loc[(self.model.outerblks_df[lon] == row[lon]) & 
                                                (self.model.outerblks_df[lat] == row[lat]), rec_type].values[0]
         
         cols = [pollutant, aconc, aconc_sci, aegl_1_1h,aegl_1_8h,aegl_2_1h,aegl_2_8h,erpg_1,erpg_2,
-                 mrl,rel,idlh_10,teel_0,teel_1, population, distance, angle, elev, hill, fips, block,
+                 mrl,rel,idlh_10,teel_0,teel_1, population, distance, angle, elev, hill, rec_id,
                  utme, utmn, lat, lon, rec_type, notes]
         acute_df = acute_df[cols]
                 
@@ -214,7 +210,7 @@ class AcuteChemicalUnpopulated(ExcelWriter, InputFile):
         # Type setting for XLS reading
         self.numericColumns = [aconc, aconc_sci, aegl_1_1h,aegl_1_8h,aegl_2_1h,aegl_2_8h,erpg_1,erpg_2,mrl,rel,idlh_10,
                                teel_0,teel_1, population, distance, angle, elev, hill, utme, utmn, lat, lon]
-        self.strColumns = [pollutant, fips, block, rec_type, notes]
+        self.strColumns = [pollutant, rec_id, rec_type, notes]
 
         df = self.readFromPath(self.getColumns())
         return df.fillna("")

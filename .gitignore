@@ -1,8 +1,7 @@
 .idea
 .gitignore
-aermod/aermod.inp
-aermod/plotfile.plt
-aermod/maxhour.plt
+com/sca/hem4/aermod
+com/sca/hem4/output
 kml_source_loc.txt
 Inputs
 /output

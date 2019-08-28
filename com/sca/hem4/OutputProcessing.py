@@ -12,6 +12,9 @@ from com.sca.hem4.writer.csv.AllPolarReceptors import *
 from com.sca.hem4.writer.csv.BlockSummaryChronicNonCensus import BlockSummaryChronicNonCensus
 from com.sca.hem4.writer.csv.RingSummaryChronic import RingSummaryChronic
 from com.sca.hem4.writer.csv.BlockSummaryChronic import *
+from com.sca.hem4.writer.excel.AcuteChemicalMax import AcuteChemicalMax
+from com.sca.hem4.writer.excel.AcuteChemicalMaxNonCensus import AcuteChemicalMaxNonCensus
+from com.sca.hem4.writer.excel.AcuteChemicalPopulatedNonCensus import AcuteChemicalPopulatedNonCensus
 from com.sca.hem4.writer.excel.CancerRiskExposure import CancerRiskExposure
 from com.sca.hem4.writer.excel.FacilityMaxRiskandHI import FacilityMaxRiskandHI
 from com.sca.hem4.writer.excel.FacilityMaxRiskandHINonCensus import FacilityMaxRiskandHINonCensus
@@ -24,13 +27,13 @@ from com.sca.hem4.writer.excel.NoncancerRiskExposure import NoncancerRiskExposur
 from com.sca.hem4.writer.excel.RiskBreakdown import RiskBreakdown
 from com.sca.hem4.writer.excel.Incidence import Incidence
 from com.sca.hem4.writer.excel.AcuteChemicalPopulated import AcuteChemicalPopulated
-from com.sca.hem4.writer.excel.AcuteChemicalUnpopulated import AcuteChemicalUnpopulated
 from com.sca.hem4.writer.excel.AcuteBreakdown import AcuteBreakdown
 from com.sca.hem4.writer.kml.KMLWriter import KMLWriter
 from com.sca.hem4.support.UTM import *
 from com.sca.hem4.model.Model import *
 from com.sca.hem4.writer.excel.FacilityCancerRiskExp import FacilityCancerRiskExp
 from com.sca.hem4.writer.excel.FacilityTOSHIExp import FacilityTOSHIExp
+
 
 class Process_outputs():
     
@@ -68,56 +71,6 @@ class Process_outputs():
 
     def process(self):
         
-#        # Determine how Aermod was run (with or without deposition)
-#        if self.model.facops['dep'] == 'N':
-#            # No deposition
-#            self.model.model_optns['runtype'] = 0
-#        else:
-#            if self.model.facops['pdep'] == 'WD':
-#                # Wet and dry deposition
-#                self.model.model_optns['runtype'] = 1
-#            elif self.model.facops['pdep'] == 'DO':
-#                # Dry only deposition
-#                self.model.model_optns['runtype'] = 2
-#            elif self.model.facops['pdep'] == 'WO':
-#                # Wet only deposition
-#                self.model.model_optns['runtype'] = 3
-#            else:
-#                self.model.model_optns['runtype'] = 0
-#        
-#        # Read chronic plotfile and put into a dataframe
-#        pfile = open("aermod/plotfile.plt", "r")
-#        
-#        if runtype == 0:
-#            plot_df = pd.read_table(pfile, delim_whitespace=True, header=None, 
-#                names=[utme,utmn,result,elev,hill,flag,avg_time,source_id,num_yrs,net_id],
-#                usecols=[0,1,2,3,4,5,6,7,8,9], 
-#                converters={utme:np.float64,utmn:np.float64,result:np.float64,elev:np.float64,hill:np.float64
-#                       ,flag:np.float64,avg_time:np.str,source_id:np.str,num_yrs:np.int64,net_id:np.str},
-#                comment='*')
-#        elif runtype == 1:
-#            plot_df = pd.read_table(pfile, delim_whitespace=True, header=None, 
-#                names=[utme,utmn,result,ddp,wdp,elev,hill,flag,avg_time,source_id,num_yrs,net_id],
-#                usecols=[0,1,2,3,4,5,6,7,8,9], 
-#                converters={utme:np.float64,utmn:np.float64,result:np.float64,ddp:np.float64,wdp:np.float64,elev:np.float64,hill:np.float64
-#                       ,flag:np.float64,avg_time:np.str,source_id:np.str,num_yrs:np.int64,net_id:np.str},
-#                comment='*')
-#        elif runtype == 2:
-#            plot_df = pd.read_table(pfile, delim_whitespace=True, header=None, 
-#                names=[utme,utmn,result,ddp,elev,hill,flag,avg_time,source_id,num_yrs,net_id],
-#                usecols=[0,1,2,3,4,5,6,7,8,9], 
-#                converters={utme:np.float64,utmn:np.float64,result:np.float64,ddp:np.float64,elev:np.float64,hill:np.float64
-#                       ,flag:np.float64,avg_time:np.str,source_id:np.str,num_yrs:np.int64,net_id:np.str},
-#                comment='*')
-#        elif runtype == 3:
-#            plot_df = pd.read_table(pfile, delim_whitespace=True, header=None, 
-#                names=[utme,utmn,result,wdp,elev,hill,flag,avg_time,source_id,num_yrs,net_id],
-#                usecols=[0,1,2,3,4,5,6,7,8,9], 
-#                converters={utme:np.float64,utmn:np.float64,result:np.float64,wdp:np.float64,elev:np.float64,hill:np.float64
-#                       ,flag:np.float64,avg_time:np.str,source_id:np.str,num_yrs:np.int64,net_id:np.str},
-#                comment='*')
-            
-
         if self.abort.is_set():
             Logger.logMessage("Terminating output processing...")
             return
@@ -150,13 +103,13 @@ class Process_outputs():
             Logger.logMessage("Terminating output processing...")
             return
 
-        # Was this facility run with user receptors only? If so, we need to use the output modules that do not
+        # Was this facility run with alternate receptors? If so, we need to use the output modules that do not
         # reference census data fields like FIPs and block number.
-        ureponly = self.model.urepOnly_optns.get("ureponly", None)
-        ureponly_nopop = self.model.urepOnly_optns.get("ureponly_nopop", None)
+        altrec = self.model.altRec_optns.get("altrec", None)
+        altrec_nopop = self.model.altRec_optns.get("altrec_nopop", None)
 
         #----------- create All_Inner_Receptor output file -----------------
-        all_inner_receptors = AllInnerReceptorsNonCensus(self.outdir, self.facid, self.model, self.plot_df) if ureponly \
+        all_inner_receptors = AllInnerReceptorsNonCensus(self.outdir, self.facid, self.model, self.plot_df) if altrec \
                         else AllInnerReceptors(self.outdir, self.facid, self.model, self.plot_df)
         all_inner_receptors.write()
         self.model.all_inner_receptors_df = all_inner_receptors.dataframe
@@ -166,8 +119,9 @@ class Process_outputs():
             Logger.logMessage("Terminating output processing...")
             return
 
+        
         #----------- create All_Outer_Receptor output file -----------------
-        all_outer_receptors = AllOuterReceptorsNonCensus(self.outdir, self.facid, self.model, self.plot_df, self.acute_yn) if ureponly \
+        all_outer_receptors = AllOuterReceptorsNonCensus(self.outdir, self.facid, self.model, self.plot_df, self.acute_yn) if altrec \
                         else AllOuterReceptors(self.outdir, self.facid, self.model, self.plot_df, self.acute_yn)
         all_outer_receptors.write()
         self.model.all_outer_receptors_df = all_outer_receptors.dataframe
@@ -190,7 +144,7 @@ class Process_outputs():
             return
 
         #----------- create Block_Summary_Chronic data -----------------
-        block_summary_chronic = BlockSummaryChronicNonCensus(self.outdir, self.facid, self.model, self.plot_df, all_outer_receptors.outerAgg) if ureponly else \
+        block_summary_chronic = BlockSummaryChronicNonCensus(self.outdir, self.facid, self.model, self.plot_df, all_outer_receptors.outerAgg) if altrec else \
             BlockSummaryChronic(self.outdir, self.facid, self.model, self.plot_df, all_outer_receptors.outerAgg)
         generator = block_summary_chronic.generateOutputs()
         for batch in generator:
@@ -234,10 +188,9 @@ class Process_outputs():
             Logger.logMessage("Terminating output processing...")
             return
 
-        Logger.logMessage("Finished creating Cancer Risk Exposure for " + self.facid)          
         
         #----------- create Maximum_Individual_Risk output file ---------------
-        max_indiv_risk = MaximumIndividualRisksNonCensus(self.outdir, self.facid, self.model, self.plot_df) if ureponly \
+        max_indiv_risk = MaximumIndividualRisksNonCensus(self.outdir, self.facid, self.model, self.plot_df) if altrec \
                 else MaximumIndividualRisks(self.outdir, self.facid, self.model, self.plot_df)
         max_indiv_risk.write()
         self.model.max_indiv_risk_df = max_indiv_risk.dataframe
@@ -246,7 +199,7 @@ class Process_outputs():
         #----------- create Maximum_Offsite_Impacts output file ---------------
         inner_recep_risk_df = self.model.block_summary_chronic_df[self.model.block_summary_chronic_df["rec_type"] == "I"]
         max_offsite_impacts = MaximumOffsiteImpactsNonCensus(self.outdir, self.facid, self.model, self.plot_df,
-                                                    ring_summary_chronic_df, inner_recep_risk_df) if ureponly else \
+                                                    ring_summary_chronic_df, inner_recep_risk_df) if altrec else \
             MaximumOffsiteImpacts(self.outdir, self.facid, self.model, self.plot_df, ring_summary_chronic_df, inner_recep_risk_df)
         max_offsite_impacts.write()
         Logger.logMessage("Completed MaximumOffsiteImpacts output")
@@ -273,7 +226,7 @@ class Process_outputs():
 
 
         #----------- create Incidence output file ------------------------
-        if not ureponly_nopop:
+        if not altrec_nopop:
             outerInc_list = []
             for key in all_outer_receptors.outerInc.keys():
                 insert_list = [key[0], key[1], key[2], all_outer_receptors.outerInc[key]]
@@ -285,10 +238,10 @@ class Process_outputs():
 
 
         #----------- append to facility max risk output file ------------------
-
-        fac_max_risk = FacilityMaxRiskandHINonCensus(self.model.rootoutput, self.facid, self.model, self.plot_df, incidence.dataframe) if ureponly else \
+        fac_max_risk = FacilityMaxRiskandHINonCensus(self.model.rootoutput, self.facid, self.model, self.plot_df, incidence.dataframe) if altrec else \
             FacilityMaxRiskandHI(targetDir=self.model.rootoutput, facilityId=self.facid, model=self.model,
                                  plot_df=self.plot_df, incidence=incidence.dataframe)
+
         fac_max_risk.writeWithoutHeader()
 
         #----------- append to facility cancer risk exposure output file ------------------
@@ -320,24 +273,35 @@ class Process_outputs():
                 return
 
             #----------- create Acute Chemical Populated output file ------------------------
-            acutechempop = AcuteChemicalPopulated(self.outdir, self.facid, self.model, aplot_df)
+            acutechempop = AcuteChemicalPopulatedNonCensus(self.outdir, self.facid, self.model, aplot_df) if altrec \
+                 else AcuteChemicalPopulated(self.outdir, self.facid, self.model, aplot_df)
             acutechempop.write()
+            Logger.logMessage("Completed Acute Chemical Populated output")
 
-            #----------- create Acute Chemical Unpopulated output file ------------------------
-            acutechemunpop = AcuteChemicalUnpopulated(self.outdir, self.facid, self.model, aplot_df)
-            acutechemunpop.write()
+            #----------- create Acute Chemical Max output file ------------------------
+            acutechemmax = AcuteChemicalMaxNonCensus(self.outdir, self.facid, self.model, aplot_df) if altrec \
+                 else AcuteChemicalMax(self.outdir, self.facid, self.model, aplot_df)
+            acutechemmax.write()
+            Logger.logMessage("Completed Acute Chemical Max output")
+
 
             #----------- create Acute Breakdown output file ------------------------
             acutebkdn = AcuteBreakdown(self.outdir, self.facid, self.model, aplot_df,
-                                       acutechempop.dataframe, acutechemunpop.dataframe)
+                                       acutechempop.dataframe, acutechemmax.dataframe)
             acutebkdn.write()
+            Logger.logMessage("Completed Acute Breakdown output")
             
 
 
         #create facility kml
         Logger.logMessage("Writing KML file for " + self.facid)
         kmlWriter = KMLWriter()
-        kmlWriter.write_facility_kml(self.facid, self.model.computedValues['cenlat'], 
+        
+        if not altrec:
+            kmlWriter.write_facility_kml(self.facid, self.model.computedValues['cenlat'], 
+                                     self.model.computedValues['cenlon'], self.outdir, self.model)
+        else:
+            kmlWriter.write_facility_kml_NonCensus(self.facid, self.model.computedValues['cenlat'], 
                                      self.model.computedValues['cenlon'], self.outdir, self.model)
 
 #        return local_vars

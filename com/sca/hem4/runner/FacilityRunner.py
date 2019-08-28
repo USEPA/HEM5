@@ -31,22 +31,20 @@ class FacilityRunner():
         else:
             self.model.model_optns['phase'] = fac['phase'].tolist()[0]
 
-        if self.model.group_name != None:
-            
-            Logger.logMessage("RUN GROUP: " + self.model.group_name)
-            
-            output = "output/"+self.model.group_name+"/"
-            fac_folder =  output + self.facilityId + "/"
-            
+#        if self.model.group_name != None:
+#            
+#            Logger.logMessage("RUN GROUP: " + self.model.group_name)
+#            
+#            output = "output/"+self.model.group_name+"/"
+#            fac_folder =  output + self.facilityId + "/"
+#            
 #        else:
-#            output = "output/" + str(datetime.datetime.now().strftime("%B-%d-%Y-%H-%M-%p"))+"/" 
-        else:
-            
-            self.model.group_name = "rungroup_" + str(datetime.now().strftime('%Y_%m_%d_%H_%M_%S'))
-            Logger.logMessage("RUN GROUP: " + self.model.group_name)
+#            
+#            self.model.group_name = "rungroup_" + str(datetime.now().strftime('%Y_%m_%d_%H_%M_%S'))
+#            Logger.logMessage("RUN GROUP: " + self.model.group_name)
             
         #create fac folder
-            fac_folder =  "output/" + self.model.group_name +self.facilityId + "/"
+        fac_folder =  "output/" + self.model.group_name + "/" + self.facilityId + "/"
 
         if os.path.exists(fac_folder):
             pass
@@ -72,7 +70,7 @@ class FacilityRunner():
         
         #Single run model options
         if self.model.model_optns['phase'] != 'B':
-            
+ 
             #create runstream
             try:
                 self.runstream = self.prep_fac.createRunstream(self.facilityId, phases)

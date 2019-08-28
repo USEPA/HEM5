@@ -24,6 +24,9 @@ class EmissionsLocations(InputFile):
 
     def createDataframe(self):
 
+        # two row header
+        self.skiprows = 1
+
         # Specify dtypes for all fields
         self.numericColumns = [lon,lat,utmzone,lengthx,lengthy,angle,horzdim,vertdim,areavolrelhgt,
                                stkht,stkdia,stkvel,stktemp,elev,x2,y2]

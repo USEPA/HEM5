@@ -1,7 +1,7 @@
 import math
 
 import pandas as pd
-from math import log10, floor
+from math import log10, floor, isnan
 import os
 from com.sca.hem4.FacilityPrep import FacilityPrep
 from com.sca.hem4.writer.excel.ExcelWriter import ExcelWriter
@@ -89,7 +89,7 @@ class FacilityCancerRiskExp(ExcelWriter):
         if x == 0:
             return 0;
 
-        if math.isnan(x):
+        if isnan(x):
             return float('NaN')
 
         rounded = round(x, sig-int(floor(log10(abs(x))))-1)

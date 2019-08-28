@@ -11,9 +11,9 @@ class TestHarness:
     A class that simulates the GUI by setting up a model, uploading library
     files, and processing hard-coded inputs in the context of a unit test.
     """
-    def __init__(self, ureponly):
+    def __init__(self, altrec):
         self.success = False
-        self.ureponly = ureponly
+        self.altrec = altrec
 
         pd_version = pkg_resources.get_distribution("pandas").version
         np_version = pkg_resources.get_distribution("numpy").version
@@ -22,8 +22,8 @@ class TestHarness:
 
         self.model = Model()
 
-        if ureponly:
-            self.model.urepOnly_optns['ureponly'] = True
+        if altrec:
+            self.model.altRec_optns['altrec'] = True
 
         uploader = FileUploader(self.model)
 
@@ -40,7 +40,7 @@ class TestHarness:
         uploader.uploadDependent("user receptors", "fixtures/input/urec.xlsx",
                                  self.model.faclist.dataframe)
 
-        if ureponly:
+        if altrec:
             uploader.uploadDependent("alt receptors", "fixtures/input/urec_only.csv",
                                      self.model.faclist.dataframe)
 

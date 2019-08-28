@@ -18,45 +18,51 @@ class InputSelectionOptions(ExcelWriter):
         self.filename = os.path.join(targetDir, facilityId + "_input_selection_options.xlsx")
 
     def getHeader(self):
-        return ['title1', 'title2', 'hap_phase', 'rural_urban', 'dep_yn', 'depl_yn', 'part_vap', 'dep', 'depl',
-                'incl_elev', 'incl_hour', 'model status', 'hr_ratio', 'incl_bldg_dw', 'incl_size','user_rcpt', 'max_rad', 'min_rad', 'blk_dist',
-                'ovrlap_dist', 'conc_cir', 'radials', 'emis_file', 'hap_emis_file', 'user_rcpt_file', 'part_size_file',
-                'bldg_file', 'acute', 'acute hours', 'poll_type', 'done', 'num_of_runs', 'facil_number', 'multi_file',
-                'all_receptors', 'pop_size', 'first_ring', 'landuse_file', 'season_file', 'vertex_file', 'diurnal', 'time_blks',
-                'seas_var', 'emis_var', 'emis_var_file', 'results_temporal', 'fastall', 'flagpole', 'hremis_file', 'bldg_dw_so',
-                'hour_emis', 'prefix', 'prefixyn', 'blp_file', 'reset']
+        return ['Facility ID', 'Aermod Title2', 'Emissions Phase', 'Rural/Urban', 'Deposition (YN)',
+             'Depletion (YN)', 'Deposition Type (particle/vapor)', 'Depletion Type (particle/vapor)', 
+             'Elevation (YN)', 'Acute Hours', 
+             'Acute Multiplier', 'Building Downwash (YN)', 'User Receptors (YN)', 'Max Modeling Distance', 
+             'Discrete Modeling Distance', 'Overlap Distance', 'Number of Polar Rings', 
+             'Number of Polar Radials', 'Acute (YN)', 'All Receptors (YN)', 'First Ring Distance', 
+             'Fastall (YN)', 'Facility Group Name', 'Facility List Options File', 
+             'Emission Location File', 'HAP Emissions File', 'User Receptor File', 
+             'Particle Size File', 'Building Downwash File', 'Buoyant Line File',
+             'Landuse File', 'Seasons File', 'Polygon Vertex File']
+
 
     def generateOutputs(self):
 
-        faclist = self.model.faclist.dataframe
-        facoptions = faclist.loc[faclist.fac_id == self.facilityId].iloc[0]
+#        faclist = self.model.faclist.dataframe
+#        facoptions = faclist.loc[faclist.fac_id == self.facilityId].iloc[0]
+        facoptions = self.model.facops
 
         title1 = self.facilityId
-
-        # Options that are in the faclist input file
-        ruralurban = facoptions['rural_urban']
-        phase = facoptions['phase']
-        dep_yn = facoptions['dep']
-        depl_yn = facoptions['depl']
-        elev = facoptions['elev']
-        hours = facoptions['hours']
-        bldg_dw = facoptions['bldg_dw']
-        user_rcpt = facoptions['user_rcpt']
-        overlap_dist = facoptions['overlap_dist']
-        conc_cir = facoptions['circles']
-        radials = facoptions['radial']
-        acute = facoptions['acute']
-        fastall = facoptions['fastall']
-        max_rad = facoptions['max_dist']
-        facil_number = self.facilityId
-
-        # Where oh where do you live?
-        title2, part_vap, dep, depl, model_status, hr_ratio, incl_size, min_rad, blk_dist, acute_hours, \
-        poll_type, done, num_of_runs, multi_file, all_receptors, pop_size, first_ring, diurnal, time_blks, \
-        seas_var, emis_var, results_temporal, flagpole, bldg_dw_so, hour_emis, prefix, prefixyn, reset = ('?',)*28
-
-        emis_file = self.model.haplib.path
-        hap_emis_file = self.model.hapemis.path
+        title2 = self.model.model_optns['titletwo']
+        dep_type = facoptions['pdep'].iloc[0] + '/' + facoptions['vdep'].iloc[0]
+        depl_type = facoptions['pdepl'].iloc[0] + '/' + facoptions['vdepl'].iloc[0]
+        ruralurban = self.model.model_optns['urban']
+        phase = self.model.model_optns['phase']
+        dep_yn = facoptions['dep'].iloc[0]
+        depl_yn = facoptions['depl'].iloc[0]
+        elev = facoptions['elev'].iloc[0]
+        acute_hours = facoptions['hours'].iloc[0]
+        acute_multiplier = facoptions['multiplier'].iloc[0]
+        bldgdw_yn = facoptions['bldg_dw'].iloc[0]
+        userrcpt_yn = facoptions['user_rcpt'].iloc[0]
+        overlap_dist = facoptions['overlap_dist'].iloc[0]
+        num_rings = facoptions['circles'].iloc[0]
+        num_radials = facoptions['radial'].iloc[0]
+        acute_yn = facoptions['acute'].iloc[0]
+        fastall = facoptions['fastall'].iloc[0]
+        max_dist = facoptions['max_dist'].iloc[0]
+        mod_dist = facoptions['model_dist'].iloc[0]
+        allrecpts_yn = facoptions['all_rcpts'].iloc[0]
+        first_ring = facoptions['ring1'].iloc[0]
+        grpname = self.model.group_name  
+        faclist_file = self.model.faclist.path
+        emisloc_file = self.model.emisloc.path
+        hapemis_file = self.model.hapemis.path
+        
         user_rcpt_file = ''
         if self.model.ureceptr is not None:
             user_rcpt_file = self.model.ureceptr.path
@@ -66,27 +72,43 @@ class InputSelectionOptions(ExcelWriter):
             part_size_file = self.model.partdep.path
 
         bldg_file = ''
+        if self.model.bldgdw is not None:
+            bldg_file = self.model.bldgdw.path
+        
         landuse_file = ''
+        if self.model.landuse is not None:
+            landuse_file = self.model.landuse.path
+
         season_file = ''
+        if self.model.seasons is not None:
+            season_file = self.model.seasons.path
+
         vertex_file = ''
-        emis_var_file = ''
-        hremis_file = ''
+        if self.model.multipoly is not None:
+            vertex_file = self.model.multipoly.path
+
         blp_file = ''
-        # if hasattr(self.model, '?'):
-        #     bldg_file = self.model.partdep.path
+        if self.model.multibuoy is not None:
+            blp_file = self.model.multibuoy.path
+        
 
-        #'landuse_file', 'season_file', 'vertex_file' 'emis_var_file' 'hremis_file' 'blp_file'
+        optioncols = ['facid', 'title2', 'phase', 'ruralurban', 'dep_yn', 'depl_yn', 'dep_type', 'depl_type',
+                      'elev_yn', 'acute_hrs', 'acute_mult', 'bldgdw_yn', 'userrcpt_yn', 'max_dist',
+                      'model_dist', 'overlap_dist', 'num_rings', 'num_radials', 'acute_yn',
+                      'allrecpts_yn', 'first_ring', 'fastall_yn', 'grpname', 'faclist_file',
+                      'emisloc_file', 'hapemis_file', 'usrrcpt_file', 'partsize_file', 'bldgdw_file',
+                      'blp_file', 'landuse_file', 'seasons_file', 'vertex_file']
+        
+        
+        optionlist = [[title1, title2, phase, ruralurban, dep_yn, depl_yn, dep_type, depl_type,
+                      elev, acute_hours, acute_multiplier, bldgdw_yn, userrcpt_yn, max_dist, mod_dist,
+                      overlap_dist, num_rings, num_radials, acute_yn, allrecpts_yn, first_ring, 
+                      fastall, grpname, faclist_file, emisloc_file, hapemis_file, 
+                      user_rcpt_file, part_size_file, bldg_file, blp_file, landuse_file, 
+                      season_file, vertex_file]]
+        
+        df = DataFrame(optionlist, columns=optioncols)
 
-        optionlist = [title1, title2, phase, ruralurban, dep_yn, depl_yn, part_vap, dep, depl,
-                      elev, hours, model_status, hr_ratio, bldg_dw, incl_size, user_rcpt, max_rad, min_rad, blk_dist,
-                      overlap_dist, conc_cir, radials, emis_file, hap_emis_file, user_rcpt_file, part_size_file,
-                      bldg_file, acute, acute_hours, poll_type, done, num_of_runs, facil_number, multi_file,
-                      all_receptors, pop_size, first_ring, landuse_file, season_file, vertex_file, diurnal, time_blks,
-                      seas_var, emis_var, emis_var_file, results_temporal, fastall, flagpole, hremis_file, bldg_dw_so,
-                      hour_emis, prefix, prefixyn, blp_file, reset]
-        df = DataFrame(array(optionlist, ndmin=2), dtype="object")
-
-        df.replace(to_replace='nan', value='', inplace=True)
-
+        self.dataframe = df
         self.data = df.values
         yield self.dataframe

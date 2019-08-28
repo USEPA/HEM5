@@ -226,8 +226,8 @@ class Hem4(tk.Frame):
         self.hap_list.set('')
         self.emisloc_list.set('')
 
-        self.check_ureponly.set(False)
-        self.set_ureponly()
+        self.check_altrec.set(False)
+        self.set_altrec()
 
         if hasattr(self, 's6'):
             self.urep.destroy()
@@ -472,11 +472,11 @@ class Hem4(tk.Frame):
         self.group_list_man.grid(row=1, column=0, sticky='W', pady=20)
         
         
-        self.check_ureponly = tk.BooleanVar()
-        self.ureponly_sel = tk.Checkbutton(self.alturep, text="Use alternate receptors",
-                                           variable = self.check_ureponly, bg='palegreen3',
-                                           command = self.set_ureponly, font=TEXT_FONT)
-        self.ureponly_sel.grid(row=0, column=0, sticky='W')
+        self.check_altrec = tk.BooleanVar()
+        self.altrec_sel = tk.Checkbutton(self.alturep, text="Use alternate receptors",
+                                           variable = self.check_altrec, bg='palegreen3',
+                                           command = self.set_altrec, font=TEXT_FONT)
+        self.altrec_sel.grid(row=0, column=0, sticky='W')
 
         #facilities label
         fac_label = tk.Label(self.s3, font=TEXT_FONT, bg="palegreen3", 
@@ -794,7 +794,7 @@ class Hem4(tk.Frame):
 
     def uploadAltReceptors(self):
         """
-        Function for uploading user receptors
+        Function for uploading Alternate Receptors
         """
 
         if self.model.faclist is None:
@@ -805,7 +805,7 @@ class Hem4(tk.Frame):
 
         fullpath = self.openFile(askopenfilename())
         if fullpath is not None:
-
+                        
             self.uploader.uploadDependent("alt receptors", fullpath,
                                           self.model.faclist.dataframe)
 
@@ -1233,10 +1233,10 @@ class Hem4(tk.Frame):
                     self.emisvar_label.destroy()
                     self.s13.destroy()
 
-    def set_ureponly(self):
-        self.model.urepOnly_optns['ureponly'] = self.check_ureponly.get()
+    def set_altrec(self):
+        self.model.altRec_optns['altrec'] = self.check_altrec.get()
 
-        if self.model.urepOnly_optns['ureponly']:
+        if self.model.altRec_optns['altrec']:
             self.add_urepalt()
         else:
             if self.urepaltButton is not None:
