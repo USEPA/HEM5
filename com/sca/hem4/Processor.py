@@ -1,7 +1,8 @@
 import os
 import shutil
 import threading
-import datetime
+from datetime import datetime
+
 from com.sca.hem4.SaveState import SaveState
 from com.sca.hem4.log.Logger import Logger
 from com.sca.hem4.runner.FacilityRunner import FacilityRunner

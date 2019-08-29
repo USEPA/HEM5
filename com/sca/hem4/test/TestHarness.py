@@ -21,6 +21,7 @@ class TestHarness:
         print("Numpy version:" + str(np_version))
 
         self.model = Model()
+        self.model.group_name = 'TST'
 
         if altrec:
             self.model.altRec_optns['altrec'] = True

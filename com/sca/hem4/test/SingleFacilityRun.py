@@ -43,7 +43,7 @@ class SingleFacilityRun(unittest.TestCase):
             fixture = AllPolarReceptors("fixtures/output/", facid, None, None)
             checksum_expected = self.hashFile(fixture.filename)
 
-            generated = AllPolarReceptors("output/"+facid, facid, None, None)
+            generated = AllPolarReceptors("output/TST/"+facid, facid, None, None)
             checksum_generated = self.hashFile(generated.filename)
             self.assertEqual(checksum_expected, checksum_generated,
                  "The contents of the AllPolarReceptors output file are inconsistent with the test fixture:" +
@@ -57,7 +57,7 @@ class SingleFacilityRun(unittest.TestCase):
             fixture = AllInnerReceptors(self.outputFixturePrefix, facid, None, None, None, None)
             checksum_expected = self.hashFile(fixture.filename)
 
-            generated = AllInnerReceptors("output/"+facid, facid)
+            generated = AllInnerReceptors("output/TST/"+facid, facid)
             checksum_generated = self.hashFile(generated.filename)
             self.assertEqual(checksum_expected, checksum_generated,
                              "The contents of the output file are inconsistent with the test fixture:" +
@@ -70,7 +70,7 @@ class SingleFacilityRun(unittest.TestCase):
         for facid in self.testHarness.model.facids:
 
             fixture = pd.read_csv(self.outputFixturePrefix + facid + "_all_outer_receptors.csv")
-            produced = pd.read_csv("output/" + facid + "/" + facid + "_all_outer_receptors.csv")
+            produced = pd.read_csv("output/TST/" + facid + "/" + facid + "_all_outer_receptors.csv")
 
             # difference = fixture[fixture!=produced]
             # print(difference)
@@ -84,7 +84,7 @@ class SingleFacilityRun(unittest.TestCase):
             fixture = RingSummaryChronic("fixtures/output/", facid, None, None)
             checksum_expected = self.hashFile(fixture.filename)
 
-            generated = RingSummaryChronic("output/"+facid, facid, None, None)
+            generated = RingSummaryChronic("output/TST/"+facid, facid, None, None)
             checksum_generated = self.hashFile(generated.filename)
             self.assertEqual(checksum_expected, checksum_generated,
                              "The contents of the output file are inconsistent with the test fixture:" +
@@ -98,7 +98,7 @@ class SingleFacilityRun(unittest.TestCase):
             fixture = BlockSummaryChronic(targetDir=self.outputFixturePrefix, facilityId=facid)
             checksum_expected = self.hashFile(fixture.filename)
 
-            generated = BlockSummaryChronic(targetDir="output/"+facid, facilityId=facid)
+            generated = BlockSummaryChronic(targetDir="output/TST/"+facid, facilityId=facid)
             checksum_generated = self.hashFile(generated.filename)
             self.assertEqual(checksum_expected, checksum_generated,
                              "The contents of the output file are inconsistent with the test fixture:" +
@@ -110,7 +110,7 @@ class SingleFacilityRun(unittest.TestCase):
         """
         for facid in self.testHarness.model.facids:
             fixture = pd.read_excel("fixtures/output/" + facid + "_cancer_risk_exposure.xlsx")
-            produced = pd.read_excel("output/" + facid + "/" + facid + "_cancer_risk_exposure.xlsx")
+            produced = pd.read_excel("output/TST/" + facid + "/" + facid + "_cancer_risk_exposure.xlsx")
 
             self.assertTrue(fixture.equals(produced), "The contents of the output file are inconsistent with the test fixture.")
 
@@ -120,7 +120,7 @@ class SingleFacilityRun(unittest.TestCase):
         """
         for facid in self.testHarness.model.facids:
             fixture = pd.read_excel("fixtures/output/" + facid + "_noncancer_risk_exposure.xlsx")
-            produced = pd.read_excel("output/" + facid + "/" + facid + "_noncancer_risk_exposure.xlsx")
+            produced = pd.read_excel("output/TST/" + facid + "/" + facid + "_noncancer_risk_exposure.xlsx")
 
             self.assertTrue(fixture.equals(produced), "The contents of the output file are inconsistent with the test fixture.")
 
@@ -130,7 +130,7 @@ class SingleFacilityRun(unittest.TestCase):
         """
         for facid in self.testHarness.model.facids:
             fixture = pd.read_excel(self.outputFixturePrefix + facid + "_maximum_indiv_risks.xlsx")
-            produced = pd.read_excel("output/" + facid + "/" + facid + "_maximum_indiv_risks.xlsx")
+            produced = pd.read_excel("output/TST/" + facid + "/" + facid + "_maximum_indiv_risks.xlsx")
 
             self.assertTrue(fixture.equals(produced), "The contents of the output file are inconsistent with the test fixture.")
 
@@ -140,7 +140,7 @@ class SingleFacilityRun(unittest.TestCase):
         """
         for facid in self.testHarness.model.facids:
             fixture = pd.read_excel("fixtures/output/" + facid + "_incidence.xlsx")
-            produced = pd.read_excel("output/" + facid + "/" + facid + "_incidence.xlsx")
+            produced = pd.read_excel("output/TST/" + facid + "/" + facid + "_incidence.xlsx")
 
             self.assertTrue(fixture.equals(produced), "The contents of the output file are inconsistent with the test fixture.")
 
@@ -150,7 +150,7 @@ class SingleFacilityRun(unittest.TestCase):
         """
         for facid in self.testHarness.model.facids:
             fixture = pd.read_excel(self.outputFixturePrefix + facid + "_risk_breakdown.xlsx")
-            produced = pd.read_excel("output/" + facid + "/" + facid + "_risk_breakdown.xlsx")
+            produced = pd.read_excel("output/TST/" + facid + "/" + facid + "_risk_breakdown.xlsx")
 
             self.assertTrue(fixture.equals(produced), "The contents of the output file are inconsistent with the test fixture.")
 
@@ -160,7 +160,7 @@ class SingleFacilityRun(unittest.TestCase):
         """
         for facid in self.testHarness.model.facids:
             fixture = pd.read_excel(self.outputFixturePrefix + facid + "_acute_bkdn.xlsx")
-            produced = pd.read_excel("output/" + facid + "/" + facid + "_acute_bkdn.xlsx")
+            produced = pd.read_excel("output/TST/" + facid + "/" + facid + "_acute_bkdn.xlsx")
 
             self.assertTrue(fixture.equals(produced), "The contents of the output file are inconsistent with the test fixture.")
 
@@ -170,7 +170,7 @@ class SingleFacilityRun(unittest.TestCase):
         """
         for facid in self.testHarness.model.facids:
             fixture = pd.read_excel(self.outputFixturePrefix + facid + "_acute_chem_pop.xlsx")
-            produced = pd.read_excel("output/" + facid + "/" + facid + "_acute_chem_pop.xlsx")
+            produced = pd.read_excel("output/TST/" + facid + "/" + facid + "_acute_chem_pop.xlsx")
 
             self.assertTrue(fixture.equals(produced), "The contents of the output file are inconsistent with the test fixture.")
 
@@ -180,7 +180,7 @@ class SingleFacilityRun(unittest.TestCase):
         """
         for facid in self.testHarness.model.facids:
             fixture = pd.read_excel(self.outputFixturePrefix + facid + "_acute_chem_unpop.xlsx")
-            produced = pd.read_excel("output/" + facid + "/" + facid + "_acute_chem_unpop.xlsx")
+            produced = pd.read_excel("output/TST/" + facid + "/" + facid + "_acute_chem_unpop.xlsx")
 
             self.assertTrue(fixture.equals(produced), "The contents of the output file are inconsistent with the test fixture.")
 
