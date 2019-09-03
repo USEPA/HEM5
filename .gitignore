@@ -1,7 +1,7 @@
 .idea
 .gitignore
-com/sca/hem4/aermod
-com/sca/hem4/output
+aermod
+output
 kml_source_loc.txt
 Inputs
 /output

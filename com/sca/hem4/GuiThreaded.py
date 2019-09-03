@@ -16,15 +16,15 @@ from tkinter import messagebox
 from tkinter import scrolledtext
 
 import datetime
-from Processor import Processor
+from com.sca.hem4.Processor import Processor
 from com.sca.hem4.log.Logger import Logger
-from tools.CensusUpdater import CensusUpdater
+from com.sca.hem4.tools.CensusUpdater import CensusUpdater
 from com.sca.hem4.model.Model import Model
 from com.sca.hem4.upload.FileUploader import FileUploader
 from tkinter.filedialog import askopenfilename
-from checker.InputChecker import InputChecker
-from DepositionDepletion import check_dep
-from SaveState import SaveState
+from com.sca.hem4.checker.InputChecker import InputChecker
+from com.sca.hem4.DepositionDepletion import check_dep
+from com.sca.hem4.SaveState import SaveState
 from tkinter.simpledialog import Dialog, Toplevel
 from ttkthemes import ThemedStyle
 

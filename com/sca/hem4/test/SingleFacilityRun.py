@@ -8,6 +8,7 @@ from com.sca.hem4.writer.csv.AllInnerReceptors import AllInnerReceptors
 from com.sca.hem4.writer.csv.AllPolarReceptors import AllPolarReceptors
 from com.sca.hem4.writer.csv.BlockSummaryChronic import BlockSummaryChronic
 from com.sca.hem4.writer.csv.RingSummaryChronic import RingSummaryChronic
+from zipfile import ZipFile
 
 fixturePresent = {}
 
@@ -174,15 +175,26 @@ class SingleFacilityRun(unittest.TestCase):
 
             self.assertTrue(fixture.equals(produced), "The contents of the output file are inconsistent with the test fixture.")
 
-    def test_acute_chem_unpop(self):
+    def test_acute_chem_max(self):
         """
-        Verify that the acute chemical all output file is identical to the test fixture.
+        Verify that the acute chemical max output file is identical to the test fixture.
         """
         for facid in self.testHarness.model.facids:
-            fixture = pd.read_excel(self.outputFixturePrefix + facid + "_acute_chem_unpop.xlsx")
-            produced = pd.read_excel("output/TST/" + facid + "/" + facid + "_acute_chem_unpop.xlsx")
+            fixture = pd.read_excel(self.outputFixturePrefix + facid + "_acute_chem_max.xlsx")
+            produced = pd.read_excel("output/TST/" + facid + "/" + facid + "_acute_chem_max.xlsx")
 
             self.assertTrue(fixture.equals(produced), "The contents of the output file are inconsistent with the test fixture.")
+
+    def test_maximum_offsite_impacts(self):
+        """
+        Verify that the maximum offsite impacts output file is identical to the test fixture.
+        """
+        for facid in self.testHarness.model.facids:
+            fixture = pd.read_excel(self.outputFixturePrefix + facid + "_maximum_offsite_impacts.xlsx")
+            produced = pd.read_excel("output/TST/" + facid + "/" + facid + "_maximum_offsite_impacts.xlsx")
+
+            self.assertTrue(fixture.equals(produced), "The contents of the output file are inconsistent with the test fixture.")
+
 
     def hashFile(self, filename):
         """
