@@ -41,18 +41,19 @@ class EmisVar(DependentInputFile):
                                        emisvar_df.columns[2]: "variation"}, inplace=True)
             
             
-            #check source ids against emislocs
-            var_source_ids = emisvar_df[source_id].tolist()
+            # facility/source ids from emission variation file
+            var_ids = set(emisvar_df[[fac_id, source_id]].apply(lambda x: ''.join(x), axis=1).tolist())
+
+            # facility/source ids from emission location file
+            model_ids = set(emisloc_df[[fac_id, source_id]].apply(lambda x: ''.join(x), axis=1).tolist())
             
-            model_source_ids = emisloc_df[source_id].tolist()
-            
-            
-            #make sure no emission sources missing from 
-            if len(set(var_source_ids).difference(set(model_source_ids))) > 0:
-                missing = set(var_source_ids).difference(set(model_source_ids)).tolist()
+            # Make sure all facility/source ids from emission variation file are also in
+            # the emission location file
+            if len(set(var_ids).difference(set(model_ids))) > 0:
+                missing = set(var_ids).difference(set(model_ids))
                 
                 messagebox.showinfo("Missing Emission Location", "The emission " + 
-                                    "variation file indicates variation for " + 
+                                    "variation file indicates variation for facility/source ids " + 
                                     ", ".join(missing) + " which are not in the " + 
                                     "emissions location file. Please edit " + 
                                     "the emissions variation or emissions location "+
@@ -136,7 +137,7 @@ class EmisVar(DependentInputFile):
                     if len(row) != 12:
                         o_wrong += 1
                         
-                if len(o_wrong) > 0:
+                if o_wrong > 0:
                     messagebox.showinfo("Emissions Variation Error", 
                                         "One of the emissions variations type does "+ 
                                         "not have the correct number of values. "+
@@ -146,10 +147,9 @@ class EmisVar(DependentInputFile):
                     
                
                 
-                o_wrong = []
             #make sure this is triggered correctly!
             self.log.append("Uploaded emissions variations for " + 
-                                " ".join(var_source_ids))
+                                " ".join(var_ids))
             self.dataframe = emisvar_df
             
         
