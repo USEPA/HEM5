@@ -231,11 +231,12 @@ class FacilityPrep():
         #%% --- Optional Emissions Variations --------------------------------
 
         if hasattr(self.model.emisvar, "dataframe"):
-            
-            if self.model.emisvar[-3:] == 'txt':
+
+            #TODO - what is this for? Can emission variation file be in text format?           
+            if self.model.emisvar.path[-3:] == 'txt':
                 
                 #if linked file set stored file path 
-                emisvar_df = self.model.emisvar
+                emisvar_df = self.model.emisvar.path
                 
             else:
                 emisvar_df = self.model.emisvar.dataframe.loc[self.model.emisvar.dataframe[fac_id] == facid].copy()

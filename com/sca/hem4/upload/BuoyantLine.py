@@ -53,6 +53,6 @@ class BuoyantLine(DependentInputFile):
         else:
             
             self.log.append("Uploaded buoyant line parameters for " + 
-                            " ".join(check_buoyant_assignment))
+                            " ".join(check_buoyant_assignment) + "\n")
             
             self.dataframe = multibuoy_df

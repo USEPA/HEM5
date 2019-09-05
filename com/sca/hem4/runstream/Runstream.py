@@ -918,6 +918,9 @@ class Runstream():
         """
         Compiles and writes parameters for emissions variation
         """
+
+#        #Debug
+#        import pdb; pdb.set_trace() 
         
         #get row
         sourcevar =  self.emisvar_df[self.emisvar_df["source_id"] == srid]
@@ -936,7 +939,6 @@ class Runstream():
             #if seasons, windspeed or month
             if length == 4 or length == 6 or length == 12:
                 var = variation[0].tolist()
-                print(var)
                 sotempvar = str("SO EMISFACT " + str(srid) + " " + qflag +  " " +
                              " ".join(map(str, var)) +"\n")
                 
@@ -944,10 +946,9 @@ class Runstream():
             
         #everything elese will have lists in multiples of 12   
         else:
-        
+                    
             for row in variation:
-                var = variation.tolist()
-                print(var)
+                var = row.tolist()
                 sotempvar = str("SO EMISFACT " + str(srid) + " " + qflag +  " " +
                          " ".join(map(str, var)) +"\n")
             

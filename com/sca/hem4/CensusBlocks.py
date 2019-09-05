@@ -165,7 +165,7 @@ def in_box(modelblks, sourcelocs, modeldist, maxdist, overlap_dist, model):
             outerblks['overlap'] = np.where(np.sqrt((outerblks[utme]-src_x)**2 + 
                                            (outerblks[utmn]-src_y)**2) <= overlap_dist, "Y", "N")
     
-    print("first innerblks size = ", innerblks.shape, " first outerblks size = ", outerblks.shape)
+#    print("first innerblks size = ", innerblks.shape, " first outerblks size = ", outerblks.shape)
     
 
 #    #....... Find blocks within modeldist of area sources with angle 0..........
@@ -211,7 +211,7 @@ def in_box(modelblks, sourcelocs, modeldist, maxdist, overlap_dist, model):
             innerblks = innerblks[~innerblks[rec_id].duplicated()]
             outerblks = outerblks[~outerblks[rec_id].isin(innerblks[rec_id])]
                   
-    print("second innerblks size = ", innerblks.shape, " second outerblks size = ", outerblks.shape)
+#    print("second innerblks size = ", innerblks.shape, " second outerblks size = ", outerblks.shape)
 
 
     #....... If there are polygon sources, find blocks within modeldist of any polygon side ..........
@@ -245,7 +245,7 @@ def in_box(modelblks, sourcelocs, modeldist, maxdist, overlap_dist, model):
                     innerblks = innerblks[~innerblks[rec_id].duplicated()]
                     outerblks = outerblks[~outerblks[rec_id].isin(innerblks[rec_id])]
 
-    print("third innerblks size = ", innerblks.shape, " third outerblks size = ", outerblks.shape)
+#    print("third innerblks size = ", innerblks.shape, " third outerblks size = ", outerblks.shape)
         
     return innerblks, outerblks
 
@@ -299,7 +299,6 @@ def getblocks(cenx, ceny, cenlon, cenlat, utmzone, maxdist, modeldist, sourceloc
     frames = []
 
     for index, row in cntyinzone_df.iterrows():
-        #print("starting loop")
         
         state = "census/" + row['file_name'] + ".json"
         # Query state census file
@@ -307,7 +306,6 @@ def getblocks(cenx, ceny, cenlon, cenlat, utmzone, maxdist, modeldist, sourceloc
             censusfile2use[state].append(str(row[fips]))
         else:
             censusfile2use[state] = [str(row[fips])]
-            #print("done!")
        
     for state, FIPS in censusfile2use.items():
         locations = FIPS
