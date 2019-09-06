@@ -156,7 +156,8 @@ class InputChecker():
            
         
         #make sure emis locs has facility ids
-        if fids.intersection(efids) != fids:   
+        if fids.intersection(efids) != fids:
+
             logMsg4 = ("The Emissions Locations file is missing one or more" + 
                        " facilities please make sure to upload the correct" + 
                        " Emissions Location file.")

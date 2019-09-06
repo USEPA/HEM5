@@ -42,7 +42,7 @@ class BuoyantLine(DependentInputFile):
         buoyant_fac = set(find_b[fac_id])
         
         if check_buoyant_assignment != buoyant_fac:
-            buoyant_unassigned = (check_buoyant_assignment - buoyant_fac).tolist()
+            buoyant_unassigned = set(check_buoyant_assignment - buoyant_fac)
             
             messagebox.showinfo("Unassigned buoyant Line parameters", "buoyant" + 
                                 " Line parameters for " + 

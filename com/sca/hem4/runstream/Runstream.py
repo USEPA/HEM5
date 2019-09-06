@@ -788,11 +788,12 @@ class Runstream():
             self.inp_f.write(ou)
         
         if acute == "Y":
-            recacu = "OU RECTABLE "  + str(acute_hrs) + " FIRST" + "\n"
+            hivalstr = str(self.facoptn_df['hivalu'][0])
+            recacu = "OU RECTABLE "  + str(acute_hrs) + " " + hivalstr + "\n"
             self.inp_f.write(recacu)
             for k in np.arange(len(self.uniqsrcs)):  
                 acuou = ("OU PLOTFILE " + str(acute_hrs) + " " + self.uniqsrcs[k] + 
-                      " FIRST maxhour.plt 40 \n")
+                      " " + hivalstr + " maxhour.plt 40 \n")
                 self.inp_f.write(acuou)
 
             #set in model options
