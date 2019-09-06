@@ -27,6 +27,7 @@ user_rcpt = 'user_rcpt';
 bldg_dw = 'bldg_dw';
 urban_pop = 'urban_pop';
 fastall = 'fastall';
+hivalu = 'hivalu';
 
 class FacilityList(InputFile):
     
@@ -39,23 +40,26 @@ class FacilityList(InputFile):
         self.skiprows = 1
 
         # Specify dtypes for all fields
-        self.numericColumns = [max_dist,model_dist,radial,circles,overlap_dist,hours,multiplier,ring1,urban_pop]
+        self.numericColumns = [max_dist,model_dist,radial,circles,overlap_dist,hours,multiplier,
+                               ring1,urban_pop,hivalu]
         self.strColumns = [fac_id,met_station,rural_urban,acute,elev,dep,depl,phase,pdep,pdepl,
                            vdep,vdepl,all_rcpts,user_rcpt,bldg_dw,fastall]
 
         # FACILITIES LIST excel to dataframe
         # HEADER----------------------
-        # FacilityID|met_station|rural_urban|max_dist|model_dist|radials|circles|overlap_dist|acute|hours|elev|
-        # multiplier|ring1|dep|depl|phase|pdep|pdepl|vdep|vdepl|All_rcpts|user_rcpt|bldg_dw|urban_pop|fastall
+        # FacilityID|met_station|rural_urban|urban_pop|max_dist|model_dist|radials|circles|overlap_dist|ring1|acute|hours|
+        # multiplier|hivalu|dep|depl|phase|pdep|pdepl|vdep|vdepl|elev|All_rcpts|user_rcpt|bldg_dw|fastall
+
         faclist_df = self.readFromPath(
-            (fac_id,met_station,rural_urban,max_dist,model_dist,radial,circles,overlap_dist, ring1, acute,
-             hours,multiplier,dep,depl,phase,pdep,pdepl,vdep,vdepl,elev,all_rcpts,
-             user_rcpt,bldg_dw,urban_pop,fastall)
+            (fac_id,met_station,rural_urban,urban_pop,max_dist,model_dist,radial,circles,overlap_dist, ring1, acute,
+             hours,multiplier,hivalu,dep,depl,phase,pdep,pdepl,vdep,vdepl,elev,all_rcpts,
+             user_rcpt,bldg_dw,fastall)
         )
             
         
         #checkif urban_rural has a u and if it does if there is a urban pop 
         #value greater than zero
+        
         urban = faclist_df[faclist_df[rural_urban] == 'U']
         missing_pop = [] 
         for index, row in urban.iterrows():
