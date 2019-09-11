@@ -60,10 +60,9 @@ class Processor():
         
         #create a Google Earth KML of all sources to be modeled
         kmlWriter = KMLWriter()
-        print("kml created")
         if kmlWriter is not None:
             kmlWriter.write_kml_emis_loc(self.model)
-            print("kml completed")
+            Logger.logMessage("KMZ for all sources completed")
             pass
 
         Logger.logMessage("Preparing Inputs for " + str(
@@ -100,6 +99,7 @@ class Processor():
                               str(len(fac_list)))
             
             success = False
+                        
             try:
                 runner = FacilityRunner(facid, self.model, self.abort)
                 runner.setup()

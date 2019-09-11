@@ -96,7 +96,7 @@ class FacilityRunner():
             #run aermod
             self.run(fac_folder)
 
-            #check aermod run and move aermod.out file to facility folder
+            #check aermod run and move aermod.inp, aermod.out, and plot.plt files to facility folder
             check = False
             try:
                 check = self.check_run(fac_folder, None)
@@ -109,7 +109,7 @@ class FacilityRunner():
             if check == True:
 
                 # Open the Aermod plotfile
-                pfile = open("aermod/plotfile.plt", "r")
+                pfile = open(fac_folder + 'plotfile.plt', "r")
                 
                 # Now put the plotfile into a dataframe
                 plot_df = self.readplotf(pfile, self.model.model_optns['runtype'])
@@ -185,7 +185,7 @@ class FacilityRunner():
                 if check == True:
     
                     # Open the Aermod plotfile
-                    pfile = open("aermod/plotfile.plt", "r")
+                    pfile = open(fac_folder + 'plotfile.plt', "r")
                     
                     # Put the plotfile into a dataframe
                     temp_df = self.readplotf(pfile, self.model.model_optns['runtype'])
@@ -237,7 +237,7 @@ class FacilityRunner():
         #run aermod
         now = datetime.now().time()
         current_time = now.strftime("%H:%M:%S")
-        Logger.logMessage("Running Aermod for " + self.facilityId + " starting at time " + current_time)
+        Logger.logMessage("Running Aermod for " + self.facilityId + ". Started at time " + current_time)
 
         # Start aermod asynchronously and then monitor it, with the possibility
         # of terminating it midstream (i.e. if the thread is asked to die...)
@@ -277,13 +277,36 @@ class FacilityRunner():
 
         if success == True:
 
-            #move aermod.out to the fac output folder and rename using phasetype
-            #replace if one is already in there othewrwise will throw error
-
+            # Move aermod.inp, aermod.out, and plotfile.plt to the fac output folder
+            # If phasetype is not empty, rename aermod.out using phasetype
+            # Replace if one is already in there othewrwise will throw error
             if os.path.isfile(fac_folder + 'aermod.out'):
                 os.remove(fac_folder + 'aermod.out')
 
+            if os.path.isfile(fac_folder + 'aermod.inp'):
+                os.remove(fac_folder + 'aermod.inp')
+
+            if os.path.isfile(fac_folder + 'plotfile.plt'):
+                os.remove(fac_folder + 'plotfile.plt')
+
+            # move aermod.out file
             shutil.move(output, fac_folder)
+            
+            # move aermod.inp file
+            inpfile = os.path.join("aermod", "aermod.inp")
+            shutil.move(inpfile, fac_folder)
+
+            # move plotfile.plt file
+            pltfile = os.path.join("aermod", "plotfile.plt")
+            shutil.move(pltfile, fac_folder)
+            
+            # if an acute maxhour.plt plotfile was output by Aermod, move it too
+            maxfile = os.path.join("aermod", "maxhour.plt")
+            if os.path.isfile(maxfile):
+                if os.path.isfile(fac_folder + "maxhour.plt"):
+                    os.remove(fac_folder + "maxhour.plt")
+                shutil.move(maxfile, fac_folder)
+            
             
             if phasetype != None:
                 oldname = os.path.join(fac_folder, 'aermod.out')

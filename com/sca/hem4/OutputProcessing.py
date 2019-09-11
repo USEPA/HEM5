@@ -256,10 +256,11 @@ class Process_outputs():
         #=================== Acute processing ==============================================
         
         # If acute was run for this facility, read the acute plotfile and create the acute outputs
-
+        
         if self.acute_yn == 'Y':
-
-            apfile = open("aermod/maxhour.plt", "r")
+            
+            apfile_path = os.path.join(self.outdir, "maxhour.plt")
+            apfile = open(apfile_path, "r")
             aplot_df = pd.read_table(apfile, delim_whitespace=True, header=None, 
                 names=[utme,utmn,result,elev,hill,flag,avg_time,source_id,num_yrs,net_id],
                 usecols=[0,1,2,3,4,5,6,7,8,9], 
@@ -294,7 +295,6 @@ class Process_outputs():
 
 
         #create facility kml
-        Logger.logMessage("Writing KML file for " + self.facid)
         kmlWriter = KMLWriter()
         
         if not altrec:
@@ -303,6 +303,8 @@ class Process_outputs():
         else:
             kmlWriter.write_facility_kml_NonCensus(self.facid, self.model.computedValues['cenlat'], 
                                      self.model.computedValues['cenlon'], self.outdir, self.model)
+
+        Logger.logMessage("Completed creating KMZ file for " + self.facid)
 
 #        return local_vars
     

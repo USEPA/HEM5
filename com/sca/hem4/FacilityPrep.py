@@ -484,7 +484,7 @@ class FacilityPrep():
         self.outerblks[sector], self.outerblks["s"], self.outerblks[ring], self.outerblks["ring_loc"] = \
              zip(*self.outerblks.apply(lambda row: self.calc_ring_sector(polar_dist,row[distance],row[angle],op_radial), axis=1))
 
-
+        
         # export innerblks to an Excel file in the Working directory
         innerblks_path = "working/innerblk_receptors.xlsx"
         innerblks_con = pd.ExcelWriter(innerblks_path)
@@ -503,6 +503,8 @@ class FacilityPrep():
         if self.model.facops[elev][0].upper() == "Y":
             polar_df[elev], polar_df[hill], polar_df['avgelev'] = zip(*polar_df.apply(lambda row: 
                         self.assign_polar_elev_step1(row,self.innerblks,self.outerblks,maxdist), axis=1))
+            # If user did not supply any source elevations, compute them. Otherwise, empty
+            # source elevations will be taken as 0.
             if emislocs[elev].max() == 0 and emislocs[elev].min() == 0:
                 emislocs[elev] = self.compute_emisloc_elev(polar_df,op_circles)
             # if polar receptor still has missing elevation, fill it in
@@ -850,7 +852,7 @@ class FacilityPrep():
                                    and df < math.sqrt((box_x - xt)**2 + (box_y - yt)**2))
                                or (xt > box_x + math.tan(A_rad)*(yt-box_y) + len_x/math.cos(A_rad)
                                    and yt < box_y - math.tan(A_rad)*(xt-box_x)
-                                   and df < math.sqrt((box_x+len_x*math.cos(A_rad) - xt)*2
+                                   and df < math.sqrt((box_x+len_x*math.cos(A_rad) - xt)**2
                                     + (box_y-len_x*math.sin(A_rad) - yt)**2))
                                or (xt > box_x + math.tan(A_rad)*(yt-box_y) + len_x/math.cos(A_rad)
                                    and yt > box_y - math.tan(A_rad)*(xt-box_x) + len_y/math.cos(A_rad)
