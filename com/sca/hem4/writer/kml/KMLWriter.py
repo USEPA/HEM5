@@ -25,7 +25,7 @@ from com.sca.hem4.support.UTM import UTM
 
 class KMLWriter():
     """
-    Creates KML files suitable for viewing in Google Earth.
+    Creates KMZ files suitable for viewing in Google Earth.
     """
 
     def __init__(self):
@@ -33,7 +33,7 @@ class KMLWriter():
 
     def write_kml_emis_loc(self, model):
         """
-        Create KML of all sources from all facilities. 
+        Create KMZ of all sources from all facilities. 
         """
  
         # Define the name of the output kml file
@@ -100,8 +100,7 @@ class KMLWriter():
             point = Point(avglon, avglat, 0.0)
             placemark.geometry = Geometry(ns=self.ns, altitude_mode="relativeToGround", geometry=point)
             es_folder.append(placemark)
-          
-            
+                      
             for name, group in sub_map.groupby(["source_id","source_type"]):
                 sname = name[0]
                 stype = name[1]
@@ -120,7 +119,7 @@ class KMLWriter():
 
                 # Area, Volume or Polygon
                 elif stype == 'A' or stype == 'V' or stype == 'I':
-                    
+                                        
                     placemark = kml.Placemark(ns=self.ns, name=sname,
                                               description=CDATA("<div align='center'>" + sname + "</div>"),
                                               styleUrl="#Areasrc")
@@ -163,7 +162,7 @@ class KMLWriter():
 
             # Append emission source folder for this facility
             document.append(es_folder)
-
+        
         # Finished
         kml_source_loc.append(document)
         # Write the KML file
@@ -1543,7 +1542,7 @@ class KMLWriter():
                         newrow["lat"] = lat_array[0]
                         newrow["lon"] = lon_array[0]
                         new_rows.append(newrow.tolist())  # repeat vertex 1
-                              
+                
                 # Remove the area/volume rows from emislocs and append the area/volume vertices list
                 emislocs = emislocs[(emislocs.source_type != "A") & (emislocs.source_type != "V")]
                 emislocs = emislocs.append(pd.DataFrame(new_rows, columns=emislocs.columns)).reset_index()

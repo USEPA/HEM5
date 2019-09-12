@@ -13,7 +13,8 @@ class AllPolarReceptors(CsvWriter):
     def __init__(self, targetDir, facilityId, model, plot_df):
         CsvWriter.__init__(self, model, plot_df)
 
-        self.filename = os.path.join(targetDir, facilityId + "_all_polar_receptors.csv")
+        self.targetDir = targetDir
+        self.filename = os.path.join(self.targetDir, facilityId + "_all_polar_receptors.csv")
 
         self.polarCache = {}
         
@@ -55,7 +56,7 @@ class AllPolarReceptors(CsvWriter):
 
         # If acute was run for this facility, read the acute plotfile
         if self.model.facops.iloc[0][acute] == 'Y':
-            apfile = open("aermod/maxhour.plt", "r")
+            apfile = open(self.targetDir + "maxhour.plt", "r")
             self.aplot_df = pd.read_table(apfile, delim_whitespace=True, header=None, 
                 names=[utme,utmn,aresult,elev,hill,flag,avg_time,source_id,num_yrs,net_id],
                 usecols=[0,1,2,3,4,5,6,7,8,9], 

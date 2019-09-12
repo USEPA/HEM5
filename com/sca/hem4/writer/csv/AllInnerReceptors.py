@@ -23,8 +23,9 @@ class AllInnerReceptors(CsvWriter, InputFile):
                  createDataframe=False):
         # Initialization for CSV reading/writing. If no file name override, use the
         # default construction.
+        self.targetDir = targetDir
         filename = facilityId + "_all_inner_receptors.csv" if filenameOverride is None else filenameOverride
-        path = os.path.join(targetDir, filename)
+        path = os.path.join(self.targetDir, filename)
 
         CsvWriter.__init__(self, model, plot_df)
         InputFile.__init__(self, path, createDataframe)
@@ -62,7 +63,7 @@ class AllInnerReceptors(CsvWriter, InputFile):
 
         # If acute was run for this facility, read the acute plotfile
         if self.model.facops.iloc[0][acute] == 'Y':
-            apfile = open("aermod/maxhour.plt", "r")
+            apfile = open(self.targetDir + "maxhour.plt", "r")
             self.aplot_df = pd.read_table(apfile, delim_whitespace=True, header=None, 
                 names=[utme,utmn,aresult,elev,hill,flag,avg_time,source_id,num_yrs,net_id],
                 usecols=[0,1,2,3,4,5,6,7,8,9], 
