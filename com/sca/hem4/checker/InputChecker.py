@@ -187,6 +187,8 @@ class InputChecker():
         hsource = set(self.model.hapemis.dataframe[self.model.hapemis.dataframe[fac_id].isin(in_hap)][source_id])
         esource = set(self.model.emisloc.dataframe[self.model.emisloc.dataframe[fac_id].isin(in_emis)][source_id])
 
+        print('hsource:', hsource)
+        print('esource', esource)
         
         if hsource != esource:
             logMsg6 = ("Source ids for Hap Emissions and Emissions Locations" + 

@@ -142,7 +142,7 @@ class Processor():
          #remove save folder after a completed run
 
         try:  
-            self.model.save.remove_folder
+            self.model.save.remove_folder()
         except:
             pass
         
