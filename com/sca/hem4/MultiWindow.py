@@ -129,18 +129,7 @@ class Page2(Page):
        title2 = tk.Label(self.s1, text="Human Exposure Model\n Version 4-Open Source ", font=TEXT_FONT, bg="palegreen3")
        title2.pack()
         
-       
-       
-       
-       
-#       img1 = ImageTk.PhotoImage(Image.open('images\smokestack.jpg'))
-#       canvas = tk.Label(self.s2, image=img1)
-##       canvas.image = img1
-#       canvas.pack()  
-##       canvas.create_image(5, 5, )  
-       
-       
-       
+
        #some information
        prepared_for = tk.Label(self.s2, text="Prepared for: \nAir Toxics" +
                             " Assessment Group \nU.S. EPA \nResearch Triangle Park, NC 27711", 
@@ -299,19 +288,6 @@ class MainView(tk.Frame):
     def color_config(self, widget, color, event):
        widget.configure(bg=color)
         
-#    def open_hem4(self):
-      
-#     """Destroy current window, create new window"""
-#     
-#     messageQueue = queue.Queue()
-#     callbackQueue = queue.Queue()
-#     hem4 = Hem4(messageQueue, callbackQueue)
-#     hem4.start_gui()
-#     
-
-        
-
-#
 
     def open_hem4(self):
      """Destroy current window, create new window"""

@@ -140,7 +140,7 @@ class Hem4(tk.Frame):
 
         else:
             # If we're not running, the only thing to do is quit the GUI...
-            self.quit_gui()
+            self.reset_gui()
 
     def display_app_quit(self):
         self.enable_widgets(self.main, False)
@@ -275,6 +275,17 @@ class Hem4(tk.Frame):
 #                self.dep_veg.destroy()
 
             self.s12.destroy()
+            
+        #destroy stop
+        self.quit.destroy()
+        
+        #add start button
+        self.run_button = tk.Button(self.main, text='RUN', fg="green", bg='lightgrey', relief='solid', borderwidth=2,
+                                    command=self.run, font=TEXT_FONT)
+        self.run_button.grid(row=0, column=0, sticky="E", padx=5, pady=5)
+        
+        global instruction_instance
+        instruction_instance.set(" ")
 
         self.after(100, self.enable_buttons)
 
@@ -1401,7 +1412,7 @@ class Hem4(tk.Frame):
         self.running = False
 
         if self.aborted:
-            self.quit_gui()
+            self.reset_gui()
         else:
             self.reset_gui()
 
