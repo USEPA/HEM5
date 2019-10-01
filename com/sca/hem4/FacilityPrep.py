@@ -106,10 +106,10 @@ class FacilityPrep():
         facutmzone = self.zone2use(emislocs)
 
         # Convert all lat/lon coordinates to UTM and UTM coordinates to lat/lon
-        slat = emislocs[lat]
-        slon = emislocs[lon]
-        sutmzone = emislocs[utmzone]
-
+        slat = emislocs[lat].reset_index(drop=True)
+        slon = emislocs[lon].reset_index(drop=True)
+        sutmzone = emislocs[utmzone].reset_index(drop=True)
+        
         # First compute lat/lon coors using whatever zone was provided
         alat, alon = UTM.utm2ll(slat, slon, sutmzone)
         emislocs[lat] = alat.tolist()
@@ -123,9 +123,9 @@ class FacilityPrep():
         emislocs[utmzone] = autmz.tolist()
 
         # Compute UTM of any x2 and y2 coordinates and add to emislocs
-        slat = emislocs[y2]
-        slon = emislocs[x2]
-        sutmzone = emislocs[utmzone]
+        slat = emislocs[y2].reset_index(drop=True)
+        slon = emislocs[x2].reset_index(drop=True)
+        sutmzone = emislocs[utmzone].reset_index(drop=True)
 
         alat, alon = UTM.utm2ll(slat, slon, sutmzone)
         emislocs["lat_y2"] = alat.tolist()
@@ -163,9 +163,9 @@ class FacilityPrep():
         if hasattr(self.model.multipoly, "dataframe"):
 
             polyver_df = self.model.multipoly.dataframe.loc[self.model.multipoly.dataframe[fac_id] == facid].copy()
-            slat = polyver_df[lat]
-            slon = polyver_df[lon]
-            szone = polyver_df[utmzone]
+            slat = polyver_df[lat].reset_index(drop=True)
+            slon = polyver_df[lon].reset_index(drop=True)
+            szone = polyver_df[utmzone].reset_index(drop=True)
 
             # First compute lat/lon coors using whatever zone was provided
             alat, alon = UTM.utm2ll(slat, slon, szone)
@@ -266,7 +266,7 @@ class FacilityPrep():
             sourcelocs = sourcelocs[sourcelocs.source_type != "I"]
             sourcelocs = sourcelocs.append(polyver_df)
             sourcelocs = sourcelocs.fillna({source_type:'', lengthx:0, lengthy:0, angle:0, "utme_x2":0, "utmn_y2":0})
-            sourcelocs = sourcelocs.reset_index()
+            sourcelocs = sourcelocs.reset_index(drop=True)
 
         # Compute the coordinates of the facililty center
         cenx, ceny, cenlon, cenlat, max_srcdist, vertx_a, verty_a = fc.center(sourcelocs, facutmzone)
@@ -299,9 +299,9 @@ class FacilityPrep():
 
             if not user_recs.empty:
                 # First compute lat/lon coors using whatever zone was provided
-                slat = user_recs[lat]
-                slon = user_recs[lon]
-                szone = user_recs[utmzone]
+                slat = user_recs[lat].reset_index(drop=True)
+                slon = user_recs[lon].reset_index(drop=True)
+                szone = user_recs[utmzone].reset_index(drop=True)
                 alat, alon = UTM.utm2ll(slat, slon, szone)
                 user_recs[lat] = alat.tolist()
                 user_recs[lon] = alon.tolist()

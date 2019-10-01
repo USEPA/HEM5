@@ -261,8 +261,7 @@ class FacilityRunner():
             else:
                 time.sleep(0.5)
                 subRunning = (p.poll() is None)
-                
-                
+                        
                 
     def check_run(self, fac_folder, phasetype):
 
