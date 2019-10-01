@@ -139,7 +139,8 @@ class Hem4(tk.Frame):
                 self.display_app_quit()
 
         else:
-            # If we're not running, the only thing to do is quit the GUI...
+            # If we're not running, the only thing to do is reset the GUI...
+            Logger.logMessage("Hem4 stopped")
             self.reset_gui()
 
     def display_app_quit(self):

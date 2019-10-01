@@ -83,12 +83,16 @@ class FacilityRunner():
             # Set the runtype variable which indicates how Aermod is run (with or without deposition)
             # and what columns will be in the Aermod plotfile
             depoYN = self.model.facops['dep'][0]
+            
             if phases['phase'] == 'P':
                 depotype = self.model.facops['pdep'][0]
+                
             elif phases['phase'] == 'V':
                 depotype = self.model.facops['vdep'][0]
+                
             else:
                 depotype = 'NO'
+                
             runtype = self.set_runtype(depoYN, depotype)
             self.model.model_optns['runtype'] = runtype
             
@@ -156,10 +160,12 @@ class FacilityRunner():
                 # Set the runtype variable which indicates how Aermod is run (with or without deposition)
                 # and what columns will be in the Aermod plotfile
                 depoYN = self.model.facops['dep'][0]
+                print('deposition type', depoYN)                
                 
                 # depotype can be WD (wet/dry), WO (wet only), DO (dry only), or NO (none)
                 if r['phase'] == 'P':
                     depotype = self.model.facops['pdep'][0]
+                    print('depotype', depotype)
                 elif r['phase'] == 'V':
                     depotype = self.model.facops['vdep'][0]
                 else:
@@ -174,6 +180,7 @@ class FacilityRunner():
                 self.run(fac_folder)
                 
                 #check aermod run, move aermod.out file to facility folder and rename
+                check = False
                 try:
                     check = self.check_run(fac_folder, r['phase'])
                     
@@ -339,7 +346,8 @@ class FacilityRunner():
             else:
                 # No deposition
                 runtype = 0
-                        
+        
+        print('runtype', runtype)                
         return runtype
         
         
