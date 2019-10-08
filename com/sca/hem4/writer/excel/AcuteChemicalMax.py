@@ -114,13 +114,13 @@ class AcuteChemicalMax(ExcelWriter, InputFile):
         
         # Loop over each pollutant and outer receptor file and see if max outer acute conc
         # is larger than the stored value
-        for p in pols:
-            for f in listOuter:
-                allouter = AllOuterReceptors(targetDir=self.targetDir, filenameOverride=f)
-                outconcs = allouter.createDataframe()
+        for f in listOuter:
+            allouter = AllOuterReceptors(targetDir=self.targetDir, filenameOverride=f)
+            outconcs = allouter.createDataframe()
+            # Sum acute conc to unique lat/lons
+            outsum = outconcs.groupby([pollutant, lat, lon]).agg(aggs)[newcolumns]                
 
-                # Sum acute conc to unique lat/lons
-                outsum = outconcs.groupby([pollutant, lat, lon]).agg(aggs)[newcolumns]                
+            for p in pols:
                 max_idx = outsum[outsum[pollutant].str.lower() == p][aconc].idxmax()
                 if outsum[aconc].loc[max_idx] > maxconc_df[aconc].loc[p]:
                     maxconc_df.loc[p, aconc] = outsum[aconc].loc[max_idx]

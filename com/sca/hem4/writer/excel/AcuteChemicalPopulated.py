@@ -75,7 +75,7 @@ class AcuteChemicalPopulated(ExcelWriter):
                 maxconc_df.loc[x, notes] = 'Discrete'
         
         # 2) Next, search the outer receptor concs
-
+        
         outercolumns = [fips, block, lat, lon, source_id, ems_type, pollutant, conc, 
                         aconc, elev, population, overlap]
         
@@ -89,13 +89,13 @@ class AcuteChemicalPopulated(ExcelWriter):
         
         # Loop over each pollutant and outer receptor file and see if max acute conc
         # is larger than the stored value
-        for p in pols:
-            for f in listOuter:
-                allouter = AllOuterReceptors(targetDir=self.targetDir, filenameOverride=f)
-                outer_df = allouter.createDataframe()
+        for f in listOuter:
+            allouter = AllOuterReceptors(targetDir=self.targetDir, filenameOverride=f)
+            outer_df = allouter.createDataframe()
+            # Sum to unique lat/lons
+            outsum = outer_df.groupby([pollutant, lat, lon]).agg(aggs)[newcolumns]
 
-                # Sum to unique lat/lons
-                outsum = outer_df.groupby([pollutant, lat, lon]).agg(aggs)[newcolumns]
+            for p in pols:
                 max_idx = outsum[outsum[pollutant].str.lower() == p][aconc].idxmax()
                 if outsum[aconc].loc[max_idx] > maxconc_df[aconc].loc[p]:
                     maxconc_df.loc[p, aconc] = outsum[aconc].loc[max_idx]
