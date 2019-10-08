@@ -27,6 +27,17 @@ hi_skel = 'hi_skel';
 hi_sple = 'hi_sple';
 hi_thyr = 'hi_thyr';
 hi_whol = 'hi_whol';
+aresult = 'aresult';
+utme = 'utme';
+utmn = 'utmn';
+elev = 'elev';
+hill = 'hill';
+flag = 'flag';
+avg_time = 'avg_time';
+source_id = 'source_id';
+num_yrs = 'num_yrs';
+net_id = 'net_id';
+
 
 class AllOuterReceptors(CsvWriter, InputFile):
     """
@@ -45,9 +56,11 @@ class AllOuterReceptors(CsvWriter, InputFile):
 
         CsvWriter.__init__(self, model, plot_df)
         InputFile.__init__(self, path, createDataframe)
-
+        
+        self.targetDir = targetDir
         self.filename = path
         self.acute_yn = acuteyn
+        self.plot_df = plot_df
 
         self.riskCache = {}
         self.organCache = {}
@@ -135,27 +148,64 @@ class AllOuterReceptors(CsvWriter, InputFile):
         Interpolate polar pollutant concs to outer receptors.
         """
 
-        #Define the number of polar grid sectors and rings
-        num_sectors = len(self.model.all_polar_receptors_df['sector'].unique())
-        num_rings = len(self.model.all_polar_receptors_df['ring'].unique())
+        # Units conversion factor
+        self.cf = 2000*0.4536/3600/8760
 
-        # Create a working copy of all_polar_receptors_df and define an index
-        self.allpolar_work = self.model.all_polar_receptors_df.copy()
-        self.allpolar_work['newindex'] = self.allpolar_work['sector'].apply(str) \
-                                         + self.allpolar_work['ring'].apply(str) \
-                                         + self.allpolar_work['ems_type'] \
-                                         + self.allpolar_work['source_id'] \
-                                         + self.allpolar_work['pollutant']
-        self.allpolar_work.set_index(['newindex'], inplace=True)
+        # If acute was run for this facility, read the acute plotfile
+        if self.acute_yn == 'Y':
+            apfile = open(self.targetDir + "maxhour.plt", "r")
+            self.aplot_df = pd.read_table(apfile, delim_whitespace=True, header=None, 
+                names=[utme,utmn,aresult,elev,hill,flag,avg_time,source_id,num_yrs,net_id],
+                usecols=[0,1,2,3,4,5,6,7,8,9], 
+                converters={utme:np.float64,utmn:np.float64,aresult:np.float64,elev:np.float64,hill:np.float64
+                       ,flag:np.float64,avg_time:np.str,source_id:np.str,rank:np.str,net_id:np.str
+                       ,concdate:np.str},
+                comment='*') 
         
+        #extract Chronic polar concs from the Chronic plotfile and round the utm coordinates
+        polarcplot_df = self.plot_df.query("net_id == 'POLGRID1'").copy()
+        polarcplot_df.utme = polarcplot_df.utme.round()
+        polarcplot_df.utmn = polarcplot_df.utmn.round()
 
-        #subset outer blocks DF to needed columns
+        # If acute was run for this facility, extract polar concs from Acute plotfile and join to
+        # chronic polar concs, otherwise, add column of 0's for acute result
+        if self.acute_yn == 'Y':
+            polaraplot_df = self.aplot_df.query("net_id == 'POLGRID1'").copy()
+            polaraplot_df.utme = polaraplot_df.utme.round()
+            polaraplot_df.utmn = polaraplot_df.utmn.round()
+            polarplot_df = pd.merge(polarcplot_df, polaraplot_df[[source_id, utme, utmn, aresult]], 
+                                    how='inner', on = [source_id, utme, utmn])
+        else:
+            polarplot_df = polarcplot_df.copy()
+            polarplot_df[aresult] = 0.0
+
+
+        # Assign sector and ring to polar concs from polarplot_df and set an index
+        # of source_id + sector + ring
+        self.polarconcs = pd.merge(polarplot_df, self.model.polargrid[['utme', 'utmn', 'sector', 'ring']], 
+                             how='inner', on=['utme', 'utmn'])
+        self.polarconcs['newindex'] = self.polarconcs['source_id'] \
+                                        + 's' + self.polarconcs['sector'].apply(str) \
+                                        + 'r' + self.polarconcs['ring'].apply(str)
+        self.polarconcs.set_index(['newindex'], inplace=True)
+        
+        # QA - make sure merge retained all rows
+        if self.polarconcs.shape[0] != polarplot_df.shape[0]:
+            print("Error! self.polarconcs has wrong number of rows in AllOuterReceptors")
+            #TODO stop this facility
+
+        #subset outer blocks DF to needed columns and sort by increasing distance
         outerblks_subset = self.model.outerblks_df[[fips, idmarplot, lat, lon, elev,
-                                                    'angle', population, overlap, 's',
-                                                    'ring_loc']].copy()
+                                                    'distance', 'angle', population, overlap,
+                                                    's', 'ring_loc']].copy()
         outerblks_subset['block'] = outerblks_subset['idmarplot'].str[5:]
+        outerblks_subset.sort_values(by=['distance'], axis=0, inplace=True)
 
-        #define sector/ring of 4 surrounding polar receptors for each outer receptor
+        #Debug
+        import pdb; pdb.set_trace() 
+
+
+        # Define sector/ring of 4 surrounding polar receptors of each outer receptor
         a_s = outerblks_subset['s'].values
         a_ringloc = outerblks_subset['ring_loc'].values
         as1, as2, ar1, ar2 = self.compute_s1s2r1r2(a_s, a_ringloc)
@@ -164,112 +214,222 @@ class AllOuterReceptors(CsvWriter, InputFile):
         outerblks_subset['r1'] = ar1.tolist()
         outerblks_subset['r2'] = ar2.tolist()
 
+        # Assign each source_id to every outer receptor
+        srcids = self.polarconcs['source_id'].unique().tolist()
+        srcid_df = pd.DataFrame(srcids, columns=['source_id'])
+        srcid_df['key'] = 1
+        outerblks_subset['key'] = 1
+        outer_for_interp = pd.merge(outerblks_subset, srcid_df, on=['key'])
+        
+        
+        # Get the 4 surrounding polar Aermod concs of each outer receptor
+        cs1r1 = pd.merge(outer_for_interp, self.polarconcs[['sector','ring','source_id','result']],
+                         how='left', left_on=['s1','r1','source_id'],
+                         right_on=['sector','ring','source_id'])
+        a_s1 = outer_for_interp['s1'].values
+        a_s2 = outer_for_interp['s2'].values
+        a_r1 = outer_for_interp['r1'].values
+        a_r2 = outer_for_interp['r2'].values
+        a_sid = outer_for_interp['source_id'].values        
+        a_ccs1r1, a_ccs1r2, a_ccs2r1, a_ccs2r2, a_ccemistype = self.get4Corners(a_s1, a_s2, a_r1, a_r2, a_sid)        
+
+        # Interpolate polar Aermod concs to each outer receptor
+        a_sectfrac = outer_for_interp['s'].values
+        a_ringfrac = outer_for_interp['ring_loc'].values
+        a_intconc = self.interpolate(a_ccs1r1, a_ccs1r2, a_ccs2r1, a_ccs2r2, a_sectfrac, a_ringfrac)
+        
+        #........ Apply emissions to interpolated outer concs and write...............
+        
+        # First build dataframes of pollutant info from hapemis for each source_id
+        srcpol_dfs = {}
+        for src in srcids:
+            dfname = src + '_df'
+            srcpol_dfs[dfname] = self.model.runstream_hapemis[[source_id,pollutant,emis_tpy]] \
+                            .loc[self.model.runstream_hapemis[source_id] == src]
         # initialize output list
         dlist = []
-        
-        #Process the outer blocks within a box defined by the corners (s1,r1), (s1,r2), (s1,r1), (s2,r2)
-        for isector in range(1, num_sectors + 1):
-            for iring in range(1, num_rings + 1):
+        collist = self.getColumns()
 
-                is1 = isector
-                is2 = num_sectors if isector==num_sectors-1 else (isector + 1) % num_sectors
-                ir1 = iring
-                ir2 = num_rings if iring==num_rings-1 else (iring + 1) % num_rings
-                                
-                #Get all outer receptors within this box. If none, then go to the next box.
-                outerblks_inbox = outerblks_subset.query('s1==@is1 and s2==@is2 and r1==@ir1 and r2==@ir2').copy()
-                if outerblks_inbox.size == 0:
-                    continue
-                
-                # Query allpolar for sector and ring
-                qry_s1r1 = self.allpolar_work.query('(sector==@is1 and ring==@ir1)').copy()
-                qry_s1r1['idxcol'] = 's1r1'
-                qry_s1r2 = self.allpolar_work.query('(sector==@is1 and ring==@ir2)').copy()
-                qry_s1r2['idxcol'] = 's1r2'
-                qry_s2r1 = self.allpolar_work.query('(sector==@is2 and ring==@ir1)').copy()
-                qry_s2r1['idxcol'] = 's2r1'
-                qry_s2r2 = self.allpolar_work.query('(sector==@is2 and ring==@ir2)').copy()
-                qry_s2r2['idxcol'] = 's2r2'
-                qry_all = pd.concat([qry_s1r1, qry_s1r2, qry_s2r1, qry_s2r2])
+        # Compute pollutant specific concs and write when needed       
+        k = 0
+        for row1 in outer_for_interp.itertuples():
+            d_fips = row1.fips
+            d_block = row1.block
+            d_lat = row1.lat
+            d_lon = row1.lon
+            d_elev = row1.elev
+            d_population = row1.population
+            d_overlap = row1.overlap
+            d_emistype = a_ccemistype[k]
+            d_sourceid = row1.source_id
+            
+            srcdfname = d_sourceid + '_df'
+            poll_df = srcpol_dfs[srcdfname]
+            for row2 in poll_df.itertuples():
+                d_pollutant = row2.pollutant
+                d_conc = a_intconc[k] * row2.emis_tpy * self.cf
+                d_aconc = 0
+#                d_aconc = row1.aresult * row2.emis_tpy * self.cf * self.model.facops.iloc[0][multiplier]    
+                datalist = [d_fips, d_block, d_lat, d_lon, d_sourceid, d_emistype, d_pollutant, d_conc,
+                            d_aconc, d_elev, d_population, d_overlap]
+                dlist.append(dict(zip(collist, datalist)))
 
-                # --------- Handle chronic concs ------------------------
-                
-                # Organize chronic concs into a pivot table
-                qry_cpivot = pd.pivot_table(qry_all, values='conc', index=['ems_type', 'source_id', 'pollutant'],
-                                                    columns = 'idxcol')
-                qry_cpivot.reset_index(inplace=True)
-                
-                # merge outerblks_inbox with qry_cpivot as one to all
-                outerblks_inbox['key'] = 1
-                qry_cpivot['key'] = 1
-                outerplus = pd.merge(outerblks_inbox, qry_cpivot, on='key').drop('key', axis=1)
-                
-                # interpolate chronic concs
-                a_s1r1 = outerplus['s1r1'].values
-                a_s1r2 = outerplus['s1r2'].values
-                a_s2r1 = outerplus['s2r1'].values
-                a_s2r2 = outerplus['s2r2'].values
-                a_s = outerplus['s'].values
-                a_ringloc = outerplus['ring_loc'].values
-                int_conc = self.interpolate(a_s1r1, a_s1r2, a_s2r1, a_s2r2, a_s, a_ringloc)
-                outerplus['conc'] = int_conc.tolist()
- 
-                    
-                # --------- If necessary, handle acute concs ------------------------
-              
-                if self.acute_yn == 'N':
-                    
-                    outerplus['aconc'] = 0
-                    
-                else:
-                    
-                    # Organize acute concs into a pivot table
-                    qry_apivot = pd.pivot_table(qry_all, values='aconc', index=['ems_type', 'source_id', 'pollutant'],
-                                                        columns = 'idxcol')
-                    qry_apivot.reset_index(inplace=True)
-                    
-                    # merge outerblks_inbox with qry_apivot as one to all
-                    qry_apivot['key'] = 1
-                    outerplus_a = pd.merge(outerblks_inbox, qry_apivot, on='key').drop('key', axis=1)
-                    
-                    # interpolate acute concs
-                    a_s1r1 = outerplus_a['s1r1'].values
-                    a_s1r2 = outerplus_a['s1r2'].values
-                    a_s2r1 = outerplus_a['s2r1'].values
-                    a_s2r2 = outerplus_a['s2r2'].values
-                    a_s = outerplus_a['s'].values
-                    a_ringloc = outerplus_a['ring_loc'].values
-                    int_aconc = self.interpolate(a_s1r1, a_s1r2, a_s2r1, a_s2r2, a_s, a_ringloc)
-                    outerplus_a['aconc'] = int_aconc.tolist()
-                    
-                    # join aconc column to outerplus DF
-                    outerplus = outerplus.join(outerplus_a['aconc'])
-                    
-                datalist = outerplus[['fips', 'block', 'lat', 'lon', 'source_id', 'ems_type',
-                                      'pollutant', 'conc', 'aconc', 'elev', 'population', 'overlap']].values.tolist()
-                dlist.extend(datalist)
-
-                # Finished this box
-                # Check if we need to write a batch and run the analyze function.            
-                if len(dlist) >= self.batchSize:
-                    yield pd.DataFrame(dlist, columns=self.columns)
-                    dlist = []
+            # Check if we need to write a batch and run the analyze function.            
+            if len(dlist) >= self.batchSize:
+                yield pd.DataFrame(dlist, columns=self.columns)
+                dlist = []
 
         # Done. Dataframe to array
         outerconc_df = pd.DataFrame(dlist, columns=self.columns)
         self.dataframe = outerconc_df
         self.data = self.dataframe.values
         yield self.dataframe
+            
+        
+#        #Debug
+#        import pdb; pdb.set_trace() 
+#
+#
+#        #Define the number of polar grid sectors and rings
+#        num_sectors = len(self.model.all_polar_receptors_df['sector'].unique())
+#        num_rings = len(self.model.all_polar_receptors_df['ring'].unique())
+#
+#        # Create a working copy of all_polar_receptors_df and define an index
+#        self.allpolar_work = self.model.all_polar_receptors_df.copy()
+#        self.allpolar_work['newindex'] = self.allpolar_work['sector'].apply(str) \
+#                                         + self.allpolar_work['ring'].apply(str) \
+#                                         + self.allpolar_work['ems_type'] \
+#                                         + self.allpolar_work['source_id'] \
+#                                         + self.allpolar_work['pollutant']
+#        self.allpolar_work.set_index(['newindex'], inplace=True)
+#        
+#
+#
+#        # initialize output list
+#        dlist = []
+#        
+#        #Process the outer blocks within a box defined by the corners (s1,r1), (s1,r2), (s1,r1), (s2,r2)
+#        for isector in range(1, num_sectors + 1):
+#            for iring in range(1, num_rings + 1):
+#
+#                is1 = isector
+#                is2 = num_sectors if isector==num_sectors-1 else (isector + 1) % num_sectors
+#                ir1 = iring
+#                ir2 = num_rings if iring==num_rings-1 else (iring + 1) % num_rings
+#                                
+#                #Get all outer receptors within this box. If none, then go to the next box.
+#                outerblks_inbox = outerblks_subset.query('s1==@is1 and s2==@is2 and r1==@ir1 and r2==@ir2').copy()
+#                if outerblks_inbox.size == 0:
+#                    continue
+#                
+#                # Query allpolar for sector and ring
+#                qry_s1r1 = self.allpolar_work.query('(sector==@is1 and ring==@ir1)').copy()
+#                qry_s1r1['idxcol'] = 's1r1'
+#                qry_s1r2 = self.allpolar_work.query('(sector==@is1 and ring==@ir2)').copy()
+#                qry_s1r2['idxcol'] = 's1r2'
+#                qry_s2r1 = self.allpolar_work.query('(sector==@is2 and ring==@ir1)').copy()
+#                qry_s2r1['idxcol'] = 's2r1'
+#                qry_s2r2 = self.allpolar_work.query('(sector==@is2 and ring==@ir2)').copy()
+#                qry_s2r2['idxcol'] = 's2r2'
+#                qry_all = pd.concat([qry_s1r1, qry_s1r2, qry_s2r1, qry_s2r2])
+#
+#                # --------- Handle chronic concs ------------------------
+#                
+#                # Organize chronic concs into a pivot table
+#                qry_cpivot = pd.pivot_table(qry_all, values='conc', index=['ems_type', 'source_id', 'pollutant'],
+#                                                    columns = 'idxcol')
+#                qry_cpivot.reset_index(inplace=True)
+#                
+#                # merge outerblks_inbox with qry_cpivot as one to all
+#                outerblks_inbox['key'] = 1
+#                qry_cpivot['key'] = 1
+#                outerplus = pd.merge(outerblks_inbox, qry_cpivot, on='key').drop('key', axis=1)
+#                
+#                # interpolate chronic concs
+#                a_s1r1 = outerplus['s1r1'].values
+#                a_s1r2 = outerplus['s1r2'].values
+#                a_s2r1 = outerplus['s2r1'].values
+#                a_s2r2 = outerplus['s2r2'].values
+#                a_s = outerplus['s'].values
+#                a_ringloc = outerplus['ring_loc'].values
+#                int_conc = self.interpolate(a_s1r1, a_s1r2, a_s2r1, a_s2r2, a_s, a_ringloc)
+#                outerplus['conc'] = int_conc.tolist()
+# 
+#                    
+#                # --------- If necessary, handle acute concs ------------------------
+#              
+#                if self.acute_yn == 'N':
+#                    
+#                    outerplus['aconc'] = 0
+#                    
+#                else:
+#                    
+#                    # Organize acute concs into a pivot table
+#                    qry_apivot = pd.pivot_table(qry_all, values='aconc', index=['ems_type', 'source_id', 'pollutant'],
+#                                                        columns = 'idxcol')
+#                    qry_apivot.reset_index(inplace=True)
+#                    
+#                    # merge outerblks_inbox with qry_apivot as one to all
+#                    qry_apivot['key'] = 1
+#                    outerplus_a = pd.merge(outerblks_inbox, qry_apivot, on='key').drop('key', axis=1)
+#                    
+#                    # interpolate acute concs
+#                    a_s1r1 = outerplus_a['s1r1'].values
+#                    a_s1r2 = outerplus_a['s1r2'].values
+#                    a_s2r1 = outerplus_a['s2r1'].values
+#                    a_s2r2 = outerplus_a['s2r2'].values
+#                    a_s = outerplus_a['s'].values
+#                    a_ringloc = outerplus_a['ring_loc'].values
+#                    int_aconc = self.interpolate(a_s1r1, a_s1r2, a_s2r1, a_s2r2, a_s, a_ringloc)
+#                    outerplus_a['aconc'] = int_aconc.tolist()
+#                    
+#                    # join aconc column to outerplus DF
+#                    outerplus = outerplus.join(outerplus_a['aconc'])
+#                    
+#                datalist = outerplus[['fips', 'block', 'lat', 'lon', 'source_id', 'ems_type',
+#                                      'pollutant', 'conc', 'aconc', 'elev', 'population', 'overlap']].values.tolist()
+#                dlist.extend(datalist)
+#
+#                # Finished this box
+#                # Check if we need to write a batch and run the analyze function.            
+#                if len(dlist) >= self.batchSize:
+#                    yield pd.DataFrame(dlist, columns=self.columns)
+#                    dlist = []
+#
+#        # Done. Dataframe to array
+#        outerconc_df = pd.DataFrame(dlist, columns=self.columns)
+#        self.dataframe = outerconc_df
+#        self.data = self.dataframe.values
+#        yield self.dataframe
                 
 
 
+    def get4Corners(self, s1, s2, r1, r2, srcid):
+
+        # Initialize output arrays
+        cc_s1r1 = np.zeros(len(s1), dtype=float)
+        cc_s1r2 = np.zeros(len(s1), dtype=float)
+        cc_s2r1 = np.zeros(len(s1), dtype=float)
+        cc_s2r2 = np.zeros(len(s1), dtype=float)
+        cc_emistype = np.zeros(len(s1), dtype=str)
+        
+        for i in np.arange(len(s1)):
+            cc_s1r1[i] = self.polarconcs['result'].loc[srcid[i]+'s'+str(s1[i])+'r'+str(r1[i])]
+            cc_s1r2[i] = self.polarconcs['result'].loc[srcid[i]+'s'+str(s1[i])+'r'+str(r2[i])]
+            cc_s2r1[i] = self.polarconcs['result'].loc[srcid[i]+'s'+str(s2[i])+'r'+str(r1[i])]
+            cc_s2r2[i] = self.polarconcs['result'].loc[srcid[i]+'s'+str(s2[i])+'r'+str(r2[i])]
+            cc_emistype[i] = self.polarconcs['emis_type'].loc[srcid[i]+'s'+str(s2[i])+'r'+str(r2[i])]
+            i = i + 1
+            
+        return cc_s1r1, cc_s1r2, cc_s2r1, cc_s2r2, cc_emistype
+    
+
 
     def interpolate(self, conc_s1r1, conc_s1r2, conc_s2r1, conc_s2r2, s, ring_loc):
-
-        # Function accepts arrays of polar concentrations
+        # Interpolate 4 concentrations to the point defined by (s, ring_loc)
         
-        # initialize interpolated concentration arrays
-        ic = np.zeros(len(conc_s1r1))
+        # initialize the output array
+        ic = np.zeros(len(conc_s1r1), dtype=float)
         
         for i in np.arange(len(conc_s1r1)):
             
@@ -293,14 +453,13 @@ class AllOuterReceptors(CsvWriter, InputFile):
 
 
     def compute_s1s2r1r2(self, ar_s, ar_r):
+        # Define the four surrounding polar sector/rings for each outer block
         
-        # Function accepts arrays of sectors and ring distances
-        
-        #define the four surrounding polar sector/rings for each outer block
-        s1 = np.zeros(len(ar_s))
-        s2 = np.zeros(len(ar_s))
-        r1 = np.zeros(len(ar_s))
-        r2 = np.zeros(len(ar_s))
+        # Initialize output arrays
+        s1 = np.zeros(len(ar_s), dtype=int)
+        s2 = np.zeros(len(ar_s), dtype=int)
+        r1 = np.zeros(len(ar_s), dtype=int)
+        r2 = np.zeros(len(ar_s), dtype=int)
         
         for i in np.arange(len(ar_s)):
             if int(ar_s[i]) == self.model.numsectors:
@@ -316,6 +475,7 @@ class AllOuterReceptors(CsvWriter, InputFile):
             r2[i] = int(ar_r[i]) + 1
             if r2[i] > self.model.numrings:
                 r2[i] = self.model.numrings
+            
         return s1, s2, r1, r2
 
 

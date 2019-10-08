@@ -560,7 +560,8 @@ class FacilityPrep():
             
         # Compute fractional sector number that will be used for interpolation
         # Note: sectors for interpolation go from 1 to num_sectors beginning at due north (zero degrees)
-        s = round(((block_angle * num_sectors)/360.0 % num_sectors), 2) + 1
+#        s = round(((block_angle * num_sectors)/360.0 % num_sectors), 2) + 1
+        s = ((block_angle * num_sectors)/360.0 % num_sectors) + 1
 
         # Compute integer sector number that will be used for assigning elevations to polar receptors
         # .... these go from halfway between two radials to halfway between the next set of two radials, clockwise
@@ -978,5 +979,5 @@ class FacilityPrep():
                 hill_est = row.hill
         
         return elev_est, hill_est
-        
+
     
