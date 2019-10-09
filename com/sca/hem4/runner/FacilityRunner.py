@@ -111,12 +111,37 @@ class FacilityRunner():
                 
 
             if check == True:
-
-                # Open the Aermod plotfile
-                pfile = open(fac_folder + 'plotfile.plt', "r")
                 
-                # Now put the plotfile into a dataframe
-                plot_df = self.readplotf(pfile, self.model.model_optns['runtype'])
+                if phases['phase'] == 'P':
+                    
+                    #rename for particle
+                    os.rename('plotfile.plt','plotfile_p.plt')
+                
+                    # Open the Aermod plotfile
+                    ppfile = open(fac_folder + 'plotfile_p.plt', "r")
+                    
+                    # Now put the plotfile into a dataframe
+                    plot_df = self.readplotfp(pfile, self.model.model_optns['runtype'])
+                    
+                elif phases['phase'] == 'V':
+                    
+                     #rename for particle
+                    os.rename('plotfile.plt','plotfile_v.plt')
+                    
+                    # Open the Aermod plotfile
+                    vpfile = open(fac_folder + 'plotfile_v.plt', "r")
+                    
+                    # Now put the plotfile into a dataframe
+                    plot_df = self.readplotf(vpfile, self.model.model_optns['runtype'])
+
+
+                else:
+                
+                    # Open the Aermod plotfile
+                    pfile = open(fac_folder + 'plotfile.plt', "r")
+                    
+                    # Now put the plotfile into a dataframe
+                    plot_df = self.readplotf(pfile, self.model.model_optns['runtype'])
                 
                 # Set the emis_type column in plot_df
                 if phases['phase'] == None:

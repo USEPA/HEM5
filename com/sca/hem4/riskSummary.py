@@ -21,7 +21,7 @@ class Summary(tk.Frame):
     def __init__(self, parent, controller):
         tk.Frame.__init__(self, parent)
         
-        self.s=ttk.Style()
+        self.s = ttk.Style()
         print(self.s.theme_names())
         self.s.theme_use('clam')
         
