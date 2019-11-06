@@ -72,22 +72,58 @@ class Page1(Page):
          #modeling group label
         group_label = tk.Label(self.s2, font=TEXT_FONT, bg="palegreen3", 
                              text="Please select a modeling group:")
-        group_label.pack(pady=30, padx=5, side="left")
+        group_label.pack(pady=20, padx=5, side="left")
         
         #file browse button
         self.mod_group = tk.Button(self.s3, command = lambda: self.browse, font=TEXT_FONT, relief='solid', borderwidth=2)
         self.mod_group["text"] = "Browse"
-        self.mod_group.pack(side='left', padx=5)
+        self.mod_group.pack(side='left', padx=5, pady=10)
         
         #output directory path
         self.mod_group_list = tk.StringVar(self.s3)
         self.group_list_man = ttk.Entry(self.s3)
         self.group_list_man["width"] = 75
         self.group_list_man["textvariable"]= self.mod_group_list
-        self.group_list_man.pack(padx=20, side="left")
+        self.group_list_man.pack(padx=20, side="left", pady=10)
        
         
+        var_m = tk.IntVar()
+        max_risk = tk.Checkbutton(self.s4, font=TEXT_FONT, bg="palegreen3", text="Max Risk Summary", variable=var_m)
+        max_risk.pack(fill="x")
         
+        var_c = tk.IntVar()
+        cancer_driver = tk.Checkbutton(self.s4, font=TEXT_FONT, bg="palegreen3", text="Cancer Drivers Summary", variable=var_c)
+        cancer_driver.pack(fill="x")
+        
+        var_h = tk.IntVar()
+        hazard = tk.Checkbutton(self.s4, font=TEXT_FONT, bg="palegreen3", text=" Hazard Index Drivers Summary", variable=var_h)
+        hazard.pack(fill="x")
+        
+        var_hi = tk.IntVar()
+        hist = tk.Checkbutton(self.s4, font=TEXT_FONT, bg="palegreen3", text="Histogram", variable=var_hi)
+        hist.pack(fill="x")
+        
+        var_hh = tk.IntVar()
+        hh = tk.Checkbutton(self.s4, font=TEXT_FONT, bg="palegreen3", text="HI Histogram", variable=var_hh)
+        hh.pack(fill="x")
+        
+        var_i = tk.IntVar()
+        inc = tk.Checkbutton(self.s4, font=TEXT_FONT, bg="palegreen3", text="Incidence Drivers Summary", variable=var_i)
+        inc.pack(fill="x")
+        
+        var_a = tk.IntVar()
+        ai = tk.Checkbutton(self.s4, font=TEXT_FONT, bg="palegreen3", text="Acute Impacts Summary", variable=var_a)
+        ai.pack(fill="x")
+        
+        var_s = tk.IntVar()
+        s = tk.Checkbutton(self.s4, font=TEXT_FONT, bg="palegreen3", text="Source Type Risk Histogram", variable=var_s)
+        s.pack(fill="x")
+        
+        var_p = tk.IntVar()
+        mp = tk.Checkbutton(self.s4, font=TEXT_FONT, bg="palegreen3", text=" Multi Pathway", variable=var_p)
+        mp.pack(fill="x")
+        
+     
         #back button
         back_button = tk.Button(self.s5, text="Back", font=TEXT_FONT, relief='solid', borderwidth=2,
                             command=self.lower)
@@ -95,7 +131,7 @@ class Page1(Page):
 
     def browse(self):
         
-        fullpath = os.path.abspath((askopenfilename()))
+        fullpath = tk.filedialog.askopenfilename()
         
         self.mod_group_list = fullpath
         
