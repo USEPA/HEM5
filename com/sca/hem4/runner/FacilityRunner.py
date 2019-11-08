@@ -87,9 +87,11 @@ class FacilityRunner():
             
             if phases['phase'] == 'P':
                 depotype = self.model.facops['pdep'][0]
+                self.phase = 'P'
                 
             elif phases['phase'] == 'V':
                 depotype = self.model.facops['vdep'][0]
+                self.phase = 'V'
                 
             else:
                 depotype = 'NO'
@@ -312,7 +314,7 @@ class FacilityRunner():
         if success == True:
             
             #determine which plotfile we are using based on phases
-            if self.phase == 'P':
+            if self.phase == 'P' or phasetype =='P':
                 
                 # listing directories
                 print ("The dir is: %s"%os.listdir('aermod'))
@@ -323,7 +325,7 @@ class FacilityRunner():
                   # listing directories
                 print ("The dir is: %s"%os.listdir('aermod'))
                  
-            elif self.phase == 'V':
+            elif self.phase == 'V' or phasetype == 'V':
                 
                   # listing directories
                 print ("The dir is: %s"%os.listdir('aermod'))
