@@ -18,6 +18,7 @@ class FacilityRunner():
         self.model = model
         self.abort = abort
         self.start = time.time()
+        self.phase = None
         
     
     def setup(self):
@@ -83,12 +84,18 @@ class FacilityRunner():
             # Set the runtype variable which indicates how Aermod is run (with or without deposition)
             # and what columns will be in the Aermod plotfile
             depoYN = self.model.facops['dep'][0]
+            
             if phases['phase'] == 'P':
                 depotype = self.model.facops['pdep'][0]
+                self.phase = 'P'
+                
             elif phases['phase'] == 'V':
                 depotype = self.model.facops['vdep'][0]
+                self.phase = 'V'
+                
             else:
                 depotype = 'NO'
+                
             runtype = self.set_runtype(depoYN, depotype)
             self.model.model_optns['runtype'] = runtype
             
@@ -107,12 +114,32 @@ class FacilityRunner():
                 
 
             if check == True:
-
-                # Open the Aermod plotfile
-                pfile = open(fac_folder + 'plotfile.plt', "r")
                 
-                # Now put the plotfile into a dataframe
-                plot_df = self.readplotf(pfile, self.model.model_optns['runtype'])
+                if phases['phase'] == 'P':
+                    
+                    # Open the Aermod plotfile
+                    ppfile = open(fac_folder + 'plotfile_p.plt', "r")
+                    
+                    # Now put the plotfile into a dataframe
+                    plot_df = self.readplotf(ppfile, self.model.model_optns['runtype'])
+                    
+                elif phases['phase'] == 'V':
+                    
+                    
+                    # Open the Aermod plotfile
+                    vpfile = open(fac_folder + 'plotfile_v.plt', "r")
+                    
+                    # Now put the plotfile into a dataframe
+                    plot_df = self.readplotf(vpfile, self.model.model_optns['runtype'])
+
+
+                else:
+                
+                    # Open the Aermod plotfile
+                    pfile = open(fac_folder + 'plotfile.plt', "r")
+                    
+                    # Now put the plotfile into a dataframe
+                    plot_df = self.readplotf(pfile, self.model.model_optns['runtype'])
                 
                 # Set the emis_type column in plot_df
                 if phases['phase'] == None:
@@ -156,12 +183,16 @@ class FacilityRunner():
                 # Set the runtype variable which indicates how Aermod is run (with or without deposition)
                 # and what columns will be in the Aermod plotfile
                 depoYN = self.model.facops['dep'][0]
+                print('deposition type', depoYN)                
                 
                 # depotype can be WD (wet/dry), WO (wet only), DO (dry only), or NO (none)
                 if r['phase'] == 'P':
                     depotype = self.model.facops['pdep'][0]
+                    self.phase = 'P'
+                    print('depotype', depotype)
                 elif r['phase'] == 'V':
                     depotype = self.model.facops['vdep'][0]
+                    self.phase = 'V'
                 else:
                     depotype = 'NO'
                 runtype = self.set_runtype(depoYN, depotype)
@@ -174,6 +205,7 @@ class FacilityRunner():
                 self.run(fac_folder)
                 
                 #check aermod run, move aermod.out file to facility folder and rename
+                check = False
                 try:
                     check = self.check_run(fac_folder, r['phase'])
                     
@@ -185,7 +217,12 @@ class FacilityRunner():
                 if check == True:
     
                     # Open the Aermod plotfile
-                    pfile = open(fac_folder + 'plotfile.plt', "r")
+                    if self.phase == 'P':
+                        pfile = open(fac_folder + 'plotfile_p.plt', "r")
+                    elif self.phase == 'V':
+                        pfile = open(fac_folder + 'plotfile_v.plt', "r")
+                    else:
+                        pfile = open(fac_folder + 'plotfile.plt', "r")
                     
                     # Put the plotfile into a dataframe
                     temp_df = self.readplotf(pfile, self.model.model_optns['runtype'])
@@ -275,6 +312,31 @@ class FacilityRunner():
         check.close()
 
         if success == True:
+            
+            #determine which plotfile we are using based on phases
+            if self.phase == 'P' or phasetype =='P':
+                
+                # listing directories
+                print ("The dir is: %s"%os.listdir('aermod'))
+                
+                #rename for particle
+                os.rename('aermod/plotfile.plt','aermod/plotfile_p.plt')
+                plt_version = 'plotfile_p.plt'
+                  # listing directories
+                print ("The dir is: %s"%os.listdir('aermod'))
+                 
+            elif self.phase == 'V' or phasetype == 'V':
+                
+                  # listing directories
+                print ("The dir is: %s"%os.listdir('aermod'))
+                #rename for particle
+                os.rename('aermod/plotfile.plt','aermod/plotfile_v.plt')
+                plt_version = 'plotfile_v.plt'
+                
+                  # listing directories
+                print ("The dir is: %s"%os.listdir('aermod'))
+            else:
+                plt_version = 'plotfile.plt'
 
             # Move aermod.inp, aermod.out, and plotfile.plt to the fac output folder
             # If phasetype is not empty, rename aermod.out using phasetype
@@ -285,8 +347,8 @@ class FacilityRunner():
             if os.path.isfile(fac_folder + 'aermod.inp'):
                 os.remove(fac_folder + 'aermod.inp')
 
-            if os.path.isfile(fac_folder + 'plotfile.plt'):
-                os.remove(fac_folder + 'plotfile.plt')
+            if os.path.isfile(fac_folder + plt_version):
+                os.remove(fac_folder + plt_version)
 
             # move aermod.out file
             shutil.move(output, fac_folder)
@@ -296,7 +358,7 @@ class FacilityRunner():
             shutil.move(inpfile, fac_folder)
 
             # move plotfile.plt file
-            pltfile = os.path.join("aermod", "plotfile.plt")
+            pltfile = os.path.join("aermod", plt_version)
             shutil.move(pltfile, fac_folder)
             
             # if an acute maxhour.plt plotfile was output by Aermod, move it too
@@ -316,7 +378,9 @@ class FacilityRunner():
                 
             #if successful save state
             self.model.save.save_model(self.facilityId)
-                
+            
+            
+            
             return success
 
 
@@ -338,7 +402,8 @@ class FacilityRunner():
             else:
                 # No deposition
                 runtype = 0
-                        
+        
+        print('runtype', runtype)                
         return runtype
         
         
