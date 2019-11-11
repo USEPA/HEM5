@@ -72,22 +72,58 @@ class Page1(Page):
          #modeling group label
         group_label = tk.Label(self.s2, font=TEXT_FONT, bg="palegreen3", 
                              text="Please select a modeling group:")
-        group_label.pack(pady=30, padx=5, side="left")
+        group_label.pack(pady=20, padx=5, side="left")
         
         #file browse button
         self.mod_group = tk.Button(self.s3, command = lambda: self.browse, font=TEXT_FONT, relief='solid', borderwidth=2)
         self.mod_group["text"] = "Browse"
-        self.mod_group.pack(side='left', padx=5)
+        self.mod_group.pack(side='left', padx=5, pady=10)
         
         #output directory path
         self.mod_group_list = tk.StringVar(self.s3)
         self.group_list_man = ttk.Entry(self.s3)
         self.group_list_man["width"] = 75
         self.group_list_man["textvariable"]= self.mod_group_list
-        self.group_list_man.pack(padx=20, side="left")
+        self.group_list_man.pack(padx=20, side="left", pady=10)
        
         
+        var_m = tk.IntVar()
+        max_risk = tk.Checkbutton(self.s4, font=TEXT_FONT, bg="palegreen3", text="Max Risk Summary", variable=var_m)
+        max_risk.pack(fill="x")
         
+        var_c = tk.IntVar()
+        cancer_driver = tk.Checkbutton(self.s4, font=TEXT_FONT, bg="palegreen3", text="Cancer Drivers Summary", variable=var_c)
+        cancer_driver.pack(fill="x")
+        
+        var_h = tk.IntVar()
+        hazard = tk.Checkbutton(self.s4, font=TEXT_FONT, bg="palegreen3", text=" Hazard Index Drivers Summary", variable=var_h)
+        hazard.pack(fill="x")
+        
+        var_hi = tk.IntVar()
+        hist = tk.Checkbutton(self.s4, font=TEXT_FONT, bg="palegreen3", text="Histogram", variable=var_hi)
+        hist.pack(fill="x")
+        
+        var_hh = tk.IntVar()
+        hh = tk.Checkbutton(self.s4, font=TEXT_FONT, bg="palegreen3", text="HI Histogram", variable=var_hh)
+        hh.pack(fill="x")
+        
+        var_i = tk.IntVar()
+        inc = tk.Checkbutton(self.s4, font=TEXT_FONT, bg="palegreen3", text="Incidence Drivers Summary", variable=var_i)
+        inc.pack(fill="x")
+        
+        var_a = tk.IntVar()
+        ai = tk.Checkbutton(self.s4, font=TEXT_FONT, bg="palegreen3", text="Acute Impacts Summary", variable=var_a)
+        ai.pack(fill="x")
+        
+        var_s = tk.IntVar()
+        s = tk.Checkbutton(self.s4, font=TEXT_FONT, bg="palegreen3", text="Source Type Risk Histogram", variable=var_s)
+        s.pack(fill="x")
+        
+        var_p = tk.IntVar()
+        mp = tk.Checkbutton(self.s4, font=TEXT_FONT, bg="palegreen3", text=" Multi Pathway", variable=var_p)
+        mp.pack(fill="x")
+        
+     
         #back button
         back_button = tk.Button(self.s5, text="Back", font=TEXT_FONT, relief='solid', borderwidth=2,
                             command=self.lower)
@@ -95,7 +131,7 @@ class Page1(Page):
 
     def browse(self):
         
-        fullpath = os.path.abspath((askopenfilename()))
+        fullpath = tk.filedialog.askopenfilename()
         
         self.mod_group_list = fullpath
         
@@ -129,18 +165,7 @@ class Page2(Page):
        title2 = tk.Label(self.s1, text="Human Exposure Model\n Version 4-Open Source ", font=TEXT_FONT, bg="palegreen3")
        title2.pack()
         
-       
-       
-       
-       
-#       img1 = ImageTk.PhotoImage(Image.open('images\smokestack.jpg'))
-#       canvas = tk.Label(self.s2, image=img1)
-##       canvas.image = img1
-#       canvas.pack()  
-##       canvas.create_image(5, 5, )  
-       
-       
-       
+
        #some information
        prepared_for = tk.Label(self.s2, text="Prepared for: \nAir Toxics" +
                             " Assessment Group \nU.S. EPA \nResearch Triangle Park, NC 27711", 
@@ -299,19 +324,6 @@ class MainView(tk.Frame):
     def color_config(self, widget, color, event):
        widget.configure(bg=color)
         
-#    def open_hem4(self):
-      
-#     """Destroy current window, create new window"""
-#     
-#     messageQueue = queue.Queue()
-#     callbackQueue = queue.Queue()
-#     hem4 = Hem4(messageQueue, callbackQueue)
-#     hem4.start_gui()
-#     
-
-        
-
-#
 
     def open_hem4(self):
      """Destroy current window, create new window"""
