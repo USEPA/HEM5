@@ -191,7 +191,7 @@ class Process_outputs():
         Logger.logMessage("Completed MaximumIndividualRisks output")
 
         #----------- create Maximum_Offsite_Impacts output file ---------------
-        inner_recep_risk_df = self.model.block_summary_chronic_df[self.model.block_summary_chronic_df["rec_type"] == "I"]
+        inner_recep_risk_df = self.model.block_summary_chronic_df[self.model.block_summary_chronic_df["rec_type"] == "D"]
         max_offsite_impacts = MaximumOffsiteImpactsNonCensus(self.outdir, self.facid, self.model, self.plot_df,
                                                     ring_summary_chronic_df, inner_recep_risk_df) if altrec else \
             MaximumOffsiteImpacts(self.outdir, self.facid, self.model, self.plot_df, ring_summary_chronic_df, inner_recep_risk_df)
@@ -225,7 +225,7 @@ class Process_outputs():
             for key in all_outer_receptors.outerInc.keys():
                 insert_list = [key[0], key[1], key[2], all_outer_receptors.outerInc[key]]
                 outerInc_list.append(insert_list)
-            outerInc_df = pd.DataFrame(outerInc_list, columns=[source_id, pollutant, ems_type, inc])
+            outerInc_df = pd.DataFrame(outerInc_list, columns=[source_id, pollutant, emis_type, inc])
             incidence= Incidence(self.outdir, self.facid, self.model, self.plot_df, outerInc_df)
             incidence.write()
             Logger.logMessage("Completed Incidence output")
