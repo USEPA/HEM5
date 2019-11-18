@@ -45,14 +45,14 @@ class AcuteBreakdown(ExcelWriter):
                 popinfo_df = self.model.all_inner_receptors_df[
                         (self.model.all_inner_receptors_df[lon] == row[lon]) & 
                         (self.model.all_inner_receptors_df[lat] == row[lat])][[pollutant,
-                                                            source_id, ems_type, aconc]]
+                                                            source_id, emis_type, aconc]]
             else:
                 # max acute is at an outer block
                 flag1 = 'Y'
                 popinfo_df = self.model.all_outer_receptors_df[
                         (self.model.all_outer_receptors_df[lon] == row[lon]) & 
                         (self.model.all_outer_receptors_df[lat] == row[lat])][[pollutant,
-                                                            source_id, ems_type, aconc]]
+                                                            source_id, emis_type, aconc]]
             popinfo_df.rename(columns={aconc:aconc_pop}, inplace=True)
                             
         # Next get breakdown info of max acute at any receptor
@@ -63,21 +63,21 @@ class AcuteBreakdown(ExcelWriter):
                 unpopinfo_df = self.model.all_inner_receptors_df[
                         (self.model.all_inner_receptors_df[lon] == row[lon]) & 
                         (self.model.all_inner_receptors_df[lat] == row[lat])][[pollutant,
-                                                            source_id, ems_type, aconc]]
+                                                            source_id, emis_type, aconc]]
             elif row[notes] == 'Interpolated':
                 # max acute is at an outer block
                 flag2 = 'Y'
                 unpopinfo_df = self.model.all_outer_receptors_df[
                         (self.model.all_outer_receptors_df[lon] == row[lon]) & 
                         (self.model.all_outer_receptors_df[lat] == row[lat])][[pollutant,
-                                                            source_id, ems_type, aconc]]
+                                                            source_id, emis_type, aconc]]
             else:
                 # max acute is at a polar receptor
                 flag2 = 'N'
                 unpopinfo_df = self.model.all_polar_receptors_df[
                         (self.model.all_polar_receptors_df[lon] == row[lon]) & 
                         (self.model.all_polar_receptors_df[lat] == row[lat])][[pollutant,
-                                                            source_id, ems_type, aconc]]
+                                                            source_id, emis_type, aconc]]
             unpopinfo_df.rename(columns={aconc:aconc_all}, inplace=True)
         
         # Combine pop and all breakdown dataframes into one
@@ -86,7 +86,7 @@ class AcuteBreakdown(ExcelWriter):
         temp_df[all_interp] = flag2
         
         # Reorder columns for output purpose, reset the index, and sort by pollutant and source_id
-        cols = [pollutant, source_id, ems_type, aconc_pop, pop_interp, aconc_all, all_interp]
+        cols = [pollutant, source_id, emis_type, aconc_pop, pop_interp, aconc_all, all_interp]
         abkdn_df = temp_df.reindex(columns = cols)
         abkdn_df.reset_index(drop=True, inplace=True)
         abkdn_df.sort_values(by=[pollutant, source_id], inplace=True)

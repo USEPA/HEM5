@@ -77,7 +77,7 @@ class AcuteChemicalPopulatedNonCensus(ExcelWriter):
         
         # 2) Next, search the outer receptor concs
 
-        outercolumns = [rec_id, lat, lon, source_id, ems_type, pollutant, conc, 
+        outercolumns = [rec_id, lat, lon, source_id, emis_type, pollutant, conc, 
                         aconc, elev, population, overlap]
         
         # Get a list of the all_outer_receptor files (could be more than one)

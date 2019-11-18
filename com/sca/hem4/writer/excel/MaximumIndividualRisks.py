@@ -54,7 +54,7 @@ class MaximumIndividualRisks(ExcelWriter, InputFile):
             # TODO keep 2 significant figures for rounded value
             #mr_value_rnd = round(mr_value, -int(floor(log10(mr_value))) + 1) if mr_value > 0 else 0
             mr_value_rnd = round(mr_value, -int(floor(log10(abs(mr_value))))) if mr_value > 0 else 0
-            if self.model.risk_by_latlon[rec_type].loc[io_idx] == "I":
+            if self.model.risk_by_latlon[rec_type].loc[io_idx] == "D":
                 mr_pop = self.model.innerblks_df[(self.model.innerblks_df[lon] == mr_lon) & (self.model.innerblks_df[lat] == mr_lat)][population].values[0]
                 mr_dist = self.model.innerblks_df[(self.model.innerblks_df[lon] == mr_lon) & (self.model.innerblks_df[lat] == mr_lat)][distance].values[0]
                 mr_angle = self.model.innerblks_df[(self.model.innerblks_df[lon] == mr_lon) & (self.model.innerblks_df[lat] == mr_lat)][angle].values[0]
@@ -100,7 +100,7 @@ class MaximumIndividualRisks(ExcelWriter, InputFile):
                 mr_utmn = self.model.all_polar_receptors_df[(self.model.all_polar_receptors_df[lon] == mr_lon) & (self.model.all_polar_receptors_df[lat] == mr_lat)][utmn].values[0]
                 mr_rectype = "Polar"
                 mr_notes = "Polar"
-            elif self.model.risk_by_latlon[rec_type].loc[iop_idx] == "O":
+            elif self.model.risk_by_latlon[rec_type].loc[iop_idx] == "I":
                 mr_pop = self.model.outerblks_df[(self.model.outerblks_df[lon] == mr_lon) & (self.model.outerblks_df[lat] == mr_lat)][population].values[0]
                 mr_dist = self.model.outerblks_df[(self.model.outerblks_df[lon] == mr_lon) & (self.model.outerblks_df[lat] == mr_lat)][distance].values[0]
                 mr_angle = self.model.outerblks_df[(self.model.outerblks_df[lon] == mr_lon) & (self.model.outerblks_df[lat] == mr_lat)][angle].values[0]
@@ -265,7 +265,7 @@ class MaximumIndividualRisks(ExcelWriter, InputFile):
                 mr_value = self.model.risk_by_latlon[mir].loc[io_idx]
                 mr_value_sci = format(mr_value, ".1e")
                 mr_value_rnd = round(mr_value, -int(floor(log10(abs(mr_value))))) if mr_value > 0 else 0
-                if self.model.risk_by_latlon[rec_type].loc[io_idx] == "I":
+                if self.model.risk_by_latlon[rec_type].loc[io_idx] == "D":
                     mr_pop = self.model.innerblks_df[(self.model.innerblks_df[lon] == mr_lon) & (self.model.innerblks_df[lat] == mr_lat)][population].values[0]
                     mr_dist = self.model.innerblks_df[(self.model.innerblks_df[lon] == mr_lon) & (self.model.innerblks_df[lat] == mr_lat)][distance].values[0]
                     mr_angle = self.model.innerblks_df[(self.model.innerblks_df[lon] == mr_lon) & (self.model.innerblks_df[lat] == mr_lat)][angle].values[0]
@@ -309,7 +309,7 @@ class MaximumIndividualRisks(ExcelWriter, InputFile):
                     mr_utmn = self.model.all_polar_receptors_df[(self.model.all_polar_receptors_df[lon] == mr_lon) & (self.model.all_polar_receptors_df[lat] == mr_lat)][utmn].values[0]
                     mr_rectype = "Polar"
                     mr_notes = "Polar"
-                elif self.model.risk_by_latlon[rec_type].loc[iop_idx] == "O":
+                elif self.model.risk_by_latlon[rec_type].loc[iop_idx] == "I":
                     mr_pop = self.model.outerblks_df[(self.model.outerblks_df[lon] == mr_lon) & (self.model.outerblks_df[lat] == mr_lat)][population].values[0]
                     mr_dist = self.model.outerblks_df[(self.model.outerblks_df[lon] == mr_lon) & (self.model.outerblks_df[lat] == mr_lat)][distance].values[0]
                     mr_angle = self.model.outerblks_df[(self.model.outerblks_df[lon] == mr_lon) & (self.model.outerblks_df[lat] == mr_lat)][angle].values[0]

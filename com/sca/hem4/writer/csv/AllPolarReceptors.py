@@ -17,12 +17,28 @@ class AllPolarReceptors(CsvWriter):
         self.filename = os.path.join(self.targetDir, facilityId + "_all_polar_receptors.csv")
 
         self.polarCache = {}
+        self.acute_yn = self.model.facops.iloc[0][acute]
         
             
     def getHeader(self):
-        return ['Source ID', 'Emission type', 'Pollutant', 'Conc (µg/m3)', 'Acute conc (ug/m3)',
-                'Distance (m)', 'Angle (from north)', 'Sector', 'Ring number', 'Elevation (m)',
-                'Latitude', 'Longitude', 'Overlap', 'Wet deposition (g/m2/yr)', 'Dry deposition (g/m2/yr)']
+        if self.acute_yn == 'N':
+            return ['Source ID', 'Emission type', 'Pollutant', 'Conc (µg/m3)',
+                    'Distance (m)', 'Angle (from north)', 'Sector', 'Ring number', 'Elevation (m)',
+                    'Latitude', 'Longitude', 'Overlap', 'Wet deposition (g/m2/yr)', 'Dry deposition (g/m2/yr)']
+        else:
+            return ['Source ID', 'Emission type', 'Pollutant', 'Conc (µg/m3)', 'Acute conc (ug/m3)',
+                    'Distance (m)', 'Angle (from north)', 'Sector', 'Ring number', 'Elevation (m)',
+                    'Latitude', 'Longitude', 'Overlap', 'Wet deposition (g/m2/yr)', 'Dry deposition (g/m2/yr)']
+            
+
+
+    def getColumns(self, acute):
+        if acute == 'N':
+            return [source_id, emis_type, pollutant, conc, distance, angle, sector, ring, elev, lat, lon, 
+                    overlap, wetdep, drydep]
+        else:
+            return [source_id, emis_type, pollutant, conc, aconc, distance, angle, sector, ring, elev, lat, lon, 
+                    overlap, wetdep, drydep]
 
     def generateOutputs(self):
         """
@@ -72,7 +88,7 @@ class AllPolarReceptors(CsvWriter):
 
         # If acute was run for this facility, extract polar concs from Acute plotfile and join to
         # chronic polar concs, otherwise, add column of 0's for acute result
-        if self.model.facops.iloc[0][acute] == 'Y':
+        if self.acute_yn == 'Y':
             polaraplot_df = self.aplot_df.query("net_id == 'POLGRID1'").copy()
             polaraplot_df.utme = polaraplot_df.utme.round()
             polaraplot_df.utmn = polaraplot_df.utmn.round()
@@ -86,13 +102,13 @@ class AllPolarReceptors(CsvWriter):
         srcids = polarplot_df[source_id].unique().tolist()
 
         dlist = []
-        columns = [source_id, ems_type, pollutant, conc, aconc, distance, angle, sector, ring, elev, lat, lon, overlap, wetdep,
-                   drydep]
+        col_list = self.getColumns(self.acute_yn)
 
         # process polar concs one source_id at a time
         for x in srcids:
             polarplot_onesrcid = polarplot_df[self.plotcols[self.rtype]].loc[polarplot_df[source_id] == x]
-            hapemis_onesrcid = self.model.runstream_hapemis[[source_id,pollutant,emis_tpy]].loc[self.model.runstream_hapemis[source_id] == x]
+            hapemis_onesrcid = self.model.runstream_hapemis[[source_id,pollutant,emis_tpy,part_frac]] \
+                               .loc[self.model.runstream_hapemis[source_id] == x]
             
             for row1 in polarplot_onesrcid.itertuples():
                 for row2 in hapemis_onesrcid.itertuples():
@@ -100,8 +116,24 @@ class AllPolarReceptors(CsvWriter):
                     d_sourceid = row1.source_id
                     d_emistype = row1.emis_type
                     d_pollutant = row2.pollutant
-                    d_conc = row1.result * row2.emis_tpy * self.cf
-                    d_aconc = row1.aresult * row2.emis_tpy * self.cf * self.model.facops.iloc[0][multiplier]                    
+                    
+                    if row1.emis_type == 'C':
+                        d_conc = row1.result * row2.emis_tpy * self.cf
+                        d_aconc = row1.aresult * row2.emis_tpy * self.cf * self.model.facops.iloc[0][multiplier]
+                        d_drydep = "" if self.rtype in [0,3] else row1.ddp * row2.emis_tpy * self.cf
+                        d_wetdep = "" if self.rtype in [0,2] else row1.wdp * row2.emis_tpy * self.cf
+                    elif row1.emis_type == 'P':
+                        d_conc = row1.result * row2.emis_tpy * self.cf * row2.part_frac
+                        d_aconc = row1.aresult * row2.emis_tpy * self.cf * self.model.facops.iloc[0][multiplier] \
+                                  * row2.part_frac
+                        d_drydep = "" if self.rtype in [0,3] else row1.ddp * row2.emis_tpy * self.cf * row2.part_frac
+                        d_wetdep = "" if self.rtype in [0,2] else row1.wdp * row2.emis_tpy * self.cf * row2.part_frac
+                    else:
+                        d_conc = row1.result * row2.emis_tpy * self.cf * (1 - row2.part_frac)
+                        d_aconc = row1.aresult * row2.emis_tpy * self.cf * self.model.facops.iloc[0][multiplier] \
+                                  * (1 - row2.part_frac)
+                        d_drydep = "" if self.rtype in [0,3] else row1.ddp * row2.emis_tpy * self.cf * (1 - row2.part_frac)
+                        d_wetdep = "" if self.rtype in [0,2] else row1.wdp * row2.emis_tpy * self.cf * (1 - row2.part_frac)
 
                     record = None
                     key = (row1.utme, row1.utmn)
@@ -119,15 +151,20 @@ class AllPolarReceptors(CsvWriter):
                     d_lat = record[lat].values[0]
                     d_lon = record[lon].values[0]
                     d_overlap = record[overlap].values[0]
-                    d_drydep = "" if self.rtype in [0,3] else row1.ddp * row2.emis_tpy * self.cf
-                    d_wetdep = "" if self.rtype in [0,2] else row1.wdp * row2.emis_tpy * self.cf
-                    datalist = [d_sourceid, d_emistype, d_pollutant, d_conc, d_aconc,
-                                d_distance, d_angle, d_sector, d_ring_no,
-                                d_elev, d_lat, d_lon, d_overlap, d_wetdep, d_drydep]
+                    
+                    if self.acute_yn == 'N':
+                        datalist = [d_sourceid, d_emistype, d_pollutant, d_conc,
+                                    d_distance, d_angle, d_sector, d_ring_no,
+                                    d_elev, d_lat, d_lon, d_overlap, d_wetdep, d_drydep]
+                    else:
+                        datalist = [d_sourceid, d_emistype, d_pollutant, d_conc, d_aconc,
+                                    d_distance, d_angle, d_sector, d_ring_no,
+                                    d_elev, d_lat, d_lon, d_overlap, d_wetdep, d_drydep]
+                        
 
-                    dlist.append(dict(zip(columns, datalist)))
+                    dlist.append(dict(zip(col_list, datalist)))
 
-        all_polar_receptors_df = pd.DataFrame(dlist, columns=columns)
+        all_polar_receptors_df = pd.DataFrame(dlist, columns=col_list)
 
         #dataframe to array
         self.dataframe = all_polar_receptors_df
