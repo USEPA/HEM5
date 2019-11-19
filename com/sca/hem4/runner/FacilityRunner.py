@@ -455,6 +455,6 @@ class FacilityRunner():
             outputProcess.process()
                         
 
-            pace =  str( round(time.time()- self.start)/60, 2) + ' minutes'
+            pace =  str(round(time.time()- self.start/60, 2)) + ' minutes'
             Logger.logMessage("Finished calculations for " + self.facilityId + 
                               ' after ' + pace + "\n")
