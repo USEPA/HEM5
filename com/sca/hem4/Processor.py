@@ -162,4 +162,3 @@ class Processor():
         # Create Facility TOSHI Exposure file
         fac_hiexp = FacilityTOSHIExp(self.model.rootoutput, None, self.model, None)
         fac_hiexp.write()
-        
