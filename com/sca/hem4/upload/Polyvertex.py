@@ -56,6 +56,6 @@ class Polyvertex(DependentInputFile):
         else:
 
             self.log.append("Uploaded polyvertex sources for " +
-                            " ".join(check_poly_assignment))
+                            " ".join(check_poly_assignment) + "\n")
 
             self.dataframe = multipoly_df
