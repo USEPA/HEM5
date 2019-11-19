@@ -40,7 +40,7 @@ class Page(tk.Frame):
         tk.Frame.__init__(self, *args, **kwargs)
     def show(self):
         self.lift()
-#%% Hem4 GUI
+#%% HEM4 GUI
 
 
 
@@ -128,19 +128,19 @@ class Hem4(tk.Frame):
         """
         if self.running:
             override = messagebox.askokcancel("Confirm HEM4 Quit", "Are you "+
-                                              "sure? Hem4 is currently running. Clicking 'OK' will stop HEM4.")
+                                              "sure? HEM4 is currently running. Clicking 'OK' will stop HEM4.")
 
             if override:
                 # Abort the thread and wait for it to stop...once it has
                 # completed, it will signal this class to kill the GUI
-                Logger.logMessage("Stopping Hem4...")
+                Logger.logMessage("Stopping HEM4...")
                 self.processor.abortProcessing()
                 self.aborted = True
                 self.display_app_quit()
 
         else:
             # If we're not running, the only thing to do is reset the GUI...
-            Logger.logMessage("Hem4 stopped")
+            Logger.logMessage("HEM4 stopped")
             self.reset_gui()
 
     def display_app_quit(self):
@@ -1352,7 +1352,7 @@ class Hem4(tk.Frame):
 
             if override:
                 global instruction_instance
-                instruction_instance.set("Hem4 Running, check the log tab for updates")
+                instruction_instance.set("HEM4 Running, check the log tab for updates")
                 self.tab2.lift()
                 Logger.logMessage("\nHEM4 is starting...")
                 

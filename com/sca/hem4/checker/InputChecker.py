@@ -549,4 +549,3 @@ class InputChecker():
         result['result'] = 'ready'
         return result
     
-

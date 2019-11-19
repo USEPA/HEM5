@@ -81,4 +81,3 @@ class Summary(tk.Frame):
         fullpath = os.path.abspath((askopenfilename()))
         
         self.mod_group_list = fullpath
-        

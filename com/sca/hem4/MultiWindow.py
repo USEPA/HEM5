@@ -279,7 +279,7 @@ class MainView(tk.Frame):
         title.pack(padx=20, pady=50)
         
         #new facility run
-        new_run = tk.Button(self.s2, text= "Run a new facility", font=TEXT_FONT, 
+        new_run = tk.Button(self.s2, text= "New Run", font=TEXT_FONT, 
                            relief='solid', borderwidth=2, bg='lightgrey', command=self.hem.lift)
         new_run.pack(padx=20, pady=50)
         new_run.bind("<Enter>", partial(self.color_config, new_run, "white"))
@@ -288,7 +288,7 @@ class MainView(tk.Frame):
         #resume a facility run
         #first get all incomplete runs
 #        incomplete_facs = os.listdir("save")
-        resume = tk.Label(self.s3, text= "Resume Previous Group Run (DISABLED)", bg='palegreen3', 
+        resume = tk.Label(self.s3, text= "Resume Previous Run (DISABLED)", bg='palegreen3', 
                                font=TEXT_FONT).pack()
 #
 #        if len(incomplete_facs) > 1:
@@ -306,11 +306,17 @@ class MainView(tk.Frame):
 #        popupMenu = tk.OptionMenu(self.s4, sum_var, *folders)
 #        popupMenu.grid(row = 2)
         
-        risk = tk.Button(self.s4, text= "Run Risk Summary Program(s) (DISABLED)", font=TEXT_FONT, relief='solid', borderwidth=2, bg='lightgrey',
+        risk = tk.Button(self.s4, text= "Run Risk Summary Programs", font=TEXT_FONT, relief='solid', borderwidth=2, bg='lightgrey',
                              command=self.summary.lift)
         risk.pack(padx=20, pady=50)
         risk.bind("<Enter>", partial(self.color_config, risk, "white"))
         risk.bind("<Leave>", partial(self.color_config, risk, "lightgrey"))
+
+        view = tk.Button(self.s5, text= "View and Analyze Outputs (Disabled) ", font=TEXT_FONT, relief='solid', borderwidth=2, bg='lightgrey')
+        view.pack(padx=20, pady=50)
+        view.bind("<Enter>", partial(self.color_config, risk, "white"))
+        view.bind("<Leave>", partial(self.color_config, risk, "lightgrey"))
+
         
 #        #back button
 #        back_button = tk.Button(self.s5, text="Back to Home", font=TEXT_FONT, relief='solid', borderwidth=2, bg='lightgrey'
@@ -319,6 +325,8 @@ class MainView(tk.Frame):
 #        back_button.bind("<Enter>", partial(self.color_config, back_button, "white"))
 #        back_button.bind("<Leave>", partial(self.color_config, back_button, "lightgrey"))
 #  
+        
+        
         self.nav.lift()
         
     def color_config(self, widget, color, event):
