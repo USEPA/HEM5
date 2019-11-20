@@ -20,7 +20,7 @@ class AllPolarReceptors(CsvWriter):
         
             
     def getHeader(self):
-        return ['Source ID', 'Emission type', 'Pollutant', 'Conc (µg/m3)', 'Acute conc (ug/m3)',
+        return ['Source ID', 'Emission type', 'Pollutant', 'Conc (\u03BCg/m3)', 'Acute conc (\u03BCg/m3)',
                 'Distance (m)', 'Angle (from north)', 'Sector', 'Ring number', 'Elevation (m)',
                 'Latitude', 'Longitude', 'Overlap', 'Wet deposition (g/m2/yr)', 'Dry deposition (g/m2/yr)']
 
