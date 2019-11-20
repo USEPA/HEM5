@@ -223,6 +223,7 @@ class FacilityRunner():
                         pfile = open(fac_folder + 'plotfile_v.plt', "r")
                     else:
                         pfile = open(fac_folder + 'plotfile.plt', "r")
+
                     
                     # Put the plotfile into a dataframe
                     temp_df = self.readplotf(pfile, self.model.model_optns['runtype'])
