@@ -253,7 +253,7 @@ class FacilityRunner():
     
     def prep(self):
         
-        Logger.logMessage("Building runstream for facility " + self.facilityId)
+        Logger.logMessage("Building runstream for " + self.facilityId)
         
         try:
             prep = FacilityPrep(self.model)

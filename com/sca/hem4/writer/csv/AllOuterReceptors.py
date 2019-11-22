@@ -123,7 +123,7 @@ class AllOuterReceptors(CsvWriter, InputFile):
 
     def getHeader(self):
         return ['FIPs', 'Block', 'Latitude', 'Longitude', 'Source ID', 'Emission type', 'Pollutant',
-                'Conc (µg/m3)', 'Acute Conc (µg/m3)', 'Elevation (m)',
+                'Conc (ug/m3)', 'Acute Conc (ug/m3)', 'Elevation (m)',
                 'Population', 'Overlap']
 
     def getColumns(self):

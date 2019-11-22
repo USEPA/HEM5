@@ -118,7 +118,7 @@ class AllOuterReceptorsNonCensus(CsvWriter, InputFile):
 
     def getHeader(self):
         return ['Receptor ID', 'Latitude', 'Longitude', 'Source ID', 'Emission type', 'Pollutant',
-                'Conc (µg/m3)', 'Acute Conc (µg/m3)', 'Elevation (m)', 'Population', 'Overlap']
+                'Conc (ug/m3)', 'Acute Conc (ug/m3)', 'Elevation (m)', 'Population', 'Overlap']
 
     def getColumns(self):
         return [rec_id, lat, lon, source_id, ems_type, pollutant, conc, aconc, elev, population, overlap]
