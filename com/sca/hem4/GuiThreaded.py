@@ -993,6 +993,10 @@ class Hem4(tk.Frame):
         """
         Function for creating row and buoyant line parameter upload widgets
         """
+        
+        self.tab_bouyant = tk.Frame(self.tabControl, bg='palegreen3')            # Add a second tab
+        self.tabControl.add(self.tab_bouyant, text='Additional')      # Make second tab visible
+
          #create row for buoyant line input
         self.s7 = tk.Frame(self.main, width=250, height=50, pady=5, padx=5, bg="palegreen3")
         self.s7.grid(row=6, column=0, columnspan=2, sticky="nsew")
@@ -1030,6 +1034,10 @@ class Hem4(tk.Frame):
         """
         Function for creating row and polyvertex file upload widgets
         """
+        
+        self.tab_poly = tk.Frame(self.tabControl, bg='palegreen3')           
+        self.tabControl.add(self.tab_poly, text='Additional')
+                            
         #create row for poly
         self.s8 = tk.Frame(self.main, width=250, height=50, pady=5, padx=5, bg="palegreen3")
         self.s8.grid(row=7, column=0, columnspan=2, sticky="nsew")
@@ -1063,6 +1071,10 @@ class Hem4(tk.Frame):
         """ 
         Function for creating row and building downwash file upload widgets
         """
+        
+        self.tab_bldg = tk.Frame(self.tabControl, bg='palegreen3')            
+        self.tabControl.add(self.tab_bldg, text='Additional')
+        
         #create row for building downwash
         self.s9 = tk.Frame(self.main, width=250, height=50, padx=5, bg="palegreen3")
         self.s9.grid(row=8, column=0, columnspan=2, sticky="nsew")
@@ -1098,6 +1110,8 @@ class Hem4(tk.Frame):
         """
         Function for creating column for particle size file upload widgets
         """
+        self.tab_dep = tk.Frame(self.tabControl, bg='palegreen3')           
+        self.tabControl.add(self.tab_dep, text='Additional')
         
         #create column for particle size file
         self.s10 = tk.Frame(self.main, width=250, height=50, pady=5, padx=5, bg="palegreen3")
@@ -1132,6 +1146,9 @@ class Hem4(tk.Frame):
         """
         Function for creating column for land use upload widgets
         """
+        
+        self.tab_dep = tk.Frame(self.tabControl, bg='palegreen3')           
+        self.tabControl.add(self.tab_dep, text='Additional')
         
         #create column for land use file
         self.s11 = tk.Frame(self.main, width=250, height=50, pady=5, padx=5, bg="palegreen3")
