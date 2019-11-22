@@ -401,7 +401,6 @@ class Hem4(tk.Frame):
         self.s3 = tk.Frame(self.main, width=750, height=50, bg="palegreen3", pady=5, padx=5)
         self.s4 = tk.Frame(self.main, width=750, height=50, bg="palegreen3", pady=5, padx=5)
         self.s5 = tk.Frame(self.main, width=750, height=50, bg="palegreen3", pady=5, padx=5)
-        self.s6 = tk.Frame(self.main, width=750, height=50, bg="palegreen3", pady=5, padx=5)
         
         self.alturep = tk.Frame(self.main, width=250, height=250,  bg="palegreen3", pady=5, padx=5)
 
@@ -412,15 +411,22 @@ class Hem4(tk.Frame):
         self.s3.grid(row=3, column=0, columnspan=2, sticky="nsew")
         self.s4.grid(row=4, column=0, columnspan=2, sticky="nsew")
         self.s5.grid(row=5, column=0, columnspan=2, sticky="nsew")
-        self.s6.grid(row=5, column=0, columnspan=2, sticky="nsew")
+
 
         self.main.grid_rowconfigure(8, weight=4)
         self.main.grid_columnconfigure(2, weight=1)
         self.s2.grid_propagate(0)
         
+        
+#        self.s10 = tk.Frame(self.main, width=750, height=50, pady=5, padx=5, bg="palegreen1")
+#        self.s10.grid(row=10, column=2, columnspan=2, sticky="nsew")
+#        
+#        
+#        
+        
         #self.s1.grid_propagate(0)
     
-        # create container frame to hold log
+# create container frame to hold log
         self.log = tk.Frame(self.tab2, bg="palegreen3")
         self.log.pack()
         

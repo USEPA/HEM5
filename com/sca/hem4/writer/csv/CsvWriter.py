@@ -28,7 +28,7 @@ class CsvWriter(Writer):
             self.writeFormatted(writer, data)
 
     def writeHeader(self):
-        with open(self.filename, 'w', encoding='UTF-8', newline='') as csvarchive:
+        with open(self.filename, 'w', encoding='ASCII', newline='') as csvarchive:
             writer = csv.writer(csvarchive, quoting=csv.QUOTE_NONNUMERIC)
             writer.writerow(self.getHeader())
 
