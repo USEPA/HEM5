@@ -62,42 +62,10 @@ class AllOuterReceptors(CsvWriter, InputFile):
         self.acute_yn = acuteyn
         self.plot_df = plot_df
 
-#        self.riskCache = {}
-#        self.organCache = {}
 
         # No need to go further if we are instantiating this class to read in a CSV file...
         if self.model is None:
             return
-
-#        # Fill local caches for URE/RFC and organ endpoint values
-#        for index, row in self.model.haplib.dataframe.iterrows():
-#
-#            # Change rfcs of 0 to -1. This simplifies HI calculations. Don't have to worry about divide by 0.
-#            if row[rfc] == 0:
-#                rfcval = -1
-#            else:
-#                rfcval = row[rfc]
-#
-#            self.riskCache[row[pollutant].lower()] = {ure : row[ure], rfc : rfcval}
-#
-#            # In order to get a case-insensitive exact match (i.e. matches exactly except for casing)
-#            # we are using a regex that is specified to be the entire value. Since pollutant names can
-#            # contain parentheses, escape them before constructing the pattern.
-#            pattern = '^' + re.escape(row[pollutant]) + '$'
-#            organrow = self.model.organs.dataframe.loc[
-#                self.model.organs.dataframe[pollutant].str.contains(pattern, case=False, regex=True)]
-#
-#            if organrow.size == 0:
-#                listed = []
-#            else:
-#                listed = organrow.values.tolist()
-#
-#            # Note: sometimes there is a pollutant with no effect on any organ (RFC == 0). In this case it will
-#            # not appear in the organs library, and therefore 'listed' will be empty. We will just assign a
-#            # dummy list in this case...
-#            dummylist = [row[pollutant], ' ', 0, 0, 0, 0 , 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
-#            organs = listed[0] if len(listed) > 0 else dummylist
-#            self.organCache[row[pollutant].lower()] = organs
 
 
         self.outerblocks = self.model.outerblks_df[[lat, lon, utme, utmn, hill]]
@@ -151,7 +119,7 @@ class AllOuterReceptors(CsvWriter, InputFile):
                     'Population', 'Overlap']
         else:
             return ['FIPs', 'Block', 'Latitude', 'Longitude', 'Source ID', 'Emission type', 'Pollutant',
-                    'Conc (µg/m3)', 'Acute Conc (µg/m3)', 'Elevation (m)',
+                    'Conc (ug/m3)', 'Acute Conc (ug/m3)', 'Elevation (m)',
                     'Population', 'Overlap']
             
 

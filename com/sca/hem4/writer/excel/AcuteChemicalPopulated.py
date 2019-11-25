@@ -30,7 +30,7 @@ class AcuteChemicalPopulated(ExcelWriter):
          
 
     def getHeader(self):
-        return ['Pollutant', 'Conc (µg/m3)', 'Conc sci (µg/m3)', 'Aegl_1 1hr (mg/m3)', 'Aegl_1 8hr (mg/m3)',
+        return ['Pollutant', 'Conc (ug/m3)', 'Conc sci (ug/m3)', 'Aegl_1 1hr (mg/m3)', 'Aegl_1 8hr (mg/m3)',
                 'Aegl_2 1hr (mg/m3)', 'Aegl_2 8hr (mg/m3)', 'Erpg_1 (mg/m3)', 'Erpg_2 (mg/m3)', 'Idlh_10 (mg/m3)',
                 'Mrl (mg/m3)', 'Rel (mg/m3)', 'Teel_0 (mg/m3)', 'Teel_1 (mg/m3)', 'Population',
                 'Distance (in meters)', 'Angle (from north)', 'Elevation (in meters)', 'Hill Height (in meters)',
