@@ -201,5 +201,4 @@ class AllPolarReceptors(CsvWriter):
         #dataframe to array
         self.dataframe = all_polar_receptors_df
         self.data = self.dataframe.values
-
         yield self.dataframe
