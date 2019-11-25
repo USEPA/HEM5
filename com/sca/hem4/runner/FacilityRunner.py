@@ -59,7 +59,7 @@ class FacilityRunner():
         except Exception as e:
                 
                 Logger.logMessage(str(e))
-                
+        
 
         # phases dictionary
         if self.model.model_optns['phase'] != None:
@@ -370,7 +370,7 @@ class FacilityRunner():
                 shutil.move(maxfile, fac_folder)
             
             
-            # for deposition runs, change the names of aermod.out, aermod.inp, and plotfile.plt
+            # for deposition runs, change the names of aermod.out and aermod.inp
             if phasetype != None:
                 
                 oldname = os.path.join(fac_folder, 'aermod.out')
@@ -381,12 +381,6 @@ class FacilityRunner():
 
                 oldname = os.path.join(fac_folder, 'aermod.inp')
                 newname = os.path.join(fac_folder, 'aermod_' + phasetype + '.inp')
-                if os.path.isfile(newname):
-                    os.remove(newname)
-                os.rename(oldname, newname)    
-
-                oldname = os.path.join(fac_folder, 'plotfile.plt')
-                newname = os.path.join(fac_folder, 'plotfile_' + phasetype + '.plt')
                 if os.path.isfile(newname):
                     os.remove(newname)
                 os.rename(oldname, newname)    

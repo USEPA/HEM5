@@ -151,6 +151,7 @@ class AllOuterReceptorsNonCensus(CsvWriter, InputFile):
                                                     'angle', population, overlap, 's',
                                                     'ring_loc']].copy()
        
+
         #define sector/ring of 4 surrounding polar receptors for each outer receptor
         a_s = outerblks_subset['s'].values
         a_ringloc = outerblks_subset['ring_loc'].values
@@ -336,7 +337,7 @@ class AllOuterReceptorsNonCensus(CsvWriter, InputFile):
                             hi_endo, hi_hema, hi_immu, hi_skel, hi_sple, hi_thyr, hi_whol]
             boxmerged = box_receptors_wrisk.merge(self.outerblocks, on=[lat, lon])[blksumm_cols]
 
-
+            
             #----------- Accumulate Outer receptor risks by lat/lon for later use in BlockSummaryChronic ----------------
 
             blksumm_aggs = {lat:'first', lon:'first', overlap:'first', elev:'first', rec_id:'first',
@@ -348,8 +349,7 @@ class AllOuterReceptorsNonCensus(CsvWriter, InputFile):
             outeragg = boxmerged.groupby([lat, lon]).agg(blksumm_aggs)[blksumm_cols]
 
             if self.outerAgg is None:
-                storage = self.outerblocks.shape[0]
-                self.outerAgg = pd.DataFrame(columns=blksumm_cols, index=range(storage))
+                self.outerAgg = pd.DataFrame(columns=blksumm_cols)
             self.outerAgg = self.outerAgg.append(outeragg)
 
 

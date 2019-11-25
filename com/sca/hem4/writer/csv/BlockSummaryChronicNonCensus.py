@@ -31,7 +31,7 @@ class BlockSummaryChronicNonCensus(CsvWriter):
         plot_df is not needed. Instead, the allinner and allouter receptor
         outputs are used to compute cancer risk and HI's at each block receptor.
         """
-
+        
         allinner_df = self.model.all_inner_receptors_df.copy()
 
         innerblocks = self.model.innerblks_df[[lat, lon, utme, utmn, hill]]

@@ -64,13 +64,46 @@ class AllInnerReceptorsNonCensus(CsvWriter):
         # If acute was run for this facility, read the acute plotfile
         if self.acute_yn == 'Y':
             apfile = open(self.targetDir + "maxhour.plt", "r")
-            self.aplot_df = pd.read_table(apfile, delim_whitespace=True, header=None, 
-                names=[utme,utmn,aresult,elev,hill,flag,avg_time,source_id,num_yrs,net_id],
-                usecols=[0,1,2,3,4,5,6,7,8,9], 
-                converters={utme:np.float64,utmn:np.float64,aresult:np.float64,elev:np.float64,hill:np.float64
-                       ,flag:np.float64,avg_time:np.str,source_id:np.str,rank:np.str,net_id:np.str
-                       ,concdate:np.str},
-                comment='*')          
+
+            if self.rtype == 0:
+                # No deposition
+                self.aplot_df = pd.read_table(apfile, delim_whitespace=True, header=None, 
+                    names=[utme,utmn,aresult,elev,hill,flag,avg_time,source_id,num_yrs,net_id],
+                    usecols=[0,1,2,3,4,5,6,7,8,9], 
+                    converters={utme:np.float64,utmn:np.float64,aresult:np.float64,elev:np.float64,hill:np.float64
+                           ,flag:np.float64,avg_time:np.str,source_id:np.str,rank:np.str,net_id:np.str
+                           ,concdate:np.str},
+                    comment='*')             
+            elif self.rtype == 1:
+                # Wet and Dry deposition
+                self.aplot_df = pd.read_table(apfile, delim_whitespace=True, header=None, 
+                    names=[utme,utmn,aresult,adry,awet,elev,hill,flag,avg_time,source_id,num_yrs,net_id],
+                    usecols=[0,1,2,3,4,5,6,7,8,9,10,11], 
+                    converters={utme:np.float64,utmn:np.float64,aresult:np.float64,adry:np.float64,
+                                awet:np.float64,elev:np.float64,hill:np.float64,flag:np.float64,
+                                avg_time:np.str,source_id:np.str,rank:np.str,net_id:np.str,concdate:np.str},
+                    comment='*')                       
+            elif self.rtype == 2:
+                # Dry only deposition
+                self.aplot_df = pd.read_table(apfile, delim_whitespace=True, header=None, 
+                    names=[utme,utmn,aresult,adry,elev,hill,flag,avg_time,source_id,num_yrs,net_id],
+                    usecols=[0,1,2,3,4,5,6,7,8,9,10], 
+                    converters={utme:np.float64,utmn:np.float64,aresult:np.float64,adry:np.float64,
+                                elev:np.float64,hill:np.float64,flag:np.float64,
+                                avg_time:np.str,source_id:np.str,rank:np.str,net_id:np.str,concdate:np.str},
+                    comment='*')                       
+            elif self.rtype == 3:
+                # Wet only deposition
+                self.aplot_df = pd.read_table(apfile, delim_whitespace=True, header=None, 
+                    names=[utme,utmn,aresult,awet,elev,hill,flag,avg_time,source_id,num_yrs,net_id],
+                    usecols=[0,1,2,3,4,5,6,7,8,9,10], 
+                    converters={utme:np.float64,utmn:np.float64,aresult:np.float64,awet:np.float64,
+                                elev:np.float64,hill:np.float64,flag:np.float64,
+                                avg_time:np.str,source_id:np.str,rank:np.str,net_id:np.str,concdate:np.str},
+                    comment='*')
+            else:
+                #TODO need to pass this to the log and skip to next facility
+                print("Error! Invalid rtype in AllInnerReceptors")                  
 
         
         # Extract Chronic inner concs from Chronic plotfile and round the utm coordinates

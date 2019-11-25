@@ -37,7 +37,7 @@ class TestHarness:
         self.model.facids = self.model.faclist.dataframe["fac_id"]
         uploader.upload("hapemis", "fixtures/input/hapemis.xlsx")
         uploader.upload("emisloc", "fixtures/input/emisloc.xlsx")
-
+        
         uploader.uploadDependent("user receptors", "fixtures/input/urec.xlsx",
                                  self.model.faclist.dataframe)
 
