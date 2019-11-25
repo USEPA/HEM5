@@ -48,8 +48,6 @@ class Hem4(tk.Frame):
 
     def __init__ (self, container, messageQueue, callbackQueue, *args, **kwargs):
         Page.__init__(self, master=container, *args, **kwargs)
-        
-        
         """
         The HEM4 class object builds the GUI for the HEM4 application.
         """
@@ -92,7 +90,10 @@ class Hem4(tk.Frame):
         self.dep_part_up = None
         self.dep_land_up = None
         self.dep_seasons_up = None
-
+        
+        #status for working with optional inputs
+        self.optionaltab = False
+        self.deptab = False
 
         self.createWidgets()
         
@@ -101,21 +102,6 @@ class Hem4(tk.Frame):
 
         Logger.messageQueue = messageQueue
 
-#
-#    def start_gui(self):
-#
-#        #create window instance
-#        self = tk.Toplevel()
-#
-#        #title
-#        self.title("HEM4")
-#        self.maxsize(1000, 1000)
-#
-#        self.createWidgets()
-#
-#        self.after(25, self.after_callback)
-#        self.after(500, self.check_processing)
-#        self.mainloop()
 
     def close(self):
         Logger.close(True)
@@ -388,13 +374,6 @@ class Hem4(tk.Frame):
                               command=self.update_census)
         self.cu_update.grid(row=3, column=0, sticky="W", padx=85, pady=20)
 
-
-         # Create container frame to hold all other widgets
-#        self.main = ttk.LabelFrame(tab1, text='Human Exposure Model,'+
-#                                   ' open-source (HEM4), Version 1.0', 
-#                                   labelanchor="n")
-#        self.main.grid(column=0, row=1)
-#        
         #create discreet sections for GUI in tab1
         self.s1 = tk.Frame(self.main, width=750, height=50, bg="palegreen3")
         self.s2 = tk.Frame(self.main, width=1000, height=50, bg="palegreen3")
@@ -419,11 +398,7 @@ class Hem4(tk.Frame):
         
         
 #        self.s10 = tk.Frame(self.main, width=750, height=50, pady=5, padx=5, bg="palegreen1")
-#        self.s10.grid(row=10, column=2, columnspan=2, sticky="nsew")
-#        
-#        
-#        
-        
+#        self.s10.grid(row=10, column=2, columnspan=2, sticky="nsew")   
         #self.s1.grid_propagate(0)
     
 # create container frame to hold log
@@ -434,13 +409,7 @@ class Hem4(tk.Frame):
 #        scrolW  = 65; scrolH  =  25
         self.scr = scrolledtext.ScrolledText(self.log, wrap=tk.WORD, width=1000, height=1000, font=LOG_FONT)
         self.scr.pack()
-#        
-#        # Adding a Textbox Entry widget
-#        scrolW  = 65; scrolH  =  25
-#        self.scr = scrolledtext.ScrolledText(self.log, width=scrolW, 
-#                                             height=scrolH, wrap=tk.WORD)
-##        self.scr.grid(column=0, row=3, sticky='WE', columnspan=3)
-        
+       
 #%% Set Quit, Run, and User Guide buttons        
 #        self.quit = tk.Button(self.main, text="STOP", fg="red", font=TEXT_FONT, bg='lightgrey', relief='solid', borderwidth=2,
 #                              command=self.quit_app)
@@ -629,6 +598,10 @@ class Hem4(tk.Frame):
                     
             #trigger additional inputs for building downwash
             if 'Y' in self.model.faclist.dataframe['bldg_dw'].tolist():
+                
+                #enable optional input tab
+                self.optionaltab = True
+                
                 #create building downwash input
                 self.add_bldgdw()
             
@@ -651,6 +624,10 @@ class Hem4(tk.Frame):
             
             
             if conditional is not None:
+                #enable deposition and depletion input tab
+                self.deptab = True                
+                
+                
                 #if deposition or depletion present load gas params library
                 self.uploader.uploadLibrary("gas params")
                 for required in conditional:
@@ -721,6 +698,10 @@ class Hem4(tk.Frame):
             
             #trigger additional inputs for buoyant line and polyvertex
             if 'I' in self.model.emisloc.dataframe['source_type'].tolist():
+                
+                #enable optional input tab
+                self.optionaltab = False
+                
                 #create polyvertex upload 
                 self.add_poly()
                 
@@ -734,6 +715,10 @@ class Hem4(tk.Frame):
                     
                     
             if 'B' in self.model.emisloc.dataframe['source_type'].tolist():
+                
+                #enable optional input tab
+                self.optionaltab = False
+                
                 #create buoyant line upload
                 self.add_buoyant()
                 
@@ -994,8 +979,16 @@ class Hem4(tk.Frame):
         Function for creating row and buoyant line parameter upload widgets
         """
         
-        self.tab_bouyant = tk.Frame(self.tabControl, bg='palegreen3')            # Add a second tab
-        self.tabControl.add(self.tab_bouyant, text='Additional')      # Make second tab visible
+        #if optional input tab already exists
+        if hasattr(self, "optionalinputtab"):
+            
+            ##create row for bouyant line in it
+            pass
+        
+        else:
+            #create optional input tab
+            self.optionalinputtab = tk.Frame(self.tabControl, bg='palegreen3')            
+            self.tabControl.add(self.self.optionalinputtab, text='Additional Inputs')      
 
          #create row for buoyant line input
         self.s7 = tk.Frame(self.main, width=250, height=50, pady=5, padx=5, bg="palegreen3")
@@ -1034,9 +1027,16 @@ class Hem4(tk.Frame):
         """
         Function for creating row and polyvertex file upload widgets
         """
+        #if optional input tab already exists
+        if hasattr(self, "optionalinputtab"):
+            
+            ##create row for polyvertex inputs
+            pass
         
-        self.tab_poly = tk.Frame(self.tabControl, bg='palegreen3')           
-        self.tabControl.add(self.tab_poly, text='Additional')
+        else:
+            #create optional input tab
+            self.optionalinputtab = tk.Frame(self.tabControl, bg='palegreen3')            
+            self.tabControl.add(self.self.optionalinputtab, text='Additional Inputs')  
                             
         #create row for poly
         self.s8 = tk.Frame(self.main, width=250, height=50, pady=5, padx=5, bg="palegreen3")
@@ -1071,9 +1071,16 @@ class Hem4(tk.Frame):
         """ 
         Function for creating row and building downwash file upload widgets
         """
+        #if optional input tab already exists
+        if hasattr(self, "optionalinputtab"):
+            
+            ##create row for buildingdownwash inputs
+            pass
         
-        self.tab_bldg = tk.Frame(self.tabControl, bg='palegreen3')            
-        self.tabControl.add(self.tab_bldg, text='Additional')
+        else:
+            #create optional input tab
+            self.optionalinputtab = tk.Frame(self.tabControl, bg='palegreen3')            
+            self.tabControl.add(self.self.optionalinputtab, text='Additional Inputs')  
         
         #create row for building downwash
         self.s9 = tk.Frame(self.main, width=250, height=50, padx=5, bg="palegreen3")
@@ -1110,8 +1117,17 @@ class Hem4(tk.Frame):
         """
         Function for creating column for particle size file upload widgets
         """
-        self.tab_dep = tk.Frame(self.tabControl, bg='palegreen3')           
-        self.tabControl.add(self.tab_dep, text='Additional')
+        
+        #if deposition/depletion input tab already exists
+        if hasattr(self, "depinputtab"):
+            
+            ##create row for particle size input
+            pass
+        
+        else:
+            #create optional input tab
+            self.depinputtab = tk.Frame(self.tabControl, bg='palegreen3')            
+            self.tabControl.add(self.depinputtab, text='Dep/Depl Inputs')  
         
         #create column for particle size file
         self.s10 = tk.Frame(self.main, width=250, height=50, pady=5, padx=5, bg="palegreen3")
@@ -1146,9 +1162,16 @@ class Hem4(tk.Frame):
         """
         Function for creating column for land use upload widgets
         """
+         #if deposition/depletion input tab already exists
+        if hasattr(self, "depinputtab"):
+            
+            ##create row for land use inputs
+            pass
         
-        self.tab_dep = tk.Frame(self.tabControl, bg='palegreen3')           
-        self.tabControl.add(self.tab_dep, text='Additional')
+        else:
+            #create optional input tab
+            self.depinputtab = tk.Frame(self.tabControl, bg='palegreen3')            
+            self.tabControl.add(self.depinputtab, text='Dep/Depl Inputs') 
         
         #create column for land use file
         self.s11 = tk.Frame(self.main, width=250, height=50, pady=5, padx=5, bg="palegreen3")
@@ -1182,6 +1205,17 @@ class Hem4(tk.Frame):
         """
         Function for creating column for seasonal vegetation upload widgets
         """
+         #if deposition/depletion input tab already exists
+        if hasattr(self, "depinputtab"):
+            
+            ##create row for seasonal vegetation inputs
+            pass
+        
+        else:
+            #create optional input tab
+            self.depinputtab = tk.Frame(self.tabControl, bg='palegreen3')            
+            self.tabControl.add(self.depinputtab, text='Dep/Depl Inputs') 
+        
         
         #create column for land use file
         self.s12 = tk.Frame(self.main, width=250, height=50, pady=5, padx=5, bg="palegreen3")
