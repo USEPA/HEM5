@@ -81,26 +81,26 @@ def check_dep(dataframe):
                         
             if (deposition[i] == 'Y' and depletion[i] != 'Y'): 
             
-                if ('DO' or 'WO' or 'WD') in part_depo[i]:
+                if 'DO' or 'WO' or 'WD' in part_depo[i]:
                     options.append('particle size')
                 
-                    if ('WD' or 'DO') in vapor_depo[i]:
+                    if 'WD' or 'DO' in vapor_depo[i]:
                         options.append('land use')
                         options.append('seasons')
             
-                elif 'NO' in part_depo[i] and ('WD' or 'DO') in vapor_depo[i]:
+                elif 'NO' in part_depo[i] and 'WD' or 'DO' in vapor_depo[i]:
                      options.append('land use')
                      options.append('seasons')
                 
             elif (depletion[i] == 'Y' and deposition[i] != 'Y'):
                 
-                if ('DO' or 'WO' or 'WD') in part_depl[i]:
+                if 'DO' or 'WO' or 'WD' in part_depl[i]:
                     options.append('particle size')
-                    if ('WD' or 'DO') in vapor_depl[i]:
+                    if 'WD' or 'DO' in vapor_depl[i]:
                         options.append('land use')
                         options.append('seasons')                        
                 
-                elif 'NO' in part_depl[i] and ('WD' or 'DO') in vapor_depl[i]:
+                elif 'NO' in part_depl[i] and 'WD' or 'DO' in vapor_depl[i]:
                     options.append('land use')
                     options.append('seasons')
                     
@@ -110,18 +110,18 @@ def check_dep(dataframe):
     
             elif (deposition[i] == 'Y' and depletion[i] == 'Y'):
                 
-                if (('DO' or 'WO' or 'WD') in part_depo[i] and 
-                    ('DO' or 'WO' or 'WD') in part_depl[i]):
+                if ('DO' or 'WO' or 'WD' in part_depo[i] and 
+                    'DO' or 'WO' or 'WD' in part_depl[i]):
                     options.append('particle size')
                     
-                    if (('WD' or 'DO') in vapor_depo[i] and 
-                        ('WD' or 'DO') in vapor_depl[i]):
+                    if ('WD' or 'DO' in vapor_depo[i] and 
+                        'WD' or 'DO' in vapor_depl[i]):
                         options.append('land use')
                         options.append('seasons')
                     
                 elif 'NO' in part_depo[i] and 'NO' in part_depl[i]:
-                    if (('WD' or 'DO') in vapor_depo[i] and 
-                        ('WD' or 'DO') in vapor_depl[i]):
+                    if ('WD' or 'DO' in vapor_depo[i] and 
+                        'WD' or 'DO' in vapor_depl[i]):
                         options.append('land use')
                         options.append('seasons')
                     
