@@ -59,7 +59,7 @@ def check_dep(dataframe):
             
             if (deposition[i] == 'Y' and depletion[i] != 'Y'):
                 
-                if ('DO' or 'WD') in vapor_depo[i]:
+                if 'DO' or 'WD' in vapor_depo[i]:
                     options.append('land use')
                     options.append('seasons')
                     

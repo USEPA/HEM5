@@ -165,7 +165,7 @@ class FacilityRunner():
                         
             runstreams = []
             plot_df = pd.DataFrame()
-            
+                        
             for r in phases:
 
                 Logger.logMessage(r['phase'] + " run:")
