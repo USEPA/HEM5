@@ -994,8 +994,8 @@ class Hem4(tk.Frame):
         Function for creating row and buoyant line parameter upload widgets
         """
         
-        self.tab_bouyant = tk.Frame(self.tabControl, bg='palegreen3')            # Add a second tab
-        self.tabControl.add(self.tab_bouyant, text='Additional')      # Make second tab visible
+#        self.tab_bouyant = tk.Frame(self.tabControl, bg='palegreen3')            # Add a second tab
+#        self.tabControl.add(self.tab_bouyant, text='Additional')      # Make second tab visible
 
          #create row for buoyant line input
         self.s7 = tk.Frame(self.main, width=250, height=50, pady=5, padx=5, bg="palegreen3")
@@ -1035,8 +1035,8 @@ class Hem4(tk.Frame):
         Function for creating row and polyvertex file upload widgets
         """
         
-        self.tab_poly = tk.Frame(self.tabControl, bg='palegreen3')           
-        self.tabControl.add(self.tab_poly, text='Additional')
+#        self.tab_poly = tk.Frame(self.tabControl, bg='palegreen3')           
+#        self.tabControl.add(self.tab_poly, text='Additional')
                             
         #create row for poly
         self.s8 = tk.Frame(self.main, width=250, height=50, pady=5, padx=5, bg="palegreen3")
@@ -1071,9 +1071,9 @@ class Hem4(tk.Frame):
         """ 
         Function for creating row and building downwash file upload widgets
         """
-        
-        self.tab_bldg = tk.Frame(self.tabControl, bg='palegreen3')            
-        self.tabControl.add(self.tab_bldg, text='Additional')
+#        
+#        self.tab_bldg = tk.Frame(self.tabControl, bg='palegreen3')            
+#        self.tabControl.add(self.tab_bldg, text='Additional')
         
         #create row for building downwash
         self.s9 = tk.Frame(self.main, width=250, height=50, padx=5, bg="palegreen3")
@@ -1110,12 +1110,12 @@ class Hem4(tk.Frame):
         """
         Function for creating column for particle size file upload widgets
         """
-        self.tab_dep = tk.Frame(self.tabControl, bg='palegreen3')           
-        self.tabControl.add(self.tab_dep, text='Additional')
+#        self.tab_dep = tk.Frame(self.tabControl, bg='palegreen3')           
+#        self.tabControl.add(self.tab_dep, text='Additional')
         
         #create column for particle size file
         self.s10 = tk.Frame(self.main, width=250, height=50, pady=5, padx=5, bg="palegreen3")
-        self.s10.grid(row=10, column=0, columnspan=2, sticky="nsew")
+        self.s10.grid(row=9, column=0, columnspan=2, sticky="nsew")
         
         #particle size label
         part_label = tk.Label(self.s10, font=TEXT_FONT, bg="palegreen3", 
@@ -1147,12 +1147,12 @@ class Hem4(tk.Frame):
         Function for creating column for land use upload widgets
         """
         
-        self.tab_dep = tk.Frame(self.tabControl, bg='palegreen3')           
-        self.tabControl.add(self.tab_dep, text='Additional')
+#        self.tab_dep = tk.Frame(self.tabControl, bg='palegreen3')           
+#        self.tabControl.add(self.tab_dep, text='Additional')
         
-        #create column for land use file
+        #create column for seasons file
         self.s11 = tk.Frame(self.main, width=250, height=50, pady=5, padx=5, bg="palegreen3")
-        self.s11.grid(row=11, column=0, columnspan=2, sticky="nsew")
+        self.s11.grid(row=10, column=0, columnspan=2, sticky="nsew")
         
         #land use size label
         land_label = tk.Label(self.s11, font=TEXT_FONT, bg="palegreen3", 
@@ -1183,9 +1183,9 @@ class Hem4(tk.Frame):
         Function for creating column for seasonal vegetation upload widgets
         """
         
-        #create column for land use file
+        #create column for seasons file
         self.s12 = tk.Frame(self.main, width=250, height=50, pady=5, padx=5, bg="palegreen3")
-        self.s12.grid(row=12, column=0, columnspan=2, sticky="nsew")
+        self.s12.grid(row=11, column=0, columnspan=2, sticky="nsew")
         
         #land use size label
         seasons_label = tk.Label(self.s12, font=TEXT_FONT, bg="palegreen3", 
@@ -1219,30 +1219,30 @@ class Hem4(tk.Frame):
             
             if hasattr(self.model.emisloc, 'dataframe'):
                 #create row for emissions variation
-                self.s13 = tk.Frame(self.main, width=250, height=100, bg="palegreen3", pady=5, 
-                                    padx=5)
-                self.s13.grid(row=9, column=0, columnspan=2, sticky="nsew")
+#                self.s5 = tk.Frame(self.main, width=250, height=100, bg="palegreen3", pady=5, 
+#                                    padx=5)
+#                self.s5.grid(row=4, column=0, columnspan=2, sticky="nsew")
                 
                 #emissions variation label
-                self.emisvar_label = tk.Label(self.s13, font=TEXT_FONT, bg="palegreen3", 
+                self.emisvar_label = tk.Label(self.s5, font=TEXT_FONT, bg="palegreen3", 
                                      text="Please select an Emissions Variation"+
                                      " file:")
-                self.emisvar_label.grid(row=0, sticky="W")
+                self.emisvar_label.grid(row=3, sticky="W")
             
                 #emissions variation upload button
-                self.emisvar_on = tk.Button(self.s13, font=TEXT_FONT, bg='lightgrey', relief='solid', borderwidth=2,
+                self.emisvar_on = tk.Button(self.s5, font=TEXT_FONT, bg='lightgrey', relief='solid', borderwidth=2,
                                        command = lambda: self.uploadVariation())
                 self.emisvar_on["text"] = "Browse"
-                self.emisvar_on.grid(row=1, column=0, sticky="W")
+                self.emisvar_on.grid(row=4, column=0, sticky="W")
                 #self.emisvar_on.bind('<Enter>', 
                                #lambda e:self.browse("instructions/urep_browse.txt"))
                 
                 #emissions variation text entry
-                self.emisvar_list = tk.StringVar(self.s13)
-                self.emisvar_list_man = ttk.Entry(self.s13)
+                self.emisvar_list = tk.StringVar(self.s5)
+                self.emisvar_list_man = ttk.Entry(self.s5)
                 self.emisvar_list_man["width"] = 100
                 self.emisvar_list_man["textvariable"]= self.emisvar_list
-                self.emisvar_list_man.grid(row=1, column=0, sticky='E', padx=85)
+                self.emisvar_list_man.grid(row=4, column=0, sticky='E', padx=85)
                 #event handler for instructions (Button 1 is the left mouse click)
                 #self.emisvar_list_man.bind('<Button-1>', 
                                        #lambda e:self.manual("instructions/urep_man.txt"))
@@ -1257,11 +1257,11 @@ class Hem4(tk.Frame):
             
         #if checked and then unchecked
         elif self.check_emisvar.get() == 0:
-            if hasattr(self, 's13'):
+            if hasattr(self, 'emisvar_on'):
                     self.emisvar_list_man.destroy()
                     self.emisvar_on.destroy()
                     self.emisvar_label.destroy()
-                    self.s13.destroy()
+                    self.s5.destroy()
 
     def set_altrec(self):
         self.model.altRec_optns['altrec'] = self.check_altrec.get()

@@ -158,7 +158,7 @@ class Runstream():
         
             
             # Landuse Options for Deposition
-        if phase['phase'] == 'V' and 'DDEP' in optdp:
+        if phase['phase'] == 'V' and 'DDEP' or 'DRYDPLT' in optdp:
             
             landval = self.landuse_df[self.landuse_df.columns[1:]].values[0]
             coland = ("CO GDLANUSE " + " ".join(map(str, landval)) + '\n')
