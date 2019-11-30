@@ -16,7 +16,7 @@ class EmisVar(DependentInputFile):
         self.path = path
         
     def createDataframe(self):
-        
+                
         emisloc_df = self.dependency
         
         #not calling standard read_file because length of columns is variable
@@ -31,15 +31,19 @@ class EmisVar(DependentInputFile):
         
         else: #excel file used
         
-            emisvar_df = pd.read_excel(self.path)
+            emisvar_df = pd.read_excel(self.path, skiprows=0, dtype=str)
             
             emisvar_df.columns = map(str.lower, emisvar_df.columns)
             
-            #rename first two columns
+            #rename first three columns
             emisvar_df.rename(columns={"facility id": fac_id,
                                        "source id": source_id,
                                        emisvar_df.columns[2]: "variation"}, inplace=True)
             
+            #convert all columns to float64 except first three
+            float_cols=[i for i in emisvar_df.columns if i not in ["fac_id","source_id","variation"]]
+            for col in float_cols:
+                emisvar_df[col]=pd.to_numeric(emisvar_df[col], errors="coerce")
             
             # facility/source ids from emission variation file
             var_ids = set(emisvar_df[[fac_id, source_id]].apply(lambda x: ''.join(x), axis=1).tolist())
