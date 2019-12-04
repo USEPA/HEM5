@@ -6,7 +6,7 @@ from math import log10
 from com.sca.hem4.CensusBlocks import population
 from com.sca.hem4.upload.DoseResponse import ure
 from com.sca.hem4.upload.InputFile import InputFile
-from com.sca.hem4.writer.csv.AllInnerReceptors import ems_type
+from com.sca.hem4.writer.csv.AllInnerReceptors import emis_type
 from com.sca.hem4.writer.excel.ExcelWriter import ExcelWriter
 from com.sca.hem4.model.Model import *
 
@@ -41,7 +41,7 @@ class Incidence(ExcelWriter, InputFile):
         return ['Source ID', 'Pollutant', 'Emission type', 'Incidence', 'Incidence rounded']
 
     def getColumns(self):
-        return [source_id, pollutant, ems_type, inc, inc_rnd]
+        return [source_id, pollutant, emis_type, inc, inc_rnd]
 
     def generateOutputs(self):
 
@@ -51,25 +51,25 @@ class Incidence(ExcelWriter, InputFile):
             # compute incidence for each Inner rececptor row and then sum incidence by source_id and pollutant
             allinner_df[inc] = allinner_df.apply(lambda row: self.calculateRisk(row[pollutant],
                                                  row[conc]) * row[population]/70, axis=1)
-            inner_inc = allinner_df.groupby([source_id, pollutant, ems_type], as_index=False)[[inc]].sum()
+            inner_inc = allinner_df.groupby([source_id, pollutant, emis_type], as_index=False)[[inc]].sum()
         else:
             inner_inc = allinner_df
             inner_inc[inc] = None
 
         # append inner_inc and outer_inc, and re-sum by source_id and pollutant
         all_inc = inner_inc.append(self.outerInc, ignore_index=True).groupby(
-            [source_id, pollutant, ems_type], as_index=False)[[inc]].sum()
+            [source_id, pollutant, emis_type], as_index=False)[[inc]].sum()
 
         # sum incidence by pollutant
-        poll_inc = all_inc.groupby([pollutant, ems_type], as_index=False)[[inc]].sum()
+        poll_inc = all_inc.groupby([pollutant, emis_type], as_index=False)[[inc]].sum()
         poll_inc[source_id] = "Total"
 
         # sum incidence by source id
-        sourceid_inc = all_inc.groupby([source_id, ems_type], as_index=False)[[inc]].sum()
+        sourceid_inc = all_inc.groupby([source_id, emis_type], as_index=False)[[inc]].sum()
         sourceid_inc[pollutant] = "All modeled pollutants"
 
         # sum incidence by emission type
-        emistype_inc = all_inc.groupby([ems_type], as_index=False)[[inc]].sum()
+        emistype_inc = all_inc.groupby([emis_type], as_index=False)[[inc]].sum()
         emistype_inc[source_id] = "Total"
         emistype_inc[pollutant] = "All modeled pollutants"
 
@@ -77,7 +77,7 @@ class Incidence(ExcelWriter, InputFile):
 
         # combine all, poll, sourceid, and emistype incidence dfs into one and store in data
         combined_inc = emistype_inc.append([all_inc, poll_inc, sourceid_inc], ignore_index=True)
-        combined_inc = combined_inc[[source_id, pollutant, ems_type, inc]]
+        combined_inc = combined_inc[[source_id, pollutant, emis_type, inc]]
 
         # compute a rounded incidence value
         combined_inc[inc_rnd] = combined_inc[inc].apply(self.roundIncidence)
@@ -127,7 +127,7 @@ class Incidence(ExcelWriter, InputFile):
     def createDataframe(self):
         # Type setting for XLS reading
         self.numericColumns = [inc, inc_rnd]
-        self.strColumns = [source_id, pollutant, ems_type]
+        self.strColumns = [source_id, pollutant, emis_type]
 
         df = self.readFromPath(self.getColumns())
         return df.fillna("")

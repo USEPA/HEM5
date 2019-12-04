@@ -86,7 +86,7 @@ class AllOuterReceptorsNonCensus(CsvWriter, InputFile):
         self.outerInc = None
 
         # AllOuterReceptor DF columns
-        self.columns = self.getColumns()
+        self.columns = self.getColumns(self.acute_yn)
 
         # Initialize max_riskhi dictionary. Keys are mir, and HIs. Values are
         # lat, lon, and risk value. This dictionary identifies the lat/lon of the max receptor for
@@ -101,7 +101,7 @@ class AllOuterReceptorsNonCensus(CsvWriter, InputFile):
         # the mir and each HI, and has source/pollutant specific risk at that lat/lon.
         # Keys are: parameter, source_id, pollutant, and emis_type.
         # Values are: lat, lon, and risk value.
-        self.srcpols = self.model.all_polar_receptors_df[[source_id, pollutant, ems_type]].drop_duplicates().values.tolist()
+        self.srcpols = self.model.all_polar_receptors_df[[source_id, pollutant, emis_type]].drop_duplicates().values.tolist()
         self.max_riskhi_bkdn = {}
         self.outerInc = {}
         for jparm in self.riskhi_parms:
@@ -120,8 +120,12 @@ class AllOuterReceptorsNonCensus(CsvWriter, InputFile):
         return ['Receptor ID', 'Latitude', 'Longitude', 'Source ID', 'Emission type', 'Pollutant',
                 'Conc (ug/m3)', 'Acute Conc (ug/m3)', 'Elevation (m)', 'Population', 'Overlap']
 
-    def getColumns(self):
-        return [rec_id, lat, lon, source_id, ems_type, pollutant, conc, aconc, elev, population, overlap]
+    def getColumns(self, acute):
+        if acute == 'N':
+            return [rec_id, lat, lon, source_id, emis_type, pollutant, conc, elev, population, overlap]
+        else:
+            return [rec_id, lat, lon, source_id, emis_type, pollutant, conc, aconc, elev, population, overlap]
+            
 
     def generateOutputs(self):
         """
@@ -136,7 +140,7 @@ class AllOuterReceptorsNonCensus(CsvWriter, InputFile):
         self.allpolar_work = self.model.all_polar_receptors_df.copy()
         self.allpolar_work['newindex'] = self.allpolar_work['sector'].apply(str) \
                                          + self.allpolar_work['ring'].apply(str) \
-                                         + self.allpolar_work['ems_type'] \
+                                         + self.allpolar_work['emis_type'] \
                                          + self.allpolar_work['source_id'] \
                                          + self.allpolar_work['pollutant']
         self.allpolar_work.set_index(['newindex'], inplace=True)
@@ -147,6 +151,7 @@ class AllOuterReceptorsNonCensus(CsvWriter, InputFile):
                                                     'angle', population, overlap, 's',
                                                     'ring_loc']].copy()
        
+
         #define sector/ring of 4 surrounding polar receptors for each outer receptor
         a_s = outerblks_subset['s'].values
         a_ringloc = outerblks_subset['ring_loc'].values
@@ -187,7 +192,7 @@ class AllOuterReceptorsNonCensus(CsvWriter, InputFile):
                 # --------- Handle chronic concs ------------------------
                 
                 # Organize chronic concs into a pivot table
-                qry_cpivot = pd.pivot_table(qry_all, values='conc', index=['ems_type', 'source_id', 'pollutant'],
+                qry_cpivot = pd.pivot_table(qry_all, values='conc', index=['emis_type', 'source_id', 'pollutant'],
                                                     columns = 'idxcol')
                 qry_cpivot.reset_index(inplace=True)
                 
@@ -212,11 +217,13 @@ class AllOuterReceptorsNonCensus(CsvWriter, InputFile):
                 if self.acute_yn == 'N':
                     
                     outerplus['aconc'] = 0
+                    datalist = outerplus[['rec_id', 'lat', 'lon', 'source_id', 'emis_type',
+                                          'pollutant', 'conc', 'elev', 'population', 'overlap']].values.tolist()
                     
                 else:
                     
                     # Organize acute concs into a pivot table
-                    qry_apivot = pd.pivot_table(qry_all, values='aconc', index=['ems_type', 'source_id', 'pollutant'],
+                    qry_apivot = pd.pivot_table(qry_all, values='aconc', index=['emis_type', 'source_id', 'pollutant'],
                                                         columns = 'idxcol')
                     qry_apivot.reset_index(inplace=True)
                     
@@ -237,8 +244,9 @@ class AllOuterReceptorsNonCensus(CsvWriter, InputFile):
                     # join aconc column to outerplus DF
                     outerplus = outerplus.join(outerplus_a['aconc'])
                     
-                datalist = outerplus[['rec_id', 'lat', 'lon', 'source_id', 'ems_type',
-                                      'pollutant', 'conc', 'aconc', 'elev', 'population', 'overlap']].values.tolist()
+                    datalist = outerplus[['rec_id', 'lat', 'lon', 'source_id', 'emis_type',
+                                          'pollutant', 'conc', 'aconc', 'elev', 'population', 'overlap']].values.tolist()
+ 
                 dlist.extend(datalist)
 
                 # Finished this box
@@ -329,7 +337,7 @@ class AllOuterReceptorsNonCensus(CsvWriter, InputFile):
                             hi_endo, hi_hema, hi_immu, hi_skel, hi_sple, hi_thyr, hi_whol]
             boxmerged = box_receptors_wrisk.merge(self.outerblocks, on=[lat, lon])[blksumm_cols]
 
-
+            
             #----------- Accumulate Outer receptor risks by lat/lon for later use in BlockSummaryChronic ----------------
 
             blksumm_aggs = {lat:'first', lon:'first', overlap:'first', elev:'first', rec_id:'first',
@@ -341,8 +349,7 @@ class AllOuterReceptorsNonCensus(CsvWriter, InputFile):
             outeragg = boxmerged.groupby([lat, lon]).agg(blksumm_aggs)[blksumm_cols]
 
             if self.outerAgg is None:
-                storage = self.outerblocks.shape[0]
-                self.outerAgg = pd.DataFrame(columns=blksumm_cols, index=range(storage))
+                self.outerAgg = pd.DataFrame(columns=blksumm_cols)
             self.outerAgg = self.outerAgg.append(outeragg)
 
 
@@ -370,19 +377,19 @@ class AllOuterReceptorsNonCensus(CsvWriter, InputFile):
                     # Update the max_riskhi_bkdn dictionary
                     box_receptors_max = box_receptors_wrisk[(box_receptors_wrisk[lat]==maxlat) & (box_receptors_wrisk[lon]==maxlon)]
                     for index, row in box_receptors_max.iterrows():
-                        self.max_riskhi_bkdn[(iparm, row[source_id], row[pollutant], row[ems_type])] = \
+                        self.max_riskhi_bkdn[(iparm, row[source_id], row[pollutant], row[emis_type])] = \
                             [maxlat, maxlon, row[iparm]]
 
             #--------------- Keep track of incidence -----------------------------------------
 
             # Compute incidence for each Outer rececptor and then sum incidence by source_id and pollutant
             box_receptors_wrisk['inc'] = box_receptors_wrisk.apply(lambda row: (row[mir] * row[population])/70, axis=1)
-            boxInc = box_receptors_wrisk.groupby([source_id, pollutant, ems_type], as_index=False)[[inc]].sum()
+            boxInc = box_receptors_wrisk.groupby([source_id, pollutant, emis_type], as_index=False)[[inc]].sum()
 
             # Update the outerInc incidence dictionary
             for incdx, incrow in boxInc.iterrows():
-                self.outerInc[(incrow[source_id], incrow[pollutant], incrow[ems_type])] = \
-                    self.outerInc[(incrow[source_id], incrow[pollutant], incrow[ems_type])] + incrow['inc']
+                self.outerInc[(incrow[source_id], incrow[pollutant], incrow[emis_type])] = \
+                    self.outerInc[(incrow[source_id], incrow[pollutant], incrow[emis_type])] + incrow['inc']
 
 
     def calculateRisks(self, pollutants, concs):
@@ -404,8 +411,8 @@ class AllOuterReceptorsNonCensus(CsvWriter, InputFile):
     def createDataframe(self):
         # Type setting for CSV reading
         self.numericColumns = [lat, lon, conc, aconc, elev, population]
-        self.strColumns = [rec_id, source_id, ems_type, pollutant, overlap]
+        self.strColumns = [rec_id, source_id, emis_type, pollutant, overlap]
 
-        df = self.readFromPathCsv(self.getColumns())
+        df = self.readFromPathCsv(self.getColumns(self.acute_yn))
         return df.fillna("")
 

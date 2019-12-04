@@ -3,6 +3,8 @@ import os
 import re
 
 from com.sca.hem4.writer.Writer import Writer
+from com.sca.hem4.log.Logger import Logger
+
 
 class CsvWriter(Writer):
 
@@ -22,13 +24,16 @@ class CsvWriter(Writer):
         if self.fileTooBig(size):
             self.startNewFile()
 
-        data = dataframe.values
-        with open(self.filename, 'a', encoding='UTF-8', newline='') as csvarchive:
-            writer = csv.writer(csvarchive, quoting=csv.QUOTE_NONNUMERIC)
-            self.writeFormatted(writer, data)
+        if self.filename.find('all_outer_receptors') == -1:
+            data = dataframe.values
+            with open(self.filename, 'a', encoding='UTF-8', newline='') as csvarchive:
+                writer = csv.writer(csvarchive, quoting=csv.QUOTE_NONNUMERIC)
+                self.writeFormatted(writer, data)
+        else:
+            self.writeBigCsv(dataframe)
 
     def writeHeader(self):
-        with open(self.filename, 'w', encoding='ASCII', newline='') as csvarchive:
+        with open(self.filename, 'w', encoding='UTF-8', newline='') as csvarchive:
             writer = csv.writer(csvarchive, quoting=csv.QUOTE_NONNUMERIC)
             writer.writerow(self.getHeader())
 
@@ -42,6 +47,12 @@ class CsvWriter(Writer):
         for row in data:
             writer.writerow([float('{:6.12}'.format(x)) if isinstance(x, float) else x for x in row])
 
+    def writeBigCsv(self, dfname):
+        """
+        Write a chunk of a dataframe to a CSV file
+        """
+        dfname.to_csv(self.filename, header=False, mode="a", index=False, chunksize=1000)
+        
     def fileTooBig(self, size):
         threshold = 1024 * 1024 * 1024 * 1.5
         return True if size >= threshold else False

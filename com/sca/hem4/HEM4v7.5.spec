@@ -4,7 +4,11 @@ block_cipher = None
 
 
 a = Analysis(['multiwindow.py'],
+<<<<<<< HEAD
              pathex=['C:\\Users\\David Lindsey\\OneDrive - SC&A, Inc\\HEM4Python\\Version_Master\\hem4\\com\\sca\\hem4'],
+=======
+             pathex=['C:\\Users\\David Lindsey\\OneDrive - SC&A, Inc\\HEM4Python\\version7\\hem4\\com\\sca\\hem4'],
+>>>>>>> bd0859b6a8f371dbb8872f9d2b3014fbf2a1c141
              binaries=[],
              datas=[],
              hiddenimports=[],

@@ -78,7 +78,7 @@ def check_dep(dataframe):
         elif p == 'B':
             #add facid
             options = [fac_id]
-            
+                        
             if (deposition[i] == 'Y' and depletion[i] != 'Y'): 
             
                 if 'DO' or 'WO' or 'WD' in part_depo[i]:
@@ -96,6 +96,9 @@ def check_dep(dataframe):
                 
                 if 'DO' or 'WO' or 'WD' in part_depl[i]:
                     options.append('particle size')
+                    if 'WD' or 'DO' in vapor_depl[i]:
+                        options.append('land use')
+                        options.append('seasons')                        
                 
                 elif 'NO' in part_depl[i] and 'WD' or 'DO' in vapor_depl[i]:
                     options.append('land use')
@@ -105,7 +108,7 @@ def check_dep(dataframe):
                     options.append('particle size')
     
     
-            elif deposition == 'Y' and depletion == 'Y':
+            elif (deposition[i] == 'Y' and depletion[i] == 'Y'):
                 
                 if ('DO' or 'WO' or 'WD' in part_depo[i] and 
                     'DO' or 'WO' or 'WD' in part_depl[i]):

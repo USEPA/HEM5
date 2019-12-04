@@ -59,7 +59,7 @@ class FacilityRunner():
         except Exception as e:
                 
                 Logger.logMessage(str(e))
-                
+        
 
         # phases dictionary
         if self.model.model_optns['phase'] != None:
@@ -165,7 +165,7 @@ class FacilityRunner():
                         
             runstreams = []
             plot_df = pd.DataFrame()
-            
+                        
             for r in phases:
 
                 Logger.logMessage(r['phase'] + " run:")
@@ -223,6 +223,7 @@ class FacilityRunner():
                         pfile = open(fac_folder + 'plotfile_v.plt', "r")
                     else:
                         pfile = open(fac_folder + 'plotfile.plt', "r")
+
                     
                     # Put the plotfile into a dataframe
                     temp_df = self.readplotf(pfile, self.model.model_optns['runtype'])
@@ -339,7 +340,7 @@ class FacilityRunner():
                 plt_version = 'plotfile.plt'
 
             # Move aermod.inp, aermod.out, and plotfile.plt to the fac output folder
-            # If phasetype is not empty, rename aermod.out using phasetype
+            # If phasetype is not empty, rename aermod.out, aermod.inp and plotfile.plt using phasetype
             # Replace if one is already in there othewrwise will throw error
             if os.path.isfile(fac_folder + 'aermod.out'):
                 os.remove(fac_folder + 'aermod.out')
@@ -369,12 +370,21 @@ class FacilityRunner():
                 shutil.move(maxfile, fac_folder)
             
             
+            # for deposition runs, change the names of aermod.out and aermod.inp
             if phasetype != None:
+                
                 oldname = os.path.join(fac_folder, 'aermod.out')
                 newname = os.path.join(fac_folder, 'aermod_' + phasetype + '.out')
                 if os.path.isfile(newname):
                     os.remove(newname)
                 os.rename(oldname, newname)    
+
+                oldname = os.path.join(fac_folder, 'aermod.inp')
+                newname = os.path.join(fac_folder, 'aermod_' + phasetype + '.inp')
+                if os.path.isfile(newname):
+                    os.remove(newname)
+                os.rename(oldname, newname)    
+
                 
             #if successful save state
             self.model.save.save_model(self.facilityId)

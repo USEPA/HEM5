@@ -42,18 +42,18 @@ class RiskBreakdown(ExcelWriter, InputFile):
 
     def getHeader(self):
         return ['Site type', 'Parameter', 'Source ID', 'Pollutant', 'Emission type', 'Value', 'Value rounded',
-                'Conc (µg/m3)', 'Conc rounded (µg/m3)', 'Emissions (tpy)',
-                'URE 1/(µg/m3)', 'RFc (mg/m3)']
+                'Conc (ug/m3)', 'Conc rounded (ug/m3)', 'Emissions (tpy)',
+                'URE 1/(ug/m3)', 'RFc (mg/m3)']
 
     def getColumns(self):
-        return [site_type, parameter, source_id, pollutant, ems_type, value, value_rnd, conc, conc_rnd, emis_tpy, ure,
+        return [site_type, parameter, source_id, pollutant, emis_type, value, value_rnd, conc, conc_rnd, emis_tpy, ure,
                 rfc]
 
     def generateOutputs(self):
         """
         Compute the sourceid and pollutant breakdown of each maximum risk and HI location.
         """
-
+        
         # Dictionary for mapping HI name to position in the target organ list
         self.hidict = {"Respiratory HI":2, "Liver HI":3, "Neurological HI":4,
                        "Developmental HI":5, "Reproductive HI":6, "Kidney HI":7,
@@ -84,11 +84,11 @@ class RiskBreakdown(ExcelWriter, InputFile):
 
                 # Get source and pollutant specific concs. Depends on receptor type.
                 if row[notes] == "Discrete":
-                    concdata = self.model.all_inner_receptors_df[[lat,lon,source_id,pollutant,ems_type,conc]] \
+                    concdata = self.model.all_inner_receptors_df[[lat,lon,source_id,pollutant,emis_type,conc]] \
                         [(self.model.all_inner_receptors_df[lat]==row[lat]) &
                          (self.model.all_inner_receptors_df[lon]==row[lon])]
                 elif row[notes] == "Polar":
-                    concdata = self.model.all_polar_receptors_df[[lat,lon,source_id,pollutant,ems_type,conc]] \
+                    concdata = self.model.all_polar_receptors_df[[lat,lon,source_id,pollutant,emis_type,conc]] \
                         [(self.model.all_polar_receptors_df[lat]==row[lat]) &
                          (self.model.all_polar_receptors_df[lon]==row[lon])]
                 else:
@@ -108,7 +108,7 @@ class RiskBreakdown(ExcelWriter, InputFile):
                         allouter = AllOuterReceptors(targetDir=self.targetDir, filenameOverride=f)
                         outconcs = allouter.createDataframe()
 
-                        concdata = outconcs[[lat,lon,source_id,pollutant,ems_type,conc]] \
+                        concdata = outconcs[[lat,lon,source_id,pollutant,emis_type,conc]] \
                                             [(outconcs[lat]==row[lat]) & (outconcs[lon]==row[lon])]
                         if not concdata.empty:
                             foundit = True
@@ -121,7 +121,7 @@ class RiskBreakdown(ExcelWriter, InputFile):
 
                 # for consistency and ease of use, change some column names
                 # concdata.rename(columns={source_id:"source_id", pollutant:"pollutant",
-                #                          ems_type:ems_type, conc:conc}, inplace=True)
+                #                          emis_type:emis_type, conc:conc}, inplace=True)
 
                 # merge hapemis to get emis_tpy field
                 bkdndata = pd.merge(concdata,self.model.runstream_hapemis[[source_id,pollutant,emis_tpy]],
@@ -146,7 +146,7 @@ class RiskBreakdown(ExcelWriter, InputFile):
                 bkdndata[value_rnd] = 0.0
                 bkdndata[conc] = 0.0
                 bkdndata[conc_rnd] = 0.0
-                bkdndata[ems_type] = "NA"
+                bkdndata[emis_type] = "NA"
 
             # set the remaining columns in bkdndata
             bkdndata[ure], bkdndata[rfc] = zip(*bkdndata.apply(lambda row:
@@ -167,9 +167,9 @@ class RiskBreakdown(ExcelWriter, InputFile):
             # If max cancer or noncancer is > 0, then get max offsite breakdown, otherwise set breakdown to 0
             if row[value] > 0:
 
-                # Find row with highest cancer or HI. This will occur at any inner or polar receptor that does not overlap.
+                # Find row with highest cancer or HI. This will occur at any discrete or polar receptor that does not overlap.
                 # The row[parameter] value indicates cancer or HI.
-                io_idx = self.model.risk_by_latlon[(self.model.risk_by_latlon[rec_type] != "O") &
+                io_idx = self.model.risk_by_latlon[(self.model.risk_by_latlon[rec_type] != "I") &
                                                    (self.model.risk_by_latlon[overlap] == "N")] \
                     [namemap[row[parameter]]].idxmax()
 
@@ -180,17 +180,17 @@ class RiskBreakdown(ExcelWriter, InputFile):
 
                 # Get source and pollutant specific concs. Depends on receptor type.
                 if mr_rectype == "I":
-                    concdata = self.model.all_inner_receptors_df[[lat,lon,source_id,pollutant,ems_type,conc]] \
+                    concdata = self.model.all_inner_receptors_df[[lat,lon,source_id,pollutant,emis_type,conc]] \
                         [(self.model.all_inner_receptors_df[lat] == mr_lat) &
                          (self.model.all_inner_receptors_df[lon] == mr_lon)]
                 else:
-                    concdata = self.model.all_polar_receptors_df[[lat,lon,source_id,pollutant,ems_type,conc]] \
+                    concdata = self.model.all_polar_receptors_df[[lat,lon,source_id,pollutant,emis_type,conc]] \
                         [(self.model.all_polar_receptors_df[lat] == mr_lat) &
                          (self.model.all_polar_receptors_df[lon] == mr_lon)]
                 
                 # for consistency and ease of use, change some column names
                 concdata.rename(columns={source_id:"source_id", pollutant:"pollutant",
-                                         ems_type:ems_type, conc:conc}, inplace=True)
+                                         emis_type:emis_type, conc:conc}, inplace=True)
 
                 # merge hapemis to get emis_tpy field
                 bkdndata = pd.merge(concdata,self.model.runstream_hapemis[[source_id,pollutant,emis_tpy]],
@@ -215,7 +215,7 @@ class RiskBreakdown(ExcelWriter, InputFile):
                 bkdndata[value_rnd] = 0.0
                 bkdndata[conc] = 0.0
                 bkdndata[conc_rnd] = 0.0
-                bkdndata[ems_type] = "NA"
+                bkdndata[emis_type] = "NA"
 
             # set the remaining columns in bkdndata
             bkdndata[ure], bkdndata[rfc] = zip(*bkdndata.apply(lambda row:
@@ -242,7 +242,7 @@ class RiskBreakdown(ExcelWriter, InputFile):
         srctot = riskbkdn_df.groupby([site_type, parameter, pollutant, ure, rfc],
                                      as_index=False)[value, conc, emis_tpy].sum()
         srctot[source_id] = "Total by pollutant all sources"
-        srctot[ems_type] = "NA"
+        srctot[emis_type] = "NA"
         srctot[ure] = 0.0
         srctot[rfc] = 0.0
                 
@@ -253,7 +253,7 @@ class RiskBreakdown(ExcelWriter, InputFile):
         polltot = riskbkdn_df.groupby([site_type, parameter, source_id],
                                       as_index=False)[value, conc, emis_tpy].sum()
         polltot[pollutant] = "All modeled pollutants"
-        polltot[ems_type] = "NA"
+        polltot[emis_type] = "NA"
         polltot[ure] = 0.0
         polltot[rfc] = 0.0
         polltot[value_rnd] = polltot[value].apply(lambda x: round(x, -int(math.floor(math.log10(abs(x))))) if x > 0 else 0)
@@ -264,7 +264,7 @@ class RiskBreakdown(ExcelWriter, InputFile):
                                       as_index=False)[value, conc, emis_tpy].sum()
         alltot[source_id] = "Total"
         alltot[pollutant] = "All pollutants all sources"
-        alltot[ems_type] = "NA"
+        alltot[emis_type] = "NA"
         alltot[ure] = 0.0
         alltot[rfc] = 0.0
         alltot[value_rnd] = alltot[value].apply(lambda x: round(x, -int(math.floor(math.log10(abs(x))))) if x > 0 else 0)
@@ -349,7 +349,7 @@ class RiskBreakdown(ExcelWriter, InputFile):
     def createDataframe(self):
         # Type setting for XLS reading
         self.numericColumns = [value, value_rnd, conc, conc_rnd, emis_tpy, ure, rfc]
-        self.strColumns = [site_type, parameter, source_id, pollutant, ems_type]
+        self.strColumns = [site_type, parameter, source_id, pollutant, emis_type]
 
         df = self.readFromPath(self.getColumns())
         return df.fillna("")

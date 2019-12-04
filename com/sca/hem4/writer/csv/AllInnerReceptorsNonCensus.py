@@ -1,11 +1,11 @@
 from com.sca.hem4.CensusBlocks import *
-from com.sca.hem4.writer.csv.AllInnerReceptors import aresult
+from com.sca.hem4.writer.csv.AllInnerReceptors import aresult, adry, awet
 from com.sca.hem4.writer.csv.CsvWriter import CsvWriter
 from com.sca.hem4.upload.HAPEmissions import *
 from com.sca.hem4.FacilityPrep import *
 import os
 
-ems_type = 'ems_type';
+emis_type = 'emis_type';
 block = 'block';
 drydep = 'drydep';
 wetdep = 'wetdep';
@@ -27,11 +27,22 @@ class AllInnerReceptorsNonCensus(CsvWriter):
         self.filename = os.path.join(self.targetDir, facilityId + "_all_inner_receptors.csv")
 
         self.innerBlocksCache = {}
+        self.acute_yn = self.model.facops.iloc[0][acute]
+        
 
     def getHeader(self):
         return ['Receptor ID', 'Latitude', 'Longitude', 'Source ID', 'Emission type', 'Pollutant',
                 'Conc (ug/m3)', 'Acute Conc (ug/m3)', 'Elevation (m)',
                 'Dry deposition (g/m2/yr)', 'Wet deposition (g/m2/yr)', 'Population', 'Overlap']
+
+    def getColumns(self, acute):
+        if acute == 'N':
+            return [rec_id, lat, lon, source_id, emis_type, pollutant, conc,
+                    elev, drydep, wetdep, population, overlap]
+        else:
+            return [rec_id, lat, lon, source_id, emis_type, pollutant, conc, aconc,
+                    elev, drydep, wetdep, population, overlap]
+
 
     def generateOutputs(self):
         """
@@ -51,15 +62,48 @@ class AllInnerReceptorsNonCensus(CsvWriter):
 
 
         # If acute was run for this facility, read the acute plotfile
-        if self.model.facops.iloc[0][acute] == 'Y':
+        if self.acute_yn == 'Y':
             apfile = open(self.targetDir + "maxhour.plt", "r")
-            self.aplot_df = pd.read_table(apfile, delim_whitespace=True, header=None, 
-                names=[utme,utmn,aresult,elev,hill,flag,avg_time,source_id,num_yrs,net_id],
-                usecols=[0,1,2,3,4,5,6,7,8,9], 
-                converters={utme:np.float64,utmn:np.float64,aresult:np.float64,elev:np.float64,hill:np.float64
-                       ,flag:np.float64,avg_time:np.str,source_id:np.str,rank:np.str,net_id:np.str
-                       ,concdate:np.str},
-                comment='*')          
+
+            if self.rtype == 0:
+                # No deposition
+                self.aplot_df = pd.read_table(apfile, delim_whitespace=True, header=None, 
+                    names=[utme,utmn,aresult,elev,hill,flag,avg_time,source_id,num_yrs,net_id],
+                    usecols=[0,1,2,3,4,5,6,7,8,9], 
+                    converters={utme:np.float64,utmn:np.float64,aresult:np.float64,elev:np.float64,hill:np.float64
+                           ,flag:np.float64,avg_time:np.str,source_id:np.str,rank:np.str,net_id:np.str
+                           ,concdate:np.str},
+                    comment='*')             
+            elif self.rtype == 1:
+                # Wet and Dry deposition
+                self.aplot_df = pd.read_table(apfile, delim_whitespace=True, header=None, 
+                    names=[utme,utmn,aresult,adry,awet,elev,hill,flag,avg_time,source_id,num_yrs,net_id],
+                    usecols=[0,1,2,3,4,5,6,7,8,9,10,11], 
+                    converters={utme:np.float64,utmn:np.float64,aresult:np.float64,adry:np.float64,
+                                awet:np.float64,elev:np.float64,hill:np.float64,flag:np.float64,
+                                avg_time:np.str,source_id:np.str,rank:np.str,net_id:np.str,concdate:np.str},
+                    comment='*')                       
+            elif self.rtype == 2:
+                # Dry only deposition
+                self.aplot_df = pd.read_table(apfile, delim_whitespace=True, header=None, 
+                    names=[utme,utmn,aresult,adry,elev,hill,flag,avg_time,source_id,num_yrs,net_id],
+                    usecols=[0,1,2,3,4,5,6,7,8,9,10], 
+                    converters={utme:np.float64,utmn:np.float64,aresult:np.float64,adry:np.float64,
+                                elev:np.float64,hill:np.float64,flag:np.float64,
+                                avg_time:np.str,source_id:np.str,rank:np.str,net_id:np.str,concdate:np.str},
+                    comment='*')                       
+            elif self.rtype == 3:
+                # Wet only deposition
+                self.aplot_df = pd.read_table(apfile, delim_whitespace=True, header=None, 
+                    names=[utme,utmn,aresult,awet,elev,hill,flag,avg_time,source_id,num_yrs,net_id],
+                    usecols=[0,1,2,3,4,5,6,7,8,9,10], 
+                    converters={utme:np.float64,utmn:np.float64,aresult:np.float64,awet:np.float64,
+                                elev:np.float64,hill:np.float64,flag:np.float64,
+                                avg_time:np.str,source_id:np.str,rank:np.str,net_id:np.str,concdate:np.str},
+                    comment='*')
+            else:
+                #TODO need to pass this to the log and skip to next facility
+                print("Error! Invalid rtype in AllInnerReceptors")                  
 
         
         # Extract Chronic inner concs from Chronic plotfile and round the utm coordinates
@@ -70,7 +114,7 @@ class AllInnerReceptorsNonCensus(CsvWriter):
         # If acute was run for this facility, extract inner concs from acute plotfile and join to
         # Chronic inner concs.
         # Otherwise, add column of 0's for acute result
-        if self.model.facops.iloc[0][acute] == 'Y':
+        if self.acute_yn == 'Y':
             inneraplot_df = self.aplot_df.query("net_id != 'POLGRID1'").copy()
             inneraplot_df.utme = inneraplot_df.utme.round()
             inneraplot_df.utmn = inneraplot_df.utmn.round()
@@ -84,8 +128,7 @@ class AllInnerReceptorsNonCensus(CsvWriter):
         srcids = innerplot_df[source_id].unique().tolist()
 
         dlist = []
-        columns = [rec_id, lat, lon, source_id, ems_type, pollutant, conc, aconc,
-                   elev, drydep, wetdep, population, overlap]
+        col_list = self.getColumns(self.acute_yn)
 
         # process inner concs one source_id at a time
         for x in srcids:
@@ -115,11 +158,17 @@ class AllInnerReceptorsNonCensus(CsvWriter):
                     d_wetdep = "" if self.rtype in [0,2] else row1.wdp * row2.emis_tpy * self.cf
                     d_population = record[population].values[0]
                     d_overlap = record[overlap].values[0]
-                    datalist = [d_recid, d_lat, d_lon, d_sourceid, d_emistype, d_pollutant, d_conc,
-                                d_aconc, d_elev, d_drydep, d_wetdep, d_population, d_overlap]
-                    dlist.append(dict(zip(columns, datalist)))
+                    
+                    if self.acute_yn == 'N':
+                        datalist = [d_recid, d_lat, d_lon, d_sourceid, d_emistype, d_pollutant, d_conc,
+                                    d_elev, d_drydep, d_wetdep, d_population, d_overlap]
+                    else:
+                        datalist = [d_recid, d_lat, d_lon, d_sourceid, d_emistype, d_pollutant, d_conc,
+                                    d_aconc, d_elev, d_drydep, d_wetdep, d_population, d_overlap]
+                        
+                    dlist.append(dict(zip(col_list, datalist)))
 
-        innerconc_df = pd.DataFrame(dlist, columns=columns)
+        innerconc_df = pd.DataFrame(dlist, columns=col_list)
 
         # dataframe to array
         self.dataframe = innerconc_df
@@ -130,7 +179,7 @@ class AllInnerReceptorsNonCensus(CsvWriter):
     def createDataframe(self):
         # Type setting for CSV reading
         self.numericColumns = [lat, lon, conc, aconc, elev, drydep, wetdep, population]
-        self.strColumns = [rec_id, source_id, ems_type, pollutant, overlap]
+        self.strColumns = [rec_id, source_id, emis_type, pollutant, overlap]
 
-        df = self.readFromPathCsv(self.getColumns())
+        df = self.readFromPathCsv(self.getColumns(self.acute_yn))
         return df.fillna("")        

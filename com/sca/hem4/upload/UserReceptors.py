@@ -16,7 +16,7 @@ class UserReceptors(DependentInputFile):
 
         #USER RECEPTOR dataframe
         faclist_df = self.dependency
-
+        
         # Specify dtypes for all fields
         self.numericColumns = [lon, lat, elev, hill, population]
         self.strColumns = [fac_id,location_type, utmzone, rec_type, rec_id]

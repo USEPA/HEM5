@@ -3,6 +3,7 @@ from com.sca.hem4.writer.csv.AllOuterReceptors import *
 from com.sca.hem4.writer.csv.CsvWriter import CsvWriter
 from com.sca.hem4.FacilityPrep import *
 
+
 class BlockSummaryChronic(CsvWriter, InputFile):
     """
     Provides the risk and each TOSHI for every census block modeled, as well as additional block information.
@@ -32,7 +33,7 @@ class BlockSummaryChronic(CsvWriter, InputFile):
         return ['Latitude', 'Longitude', 'Overlap', 'Elevation (m)', 'FIPs', 'Block', 'X', 'Y', 'Hill',
                 'Population', 'MIR', 'Respiratory HI', 'Liver HI', 'Neurological HI', 'Developmental HI',
                 'Reproductive HI', 'Kidney HI', 'Ocular HI', 'Endocrine HI', 'Hematological HI',
-                'Immunological HI', 'Skeletal HI', 'Spleen HI', 'Thyroid HI', 'Whole body HI', 'Receptor type']
+                'Immunological HI', 'Skeletal HI', 'Spleen HI', 'Thyroid HI', 'Whole body HI', 'Block type']
 
     def getColumns(self):
         return [lat, lon, overlap, elev, fips, block, utme, utmn, hill, population,
@@ -75,9 +76,9 @@ class BlockSummaryChronic(CsvWriter, InputFile):
 
         inneragg = innermerged.groupby([lat, lon]).agg(aggs)[newcolumns]
 
-        # add a receptor type column to note if inner or outer. I => inner, O => outer
-        inneragg[rec_type] = "I"
-        self.outerAgg[rec_type] = "O"
+        # Add a column to indicate type of census block. D => discrete, I => interpolated
+        inneragg[rec_type] = "D"
+        self.outerAgg[rec_type] = "I"
 
         # append the inner and outer values and write
         self.dataframe = inneragg.append(self.outerAgg, ignore_index = True).sort_values(by=[fips, block])

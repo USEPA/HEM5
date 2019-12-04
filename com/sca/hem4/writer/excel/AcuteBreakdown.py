@@ -23,70 +23,83 @@ class AcuteBreakdown(ExcelWriter):
     impact for each pollutant.
     """
 
-    def __init__(self, targetDir, facilityId, model, plot_df, achempop_df, achemunpop_df):
+    def __init__(self, targetDir, facilityId, model, plot_df, achempop_df, achemmax_df):
         ExcelWriter.__init__(self, model, plot_df)
 
         self.filename = os.path.join(targetDir, facilityId + "_acute_bkdn.xlsx")
         self.achempop_df = achempop_df
-        self.achemunpop_df = achemunpop_df
+        self.achemmax_df = achemmax_df
 
     def getHeader(self):
-        return ['Pollutant', 'Source ID', 'Emission type', 'Max conc at populated receptor (µg/m3)', 
-                'Is max populated receptor interpolated? (Y/N)', 'Max conc at any receptor (µg/m3)',
+        return ['Pollutant', 'Source ID', 'Emission type', 'Max conc at populated receptor (ug/m3)', 
+                'Is max populated receptor interpolated? (Y/N)', 'Max conc at any receptor (ug/m3)',
                 'Is max conc at any receptor interpolated? (Y/N)']
 
     def generateOutputs(self):
-
+        
         # First get breakdown info of max acute at a populated receptor
+        popinfo_list = []
         for index, row in self.achempop_df.iterrows():
             if row[notes] == 'Discrete':
                 # max acute is at an inner block
                 flag1 = 'N'
-                popinfo_df = self.model.all_inner_receptors_df[
+                pol_list = self.model.all_inner_receptors_df[
                         (self.model.all_inner_receptors_df[lon] == row[lon]) & 
-                        (self.model.all_inner_receptors_df[lat] == row[lat])][[pollutant,
-                                                            source_id, ems_type, aconc]]
+                        (self.model.all_inner_receptors_df[lat] == row[lat]) &
+                        (self.model.all_inner_receptors_df[pollutant].str.lower() == row[pollutant].lower())][[pollutant,
+                        source_id, emis_type, aconc]].values.tolist()
             else:
                 # max acute is at an outer block
                 flag1 = 'Y'
-                popinfo_df = self.model.all_outer_receptors_df[
+                pol_list = self.model.all_outer_receptors_df[
                         (self.model.all_outer_receptors_df[lon] == row[lon]) & 
-                        (self.model.all_outer_receptors_df[lat] == row[lat])][[pollutant,
-                                                            source_id, ems_type, aconc]]
-            popinfo_df.rename(columns={aconc:aconc_pop}, inplace=True)
+                        (self.model.all_outer_receptors_df[lat] == row[lat]) &
+                        (self.model.all_outer_receptors_df[pollutant].str.lower() == row[pollutant].lower())][[pollutant,
+                        source_id, emis_type, aconc]].values.tolist()
+            popinfo_list.extend(pol_list)
+#            popinfo_df.rename(columns={aconc:aconc_pop}, inplace=True)
                             
         # Next get breakdown info of max acute at any receptor
-        for index, row in self.achemunpop_df.iterrows():
+        maxinfo_list = []
+        for index, row in self.achemmax_df.iterrows():
             if row[notes] == 'Discrete':
                 # max acute is at an inner block
                 flag2 = 'N'
-                unpopinfo_df = self.model.all_inner_receptors_df[
+                maxpol_list = self.model.all_inner_receptors_df[
                         (self.model.all_inner_receptors_df[lon] == row[lon]) & 
-                        (self.model.all_inner_receptors_df[lat] == row[lat])][[pollutant,
-                                                            source_id, ems_type, aconc]]
+                        (self.model.all_inner_receptors_df[lat] == row[lat]) &
+                        (self.model.all_inner_receptors_df[pollutant].str.lower() == row[pollutant].lower())][[pollutant,
+                        source_id, emis_type, aconc]].values.tolist()
             elif row[notes] == 'Interpolated':
                 # max acute is at an outer block
                 flag2 = 'Y'
-                unpopinfo_df = self.model.all_outer_receptors_df[
+                maxpol_liist = self.model.all_outer_receptors_df[
                         (self.model.all_outer_receptors_df[lon] == row[lon]) & 
-                        (self.model.all_outer_receptors_df[lat] == row[lat])][[pollutant,
-                                                            source_id, ems_type, aconc]]
+                        (self.model.all_outer_receptors_df[lat] == row[lat]) &
+                        (self.model.all_outer_receptors_df[pollutant].str.lower() == row[pollutant].lower())][[pollutant,
+                        source_id, emis_type, aconc]].values.tolist()
             else:
                 # max acute is at a polar receptor
                 flag2 = 'N'
-                unpopinfo_df = self.model.all_polar_receptors_df[
+                maxpol_list = self.model.all_polar_receptors_df[
                         (self.model.all_polar_receptors_df[lon] == row[lon]) & 
-                        (self.model.all_polar_receptors_df[lat] == row[lat])][[pollutant,
-                                                            source_id, ems_type, aconc]]
-            unpopinfo_df.rename(columns={aconc:aconc_all}, inplace=True)
+                        (self.model.all_polar_receptors_df[lat] == row[lat]) &
+                        (self.model.all_polar_receptors_df[pollutant].str.lower() == row[pollutant].lower())][[pollutant,
+                        source_id, emis_type, aconc]].values.tolist()
+            maxinfo_list.extend(maxpol_list)
+#            unpopinfo_df.rename(columns={aconc:aconc_all}, inplace=True)
         
         # Combine pop and all breakdown dataframes into one
-        temp_df = pd.merge(popinfo_df, unpopinfo_df, how='inner', on=[pollutant, source_id])
+                
+        popinfo_df = pd.DataFrame(popinfo_list, columns=['pollutant','source_id','emis_type','aconc_pop'])
+        maxinfo_df = pd.DataFrame(maxinfo_list, columns=['pollutant','source_id','emis_type','aconc_all'])
+        
+        temp_df = pd.merge(popinfo_df, maxinfo_df, how='inner', on=[pollutant, source_id, emis_type])
         temp_df[pop_interp] = flag1
         temp_df[all_interp] = flag2
         
         # Reorder columns for output purpose, reset the index, and sort by pollutant and source_id
-        cols = [pollutant, source_id, ems_type, aconc_pop, pop_interp, aconc_all, all_interp]
+        cols = [pollutant, source_id, emis_type, aconc_pop, pop_interp, aconc_all, all_interp]
         abkdn_df = temp_df.reindex(columns = cols)
         abkdn_df.reset_index(drop=True, inplace=True)
         abkdn_df.sort_values(by=[pollutant, source_id], inplace=True)

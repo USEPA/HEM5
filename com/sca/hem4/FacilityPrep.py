@@ -43,8 +43,8 @@ class FacilityPrep():
 
         # Replace NaN with blank, No or 0
         # Note: use of elevations is defaulted to Y, acute hours is defaulted to 1
-        #       and acute multiplier is defaulted to 1
-        self.model.facops = self.model.facops.fillna({radial:0, circles:0, overlap_dist:0, hours:1, multiplier:1,
+        #       and acute multiplier is defaulted to 10
+        self.model.facops = self.model.facops.fillna({radial:0, circles:0, overlap_dist:0, hours:1, multiplier:10,
                                 ring1:0, urban_pop:0, hivalu:1})
         self.model.facops.replace(to_replace={met_station:{"nan":"N"}, rural_urban:{"nan":""}, elev:{"nan":"Y"}, 
                                    dep:{"nan":"N"}, depl:{"nan":"N"}, phase:{"nan":""}, pdep:{"nan":"NO"}, 
@@ -560,7 +560,8 @@ class FacilityPrep():
             
         # Compute fractional sector number that will be used for interpolation
         # Note: sectors for interpolation go from 1 to num_sectors beginning at due north (zero degrees)
-        s = round(((block_angle * num_sectors)/360.0 % num_sectors), 2) + 1
+#        s = round(((block_angle * num_sectors)/360.0 % num_sectors), 2) + 1
+        s = ((block_angle * num_sectors)/360.0 % num_sectors) + 1
 
         # Compute integer sector number that will be used for assigning elevations to polar receptors
         # .... these go from halfway between two radials to halfway between the next set of two radials, clockwise
@@ -978,5 +979,5 @@ class FacilityPrep():
                 hill_est = row.hill
         
         return elev_est, hill_est
-        
+
     

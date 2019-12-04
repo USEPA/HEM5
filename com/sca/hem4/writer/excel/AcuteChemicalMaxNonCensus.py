@@ -38,7 +38,7 @@ class AcuteChemicalMaxNonCensus(ExcelWriter, InputFile):
         self.targetDir = targetDir
 
     def getHeader(self):
-        return ['Pollutant', 'Conc (µg/m3)', 'Conc sci (µg/m3)', 'Aegl_1 1hr (mg/m3)', 'Aegl_1 8hr (mg/m3)',
+        return ['Pollutant', 'Conc (ug/m3)', 'Conc sci (ug/m3)', 'Aegl_1 1hr (mg/m3)', 'Aegl_1 8hr (mg/m3)',
                 'Aegl_2 1hr (mg/m3)', 'Aegl_2 8hr (mg/m3)', 'Erpg_1 (mg/m3)', 'Erpg_2 (mg/m3)', 'Idlh_10 (mg/m3)',
                 'Mrl (mg/m3)', 'Rel (mg/m3)', 'Teel_0 (mg/m3)', 'Teel_1 (mg/m3)', 'Population',
                 'Distance (in meters)', 'Angle (from north)', 'Elevation (in meters)', 'Hill Height (in meters)',
@@ -102,7 +102,7 @@ class AcuteChemicalMaxNonCensus(ExcelWriter, InputFile):
         
         # 3) Finally, search the outer receptors
 
-        outercolumns = [rec_id, lat, lon, source_id, ems_type, pollutant, conc, 
+        outercolumns = [rec_id, lat, lon, source_id, emis_type, pollutant, conc, 
                         aconc, elev, population, overlap]
         
         # Get a list of the all_outer_receptor files (could be more than one)
@@ -115,13 +115,13 @@ class AcuteChemicalMaxNonCensus(ExcelWriter, InputFile):
         
         # Loop over each pollutant and outer receptor file and see if max outer acute conc
         # is larger than the stored value
-        for p in pols:
-            for f in listOuter:
-                allouter = AllOuterReceptorsNonCensus(targetDir=self.targetDir, filenameOverride=f)
-                outconcs = allouter.createDataframe()
-
-                # Sum acute conc to unique lat/lons
-                outsum = outconcs.groupby([pollutant, lat, lon]).agg(aggs)[newcolumns]                
+        for f in listOuter:
+            allouter = AllOuterReceptorsNonCensus(targetDir=self.targetDir, filenameOverride=f)
+            outconcs = allouter.createDataframe()
+            # Sum acute conc to unique lat/lons
+            outsum = outconcs.groupby([pollutant, lat, lon]).agg(aggs)[newcolumns]                
+            
+            for p in pols:
                 max_idx = outsum[outsum[pollutant].str.lower() == p][aconc].idxmax()
                 if outsum[aconc].loc[max_idx] > maxconc_df[aconc].loc[p]:
                     maxconc_df.loc[p, aconc] = outsum[aconc].loc[max_idx]

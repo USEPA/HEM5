@@ -31,7 +31,7 @@ class BlockSummaryChronicNonCensus(CsvWriter):
         plot_df is not needed. Instead, the allinner and allouter receptor
         outputs are used to compute cancer risk and HI's at each block receptor.
         """
-
+        
         allinner_df = self.model.all_inner_receptors_df.copy()
 
         innerblocks = self.model.innerblks_df[[lat, lon, utme, utmn, hill]]
@@ -59,9 +59,9 @@ class BlockSummaryChronicNonCensus(CsvWriter):
 
         inneragg = innermerged.groupby([lat, lon]).agg(aggs)[newcolumns]
 
-        # add a receptor type column to note if inner or outer. I => inner, O => outer
-        inneragg[rec_type] = "I"
-        self.outerAgg[rec_type] = "O"
+        # add a receptor type column to note if discrete or interpolated. D => discrete, I => interpolated
+        inneragg[rec_type] = "D"
+        self.outerAgg[rec_type] = "I"
 
         # append the inner and outer values and write
         self.dataframe = inneragg.append(self.outerAgg, ignore_index = True).sort_values(by=[rec_id])

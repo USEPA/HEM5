@@ -1103,6 +1103,7 @@ class Hem4(tk.Frame):
             self.poly_list_man.bind('<Button-1>', 
                                     lambda e:self.manual("instructions/poly_browse.txt"))
         
+
         else:
             #create optional input tab
             self.optionalinputtab = tk.Frame(self.tabControl, bg='palegreen3')            
@@ -1141,6 +1142,7 @@ class Hem4(tk.Frame):
         """ 
         Function for creating row and building downwash file upload widgets
         """
+
         #if optional input tab already exists
         if hasattr(self, "optionalinputtab"):
             
@@ -1316,7 +1318,7 @@ class Hem4(tk.Frame):
             #event handler for instructions (Button 1 is the left mouse click)
             self.dep_land_man.bind('<Button-1>', 
                                    lambda e:self.manual("instructions/dep_land_man.txt"))
-        
+
         
         else:
             #create optional input tab
@@ -1427,30 +1429,30 @@ class Hem4(tk.Frame):
             
             if hasattr(self.model.emisloc, 'dataframe'):
                 #create row for emissions variation
-                self.s13 = tk.Frame(self.main, width=250, height=100, bg="palegreen3", pady=5, 
-                                    padx=5)
-                self.s13.grid(row=9, column=0, columnspan=2, sticky="nsew")
+#                self.s5 = tk.Frame(self.main, width=250, height=100, bg="palegreen3", pady=5, 
+#                                    padx=5)
+#                self.s5.grid(row=4, column=0, columnspan=2, sticky="nsew")
                 
                 #emissions variation label
-                self.emisvar_label = tk.Label(self.s13, font=TEXT_FONT, bg="palegreen3", 
+                self.emisvar_label = tk.Label(self.s5, font=TEXT_FONT, bg="palegreen3", 
                                      text="Please select an Emissions Variation"+
                                      " file:")
-                self.emisvar_label.grid(row=0, sticky="W")
+                self.emisvar_label.grid(row=3, sticky="W")
             
                 #emissions variation upload button
-                self.emisvar_on = tk.Button(self.s13, font=TEXT_FONT, bg='lightgrey', relief='solid', borderwidth=2,
+                self.emisvar_on = tk.Button(self.s5, font=TEXT_FONT, bg='lightgrey', relief='solid', borderwidth=2,
                                        command = lambda: self.uploadVariation())
                 self.emisvar_on["text"] = "Browse"
-                self.emisvar_on.grid(row=1, column=0, sticky="W")
+                self.emisvar_on.grid(row=4, column=0, sticky="W")
                 #self.emisvar_on.bind('<Enter>', 
                                #lambda e:self.browse("instructions/urep_browse.txt"))
                 
                 #emissions variation text entry
-                self.emisvar_list = tk.StringVar(self.s13)
-                self.emisvar_list_man = ttk.Entry(self.s13)
+                self.emisvar_list = tk.StringVar(self.s5)
+                self.emisvar_list_man = ttk.Entry(self.s5)
                 self.emisvar_list_man["width"] = 100
                 self.emisvar_list_man["textvariable"]= self.emisvar_list
-                self.emisvar_list_man.grid(row=1, column=0, sticky='E', padx=85)
+                self.emisvar_list_man.grid(row=4, column=0, sticky='E', padx=85)
                 #event handler for instructions (Button 1 is the left mouse click)
                 #self.emisvar_list_man.bind('<Button-1>', 
                                        #lambda e:self.manual("instructions/urep_man.txt"))
@@ -1465,11 +1467,11 @@ class Hem4(tk.Frame):
             
         #if checked and then unchecked
         elif self.check_emisvar.get() == 0:
-            if hasattr(self, 's13'):
+            if hasattr(self, 'emisvar_on'):
                     self.emisvar_list_man.destroy()
                     self.emisvar_on.destroy()
                     self.emisvar_label.destroy()
-                    self.s13.destroy()
+                    self.s5.destroy()
 
     def set_altrec(self):
         self.model.altRec_optns['altrec'] = self.check_altrec.get()
