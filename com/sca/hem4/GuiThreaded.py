@@ -284,10 +284,10 @@ class Hem4(tk.Frame):
         #add start button
         self.run_button = tk.Button(self.main, text='RUN', fg="green", bg='lightgrey', relief='solid', borderwidth=2,
                                     command=self.run, font=TEXT_FONT)
-        self.run_button.grid(row=0, column=0, sticky="E", padx=5, pady=5)
+        self.run_button.grid(row=10, column=0, sticky="W", padx=5, pady=5)
         
         global instruction_instance
-        instruction_instance.set(" ")
+        self.instruction_instance.set(" ")
 
         self.after(100, self.enable_buttons)
 
@@ -325,7 +325,42 @@ class Hem4(tk.Frame):
         if fullpath is not None:
             self.censusUpdatePath = fullpath
             self.cu_list.set(fullpath)
-
+            
+    def add_instructions(self, placeholder1, placeholder2):
+        
+        #Dynamic instructions place holder
+        global instruction_instance
+        self.instruction_instance = tk.StringVar(placeholder1)
+        self.instruction_instance.set(" ")
+        self.dynamic_inst = tk.Label(placeholder2, wraplength=600, font=TEXT_FONT, pady=5, bg='palegreen3') 
+        self.dynamic_inst.config(height=4)
+        
+        self.dynamic_inst["textvariable"] = self.instruction_instance 
+        self.dynamic_inst.grid(row=1, column=0)
+        
+        
+    def add_optional_instructions(self, placeholder):
+        """
+        Function adds a dynamic instructions instance to optional input tab
+        
+        """
+        
+        if hasattr(self, "optionalinputtab"):
+            
+            self.optional_inst = tk.Label(placeholder, wraplength=600, font=TEXT_FONT, pady=5, bg='palegreen3') 
+            self.optional_inst.config(height=4)
+        
+            self.optional_inst["textvariable"] = self.instruction_instance 
+            self.optional_inst.grid(row=1, column=0)
+        
+        if hasattr(self, "depinputtab"):
+            self.dep_inst = tk.Label(placeholder, wraplength=600, font=TEXT_FONT, pady=5, bg='palegreen3') 
+            self.dep_inst.config(height=4)
+        
+            self.dep_inst["textvariable"] = self.instruction_instance 
+            self.dep_inst.grid(row=1, column=0)
+            
+        
 
     def createWidgets(self):
         """
@@ -432,28 +467,29 @@ class Hem4(tk.Frame):
 #        
         self.back = tk.Button(self.main, text="BACK", font=TEXT_FONT, bg='lightgrey', relief='solid', borderwidth=2,
                               command=self.lower)
-        self.back.grid(row=0, column=0, sticky="W", padx=5, pady=5)
+        self.back.grid(row=10, column=0, sticky="W", padx=5, pady=5)
         
         
         #run only appears once the required files have been set
         self.run_button = tk.Button(self.main, text='RUN', fg="green", bg='lightgrey', relief='solid', borderwidth=2,
                                     command=self.run, font=TEXT_FONT)
-        self.run_button.grid(row=0, column=0, sticky="E", padx=5, pady=5)
+        self.run_button.grid(row=10, column=0, sticky="E", padx=5, pady=5)
         
         self.guide = tk.Button(self.main, font=TEXT_FONT, text="User Guide", bg='lightgrey', relief='solid', borderwidth=2,
                                command=self.user_guide)
         self.guide.grid(row=1, column=0, pady=20)
 #%% Setting up  directions text space
-
-        #Dynamic instructions place holder
-        global instruction_instance
-        instruction_instance = tk.StringVar(self.s2)
-        instruction_instance.set(" ")
-        self.dynamic_inst = tk.Label(self.s1, wraplength=600, font=TEXT_FONT, pady=5, bg='palegreen3') 
-        self.dynamic_inst.config(height=4)
         
-        self.dynamic_inst["textvariable"] = instruction_instance 
-        self.dynamic_inst.grid(row=1, column=0)
+        self.add_instructions(self.s2, self.s1)
+#        #Dynamic instructions place holder
+#        global instruction_instance
+#        instruction_instance = tk.StringVar(self.s2)
+#        instruction_instance.set(" ")
+#        self.dynamic_inst = tk.Label(self.s1, wraplength=600, font=TEXT_FONT, pady=5, bg='palegreen3') 
+#        self.dynamic_inst.config(height=4)
+#        
+#        self.dynamic_inst["textvariable"] = instruction_instance 
+#        self.dynamic_inst.grid(row=1, column=0)
         
         
         
@@ -1000,7 +1036,7 @@ class Hem4(tk.Frame):
             ##create row for bouyant line in it
              #create row for buoyant line input
             self.s7 = tk.Frame(self.optionalinputtab, width=250, height=50, pady=5, padx=5, bg="palegreen3")
-            self.s7.grid(row=2, column=0, columnspan=2, sticky="nsew")
+            self.s7.grid(row=3, column=0, columnspan=2, sticky="nsew")
             
             
             #Buoyant Line  label
@@ -1032,11 +1068,16 @@ class Hem4(tk.Frame):
         else:
             #create optional input tab
             self.optionalinputtab = tk.Frame(self.tabControl, bg='palegreen3')            
-            self.tabControl.add(self.self.optionalinputtab, text='Additional Inputs')      
+            self.tabControl.insert(1, self.self.optionalinputtab, text='Additional Inputs')
+            
+            self.inst_space = tk.Frame(self.optionalinputtab, width=750, height=50, bg="palegreen3", pady=5, padx=5)
+            self.inst_space.grid(row=2, column=0, sticky="nsew")
+            
+            self.add_optional_instructions(self.inst_space) 
 
              #create row for buoyant line input
             self.s7 = tk.Frame(self.optionalinputtab, width=250, height=50, pady=5, padx=5, bg="palegreen3")
-            self.s7.grid(row=2, column=0, columnspan=2, sticky="nsew")
+            self.s7.grid(row=3, column=0, columnspan=2, sticky="nsew")
             
             
             #Buoyant Line  label
@@ -1077,7 +1118,7 @@ class Hem4(tk.Frame):
             ##create row for polyvertex inputs
             #create row for poly
             self.s8 = tk.Frame(self.optionalinputtab, width=250, height=50, pady=5, padx=5, bg="palegreen3")
-            self.s8.grid(row=3, column=0, columnspan=2, sticky="nsew")
+            self.s8.grid(row=4, column=0, columnspan=2, sticky="nsew")
             
             #Polygon sources label
             self.poly_label = tk.Label(self.s8, font=TEXT_FONT, bg="palegreen3",  
@@ -1107,11 +1148,16 @@ class Hem4(tk.Frame):
         else:
             #create optional input tab
             self.optionalinputtab = tk.Frame(self.tabControl, bg='palegreen3')            
-            self.tabControl.add(self.self.optionalinputtab, text='Additional Inputs')  
+            self.tabControl.insert(1, self.self.optionalinputtab, text='Additional Inputs')  
+            
+            self.inst_space = tk.Frame(self.optionalinputtab, width=750, height=50, bg="palegreen3", pady=5, padx=5)
+            self.inst_space.grid(row=2, column=0, sticky="nsew")
+            
+            self.add_optional_instructions(self.inst_space) 
                             
             #create row for poly
             self.s8 = tk.Frame(self.optionalinputtab, width=250, height=50, pady=5, padx=5, bg="palegreen3")
-            self.s8.grid(row=3, column=0, columnspan=2, sticky="nsew")
+            self.s8.grid(row=4, column=0, columnspan=2, sticky="nsew")
             
             #Polygon sources label
             self.poly_label = tk.Label(self.s8, font=TEXT_FONT, bg="palegreen3",  
@@ -1153,7 +1199,7 @@ class Hem4(tk.Frame):
         
             #create row for building downwash
             self.s9 = tk.Frame(self.optionalinputtab, width=250, height=50, padx=5, bg="palegreen3")
-            self.s9.grid(row=4, column=0, columnspan=2, sticky="nsew")
+            self.s9.grid(row=5, column=0, columnspan=2, sticky="nsew")
             
             # building dw labels
             self.bldgdw_label = tk.Label(self.s9,
@@ -1183,11 +1229,16 @@ class Hem4(tk.Frame):
         else:
             #create optional input tab
             self.optionalinputtab = tk.Frame(self.tabControl, bg='palegreen3')            
-            self.tabControl.add(self.self.optionalinputtab, text='Additional Inputs')  
+            self.tabControl.insert(1, self.self.optionalinputtab, text='Additional Inputs')
+            
+            self.inst_space = tk.Frame(self.optionalinputtab, width=750, height=50, bg="palegreen3", pady=5, padx=5)
+            self.inst_space.grid(row=2, column=0, sticky="nsew")
+            
+            self.add_optional_instructions(self.inst_space) 
         
             #create row for building downwash
             self.s9 = tk.Frame(self.optionalinputtab, width=250, height=50, padx=5, bg="palegreen3")
-            self.s9.grid(row=4, column=0, columnspan=2, sticky="nsew")
+            self.s9.grid(row=5, column=0, columnspan=2, sticky="nsew")
             
             # building dw labels
             self.bldgdw_label = tk.Label(self.s9,
@@ -1226,7 +1277,7 @@ class Hem4(tk.Frame):
             
             ##create row for particle size input
             self.s10 = tk.Frame(self.depinputtab, width=250, height=50, pady=5, padx=5, bg="palegreen3")
-            self.s10.grid(row=2, column=0, columnspan=2, sticky="nsew")
+            self.s10.grid(row=3, column=0, columnspan=2, sticky="nsew")
             
             #particle size label
             part_label = tk.Label(self.s10, font=TEXT_FONT, bg="palegreen3", 
@@ -1254,11 +1305,16 @@ class Hem4(tk.Frame):
         else:
             #create optional input tab
             self.depinputtab = tk.Frame(self.tabControl, bg='palegreen3')            
-            self.tabControl.add(self.depinputtab, text='Dep/Depl Inputs')  
+            self.tabControl.insert(1, self.depinputtab, text='Dep/Depl Inputs') 
+            
+            self.inst_space = tk.Frame(self.depinputtab, width=750, height=50, bg="palegreen3", pady=5, padx=5)
+            self.inst_space.grid(row=2, column=0, sticky="nsew")
+            
+            self.add_optional_instructions(self.inst_space) 
         
             #create column for particle size file
             self.s10 = tk.Frame(self.depinputtab, width=250, height=50, pady=5, padx=5, bg="palegreen3")
-            self.s10.grid(row=2, column=0, columnspan=2, sticky="nsew")
+            self.s10.grid(row=3, column=0, columnspan=2, sticky="nsew")
             
             #particle size label
             part_label = tk.Label(self.s10, font=TEXT_FONT, bg="palegreen3", 
@@ -1294,7 +1350,7 @@ class Hem4(tk.Frame):
             
             ##create row for land use inputs
             self.s11 = tk.Frame(self.depinputtab, width=250, height=50, pady=5, padx=5, bg="palegreen3")
-            self.s11.grid(row=3, column=0, columnspan=2, sticky="nsew")
+            self.s11.grid(row=4, column=0, columnspan=2, sticky="nsew")
             
             #land use size label
             land_label = tk.Label(self.s11, font=TEXT_FONT, bg="palegreen3", 
@@ -1321,13 +1377,19 @@ class Hem4(tk.Frame):
 
         
         else:
+            
             #create optional input tab
             self.depinputtab = tk.Frame(self.tabControl, bg='palegreen3')            
-            self.tabControl.add(self.depinputtab, text='Dep/Depl Inputs') 
+            self.tabControl.insert(1, self.depinputtab, text='Dep/Depl Inputs')
+            
+            self.inst_space = tk.Frame(self.depinputtab, width=750, height=50, bg="palegreen3", pady=5, padx=5)
+            self.inst_space.grid(row=2, column=0, sticky="nsew")
+            
+            self.add_optional_instructions(self.inst_space) 
         
             #create column for land use file
             self.s11 = tk.Frame(self.depinputtab, width=250, height=50, pady=5, padx=5, bg="palegreen3")
-            self.s11.grid(row=3, column=0, columnspan=2, sticky="nsew")
+            self.s11.grid(row=4, column=0, columnspan=2, sticky="nsew")
             
             #land use size label
             land_label = tk.Label(self.s11, font=TEXT_FONT, bg="palegreen3", 
@@ -1362,7 +1424,7 @@ class Hem4(tk.Frame):
             
             #create column for land use file
             self.s12 = tk.Frame(self.depinputtab, width=250, height=50, pady=5, padx=5, bg="palegreen3")
-            self.s12.grid(row=4, column=0, columnspan=2, sticky="nsew")
+            self.s12.grid(row=5, column=0, columnspan=2, sticky="nsew")
             
             #land use size label
             seasons_label = tk.Label(self.s12, font=TEXT_FONT, bg="palegreen3", 
@@ -1390,12 +1452,17 @@ class Hem4(tk.Frame):
         else:
             #create optional input tab
             self.depinputtab = tk.Frame(self.tabControl, bg='palegreen3')            
-            self.tabControl.add(self.depinputtab, text='Dep/Depl Inputs') 
+            self.tabControl.insert(1, self.depinputtab, text='Dep/Depl Inputs') 
+            
+            self.inst_space = tk.Frame(self.depinputtab, width=750, height=50, bg="palegreen3", pady=5, padx=5)
+            self.inst_space.grid(row=2, column=0, sticky="nsew")
+            
+            self.add_optional_instructions(self.inst_space) 
         
         
             #create column for land use file
             self.s12 = tk.Frame(self.depinputtab, width=250, height=50, pady=5, padx=5, bg="palegreen3")
-            self.s12.grid(row=4, column=0, columnspan=2, sticky="nsew")
+            self.s12.grid(row=5, column=0, columnspan=2, sticky="nsew")
             
             #land use size label
             seasons_label = tk.Label(self.s12, font=TEXT_FONT, bg="palegreen3", 
@@ -1492,7 +1559,7 @@ class Hem4(tk.Frame):
         Function clears instructions from display box 
         """
         global instruction_instance
-        instruction_instance.set(" ")    
+        self.instruction_instance.set(" ")    
         
     #general function for browsing instructions
     def browse(self, location):
@@ -1501,8 +1568,8 @@ class Hem4(tk.Frame):
         browse buttons
         """
         global instruction_instance
-        read_inst = open(location, 'r')
-        instruction_instance.set(read_inst.read())
+        self.read_inst = open(location, 'r')
+        self.instruction_instance.set(self.read_inst.read())
         
     #general function for manual uploads    
     def manual(self, location):
@@ -1511,8 +1578,8 @@ class Hem4(tk.Frame):
         text fields
         """
         global instruction_instance
-        read_inst = open(location, 'r')
-        instruction_instance.set(read_inst.read())
+        self.read_inst = open(location, 'r')
+        self.instruction_instance.set(self.read_inst.read())
     
              
 #%% Run function with checks if somethign is missing raise the error here and 
