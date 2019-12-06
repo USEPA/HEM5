@@ -1581,7 +1581,13 @@ class Hem4(tk.Frame):
         global instruction_instance
         self.read_inst = open(location, 'r')
         self.instruction_instance.set(self.read_inst.read())
+        
+    def switchtooptional(self, event):
+        notebook.select(self.optionalinpputtab)
     
+    def switchtodepinput(self, event):
+        notebook.select(self.depinpputtab)
+         
              
 #%% Run function with checks if somethign is missing raise the error here and 
 #   create an additional dialogue before trying to run the file
