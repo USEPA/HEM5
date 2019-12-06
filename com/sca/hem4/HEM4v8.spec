@@ -4,11 +4,7 @@ block_cipher = None
 
 
 a = Analysis(['multiwindow.py'],
-<<<<<<< HEAD
-             pathex=['C:\\Users\\David Lindsey\\OneDrive - SC&A, Inc\\HEM4Python\\Version_Master\\hem4\\com\\sca\\hem4'],
-=======
-             pathex=['C:\\Users\\David Lindsey\\OneDrive - SC&A, Inc\\HEM4Python\\version7\\hem4\\com\\sca\\hem4'],
->>>>>>> bd0859b6a8f371dbb8872f9d2b3014fbf2a1c141
+             pathex=['C:\\Users\\David Lindsey\\OneDrive - SC&A, Inc\\HEM4Python\\Version_Master\\HEM4\\com\\sca\\hem4'],
              binaries=[],
              datas=[],
              hiddenimports=[],
@@ -25,7 +21,7 @@ exe = EXE(pyz,
           a.scripts,
           [],
           exclude_binaries=True,
-          name='HEM4v7.5',
+          name='HEM4v8',
           debug=False,
           bootloader_ignore_signals=False,
           strip=False,
@@ -38,4 +34,4 @@ coll = COLLECT(exe,
                strip=False,
                upx=True,
                upx_exclude=[],
-               name='HEM4v7.5')
+               name='HEM4v8')
