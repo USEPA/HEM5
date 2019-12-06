@@ -34,7 +34,7 @@ class MaximumOffsiteImpacts(ExcelWriter):
         """
 
         # dictionary of receptor types
-        rectype_dict = {"P":"Polar grid", "I":"Census block"}
+        rectype_dict = {"P":"Polar grid", "D":"Census block"}
 
         ring_risk = self.ring_summary_chronic_df.copy()
         inner_risk = self.inner_recep_risk_df.copy()

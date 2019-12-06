@@ -1,6 +1,5 @@
 import math
 
-from com.sca.hem4.log.Logger import Logger
 from com.sca.hem4.support.UTM import *
 from com.sca.hem4.model.Model import *
 
@@ -59,7 +58,7 @@ def rotatedbox(xt, yt, box_x, box_y, len_x, len_y, angle, fringe, overlap_dist):
     #	with southwest corner (box_x,box_y), dimensions (Len_x,Len_y), and oriented at a given
     #   "Angle", measured clockwise from North.
     # Also determine if this box overlaps the point.
-        
+    
     inbox = False
     overlap = "N"
         
@@ -346,8 +345,6 @@ def getblocks(cenx, ceny, cenlon, cenlat, utmzone, maxdist, modeldist, sourceloc
     
     # Split modelblks into inner and outer block receptors
     innerblks, outerblks = in_box(modelblks, sourcelocs, modeldist, maxdist, overlap_dist, model)
-
-    Logger.log("OUTERBLOCKS", outerblks, False)
         
     # convert utme, utmn, utmz, and population to integers
     innerblks[utme] = innerblks[utme].astype(np.int64)
