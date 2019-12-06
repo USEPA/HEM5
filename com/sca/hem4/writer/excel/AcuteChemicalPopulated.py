@@ -191,4 +191,5 @@ class AcuteChemicalPopulated(ExcelWriter):
         sector_num = record.iloc[0][sector]
         ring_num = record.iloc[0][ring]
         return pd.Series((sector_num, ring_num))
+
         
