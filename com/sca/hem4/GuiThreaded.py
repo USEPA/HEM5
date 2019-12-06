@@ -758,6 +758,7 @@ class Hem4(tk.Frame):
                 
             else:
                 #reset gui if reuploading
+                
                 if hasattr(self, 's8'):
                     self.poly_list_man.destroy()
                     self.poly_up.destroy()
@@ -1647,7 +1648,7 @@ class Hem4(tk.Frame):
 
             if override:
                 global instruction_instance
-                instruction_instance.set("HEM4 Running, check the log tab for updates")
+                self.instruction_instance.set("HEM4 Running, check the log tab for updates")
                 self.tab2.lift()
                 Logger.logMessage("\nHEM4 is starting...")
                 
