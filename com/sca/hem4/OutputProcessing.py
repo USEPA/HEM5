@@ -190,6 +190,7 @@ class Process_outputs():
         self.model.max_indiv_risk_df = max_indiv_risk.dataframe
         Logger.logMessage("Completed MaximumIndividualRisks output")
 
+
         #----------- create Maximum_Offsite_Impacts output file ---------------
         inner_recep_risk_df = self.model.block_summary_chronic_df[self.model.block_summary_chronic_df["rec_type"] == "D"]
         max_offsite_impacts = MaximumOffsiteImpactsNonCensus(self.outdir, self.facid, self.model, self.plot_df,
@@ -198,7 +199,7 @@ class Process_outputs():
         max_offsite_impacts.write()
         Logger.logMessage("Completed MaximumOffsiteImpacts output")
 
-
+        
         # For any rows in ring_summary_chronic and block_summary_chronic where overlap = Y, 
         # replace mir and HI's with values from max_indiv_risk and write data to csv output.
         replacement = self.model.max_indiv_risk_df[value].values

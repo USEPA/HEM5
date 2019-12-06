@@ -1,4 +1,5 @@
 from com.sca.hem4.upload.UserReceptors import rec_type
+from com.sca.hem4.upload.InputFile import InputFile
 from com.sca.hem4.writer.csv.AllOuterReceptors import *
 from com.sca.hem4.writer.csv.CsvWriter import CsvWriter
 from com.sca.hem4.FacilityPrep import *
@@ -13,6 +14,7 @@ class BlockSummaryChronic(CsvWriter, InputFile):
                  createDataframe=False):
         # Initialization for CSV reading/writing. If no file name override, use the
         # default construction.
+        
         filename = facilityId + "_block_summary_chronic.csv" if filenameOverride is None else filenameOverride
         path = os.path.join(targetDir, filename)
 
@@ -80,8 +82,9 @@ class BlockSummaryChronic(CsvWriter, InputFile):
         inneragg[rec_type] = "D"
         self.outerAgg[rec_type] = "I"
 
+
         # append the inner and outer values and write
-        self.dataframe = inneragg.append(self.outerAgg, ignore_index = True).sort_values(by=[fips, block])
+        self.dataframe = inneragg.append(self.outerAgg, ignore_index = True).sort_values(by=[fips, block])        
         self.data = self.dataframe.values
         yield self.dataframe
 
