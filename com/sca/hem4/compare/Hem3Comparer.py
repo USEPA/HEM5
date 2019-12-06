@@ -1,7 +1,5 @@
 from math import floor, log10
 
-from pandas.core.dtypes.common import is_numeric_dtype
-
 from com.sca.hem4.writer.csv.AllInnerReceptors import *
 from com.sca.hem4.writer.csv.AllOuterReceptors import AllOuterReceptors
 from com.sca.hem4.writer.csv.AllPolarReceptors import AllPolarReceptors, sector, ring
@@ -11,6 +9,8 @@ from com.sca.hem4.writer.csv.hem3.Hem3AllPolarReceptors import Hem3AllPolarRecep
 from com.sca.hem4.writer.excel.MaximumIndividualRisks import MaximumIndividualRisks, value, parameter
 from com.sca.hem4.writer.excel.hem3.Hem3MaximumIndividualRisks import Hem3MaximumIndividualRisks
 
+hem3Dirname = "C:\HEM-inputs\comparison\HEM3"
+hem4Dirname = "C:\HEM-inputs\comparison\HEM4"
 
 class Hem3Comparer():
 
@@ -24,7 +24,7 @@ class Hem3Comparer():
             os.mkdir(self.diff_target)
 
     def compare(self):
-        
+
         #---------- All inner receptors -----------#
         hem3File = "FAC1-NC_all_inner_receptors.csv"
         hem4File = "FAC1-NC_all_inner_receptors.csv"
@@ -75,7 +75,7 @@ class Hem3Comparer():
         risks_diff.writeHeader()
         diff_df = self.calculateNumericDiffs(hem3risks, hem4risks, joinColumns, diffColumns)
         risks_diff.appendToFile(diff_df)
-        
+
         #---------- All outer receptors -----------#
         hem3File = "FAC1-NC_all_outer_receptors.csv"
         hem4File = "FAC1-NC_all_outer_receptors.csv"
@@ -120,5 +120,5 @@ class Hem3Comparer():
         rounded = round(x, sig-int(floor(log10(abs(x))))-1)
         return rounded
 
-comparer = Hem3Comparer("C:\HEM-inputs\comparison\HEM3", "C:\HEM-inputs\comparison\HEM4")
+comparer = Hem3Comparer(hem3Dirname, hem4Dirname)
 comparer.compare()
