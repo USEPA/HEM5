@@ -1068,7 +1068,7 @@ class Hem4(tk.Frame):
         else:
             #create optional input tab
             self.optionalinputtab = tk.Frame(self.tabControl, bg='palegreen3')            
-            self.tabControl.insert(1, self.self.optionalinputtab, text='Additional Inputs')
+            self.tabControl.insert(1, self.optionalinputtab, text='Additional Inputs')
             
             self.inst_space = tk.Frame(self.optionalinputtab, width=750, height=50, bg="palegreen3", pady=5, padx=5)
             self.inst_space.grid(row=2, column=0, sticky="nsew")
@@ -1148,7 +1148,7 @@ class Hem4(tk.Frame):
         else:
             #create optional input tab
             self.optionalinputtab = tk.Frame(self.tabControl, bg='palegreen3')            
-            self.tabControl.insert(1, self.self.optionalinputtab, text='Additional Inputs')  
+            self.tabControl.insert(1, self.optionalinputtab, text='Additional Inputs')  
             
             self.inst_space = tk.Frame(self.optionalinputtab, width=750, height=50, bg="palegreen3", pady=5, padx=5)
             self.inst_space.grid(row=2, column=0, sticky="nsew")
@@ -1195,7 +1195,7 @@ class Hem4(tk.Frame):
             ##create row for buildingdownwash inputs
             #create optional input tab
             self.optionalinputtab = tk.Frame(self.tabControl, bg='palegreen3')            
-            self.tabControl.add(self.self.optionalinputtab, text='Additional Inputs')  
+            self.tabControl.add(self.optionalinputtab, text='Additional Inputs')  
         
             #create row for building downwash
             self.s9 = tk.Frame(self.optionalinputtab, width=250, height=50, padx=5, bg="palegreen3")
@@ -1538,7 +1538,7 @@ class Hem4(tk.Frame):
                     self.emisvar_list_man.destroy()
                     self.emisvar_on.destroy()
                     self.emisvar_label.destroy()
-                    self.s5.destroy()
+                   
 
     def set_altrec(self):
         self.model.altRec_optns['altrec'] = self.check_altrec.get()
