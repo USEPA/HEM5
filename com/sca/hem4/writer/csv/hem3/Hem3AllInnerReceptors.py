@@ -36,9 +36,9 @@ class Hem3AllInnerReceptors(CsvWriter, InputFile):
 
 
     def getHeader(self):
-        return ['FIPs', 'Block', 'Latitude', 'Longitude', 'Source ID', 'Emission type', 'Pollutant',
-                'Conc (µg/m3)', 'Acute Conc (µg/m3)', 'Elevation (m)',
-                'Dry deposition (g/m2/yr)', 'Wet deposition (g/m2/yr)', 'Population', 'Overlap']
+        return ['Latitude', 'Longitude', 'Source ID', 'Emission type', 'Pollutant',
+                'Conc (µg/m3)', 'Population', 'FIPs', 'Block',
+                'Wet deposition (g/m2/yr)', 'Dry deposition (g/m2/yr)', 'Elevation (m)', 'Overlap']
 
     def getColumns(self):
         return [lat, lon, source_id, ems_type, pollutant, conc, population,

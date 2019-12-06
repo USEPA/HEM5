@@ -2,23 +2,29 @@ from com.sca.hem4.FacilityPrep import *
 from com.sca.hem4.writer.csv.AllInnerReceptors import *
 
 
-class AllPolarReceptors(CsvWriter):
+class AllPolarReceptors(CsvWriter, InputFile):
     """
     Provides the annual average concentration modeled at every census block within the modeling cutoff distance,
     specific to each source ID and pollutant, along with receptor information, and acute concentration (if modeled) and
     wet and dry deposition flux (if modeled).
     """
 
-    def __init__(self, targetDir, facilityId, model, plot_df):
-        CsvWriter.__init__(self, model, plot_df)
-
+    def __init__(self, targetDir=None, facilityId=None, model=None, plot_df=None, filenameOverride=None,
+                 createDataframe=False):
+        # Initialization for CSV reading/writing. If no file name override, use the
+        # default construction.
         self.targetDir = targetDir
-        self.filename = os.path.join(self.targetDir, facilityId + "_all_polar_receptors.csv")
+        filename = facilityId + "_all_polar_receptors.csv" if filenameOverride is None else filenameOverride
+        path = os.path.join(self.targetDir, filename)
 
+        CsvWriter.__init__(self, model, plot_df)
+        InputFile.__init__(self, path, createDataframe)
+
+        # initialize cache for inner census block data
         self.polarCache = {}
         self.acute_yn = self.model.facops.iloc[0][acute]
-        
-            
+        self.filename = path
+
     def getHeader(self):
         if self.acute_yn == 'N':
             return ['Source ID', 'Emission type', 'Pollutant', 'Conc (ug/m3)',
@@ -38,6 +44,10 @@ class AllPolarReceptors(CsvWriter):
         else:
             return [source_id, emis_type, pollutant, conc, aconc, distance, angle, sector, ring, elev, lat, lon, 
                     overlap, wetdep, drydep]
+
+    def getColumns(self):
+        return [source_id, emis_type, pollutant, conc, aconc, distance, angle, sector, ring, elev, lat, lon, overlap,
+                wetdep, drydep]
 
     def generateOutputs(self):
         """
@@ -134,6 +144,7 @@ class AllPolarReceptors(CsvWriter):
         srcids = polarplot_df[source_id].unique().tolist()
 
         dlist = []
+
         col_list = self.getColumns(self.acute_yn)
 
         # process polar concs one source_id at a time
@@ -201,4 +212,14 @@ class AllPolarReceptors(CsvWriter):
         #dataframe to array
         self.dataframe = all_polar_receptors_df
         self.data = self.dataframe.values
+
         yield self.dataframe
+
+    def createDataframe(self):
+        # Type setting for CSV reading
+        self.numericColumns = [distance, angle, sector, ring, lat, lon, conc, aconc, elev, drydep, wetdep]
+        self.strColumns = [source_id, emis_type, pollutant, overlap]
+
+        df = self.readFromPathCsv(self.getColumns())
+        return df.fillna("")
+

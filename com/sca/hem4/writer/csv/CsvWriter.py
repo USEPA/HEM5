@@ -32,10 +32,14 @@ class CsvWriter(Writer):
         else:
             self.writeBigCsv(dataframe)
 
-    def writeHeader(self):
+    def writeHeader(self, headers=None):
         with open(self.filename, 'w', encoding='UTF-8', newline='') as csvarchive:
             writer = csv.writer(csvarchive, quoting=csv.QUOTE_NONNUMERIC)
-            writer.writerow(self.getHeader())
+
+            if headers is None:
+                headers = self.getHeader()
+
+            writer.writerow(headers)
 
     def analyze(self, data):
         pass
