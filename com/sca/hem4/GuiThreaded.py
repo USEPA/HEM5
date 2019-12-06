@@ -1229,7 +1229,7 @@ class Hem4(tk.Frame):
         else:
             #create optional input tab
             self.optionalinputtab = tk.Frame(self.tabControl, bg='palegreen3')            
-            self.tabControl.insert(1, self.self.optionalinputtab, text='Additional Inputs')
+            self.tabControl.insert(1, self.optionalinputtab, text='Additional Inputs')
             
             self.inst_space = tk.Frame(self.optionalinputtab, width=750, height=50, bg="palegreen3", pady=5, padx=5)
             self.inst_space.grid(row=2, column=0, sticky="nsew")
