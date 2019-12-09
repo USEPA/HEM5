@@ -106,8 +106,8 @@ class Hem3Comparer():
 
         merged_df = hem4_df.merge(hem3_df, on=joinColumns, suffixes=('', '_y'))
         for numericCol in diffColumns:
-            merged_df[numericCol] = 100*(merged_df[numericCol+"_y"] -
-                      merged_df[numericCol]) / merged_df[numericCol]
+            merged_df[numericCol] = 100*(merged_df[numericCol] -
+                      merged_df[numericCol+"_y"]) / merged_df[numericCol+"_y"]
             merged_df[numericCol] = merged_df[numericCol].apply(self.round_to_sigfig, args=[3])
 
         merged_df.drop(list(merged_df.filter(regex='_y$')), axis=1, inplace=True)
