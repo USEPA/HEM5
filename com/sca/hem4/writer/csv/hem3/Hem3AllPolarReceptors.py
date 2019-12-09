@@ -29,11 +29,12 @@ class Hem3AllPolarReceptors(CsvWriter, InputFile):
     def getHeader(self):
         return ['Source ID', 'Emission type', 'Conc (µg/m3)', 'Pollutant',
                 'Distance (m)', 'Angle (from north)', 'Sector', 'Ring number', 'Elevation (m)',
-                'Latitude', 'Longitude', 'Wet deposition (g/m2/yr)', 'Dry deposition (g/m2/yr)', 'Overlap']
+                'Latitude', 'Longitude', 'Wet deposition (g/m2/yr)', 'Dry deposition (g/m2/yr)', 
+                'Acute Conc (ug/m3)', 'Overlap']
 
     def getColumns(self):
-        return [source_id, ems_type, conc, pollutant, distance, angle, sector, ring, elev, lat, lon, drydep, wetdep,
-                   overlap]
+        return [source_id, ems_type, conc, pollutant, distance, angle, sector, ring, elev, lat, lon, drydep, 
+                wetdep, aconc, overlap]
 
     def generateOutputs(self):
         """
@@ -147,7 +148,7 @@ class Hem3AllPolarReceptors(CsvWriter, InputFile):
 
     def createDataframe(self):
         # Type setting for CSV reading
-        self.numericColumns = [distance, angle, sector, ring, lat, lon, conc, elev, drydep, wetdep]
+        self.numericColumns = [distance, angle, sector, ring, lat, lon, conc, aconc, elev, drydep, wetdep]
         self.strColumns = [source_id, ems_type, pollutant, overlap]
 
         df = self.readFromPathCsv(self.getColumns())
