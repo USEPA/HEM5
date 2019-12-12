@@ -13,8 +13,8 @@ from com.sca.hem4.writer.excel.RiskBreakdown import RiskBreakdown, site_type, mi
 from com.sca.hem4.writer.excel.hem3.Hem3MaximumIndividualRisks import Hem3MaximumIndividualRisks
 from com.sca.hem4.writer.excel.hem3.Hem3RiskBreakdown import Hem3RiskBreakdown
 
-hem3Dirname = "C:\HEM-inputs\comparison\HEM3"
-hem4Dirname = "C:\HEM-inputs\comparison\HEM4"
+hem3Dirname = r"\\sfudge-pc\HEM3_for_HEM4_compare\hem3_output_unittest\01043110000366247"
+hem4Dirname = r"C:\Git_HEM4\HEM4\output\Unit\01043110000366247"
 
 class Hem3Comparer():
 
@@ -30,11 +30,11 @@ class Hem3Comparer():
     def compare(self):
 
         #---------- All inner receptors -----------#
-        hem3File = "FAC1-NC_all_inner_receptors.csv"
-        hem4File = "FAC1-NC_all_inner_receptors.csv"
+        hem3File = "01043110000366247_all_inner_receptors.csv"
+        hem4File = "01043110000366247_all_inner_receptors.csv"
         diffFile = "diff_all_inner_receptors.csv"
         joinColumns = [fips, block, source_id, pollutant]
-        diffColumns = [conc]
+        diffColumns = [conc, aconc]
         #------------------------------------------#
         hem4allinner = AllInnerReceptors(targetDir=self.hem4Dir, facilityId=None, model=None, plot_df=None,
              filenameOverride=hem4File)
@@ -47,11 +47,11 @@ class Hem3Comparer():
         allinner_diff.appendToFile(diff_df)
 
         #---------- All polar receptors -----------#
-        hem3File = "FAC1-NC_all_polar_receptors.csv"
-        hem4File = "FAC1-NC_all_polar_receptors.csv"
+        hem3File = "01043110000366247_all_polar_receptors.csv"
+        hem4File = "01043110000366247_all_polar_receptors.csv"
         diffFile = "diff_all_polar_receptors.csv"
         joinColumns = [sector, ring, source_id, pollutant]
-        diffColumns = [conc]
+        diffColumns = [conc, aconc]
         #------------------------------------------#
         hem4allpolar = AllPolarReceptors(targetDir=self.hem4Dir, facilityId=None, model=None, plot_df=None,
              filenameOverride=hem4File)
@@ -64,8 +64,8 @@ class Hem3Comparer():
         allpolar_diff.appendToFile(diff_df)
 
         #---------- Maximum individual risks -----------#
-        hem3File = "FAC1-NC_maximum_indiv_risks.xlsx"
-        hem4File = "FAC1-NC_maximum_indiv_risks.xlsx"
+        hem3File = "01043110000366247_maximum_indiv_risks.xlsx"
+        hem4File = "01043110000366247_maximum_indiv_risks.xlsx"
         diffFile = "diff_maximum_indiv_risks.xlsx"
         joinColumns = [parameter]
         diffColumns = [value]
@@ -115,9 +115,10 @@ class Hem3Comparer():
         diff_df = self.calculateNumericDiffs(hem3summary, hem4summary, joinColumns, diffColumns)
         summary_diff.appendToFile(diff_df)
 
+
         #---------- All outer receptors -----------#
-        hem3File = "FAC1-NC_all_outer_receptors.csv"
-        hem4File = "FAC1-NC_all_outer_receptors.csv"
+        hem3File = "01043110000366247_all_outer_receptors.csv"
+        hem4File = "01043110000366247_all_outer_receptors.csv"
         diffFile = "diff_all_outer_receptors.csv"
         joinColumns = [fips, block, source_id, pollutant]
         diffColumns = [conc]
@@ -140,6 +141,9 @@ class Hem3Comparer():
     # Note: for this method to work correctly, none of the columns in diffColumns can be
     # present in joinColumns
     def calculateNumericDiffs(self, hem3_entity, hem4_entity, joinColumns, diffColumns):
+
+        # Percent Change = ((HEM4- HEM3)/HEM3) * 100
+
         hem4_df = hem4_entity.createDataframe()
         hem3_df = hem3_entity.createDataframe()
 

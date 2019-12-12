@@ -38,11 +38,12 @@ class Hem3AllInnerReceptors(CsvWriter, InputFile):
     def getHeader(self):
         return ['Latitude', 'Longitude', 'Source ID', 'Emission type', 'Pollutant',
                 'Conc (µg/m3)', 'Population', 'FIPs', 'Block',
-                'Wet deposition (g/m2/yr)', 'Dry deposition (g/m2/yr)', 'Elevation (m)', 'Overlap']
+                'Wet deposition (g/m2/yr)', 'Dry deposition (g/m2/yr)', 'Acute Conc (ug/m3)', 
+                'Elevation (m)', 'Overlap']
 
     def getColumns(self):
         return [lat, lon, source_id, ems_type, pollutant, conc, population,
-                fips, block, wetdep, drydep, elev, overlap]
+                fips, block, wetdep, drydep, elev, aconc, overlap]
 
     def generateOutputs(self):
         """
@@ -143,7 +144,7 @@ class Hem3AllInnerReceptors(CsvWriter, InputFile):
 
     def createDataframe(self):
         # Type setting for CSV reading
-        self.numericColumns = [lat, lon, conc, elev, drydep, wetdep, population]
+        self.numericColumns = [lat, lon, conc, aconc, elev, drydep, wetdep, population]
         self.strColumns = [fips, block, source_id, ems_type, pollutant, overlap]
 
         df = self.readFromPathCsv(self.getColumns())
