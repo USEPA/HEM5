@@ -212,6 +212,7 @@ class Hem4(tk.Frame):
         self.fac_list.set('')
         self.hap_list.set('')
         self.emisloc_list.set('')
+        self.group_list.set('')
 
         self.check_altrec.set(False)
         self.set_altrec()
@@ -279,12 +280,13 @@ class Hem4(tk.Frame):
             
             
         #destroy stop
-        self.quit.destroy()
+        if hasattr(self, 'stop'):
+            self.stop.destroy()
         
         #add start button
         self.run_button = tk.Button(self.main, text='RUN', fg="green", bg='lightgrey', relief='solid', borderwidth=2,
                                     command=self.run, font=TEXT_FONT)
-        self.run_button.grid(row=10, column=0, sticky="W", padx=5, pady=5)
+        self.run_button.grid(row=10, column=0, sticky="E", padx=5, pady=5)
         
         global instruction_instance
         self.instruction_instance.set(" ")
@@ -460,11 +462,8 @@ class Hem4(tk.Frame):
         self.scr = scrolledtext.ScrolledText(self.log, wrap=tk.WORD, width=1000, height=1000, font=LOG_FONT)
         self.scr.pack()
        
-#%% Set Quit, Run, and User Guide buttons        
-#        self.quit = tk.Button(self.main, text="STOP", fg="red", font=TEXT_FONT, bg='lightgrey', relief='solid', borderwidth=2,
-#                              command=self.quit_app)
-#        self.quit.grid(row=0, column=0, sticky="E", padx=5, pady=5)
-#        
+#%% Set Back, Run, and User Guide buttons        
+      
         self.back = tk.Button(self.main, text="BACK", font=TEXT_FONT, bg='lightgrey', relief='solid', borderwidth=2,
                               command=self.lower)
         self.back.grid(row=10, column=0, sticky="W", padx=5, pady=5)
@@ -481,18 +480,7 @@ class Hem4(tk.Frame):
 #%% Setting up  directions text space
         
         self.add_instructions(self.s2, self.s1)
-#        #Dynamic instructions place holder
-#        global instruction_instance
-#        instruction_instance = tk.StringVar(self.s2)
-#        instruction_instance.set(" ")
-#        self.dynamic_inst = tk.Label(self.s1, wraplength=600, font=TEXT_FONT, pady=5, bg='palegreen3') 
-#        self.dynamic_inst.config(height=4)
-#        
-#        self.dynamic_inst["textvariable"] = instruction_instance 
-#        self.dynamic_inst.grid(row=1, column=0)
-        
-        
-        
+
 # %% Setting up each file upload space (includes browse button, and manual text entry for file path)
         group_label = tk.Label(self.s3, font=TEXT_FONT, bg="palegreen3", 
                              text="Name Run Group (optional):")
@@ -1667,13 +1655,10 @@ class Hem4(tk.Frame):
                     
                     self.model.group_name = None
                     
-                
-                
-                
                 self.run_button.destroy()
-                self.quit = tk.Button(self.main, text="STOP", fg="red", font=TEXT_FONT, bg='lightgrey', relief='solid', borderwidth=2,
+                self.stop = tk.Button(self.main, text="STOP", fg="red", font=TEXT_FONT, bg='lightgrey', relief='solid', borderwidth=2,
                               command=self.quit_app)
-                self.quit.grid(row=0, column=0, sticky="E", padx=5, pady=5)
+                self.stop.grid(row=0, column=0, sticky="E", padx=5, pady=5)
         
                 try:
                     self.process()

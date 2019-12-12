@@ -280,7 +280,7 @@ class MainView(tk.Frame):
         
         #new facility run
         new_run = tk.Button(self.s2, text= "New Run", font=TEXT_FONT, 
-                           relief='solid', borderwidth=2, bg='lightgrey', command=self.hem.lift)
+                           relief='solid', borderwidth=2, bg='lightgrey', command=self.open_hem4)
         new_run.pack(padx=20, pady=50)
         new_run.bind("<Enter>", partial(self.color_config, new_run, "white"))
         new_run.bind("<Leave>", partial(self.color_config, new_run, "lightgrey"))
@@ -334,14 +334,8 @@ class MainView(tk.Frame):
         
 
     def open_hem4(self):
-     """Destroy current window, create new window"""
-     
-     messageQueue = queue.Queue()
-     callbackQueue = queue.Queue()
-     hem4 = Hem4(messageQueue, callbackQueue)
-     hem4.start_gui()
-     
-     self.master.withdraw()
+        self.hem.lift()
+        self.hem.reset_gui()
 
 if __name__ == "__main__":
     root = tk.Tk()
