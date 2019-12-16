@@ -209,13 +209,11 @@ class Hem4(tk.Frame):
     def reset_gui(self):
         #reset all inputs if everything finished. actually destroy and recreate all inputs
         self.model.reset()
-        self.tabControl.destroy()
-        self.createWidgets()
-        
-#        self.fac_list.set('')
-#        self.hap_list.set('')
-#        self.emisloc_list.set('')
-#        self.group_list.set('')
+
+        self.fac_list.set('')
+        self.hap_list.set('')
+        self.emisloc_list.set('')
+        self.group_list.set('')
 
         self.check_altrec.set(False)
         self.set_altrec()
@@ -388,8 +386,15 @@ class Hem4(tk.Frame):
         # Tab Control introduced here --------------------------------------
         self.tabControl = ttk.Notebook(self, style='TNotebook')     # Create Tab Control
 
-        self.main = tk.Frame(self.tabControl, bg='palegreen3')            # Create a tab
-        self.tabControl.add(self.main, text='HEM4')      # Add the tab
+        if hasattr('self', 'main'):
+            if self.main is None:
+                self.main = tk.Frame(self.tabControl, bg='palegreen3')            # Create a tab
+                self.tabControl.add(self.main, text='HEM4')
+                
+        else:
+            
+            self.main = tk.Frame(self.tabControl, bg='palegreen3')            # Create a tab
+            self.tabControl.add(self.main, text='HEM4')      # Add the tab
 
         self.tab2 = tk.Frame(self.tabControl, bg='palegreen3')            # Add a second tab
         self.tabControl.add(self.tab2, text='Log')      # Make second tab visible
