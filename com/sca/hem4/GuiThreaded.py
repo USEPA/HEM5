@@ -846,17 +846,10 @@ class Hem4(tk.Frame):
         Function for uploading Alternate Receptors
         """
 
-        if self.model.faclist is None:
-            messagebox.showinfo("Facilities List Option File Missing",
-                                "Please upload a Facilities List Options file before selecting"+
-                                " a User Receptors file.")
-            return
-
         fullpath = self.openFile(askopenfilename())
         if fullpath is not None:
                         
-            self.uploader.uploadDependent("alt receptors", fullpath,
-                                          self.model.faclist.dataframe)
+            self.uploader.upload("alt receptors", fullpath)
 
             # Update the UI
             self.urepalt_list.set(fullpath)

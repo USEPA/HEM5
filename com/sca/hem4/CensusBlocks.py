@@ -346,13 +346,13 @@ def getblocks(cenx, ceny, cenlon, cenlat, utmzone, maxdist, modeldist, sourceloc
     # Split modelblks into inner and outer block receptors
     innerblks, outerblks = in_box(modelblks, sourcelocs, modeldist, maxdist, overlap_dist, model)
         
-    # convert utme, utmn, utmz, and population to integers
-    innerblks[utme] = innerblks[utme].astype(np.int64)
-    innerblks[utmn] = innerblks[utmn].astype(np.int64)
+    # convert utme, utmn, utmz, and population to appropriate numeric types
+    innerblks[utme] = innerblks[utme].astype(np.float64)
+    innerblks[utmn] = innerblks[utmn].astype(np.float64)
     innerblks[utmz] = innerblks[utmz].astype(int)
     innerblks[population] = pd.to_numeric(innerblks[population], errors='coerce').astype(int)
-    outerblks[utme] = outerblks[utme].astype(np.int64)
-    outerblks[utmn] = outerblks[utmn].astype(np.int64)
+    outerblks[utme] = outerblks[utme].astype(np.float64)
+    outerblks[utmn] = outerblks[utmn].astype(np.float64)
     outerblks[utmz] = outerblks[utmz].astype(int)
     outerblks[population] = pd.to_numeric(outerblks[population], errors='coerce').astype(int)
     
