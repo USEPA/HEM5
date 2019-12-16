@@ -26,10 +26,11 @@ class Hem3Comparer():
 
 class Hem3Comparer():
 
-    def __init__(self, hem3Dir, hem4Dir):
+    def __init__(self, hem3Dir, hem4Dir, acute):
         self.hem3Dir = hem3Dir
         self.hem4Dir = hem4Dir
         self.diff_target = self.hem4Dir + "\diff"
+        self.acute = acute
 
         if not (os.path.exists(self.diff_target) or os.path.isdir(self.diff_target)):
             print("Creating diff directory for results...")
@@ -50,9 +51,9 @@ class Hem3Comparer():
         hem4allinner = AllInnerReceptors(targetDir=self.hem4Dir, facilityId=None, model=None, plot_df=None,
              acuteyn=self.acute, filenameOverride=hem4File)
         hem3allinner = Hem3AllInnerReceptors(targetDir=self.hem3Dir, facilityId=None, model=None, plot_df=None,
-             filenameOverride=hem3File)
+             acuteyn=self.acute, filenameOverride=hem3File)
         allinner_diff = AllInnerReceptors(targetDir=self.diff_target, facilityId=None, model=None, plot_df=None,
-            filenameOverride=diffFile)
+              acuteyn=self.acute, filenameOverride=diffFile)
         allinner_diff.writeHeader()
         diff_df = self.calculateNumericDiffs(hem3allinner, hem4allinner, joinColumns, diffColumns)
         allinner_diff.appendToFile(diff_df)
@@ -68,11 +69,11 @@ class Hem3Comparer():
 
         #------------------------------------------#
         hem4allpolar = AllPolarReceptors(targetDir=self.hem4Dir, facilityId=None, model=None, plot_df=None,
-             filenameOverride=hem4File)
+             acuteyn=self.acute, filenameOverride=hem4File)
         hem3allpolar = Hem3AllPolarReceptors(targetDir=self.hem3Dir, facilityId=None, model=None, plot_df=None,
-             filenameOverride=hem3File)
+             acuteyn=self.acute, filenameOverride=hem3File)
         allpolar_diff = AllPolarReceptors(targetDir=self.diff_target, facilityId=None, model=None, plot_df=None,
-            filenameOverride=diffFile)
+            acuteyn=self.acute, filenameOverride=diffFile)
         allpolar_diff.writeHeader()
         diff_df = self.calculateNumericDiffs(hem3allpolar, hem4allpolar, joinColumns, diffColumns)
         allpolar_diff.appendToFile(diff_df)
@@ -136,13 +137,16 @@ class Hem3Comparer():
         diffFile = "diff_all_outer_receptors.csv"
         joinColumns = [fips, block, source_id, pollutant]
         diffColumns = [conc]
+        if self.acute:
+            diffColumns.append(aconc)
+
         #------------------------------------------#
         hem4allouter = AllOuterReceptors(targetDir=self.hem4Dir, facilityId=None, model=None, plot_df=None,
-             filenameOverride=hem4File)
+             acuteyn=self.acute, filenameOverride=hem4File)
         hem3allouter = Hem3AllOuterReceptors(targetDir=self.hem3Dir, facilityId=None, model=None, plot_df=None,
-             filenameOverride=hem3File)
+             acuteyn=self.acute, filenameOverride=hem3File)
         allouter_diff = AllOuterReceptors(targetDir=self.diff_target, facilityId=None, model=None, plot_df=None,
-            filenameOverride=diffFile)
+              acuteyn=self.acute, filenameOverride=diffFile)
         allouter_diff.writeHeader()
         diff_df = self.calculateNumericDiffs(hem3allouter, hem4allouter, joinColumns, diffColumns)
         allouter_diff.appendToFile(diff_df)
@@ -189,5 +193,6 @@ class Hem3Comparer():
         rounded = round(x, sig-int(floor(log10(abs(x))))-1)
         return rounded
 
+acute = 'N'
 comparer = Hem3Comparer(hem3Dirname, hem4Dirname, acute)
 comparer.compare()

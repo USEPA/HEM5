@@ -106,7 +106,7 @@ class Hem3AllOuterReceptors(CsvWriter, InputFile):
         # the mir and each HI, and has source/pollutant specific risk at that lat/lon.
         # Keys are: parameter, source_id, pollutant, and emis_type.
         # Values are: lat, lon, and risk value.
-        self.srcpols = self.model.all_polar_receptors_df[[source_id, pollutant, ems_type]].drop_duplicates().values.tolist()
+        self.srcpols = self.model.all_polar_receptors_df[[source_id, pollutant, emis_type]].drop_duplicates().values.tolist()
         self.max_riskhi_bkdn = {}
         self.outerInc = {}
         for jparm in self.riskhi_parms:
@@ -127,7 +127,7 @@ class Hem3AllOuterReceptors(CsvWriter, InputFile):
                 'Overlap']
 
     def getColumns(self):
-        return [lat, lon, conc, source_id, pollutant, ems_type, aconc, population, fips, block, elev, overlap]
+        return [lat, lon, conc, source_id, pollutant, emis_type, aconc, population, fips, block, elev, overlap]
 
 
     def generateOutputs(self):
@@ -378,19 +378,19 @@ class Hem3AllOuterReceptors(CsvWriter, InputFile):
                     # Update the max_riskhi_bkdn dictionary
                     box_receptors_max = box_receptors_wrisk[(box_receptors_wrisk[lat]==maxlat) & (box_receptors_wrisk[lon]==maxlon)]
                     for index, row in box_receptors_max.iterrows():
-                        self.max_riskhi_bkdn[(iparm, row[source_id], row[pollutant], row[ems_type])] = \
+                        self.max_riskhi_bkdn[(iparm, row[source_id], row[pollutant], row[emis_type])] = \
                             [maxlat, maxlon, row[iparm]]
 
             #--------------- Keep track of incidence -----------------------------------------
 
             # Compute incidence for each Outer rececptor and then sum incidence by source_id and pollutant
             box_receptors_wrisk['inc'] = (box_receptors_wrisk[mir] * box_receptors_wrisk[population])/70
-            boxInc = box_receptors_wrisk.groupby([source_id, pollutant, ems_type], as_index=False)[[inc]].sum()
+            boxInc = box_receptors_wrisk.groupby([source_id, pollutant, emis_type], as_index=False)[[inc]].sum()
 
             # Update the outerInc incidence dictionary
             for incdx, incrow in boxInc.iterrows():
-                self.outerInc[(incrow[source_id], incrow[pollutant], incrow[ems_type])] = \
-                    self.outerInc[(incrow[source_id], incrow[pollutant], incrow[ems_type])] + incrow['inc']
+                self.outerInc[(incrow[source_id], incrow[pollutant], incrow[emis_type])] = \
+                    self.outerInc[(incrow[source_id], incrow[pollutant], incrow[emis_type])] + incrow['inc']
 
 
     def calculateRisks(self, pollutants, concs):
@@ -410,8 +410,12 @@ class Hem3AllOuterReceptors(CsvWriter, InputFile):
 
     def createDataframe(self):
         # Type setting for CSV reading
-        self.numericColumns = [lat, lon, conc, aconc, elev, population]
-        self.strColumns = [fips, block, source_id, ems_type, pollutant, overlap]
+        if self.acute_yn:
+            self.numericColumns = [lat, lon, conc, aconc, elev, population]
+        else:
+            self.numericColumns = [lat, lon, conc, elev, population]
+
+        self.strColumns = [fips, block, source_id, emis_type, pollutant, overlap]
 
         df = self.readFromPathCsv(self.getColumns())
         return df.fillna("")

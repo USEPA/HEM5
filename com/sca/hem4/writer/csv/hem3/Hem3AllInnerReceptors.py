@@ -4,7 +4,7 @@ from com.sca.hem4.upload.HAPEmissions import *
 from com.sca.hem4.upload.FacilityList import *
 import os
 
-ems_type = 'ems_type';
+emis_type = 'ems_type';
 block = 'block';
 drydep = 'drydep';
 wetdep = 'wetdep';
@@ -19,8 +19,8 @@ class Hem3AllInnerReceptors(CsvWriter, InputFile):
     inner receptor information.
     """
 
-    def __init__(self, targetDir=None, facilityId=None, model=None, plot_df=None, filenameOverride=None,
-                 createDataframe=False):
+    def __init__(self, targetDir=None, facilityId=None, model=None, plot_df=None, acuteyn=None,
+                 filenameOverride=None, createDataframe=False):
         # Initialization for CSV reading/writing. If no file name override, use the
         # default construction.
         self.targetDir = targetDir
@@ -33,18 +33,27 @@ class Hem3AllInnerReceptors(CsvWriter, InputFile):
         # initialize cache for inner census block data
         self.innblkCache = {}
         self.filename = path
-
+        self.acute_yn = acuteyn
 
     def getHeader(self):
-        return ['Latitude', 'Longitude', 'Source ID', 'Emission type', 'Pollutant',
+        if self.acute_yn:
+            return ['Latitude', 'Longitude', 'Source ID', 'Emission type', 'Pollutant',
                 'Conc (µg/m3)', 'Population', 'FIPs', 'Block',
-                'Wet deposition (g/m2/yr)', 'Dry deposition (g/m2/yr)', 'Acute Conc (ug/m3)', 
+                'Wet deposition (g/m2/yr)', 'Dry deposition (g/m2/yr)', 'Acute Conc (ug/m3)',
                 'Elevation (m)', 'Overlap']
+        else:
+            return ['Latitude', 'Longitude', 'Source ID', 'Emission type', 'Pollutant',
+                    'Conc (µg/m3)', 'Population', 'FIPs', 'Block',
+                    'Wet deposition (g/m2/yr)', 'Dry deposition (g/m2/yr)',
+                    'Elevation (m)', 'Overlap']
 
     def getColumns(self):
-        return [lat, lon, source_id, ems_type, pollutant, conc, population,
+        if self.acute_yn:
+            return [lat, lon, source_id, emis_type, pollutant, conc, population,
                 fips, block, wetdep, drydep, elev, aconc, overlap]
-
+        else:
+            return [lat, lon, source_id, emis_type, pollutant, conc, population,
+                    fips, block, wetdep, drydep, elev, overlap]
     def generateOutputs(self):
         """
         Compute source and pollutant specific air concentrations at inner receptors.
@@ -144,8 +153,12 @@ class Hem3AllInnerReceptors(CsvWriter, InputFile):
 
     def createDataframe(self):
         # Type setting for CSV reading
-        self.numericColumns = [lat, lon, conc, aconc, elev, drydep, wetdep, population]
-        self.strColumns = [fips, block, source_id, ems_type, pollutant, overlap]
+        if self.acute_yn:
+            self.numericColumns = [lat, lon, conc, aconc, elev, drydep, wetdep, population]
+        else:
+            self.numericColumns = [lat, lon, conc, elev, drydep, wetdep, population]
+
+        self.strColumns = [fips, block, source_id, emis_type, pollutant, overlap]
 
         df = self.readFromPathCsv(self.getColumns())
         return df.fillna("")

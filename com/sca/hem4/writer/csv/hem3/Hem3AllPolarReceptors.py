@@ -10,8 +10,8 @@ class Hem3AllPolarReceptors(CsvWriter, InputFile):
     wet and dry deposition flux (if modeled).
     """
 
-    def __init__(self, targetDir=None, facilityId=None, model=None, plot_df=None, filenameOverride=None,
-                 createDataframe=False):
+    def __init__(self, targetDir=None, facilityId=None, model=None, plot_df=None, acuteyn=None,
+                 filenameOverride=None, createDataframe=False):
         # Initialization for CSV reading/writing. If no file name override, use the
         # default construction.
         self.targetDir = targetDir
@@ -24,17 +24,28 @@ class Hem3AllPolarReceptors(CsvWriter, InputFile):
         # initialize cache for inner census block data
         self.polarCache = {}
         self.filename = path
+        self.acute_yn = acuteyn
 
 
     def getHeader(self):
-        return ['Source ID', 'Emission type', 'Conc (µg/m3)', 'Pollutant',
+        if self.acute_yn:
+            return ['Source ID', 'Emission type', 'Conc (µg/m3)', 'Pollutant',
                 'Distance (m)', 'Angle (from north)', 'Sector', 'Ring number', 'Elevation (m)',
                 'Latitude', 'Longitude', 'Wet deposition (g/m2/yr)', 'Dry deposition (g/m2/yr)', 
                 'Acute Conc (ug/m3)', 'Overlap']
+        else:
+            return ['Source ID', 'Emission type', 'Conc (µg/m3)', 'Pollutant',
+                'Distance (m)', 'Angle (from north)', 'Sector', 'Ring number', 'Elevation (m)',
+                'Latitude', 'Longitude', 'Wet deposition (g/m2/yr)', 'Dry deposition (g/m2/yr)',
+                'Overlap']
 
     def getColumns(self):
-        return [source_id, ems_type, conc, pollutant, distance, angle, sector, ring, elev, lat, lon, drydep, 
+        if self.acute_yn:
+            return [source_id, emis_type, conc, pollutant, distance, angle, sector, ring, elev, lat, lon, drydep,
                 wetdep, aconc, overlap]
+        else:
+            return [source_id, emis_type, conc, pollutant, distance, angle, sector, ring, elev, lat, lon, drydep,
+                    wetdep, overlap]
 
     def generateOutputs(self):
         """
@@ -148,8 +159,12 @@ class Hem3AllPolarReceptors(CsvWriter, InputFile):
 
     def createDataframe(self):
         # Type setting for CSV reading
-        self.numericColumns = [distance, angle, sector, ring, lat, lon, conc, aconc, elev, drydep, wetdep]
-        self.strColumns = [source_id, ems_type, pollutant, overlap]
+        if self.acute_yn:
+            self.numericColumns = [distance, angle, sector, ring, lat, lon, conc, aconc, elev, drydep, wetdep]
+        else:
+            self.numericColumns = [distance, angle, sector, ring, lat, lon, conc, elev, drydep, wetdep]
+
+        self.strColumns = [source_id, emis_type, pollutant, overlap]
 
         df = self.readFromPathCsv(self.getColumns())
         return df.fillna("")
