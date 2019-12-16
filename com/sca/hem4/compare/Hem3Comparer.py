@@ -48,7 +48,7 @@ class Hem3Comparer():
 
         #------------------------------------------#
         hem4allinner = AllInnerReceptors(targetDir=self.hem4Dir, facilityId=None, model=None, plot_df=None,
-             filenameOverride=hem4File)
+             acuteyn=self.acute, filenameOverride=hem4File)
         hem3allinner = Hem3AllInnerReceptors(targetDir=self.hem3Dir, facilityId=None, model=None, plot_df=None,
              filenameOverride=hem3File)
         allinner_diff = AllInnerReceptors(targetDir=self.diff_target, facilityId=None, model=None, plot_df=None,

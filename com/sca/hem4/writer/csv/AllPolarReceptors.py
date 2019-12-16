@@ -37,21 +37,13 @@ class AllPolarReceptors(CsvWriter, InputFile):
             
 
 
-    def getColumns(self, acute):
-        if acute == 'N':
+    def getColumns(self):
+        if self.acute_yn == 'N':
             return [source_id, emis_type, pollutant, conc, distance, angle, sector, ring, elev, lat, lon, 
                     overlap, wetdep, drydep]
         else:
             return [source_id, emis_type, pollutant, conc, aconc, distance, angle, sector, ring, elev, lat, lon, 
                     overlap, wetdep, drydep]
-
-    def getColumns(self):
-        return [source_id, emis_type, pollutant, conc, aconc, distance, angle, sector, ring, elev, lat, lon, overlap,
-                wetdep, drydep]
-
-    def getColumns(self):
-        return [source_id, emis_type, pollutant, conc, aconc, distance, angle, sector, ring, elev, lat, lon, overlap,
-                wetdep, drydep]
 
     def generateOutputs(self):
         """
@@ -148,8 +140,7 @@ class AllPolarReceptors(CsvWriter, InputFile):
         srcids = polarplot_df[source_id].unique().tolist()
 
         dlist = []
-
-        col_list = self.getColumns(self.acute_yn)
+        col_list = self.getColumns()
 
         # process polar concs one source_id at a time
         for x in srcids:

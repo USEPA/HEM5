@@ -86,7 +86,7 @@ class AllOuterReceptorsNonCensus(CsvWriter, InputFile):
         self.outerInc = None
 
         # AllOuterReceptor DF columns
-        self.columns = self.getColumns(self.acute_yn)
+        self.columns = self.getColumns()
 
         # Initialize max_riskhi dictionary. Keys are mir, and HIs. Values are
         # lat, lon, and risk value. This dictionary identifies the lat/lon of the max receptor for
@@ -120,8 +120,8 @@ class AllOuterReceptorsNonCensus(CsvWriter, InputFile):
         return ['Receptor ID', 'Latitude', 'Longitude', 'Source ID', 'Emission type', 'Pollutant',
                 'Conc (ug/m3)', 'Acute Conc (ug/m3)', 'Elevation (m)', 'Population', 'Overlap']
 
-    def getColumns(self, acute):
-        if acute == 'N':
+    def getColumns(self):
+        if self.acute_yn == 'N':
             return [rec_id, lat, lon, source_id, emis_type, pollutant, conc, elev, population, overlap]
         else:
             return [rec_id, lat, lon, source_id, emis_type, pollutant, conc, aconc, elev, population, overlap]
@@ -413,6 +413,6 @@ class AllOuterReceptorsNonCensus(CsvWriter, InputFile):
         self.numericColumns = [lat, lon, conc, aconc, elev, population]
         self.strColumns = [rec_id, source_id, emis_type, pollutant, overlap]
 
-        df = self.readFromPathCsv(self.getColumns(self.acute_yn))
+        df = self.readFromPathCsv(self.getColumns())
         return df.fillna("")
 

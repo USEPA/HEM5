@@ -20,14 +20,14 @@ class AllInnerReceptorsNonCensus(CsvWriter):
     that is only present when using census data. This corresponds to a "user receptors only" scenario.
     """
 
-    def __init__(self, targetDir, facilityId, model, plot_df):
+    def __init__(self, targetDir, facilityId, model, plot_df, acuteyn):
         CsvWriter.__init__(self, model, plot_df)
 
         self.targetDir = targetDir
         self.filename = os.path.join(self.targetDir, facilityId + "_all_inner_receptors.csv")
 
         self.innerBlocksCache = {}
-        self.acute_yn = self.model.facops.iloc[0][acute]
+        self.acute_yn = acuteyn
         
 
     def getHeader(self):
@@ -35,8 +35,8 @@ class AllInnerReceptorsNonCensus(CsvWriter):
                 'Conc (ug/m3)', 'Acute Conc (ug/m3)', 'Elevation (m)',
                 'Dry deposition (g/m2/yr)', 'Wet deposition (g/m2/yr)', 'Population', 'Overlap']
 
-    def getColumns(self, acute):
-        if acute == 'N':
+    def getColumns(self):
+        if self.acute_yn == 'N':
             return [rec_id, lat, lon, source_id, emis_type, pollutant, conc,
                     elev, drydep, wetdep, population, overlap]
         else:
@@ -128,7 +128,7 @@ class AllInnerReceptorsNonCensus(CsvWriter):
         srcids = innerplot_df[source_id].unique().tolist()
 
         dlist = []
-        col_list = self.getColumns(self.acute_yn)
+        col_list = self.getColumns()
 
         # process inner concs one source_id at a time
         for x in srcids:

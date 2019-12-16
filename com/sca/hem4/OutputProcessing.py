@@ -103,7 +103,7 @@ class Process_outputs():
         altrec_nopop = self.model.altRec_optns.get("altrec_nopop", None)
 
         #----------- create All_Inner_Receptor output file -----------------
-        all_inner_receptors = AllInnerReceptorsNonCensus(self.outdir, self.facid, self.model, self.plot_df) if altrec \
+        all_inner_receptors = AllInnerReceptorsNonCensus(self.outdir, self.facid, self.model, self.plot_df, self.acute_yn) if altrec \
                         else AllInnerReceptors(self.outdir, self.facid, self.model, self.plot_df, self.acute_yn)
         all_inner_receptors.write()
         self.model.all_inner_receptors_df = all_inner_receptors.dataframe

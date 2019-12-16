@@ -73,7 +73,7 @@ class AllOuterReceptors(CsvWriter, InputFile):
         self.outerInc = None
 
         # AllOuterReceptor DF columns
-        self.columns = self.getColumns(self.acute_yn)
+        self.columns = self.getColumns()
 
         # Initialize max_riskhi dictionary. Keys are mir, and HIs. Values are
         # lat, lon, and risk value. This dictionary identifies the lat/lon of the max receptor for
@@ -123,8 +123,8 @@ class AllOuterReceptors(CsvWriter, InputFile):
                     'Population', 'Overlap']
             
 
-    def getColumns(self, acute):
-        if acute == 'N':
+    def getColumns(self):
+        if self.acute_yn == 'N':
             return [fips, block, lat, lon, source_id, 'emis_type', pollutant, conc, elev, population, overlap]
         else:
             return [fips, block, lat, lon, source_id, 'emis_type', pollutant, conc, aconc, elev, population, overlap]
@@ -231,7 +231,7 @@ class AllOuterReceptors(CsvWriter, InputFile):
             num_rows_output = num_rows_outer_recs * num_rows_hapemis
             num_srcids = len(srcids)
      
-            col_list = self.getColumns(self.acute_yn)
+            col_list = self.getColumns()
      
            
             #  Write no more than 14,000,000 rows to a given CSV output file
@@ -469,7 +469,7 @@ class AllOuterReceptors(CsvWriter, InputFile):
             num_rows_output = num_rows_outer_recs * num_rows_hapemis
             num_srcids = len(srcids)
      
-            col_list = self.getColumns(self.acute_yn)
+            col_list = self.getColumns()
  
        
             # Write no more than 14,000,000 rows to a given CSV output file
@@ -840,5 +840,5 @@ class AllOuterReceptors(CsvWriter, InputFile):
             
         self.strColumns = [fips, block, source_id, 'emis_type', pollutant, overlap]
 
-        df = self.readFromPathCsv(self.getColumns(self.acute_yn))
+        df = self.readFromPathCsv(self.getColumns())
         return df.fillna("")

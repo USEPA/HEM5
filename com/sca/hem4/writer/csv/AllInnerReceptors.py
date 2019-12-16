@@ -51,8 +51,8 @@ class AllInnerReceptors(CsvWriter, InputFile):
                     'Dry deposition (g/m2/yr)', 'Wet deposition (g/m2/yr)', 'Population', 'Overlap']
             
 
-    def getColumns(self, acute):
-        if acute == 'N':
+    def getColumns(self):
+        if self.acute_yn == 'N':
             return [fips, block, lat, lon, source_id, emis_type, pollutant, conc,
                     elev, drydep, wetdep, population, overlap]
         else:
@@ -144,7 +144,7 @@ class AllInnerReceptors(CsvWriter, InputFile):
         srcids = innerplot_df[source_id].unique().tolist()
 
         dlist = []
-        col_list = self.getColumns(self.acute_yn)
+        col_list = self.getColumns()
 
 
         # process inner concs one source_id at a time
