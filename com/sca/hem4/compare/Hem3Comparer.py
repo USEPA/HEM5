@@ -141,10 +141,6 @@ class Hem3Comparer():
         allouter_diff.appendToFile(diff_df)
 
 
-
-
-
-
     # Note: for this method to work correctly, none of the columns in diffColumns can be
     # present in joinColumns
     def calculateNumericDiffs(self, hem3_entity, hem4_entity, joinColumns, diffColumns):

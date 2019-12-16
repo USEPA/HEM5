@@ -22,8 +22,8 @@ class AllInnerReceptors(CsvWriter, InputFile):
     inner receptor information.
     """
 
-    def __init__(self, targetDir=None, facilityId=None, model=None, plot_df=None, filenameOverride=None,
-                 createDataframe=False):
+    def __init__(self, targetDir=None, facilityId=None, model=None, plot_df=None, acuteyn=None,
+                 filenameOverride=None, createDataframe=False):
         # Initialization for CSV reading/writing. If no file name override, use the
         # default construction.
         self.targetDir = targetDir
@@ -37,7 +37,7 @@ class AllInnerReceptors(CsvWriter, InputFile):
         self.innblkCache = {}
         self.filename = path
                 
-        self.acute_yn = self.model.facops.iloc[0][acute]
+        self.acute_yn = acuteyn
 
 
     def getHeader(self):

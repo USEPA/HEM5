@@ -9,8 +9,8 @@ class AllPolarReceptors(CsvWriter, InputFile):
     wet and dry deposition flux (if modeled).
     """
 
-    def __init__(self, targetDir=None, facilityId=None, model=None, plot_df=None, filenameOverride=None,
-                 createDataframe=False):
+    def __init__(self, targetDir=None, facilityId=None, model=None, plot_df=None, acuteyn=None,
+                 filenameOverride=None, createDataframe=False):
         # Initialization for CSV reading/writing. If no file name override, use the
         # default construction.
         self.targetDir = targetDir
@@ -22,7 +22,7 @@ class AllPolarReceptors(CsvWriter, InputFile):
 
         # initialize cache for inner census block data
         self.polarCache = {}
-        self.acute_yn = self.model.facops.iloc[0][acute]
+        self.acute_yn = acuteyn
         self.filename = path
 
     def getHeader(self):
