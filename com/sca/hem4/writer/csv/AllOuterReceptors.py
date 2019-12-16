@@ -101,7 +101,7 @@ class AllOuterReceptors(CsvWriter, InputFile):
         # Value is: incidence
         for jsrcpol in self.srcpols:
             self.outerInc[(jsrcpol[0], jsrcpol[1], jsrcpol[2])] = 0
-
+        
         # Compute a recipricol of the rfc for easier computation of HIs
         self.haplib_df = self.model.haplib.dataframe
         self.haplib_df['invrfc'] = self.haplib_df.apply(lambda x: 1/x['rfc'] if x['rfc']>0 else 0.0, axis=1)

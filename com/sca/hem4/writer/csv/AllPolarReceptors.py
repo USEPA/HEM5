@@ -212,7 +212,11 @@ class AllPolarReceptors(CsvWriter, InputFile):
 
     def createDataframe(self):
         # Type setting for CSV reading
-        self.numericColumns = [distance, angle, sector, ring, lat, lon, conc, aconc, elev, drydep, wetdep]
+        if self.acute_yn == 'N':
+            self.numericColumns = [distance, angle, sector, ring, lat, lon, conc, elev, drydep, wetdep]
+        else:
+            self.numericColumns = [distance, angle, sector, ring, lat, lon, conc, aconc, elev, drydep, wetdep]
+            
         self.strColumns = [source_id, emis_type, pollutant, overlap]
 
         df = self.readFromPathCsv(self.getColumns())
