@@ -24,7 +24,7 @@ acute_con = 'acute_con';
 class DoseResponse(InputFile):
 
     def __init__(self):
-        InputFile.__init__(self, "resources/Dose_response_library.xlsx")
+        InputFile.__init__(self, "resources/Dose_Response_Library.xlsx")
 
     def createDataframe(self):
 

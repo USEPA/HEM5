@@ -280,7 +280,7 @@ class MainView(tk.Frame):
         
         #new facility run
         new_run = tk.Button(self.s2, text= "New Run", font=TEXT_FONT, 
-                           relief='solid', borderwidth=2, bg='lightgrey', command=self.open_hem4)
+                           relief='solid', borderwidth=2, bg='lightgrey', command=self.hem.lift)
         new_run.pack(padx=20, pady=50)
         new_run.bind("<Enter>", partial(self.color_config, new_run, "white"))
         new_run.bind("<Leave>", partial(self.color_config, new_run, "lightgrey"))
@@ -334,7 +334,6 @@ class MainView(tk.Frame):
         
 
     def open_hem4(self):
-        self.hem.lift()
         self.hem.reset_gui()
 
 if __name__ == "__main__":

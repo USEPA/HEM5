@@ -27,6 +27,7 @@ class FileUploader():
     def uploadLibrary(self, filetype):
         if filetype == "haplib":
             self.model.haplib = DoseResponse()
+            print("HAPLIB", self.model.haplib)
         elif filetype == "organs":
             self.model.organs = TargetOrganEndpoints()
             
@@ -37,6 +38,7 @@ class FileUploader():
             if filetype == "faclist":
                 self.model.faclist = FacilityList(path)
             elif filetype == "hapemis":
+                
                 self.model.hapemis = HAPEmissions(path, self.model.haplib)
             elif filetype == "emisloc":
                 self.model.emisloc = EmissionsLocations(path)

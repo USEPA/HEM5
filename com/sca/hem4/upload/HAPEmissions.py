@@ -13,6 +13,7 @@ class HAPEmissions(InputFile):
 
     def __init__(self, path, haplib):
         self.haplib = haplib
+        
 
         InputFile.__init__(self, path)
 

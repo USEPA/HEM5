@@ -207,12 +207,15 @@ class Hem4(tk.Frame):
 #        sys.exit()
 
     def reset_gui(self):
-        #reset all inputs if everything finished
+        #reset all inputs if everything finished. actually destroy and recreate all inputs
         self.model.reset()
-        self.fac_list.set('')
-        self.hap_list.set('')
-        self.emisloc_list.set('')
-        self.group_list.set('')
+        self.tabControl.destroy()
+        self.createWidgets()
+        
+#        self.fac_list.set('')
+#        self.hap_list.set('')
+#        self.emisloc_list.set('')
+#        self.group_list.set('')
 
         self.check_altrec.set(False)
         self.set_altrec()
@@ -362,6 +365,9 @@ class Hem4(tk.Frame):
             self.dep_inst["textvariable"] = self.instruction_instance 
             self.dep_inst.grid(row=1, column=0)
             
+    def backtomenu(self):
+        self.lower()
+        self.reset_gui()
         
 
     def createWidgets(self):
@@ -465,7 +471,7 @@ class Hem4(tk.Frame):
 #%% Set Back, Run, and User Guide buttons        
       
         self.back = tk.Button(self.main, text="BACK", font=TEXT_FONT, bg='lightgrey', relief='solid', borderwidth=2,
-                              command=self.lower)
+                              command=self.backtomenu)
         self.back.grid(row=10, column=0, sticky="W", padx=5, pady=5)
         
         
