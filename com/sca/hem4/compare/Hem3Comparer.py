@@ -4,18 +4,20 @@ from com.sca.hem4.writer.csv.AllInnerReceptors import *
 from com.sca.hem4.writer.csv.AllOuterReceptors import *
 from com.sca.hem4.writer.csv.AllPolarReceptors import AllPolarReceptors, sector, ring
 from com.sca.hem4.writer.csv.BlockSummaryChronic import BlockSummaryChronic
+from com.sca.hem4.writer.csv.RingSummaryChronic import RingSummaryChronic
 from com.sca.hem4.writer.csv.hem3.Hem3AllInnerReceptors import Hem3AllInnerReceptors
 from com.sca.hem4.writer.csv.hem3.Hem3AllOuterReceptors import Hem3AllOuterReceptors
 from com.sca.hem4.writer.csv.hem3.Hem3AllPolarReceptors import Hem3AllPolarReceptors
 from com.sca.hem4.writer.csv.hem3.Hem3BlockSummaryChronic import Hem3BlockSummaryChronic
+from com.sca.hem4.writer.csv.hem3.Hem3RingSummaryChronic import Hem3RingSummaryChronic
 from com.sca.hem4.writer.excel.MaximumIndividualRisks import MaximumIndividualRisks, value, parameter
 from com.sca.hem4.writer.excel.RiskBreakdown import RiskBreakdown, site_type, mir
 from com.sca.hem4.writer.excel.hem3.Hem3MaximumIndividualRisks import Hem3MaximumIndividualRisks
 from com.sca.hem4.writer.excel.hem3.Hem3RiskBreakdown import Hem3RiskBreakdown
 
-hem3Dirname = "C:\HEM-inputs\comparison\HEM3"
-hem4Dirname = "C:\HEM-inputs\comparison\HEM4"
-acute = False
+hem3Dirname = "C:\HEM-inputs\comparison\HEM3_unittest"
+hem4Dirname = "C:\\Users\Chris Stolte\IdeaProjects\HEM\\fixtures\\output"
+acute = 'Y'
 
 class Hem3Comparer():
 
@@ -39,8 +41,8 @@ class Hem3Comparer():
     def compare(self):
 
         #---------- All inner receptors -----------#
-        hem3File = "Fac1-NC_all_inner_receptors.csv"
-        hem4File = "Fac1-NC_all_inner_receptors.csv"
+        hem3File = "01043110000366247_all_inner_receptors.csv"
+        hem4File = "01043110000366247_all_inner_receptors.csv"
         diffFile = "diff_all_inner_receptors.csv"
         joinColumns = [fips, block, source_id, pollutant]
         diffColumns = [conc]
@@ -59,8 +61,8 @@ class Hem3Comparer():
         allinner_diff.appendToFile(diff_df)
 
         #---------- All polar receptors -----------#
-        hem3File = "Fac1-NC_all_polar_receptors.csv"
-        hem4File = "Fac1-NC_all_polar_receptors.csv"
+        hem3File = "01043110000366247_all_polar_receptors.csv"
+        hem4File = "01043110000366247_all_polar_receptors.csv"
         diffFile = "diff_all_polar_receptors.csv"
         joinColumns = [sector, ring, source_id, pollutant]
         diffColumns = [conc]
@@ -79,8 +81,8 @@ class Hem3Comparer():
         allpolar_diff.appendToFile(diff_df)
 
         #---------- Maximum individual risks -----------#
-        hem3File = "Fac1-NC_maximum_indiv_risks.xlsx"
-        hem4File = "Fac1-NC_maximum_indiv_risks.xlsx"
+        hem3File = "01043110000366247_maximum_indiv_risks.xlsx"
+        hem4File = "01043110000366247_maximum_indiv_risks.xlsx"
 
         diffFile = "diff_maximum_indiv_risks.xlsx"
         joinColumns = [parameter]
@@ -97,8 +99,8 @@ class Hem3Comparer():
         risks_diff.appendToFile(diff_df)
 
         #---------- Risk breakdown -----------#
-        hem3File = "FAC1-NC_risk_breakdown.xlsx"
-        hem4File = "FAC1-NC_risk_breakdown.xlsx"
+        hem3File = "01043110000366247_risk_breakdown.xlsx"
+        hem4File = "01043110000366247_risk_breakdown.xlsx"
         diffFile = "diff_risk_breakdown.xlsx"
         joinColumns = [site_type, parameter, source_id, pollutant]
         diffColumns = [value]
@@ -114,8 +116,8 @@ class Hem3Comparer():
         risks_diff.appendToFile(diff_df)
 
         #---------- Block Summary Chronic -----------#
-        hem3File = "FAC1-NC_Block_summary_chronic.csv"
-        hem4File = "FAC1-NC_block_summary_chronic.csv"
+        hem3File = "01043110000366247_Block_summary_chronic.csv"
+        hem4File = "01043110000366247_block_summary_chronic.csv"
         diffFile = "diff_block_summary_chronic.csv"
         joinColumns = [fips, block]
         diffColumns = [mir, hi_resp, hi_live, hi_neur, hi_deve,
@@ -131,9 +133,27 @@ class Hem3Comparer():
         diff_df = self.calculateNumericDiffs(hem3summary, hem4summary, joinColumns, diffColumns)
         summary_diff.appendToFile(diff_df)
 
+        #---------- Ring Summary Chronic -----------#
+        hem3File = "01043110000366247_ring_summary_chronic.csv"
+        hem4File = "01043110000366247_ring_summary_chronic.csv"
+        diffFile = "diff_ring_summary_chronic.csv"
+        joinColumns = [utme, utmn]
+        diffColumns = [mir, hi_resp, hi_live, hi_neur, hi_deve,
+                       hi_repr, hi_kidn, hi_ocul, hi_endo, hi_hema, hi_immu, hi_skel, hi_sple, hi_thyr, hi_whol]
+        #------------------------------------------#
+        hem4summary = RingSummaryChronic(targetDir=self.hem4Dir, facilityId=None, model=None, plot_df=None,
+                                          filenameOverride=hem4File)
+        hem3summary = Hem3RingSummaryChronic(targetDir=self.hem3Dir, facilityId=None, model=None, plot_df=None,
+                                              filenameOverride=hem3File)
+        summary_diff = RingSummaryChronic(targetDir=self.diff_target, facilityId=None, model=None, plot_df=None,
+                                           filenameOverride=diffFile)
+        summary_diff.writeHeader()
+        diff_df = self.calculateNumericDiffs(hem3summary, hem4summary, joinColumns, diffColumns)
+        summary_diff.appendToFile(diff_df)
+
         #---------- All outer receptors -----------#
-        hem3File = "Fac1-NC_all_outer_receptors.csv"
-        hem4File = "Fac1-NC_all_outer_receptors.csv"
+        hem3File = "01043110000366247_all_outer_receptors.csv"
+        hem4File = "01043110000366247_all_outer_receptors.csv"
         diffFile = "diff_all_outer_receptors.csv"
         joinColumns = [fips, block, source_id, pollutant]
         diffColumns = [conc]
@@ -193,6 +213,5 @@ class Hem3Comparer():
         rounded = round(x, sig-int(floor(log10(abs(x))))-1)
         return rounded
 
-acute = 'N'
 comparer = Hem3Comparer(hem3Dirname, hem4Dirname, acute)
 comparer.compare()
