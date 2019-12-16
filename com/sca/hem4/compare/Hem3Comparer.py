@@ -23,6 +23,12 @@ class Hem3Comparer():
         self.hem3Dir = hem3Dir
         self.hem4Dir = hem4Dir
         self.acute = acute
+
+class Hem3Comparer():
+
+    def __init__(self, hem3Dir, hem4Dir):
+        self.hem3Dir = hem3Dir
+        self.hem4Dir = hem4Dir
         self.diff_target = self.hem4Dir + "\diff"
 
         if not (os.path.exists(self.diff_target) or os.path.isdir(self.diff_target)):
@@ -74,6 +80,7 @@ class Hem3Comparer():
         #---------- Maximum individual risks -----------#
         hem3File = "Fac1-NC_maximum_indiv_risks.xlsx"
         hem4File = "Fac1-NC_maximum_indiv_risks.xlsx"
+
         diffFile = "diff_maximum_indiv_risks.xlsx"
         joinColumns = [parameter]
         diffColumns = [value]
@@ -181,7 +188,6 @@ class Hem3Comparer():
 
         rounded = round(x, sig-int(floor(log10(abs(x))))-1)
         return rounded
-
 
 comparer = Hem3Comparer(hem3Dirname, hem4Dirname, acute)
 comparer.compare()

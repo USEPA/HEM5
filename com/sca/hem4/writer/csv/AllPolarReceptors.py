@@ -8,9 +8,9 @@ class AllPolarReceptors(CsvWriter, InputFile):
     specific to each source ID and pollutant, along with receptor information, and acute concentration (if modeled) and
     wet and dry deposition flux (if modeled).
     """
-
     def __init__(self, targetDir=None, facilityId=None, model=None, plot_df=None, acuteyn=None,
                  filenameOverride=None, createDataframe=False):
+
         # Initialization for CSV reading/writing. If no file name override, use the
         # default construction.
         self.targetDir = targetDir
@@ -44,6 +44,10 @@ class AllPolarReceptors(CsvWriter, InputFile):
         else:
             return [source_id, emis_type, pollutant, conc, aconc, distance, angle, sector, ring, elev, lat, lon, 
                     overlap, wetdep, drydep]
+
+    def getColumns(self):
+        return [source_id, emis_type, pollutant, conc, aconc, distance, angle, sector, ring, elev, lat, lon, overlap,
+                wetdep, drydep]
 
     def getColumns(self):
         return [source_id, emis_type, pollutant, conc, aconc, distance, angle, sector, ring, elev, lat, lon, overlap,
