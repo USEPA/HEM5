@@ -101,7 +101,7 @@ class Hem3AcuteChemicalMax(ExcelWriter, InputFile):
 
         # 3) Finally, search the outer receptors
 
-        outercolumns = [fips, block, lat, lon, source_id, ems_type, pollutant, conc,
+        outercolumns = [fips, block, lat, lon, source_id, emis_type, pollutant, conc,
                         aconc, elev, population, overlap]
 
         # Get a list of the all_outer_receptor files (could be more than one)
