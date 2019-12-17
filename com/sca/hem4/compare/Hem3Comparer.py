@@ -1,21 +1,31 @@
 from math import floor, log10
 
+from pandas.core.dtypes.common import is_string_dtype
+
 from com.sca.hem4.writer.csv.AllInnerReceptors import *
 from com.sca.hem4.writer.csv.AllOuterReceptors import *
 from com.sca.hem4.writer.csv.AllPolarReceptors import AllPolarReceptors, sector, ring
 from com.sca.hem4.writer.csv.BlockSummaryChronic import BlockSummaryChronic
+from com.sca.hem4.writer.csv.RingSummaryChronic import RingSummaryChronic
 from com.sca.hem4.writer.csv.hem3.Hem3AllInnerReceptors import Hem3AllInnerReceptors
 from com.sca.hem4.writer.csv.hem3.Hem3AllOuterReceptors import Hem3AllOuterReceptors
 from com.sca.hem4.writer.csv.hem3.Hem3AllPolarReceptors import Hem3AllPolarReceptors
 from com.sca.hem4.writer.csv.hem3.Hem3BlockSummaryChronic import Hem3BlockSummaryChronic
+from com.sca.hem4.writer.csv.hem3.Hem3RingSummaryChronic import Hem3RingSummaryChronic
+from com.sca.hem4.writer.excel.AcuteBreakdown import aconc_pop, aconc_all, AcuteBreakdown
+from com.sca.hem4.writer.excel.AcuteChemicalMax import AcuteChemicalMax
+from com.sca.hem4.writer.excel.AcuteChemicalPopulated import AcuteChemicalPopulated
 from com.sca.hem4.writer.excel.MaximumIndividualRisks import MaximumIndividualRisks, value, parameter
 from com.sca.hem4.writer.excel.RiskBreakdown import RiskBreakdown, site_type, mir
+from com.sca.hem4.writer.excel.hem3.Hem3AcuteBreakdown import Hem3AcuteBreakdown
+from com.sca.hem4.writer.excel.hem3.Hem3AcuteChemicalMax import Hem3AcuteChemicalMax
+from com.sca.hem4.writer.excel.hem3.Hem3AcuteChemicalPopulated import Hem3AcuteChemicalPopulated
 from com.sca.hem4.writer.excel.hem3.Hem3MaximumIndividualRisks import Hem3MaximumIndividualRisks
 from com.sca.hem4.writer.excel.hem3.Hem3RiskBreakdown import Hem3RiskBreakdown
 
-hem3Dirname = "C:\HEM-inputs\comparison\HEM3"
-hem4Dirname = "C:\HEM-inputs\comparison\HEM4"
-acute = False
+hem3Dirname = "C:\HEM-inputs\comparison\HEM3_unittest"
+hem4Dirname = "C:\\Users\Chris Stolte\IdeaProjects\HEM\\fixtures\\output"
+acute = 'Y'
 
 class Hem3Comparer():
 
@@ -39,8 +49,8 @@ class Hem3Comparer():
     def compare(self):
 
         #---------- All inner receptors -----------#
-        hem3File = "Fac1-NC_all_inner_receptors.csv"
-        hem4File = "Fac1-NC_all_inner_receptors.csv"
+        hem3File = "01043110000366247_all_inner_receptors.csv"
+        hem4File = "01043110000366247_all_inner_receptors.csv"
         diffFile = "diff_all_inner_receptors.csv"
         joinColumns = [fips, block, source_id, pollutant]
         diffColumns = [conc]
@@ -59,8 +69,8 @@ class Hem3Comparer():
         allinner_diff.appendToFile(diff_df)
 
         #---------- All polar receptors -----------#
-        hem3File = "Fac1-NC_all_polar_receptors.csv"
-        hem4File = "Fac1-NC_all_polar_receptors.csv"
+        hem3File = "01043110000366247_all_polar_receptors.csv"
+        hem4File = "01043110000366247_all_polar_receptors.csv"
         diffFile = "diff_all_polar_receptors.csv"
         joinColumns = [sector, ring, source_id, pollutant]
         diffColumns = [conc]
@@ -79,8 +89,8 @@ class Hem3Comparer():
         allpolar_diff.appendToFile(diff_df)
 
         #---------- Maximum individual risks -----------#
-        hem3File = "Fac1-NC_maximum_indiv_risks.xlsx"
-        hem4File = "Fac1-NC_maximum_indiv_risks.xlsx"
+        hem3File = "01043110000366247_maximum_indiv_risks.xlsx"
+        hem4File = "01043110000366247_maximum_indiv_risks.xlsx"
 
         diffFile = "diff_maximum_indiv_risks.xlsx"
         joinColumns = [parameter]
@@ -97,8 +107,8 @@ class Hem3Comparer():
         risks_diff.appendToFile(diff_df)
 
         #---------- Risk breakdown -----------#
-        hem3File = "FAC1-NC_risk_breakdown.xlsx"
-        hem4File = "FAC1-NC_risk_breakdown.xlsx"
+        hem3File = "01043110000366247_risk_breakdown.xlsx"
+        hem4File = "01043110000366247_risk_breakdown.xlsx"
         diffFile = "diff_risk_breakdown.xlsx"
         joinColumns = [site_type, parameter, source_id, pollutant]
         diffColumns = [value]
@@ -114,8 +124,8 @@ class Hem3Comparer():
         risks_diff.appendToFile(diff_df)
 
         #---------- Block Summary Chronic -----------#
-        hem3File = "FAC1-NC_Block_summary_chronic.csv"
-        hem4File = "FAC1-NC_block_summary_chronic.csv"
+        hem3File = "01043110000366247_Block_summary_chronic.csv"
+        hem4File = "01043110000366247_block_summary_chronic.csv"
         diffFile = "diff_block_summary_chronic.csv"
         joinColumns = [fips, block]
         diffColumns = [mir, hi_resp, hi_live, hi_neur, hi_deve,
@@ -131,9 +141,78 @@ class Hem3Comparer():
         diff_df = self.calculateNumericDiffs(hem3summary, hem4summary, joinColumns, diffColumns)
         summary_diff.appendToFile(diff_df)
 
+        #---------- Ring Summary Chronic -----------#
+        hem3File = "01043110000366247_ring_summary_chronic.csv"
+        hem4File = "01043110000366247_ring_summary_chronic.csv"
+        diffFile = "diff_ring_summary_chronic.csv"
+        joinColumns = [utme, utmn]
+        diffColumns = [mir, hi_resp, hi_live, hi_neur, hi_deve,
+                       hi_repr, hi_kidn, hi_ocul, hi_endo, hi_hema, hi_immu, hi_skel, hi_sple, hi_thyr, hi_whol]
+        #------------------------------------------#
+        hem4summary = RingSummaryChronic(targetDir=self.hem4Dir, facilityId=None, model=None, plot_df=None,
+                                          filenameOverride=hem4File)
+        hem3summary = Hem3RingSummaryChronic(targetDir=self.hem3Dir, facilityId=None, model=None, plot_df=None,
+                                              filenameOverride=hem3File)
+        summary_diff = RingSummaryChronic(targetDir=self.diff_target, facilityId=None, model=None, plot_df=None,
+                                           filenameOverride=diffFile)
+        summary_diff.writeHeader()
+        diff_df = self.calculateNumericDiffs(hem3summary, hem4summary, joinColumns, diffColumns)
+        summary_diff.appendToFile(diff_df)
+
+        #---------- Acute Chemical Max -----------#
+        hem3File = "01043110000366247_acute_chem_max.xlsx"
+        hem4File = "01043110000366247_acute_chem_max.xlsx"
+        diffFile = "diff_acute_chem_max.xlsx"
+        joinColumns = [pollutant]
+        diffColumns = [aconc]
+        #------------------------------------------#
+        hem4max = AcuteChemicalMax(targetDir=self.hem4Dir, facilityId=None, model=None, plot_df=None,
+                                         filenameOverride=hem4File)
+        hem3max = Hem3AcuteChemicalMax(targetDir=self.hem3Dir, facilityId=None, model=None, plot_df=None,
+                                             filenameOverride=hem3File)
+        max_diff = AcuteChemicalMax(targetDir=self.diff_target, facilityId=None, model=None, plot_df=None,
+                                          filenameOverride=diffFile)
+        max_diff.writeHeader()
+        diff_df = self.calculateNumericDiffs(hem3max, hem4max, joinColumns, diffColumns)
+        max_diff.appendToFile(diff_df)
+
+        #---------- Acute Chemical Pop -----------#
+        hem3File = "01043110000366247_acute_chem_pop.xlsx"
+        hem4File = "01043110000366247_acute_chem_pop.xlsx"
+        diffFile = "diff_acute_chem_pop.xlsx"
+        joinColumns = [pollutant]
+        diffColumns = [aconc]
+        #------------------------------------------#
+        hem4pop = AcuteChemicalPopulated(targetDir=self.hem4Dir, facilityId=None, model=None, plot_df=None,
+                                   filenameOverride=hem4File)
+        hem3pop = Hem3AcuteChemicalPopulated(targetDir=self.hem3Dir, facilityId=None, model=None, plot_df=None,
+                                       filenameOverride=hem3File)
+        pop_diff = AcuteChemicalPopulated(targetDir=self.diff_target, facilityId=None, model=None, plot_df=None,
+                                    filenameOverride=diffFile)
+        pop_diff.writeHeader()
+        diff_df = self.calculateNumericDiffs(hem3pop, hem4pop, joinColumns, diffColumns)
+        pop_diff.appendToFile(diff_df)
+
+        #---------- Acute Breakdown -----------#
+        hem3File = "01043110000366247_acute_bkdn.xlsx"
+        hem4File = "01043110000366247_acute_bkdn.xlsx"
+        diffFile = "diff_acute_bkdn.xlsx"
+        joinColumns = [pollutant]
+        diffColumns = [aconc_pop, aconc_all]
+        #------------------------------------------#
+        hem4bkdn = AcuteBreakdown(targetDir=self.hem4Dir, facilityId=None, model=None, plot_df=None,
+                                         filenameOverride=hem4File)
+        hem3bkdn = Hem3AcuteBreakdown(targetDir=self.hem3Dir, facilityId=None, model=None, plot_df=None,
+                                             filenameOverride=hem3File)
+        bkdn_diff = AcuteBreakdown(targetDir=self.diff_target, facilityId=None, model=None, plot_df=None,
+                                          filenameOverride=diffFile)
+        bkdn_diff.writeHeader()
+        diff_df = self.calculateNumericDiffs(hem3bkdn, hem4bkdn, joinColumns, diffColumns)
+        bkdn_diff.appendToFile(diff_df)
+
         #---------- All outer receptors -----------#
-        hem3File = "Fac1-NC_all_outer_receptors.csv"
-        hem4File = "Fac1-NC_all_outer_receptors.csv"
+        hem3File = "01043110000366247_all_outer_receptors.csv"
+        hem4File = "01043110000366247_all_outer_receptors.csv"
         diffFile = "diff_all_outer_receptors.csv"
         joinColumns = [fips, block, source_id, pollutant]
         diffColumns = [conc]
@@ -161,6 +240,11 @@ class Hem3Comparer():
         hem4_df = hem4_entity.createDataframe()
         hem3_df = hem3_entity.createDataframe()
 
+        for col in joinColumns:
+            if is_string_dtype(hem4_df[col]):
+                hem4_df[col] = hem4_df[col].str.lower()
+                hem3_df[col] = hem3_df[col].str.lower()
+                
         merged_df = hem4_df.merge(hem3_df, on=joinColumns, suffixes=('', '_y'))
         for numericCol in diffColumns:
 
@@ -193,6 +277,5 @@ class Hem3Comparer():
         rounded = round(x, sig-int(floor(log10(abs(x))))-1)
         return rounded
 
-acute = 'N'
 comparer = Hem3Comparer(hem3Dirname, hem4Dirname, acute)
 comparer.compare()

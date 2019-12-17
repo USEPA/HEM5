@@ -2,15 +2,23 @@ from com.sca.hem4.FacilityPrep import *
 from com.sca.hem4.writer.csv.BlockSummaryChronic import *
 from com.sca.hem4.writer.csv.CsvWriter import CsvWriter
 
-class RingSummaryChronic(CsvWriter):
+class RingSummaryChronic(CsvWriter, InputFile):
     """
     Provides the risk and each TOSHI for every census block modeled, as well as additional block information.
     """
 
-    def __init__(self, targetDir, facilityId, model, plot_df):
-        CsvWriter.__init__(self, model, plot_df)
+    def __init__(self, targetDir=None, facilityId=None, model=None, plot_df=None,
+                 filenameOverride=None, createDataframe=False):
+        # Initialization for CSV reading/writing. If no file name override, use the
+        # default construction.
+        self.targetDir = targetDir
+        filename = facilityId + "_ring_summary_chronic.csv" if filenameOverride is None else filenameOverride
+        path = os.path.join(self.targetDir, filename)
 
-        self.filename = os.path.join(targetDir, facilityId + "_ring_summary_chronic.csv")
+        CsvWriter.__init__(self, model, plot_df)
+        InputFile.__init__(self, path, createDataframe)
+
+        self.filename = path
 
         # Local cache for URE/RFC values
         self.riskCache = {}
@@ -23,6 +31,11 @@ class RingSummaryChronic(CsvWriter):
                 'Respiratory HI', 'Liver HI', 'Neurological HI', 'Developmental HI', 'Reproductive HI',
                 'Kidney HI', 'Ocular HI', 'Endocrine HI', 'Hematological HI', 'Immunological HI', 'Skeletal HI',
                 'Spleen HI', 'Thyroid HI', 'Whole body HI', 'Distance (m)', 'Angle (from north)', 'Sector']
+
+    def getColumns(self):
+        return [lat, lon, overlap, elev, utme, utmn, hill, mir, hi_resp, hi_live, hi_neur,
+                hi_deve, hi_repr, hi_kidn, hi_ocul, hi_endo, hi_hema, hi_immu, hi_skel,
+                hi_sple, hi_thyr, hi_whol, distance, angle, sector]
 
     def generateOutputs(self):
         """
@@ -48,9 +61,7 @@ class RingSummaryChronic(CsvWriter):
                 hi_repr:'sum', hi_kidn:'sum', hi_ocul:'sum', hi_endo:'sum', hi_hema:'sum',
                 hi_immu:'sum', hi_skel:'sum', hi_sple:'sum', hi_thyr:'sum', hi_whol:'sum'}
 
-        newcolumns = [lat, lon, overlap, elev, utme, utmn, hill, mir, hi_resp, hi_live, hi_neur,
-                      hi_deve, hi_repr, hi_kidn, hi_ocul, hi_endo, hi_hema, hi_immu, hi_skel,
-                      hi_sple, hi_thyr, hi_whol, distance, angle, sector]
+        newcolumns = self.getColumns()
 
         self.dataframe = merged.groupby([lat, lon]).agg(aggs)[newcolumns].sort_values(by=[sector, distance])
         self.data = self.dataframe.values
@@ -111,3 +122,18 @@ class RingSummaryChronic(CsvWriter):
             hazard_index = (0 if RFC == 0 else (conc/RFC/1000)*organs[i])
             risks.append(hazard_index)
         return Series(risks)
+
+    def createDataframe(self):
+
+        lat, lon, overlap, elev, utme, utmn, hill, mir, hi_resp, hi_live, hi_neur,
+        hi_deve, hi_repr, hi_kidn, hi_ocul, hi_endo, hi_hema, hi_immu, hi_skel,
+        hi_sple, hi_thyr, hi_whol, distance, angle, sector
+
+
+        self.numericColumns = [lat, lon, elev, utme, utmn, hill, mir, hi_resp, hi_live, hi_neur,
+                               hi_deve, hi_repr, hi_kidn, hi_ocul, hi_endo, hi_hema, hi_immu, hi_skel,
+                               hi_sple, hi_thyr, hi_whol, distance, angle, sector]
+        self.strColumns = [overlap]
+        df = self.readFromPathCsv(self.getColumns())
+        return df.fillna("")
+

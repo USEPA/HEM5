@@ -201,9 +201,7 @@ class AcuteChemicalMax(ExcelWriter, InputFile):
                 acute_df.at[index,rec_type] = self.model.outerblks_df.loc[(self.model.outerblks_df[lon] == row[lon]) & 
                                                (self.model.outerblks_df[lat] == row[lat]), rec_type].values[0]
         
-        cols = [pollutant, aconc, aconc_sci, aegl_1_1h,aegl_1_8h,aegl_2_1h,aegl_2_8h,erpg_1,erpg_2,
-                 mrl,rel,idlh_10,teel_0,teel_1, population, distance, angle, elev, hill, fips, block,
-                 utme, utmn, lat, lon, rec_type, notes]
+        cols = self.getColumns()
         acute_df = acute_df[cols]
                 
         self.dataframe = acute_df
