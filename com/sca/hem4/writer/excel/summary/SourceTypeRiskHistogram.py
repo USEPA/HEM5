@@ -12,7 +12,7 @@ class SourceTypeRiskHistogram(ExcelWriter):
         self.categoryFolder = targetDir
         self.facilityIds = facilityIds
 
-        # These specify which part of the source id contains the code
+        # Parameters specify which part of the source id contains the code
         self.codePosition = parameters[0]
         self.codeLength = parameters[1]
         self.sourceTypes = None
@@ -61,7 +61,7 @@ class SourceTypeRiskHistogram(ExcelWriter):
             # convert source ids to the code part only, and then group and sum
             allinner_df[source_id] = allinner_df[source_id].apply(lambda x: x[self.codePosition:self.codePosition+self.codeLength])
 
-            aggs = {lat:'first', lon:'first', ems_type:'first',
+            aggs = {lat:'first', lon:'first', emis_type:'first',
                     pollutant:'first', conc:'sum', aconc:'first', elev:'first', drydep:'first', wetdep:'first',
                     population:'first', overlap:'first', 'risk':'sum'}
 
@@ -117,7 +117,7 @@ class SourceTypeRiskHistogram(ExcelWriter):
                 # convert source ids to the code part only, and then group and sum
                 allouter_df[source_id] = allouter_df[source_id].apply(lambda x: x[self.codePosition:self.codePosition+self.codeLength])
 
-                aggs = {lat:'first', lon:'first', ems_type:'first', pollutant:'first', conc:'sum', aconc:'first',
+                aggs = {lat:'first', lon:'first', emis_type:'first', pollutant:'first', conc:'sum', aconc:'first',
                         elev:'first', population:'first', overlap:'first', 'risk':'sum'}
     
                 # Aggregate concentration, grouped by FIPS/block

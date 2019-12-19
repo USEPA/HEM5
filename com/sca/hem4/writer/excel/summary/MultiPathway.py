@@ -7,9 +7,10 @@ risk_contrib = 'risk_contrib'
 class MultiPathway(ExcelWriter):
 
     def __init__(self, targetDir, facilityIds, parameters=None):
-        self.name = "Cancer Drivers Summary"
+        self.name = "Multipathway Summary"
         self.categoryFolder = targetDir
         self.facilityIds = facilityIds
+        self.categoryName = parameters[0]
 
         self.filename = os.path.join(targetDir, "cancer_drivers.xlsx")
 
