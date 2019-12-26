@@ -9,6 +9,7 @@ from com.sca.hem4.upload.FacilityList import FacilityList
 from com.sca.hem4.upload.HAPEmissions import HAPEmissions
 from com.sca.hem4.upload.TargetOrganEndpoints import TargetOrganEndpoints
 from com.sca.hem4.upload.UserReceptors import UserReceptors
+from com.sca.hem4.upload.AltReceptors import AltReceptors
 from com.sca.hem4.upload.Polyvertex import Polyvertex
 from com.sca.hem4.upload.BuoyantLine import BuoyantLine
 from com.sca.hem4.upload.Downwash import Downwash
@@ -38,10 +39,11 @@ class FileUploader():
             if filetype == "faclist":
                 self.model.faclist = FacilityList(path)
             elif filetype == "hapemis":
-                
                 self.model.hapemis = HAPEmissions(path, self.model.haplib)
             elif filetype == "emisloc":
                 self.model.emisloc = EmissionsLocations(path)
+            elif filetype == "alt receptors":
+                self.model.altreceptr = AltReceptors(path)
 
 
     def uploadDependent(self, filetype, path, dependency, facilities=None):
@@ -54,9 +56,6 @@ class FileUploader():
 
         elif filetype == "user receptors":
             self.model.ureceptr = UserReceptors(path, dependency, False)
-
-        elif filetype == "alt receptors":
-            self.model.altreceptr = UserReceptors(path, dependency, True)
 
         elif filetype ==  "building downwash":
             self.model.bldgdw = Downwash(path, dependency)

@@ -22,8 +22,8 @@ class AllInnerReceptors(CsvWriter, InputFile):
     inner receptor information.
     """
 
-    def __init__(self, targetDir=None, facilityId=None, model=None, plot_df=None, filenameOverride=None,
-                 createDataframe=False):
+    def __init__(self, targetDir=None, facilityId=None, model=None, plot_df=None, acuteyn=None,
+                 filenameOverride=None, createDataframe=False):
         # Initialization for CSV reading/writing. If no file name override, use the
         # default construction.
         self.targetDir = targetDir
@@ -37,7 +37,7 @@ class AllInnerReceptors(CsvWriter, InputFile):
         self.innblkCache = {}
         self.filename = path
                 
-        self.acute_yn = self.model.facops.iloc[0][acute]
+        self.acute_yn = acuteyn
 
 
     def getHeader(self):
@@ -51,8 +51,8 @@ class AllInnerReceptors(CsvWriter, InputFile):
                     'Dry deposition (g/m2/yr)', 'Wet deposition (g/m2/yr)', 'Population', 'Overlap']
             
 
-    def getColumns(self, acute):
-        if acute == 'N':
+    def getColumns(self):
+        if self.acute_yn == 'N':
             return [fips, block, lat, lon, source_id, emis_type, pollutant, conc,
                     elev, drydep, wetdep, population, overlap]
         else:
@@ -144,7 +144,7 @@ class AllInnerReceptors(CsvWriter, InputFile):
         srcids = innerplot_df[source_id].unique().tolist()
 
         dlist = []
-        col_list = self.getColumns(self.acute_yn)
+        col_list = self.getColumns()
 
 
         # process inner concs one source_id at a time
@@ -211,7 +211,11 @@ class AllInnerReceptors(CsvWriter, InputFile):
 
     def createDataframe(self):
         # Type setting for CSV reading
-        self.numericColumns = [lat, lon, conc, aconc, elev, drydep, wetdep, population]
+        if self.acute_yn == 'N':
+            self.numericColumns = [lat, lon, conc, elev, drydep, wetdep, population]
+        else:
+            self.numericColumns = [lat, lon, conc, aconc, elev, drydep, wetdep, population]
+
         self.strColumns = [fips, block, source_id, emis_type, pollutant, overlap]
-        df = self.readFromPathCsv(self.getColumns(self.acute_yn))
+        df = self.readFromPathCsv(self.getColumns())
         return df.fillna("")
