@@ -1070,6 +1070,28 @@ class Hem4(tk.Frame):
             self.optionalinputtab = tk.Frame(self.tabControl, bg='palegreen3')            
             self.tabControl.insert(1, self.optionalinputtab, text='Additional Inputs')
             
+            if hasattr('self', 'depinputtab'):
+                #put next tab on depinput tab
+                self.nexttab = tk.Button(self.depinputtab, font=TEXT_FONT, bg='lightgrey', relief='solid', borderwidth=2,
+                                         command = lambda: self.switchtooptional())
+                self.nexttab.grid(row=10, sticky='E')
+                
+                #put run button on optional input tab
+                self.run_button2.destroy()
+                self.run_button3 = tk.Button(self.optionalinputtab, text='RUN', fg="green", bg='lightgrey', relief='solid', borderwidth=2,
+                                    command=self.run, font=TEXT_FONT)
+                self.run_button3.grid(row=10, column=0, sticky="E", padx=5, pady=5)
+                
+            
+            else:
+                
+                #put next button on main 
+                self.nexttab = tk.Button(self.depinputtab, font=TEXT_FONT, bg='lightgrey', relief='solid', borderwidth=2,
+                                         command = lambda: self.switchtooptional())
+                self.nexttab.grid(row=10, sticky='E')
+            
+                
+            
             self.inst_space = tk.Frame(self.optionalinputtab, width=750, height=50, bg="palegreen3", pady=5, padx=5)
             self.inst_space.grid(row=2, column=0, sticky="nsew")
             
@@ -1149,6 +1171,27 @@ class Hem4(tk.Frame):
             #create optional input tab
             self.optionalinputtab = tk.Frame(self.tabControl, bg='palegreen3')            
             self.tabControl.insert(1, self.optionalinputtab, text='Additional Inputs')  
+
+            if hasattr('self', 'depinputtab'):
+                #put next tab on depinput tab
+                self.nexttab = tk.Button(self.depinputtab, font=TEXT_FONT, bg='lightgrey', relief='solid', borderwidth=2,
+                                         command = lambda: self.switchtooptional())
+                self.nexttab.grid(row=10, sticky='E')
+                
+                #put run button on optional input tab
+                self.run_button2.destroy()
+                self.run_button3 = tk.Button(self.optionalinputtab, text='RUN', fg="green", bg='lightgrey', relief='solid', borderwidth=2,
+                                    command=self.run, font=TEXT_FONT)
+                self.run_button3.grid(row=10, column=0, sticky="E", padx=5, pady=5)
+                
+            
+            else:
+                
+                #put next button on main 
+                self.nexttab = tk.Button(self.depinputtab, font=TEXT_FONT, bg='lightgrey', relief='solid', borderwidth=2,
+                                         command = lambda: self.switchtooptional())
+                self.nexttab.grid(row=10, sticky='E')
+
             
             self.inst_space = tk.Frame(self.optionalinputtab, width=750, height=50, bg="palegreen3", pady=5, padx=5)
             self.inst_space.grid(row=2, column=0, sticky="nsew")
@@ -1233,6 +1276,26 @@ class Hem4(tk.Frame):
             
             self.inst_space = tk.Frame(self.optionalinputtab, width=750, height=50, bg="palegreen3", pady=5, padx=5)
             self.inst_space.grid(row=2, column=0, sticky="nsew")
+
+            if hasattr('self', 'depinputtab'):
+                #put next tab on depinput tab
+                self.nexttab = tk.Button(self.depinputtab, font=TEXT_FONT, bg='lightgrey', relief='solid', borderwidth=2,
+                                         command = lambda: self.switchtooptional())
+                self.nexttab.grid(row=10, sticky='E')
+                
+                #put run button on optional input tab
+                self.run_button2.destroy()
+                self.run_button3 = tk.Button(self.optionalinputtab, text='RUN', fg="green", bg='lightgrey', relief='solid', borderwidth=2,
+                                    command=self.run, font=TEXT_FONT)
+                self.run_button3.grid(row=10, column=0, sticky="E", padx=5, pady=5)
+                
+            
+            else:
+                
+                #put next button on main 
+                self.nexttab = tk.Button(self.depinputtab, font=TEXT_FONT, bg='lightgrey', relief='solid', borderwidth=2,
+                                         command = lambda: self.switchtooptional())
+                self.nexttab.grid(row=10, sticky='E')
             
             self.add_optional_instructions(self.inst_space) 
         
@@ -1305,7 +1368,19 @@ class Hem4(tk.Frame):
         else:
             #create optional input tab
             self.depinputtab = tk.Frame(self.tabControl, bg='palegreen3')            
-            self.tabControl.insert(1, self.depinputtab, text='Dep/Depl Inputs') 
+            self.tabControl.insert(1, self.depinputtab, text='Dep/Depl Inputs')
+                       
+            #put run button on optional input tab and next button on main
+            self.run_button.destroy()
+            
+            self.run_button2 = tk.Button(self.depinputtab, text='RUN', fg="green", bg='lightgrey', relief='solid', borderwidth=2,
+                                command=self.run, font=TEXT_FONT)
+            self.run_button2.grid(row=10, column=0, sticky="E", padx=5, pady=5)
+            
+            self.nexttab = tk.Button(self.main, font=TEXT_FONT, bg='lightgrey', relief='solid', borderwidth=2,
+                                     command = lambda: self.depinputtab())
+            self.nexttab.grid(row=10, sticky='E')
+
             
             self.inst_space = tk.Frame(self.depinputtab, width=750, height=50, bg="palegreen3", pady=5, padx=5)
             self.inst_space.grid(row=2, column=0, sticky="nsew")
@@ -1382,6 +1457,17 @@ class Hem4(tk.Frame):
             self.depinputtab = tk.Frame(self.tabControl, bg='palegreen3')            
             self.tabControl.insert(1, self.depinputtab, text='Dep/Depl Inputs')
             
+                        #put run button on optional input tab and next button on main
+            self.run_button.destroy()
+            
+            self.run_button2 = tk.Button(self.depinputtab, text='RUN', fg="green", bg='lightgrey', relief='solid', borderwidth=2,
+                                command=self.run, font=TEXT_FONT)
+            self.run_button2.grid(row=10, column=0, sticky="E", padx=5, pady=5)
+            
+            self.nexttab = tk.Button(self.main, font=TEXT_FONT, bg='lightgrey', relief='solid', borderwidth=2,
+                                     command = lambda: self.depinputtab())
+            self.nexttab.grid(row=10, sticky='E')
+            
             self.inst_space = tk.Frame(self.depinputtab, width=750, height=50, bg="palegreen3", pady=5, padx=5)
             self.inst_space.grid(row=2, column=0, sticky="nsew")
             
@@ -1453,6 +1539,17 @@ class Hem4(tk.Frame):
             #create optional input tab
             self.depinputtab = tk.Frame(self.tabControl, bg='palegreen3')            
             self.tabControl.insert(1, self.depinputtab, text='Dep/Depl Inputs') 
+            
+            #put run button on optional input tab and next button on main
+            self.run_button.destroy()
+            
+            self.run_button2 = tk.Button(self.depinputtab, text='RUN', fg="green", bg='lightgrey', relief='solid', borderwidth=2,
+                                command=self.run, font=TEXT_FONT)
+            self.run_button2.grid(row=10, column=0, sticky="E", padx=5, pady=5)
+            
+            self.nexttab = tk.Button(self.main, font=TEXT_FONT, bg='lightgrey', relief='solid', borderwidth=2,
+                                     command = lambda: self.depinputtab())
+            self.nexttab.grid(row=10, sticky='E')
             
             self.inst_space = tk.Frame(self.depinputtab, width=750, height=50, bg="palegreen3", pady=5, padx=5)
             self.inst_space.grid(row=2, column=0, sticky="nsew")
@@ -1582,10 +1679,10 @@ class Hem4(tk.Frame):
         self.instruction_instance.set(self.read_inst.read())
         
     def switchtooptional(self, event):
-        notebook.select(self.optionalinpputtab)
+        notebook.select(self.optionalinputtab)
     
     def switchtodepinput(self, event):
-        notebook.select(self.depinpputtab)
+        notebook.select(self.depinputtab)
          
              
 #%% Run function with checks if somethign is missing raise the error here and 
