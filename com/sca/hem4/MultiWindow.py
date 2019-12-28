@@ -13,8 +13,19 @@ from com.sca.hem4.GuiThreaded import Hem4
 import queue
 
 import os
+import importlib 
 
 from PIL import ImageTk, Image
+
+maxRiskReportModule = importlib.import_module("com.sca.hem4.writer.excel.summary.MaxRisk")
+cancerDriversReportModule = importlib.import_module("com.sca.hem4.writer.excel.summary.CancerDrivers")
+hazardIndexDriversReportModule = importlib.import_module("com.sca.hem4.writer.excel.summary.HazardIndexDrivers")
+histogramModule = importlib.import_module("com.sca.hem4.writer.excel.summary.Histogram")
+hiHistogramModule = importlib.import_module("com.sca.hem4.writer.excel.summary.HI_Histogram")
+incidenceDriversReportModule = importlib.import_module("com.sca.hem4.writer.excel.summary.IncidenceDrivers")
+acuteImpactsReportModule = importlib.import_module("com.sca.hem4.writer.excel.summary.AcuteImpacts")
+sourceTypeRiskHistogramModule = importlib.import_module("com.sca.hem4.writer.excel.summary.SourceTypeRiskHistogram")
+multiPathwayModule = importlib.import_module("com.sca.hem4.writer.excel.summary.MultiPathway")
 
 
 TITLE_FONT= ("Verdana", 18)
@@ -27,6 +38,9 @@ def hyperlink1(event):
 def hyperlink2(event):
     webbrowser.open_new(r"https://www.epa.gov/fera/human-exposure-model-hem-3"+
                         "-users-guides")
+    
+
+
 
 
 class Page(tk.Frame):
@@ -75,52 +89,53 @@ class Page1(Page):
         group_label.pack(pady=20, padx=5, side="left")
         
         #file browse button
-        self.mod_group = tk.Button(self.s3, command = lambda: self.browse, font=TEXT_FONT, relief='solid', borderwidth=2)
+        self.mod_group = tk.Button(self.s3, command = self.browse, font=TEXT_FONT, relief='solid', borderwidth=2)
         self.mod_group["text"] = "Browse"
         self.mod_group.pack(side='left', padx=5, pady=10)
         
         #output directory path
         self.mod_group_list = tk.StringVar(self.s3)
         self.group_list_man = ttk.Entry(self.s3)
-        self.group_list_man["width"] = 75
+        self.group_list_man["width"] = 250
         self.group_list_man["textvariable"]= self.mod_group_list
         self.group_list_man.pack(padx=20, side="left", pady=10)
        
         
-        var_m = tk.IntVar()
-        max_risk = tk.Checkbutton(self.s4, font=TEXT_FONT, bg="palegreen3", text="Max Risk Summary", variable=var_m)
+        self.var_m = tk.IntVar()
+        max_risk = tk.Checkbutton(self.s4, font=TEXT_FONT, bg="palegreen3", text="Max Risk Summary", variable=self.var_m)
         max_risk.pack(fill="x")
         
-        var_c = tk.IntVar()
-        cancer_driver = tk.Checkbutton(self.s4, font=TEXT_FONT, bg="palegreen3", text="Cancer Drivers Summary", variable=var_c)
+        
+        self.var_c = tk.IntVar()
+        cancer_driver = tk.Checkbutton(self.s4, font=TEXT_FONT, bg="palegreen3", text="Cancer Drivers Summary", variable=self.var_c)
         cancer_driver.pack(fill="x")
         
-        var_h = tk.IntVar()
-        hazard = tk.Checkbutton(self.s4, font=TEXT_FONT, bg="palegreen3", text=" Hazard Index Drivers Summary", variable=var_h)
+        self.var_h = tk.IntVar()
+        hazard = tk.Checkbutton(self.s4, font=TEXT_FONT, bg="palegreen3", text=" Hazard Index Drivers Summary", variable=self.var_h)
         hazard.pack(fill="x")
         
-        var_hi = tk.IntVar()
-        hist = tk.Checkbutton(self.s4, font=TEXT_FONT, bg="palegreen3", text="Histogram", variable=var_hi)
+        self.var_hi = tk.IntVar()
+        hist = tk.Checkbutton(self.s4, font=TEXT_FONT, bg="palegreen3", text="Histogram", variable=self.var_hi)
         hist.pack(fill="x")
         
-        var_hh = tk.IntVar()
-        hh = tk.Checkbutton(self.s4, font=TEXT_FONT, bg="palegreen3", text="HI Histogram", variable=var_hh)
+        self.var_hh = tk.IntVar()
+        hh = tk.Checkbutton(self.s4, font=TEXT_FONT, bg="palegreen3", text="HI Histogram", variable=self.var_hh)
         hh.pack(fill="x")
         
-        var_i = tk.IntVar()
-        inc = tk.Checkbutton(self.s4, font=TEXT_FONT, bg="palegreen3", text="Incidence Drivers Summary", variable=var_i)
+        self.var_i = tk.IntVar()
+        inc = tk.Checkbutton(self.s4, font=TEXT_FONT, bg="palegreen3", text="Incidence Drivers Summary", variable=self.var_i)
         inc.pack(fill="x")
         
-        var_a = tk.IntVar()
-        ai = tk.Checkbutton(self.s4, font=TEXT_FONT, bg="palegreen3", text="Acute Impacts Summary", variable=var_a)
+        self.var_a = tk.IntVar()
+        ai = tk.Checkbutton(self.s4, font=TEXT_FONT, bg="palegreen3", text="Acute Impacts Summary", variable=self.var_a)
         ai.pack(fill="x")
         
-        var_s = tk.IntVar()
-        s = tk.Checkbutton(self.s4, font=TEXT_FONT, bg="palegreen3", text="Source Type Risk Histogram", variable=var_s)
+        self.var_s = tk.IntVar()
+        s = tk.Checkbutton(self.s4, font=TEXT_FONT, bg="palegreen3", text="Source Type Risk Histogram", variable=self.var_s)
         s.pack(fill="x")
         
-        var_p = tk.IntVar()
-        mp = tk.Checkbutton(self.s4, font=TEXT_FONT, bg="palegreen3", text=" Multi Pathway", variable=var_p)
+        self.var_p = tk.IntVar()
+        mp = tk.Checkbutton(self.s4, font=TEXT_FONT, bg="palegreen3", text=" Multi Pathway", variable=self.var_p)
         mp.pack(fill="x")
         
      
@@ -128,13 +143,76 @@ class Page1(Page):
         back_button = tk.Button(self.s5, text="Back", font=TEXT_FONT, relief='solid', borderwidth=2,
                             command=self.lower)
         back_button.pack(side="left", padx=5, pady=10)
-
+        
+        run_button = tk.Button(self.s5, text="Run Reports", font=TEXT_FONT, relief='solid', borderwidth=2,
+                            command= self.createReports)
+        run_button.pack(side="right", padx=5, pady=10)
+        
     def browse(self):
         
-        fullpath = tk.filedialog.askopenfilename()
+        self.fullpath = tk.filedialog.askdirectory()
+        #print(fullpath)
+        self.mod_group_list.set(self.fullpath)
         
-        self.mod_group_list = fullpath
+
         
+    def createReports(self,  arguments=None):
+    
+    
+        files = os.listdir(self.fullpath)
+        rootpath = self.fullpath+'/'
+        faclist = [ item for item in files if os.path.isdir(os.path.join(rootpath, item)) ]
+        print(faclist)
+        
+        
+        #get reports
+        reportNames = []
+        if self.var_m.get() == 1:
+            reportNames.append('MaxRisk')
+        if self.var_c.get() == 1:
+            reportNames.append('CancerDrivers')
+        if self.var_h.get() == 1:
+            reportNames.append('HazardIndexDrivers')
+        if self.var_hi.get() == 1:
+            reportNames.append('Histogram')
+        if self.var_hh.get() == 1:
+            reportNames.append('HI_Histogram')
+        if self.var_i.get() == 1:
+            reportNames.append('IncidenceDrivers')
+        if self.var_a.get() == 1:
+            reportNames.append('AcuteImpacts')
+        if self.var_s.get() == 1:
+            reportNames.append('SourceTypeRiskHistogram')
+        if self.var_p.get() == 1:
+            reportNames.append('MultiPathway')
+        
+        availableReports = {'MaxRisk' : maxRiskReportModule,
+                                     'CancerDrivers' : cancerDriversReportModule,
+                                     'HazardIndexDrivers' : hazardIndexDriversReportModule,
+                                     'Histogram' : histogramModule,
+                                     'HI_Histogram' : hiHistogramModule,
+                                     'IncidenceDrivers' : incidenceDriversReportModule,
+                                     'AcuteImpacts' : acuteImpactsReportModule,
+                                     'SourceTypeRiskHistogram' : sourceTypeRiskHistogramModule,
+                                     'MultiPathway' : multiPathwayModule}
+    
+        # Figure out which facilities will be included in the report
+        #categoryfolder
+    
+        print("Running report with ids: " + ', '.join(faclist))
+        
+        #loop through for each
+        for reportName in reportNames:
+            module = availableReports[reportName]
+            if module is None:
+                print("Oops. HEM4 couldn't find your report module.")
+                return
+        
+            reportClass = getattr(module, reportName)
+            instance = reportClass(self.fullpath, faclist, arguments)
+            instance.writeWithTimestamp()
+               
+    
     def color_config(self, widget, color, event):
          widget.configure(bg=color)
 

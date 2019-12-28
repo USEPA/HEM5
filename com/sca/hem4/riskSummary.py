@@ -78,6 +78,6 @@ class Summary(tk.Frame):
 
     def browse(self):
         
-        fullpath = os.path.abspath((askopenfilename()))
+        fullpath = filedialog.askdirectory()
         
         self.mod_group_list = fullpath
