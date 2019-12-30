@@ -1,4 +1,4 @@
-from com.sca.hem4.writer.excel.AcuteChemicalUnpopulated import AcuteChemicalUnpopulated
+#from com.sca.hem4.writer.excel.AcuteChemicalUnpopulated import AcuteChemicalUnpopulated
 from com.sca.hem4.writer.excel.RiskBreakdown import *
 
 hq_rel = 'hq_rel'
