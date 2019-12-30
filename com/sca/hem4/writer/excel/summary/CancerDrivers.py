@@ -41,6 +41,10 @@ class CancerDrivers(ExcelWriter):
         allrisk_df.drop_duplicates().reset_index(drop=True)
         cancerdrivers_df = pd.DataFrame(allrisk_df, columns=[fac_id, mir, pollutant, value, source_id])
 
+        # Sort by descending mir
+        cancerdrivers_df.sort_values(by=[mir], inplace=True, ascending=False)
+        
+        
         # The risk contribution is the risk divided by the MIR.
         cancerdrivers_df[risk_contrib] = cancerdrivers_df.apply(
             lambda x: round(100*(x[value] / x[mir]), 2) if x[mir] > 0 else 0, axis=1)

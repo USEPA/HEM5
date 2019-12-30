@@ -67,4 +67,6 @@ class SummaryManager():
         #         '36091110000324435', '39153110041418338', '48039110008170237', '54107110000586081']
 
 manager = SummaryManager()
-manager.createReport("c:\\git_hem4\hem4\\output\ALDT5", "MultiPathway", "ALDT5")
+parameters = {}
+parameters['category'] = "ALDT5"
+manager.createReport("c:\git_hem4\hem4\output\ALDT5", "MultiPathway", parameters)
