@@ -179,8 +179,8 @@ class Page1(Page):
             reportNames.append('HI_Histogram')
         if self.var_i.get() == 1:
             reportNames.append('IncidenceDrivers')
-        if self.var_a.get() == 1:
-            reportNames.append('AcuteImpacts')
+        #if self.var_a.get() == 1:
+        #    reportNames.append('AcuteImpacts')
         if self.var_s.get() == 1:
             reportNames.append('SourceTypeRiskHistogram')
         if self.var_p.get() == 1:
