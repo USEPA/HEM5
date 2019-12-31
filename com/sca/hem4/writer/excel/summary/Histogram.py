@@ -26,6 +26,9 @@ class Histogram(ExcelWriter):
         # There are 5 sub lists corresponding to the five buckets.
         counts = [[0,0], [0,0], [0,0], [0,0], [0,0]]
 
+        #debug
+        import pdb; pdb.set_trace() 
+
         blocksummary_df = pd.DataFrame()
         for facilityId in self.facilityIds:
             targetDir = self.categoryFolder + "/" + facilityId
@@ -65,6 +68,7 @@ class Histogram(ExcelWriter):
         # Aggregate concentration, grouped by FIPS/block
         risk_summed = blocksummary_df.groupby([fips, block]).agg(aggs)[blockSummaryChronic.getColumns()]
 
+        
         for index, row in risk_summed.iterrows():
             rounded = self.round_to_sigfig(row[mir])
             if rounded < 1e-6:
