@@ -16,7 +16,6 @@ class InputFile(ABC):
         self.skiprows = 0
 
         if createDataframe:
-            print(self.path)
             self.createDataframe()
 
     @abstractmethod

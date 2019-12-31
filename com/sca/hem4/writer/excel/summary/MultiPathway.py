@@ -16,7 +16,7 @@ class MultiPathway(ExcelWriter):
 
     def __init__(self, targetDir, facilityIds, parameters=None):
         self.name = "Multipathway Summary"
-        self.category = parameters['category']
+        self.category = parameters[0]
         self.categoryFolder = targetDir
         self.facilityIds = facilityIds
 
@@ -298,8 +298,3 @@ class MultiPathway(ExcelWriter):
         distance = 2*R*math.atan2(math.sqrt(a), math.sqrt(1 - a))
 
         return brng, distance
-    
-parameters = {}
-parameters['category'] = "ALDT5"
-multi = MultiPathway("c:\temp", "123", parameters)
-bearing, distance = multi.bearingDistance(32.2820300918,-86.3288448479,32.276244,-86.325745)

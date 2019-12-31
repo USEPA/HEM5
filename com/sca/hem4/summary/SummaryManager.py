@@ -1,9 +1,13 @@
 import importlib
+import os, glob
+
 
 class SummaryManager():
 
-    def __init__(self):
-        self.facilityIds = []
+    def __init__(self, targetDir, facilitylist):
+        
+        self.categoryFolder = targetDir
+        self.facilityIds = facilitylist
 
         maxRiskReportModule = importlib.import_module("com.sca.hem4.writer.excel.summary.MaxRisk")
         cancerDriversReportModule = importlib.import_module("com.sca.hem4.writer.excel.summary.CancerDrivers")
@@ -25,18 +29,37 @@ class SummaryManager():
                                  'SourceTypeRiskHistogram' : sourceTypeRiskHistogramModule,
                                  'MultiPathway' : multiPathwayModule}
 
+        # Get modeling group name from the Facililty Max Risk and HI file
+        skeleton = os.path.join(self.categoryFolder, '*_facility_max_risk_and_hi.xlsx')
+        fname = glob.glob(skeleton)
+        if fname:
+            head, tail = os.path.split(glob.glob(skeleton)[0])
+            self.grpname = tail[:tail.find('facility_max_risk_and_hi')-1]
+        else:
+            print("Problem. There is no Facility Max Risk and HI file")
+            return 
+
+        # Define the arguments needed for each summary module
+        self.reportArgs = {'MaxRisk' : None,
+                        'CancerDrivers' : None,
+                        'HazardIndexDrivers' : None,
+                        'Histogram' : None,
+                        'HI_Histogram' : None,
+                        'IncidenceDrivers' : None,
+                        'AcuteImpacts' : None,
+                        'SourceTypeRiskHistogram' : 0,
+                        'MultiPathway' : [self.grpname]}
+
+        
     def createReport(self, categoryFolder, reportName, arguments=None):
-
-        # Figure out which facilities will be included in the report
-        self.facilityIds = self.findFacilities(categoryFolder)
-
-        print("Running report with ids: " + str(self.facilityIds))
 
         module = self.availableReports[reportName]
         if module is None:
             print("Oops. HEM4 couldn't find your report module.")
             return
-
+        
+        arguments = self.reportArgs[reportName]
+        
         reportClass = getattr(module, reportName)
         instance = reportClass(categoryFolder, self.facilityIds, arguments)
         instance.writeWithTimestamp()
@@ -66,7 +89,7 @@ class SummaryManager():
         #         '22033110003266849', '22047110001244724', '22089110013662009', '26111110027360629', '34015110000582003',
         #         '36091110000324435', '39153110041418338', '48039110008170237', '54107110000586081']
 
-manager = SummaryManager()
-parameters = {}
-parameters['category'] = "ALDT5"
-manager.createReport("c:\git_hem4\hem4\output\ALDT5", "MultiPathway", parameters)
+#manager = SummaryManager()
+#parameters = {}
+#parameters['category'] = "ALDT5"
+#manager.createReport("c:\git_hem4\hem4\output\ALDT5", "MultiPathway", parameters)

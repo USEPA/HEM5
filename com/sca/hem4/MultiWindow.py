@@ -13,6 +13,7 @@ from com.sca.hem4.GuiThreaded import Hem4
 import queue
 
 import os
+import glob
 import importlib 
 
 from PIL import ImageTk, Image
@@ -26,6 +27,8 @@ incidenceDriversReportModule = importlib.import_module("com.sca.hem4.writer.exce
 acuteImpactsReportModule = importlib.import_module("com.sca.hem4.writer.excel.summary.AcuteImpacts")
 sourceTypeRiskHistogramModule = importlib.import_module("com.sca.hem4.writer.excel.summary.SourceTypeRiskHistogram")
 multiPathwayModule = importlib.import_module("com.sca.hem4.writer.excel.summary.MultiPathway")
+
+from com.sca.hem4.summary.SummaryManager import SummaryManager
 
 
 TITLE_FONT= ("Verdana", 18)
@@ -85,7 +88,7 @@ class Page1(Page):
         
          #modeling group label
         group_label = tk.Label(self.s2, font=TEXT_FONT, bg="palegreen3", 
-                             text="Please select a modeling group:")
+                             text="Please identify the location of the HEM4 results to be summarized:")
         group_label.pack(pady=20, padx=5, side="left")
         
         #file browse button
@@ -138,7 +141,7 @@ class Page1(Page):
         mp = tk.Checkbutton(self.s4, font=TEXT_FONT, bg="palegreen3", text=" Multi Pathway", variable=self.var_p)
         mp.pack(fill="x")
         
-     
+        
         #back button
         back_button = tk.Button(self.s5, text="Back", font=TEXT_FONT, relief='solid', borderwidth=2,
                             command=self.lower)
@@ -157,14 +160,13 @@ class Page1(Page):
 
         
     def createReports(self,  arguments=None):
-    
-    
+        
+        # Figure out which facilities will be included in the report
         files = os.listdir(self.fullpath)
         rootpath = self.fullpath+'/'
-        faclist = [ item for item in files if os.path.isdir(os.path.join(rootpath, item)) ]
-        print(faclist)
-        
-        
+        faclist = [ item for item in files if os.path.isdir(os.path.join(rootpath, item)) 
+                    and 'inputs' not in item.lower() ]
+                
         #get reports
         reportNames = []
         if self.var_m.get() == 1:
@@ -186,31 +188,31 @@ class Page1(Page):
         if self.var_p.get() == 1:
             reportNames.append('MultiPathway')
         
-        availableReports = {'MaxRisk' : maxRiskReportModule,
-                                     'CancerDrivers' : cancerDriversReportModule,
-                                     'HazardIndexDrivers' : hazardIndexDriversReportModule,
-                                     'Histogram' : histogramModule,
-                                     'HI_Histogram' : hiHistogramModule,
-                                     'IncidenceDrivers' : incidenceDriversReportModule,
-                                     'AcuteImpacts' : acuteImpactsReportModule,
-                                     'SourceTypeRiskHistogram' : sourceTypeRiskHistogramModule,
-                                     'MultiPathway' : multiPathwayModule}
-    
-        # Figure out which facilities will be included in the report
-        #categoryfolder
-    
-        print("Running report with ids: " + ', '.join(faclist))
+#        availableReports = {'MaxRisk' : maxRiskReportModule,
+#                                     'CancerDrivers' : cancerDriversReportModule,
+#                                     'HazardIndexDrivers' : hazardIndexDriversReportModule,
+#                                     'Histogram' : histogramModule,
+#                                     'HI_Histogram' : hiHistogramModule,
+#                                     'IncidenceDrivers' : incidenceDriversReportModule,
+#                                     'AcuteImpacts' : acuteImpactsReportModule,
+#                                     'SourceTypeRiskHistogram' : sourceTypeRiskHistogramModule,
+#                                     'MultiPathway' : multiPathwayModule}
         
-        #loop through for each
+        print("Running report on facilities: " + ', '.join(faclist))
+
+        summaryMgr = SummaryManager(self.fullpath, faclist)
+        
+        #loop through for each report selected
         for reportName in reportNames:
-            module = availableReports[reportName]
-            if module is None:
-                print("Oops. HEM4 couldn't find your report module.")
-                return
-        
-            reportClass = getattr(module, reportName)
-            instance = reportClass(self.fullpath, faclist, arguments)
-            instance.writeWithTimestamp()
+            summaryMgr.createReport(self.fullpath, reportName)
+            
+#            module = availableReports[reportName]
+#            if module is None:
+#                print("Oops. HEM4 couldn't find your report module.")
+#                return
+#            reportClass = getattr(module, reportName)
+#            instance = reportClass(self.fullpath, faclist, arguments)
+#            instance.writeWithTimestamp()
                
     
     def color_config(self, widget, color, event):

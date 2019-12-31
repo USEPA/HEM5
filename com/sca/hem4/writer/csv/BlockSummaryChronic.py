@@ -148,6 +148,6 @@ class BlockSummaryChronic(CsvWriter, InputFile):
         self.numericColumns = [lat, lon, elev, utme, utmn, population, hill, mir, hi_resp, hi_live, hi_neur, hi_deve,
                                hi_repr, hi_kidn, hi_ocul, hi_endo, hi_hema, hi_immu, hi_skel, hi_sple, hi_thyr, hi_whol]
         self.strColumns = [fips, block, overlap, rec_type]
-
+        
         df = self.readFromPathCsv(self.getColumns())
         return df.fillna("")

@@ -47,7 +47,7 @@ class AcuteBreakdown(ExcelWriter, InputFile):
         return [pollutant, source_id, emis_type, aconc_pop, pop_interp, aconc_all, all_interp]
 
     def generateOutputs(self):
-        
+                
         # First get breakdown info of max acute at a populated receptor
         popinfo_list = []
         for index, row in self.achempop_df.iterrows():
