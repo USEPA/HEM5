@@ -26,9 +26,6 @@ class Histogram(ExcelWriter):
         # There are 5 sub lists corresponding to the five buckets.
         counts = [[0,0], [0,0], [0,0], [0,0], [0,0]]
 
-        #debug
-        import pdb; pdb.set_trace() 
-
         blocksummary_df = pd.DataFrame()
         for facilityId in self.facilityIds:
             targetDir = self.categoryFolder + "/" + facilityId
