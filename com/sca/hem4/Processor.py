@@ -10,6 +10,7 @@ from com.sca.hem4.writer.excel.FacilityMaxRiskandHI import FacilityMaxRiskandHI
 from com.sca.hem4.writer.excel.FacilityCancerRiskExp import FacilityCancerRiskExp
 from com.sca.hem4.writer.excel.FacilityTOSHIExp import FacilityTOSHIExp
 from com.sca.hem4.writer.kml.KMLWriter import KMLWriter
+from com.sca.hem4.inputsfolder.InputsPackager import InputsPackager
 
 import traceback
 from collections import defaultdict
@@ -44,6 +45,11 @@ class Processor():
         if os.path.exists(self.model.rootoutput):
             shutil.rmtree(self.model.rootoutput)                
         os.makedirs(self.model.rootoutput)
+
+        # create Inputs folder
+        inputspkgr = InputsPackager(self.model.rootoutput, self.model)
+        inputspkgr.createInputs()
+
        
         Logger.logMessage("RUN GROUP: " + self.model.group_name)
         

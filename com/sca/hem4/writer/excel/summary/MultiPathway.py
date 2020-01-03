@@ -1,6 +1,8 @@
 from com.sca.hem4.upload.PollutantCrosswalk import PollutantCrosswalk, pollutant_name, designation
 from com.sca.hem4.writer.excel.FacilityMaxRiskandHI import FacilityMaxRiskandHI
 from com.sca.hem4.writer.excel.RiskBreakdown import *
+from com.sca.hem4.writer.excel.InputSelectionOptions import InputSelectionOptions
+from com.sca.hem4.log.Logger import Logger
 
 risk_contrib = 'risk_contrib'
 category = 'category'
@@ -48,6 +50,11 @@ class MultiPathway(ExcelWriter):
         for facilityId in self.facilityIds:
             targetDir = self.categoryFolder + "/" + facilityId
 
+            # Determine if this facility was run with acute or not
+            inputops = InputSelectionOptions(targetDir=targetDir, facilityId=facilityId)
+            inputops_df = inputops.createDataframe()
+            acute_yn = inputops_df['acute_yn'].iloc[0]
+            
             # Steps a-f in Steve's summary
             maxIndivRisks = MaximumIndividualRisks(targetDir=targetDir, facilityId=facilityId)
             maxIndivRisks_df = maxIndivRisks.createDataframe()
@@ -89,7 +96,7 @@ class MultiPathway(ExcelWriter):
             pathways.append(pathway)
 
             # Steps g-j
-            allinner = AllInnerReceptors(targetDir=targetDir, facilityId=facilityId)
+            allinner = AllInnerReceptors(targetDir=targetDir, facilityId=facilityId, acuteyn=acute_yn)
             allinner_df = allinner.createDataframe()
 
             # Only keep records that have non-zero population or represent non-overlapped user receptors
@@ -121,7 +128,7 @@ class MultiPathway(ExcelWriter):
                     listOuter.append(entry)
 
             for f in listOuter:
-                allouter = AllOuterReceptors(targetDir=targetDir, filenameOverride=f)
+                allouter = AllOuterReceptors(targetDir=targetDir, acuteyn=acute_yn, filenameOverride=f)
                 allouter_df = allouter.createDataframe()
 
                 # Only keep records that have non-zero population or represent non-overlapped user receptors

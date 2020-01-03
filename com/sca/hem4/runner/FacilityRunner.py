@@ -50,8 +50,8 @@ class FacilityRunner():
         if os.path.exists(fac_folder):
             pass
         else:
-            os.makedirs(fac_folder)
-
+            os.makedirs(fac_folder)        
+        
         #do prep
         try:    
             self.prep_fac = self.prep()
