@@ -1,6 +1,16 @@
 import importlib
 import os, glob
 
+import com.sca.hem4.writer.excel.summary.MaxRisk as maxRiskReportModule
+import com.sca.hem4.writer.excel.summary.CancerDrivers as cancerDriversReportModule
+import com.sca.hem4.writer.excel.summary.HazardIndexDrivers as hazardIndexDriversReportModule
+import com.sca.hem4.writer.excel.summary.Histogram as histogramModule
+import com.sca.hem4.writer.excel.summary.HI_Histogram as hiHistogramModule
+import com.sca.hem4.writer.excel.summary.IncidenceDrivers as incidenceDriversReportModule
+import com.sca.hem4.writer.excel.summary.AcuteImpacts as acuteImpactsReportModule
+import com.sca.hem4.writer.excel.summary.SourceTypeRiskHistogram as sourceTypeRiskHistogramModule
+import com.sca.hem4.writer.excel.summary.MultiPathway as multiPathwayModule
+
 
 class SummaryManager():
 
@@ -8,16 +18,6 @@ class SummaryManager():
         
         self.categoryFolder = targetDir
         self.facilityIds = facilitylist
-
-        maxRiskReportModule = importlib.import_module("com.sca.hem4.writer.excel.summary.MaxRisk")
-        cancerDriversReportModule = importlib.import_module("com.sca.hem4.writer.excel.summary.CancerDrivers")
-        hazardIndexDriversReportModule = importlib.import_module("com.sca.hem4.writer.excel.summary.HazardIndexDrivers")
-        histogramModule = importlib.import_module("com.sca.hem4.writer.excel.summary.Histogram")
-        hiHistogramModule = importlib.import_module("com.sca.hem4.writer.excel.summary.HI_Histogram")
-        incidenceDriversReportModule = importlib.import_module("com.sca.hem4.writer.excel.summary.IncidenceDrivers")
-        acuteImpactsReportModule = importlib.import_module("com.sca.hem4.writer.excel.summary.AcuteImpacts")
-        sourceTypeRiskHistogramModule = importlib.import_module("com.sca.hem4.writer.excel.summary.SourceTypeRiskHistogram")
-        multiPathwayModule = importlib.import_module("com.sca.hem4.writer.excel.summary.MultiPathway")
 
         self.availableReports = {'MaxRisk' : maxRiskReportModule,
                                  'CancerDrivers' : cancerDriversReportModule,
@@ -50,11 +50,12 @@ class SummaryManager():
                         'SourceTypeRiskHistogram' : [0,2],
                         'MultiPathway' : [self.grpname]}
 
+
         
     def createReport(self, categoryFolder, reportName, arguments=None):
 
         print("\r\n Starting report: " + reportName)
-        
+                
         module = self.availableReports[reportName]
         if module is None:
             print("Oops. HEM4 couldn't find your report module.")
