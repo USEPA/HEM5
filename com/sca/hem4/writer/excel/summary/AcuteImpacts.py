@@ -1,4 +1,4 @@
-from com.sca.hem4.writer.excel.AcuteChemicalUnpopulated import AcuteChemicalUnpopulated
+from com.sca.hem4.writer.excel.AcuteChemicalMax import AcuteChemicalMax
 from com.sca.hem4.writer.excel.RiskBreakdown import *
 
 hq_rel = 'hq_rel'
@@ -29,7 +29,7 @@ class AcuteImpacts(ExcelWriter):
         for facilityId in self.facilityIds:
             targetDir = self.categoryFolder + "/" + facilityId
 
-            acute = AcuteChemicalUnpopulated(targetDir=targetDir, facilityId=facilityId)
+            acute = AcuteChemicalMax(targetDir=targetDir, facilityId=facilityId)
             acute_df = acute.createDataframe()
 
             acute_df[fac_id] = facilityId

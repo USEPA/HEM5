@@ -410,10 +410,10 @@ class AllOuterReceptorsNonCensus(CsvWriter, InputFile):
 
     def createDataframe(self):
         # Type setting for CSV reading
-        if self.acute_yn:
-            self.numericColumns = [lat, lon, conc, aconc, elev, population]
-        else:
+        if self.acute_yn == 'N':
             self.numericColumns = [lat, lon, conc, elev, population]
+        else:
+            self.numericColumns = [lat, lon, conc, aconc, elev, population]
 
         self.strColumns = [rec_id, source_id, emis_type, pollutant, overlap]
 

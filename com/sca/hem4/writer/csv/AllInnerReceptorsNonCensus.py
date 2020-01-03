@@ -178,10 +178,10 @@ class AllInnerReceptorsNonCensus(CsvWriter):
 
     def createDataframe(self):
         # Type setting for CSV reading
-        if self.acute_yn:
-            self.numericColumns = [lat, lon, conc, aconc, elev, drydep, wetdep, population]
-        else:
+        if self.acute_yn == 'N':
             self.numericColumns = [lat, lon, conc, elev, drydep, wetdep, population]
+        else:
+            self.numericColumns = [lat, lon, conc, aconc, elev, drydep, wetdep, population]
 
         self.strColumns = [rec_id, source_id, emis_type, pollutant, overlap]
 

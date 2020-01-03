@@ -1,3 +1,5 @@
+import os
+
 from com.sca.hem4.upload.InputFile import InputFile
 
 designation = 'designation'
@@ -14,8 +16,9 @@ note = 'note'
 
 class PollutantCrosswalk(InputFile):
 
-    def __init__(self, path):
-        InputFile.__init__(self, path)
+    def __init__(self, createDataframe=False):
+
+        InputFile.__init__(self, "resources/Pollutant_CrossWalk.xlsx")
 
     def createDataframe(self):
 

@@ -505,7 +505,7 @@ class FacilityPrep():
 
         #%%------ Elevations and hill height ---------
 
-        # if the facility will use elevations, assign them to emission sources and polar receptors
+        # if the facility will use elevations, assign them to emission sources and polar receptors        
         if self.model.facops[elev][0].upper() == "Y":
             polar_df[elev], polar_df[hill], polar_df['avgelev'] = zip(*polar_df.apply(lambda row: 
                         self.assign_polar_elev_step1(row,self.innerblks,self.outerblks,maxdist), axis=1))
@@ -662,7 +662,7 @@ class FacilityPrep():
 
     #%% Assign elevation and hill height to polar receptors that still have missing elevations
     def assign_polar_elev_step2(self, polar_row, innblks, outblks, emislocs):
-
+        
         d_nearelev = 99999
         d_nearhill = 99999
         r_maxelev = -88888
@@ -896,48 +896,47 @@ class FacilityPrep():
         return angle        
 
 
-    # Determine inner and outer blocks from the set of user receptors only.
+    # Determine inner and outer blocks from the set of alternate receptors.
     def getBlocksFromUrep(self, facid, cenx, ceny, cenlon, cenlat, utmZone, maxdist, modeldist, sourcelocs, overlap_dist):
 
         # convert max outer ring distance from meters to degrees latitude
         maxdist_deg = maxdist*39.36/36/2000/60
-
-        # Get all user receptors that correspond to the given fac id
-        urecs = self.model.altreceptr.dataframe.loc[self.model.altreceptr.dataframe[fac_id] == facid]
+        
+        altrecs = self.model.altreceptr.dataframe.copy()
 
         # If any population values are missing, we cannot create an Incidence report
-        self.model.altRec_optns['altrec_nopop'] = urecs.isnull().any()[population]
-        urecs[population] = pd.to_numeric(urecs[population], errors='coerce').fillna(0)
+        self.model.altRec_optns['altrec_nopop'] = altrecs.isnull().any()[population]
+        altrecs[population] = pd.to_numeric(altrecs[population], errors='coerce').fillna(0)
 
         # If any elevation or hill height values are missing, we must run in FLAT mode.
-        self.model.altRec_optns['altrec_flat'] = urecs.isnull().any()[elev] or urecs.isnull().any()[hill]
-        urecs[elev] = pd.to_numeric(urecs[elev], errors='coerce').fillna(0)
-        urecs[hill] = pd.to_numeric(urecs[hill], errors='coerce').fillna(0)
+        self.model.altRec_optns['altrec_flat'] = altrecs.isnull().any()[elev] or altrecs.isnull().any()[hill]
+        altrecs[elev] = pd.to_numeric(altrecs[elev], errors='coerce').fillna(0)
+        altrecs[hill] = pd.to_numeric(altrecs[hill], errors='coerce').fillna(0)
 
         # Which location type is being used? If lat/lon, convert to UTM. Otherwise, just copy over
         # the relevant values.
-        ltype = urecs.iloc[0][location_type]
+        ltype = altrecs.iloc[0][location_type]
         if ltype == 'L':
-            urecs[utms] = urecs.apply(lambda row: UTM.ll2utm_alt(row[lat], row[lon], utmZone), axis=1)
+            altrecs[utms] = altrecs.apply(lambda row: UTM.ll2utm_alt(row[lat], row[lon], utmZone), axis=1)
         else:
-            urecs[utms] = urecs.apply(lambda row: self.copyUTMColumns(row[lat], row[lon], utmZone), axis=1)
+            altrecs[utms] = altrecs.apply(lambda row: self.copyUTMColumns(row[lat], row[lon], utmZone), axis=1)
 
         #split utms column into utmn, utme, utmz
-        urecs[[utmn, utme, utmz]] = pd.DataFrame(urecs.utms.values.tolist(), index= urecs.index)
+        altrecs[[utmn, utme, utmz]] = pd.DataFrame(altrecs.utms.values.tolist(), index= altrecs.index)
 
-        del urecs[utms]
+        del altrecs[utms]
 
         #coerce hill and elevation into floats
-        urecs[hill] = pd.to_numeric(urecs[hill], errors='coerce').fillna(0)
-        urecs[elev] = pd.to_numeric(urecs[elev], errors='coerce').fillna(0)
+        altrecs[hill] = pd.to_numeric(altrecs[hill], errors='coerce').fillna(0)
+        altrecs[elev] = pd.to_numeric(altrecs[elev], errors='coerce').fillna(0)
 
         #compute distance and bearing (angle) from the center of the facility
-        urecs['distance'] = np.sqrt((cenx - urecs.utme)**2 + (ceny - urecs.utmn)**2)
-        urecs['angle'] = urecs.apply(lambda row: bearing(row[utme],row[utmn],cenx,ceny), axis=1)
-        urecs['urban_pop'] = 0
+        altrecs['distance'] = np.sqrt((cenx - altrecs.utme)**2 + (ceny - altrecs.utmn)**2)
+        altrecs['angle'] = altrecs.apply(lambda row: bearing(row[utme],row[utmn],cenx,ceny), axis=1)
+        altrecs['urban_pop'] = 0
 
-        #subset the urecs dataframe to blocks that are within the modeling distance of the facility
-        modelblks = urecs.query('distance <= @maxdist')
+        #subset the altrecs dataframe to blocks that are within the modeling distance of the facility
+        modelblks = altrecs.query('distance <= @maxdist')
 
         # Split modelblks into inner and outer block receptors
         innerblks, outerblks = in_box(modelblks, sourcelocs, modeldist, maxdist, overlap_dist, self.model)
@@ -945,13 +944,13 @@ class FacilityPrep():
 
 #        Logger.log("OUTERBLOCKS", outerblks, False)
 
-        # convert utme, utmn, utmz, and population to integers
-        innerblks[utme] = innerblks[utme].astype(int)
-        innerblks[utmn] = innerblks[utmn].astype(int)
+        # convert utme, utmn, utmz, and population to appropriate numeric types
+        innerblks[utme] = innerblks[utme].astype(np.float64)
+        innerblks[utmn] = innerblks[utmn].astype(np.float64)
         innerblks[utmz] = innerblks[utmz].astype(int)
         innerblks[population] = pd.to_numeric(innerblks[population], errors='coerce').astype(int)
-        outerblks[utme] = outerblks[utme].astype(int)
-        outerblks[utmn] = outerblks[utmn].astype(int)
+        outerblks[utme] = outerblks[utme].astype(np.float64)
+        outerblks[utmn] = outerblks[utmn].astype(np.float64)
         outerblks[utmz] = outerblks[utmz].astype(int)
         outerblks[population] = pd.to_numeric(outerblks[population], errors='coerce').astype(int)
 

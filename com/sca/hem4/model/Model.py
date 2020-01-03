@@ -93,7 +93,6 @@ class Model():
         self.gasparams = None
         self.model_optns = defaultdict() 
         self.save = None
-        self.organs = None
         self.all_polar_receptors_df = None
         self.all_inner_receptors_df = None
         self.all_outer_receptors_df = None
@@ -125,7 +124,6 @@ class Model():
         self.facids = None
         self.depdeplt = None
         self.polargrid = None
-        self.organs = None
         self.riskfacs_df = None
         self.all_polar_receptors_df = None
         self.all_inner_receptors_df = None

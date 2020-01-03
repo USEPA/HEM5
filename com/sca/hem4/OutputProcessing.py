@@ -283,7 +283,7 @@ class Process_outputs():
 
 
             #----------- create Acute Breakdown output file ------------------------
-            acutebkdn = AcuteBreakdown(self.outdir, self.facid, self.model, aplot_df,
+            acutebkdn = AcuteBreakdown(self.outdir, self.facid, self.model, aplot_df, None, False,
                                        acutechempop.dataframe, acutechemmax.dataframe)
             acutebkdn.write()
             Logger.logMessage("Completed Acute Breakdown output")

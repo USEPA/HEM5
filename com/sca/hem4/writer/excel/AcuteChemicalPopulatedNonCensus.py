@@ -38,7 +38,7 @@ class AcuteChemicalPopulatedNonCensus(ExcelWriter):
                 'Receptor ID', 'Utm easting', 'Utm northing', 'Latitude', 'Longitude', 'Receptor type', 'Notes']
 
     def generateOutputs(self):
-
+        
         # Set-up a dataframe to hold the running max conc for each pollutant along with location of the receptor
         pols = self.model.runstream_hapemis[pollutant].str.lower().unique().tolist()
         cols = [aconc, lon, lat, notes]
@@ -90,7 +90,7 @@ class AcuteChemicalPopulatedNonCensus(ExcelWriter):
         
         # Loop over each pollutant and outer receptor file and see if max acute conc
         # is larger than the stored value
-        for f in listOuter:
+        for f in listOuter:            
             allouter = AllOuterReceptorsNonCensus(targetDir=self.targetDir, filenameOverride=f)
             outer_df = allouter.createDataframe()
             # Sum to unique lat/lons

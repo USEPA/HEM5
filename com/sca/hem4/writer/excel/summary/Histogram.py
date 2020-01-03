@@ -65,6 +65,7 @@ class Histogram(ExcelWriter):
         # Aggregate concentration, grouped by FIPS/block
         risk_summed = blocksummary_df.groupby([fips, block]).agg(aggs)[blockSummaryChronic.getColumns()]
 
+        
         for index, row in risk_summed.iterrows():
             rounded = self.round_to_sigfig(row[mir])
             if rounded < 1e-6:
