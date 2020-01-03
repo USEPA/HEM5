@@ -10,11 +10,17 @@ class Writer(ABC):
         self.dataframe = None
         self.batchSize = 100000
 
-    def write(self):
-        self.writeHeader()
+    def write(self, generateOnly=False):
+
+        if not generateOnly:
+            self.writeHeader()
+
         for data in self.generateOutputs():
             if data is not None:
-                self.appendToFile(data)
+
+                if not generateOnly:
+                    self.appendToFile(data)
+
                 self.analyze(data)
 
     @abstractmethod

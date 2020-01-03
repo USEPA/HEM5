@@ -50,7 +50,7 @@ class Process_outputs():
         self.model.innerblks_df = prep.innerblks
         self.model.outerblks_df = prep.outerblks
         self.model.runstream_hapemis = runstream.hapemis
-
+        self.generateOnly = self.model.facops["all_rcpts"] == 'N'
         self.abort = abort
 
         self.acute_yn = self.runstream.facoptn_df.iloc[0][acute]
@@ -89,7 +89,8 @@ class Process_outputs():
         
         #----------- create All_Polar_Receptor output file -----------------
         all_polar_receptors = AllPolarReceptors(self.outdir, self.facid, self.model, self.plot_df, self.acute_yn)
-        all_polar_receptors.write()
+        all_polar_receptors.write(generateOnly=self.generateOnly)
+
         self.model.all_polar_receptors_df = all_polar_receptors.dataframe
         Logger.logMessage("Completed AllPolarReceptors output")
 
@@ -105,7 +106,7 @@ class Process_outputs():
         #----------- create All_Inner_Receptor output file -----------------
         all_inner_receptors = AllInnerReceptorsNonCensus(self.outdir, self.facid, self.model, self.plot_df, self.acute_yn) if altrec \
                         else AllInnerReceptors(self.outdir, self.facid, self.model, self.plot_df, self.acute_yn)
-        all_inner_receptors.write()
+        all_inner_receptors.write(generateOnly=self.generateOnly)
         self.model.all_inner_receptors_df = all_inner_receptors.dataframe
         Logger.logMessage("Completed AllInnerReceptors output")
 
@@ -117,7 +118,7 @@ class Process_outputs():
         #----------- create All_Outer_Receptor output file -----------------
         all_outer_receptors = AllOuterReceptorsNonCensus(self.outdir, self.facid, self.model, self.plot_df, self.acute_yn) if altrec \
                         else AllOuterReceptors(self.outdir, self.facid, self.model, self.plot_df, self.acute_yn)
-        all_outer_receptors.write()
+        all_outer_receptors.write(generateOnly=self.generateOnly)
         self.model.all_outer_receptors_df = all_outer_receptors.dataframe
         Logger.logMessage("Completed AllOuterReceptors output")
 
