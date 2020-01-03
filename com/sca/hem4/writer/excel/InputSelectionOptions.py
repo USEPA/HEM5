@@ -5,17 +5,27 @@ from pandas import DataFrame
 
 from com.sca.hem4.log.Logger import Logger
 from com.sca.hem4.writer.excel.ExcelWriter import ExcelWriter
+from com.sca.hem4.upload.HAPEmissions import *
 
-class InputSelectionOptions(ExcelWriter):
+class InputSelectionOptions(ExcelWriter, InputFile):
     """
     Provides the options and input file names specified by the user at the start of the run.
     """
 
-    def __init__(self, targetDir, facilityId, model, plot_df):
+    def __init__(self, targetDir=None, facilityId=None, model=None, plot_df=None,
+                 filenameOverride=None, createDataframe=False):
+
+        # Initialization for file reading/writing. If no file name override, use the
+        # default construction.
+        self.targetDir = targetDir
+        filename = facilityId + "_input_selection_options.xlsx" if filenameOverride is None else filenameOverride
+        path = os.path.join(self.targetDir, filename)
+
         ExcelWriter.__init__(self, model, plot_df)
+        InputFile.__init__(self, path, createDataframe)
 
         self.facilityId = facilityId
-        self.filename = os.path.join(targetDir, facilityId + "_input_selection_options.xlsx")
+        self.filename = path
 
     def getHeader(self):
         return ['Facility ID', 'Aermod Title2', 'Emissions Phase', 'Rural/Urban', 'Deposition (YN)',
@@ -28,6 +38,15 @@ class InputSelectionOptions(ExcelWriter):
              'Emission Location File', 'HAP Emissions File', 'User Receptor File', 
              'Particle Size File', 'Building Downwash File', 'Buoyant Line File',
              'Landuse File', 'Seasons File', 'Polygon Vertex File']
+
+
+    def getColumns(self):
+        return ['facid', 'title2', 'phase', 'ruralurban', 'dep_yn', 'depl_yn', 'dep_type', 'depl_type',
+                      'elev_yn', 'acute_hrs', 'acute_mult', 'bldgdw_yn', 'userrcpt_yn', 'max_dist',
+                      'model_dist', 'overlap_dist', 'num_rings', 'num_radials', 'acute_yn',
+                      'allrecpts_yn', 'first_ring', 'fastall_yn', 'grpname', 'faclist_file',
+                      'emisloc_file', 'hapemis_file', 'usrrcpt_file', 'partsize_file', 'bldgdw_file',
+                      'blp_file', 'landuse_file', 'seasons_file', 'vertex_file']
 
 
     def generateOutputs(self):
@@ -112,3 +131,16 @@ class InputSelectionOptions(ExcelWriter):
         self.dataframe = df
         self.data = df.values
         yield self.dataframe
+
+    def createDataframe(self):
+        # Type setting for XLS reading
+        self.numericColumns = ['acute_hrs', 'acute_mult', 'max_dist', 'model_dist', 'overlap_dist',
+                               'num_rings', 'num_radials', 'first_ring']
+        self.strColumns = ['facid', 'title2', 'phase', 'ruralurban', 'dep_yn', 'depl_yn', 'dep_type',
+                           'depl_type', 'elev_yn', 'bldgdw_yn', 'userrcpt_yn', 'acute_yn', 'allrecpts_yn',
+                           'fastall_yn', 'grpname', 'faclist_file', 'emisloc_file', 'hapemis_file',
+                           'usrrcpt_file', 'partsize_file', 'bldgdw_file', 'blp_file', 'landuse_file',
+                           'seasons_file', 'vertex_file']
+
+        df = self.readFromPath(self.getColumns())
+        return df.fillna("")
