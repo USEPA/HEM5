@@ -1,6 +1,7 @@
 import fnmatch
 from math import log10, floor
 from com.sca.hem4.upload.EmissionsLocations import EmissionsLocations
+from com.sca.hem4.upload.FacilityList import FacilityList
 from com.sca.hem4.writer.csv.BlockSummaryChronic import *
 from com.sca.hem4.writer.excel.ExcelWriter import ExcelWriter
 from com.sca.hem4.FacilityPrep import *
@@ -38,6 +39,11 @@ class SourceTypeRiskHistogram(ExcelWriter):
 
     def generateOutputs(self):
         Logger.log("Creating " + self.name + " report...", None, False)
+        
+        # Read the facility list options input to know which facilities were run with acute
+        faclistFile = os.path.join(self.categoryFolder, "inputs/faclist.xlsx")
+        faclist = FacilityList(faclistFile).dataframe
+        faclist.replace(to_replace={'acute':{"nan":"N"}}, inplace=True)
 
         # Create a list to hold the values for each bucket
         maximum = ['Maximum (in 1 million)']
@@ -50,10 +56,11 @@ class SourceTypeRiskHistogram(ExcelWriter):
         codes['overall'] = [0, 0, 0, 0, 0]
 
         for facilityId in self.facilityIds:
-            print("handling facility " + facilityId)
+                            
             targetDir = self.categoryFolder + "/" + facilityId
-
-            allinner = AllInnerReceptors(targetDir=targetDir, facilityId=facilityId)
+            
+            acute_yn = faclist[faclist['fac_id']==facilityId]['acute'].iloc[0]
+            allinner = AllInnerReceptors(targetDir=targetDir, facilityId=facilityId, acuteyn=acute_yn)
             allinner_df = allinner.createDataframe()
 
             allinner_df['risk'] = allinner_df.apply(lambda x: self.calculateRisk(x[pollutant], x[conc]), axis=1)
@@ -61,9 +68,14 @@ class SourceTypeRiskHistogram(ExcelWriter):
             # convert source ids to the code part only, and then group and sum
             allinner_df[source_id] = allinner_df[source_id].apply(lambda x: x[self.codePosition:self.codePosition+self.codeLength])
 
-            aggs = {lat:'first', lon:'first', emis_type:'first',
-                    pollutant:'first', conc:'sum', aconc:'first', elev:'first', drydep:'first', wetdep:'first',
-                    population:'first', overlap:'first', 'risk':'sum'}
+            if acute_yn == 'N':
+                aggs = {lat:'first', lon:'first', emis_type:'first',
+                        pollutant:'first', conc:'sum', elev:'first', drydep:'first', wetdep:'first',
+                        population:'first', overlap:'first', 'risk':'sum'}                
+            else:
+                aggs = {lat:'first', lon:'first', emis_type:'first',
+                        pollutant:'first', conc:'sum', aconc:'first', elev:'first', drydep:'first', wetdep:'first',
+                        population:'first', overlap:'first', 'risk':'sum'}
 
             # Aggregate concentration, grouped by FIPS/block
             inner_summed = allinner_df.groupby(by=[fips, block, source_id], as_index=False).agg(aggs).reset_index(drop=True)
@@ -109,7 +121,7 @@ class SourceTypeRiskHistogram(ExcelWriter):
                     listOuter.append(entry)
 
             for f in listOuter:
-                allouter = AllOuterReceptors(targetDir=targetDir, filenameOverride=f)
+                allouter = AllOuterReceptors(targetDir=targetDir, acuteyn=acute_yn, filenameOverride=f)
                 allouter_df = allouter.createDataframe()
 
                 allouter_df['risk'] = allouter_df.apply(lambda x: self.calculateRisk(x[pollutant], x[conc]), axis=1)
@@ -117,8 +129,12 @@ class SourceTypeRiskHistogram(ExcelWriter):
                 # convert source ids to the code part only, and then group and sum
                 allouter_df[source_id] = allouter_df[source_id].apply(lambda x: x[self.codePosition:self.codePosition+self.codeLength])
 
-                aggs = {lat:'first', lon:'first', emis_type:'first', pollutant:'first', conc:'sum', aconc:'first',
-                        elev:'first', population:'first', overlap:'first', 'risk':'sum'}
+                if acute_yn == 'N':
+                    aggs = {lat:'first', lon:'first', emis_type:'first', pollutant:'first', conc:'sum',
+                            elev:'first', population:'first', overlap:'first', 'risk':'sum'}                    
+                else:
+                    aggs = {lat:'first', lon:'first', emis_type:'first', pollutant:'first', conc:'sum', aconc:'first',
+                            elev:'first', population:'first', overlap:'first', 'risk':'sum'}
     
                 # Aggregate concentration, grouped by FIPS/block
                 outer_summed = allouter_df.groupby(by=[fips, block, source_id], as_index=False).agg(aggs).reset_index(drop=True)
@@ -190,7 +206,6 @@ class SourceTypeRiskHistogram(ExcelWriter):
         if pollutant_name in self.riskCache:
             URE = self.riskCache[pollutant_name][ure]
         else:
-            print("cache miss for pollutant " + pollutant_name)
             row = self.haplib_df.loc[
                 self.haplib_df[pollutant].str.contains(pattern, case=False, regex=True)]
 
