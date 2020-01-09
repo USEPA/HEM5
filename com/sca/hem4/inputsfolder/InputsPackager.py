@@ -68,6 +68,11 @@ class InputsPackager():
         inputs_hapemis_file = os.path.join(self.inputsFolder, "hapemis.xlsx")
         shutil.copyfile(hapemis_file, inputs_hapemis_file)
 
+        if self.model.altRec_optns.get("altrec", None):
+            alt_rcpt_file = self.model.altRec_optns.get("path", None)
+            inputs_altrec_file = os.path.join(self.inputsFolder, "alt_receptors.xlsx")
+            shutil.copyfile(alt_rcpt_file, inputs_altrec_file)
+
         if self.model.ureceptr is not None:
             user_rcpt_file = self.model.ureceptr.path
             inputs_urec_file = os.path.join(self.inputsFolder, "user_receptors.xlsx")

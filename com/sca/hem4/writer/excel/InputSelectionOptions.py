@@ -37,7 +37,7 @@ class InputSelectionOptions(ExcelWriter, InputFile):
              'Fastall (YN)', 'Facility Group Name', 'Facility List Options File', 
              'Emission Location File', 'HAP Emissions File', 'User Receptor File', 
              'Particle Size File', 'Building Downwash File', 'Buoyant Line File',
-             'Landuse File', 'Seasons File', 'Polygon Vertex File']
+             'Landuse File', 'Seasons File', 'Polygon Vertex File', 'Alternate Receptors', 'Alternate Rcpt No Pop']
 
 
     def getColumns(self):
@@ -46,7 +46,7 @@ class InputSelectionOptions(ExcelWriter, InputFile):
                       'model_dist', 'overlap_dist', 'num_rings', 'num_radials', 'acute_yn',
                       'allrecpts_yn', 'first_ring', 'fastall_yn', 'grpname', 'faclist_file',
                       'emisloc_file', 'hapemis_file', 'usrrcpt_file', 'partsize_file', 'bldgdw_file',
-                      'blp_file', 'landuse_file', 'seasons_file', 'vertex_file']
+                      'blp_file', 'landuse_file', 'seasons_file', 'vertex_file', 'alt_rec', 'alt_rec_nopop']
 
 
     def generateOutputs(self):
@@ -109,23 +109,21 @@ class InputSelectionOptions(ExcelWriter, InputFile):
         blp_file = ''
         if self.model.multibuoy is not None:
             blp_file = self.model.multibuoy.path
-        
 
-        optioncols = ['facid', 'title2', 'phase', 'ruralurban', 'dep_yn', 'depl_yn', 'dep_type', 'depl_type',
-                      'elev_yn', 'acute_hrs', 'acute_mult', 'bldgdw_yn', 'userrcpt_yn', 'max_dist',
-                      'model_dist', 'overlap_dist', 'num_rings', 'num_radials', 'acute_yn',
-                      'allrecpts_yn', 'first_ring', 'fastall_yn', 'grpname', 'faclist_file',
-                      'emisloc_file', 'hapemis_file', 'usrrcpt_file', 'partsize_file', 'bldgdw_file',
-                      'blp_file', 'landuse_file', 'seasons_file', 'vertex_file']
-        
-        
+        altrec = self.model.altRec_optns.get("altrec", None)
+        altrec = 'Y' if altrec else 'N'
+        altrec_nopop = self.model.altRec_optns.get("altrec_nopop", None)
+        altrec_nopop = 'Y' if altrec_nopop else 'N'
+
+        optioncols = self.getColumns()
+
         optionlist = [[title1, title2, phase, ruralurban, dep_yn, depl_yn, dep_type, depl_type,
                       elev, acute_hours, acute_multiplier, bldgdw_yn, userrcpt_yn, max_dist, mod_dist,
                       overlap_dist, num_rings, num_radials, acute_yn, allrecpts_yn, first_ring, 
                       fastall, grpname, faclist_file, emisloc_file, hapemis_file, 
                       user_rcpt_file, part_size_file, bldg_file, blp_file, landuse_file, 
-                      season_file, vertex_file]]
-        
+                      season_file, vertex_file, altrec, altrec_nopop]]
+
         df = DataFrame(optionlist, columns=optioncols)
 
         self.dataframe = df
@@ -140,7 +138,7 @@ class InputSelectionOptions(ExcelWriter, InputFile):
                            'depl_type', 'elev_yn', 'bldgdw_yn', 'userrcpt_yn', 'acute_yn', 'allrecpts_yn',
                            'fastall_yn', 'grpname', 'faclist_file', 'emisloc_file', 'hapemis_file',
                            'usrrcpt_file', 'partsize_file', 'bldgdw_file', 'blp_file', 'landuse_file',
-                           'seasons_file', 'vertex_file']
+                           'seasons_file', 'vertex_file', 'alt_rec', 'alt_rec_nopop']
 
         df = self.readFromPath(self.getColumns())
         return df.fillna("")

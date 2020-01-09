@@ -6,6 +6,8 @@ Created on Thu Jun  7 13:08:48 2018
 """
 
 import os
+import sys
+
 import pandas as pd
 from tkinter.filedialog import askopenfilename
 from tkinter import messagebox
@@ -214,12 +216,12 @@ class InputChecker():
                     
                     self.model.ureceptr.dataframe
             
-                except AttributeError:
+                except AttributeError as e:
                     logMsg7 = ("User receptors are specified in the Facilities" +
                               " List Options file, please upload user recptors" + 
                               " for " )
                     
-                    result['result'] = logMsg7
+                    result['result'] = logMsg7 + e
                     result['reset'] = 'user_rcpt'
                     return result
                 
