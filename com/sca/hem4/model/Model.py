@@ -144,6 +144,7 @@ class Model():
 
     def initializeAltRecOptions(self):
         self.altRec_optns = defaultdict()
+        self.altRec_optns['path'] = ''
         self.altRec_optns['altrec'] = False
         self.altRec_optns['altrec_nopop'] = False
         self.altRec_optns['altrec_flat'] = False

@@ -853,6 +853,7 @@ class Hem4(tk.Frame):
         if fullpath is not None:
                         
             self.uploader.upload("alt receptors", fullpath)
+            self.model.altRec_optns["path"] = fullpath
 
             # Update the UI
             self.urepalt_list.set(fullpath)
