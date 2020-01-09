@@ -15,16 +15,23 @@ value_rnd = 'value_rnd';
 value_sci = 'value_sci';
 notes = 'notes';
 
-class MaximumIndividualRisksNonCensus(ExcelWriter):
+class MaximumIndividualRisksNonCensus(ExcelWriter, InputFile):
     """
     Provides the maximum cancer risk and all 14 TOSHIs at populated receptors, as well as additional receptor
     information.
     """
 
-    def __init__(self, targetDir, facilityId, model, plot_df):
-        ExcelWriter.__init__(self, model, plot_df)
+    def __init__(self, targetDir=None, facilityId=None, model=None, plot_df=None, filenameOverride=None,
+                 createDataframe=False):
+        # Initialization for file reading/writing. If no file name override, use the
+        # default construction.
+        filename = facilityId + "_maximum_indiv_risks.xlsx" if filenameOverride is None else filenameOverride
+        path = os.path.join(targetDir, filename)
 
-        self.filename = os.path.join(targetDir, facilityId + "_maximum_indiv_risks.xlsx")
+        ExcelWriter.__init__(self, model, plot_df)
+        InputFile.__init__(self, path, createDataframe)
+
+        self.filename = path
 
     def nodivby0(self, n, d):
         quotient = np.zeros(len(n))
@@ -120,6 +127,10 @@ class MaximumIndividualRisksNonCensus(ExcelWriter):
         return ['Parameter', 'Value', 'Value rounded', 'Value scientific notation', 'Population', 'Distance (m)',
                 'Angle (from north)', 'Elevation (m)', 'Hill height (m)', 'Receptor ID',
                 'UTM easting', 'UTM northing', 'Latitude', 'Longitude', 'Receptor type', 'Notes']
+
+    def getColumns(self):
+        return [parameter, value, value_rnd, value_sci, population, distance, angle, elev,
+                hill, rec_id, utme, utmn, lat, lon, rec_type, notes]
 
     def generateOutputs(self):
         """
@@ -357,11 +368,19 @@ class MaximumIndividualRisksNonCensus(ExcelWriter):
             maxrisklist.append(hirow)
 
 
-        columns = [parameter, value, value_rnd, value_sci, population, distance, angle, elev,
-                   hill, rec_id, utme, utmn, lat, lon, rec_type, notes]
+        columns = self.getColumns()
+
         # Convert maxrisklist list to a dataframe and then output to self.data array
         maxrisk_df = pd.DataFrame(maxrisklist, columns=columns)
 
         self.dataframe = maxrisk_df
         self.data = self.dataframe.values
         yield self.dataframe
+
+    def createDataframe(self):
+        # Type setting for XLS reading
+        self.numericColumns = [value, value_rnd, value_sci, population, distance, angle, elev, hill, utme, utmn, lat, lon]
+        self.strColumns = [parameter, rec_id, rec_type, notes]
+
+        df = self.readFromPath(self.getColumns())
+        return df.fillna("")

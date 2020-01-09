@@ -2,11 +2,14 @@ import fnmatch
 from math import log10, floor
 from com.sca.hem4.upload.EmissionsLocations import EmissionsLocations
 from com.sca.hem4.upload.FacilityList import FacilityList
+from com.sca.hem4.writer.csv.AllInnerReceptorsNonCensus import AllInnerReceptorsNonCensus
+from com.sca.hem4.writer.csv.AllOuterReceptorsNonCensus import AllOuterReceptorsNonCensus
 from com.sca.hem4.writer.csv.BlockSummaryChronic import *
 from com.sca.hem4.writer.excel.ExcelWriter import ExcelWriter
 from com.sca.hem4.FacilityPrep import *
+from com.sca.hem4.writer.excel.summary.AltRecAwareSummary import AltRecAwareSummary
 
-class SourceTypeRiskHistogram(ExcelWriter):
+class SourceTypeRiskHistogram(ExcelWriter, AltRecAwareSummary):
 
     def __init__(self, targetDir, facilityIds, parameters=None):
         self.name = "Source Type Risk Histogram"
@@ -58,9 +61,12 @@ class SourceTypeRiskHistogram(ExcelWriter):
         for facilityId in self.facilityIds:
                             
             targetDir = self.categoryFolder + "/" + facilityId
-            
+
+            altrec = self.determineAltRec(targetDir, facilityId)
+
             acute_yn = faclist[faclist['fac_id']==facilityId]['acute'].iloc[0]
-            allinner = AllInnerReceptors(targetDir=targetDir, facilityId=facilityId, acuteyn=acute_yn)
+            allinner = AllInnerReceptorsNonCensus(targetDir=targetDir, facilityId=facilityId, acuteyn=acute_yn) if altrec else \
+                AllInnerReceptors(targetDir=targetDir, facilityId=facilityId, acuteyn=acute_yn)
             allinner_df = allinner.createDataframe()
 
             allinner_df['risk'] = allinner_df.apply(lambda x: self.calculateRisk(x[pollutant], x[conc]), axis=1)
@@ -77,8 +83,9 @@ class SourceTypeRiskHistogram(ExcelWriter):
                         pollutant:'first', conc:'sum', aconc:'first', elev:'first', drydep:'first', wetdep:'first',
                         population:'first', overlap:'first', 'risk':'sum'}
 
-            # Aggregate concentration, grouped by FIPS/block
-            inner_summed = allinner_df.groupby(by=[fips, block, source_id], as_index=False).agg(aggs).reset_index(drop=True)
+            # Aggregate concentration, grouped by FIPS/block (or receptor id if we're using alternates)
+            byCols = [rec_id, source_id] if altrec else [fips, block, source_id]
+            inner_summed = allinner_df.groupby(by=byCols, as_index=False).agg(aggs).reset_index(drop=True)
 
             for index, row in inner_summed.iterrows():
                 code = row[source_id]
@@ -121,7 +128,8 @@ class SourceTypeRiskHistogram(ExcelWriter):
                     listOuter.append(entry)
 
             for f in listOuter:
-                allouter = AllOuterReceptors(targetDir=targetDir, acuteyn=acute_yn, filenameOverride=f)
+                allouter = AllOuterReceptorsNonCensus(targetDir=targetDir, acuteyn=acute_yn, filenameOverride=f) if altrec else \
+                    AllOuterReceptors(targetDir=targetDir, acuteyn=acute_yn, filenameOverride=f)
                 allouter_df = allouter.createDataframe()
 
                 allouter_df['risk'] = allouter_df.apply(lambda x: self.calculateRisk(x[pollutant], x[conc]), axis=1)
@@ -136,9 +144,10 @@ class SourceTypeRiskHistogram(ExcelWriter):
                     aggs = {lat:'first', lon:'first', emis_type:'first', pollutant:'first', conc:'sum', aconc:'first',
                             elev:'first', population:'first', overlap:'first', 'risk':'sum'}
     
-                # Aggregate concentration, grouped by FIPS/block
-                outer_summed = allouter_df.groupby(by=[fips, block, source_id], as_index=False).agg(aggs).reset_index(drop=True)
-    
+                # Aggregate concentration, grouped by FIPS/block (or receptor id if we're using alternates)
+                byCols = [rec_id, source_id] if altrec else [fips, block, source_id]
+                outer_summed = allouter_df.groupby(by=byCols, as_index=False).agg(aggs).reset_index(drop=True)
+
                 for index, row in outer_summed.iterrows():
                     code = row[source_id]
                     risk = row['risk']

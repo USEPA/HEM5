@@ -12,7 +12,7 @@ wetdep = 'wetdep';
 aconc = 'aconc';
 aresult = 'aresult';
 
-class AllInnerReceptorsNonCensus(CsvWriter):
+class AllInnerReceptorsNonCensus(CsvWriter, InputFile):
     """
     Provides the annual average concentration modeled at every census block within the modeling cutoff distance,
     specific to each source ID and pollutant, along with receptor information, and acute concentration (if modeled) and
@@ -20,11 +20,16 @@ class AllInnerReceptorsNonCensus(CsvWriter):
     that is only present when using census data. This corresponds to a "user receptors only" scenario.
     """
 
-    def __init__(self, targetDir, facilityId, model, plot_df, acuteyn):
-        CsvWriter.__init__(self, model, plot_df)
-
+    def __init__(self, targetDir=None, facilityId=None, model=None, plot_df=None, acuteyn=None,
+                 filenameOverride=None, createDataframe=False):
+        # Initialization for CSV reading/writing. If no file name override, use the
+        # default construction.
         self.targetDir = targetDir
-        self.filename = os.path.join(self.targetDir, facilityId + "_all_inner_receptors.csv")
+        filename = facilityId + "_all_inner_receptors.csv" if filenameOverride is None else filenameOverride
+        path = os.path.join(self.targetDir, filename)
+
+        CsvWriter.__init__(self, model, plot_df)
+        InputFile.__init__(self, path, createDataframe)
 
         self.innerBlocksCache = {}
         self.acute_yn = acuteyn
@@ -185,5 +190,5 @@ class AllInnerReceptorsNonCensus(CsvWriter):
 
         self.strColumns = [rec_id, source_id, emis_type, pollutant, overlap]
 
-        df = self.readFromPathCsv(self.getColumns(self.acute_yn))
+        df = self.readFromPathCsv(self.getColumns())
         return df.fillna("")        
