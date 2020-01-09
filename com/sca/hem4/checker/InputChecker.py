@@ -216,7 +216,7 @@ class InputChecker():
                     
                     self.model.ureceptr.dataframe
             
-                except Exception as e:
+                except AttributeError as e:
                     logMsg7 = ("User receptors are specified in the Facilities" +
                               " List Options file, please upload user recptors" + 
                               " for " )
