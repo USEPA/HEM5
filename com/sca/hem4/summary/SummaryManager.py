@@ -10,9 +10,11 @@ import com.sca.hem4.writer.excel.summary.IncidenceDrivers as incidenceDriversRep
 import com.sca.hem4.writer.excel.summary.AcuteImpacts as acuteImpactsReportModule
 import com.sca.hem4.writer.excel.summary.SourceTypeRiskHistogram as sourceTypeRiskHistogramModule
 import com.sca.hem4.writer.excel.summary.MultiPathway as multiPathwayModule
+import com.sca.hem4.writer.excel.summary.MultiPathwayNonCensus as multiPathwayModuleNonCensus
+from com.sca.hem4.writer.excel.summary.AltRecAwareSummary import AltRecAwareSummary
 
 
-class SummaryManager():
+class SummaryManager(AltRecAwareSummary):
 
     def __init__(self, targetDir, facilitylist):
         
@@ -27,7 +29,8 @@ class SummaryManager():
                                  'IncidenceDrivers' : incidenceDriversReportModule,
                                  'AcuteImpacts' : acuteImpactsReportModule,
                                  'SourceTypeRiskHistogram' : sourceTypeRiskHistogramModule,
-                                 'MultiPathway' : multiPathwayModule}
+                                 'MultiPathway' : multiPathwayModule,
+                                 'MultiPathwayNonCensus' : multiPathwayModuleNonCensus}
 
         # Get modeling group name from the Facililty Max Risk and HI file
         skeleton = os.path.join(self.categoryFolder, '*_facility_max_risk_and_hi.xlsx')
@@ -48,11 +51,23 @@ class SummaryManager():
                         'IncidenceDrivers' : None,
                         'AcuteImpacts' : None,
                         'SourceTypeRiskHistogram' : [0,2],
-                        'MultiPathway' : [self.grpname]}
+                        'MultiPathway' : [self.grpname],
+                        'MultiPathwayNonCensus' : [self.grpname]}
 
 
         
     def createReport(self, categoryFolder, reportName, arguments=None):
+
+        # Multipathway is the only summary that has two implementation classes, one for the standard
+        # case and one for when alternate receptors are used. But we don't expose that split
+        # to users, therefore we run the alt rec summary when needed and determine that here. Since we can
+        # assume that all facilities run in the same category used alternate receptors (or not...)
+        # we only need to check the first one to decide.
+        firstFacility = self.facilityIds[0]
+        targetDir = os.path.join(categoryFolder, firstFacility)
+        altrec = self.determineAltRec(targetDir, firstFacility)
+        if altrec == 'Y' and reportName == 'MultiPathway':
+            reportName = "MultiPathwayNonCensus"
 
         print("\r\n Starting report: " + reportName)
                 
