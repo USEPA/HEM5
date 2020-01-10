@@ -260,6 +260,7 @@ class FacilityRunner():
         Logger.logMessage("Building runstream for " + self.facilityId)
         
         try:
+            
             prep = FacilityPrep(self.model)
         
 #        print("building runstream")
