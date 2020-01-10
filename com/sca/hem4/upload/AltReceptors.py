@@ -19,7 +19,7 @@ class AltReceptors(InputFile):
         self.strColumns = [location_type, utmzone, rec_type, rec_id]
 
         altreceptor_df = self.readFromPathCsv(
-                (location_type, lon, lat, utmzone, elev, rec_type, rec_id, hill, population))
+                (rec_id, rec_type, location_type, lon, lat, utmzone, elev, hill, population))
 
         self.log.append("Uploaded Alternate Receptors")
 

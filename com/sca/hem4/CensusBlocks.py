@@ -264,7 +264,7 @@ def cntyinzone(lat_min, lon_min, lat_max, lon_max, cenlat, cenlon, maxdist_deg):
     return inzone
 
 #%%
-def getblocks(cenx, ceny, cenlon, cenlat, utmzone, maxdist, modeldist, sourcelocs, overlap_dist, model):
+def getblocks(cenx, ceny, cenlon, cenlat, utmzone, hemi, maxdist, modeldist, sourcelocs, overlap_dist, model):
     
 
     # convert max outer ring distance from meters to degrees latitude
@@ -321,14 +321,14 @@ def getblocks(cenx, ceny, cenlon, cenlat, utmzone, maxdist, modeldist, sourceloc
     #combine all frames df's
     censusblks = pd.concat(frames)
 
-    #convert to utm if necessary
-    censusblks[utms] = censusblks.apply(lambda row: UTM.ll2utm_alt(row[lat], row[lon], utmzone), axis=1)
+    #compute UTMs from lat/lon using the common zone       
+    censusblks[[utmn, utme]] = censusblks.apply(lambda row: UTM.ll2utm_alt(row[lat],row[lon],utmzone,hemi), 
+                                               result_type="expand", axis=1)
 
-    #split utms column into utmn, utme, utmz
-    censusblks[[utmn, utme, utmz]] = pd.DataFrame(censusblks.utms.values.tolist(), index= censusblks.index)
-    #clean up censusblks df
-    del censusblks[utms]
+    #set utmz as the common zone
+    censusblks[utmz] = utmzone
     
+   
     #coerce hill and elevation into floats
     censusblks[hill] = pd.to_numeric(censusblks[hill], errors='coerce').fillna(0)
     censusblks[elev] = pd.to_numeric(censusblks[elev], errors='coerce').fillna(0)
