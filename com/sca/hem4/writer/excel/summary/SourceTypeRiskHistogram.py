@@ -59,7 +59,7 @@ class SourceTypeRiskHistogram(ExcelWriter, AltRecAwareSummary):
         codes['overall'] = [0, 0, 0, 0, 0]
 
         for facilityId in self.facilityIds:
-                            
+                           
             targetDir = self.categoryFolder + "/" + facilityId
 
             altrec = self.determineAltRec(targetDir, facilityId)
@@ -74,19 +74,22 @@ class SourceTypeRiskHistogram(ExcelWriter, AltRecAwareSummary):
             # convert source ids to the code part only, and then group and sum
             allinner_df[source_id] = allinner_df[source_id].apply(lambda x: x[self.codePosition:self.codePosition+self.codeLength])
 
-            if acute_yn == 'N':
-                aggs = {lat:'first', lon:'first', emis_type:'first',
-                        pollutant:'first', conc:'sum', elev:'first', drydep:'first', wetdep:'first',
-                        population:'first', overlap:'first', 'risk':'sum'}                
-            else:
-                aggs = {lat:'first', lon:'first', emis_type:'first',
-                        pollutant:'first', conc:'sum', aconc:'first', elev:'first', drydep:'first', wetdep:'first',
-                        population:'first', overlap:'first', 'risk':'sum'}
+#            if acute_yn == 'N':
+#                aggs = {lat:'first', lon:'first', emis_type:'first',
+#                        pollutant:'first', conc:'sum', elev:'first', drydep:'first', wetdep:'first',
+#                        population:'first', overlap:'first', 'risk':'sum'}                
+#            else:
+#                aggs = {lat:'first', lon:'first', emis_type:'first',
+#                        pollutant:'first', conc:'sum', aconc:'first', elev:'first', drydep:'first', wetdep:'first',
+#                        population:'first', overlap:'first', 'risk':'sum'}
+
+
+            aggs = {lat:'first', lon:'first', population:'first', 'risk':'sum'}                
 
             # Aggregate concentration, grouped by FIPS/block (or receptor id if we're using alternates)
             byCols = [rec_id, source_id] if altrec else [fips, block, source_id]
             inner_summed = allinner_df.groupby(by=byCols, as_index=False).agg(aggs).reset_index(drop=True)
-
+            
             for index, row in inner_summed.iterrows():
                 code = row[source_id]
                 risk = row['risk']
@@ -137,12 +140,14 @@ class SourceTypeRiskHistogram(ExcelWriter, AltRecAwareSummary):
                 # convert source ids to the code part only, and then group and sum
                 allouter_df[source_id] = allouter_df[source_id].apply(lambda x: x[self.codePosition:self.codePosition+self.codeLength])
 
-                if acute_yn == 'N':
-                    aggs = {lat:'first', lon:'first', emis_type:'first', pollutant:'first', conc:'sum',
-                            elev:'first', population:'first', overlap:'first', 'risk':'sum'}                    
-                else:
-                    aggs = {lat:'first', lon:'first', emis_type:'first', pollutant:'first', conc:'sum', aconc:'first',
-                            elev:'first', population:'first', overlap:'first', 'risk':'sum'}
+#                if acute_yn == 'N':
+#                    aggs = {lat:'first', lon:'first', emis_type:'first', pollutant:'first', conc:'sum',
+#                            elev:'first', population:'first', overlap:'first', 'risk':'sum'}                    
+#                else:
+#                    aggs = {lat:'first', lon:'first', emis_type:'first', pollutant:'first', conc:'sum', aconc:'first',
+#                            elev:'first', population:'first', overlap:'first', 'risk':'sum'}
+
+                aggs = {lat:'first', lon:'first', population:'first', 'risk':'sum'}                
     
                 # Aggregate concentration, grouped by FIPS/block (or receptor id if we're using alternates)
                 byCols = [rec_id, source_id] if altrec else [fips, block, source_id]
@@ -180,9 +185,12 @@ class SourceTypeRiskHistogram(ExcelWriter, AltRecAwareSummary):
                         codelist[3] += pop
                     codelist[4] += (risk * pop) / 70
 
+        # Sort codes dictionary by descending cancer risk
+        codes_sorted = {k: v for k, v in sorted(codes.items(), key=lambda item: item[1], reverse=True)}
+        
         self.sourceTypes.insert(0, 'overall')
         for code in self.sourceTypes:
-            codelist = codes[code]
+            codelist = codes_sorted[code]
             maximum.append(self.round_to_sigfig(codelist[0]*1000000))
             hundo.append(codelist[1])
             ten.append(codelist[2])
