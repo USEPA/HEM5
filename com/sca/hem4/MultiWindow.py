@@ -33,6 +33,7 @@ from com.sca.hem4.summary.SummaryManager import SummaryManager
 
 TITLE_FONT= ("Verdana", 18)
 TEXT_FONT = ("Verdana", 14)
+SUB_FONT = ("Verdana", 12)
 
 def hyperlink1(event):
     webbrowser.open_new(r"https://www.epa.gov/fera/risk-assessment-and-"+
@@ -106,7 +107,7 @@ class Page1(Page):
         
         self.var_m = tk.IntVar()
         max_risk = tk.Checkbutton(self.s4, font=TEXT_FONT, bg="palegreen3", text="Max Risk Summary", variable=self.var_m)
-        max_risk.pack(fill="x")
+        max_risk.pack()
         
         
         self.var_c = tk.IntVar()
@@ -118,7 +119,7 @@ class Page1(Page):
         hazard.pack(fill="x")
         
         self.var_hi = tk.IntVar()
-        hist = tk.Checkbutton(self.s4, font=TEXT_FONT, bg="palegreen3", text="Histogram", variable=self.var_hi)
+        hist = tk.Checkbutton(self.s4, font=TEXT_FONT, bg="palegreen3", text="Risk Histogram", variable=self.var_hi)
         hist.pack(fill="x")
         
         self.var_hh = tk.IntVar()
@@ -133,13 +134,30 @@ class Page1(Page):
         ai = tk.Checkbutton(self.s4, font=TEXT_FONT, bg="palegreen3", text="Acute Impacts Summary", variable=self.var_a)
         ai.pack(fill="x")
         
+        self.var_p = tk.IntVar()
+        mp = tk.Checkbutton(self.s4, font=TEXT_FONT, bg="palegreen3", text=" Multi Pathway", variable=self.var_p)
+        mp.pack(fill="x")
+        
         self.var_s = tk.IntVar()
         s = tk.Checkbutton(self.s4, font=TEXT_FONT, bg="palegreen3", text="Source Type Risk Histogram", variable=self.var_s)
         s.pack(fill="x")
         
-        self.var_p = tk.IntVar()
-        mp = tk.Checkbutton(self.s4, font=TEXT_FONT, bg="palegreen3", text=" Multi Pathway", variable=self.var_p)
-        mp.pack(fill="x")
+        pos = tk.Label(self.s4, font=SUB_FONT, bg="palegreen3", text="Enter the position in the source ID where the\n source ID type begins.The default is 1.")
+        pos.pack(side='left', padx = 10)
+        
+        self.pos_num = ttk.Entry(self.s4)
+        self.pos_num["width"] = 5
+        self.pos_num.pack(side = 'left', padx=5)
+        
+        chars = tk.Label(self.s4, font=SUB_FONT, bg="palegreen3", text="Enter the number of characters of the sourcetype ID")
+        chars.pack()
+        
+        self.chars_num = ttk.Entry(self.s4)
+        self.chars_num["width"] = 5
+        self.chars_num.pack(side="right", padx=10)
+        
+   
+        
         
         
         #back button
@@ -185,6 +203,11 @@ class Page1(Page):
         #    reportNames.append('AcuteImpacts')
         if self.var_s.get() == 1:
             reportNames.append('SourceTypeRiskHistogram')
+            #pass position number and character number
+            self.pos_num
+            self.chars_num
+            
+            
         if self.var_p.get() == 1:
             reportNames.append('MultiPathway')
         
