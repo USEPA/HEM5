@@ -169,7 +169,7 @@ class UTM:
 
             transformer = UTM.getTransformer(realepsg, epsgUsed)
             utme, utmn = transformer.transform(realE, realN)
-            return utmn, utme
+            return int(utmn), int(utme)
   
     @staticmethod
     def center(sourcelocs, facutmznum, fachemi):

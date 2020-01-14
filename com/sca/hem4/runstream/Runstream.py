@@ -190,7 +190,6 @@ class Runstream():
         cord = self.emisloc_df['location_type'][:]                       # Coordinate System
         xco1 = self.emisloc_df['utme'].apply(lambda x: normal_round(x))  # X-Coordinate
         yco1 = self.emisloc_df['utmn'].apply(lambda x: normal_round(x))  # Y-Coordinate
-        utmz = self.emisloc_df['utmzone'][:]                             # UTM Zone
         srct = self.emisloc_df['source_type'][:]                         # Source Type
         lenx = self.emisloc_df['lengthx'][:]                             # Length in X-Direction
         leny = self.emisloc_df['lengthy'][:]                             # Length in Y-Direction
@@ -227,7 +226,6 @@ class Runstream():
 
     
     # Lat/Lon check also needs to be inserted
-        utmz[np.isnan(utmz)] = 0
         lenx[np.isnan(lenx)] = 0
         leny[np.isnan(leny)] = 0
         angl[np.isnan(angl)] = 0
