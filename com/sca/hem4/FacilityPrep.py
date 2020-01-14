@@ -280,13 +280,35 @@ class FacilityPrep():
         if hasattr(self.model.ureceptr, "dataframe"):
 
             user_recs = self.model.ureceptr.dataframe.loc[self.model.ureceptr.dataframe[fac_id] == facid].copy()
+            user_recs.utmzone = user_recs.utmzone.replace('nan', '0N', regex=True)
+
+            # Compute lat/lon of any user supplied UTM coordinates
+            user_recs[[lat, lon]] = user_recs.apply(lambda row: UTM.utm2ll(row[lon],row[lat],row[utmzone])
+            if row['location_type']=='U' else [row[lat],row[lon]], result_type="expand", axis=1)
+    
+            # Next compute UTM coordinates using the common zone
+            user_recs[[utmn, utme]] = user_recs.apply(lambda row: UTM.ll2utm_alt(row[lat],row[lon],facutmzone,hemi)
+            if row['location_type']=='L' else [row[utmn],row[utme]], result_type="expand", axis=1)
+    
+    
+            # Compute lat/lon of any x2 and y2 coordinates that were supplied as UTM
+            user_recs[['lat_y2', 'lon_x2']] = user_recs.apply(lambda row: UTM.utm2ll(row[x2],row[y2],row[utmzone])
+            if row['location_type']=='U' else [row[y2],row[x2]], result_type="expand", axis=1)
+    
+            # Compute UTM coordinates of x2 and y2 using the common zone
+            user_recs[['utmn_y2', 'utme_x2']] = user_recs.apply(lambda row: UTM.ll2utm_alt(row[y2],row[x2],facutmzone,hemi)
+            if row['location_type']=='L' else [row[y2],row[x2]], result_type="expand", axis=1)
+        
             user_recs.reset_index(inplace=True)
 
             if not user_recs.empty:
+                user_recs = user_recs.iloc[0]
+
                 # First compute lat/lon coors using whatever zone was provided
-                slat = user_recs[lat].reset_index(drop=True)
-                slon = user_recs[lon].reset_index(drop=True)
-                szone = user_recs[utmzone].reset_index(drop=True)
+                slat = user_recs[lat] #.reset_index(drop=True)
+                slon = user_recs[lon] #.reset_index(drop=True)
+                szone = user_recs[utmzone] #.reset_index(drop=True)
+                print("szone: " + str(szone))
                 alat, alon = UTM.utm2ll(slat, slon, szone)
                 user_recs[lat] = alat.tolist()
                 user_recs[lon] = alon.tolist()
