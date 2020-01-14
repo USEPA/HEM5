@@ -20,7 +20,7 @@ class MultiPathwayNonCensus(ExcelWriter):
 
     def __init__(self, targetDir, facilityIds, parameters=None):
         self.name = "Multipathway Summary"
-        self.category = parameters[0]
+        self.categoryName = parameters[0]
         self.categoryFolder = targetDir
         self.facilityIds = facilityIds
 
@@ -30,7 +30,7 @@ class MultiPathwayNonCensus(ExcelWriter):
         self.riskCache = {}
 
     def getHeader(self):
-        return ['Src Cat',	'Facility ID',	'Rural/Urban', 'Octant or MIR', 'Chem,Centroid, or Discrete',
+        return ['Src Cat',	'Facility ID',	'Rural/Urban', 'Octant or MIR', 'Chem, Centroid, or Discrete',
                 'Receptor ID', 'Lat',	'Lon', 'Population', 'Total Inhalation Cancer Risk',
                 'Total Inhalation As Cancer Risk',	 'Total Inhalation PAH Cancer Risk',
                 'Total Inhalation D/F Cancer Risk'
@@ -41,7 +41,7 @@ class MultiPathwayNonCensus(ExcelWriter):
 
         # The first step is to load the risk breakdown output for each facility so that we
         # can recover the risk for each pollutant.
-        filename = self.category + "_facility_max_risk_and_hi.xlsx"
+        filename = self.categoryName + "_facility_max_risk_and_hi.xlsx"
         facilityMaxRiskAndHI = FacilityMaxRiskandHI(targetDir=self.categoryFolder, filenameOverride=filename)
         facilityMaxRiskAndHI_df = facilityMaxRiskAndHI.createDataframe()
 
@@ -89,7 +89,7 @@ class MultiPathwayNonCensus(ExcelWriter):
             dfRow = rbkdn_df.loc[rbkdn_df[designation] == 'DF']
             dfRisk = 0 if dfRow.empty else dfRow.iloc[0][value]
 
-            pathway = [self.category, facilityId, maxRiskAndHI_df.iloc[0][rural_urban], 'MIR', 'All HAP',
+            pathway = [self.categoryName, facilityId, maxRiskAndHI_df.iloc[0][rural_urban], 'MIR', 'All HAP',
                        maxIndivRisks_df.iloc[0][rec_id],
                        maxIndivRisks_df.iloc[0][lat], maxIndivRisks_df.iloc[0][lon],
                        maxIndivRisks_df.iloc[0][population], maxRiskAndHI_df.iloc[0]['mx_can_rsk'],
@@ -212,7 +212,7 @@ class MultiPathwayNonCensus(ExcelWriter):
     def getRisksPathway(self, designationValue, riskblocks_df, facilityId, maxRiskAndHI_df, maxIndivRisks_df):
         onlyThis = riskblocks_df[riskblocks_df[designation] == designationValue]
         if onlyThis.empty:
-            maxPathway = [self.category, facilityId, maxRiskAndHI_df.iloc[0][rural_urban], 'MIR', designationValue,'','', '',
+            maxPathway = [self.categoryName, facilityId, maxRiskAndHI_df.iloc[0][rural_urban], 'MIR', designationValue,'','', '',
                           '', '', 0, 0, 0]
         else:
             maxRisk = onlyThis.loc[onlyThis['risk'].idxmax()].iloc[0]
@@ -225,7 +225,7 @@ class MultiPathwayNonCensus(ExcelWriter):
             dfRiskValue = 0 if quartet_df.loc[quartet_df[designation] == 'DF'].empty else \
                 quartet_df.loc[quartet_df[designation] == 'DF'].iloc[0]['risk']
 
-            maxPathway = [self.category, facilityId, maxRiskAndHI_df.iloc[0][rural_urban], 'MIR', designationValue,
+            maxPathway = [self.categoryName, facilityId, maxRiskAndHI_df.iloc[0][rural_urban], 'MIR', designationValue,
                           maxIndivRisks_df.iloc[0][rec_id],
                           maxIndivRisks_df.iloc[0][lat], maxIndivRisks_df.iloc[0][lon],
                           maxIndivRisks_df.iloc[0][population], quartet_df['risk'].sum(),
@@ -245,7 +245,7 @@ class MultiPathwayNonCensus(ExcelWriter):
 
         populationValue = quartet_df.iloc[0][population]
         receptorType = 'Centroid' if populationValue > 0 else 'Discrete'
-        maxPathway = [self.category, facilityId, maxRiskAndHI_df.iloc[0][rural_urban], octant, receptorType,
+        maxPathway = [self.categoryName, facilityId, maxRiskAndHI_df.iloc[0][rural_urban], octant, receptorType,
                       recIdValue, quartet_df.iloc[0][lat], quartet_df.iloc[0][lon],
                       populationValue, quartet_df['risk'].sum(), asRiskValue, pahRiskValue, dfRiskValue]
 

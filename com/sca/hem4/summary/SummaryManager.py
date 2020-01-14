@@ -43,14 +43,14 @@ class SummaryManager(AltRecAwareSummary):
             return 
 
         # Define the arguments needed for each summary module
-        self.reportArgs = {'MaxRisk' : None,
-                        'CancerDrivers' : None,
-                        'HazardIndexDrivers' : None,
-                        'Histogram' : None,
-                        'HI_Histogram' : None,
-                        'IncidenceDrivers' : None,
-                        'AcuteImpacts' : None,
-                        'SourceTypeRiskHistogram' : [0,2],
+        self.reportArgs = {'MaxRisk' : [self.grpname],
+                        'CancerDrivers' : [self.grpname],
+                        'HazardIndexDrivers' : [self.grpname],
+                        'Histogram' : [self.grpname],
+                        'HI_Histogram' : [self.grpname],
+                        'IncidenceDrivers' : [self.grpname],
+                        'AcuteImpacts' : [self.grpname],
+                        'SourceTypeRiskHistogram' : [self.grpname,0,2],
                         'MultiPathway' : [self.grpname],
                         'MultiPathwayNonCensus' : [self.grpname]}
 

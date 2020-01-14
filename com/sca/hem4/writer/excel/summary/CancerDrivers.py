@@ -6,10 +6,11 @@ class CancerDrivers(ExcelWriter):
 
     def __init__(self, targetDir, facilityIds, parameters=None):
         self.name = "Cancer Drivers Summary"
+        self.categoryName = parameters[0]
         self.categoryFolder = targetDir
         self.facilityIds = facilityIds
 
-        self.filename = os.path.join(targetDir, "cancer_drivers.xlsx")
+        self.filename = os.path.join(targetDir, self.categoryName + "_cancer_drivers.xlsx")
 
     def getHeader(self):
         return ['Facility ID', 'MIR', 'Pollutant', 'Cancer Risk', 'Risk Contribution', 'Source ID']

@@ -13,16 +13,17 @@ class SourceTypeRiskHistogram(ExcelWriter, AltRecAwareSummary):
 
     def __init__(self, targetDir, facilityIds, parameters=None):
         self.name = "Source Type Risk Histogram"
+        self.categoryName = parameters[0]
         self.categoryFolder = targetDir
         self.facilityIds = facilityIds
 
         # Parameters specify which part of the source id contains the code
-        self.codePosition = parameters[0]
-        self.codeLength = parameters[1]
+        self.codePosition = parameters[1]
+        self.codeLength = parameters[2]
         self.sourceTypes = None
         self.header = None
         self.haplib_df = DoseResponse().dataframe
-        self.filename = os.path.join(targetDir, "source_type_risk.xlsx")
+        self.filename = os.path.join(targetDir, self.categoryName + "_source_type_risk.xlsx")
 
         self.riskCache = {}
 
@@ -58,6 +59,10 @@ class SourceTypeRiskHistogram(ExcelWriter, AltRecAwareSummary):
         codes = {}
         codes['overall'] = [0, 0, 0, 0, 0]
 
+        # Initialize overall block risk DF (sector level)
+        sector_blkrisk = pd.DataFrame()
+        
+        
         for facilityId in self.facilityIds:
                            
             targetDir = self.categoryFolder + "/" + facilityId
@@ -65,7 +70,7 @@ class SourceTypeRiskHistogram(ExcelWriter, AltRecAwareSummary):
             altrec = self.determineAltRec(targetDir, facilityId)
 
             acute_yn = faclist[faclist['fac_id']==facilityId]['acute'].iloc[0]
-            allinner = AllInnerReceptorsNonCensus(targetDir=targetDir, facilityId=facilityId, acuteyn=acute_yn) if altrec else \
+            allinner = AllInnerReceptorsNonCensus(targetDir=targetDir, facilityId=facilityId, acuteyn=acute_yn) if altrec=='Y' else \
                 AllInnerReceptors(targetDir=targetDir, facilityId=facilityId, acuteyn=acute_yn)
             allinner_df = allinner.createDataframe()
 
@@ -74,21 +79,27 @@ class SourceTypeRiskHistogram(ExcelWriter, AltRecAwareSummary):
             # convert source ids to the code part only, and then group and sum
             allinner_df[source_id] = allinner_df[source_id].apply(lambda x: x[self.codePosition:self.codePosition+self.codeLength])
 
-#            if acute_yn == 'N':
-#                aggs = {lat:'first', lon:'first', emis_type:'first',
-#                        pollutant:'first', conc:'sum', elev:'first', drydep:'first', wetdep:'first',
-#                        population:'first', overlap:'first', 'risk':'sum'}                
-#            else:
-#                aggs = {lat:'first', lon:'first', emis_type:'first',
-#                        pollutant:'first', conc:'sum', aconc:'first', elev:'first', drydep:'first', wetdep:'first',
-#                        population:'first', overlap:'first', 'risk':'sum'}
 
-
+            # Aggregate risk, grouped by FIPS/block (or receptor id if we're using alternates)
             aggs = {lat:'first', lon:'first', population:'first', 'risk':'sum'}                
-
-            # Aggregate concentration, grouped by FIPS/block (or receptor id if we're using alternates)
-            byCols = [rec_id, source_id] if altrec else [fips, block, source_id]
+            byCols = [rec_id, source_id] if altrec=='Y' else [fips, block, source_id]
             inner_summed = allinner_df.groupby(by=byCols, as_index=False).agg(aggs).reset_index(drop=True)
+
+            
+            # Drop records that (are not user receptors AND have population = 0)
+            if altrec == 'N':
+                inner_summed.drop(inner_summed[(inner_summed.population == 0) & ("U" not in inner_summed.block)].index,
+                                 inplace=True)
+            else:
+                inner_summed.drop(inner_summed[(inner_summed.population == 0) & ("U" not in inner_summed.rec_id)].index,
+                                 inplace=True)
+                
+            
+            # Append to sector block risk DF
+            sector_blkrisk = sector_blkrisk.append(inner_summed)
+            
+            # Round risk to 1 sig fig
+            inner_summed['risk'] = inner_summed['risk'].apply(lambda x: self.round_to_sigfig(x, 1))
             
             for index, row in inner_summed.iterrows():
                 code = row[source_id]
@@ -131,7 +142,7 @@ class SourceTypeRiskHistogram(ExcelWriter, AltRecAwareSummary):
                     listOuter.append(entry)
 
             for f in listOuter:
-                allouter = AllOuterReceptorsNonCensus(targetDir=targetDir, acuteyn=acute_yn, filenameOverride=f) if altrec else \
+                allouter = AllOuterReceptorsNonCensus(targetDir=targetDir, acuteyn=acute_yn, filenameOverride=f) if altrec=='Y' else \
                     AllOuterReceptors(targetDir=targetDir, acuteyn=acute_yn, filenameOverride=f)
                 allouter_df = allouter.createDataframe()
 
@@ -140,18 +151,26 @@ class SourceTypeRiskHistogram(ExcelWriter, AltRecAwareSummary):
                 # convert source ids to the code part only, and then group and sum
                 allouter_df[source_id] = allouter_df[source_id].apply(lambda x: x[self.codePosition:self.codePosition+self.codeLength])
 
-#                if acute_yn == 'N':
-#                    aggs = {lat:'first', lon:'first', emis_type:'first', pollutant:'first', conc:'sum',
-#                            elev:'first', population:'first', overlap:'first', 'risk':'sum'}                    
-#                else:
-#                    aggs = {lat:'first', lon:'first', emis_type:'first', pollutant:'first', conc:'sum', aconc:'first',
-#                            elev:'first', population:'first', overlap:'first', 'risk':'sum'}
-
-                aggs = {lat:'first', lon:'first', population:'first', 'risk':'sum'}                
     
-                # Aggregate concentration, grouped by FIPS/block (or receptor id if we're using alternates)
-                byCols = [rec_id, source_id] if altrec else [fips, block, source_id]
+                # Aggregate risk, grouped by FIPS/block (or receptor id if we're using alternates)
+                aggs = {lat:'first', lon:'first', population:'first', 'risk':'sum'}                
+                byCols = [rec_id, source_id] if altrec=='Y' else [fips, block, source_id]
                 outer_summed = allouter_df.groupby(by=byCols, as_index=False).agg(aggs).reset_index(drop=True)
+
+                # Drop records that (are not user receptors AND have population = 0)
+                if altrec == 'N':
+                    outer_summed.drop(outer_summed[(outer_summed.population == 0) & ("U" not in outer_summed.block)].index,
+                                     inplace=True)
+                else:
+                    outer_summed.drop(outer_summed[(outer_summed.population == 0) & ("U" not in outer_summed.rec_id)].index,
+                                     inplace=True)
+                    
+
+                # Append to sector block risk DF
+                sector_blkrisk = sector_blkrisk.append(outer_summed)
+
+                # Round risk to 1 sig fig
+                outer_summed['risk'] = outer_summed['risk'].apply(lambda x: self.round_to_sigfig(x, 1))
 
                 for index, row in outer_summed.iterrows():
                     code = row[source_id]
@@ -185,6 +204,15 @@ class SourceTypeRiskHistogram(ExcelWriter, AltRecAwareSummary):
                         codelist[3] += pop
                     codelist[4] += (risk * pop) / 70
 
+        # Aggregate sector risk, grouped by FIPS/block (or receptor id if we're using alternates)
+        aggs = {lat:'first', lon:'first', 'risk':'sum'}                
+        byCols = [rec_id, source_id] if altrec=='Y' else [fips, block, source_id]
+        sector_summed = sector_blkrisk.groupby(by=byCols, as_index=False).agg(aggs).reset_index(drop=True)
+
+        # Maximum MIR for the entire sector
+        self.sector_mir = round(sector_summed['risk'].max() * 1000000, 3)
+        
+        
         # Sort codes dictionary by descending cancer risk
         codes_sorted = {k: v for k, v in sorted(codes.items(), key=lambda item: item[1], reverse=True)}
         
@@ -239,6 +267,8 @@ class SourceTypeRiskHistogram(ExcelWriter, AltRecAwareSummary):
     def writeWithTimestamp(self):
         super(SourceTypeRiskHistogram, self).writeWithTimestamp()
 
+        sector_mir_txt = ["Sector MIR (in a million) = " + str(self.sector_mir)]
+        
         notes = ["Note: The Maximum Overall column lists the population at various risk levels attributable to all\n" + \
         "source types/emission process groups combined, while the other columns list the population at various risk\n" + \
         "levels attributable to each individual source type in isolation. The sum of the population tallies across\n" + \
@@ -248,6 +278,8 @@ class SourceTypeRiskHistogram(ExcelWriter, AltRecAwareSummary):
         "in isolation may be enough to cause a census block population to exceed a given risk level, while other\n" + \
         "source types may similarly impact the same census block population and also (in isolation) cause that\n" + \
         "population to exceed the given risk level."]
+        
+        self.appendHeaderAtLocation(headers=sector_mir_txt, startingrow=13, startingcol=0)
 
         self.appendHeaderAtLocation(headers=notes, startingrow=15, startingcol=0)
 

@@ -15,10 +15,11 @@ class HI_Histogram(ExcelWriter):
 
     def __init__(self, targetDir, facilityIds, parameters=None):
         self.name = "Non-cancer Histogram"
+        self.categoryName = parameters[0]
         self.categoryFolder = targetDir
         self.facilityIds = facilityIds
 
-        self.filename = os.path.join(targetDir, "hi_histogram_risk.xlsx")
+        self.filename = os.path.join(targetDir, self.categoryName + "_hi_histogram.xlsx")
 
     def getHeader(self):
         return ['HI Level',	 'Respiratory Pop',	'Respiratory Facilities',
