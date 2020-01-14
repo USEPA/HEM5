@@ -284,93 +284,67 @@ class FacilityPrep():
 
             # Compute lat/lon of any user supplied UTM coordinates
             user_recs[[lat, lon]] = user_recs.apply(lambda row: UTM.utm2ll(row[lon],row[lat],row[utmzone])
-            if row['location_type']=='U' else [row[lat],row[lon]], result_type="expand", axis=1)
+                         if row['location_type']=='U' else [row[lat],row[lon]], result_type="expand", axis=1)
     
             # Next compute UTM coordinates using the common zone
             user_recs[[utmn, utme]] = user_recs.apply(lambda row: UTM.ll2utm_alt(row[lat],row[lon],facutmzone,hemi)
-            if row['location_type']=='L' else [row[utmn],row[utme]], result_type="expand", axis=1)
+                         if row['location_type']=='L' else [row[utmn],row[utme]], result_type="expand", axis=1)
     
-    
-            # Compute lat/lon of any x2 and y2 coordinates that were supplied as UTM
-            user_recs[['lat_y2', 'lon_x2']] = user_recs.apply(lambda row: UTM.utm2ll(row[x2],row[y2],row[utmzone])
-            if row['location_type']=='U' else [row[y2],row[x2]], result_type="expand", axis=1)
-    
-            # Compute UTM coordinates of x2 and y2 using the common zone
-            user_recs[['utmn_y2', 'utme_x2']] = user_recs.apply(lambda row: UTM.ll2utm_alt(row[y2],row[x2],facutmzone,hemi)
-            if row['location_type']=='L' else [row[y2],row[x2]], result_type="expand", axis=1)
-        
+            
             user_recs.reset_index(inplace=True)
 
-            if not user_recs.empty:
-                user_recs = user_recs.iloc[0]
 
-                # First compute lat/lon coors using whatever zone was provided
-                slat = user_recs[lat] #.reset_index(drop=True)
-                slon = user_recs[lon] #.reset_index(drop=True)
-                szone = user_recs[utmzone] #.reset_index(drop=True)
-                print("szone: " + str(szone))
-                alat, alon = UTM.utm2ll(slat, slon, szone)
-                user_recs[lat] = alat.tolist()
-                user_recs[lon] = alon.tolist()
+            # Compute distance and bearing (angle) from the center of the facility
+            user_recs['distance'] = np.sqrt((cenx - user_recs.utme)**2 + (ceny - user_recs.utmn)**2)
+            user_recs['angle'] = user_recs.apply(lambda row: self.bearing(row[utme],row[utmn],cenx,ceny), axis=1)
 
-                # Next compute UTM coors using the common zone
-                sutmzone = facutmzone*np.ones(len(user_recs[lat]))
-                autmn, autme, autmz = UTM.ll2utm(slat, slon, sutmzone)
-                user_recs[utme] = autme.tolist()
-                user_recs[utmn] = autmn.tolist()
-                user_recs[utmzone] = autmz.tolist()
+            # If all user receptor elevations are NaN, then replace with closest block elevation.
+            # If at least one elevation is not NaN, then leave non-NaN alone and replace NaN with 0.
+            # If all hill heights are NaN, then replace with max of closest block hill, closest block elev,
+            # or max user provided elev.
+            maxelev = user_recs[elev].max(axis=0, skipna=True) \
+                if math.isnan(user_recs[elev].max(axis=0, skipna=True)) == False \
+                else 0
+            maxhill = user_recs[hill].max(axis=0, skipna=True) \
+                if math.isnan(user_recs[hill].max(axis=0, skipna=True)) == False \
+                else 0
+            elev_allnan = user_recs[elev].all(axis=0)
+            hill_allnan = user_recs[hill].all(axis=0)
 
-                # Compute distance and bearing (angle) from the center of the facility
-                user_recs['distance'] = np.sqrt((cenx - user_recs.utme)**2 + (ceny - user_recs.utmn)**2)
-                user_recs['angle'] = user_recs.apply(lambda row: self.bearing(row[utme],row[utmn],cenx,ceny), axis=1)
+            if elev_allnan == True or hill_allnan == True:
+                for index, row in user_recs.iterrows():
+                    elev_close, hill_close = self.urec_elevs(row[utme], row[utmn],
+                                                             self.innerblks, self.outerblks)
+                    if elev_allnan == True:
+                        user_recs.loc[index, elev] = elev_close
+                    if hill_allnan == True:
+                        user_recs.loc[index, hill] = max([maxelev, elev_close, hill_close])
 
-                # If all user receptor elevations are NaN, then replace with closest block elevation.
-                # If at least one elevation is not NaN, then leave non-NaN alone and replace NaN with 0.
-                # If all hill heights are NaN, then replace with max of closest block hill, closest block elev,
-                # or max user provided elev.
-                maxelev = user_recs[elev].max(axis=0, skipna=True) \
-                    if math.isnan(user_recs[elev].max(axis=0, skipna=True)) == False \
-                    else 0
-                maxhill = user_recs[hill].max(axis=0, skipna=True) \
-                    if math.isnan(user_recs[hill].max(axis=0, skipna=True)) == False \
-                    else 0
-                elev_allnan = user_recs[elev].all(axis=0)
-                hill_allnan = user_recs[hill].all(axis=0)
+            if elev_allnan == False:
+                # Not all elevs are NaN. Leave non-NaN alone and replace NaN with 0.
+                user_recs[elev].fillna(0, inplace=True)
 
-                if elev_allnan == True or hill_allnan == True:
-                    for index, row in user_recs.iterrows():
-                        elev_close, hill_close = self.urec_elevs(row[utme], row[utmn],
-                                                                 self.innerblks, self.outerblks)
-                        if elev_allnan == True:
-                            user_recs.loc[index, elev] = elev_close
-                        if hill_allnan == True:
-                            user_recs.loc[index, hill] = max([maxelev, elev_close, hill_close])
+            if hill_allnan == False:
+                # Not all hills are NaN. Leave non-NaN alone and replace NaN with 0.
+                user_recs[hill].fillna(0, inplace=True)
 
-                if elev_allnan == False:
-                    # Not all elevs are NaN. Leave non-NaN alone and replace NaN with 0.
-                    user_recs[elev].fillna(0, inplace=True)
-
-                if hill_allnan == False:
-                    # Not all hills are NaN. Leave non-NaN alone and replace NaN with 0.
-                    user_recs[hill].fillna(0, inplace=True)
-
-                # determine if the user receptors overlap any emission sources
-                user_recs[overlap] = user_recs.apply(lambda row: self.check_overlap(row[utme],
-                                                                                    row[utmn], sourcelocs, op_overlap), axis=1)
+            # determine if the user receptors overlap any emission sources
+            user_recs[overlap] = user_recs.apply(lambda row: self.check_overlap(row[utme],
+                                                                                row[utmn], sourcelocs, op_overlap), axis=1)
 
 
-                # Add or remove columns to make user_recs compatible with innerblks
-                #            user_recs.drop('fac_id', inplace=True, axis=1)
-                user_recs['urban_pop'] = 0
-                user_recs['population'] = 0
-                if self.model.altRec_optns.get('altrec', None):
-                    user_recs['rec_id'] = 'U_' + user_recs['rec_id']
-                else:
-                    user_recs['fips'] = 'U0000'
-                    user_recs['idmarplot'] = 'U0000U' + user_recs['rec_id']
+            # Add or remove columns to make user_recs compatible with innerblks
+            #            user_recs.drop('fac_id', inplace=True, axis=1)
+            user_recs['urban_pop'] = 0
+            user_recs['population'] = 0
+            if self.model.altRec_optns.get('altrec', None):
+                user_recs['rec_id'] = 'U_' + user_recs['rec_id']
+            else:
+                user_recs['fips'] = 'U0000'
+                user_recs['idmarplot'] = 'U0000U' + user_recs['rec_id']
 
-                # Append user_recs to innerblks
-                self.innerblks = self.innerblks.append(user_recs, ignore_index=True)
+            # Append user_recs to innerblks
+            self.innerblks = self.innerblks.append(user_recs, ignore_index=True)
 
 
         #%%----- Polar receptors ----------
@@ -444,17 +418,16 @@ class FacilityPrep():
         stop = 360. - (360./op_radial)
         polar_angl = np.linspace(start,stop,op_radial).tolist()
 
-        # create lists of other polar receptor parameters
+        # create distance and angle lists of length (number rings * number angles)
+        polar_dist2 = [i for i in polar_dist for j in polar_angl]
+        polar_angl2 = [j for i in polar_dist for j in polar_angl]
+
+        # create lists of polar utm coordinates and IDs of same length
         polar_id = ["polgrid1"] * (len(polar_dist) * len(polar_angl))
         polar_utme = [normal_round(cenx + polardist * math.sin(math.radians(pa))) for polardist in polar_dist for pa in polar_angl]
         polar_utmn = [normal_round(ceny + polardist * math.cos(math.radians(pa))) for polardist in polar_dist for pa in polar_angl]
         polar_utmz = [facutmzone] * (len(polar_dist) * len(polar_angl))
-        polar_lat, polar_lon = UTM.utm2ll(polar_utmn, polar_utme, polar_utmz)
 
-        # create dist and angl lists of length op_circle*op_radial
-        polar_dist2 = [i for i in polar_dist for j in polar_angl]
-        polar_angl2 = [j for i in polar_dist for j in polar_angl]
-        
         # sector and ring lists
         polar_sect = [int(((a*op_radial/360) % op_radial)+1) for a in polar_angl2]
         polar_ring = []
@@ -467,13 +440,20 @@ class FacilityPrep():
                 remring = polar_dist2[i]
                 ringcount = ringcount + 1
                 polar_ring.append(ringcount)
-        
-        # construct the polar dataframe
+
+        # construct the polar dataframe from the lists
         dfitems = [("id",polar_id), ("distance",polar_dist2), (angle,polar_angl2), (utme,polar_utme),
-                   (utmn,polar_utmn), ("utmz",polar_utmz), (lon,polar_lon), (lat,polar_lat),
+                   (utmn,polar_utmn), ("utmz",polar_utmz), 
                    ("sector",polar_sect), ("ring",polar_ring)]
         polar_df = pd.DataFrame.from_dict(dict(dfitems))
 
+       
+        # compute polar lat/lon
+        facutmzone_txt = str(facutmzone) + hemi
+        polar_df[[lat, lon]] = polar_df.apply(lambda row: UTM.utm2ll(row[utmn],row[utme],facutmzone_txt), 
+                                              result_type="expand", axis=1)
+
+        
         # define the index of polar_df as concatenation of sector and ring
         polar_idx = polar_df.apply(lambda row: self.define_polar_idx(row[sector], row[ring]), axis=1)
         polar_df.set_index(polar_idx, inplace=True)
