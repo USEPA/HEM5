@@ -1,3 +1,5 @@
+import time
+
 import numpy as np
 import sys
 import math as m
@@ -10,11 +12,16 @@ utme = 'utme';
 utmn = 'utmn';
 utmz = 'utmz';
 
+# Caches for projections and transformers...avoiding the continual creation of these objects
+# helps performance tremendously.
+projections = {}
+transformers = {}
+
 class UTM:
     """
     A utility class with functions related to UTM zones.
     """
-    
+
     @staticmethod
     def zonetxt(zone):
         if int(zone) < 10:
@@ -111,10 +118,9 @@ class UTM:
             epsg = 'epsg:326'+str(zonetxt)
         else:
             epsg = 'epsg:327'+str(zonetxt)
-       
-        inProj = Proj(init=epsg)
-        outProj = Proj(init='epsg:4326')
-        lon,lat = transform(inProj,outProj,utme,utmn)
+
+        transformer = UTM.getTransformer(epsg, 'epsg:4326')
+        lon,lat = transformer.transform(utme, utmn)
         return lat, lon
 
     @staticmethod
@@ -132,12 +138,16 @@ class UTM:
             epsg = 'epsg:326'+str(zonetxt)
         else:
             epsg = 'epsg:327'+str(zonetxt)
-        
-        p1 = Proj(init = 'epsg:4326')
-        p2 = Proj(init = epsg)
-        utme, utmn = transform(p1, p2, lon, lat)
+
+        transformer = UTM.getTransformer('epsg:4326', epsg)
+
+        # Use the cached transformer to perform the transformation more quickly!
+        # see https://pyproj4.github.io/pyproj/stable/advanced_examples.html#optimize-transformations
+        utme, utmn = transformer.transform(lon, lat)
+
         utme = int(utme)
         utmn = int(utmn)
+        
         return utmn, utme, zone, hemi, epsg
         
 
@@ -156,10 +166,9 @@ class UTM:
                 epsgUsed = "epsg:32660"
             if zoneUsed == 60 and realHemi == "S":
                 epsgUsed = "epsg:32760"
-               
-            p1 = Proj(init = realepsg)
-            p2 = Proj(init = epsgUsed)
-            utme, utmn = transform(p1, p2, realE, realN)
+
+            transformer = UTM.getTransformer(realepsg, epsgUsed)
+            utme, utmn = transformer.transform(realE, realN)
             return utmn, utme
   
     @staticmethod
@@ -263,4 +272,31 @@ class UTM:
         cenlat, cenlon = UTM.utm2ll(ceny, cenx, utmz)
      
         return cenx, ceny, cenlon, cenlat, max_dist, vertx_a, verty_a
+
+    # This method returns the correct transformer to use. It comes either from
+    # the cache (if it's been requested previously) or from the Transformer instantiation
+    # method. Note that the transformers cache is keyed by the concatentation of the two
+    # projection epsg values.
+    @staticmethod
+    def getTransformer(epsg1, epsg2):
+        key = epsg1 + epsg2
+        if key in transformers:
+            transformer = transformers[key]
+        else:
+            if epsg1 in projections:
+                p1 = projections[epsg1]
+            else:
+                p1 = Proj(init = epsg1)
+                projections[epsg1] = p1
+
+            if epsg2 in projections:
+                p2 = projections[epsg2]
+            else:
+                p2 = Proj(init = epsg2)
+                projections[epsg2] = p2
+
+            transformer = Transformer.from_proj(p1, p2)
+            transformers[key] = transformer
+
+        return transformer
 

@@ -159,10 +159,10 @@ def in_box(modelblks, sourcelocs, modeldist, maxdist, overlap_dist, model):
             outerblks = outerblks[~outerblks[rec_id].isin(innerblks[rec_id])].copy()
 
             #Do any of these inner or outer blocks overlap this source?
-            innerblks['overlap'] = np.where(np.sqrt((innerblks[utme]-src_x)**2 + 
-                                           (innerblks[utmn]-src_y)**2) <= overlap_dist, "Y", "N")
-            outerblks['overlap'] = np.where(np.sqrt((outerblks[utme]-src_x)**2 + 
-                                           (outerblks[utmn]-src_y)**2) <= overlap_dist, "Y", "N")
+            innerblks['overlap'] = np.where(np.sqrt(np.double((innerblks[utme]-src_x)**2 +
+                                           (innerblks[utmn]-src_y)**2)) <= overlap_dist, "Y", "N")
+            outerblks['overlap'] = np.where(np.sqrt(np.double((outerblks[utme]-src_x)**2 +
+                                           (outerblks[utmn]-src_y)**2)) <= overlap_dist, "Y", "N")
     
 #    print("first innerblks size = ", innerblks.shape, " first outerblks size = ", outerblks.shape)
     
