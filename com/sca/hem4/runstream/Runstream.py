@@ -36,7 +36,6 @@ class Runstream():
         self.emisvar_df = emisvar_df
         self.model = model
         self.urban = False
-
         
         #open file to write
         self.inp_f = open(os.path.join("aermod", "aermod.inp"), "w")
@@ -458,10 +457,7 @@ class Runstream():
     
                 poly_utmn = list(self.polyver_df[self.polyver_df['source_id']==
                                                  srid[index]]['utmn'][:])
-                
-                poly_utmz = list(self.polyver_df[self.polyver_df['source_id']==
-                                                 srid[index]]['utmzone'][:])
-                
+                                
                 poly_numv = list(self.polyver_df[self.polyver_df['source_id']==
                                                  srid[index]]['numvert'][:])
                 
@@ -472,18 +468,13 @@ class Runstream():
                          str(xco1[index]) + " " + str(yco1[index]) + " " + \
                          " " + str(elev[index]) + "\n")
                 
-#            poly_pos = poly_srid.index(srid[index])
                 soparam = ("SO SRCPARAM " + str(srid[index]) + " " + 
                            str(1000/(poly_area[0])) + " " + str(relh[index]) + 
                            " " + str(poly_numv[0]) + "\n")
                 
                 self.inp_f.write(soloc)
                 self.inp_f.write(soparam)
-            
-                for i in np.arange(len(poly_utmz)):
-                    if np.isnan(poly_utmz[i]) == 1:
-                        poly_utmz[i] = 0
-                        
+                                    
                 vert_start = "SO AREAVERT " + str(poly_srid[0]) + " "
                 vert_coor = ""
                 for i in np.arange(len(poly_srid)):

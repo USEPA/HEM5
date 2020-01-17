@@ -33,13 +33,15 @@ class UTM:
     @staticmethod
     def getZone(zonestr):
         # returns the zone number portion of a zone string (e.g. '16N')
-        if "N" or "S" in zonestr:
+        hemilist = ['N', 'S']
+        if any(elem in zonestr for elem in hemilist):
             return zonestr[:-1]
         else:
             return zonestr
      
     @staticmethod
     def getBand(row):
+        # returns the hemisphere (N or S) portion of a zone string; if none return N
         N_or_S = "N"
         if "S" in row:
             N_or_S = "S"
@@ -109,7 +111,7 @@ class UTM:
 
     @staticmethod
     def utm2ll(utmn,utme,zone):
-        
+ 
         zonenum = UTM.getZone(zone)
         zonehemi = UTM.getBand(zone)
         zonetxt = UTM.zonetxt(zonenum)

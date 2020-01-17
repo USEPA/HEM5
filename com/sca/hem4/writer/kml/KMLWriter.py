@@ -1441,25 +1441,30 @@ class KMLWriter():
             emislocs = emislocs.fillna({"utmzone":'0N', "source_type":"", "x2":0, "y2":0})
 
             # Determine the common utm zone to use for this facility and the hemisphere
-            facutmzone, hemi = UTM.zone2use(emislocs)
+            facutmzonenum, hemi = UTM.zone2use(emislocs)
+            facutmzonestr = str(facutmzonenum) + hemi
 
+
+#            # Create utmn and utme columns. Fill with any provided utm coordinates otherwise fill with 0.
+#            emislocs[["utmn", "utme"]] = emislocs.apply(lambda row: self.copyUTMColumns(row["lat"],row["lon"])
+#                                     if row['location_type']=='U' else [0, 0],
+#                                     result_type="expand", axis=1)
 
             # Compute lat/lon of any user supplied UTM coordinates
-            emislocs[["lat", "lon"]] = emislocs.apply(lambda row: UTM.utm2ll(row["lon"],row["lat"],row["utmzone"],hemi) 
+            emislocs[["lat", "lon"]] = emislocs.apply(lambda row: UTM.utm2ll(row["lat"],row["lon"],row["utmzone"]) 
                                if row['location_type']=='U' else [row["lat"],row["lon"]], result_type="expand", axis=1)
 
             # Next compute UTM coordinates using the common zone
-            emislocs[["utmn", "utme"]] = emislocs.apply(lambda row: UTM.ll2utm_alt(row["lat"],row["lon"],facutmzone,hemi)
-                               if row['location_type']=='L' else [row["utmn"],row["utme"]], result_type="expand", axis=1)
-            emislocs["utmzone"] = facutmzone
+            emislocs[["utmn", "utme"]] = emislocs.apply(lambda row: UTM.ll2utm_alt(row["lat"],row["lon"],facutmzonenum,hemi)
+                               , result_type="expand", axis=1)
 
             # Compute lat/lon of any x2 and y2 coordinates that were supplied as UTM
-            emislocs[['lat_y2', 'lon_x2']] = emislocs.apply(lambda row: UTM.utm2ll(row["x2"],row["y2"],row["utmzone"],hemi) 
+            emislocs[['lat_y2', 'lon_x2']] = emislocs.apply(lambda row: UTM.utm2ll(row["y2"],row["x2"],row["utmzone"]) 
                               if row['location_type']=='U' else [row["y2"],row["x2"]], result_type="expand", axis=1)
-    
-            # Compute UTM coordinates of x2 and y2 using the common zone
-            emislocs[['utmn_y2', 'utme_x2']] = emislocs.apply(lambda row: UTM.ll2utm_alt(row["y2"],row["x2"],facutmzone,hemi)
-                              if row['location_type']=='L' else [row["y2"],row["x2"]], result_type="expand", axis=1)
+            
+            # Compute UTM coordinates of lat_x2 and lon_y2 using the common zone
+            emislocs[['utmn_y2', 'utme_x2']] = emislocs.apply(lambda row: UTM.ll2utm_alt(row["lat_y2"],row["lon_x2"],facutmzonenum,hemi)
+                              , result_type="expand", axis=1)
 
             # Pull out any area/volume sources and create vertices of each corner
             areavol = emislocs[(emislocs.source_type=="A") | (emislocs.source_type=="V")]
@@ -1473,7 +1478,7 @@ class KMLWriter():
                         new_rows.append(newrow.tolist())  # vertex 1
                         newrow["utme"] = row["utme"] + row["lengthx"] * np.cos(row["angle"])
                         newrow["utmn"] = row["utmn"] - row["lengthx"] * np.sin(row["angle"])
-                        latitude, longitude = UTM.utm2ll(newrow["utmn"],newrow["utme"],facutmzone,hemi)
+                        latitude, longitude = UTM.utm2ll(newrow["utmn"],newrow["utme"],facutmzonestr)
                         newrow["lat"] = latitude
                         newrow["lon"] = longitude
                         new_rows.append(newrow.tolist())  # vertex 2
@@ -1481,13 +1486,13 @@ class KMLWriter():
                                                         + row["lengthy"] * np.sin(row["angle"])
                         newrow["utmn"] = row["utmn"] - row["lengthx"] * np.sin(row["angle"]) \
                                                         + row["lengthy"] * np.cos(row["angle"])
-                        latitude, longitude = UTM.utm2ll(newrow["utmn"],newrow["utme"],facutmzone,hemi)
+                        latitude, longitude = UTM.utm2ll(newrow["utmn"],newrow["utme"],facutmzonestr)
                         newrow["lat"] = latitude
                         newrow["lon"] = longitude
                         new_rows.append(newrow.tolist())  # vertex 3
                         newrow["utme"] = row["utme"] + row["lengthy"] * np.sin(row["angle"])
                         newrow["utmn"] = row["utmn"] + row["lengthy"] * np.cos(row["angle"])
-                        latitude, longitude = UTM.utm2ll(newrow["utmn"],newrow["utme"],facutmzone,hemi)
+                        latitude, longitude = UTM.utm2ll(newrow["utmn"],newrow["utme"],facutmzonestr)
                         newrow["lat"] = latitude
                         newrow["lon"] = longitude
                         new_rows.append(newrow.tolist())  # vertex 4
@@ -1500,31 +1505,31 @@ class KMLWriter():
                         # Volume sources
                         newrow["utme"] = row["utme"] - row["horzdim"]/2
                         newrow["utmn"] = row["utmn"] - row["horzdim"]/2
-                        latitude, longitude = UTM.utm2ll(newrow["utmn"],newrow["utme"],facutmzone,hemi)
+                        latitude, longitude = UTM.utm2ll(newrow["utmn"],newrow["utme"],facutmzonestr)
                         newrow["lat"] = latitude
                         newrow["lon"] = longitude
                         new_rows.append(newrow.tolist())  # vertex 1
                         newrow["utme"] = row["utme"] + row["horzdim"]/2
                         newrow["utmn"] = row["utmn"] - row["horzdim"]/2
-                        latitude, longitude = UTM.utm2ll(newrow["utmn"],newrow["utme"],facutmzone,hemi)
+                        latitude, longitude = UTM.utm2ll(newrow["utmn"],newrow["utme"],facutmzonestr)
                         newrow["lat"] = latitude
                         newrow["lon"] = longitude
                         new_rows.append(newrow.tolist())  # vertex 2
                         newrow["utme"] = row["utme"] + row["horzdim"]/2
                         newrow["utmn"] = row["utmn"] + row["horzdim"]/2
-                        latitude, longitude = UTM.utm2ll(newrow["utmn"],newrow["utme"],facutmzone,hemi)
+                        latitude, longitude = UTM.utm2ll(newrow["utmn"],newrow["utme"],facutmzonestr)
                         newrow["lat"] = latitude
                         newrow["lon"] = longitude
                         new_rows.append(newrow.tolist())  # vertex 3
                         newrow["utme"] = row["utme"] - row["horzdim"]/2
                         newrow["utmn"] = row["utmn"] + row["horzdim"]/2
-                        latitude, longitude = UTM.utm2ll(newrow["utmn"],newrow["utme"],facutmzone,hemi)
+                        latitude, longitude = UTM.utm2ll(newrow["utmn"],newrow["utme"],facutmzonestr)
                         newrow["lat"] = latitude
                         newrow["lon"] = longitude
                         new_rows.append(newrow.tolist())  # vertex 4
                         newrow["utme"] = row["utme"] - row["horzdim"]/2
                         newrow["utmn"] = row["utmn"] - row["horzdim"]/2
-                        latitude, longitude = UTM.utm2ll(newrow["utmn"],newrow["utme"],facutmzone,hemi)
+                        latitude, longitude = UTM.utm2ll(newrow["utmn"],newrow["utme"],facutmzonestr)
                         newrow["lat"] = latitude
                         newrow["lon"] = longitude
                         new_rows.append(newrow.tolist())  # repeat vertex 1
@@ -1575,24 +1580,28 @@ class KMLWriter():
         emislocs = emislocs.fillna({"utmzone":'0N', "source_type":"", "x2":0, "y2":0})
 
         # Determine the common utm zone to use for this facility and the hemisphere
-        facutmzone, hemi = UTM.zone2use(emislocs)
+        facutmzonenum, hemi = UTM.zone2use(emislocs)
+
+#        # Create utmn and utme columns. Fill with any provided utm coordinates otherwise fill with 0.
+#        emislocs[["utmn", "utme"]] = emislocs.apply(lambda row: self.copyUTMColumns(row["lat"],row["lon"])
+#                                 if row['location_type']=='U' else [0, 0],
+#                                 result_type="expand", axis=1)
 
         # Compute lat/lon of any user supplied UTM coordinates
-        emislocs[["lat", "lon"]] = emislocs.apply(lambda row: UTM.utm2ll(row["lon"],row["lat"],row["utmzone"],hemi) 
+        emislocs[["lat", "lon"]] = emislocs.apply(lambda row: UTM.utm2ll(row["lat"],row["lon"],row["utmzone"]) 
                            if row['location_type']=='U' else [row["lat"],row["lon"]], result_type="expand", axis=1)
 
         # Next compute UTM coordinates using the common zone
-        emislocs[["utmn", "utme"]] = emislocs.apply(lambda row: UTM.ll2utm_alt(row["lat"],row["lon"],facutmzone,hemi)
-                           if row['location_type']=='L' else [row["utmn"],row["utme"]], result_type="expand", axis=1)
-        emislocs["utmzone"] = facutmzone
+        emislocs[["utmn", "utme"]] = emislocs.apply(lambda row: UTM.ll2utm_alt(row["lat"],row["lon"],facutmzonenum,hemi)
+                           , result_type="expand", axis=1)
 
         # Compute lat/lon of any x2 and y2 coordinates that were supplied as UTM
-        emislocs[['lat_y2', 'lon_x2']] = emislocs.apply(lambda row: UTM.utm2ll(row["x2"],row["y2"],row["utmzone"],hemi) 
+        emislocs[['lat_y2', 'lon_x2']] = emislocs.apply(lambda row: UTM.utm2ll(row["y2"],row["x2"],row["utmzone"]) 
                           if row['location_type']=='U' else [row["y2"],row["x2"]], result_type="expand", axis=1)
 
         # Compute UTM coordinates of x2 and y2 using the common zone
-        emislocs[['utmn_y2', 'utme_x2']] = emislocs.apply(lambda row: UTM.ll2utm_alt(row["y2"],row["x2"],facutmzone,hemi)
-                          if row['location_type']=='L' else [row["y2"],row["x2"]], result_type="expand", axis=1)
+        emislocs[['utmn_y2', 'utme_x2']] = emislocs.apply(lambda row: UTM.ll2utm_alt(row["y2"],row["x2"],facutmzonenum,hemi)
+                          , result_type="expand", axis=1)
 
         # Append to source_map
         fac_source_map = fac_source_map.append(emislocs)
@@ -1670,6 +1679,9 @@ class KMLWriter():
         document.append_style(mir_style)
 
         return document
+
+    def copyUTMColumns(self, utmn, utme):
+        return [utmn, utme]
 
     def getAreaSrcStyle(self):
         as_style = kml.Style(ns=self.ns, id="Areasrc")

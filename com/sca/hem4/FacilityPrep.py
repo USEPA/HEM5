@@ -35,10 +35,10 @@ class FacilityPrep():
 
         # Set defaults of the facility options
         if self.model.facops[max_dist].isnull().sum() > 0 or self.model.facops.iloc[0][max_dist] > 50000:
-            self.model.facops[max_dist] = 50000
+            self.model.facops.loc[:, max_dist] = 50000
 
         if self.model.facops[model_dist].isnull().sum() > 0:
-            self.model.facops[model_dist] = 3000
+            self.model.facops.loc[:, model_dist] = 3000
 
         # Replace NaN with blank, No or 0
         # Note: use of elevations or all receptors are defaulted to Y, acute hours is defaulted to 1
@@ -100,29 +100,28 @@ class FacilityPrep():
                                     horzdim:0, vertdim:0, areavolrelhgt:0, stkht:0, stkdia: 0,
                                     stkvel:0, stktemp:0, elev:0, x2:0, y2:0})
         emislocs = emislocs.reset_index(drop = True)
-
-
+        
         # Determine the utm zone to use for this facility. Also get the hemisphere (N or S).
-        facutmzone, hemi = UTM.zone2use(emislocs)
+        facutmzonenum, hemi = UTM.zone2use(emislocs)
+        facutmzonestr = str(facutmzonenum) + hemi
 
-         
+                
         # Compute lat/lon of any user supplied UTM coordinates
-        emislocs[[lat, lon]] = emislocs.apply(lambda row: UTM.utm2ll(row[lon],row[lat],row[utmzone]) 
+        emislocs[[lat, lon]] = emislocs.apply(lambda row: UTM.utm2ll(row[lat],row[lon],row[utmzone]) 
                                if row['location_type']=='U' else [row[lat],row[lon]], result_type="expand", axis=1)
 
         # Next compute UTM coordinates using the common zone
-        emislocs[[utmn, utme]] = emislocs.apply(lambda row: UTM.ll2utm_alt(row[lat],row[lon],facutmzone,hemi)
-                               if row['location_type']=='L' else [row[utmn],row[utme]], result_type="expand", axis=1)
-        
+        emislocs[[utmn, utme]] = emislocs.apply(lambda row: UTM.ll2utm_alt(row[lat],row[lon],facutmzonenum,hemi)
+                               , result_type="expand", axis=1)
 
         # Compute lat/lon of any x2 and y2 coordinates that were supplied as UTM
-        emislocs[['lat_y2', 'lon_x2']] = emislocs.apply(lambda row: UTM.utm2ll(row[x2],row[y2],row[utmzone]) 
-                               if row['location_type']=='U' else [row[y2],row[x2]], result_type="expand", axis=1)
+        emislocs[['lat_y2', 'lon_x2']] = emislocs.apply(lambda row: UTM.utm2ll(row["y2"],row["x2"],row["utmzone"]) 
+                          if row['location_type']=='U' else [row["y2"],row["x2"]], result_type="expand", axis=1)
 
-        # Compute UTM coordinates of x2 and y2 using the common zone
-        emislocs[['utmn_y2', 'utme_x2']] = emislocs.apply(lambda row: UTM.ll2utm_alt(row[y2],row[x2],facutmzone,hemi)
-                               if row['location_type']=='L' else [row[y2],row[x2]], result_type="expand", axis=1)
-
+        # Compute UTM coordinates of lat_x2 and lon_y2 using the common zone
+        emislocs[['utmn_y2', 'utme_x2']] = emislocs.apply(lambda row: UTM.ll2utm_alt(row["lat_y2"],row["lon_x2"],facutmzonenum,hemi)
+                          , result_type="expand", axis=1)
+        
 
         #%%---------- HAP Emissions --------------------------------------
 
@@ -151,21 +150,25 @@ class FacilityPrep():
         if hasattr(self.model.multipoly, "dataframe"):
 
             polyver_df = self.model.multipoly.dataframe.loc[self.model.multipoly.dataframe[fac_id] == facid].copy()
-            slat = polyver_df[lat].reset_index(drop=True)
-            slon = polyver_df[lon].reset_index(drop=True)
-            szone = polyver_df[utmzone].reset_index(drop=True)
 
-            # Compute lat/lon of any user supplied UTM coordinates
-            polyver_df[[lat, lon]] = polyver_df.apply(lambda row: UTM.utm2ll(row[lon],row[lat],row[utmzone]) 
-                               if row['location_type']=='U' else [row[lat],row[lon]], result_type="expand", axis=1)
+            if polyver_df.empty == False:
+                            
+                # Create utmn and utme columns. Fill with any provided utm coordinates otherwise fill with 0.
+                polyver_df[[utmn, utme]] = polyver_df.apply(lambda row: self.copyUTMColumns(row[lat],row[lon])
+                                         if row['location_type']=='U' else [0, 0],
+                                         result_type="expand", axis=1)
 
-            # Next compute UTM coordinates using the common zone
-            polyver_df[[utmn, utme]] = polyver_df.apply(lambda row: UTM.ll2utm_alt(row[lat],row[lon],facutmzone,hemi)
-                               if row['location_type']=='L' else [row[utmn],row[utme]], result_type="expand", axis=1)
-
-            # Assign source_type
-            polyver_df[source_type] = "I"
-
+                # Compute lat/lon of any user supplied UTM coordinates
+                polyver_df[[lat, lon]] = polyver_df.apply(lambda row: UTM.utm2ll(row[lat],row[lon],row[utmzone]) 
+                                   if row['location_type']=='U' else [row[lat],row[lon]], result_type="expand", axis=1)
+    
+                # Next compute UTM coordinates using the common zone
+                polyver_df[[utmn, utme]] = polyver_df.apply(lambda row: UTM.ll2utm_alt(row[lat],row[lon],facutmzonenum,hemi)
+                                   if row['location_type']=='L' else [row[utmn],row[utme]], result_type="expand", axis=1)
+    
+                # Assign source_type
+                polyver_df[source_type] = "I"
+            
         else:
             # No polygon sources. Empty dataframe.
             polyver_df = None
@@ -238,9 +241,9 @@ class FacilityPrep():
             #gasparams_df = None
 
         #%%---------- Get Census Block Receptors --------------------------------------
-
+        
         # Keep necessary source location columns
-        sourcelocs = emislocs[[fac_id,source_id,source_type,utme,utmn,utmzone
+        sourcelocs = emislocs[[fac_id,source_id,source_type,lat,lon,utme,utmn,utmzone
             ,lengthx,lengthy,angle,"utme_x2","utmn_y2"]].copy()
 
         # Is there a polygon source at this facility?
@@ -253,7 +256,7 @@ class FacilityPrep():
             sourcelocs = sourcelocs.reset_index(drop=True)
 
         # Compute the coordinates of the facililty center
-        cenx, ceny, cenlon, cenlat, max_srcdist, vertx_a, verty_a = UTM.center(sourcelocs, facutmzone, hemi)
+        cenx, ceny, cenlon, cenlat, max_srcdist, vertx_a, verty_a = UTM.center(sourcelocs, facutmzonenum, hemi)
 
         self.model.computedValues['cenlat'] = cenlat
         self.model.computedValues['cenlon'] = cenlon
@@ -263,12 +266,12 @@ class FacilityPrep():
         modeldist = self.model.facops[model_dist][0]
 
         if self.model.altRec_optns.get('altrec', None):
-            self.innerblks, self.outerblks = self.getBlocksFromUrep(facid, cenx, ceny, cenlon, cenlat, facutmzone,
+            self.innerblks, self.outerblks = self.getBlocksFromUrep(facid, cenx, ceny, cenlon, cenlat, facutmzonenum,
                 hemi, maxdist, modeldist, sourcelocs, op_overlap)
 
         else:
-
-            self.innerblks, self.outerblks = getblocks(cenx, ceny, cenlon, cenlat, facutmzone, hemi, maxdist, 
+            
+            self.innerblks, self.outerblks = getblocks(cenx, ceny, cenlon, cenlat, facutmzonenum, hemi, maxdist, 
                                              modeldist, sourcelocs, op_overlap, self.model)
 
 
@@ -280,71 +283,79 @@ class FacilityPrep():
         if hasattr(self.model.ureceptr, "dataframe"):
 
             user_recs = self.model.ureceptr.dataframe.loc[self.model.ureceptr.dataframe[fac_id] == facid].copy()
-            user_recs.utmzone = user_recs.utmzone.replace('nan', '0N', regex=True)
-
-            # Compute lat/lon of any user supplied UTM coordinates
-            user_recs[[lat, lon]] = user_recs.apply(lambda row: UTM.utm2ll(row[lon],row[lat],row[utmzone])
-                         if row['location_type']=='U' else [row[lat],row[lon]], result_type="expand", axis=1)
-    
-            # Next compute UTM coordinates using the common zone
-            user_recs[[utmn, utme]] = user_recs.apply(lambda row: UTM.ll2utm_alt(row[lat],row[lon],facutmzone,hemi)
-                         if row['location_type']=='L' else [row[utmn],row[utme]], result_type="expand", axis=1)
-    
             
-            user_recs.reset_index(inplace=True)
+            if user_recs.empty == False:
+                
+                user_recs.utmzone = user_recs.utmzone.replace('nan', '0N', regex=True)
+    
+                # Create utmn and utme columns. Fill with any provided utm coordinates otherwise fill with 0.
+                user_recs[[utmn, utme]] = user_recs.apply(lambda row: self.copyUTMColumns(row[lat],row[lon])
+                                         if row['location_type']=='U' else [0, 0],
+                                         result_type="expand", axis=1)
 
-
-            # Compute distance and bearing (angle) from the center of the facility
-            user_recs['distance'] = np.sqrt((cenx - user_recs.utme)**2 + (ceny - user_recs.utmn)**2)
-            user_recs['angle'] = user_recs.apply(lambda row: self.bearing(row[utme],row[utmn],cenx,ceny), axis=1)
-
-            # If all user receptor elevations are NaN, then replace with closest block elevation.
-            # If at least one elevation is not NaN, then leave non-NaN alone and replace NaN with 0.
-            # If all hill heights are NaN, then replace with max of closest block hill, closest block elev,
-            # or max user provided elev.
-            maxelev = user_recs[elev].max(axis=0, skipna=True) \
-                if math.isnan(user_recs[elev].max(axis=0, skipna=True)) == False \
-                else 0
-            maxhill = user_recs[hill].max(axis=0, skipna=True) \
-                if math.isnan(user_recs[hill].max(axis=0, skipna=True)) == False \
-                else 0
-            elev_allnan = user_recs[elev].all(axis=0)
-            hill_allnan = user_recs[hill].all(axis=0)
-
-            if elev_allnan == True or hill_allnan == True:
-                for index, row in user_recs.iterrows():
-                    elev_close, hill_close = self.urec_elevs(row[utme], row[utmn],
-                                                             self.innerblks, self.outerblks)
-                    if elev_allnan == True:
-                        user_recs.loc[index, elev] = elev_close
-                    if hill_allnan == True:
-                        user_recs.loc[index, hill] = max([maxelev, elev_close, hill_close])
-
-            if elev_allnan == False:
-                # Not all elevs are NaN. Leave non-NaN alone and replace NaN with 0.
-                user_recs[elev].fillna(0, inplace=True)
-
-            if hill_allnan == False:
-                # Not all hills are NaN. Leave non-NaN alone and replace NaN with 0.
-                user_recs[hill].fillna(0, inplace=True)
-
-            # determine if the user receptors overlap any emission sources
-            user_recs[overlap] = user_recs.apply(lambda row: self.check_overlap(row[utme],
-                                                                                row[utmn], sourcelocs, op_overlap), axis=1)
-
-
-            # Add or remove columns to make user_recs compatible with innerblks
-            #            user_recs.drop('fac_id', inplace=True, axis=1)
-            user_recs['urban_pop'] = 0
-            user_recs['population'] = 0
-            if self.model.altRec_optns.get('altrec', None):
-                user_recs['rec_id'] = 'U_' + user_recs['rec_id']
-            else:
-                user_recs['fips'] = 'U0000'
-                user_recs['idmarplot'] = 'U0000U' + user_recs['rec_id']
-
-            # Append user_recs to innerblks
-            self.innerblks = self.innerblks.append(user_recs, ignore_index=True)
+                # Compute lat/lon of any user supplied UTM coordinates
+                user_recs[[lat, lon]] = user_recs.apply(lambda row: UTM.utm2ll(row[lat],row[lon],row[utmzone])
+                             if row['location_type']=='U' else [row[lat],row[lon]], result_type="expand", axis=1)
+        
+                # Next compute UTM coordinates using the common zone
+                user_recs[[utmn, utme]] = user_recs.apply(lambda row: UTM.ll2utm_alt(row[lat],row[lon],facutmzonenum,hemi)
+                             if row['location_type']=='L' else [row[utmn],row[utme]], result_type="expand", axis=1)
+        
+                
+                user_recs.reset_index(inplace=True)
+    
+    
+                # Compute distance and bearing (angle) from the center of the facility
+                user_recs['distance'] = np.sqrt((cenx - user_recs.utme)**2 + (ceny - user_recs.utmn)**2)
+                user_recs['angle'] = user_recs.apply(lambda row: self.bearing(row[utme],row[utmn],cenx,ceny), axis=1)
+    
+                # If all user receptor elevations are NaN, then replace with closest block elevation.
+                # If at least one elevation is not NaN, then leave non-NaN alone and replace NaN with 0.
+                # If all hill heights are NaN, then replace with max of closest block hill, closest block elev,
+                # or max user provided elev.
+                maxelev = user_recs[elev].max(axis=0, skipna=True) \
+                    if math.isnan(user_recs[elev].max(axis=0, skipna=True)) == False \
+                    else 0
+                maxhill = user_recs[hill].max(axis=0, skipna=True) \
+                    if math.isnan(user_recs[hill].max(axis=0, skipna=True)) == False \
+                    else 0
+                elev_allnan = user_recs[elev].all(axis=0)
+                hill_allnan = user_recs[hill].all(axis=0)
+    
+                if elev_allnan == True or hill_allnan == True:
+                    for index, row in user_recs.iterrows():
+                        elev_close, hill_close = self.urec_elevs(row[utme], row[utmn],
+                                                                 self.innerblks, self.outerblks)
+                        if elev_allnan == True:
+                            user_recs.loc[index, elev] = elev_close
+                        if hill_allnan == True:
+                            user_recs.loc[index, hill] = max([maxelev, elev_close, hill_close])
+    
+                if elev_allnan == False:
+                    # Not all elevs are NaN. Leave non-NaN alone and replace NaN with 0.
+                    user_recs[elev].fillna(0, inplace=True)
+    
+                if hill_allnan == False:
+                    # Not all hills are NaN. Leave non-NaN alone and replace NaN with 0.
+                    user_recs[hill].fillna(0, inplace=True)
+    
+                # determine if the user receptors overlap any emission sources
+                user_recs[overlap] = user_recs.apply(lambda row: self.check_overlap(row[utme],
+                                                                                    row[utmn], sourcelocs, op_overlap), axis=1)
+    
+    
+                # Add or remove columns to make user_recs compatible with innerblks
+                #            user_recs.drop('fac_id', inplace=True, axis=1)
+                user_recs['urban_pop'] = 0
+                user_recs['population'] = 0
+                if self.model.altRec_optns.get('altrec', None):
+                    user_recs['rec_id'] = 'U_' + user_recs['rec_id']
+                else:
+                    user_recs['fips'] = 'U0000'
+                    user_recs['idmarplot'] = 'U0000U' + user_recs['rec_id']
+    
+                # Append user_recs to innerblks
+                self.innerblks = self.innerblks.append(user_recs, ignore_index=True)
 
 
         #%%----- Polar receptors ----------
@@ -426,7 +437,7 @@ class FacilityPrep():
         polar_id = ["polgrid1"] * (len(polar_dist) * len(polar_angl))
         polar_utme = [normal_round(cenx + polardist * math.sin(math.radians(pa))) for polardist in polar_dist for pa in polar_angl]
         polar_utmn = [normal_round(ceny + polardist * math.cos(math.radians(pa))) for polardist in polar_dist for pa in polar_angl]
-        polar_utmz = [facutmzone] * (len(polar_dist) * len(polar_angl))
+        polar_utmz = [facutmzonenum] * (len(polar_dist) * len(polar_angl))
 
         # sector and ring lists
         polar_sect = [int(((a*op_radial/360) % op_radial)+1) for a in polar_angl2]
@@ -449,8 +460,7 @@ class FacilityPrep():
 
        
         # compute polar lat/lon
-        facutmzone_txt = str(facutmzone) + hemi
-        polar_df[[lat, lon]] = polar_df.apply(lambda row: UTM.utm2ll(row[utmn],row[utme],facutmzone_txt), 
+        polar_df[[lat, lon]] = polar_df.apply(lambda row: UTM.utm2ll(row[utmn],row[utme],facutmzonestr), 
                                               result_type="expand", axis=1)
 
         
@@ -864,7 +874,8 @@ class FacilityPrep():
             altrecs[[utmn, utme]] = altrecs.apply(lambda row: UTM.ll2utm_alt(row[lat],row[lon],utmZone,hemi), 
                                     result_type="expand", axis=1)
         else:
-            altrecs[[utmn, utme]] = altrecs.apply(lambda row: self.copyUTMColumns(row[lat],row[lon]), axis=1)
+            altrecs[[utmn, utme]] = altrecs.apply(lambda row: self.copyUTMColumns(row[lat],row[lon]), 
+                                    result_type="expand", axis=1)
 
         # Set utmzone as the common zone
         altrecs[utmzone] = utmZone
