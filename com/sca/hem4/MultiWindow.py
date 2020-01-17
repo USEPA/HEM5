@@ -8,8 +8,10 @@ Created on Sun Jul 28 23:29:19 2019
 import tkinter as tk
 import webbrowser
 import tkinter.ttk as ttk
+from tkinter import scrolledtext
 from functools import partial
 from com.sca.hem4.GuiThreaded import Hem4
+
 import queue
 
 import os
@@ -58,116 +60,148 @@ class Page1(Page):
     def __init__(self, nav, *args, **kwargs):
         Page.__init__(self, *args, **kwargs)
         
-        container = tk.Frame(self, bg="palegreen3")
+        self.noteStyler = ttk.Style()
+        self.noteStyler.configure("TNotebook", background="palegreen3", borderwidth=0)
+        self.noteStyler.configure("TNotebook.Tab", background="palegreen3", borderwidth=0)
+        self.noteStyler.configure("TFrame", background="palegreen3", borderwidth=0)
+
+        
+        # Tab Control introduced here --------------------------------------
+        self.tabControl = ttk.Notebook(self, style='TNotebook')     # Create Tab Control
+        
+        self.container = tk.Frame(self, bg="palegreen3")
 #        self.buttonframe.pack(side="right", fill="y", expand=False)
-        container.pack(side="top", fill="both", expand=True)
         
         self.s=ttk.Style()
         print(self.s.theme_names())
         self.s.theme_use('clam')
         
+        
+        self.tabControl.add(self.container, text='Summaries')      # Add the tab
+
+        self.log2 = tk.Frame(self.tabControl, bg='palegreen3')            # Add a second tab
+        self.tabControl.add(self.log2, text='Log')      # Make second tab visible
+    
+        
+        # Adding a Textbox Entry widget
+#        scrolW  = 65; scrolH  =  25
+        self.scr = scrolledtext.ScrolledText(self.log2, wrap=tk.WORD, width=1000, height=1000, font=TEXT_FONT)
+        self.scr.pack()
+
+        self.tabControl.pack(expand=1, fill="both")  # Pack to make visible
+
          #create grid
-        self.s1 = tk.Frame(container, width=750, height=100, bg="palegreen3")
-        self.s2 = tk.Frame(container, width=750, height=100, bg="palegreen3")
-        self.s3 = tk.Frame(container, width=750, height=100, pady=5, padx=5, bg="palegreen3")
-        self.s4 = tk.Frame(container, width=750, height=100, pady=5, padx=5, bg="palegreen3")
-        self.s5 = tk.Frame(container, width=750, height=100, pady=5, padx=5, bg="palegreen3")
+        self.s1 = tk.Frame(self.container, width=750, height=100, bg="palegreen3")
+        self.s2 = tk.Frame(self.container, width=750, height=100, bg="palegreen3")
+        self.s3 = tk.Frame(self.container, width=750, height=100, pady=5, padx=5, bg="palegreen3")
+        self.s4 = tk.Frame(self.container, width=750, height=100, pady=5, padx=5, bg="palegreen3")
+        self.s5 = tk.Frame(self.container, width=750, height=100, pady=5, padx=5, bg="palegreen3")
+        self.s6 = tk.Frame(self.container, width=750, height=100, pady=5, padx=5, bg="palegreen3")
+        self.s7 = tk.Frame(self.container, width=750, height=100, pady=5, padx=5, bg="palegreen3")
+        self.s8 = tk.Frame(self.container, width=750, height=100, pady=5, padx=5, bg="palegreen3")
+        self.s9 = tk.Frame(self.container, width=750, height=100, pady=5, padx=5, bg="palegreen3")
+        self.s10 = tk.Frame(self.container, width=750, height=100, pady=5, padx=5, bg="palegreen3")
+        self.s11 = tk.Frame(self.container, width=750, height=100, pady=5, padx=5, bg="palegreen3")
+        self.s12 = tk.Frame(self.container, width=750, height=100, pady=5, padx=5, bg="palegreen3")
+        self.s13 = tk.Frame(self.container, width=750, height=100, pady=5, padx=5, bg="palegreen3")
+
           
-        self.s1.pack(fill="x")
-        self.s2.pack(fill="x")
-        self.s3.pack(fill="x")
-        self.s4.pack(fill="x")
-        self.s5.pack(fill="y")
+        self.s1.grid(row=0)
+        self.s2.grid(row=1, column=0)
+        self.s3.grid(row=3, column=0, columnspan=2, sticky="nsew")
+        self.s4.grid(row=4, column=0, columnspan=2, sticky="nsew")
+        self.s5.grid(row=5, column=0, columnspan=2, sticky="nsew")
+        self.s6.grid(row=6, column=0, columnspan=2, sticky="nsew")
+        self.s7.grid(row=7, column=0, columnspan=2, sticky="nsew")
+        self.s8.grid(row=8, column=0, columnspan=2, sticky="nsew")
+        self.s9.grid(row=9, column=0, columnspan=2, sticky="nsew")
+        self.s10.grid(row=10, column=0, columnspan=2, sticky="nsew")
+        self.s11.grid(row=11, column=0, columnspan=2, sticky="nsew")
+        self.s12.grid(row=12, column=0, columnspan=2, sticky="nsew")
+        self.s13.grid(row=13, column=0, columnspan=2, sticky="nsew")
+
+
+        self.container.grid_rowconfigure(12, weight=4)
+        self.container.grid_columnconfigure(0, weight=1)
+        
+
         
         #title
         title = tk.Label(self.s1, text="Risk Summary", font=TITLE_FONT, bg="palegreen3")
-        title.pack(pady=10, side="top")
+
+        title.grid(row = 1)
         
         #instructions
         instructions = tk.Label(self.s1, text="Select one or more risk summary programs", font=TEXT_FONT, bg="palegreen3")
-        instructions.pack()
+        instructions.grid_columnconfigure(1, weight=1)
+        instructions.grid(row=2)
         
          #modeling group label
-        group_label = tk.Label(self.s2, font=TEXT_FONT, bg="palegreen3", 
+        group_label = tk.Label(self.s1, font=TEXT_FONT, bg="palegreen3", 
                              text="Please identify the location of the HEM4 results to be summarized:")
-        group_label.pack(pady=20, padx=5, side="left")
+        group_label.grid(row=3)
         
         #file browse button
-        self.mod_group = tk.Button(self.s3, command = self.browse, font=TEXT_FONT, relief='solid', borderwidth=2)
+        self.mod_group = tk.Button(self.s2, command = self.browse, font=TEXT_FONT, relief='solid', borderwidth=2)
         self.mod_group["text"] = "Browse"
-        self.mod_group.pack(side='left', padx=5, pady=10)
+        self.mod_group.grid(row=2, column=0, sticky="E", padx=10)
         
         #output directory path
-        self.mod_group_list = tk.StringVar(self.s3)
-        self.group_list_man = ttk.Entry(self.s3)
-        self.group_list_man["width"] = 250
+        self.mod_group_list = tk.StringVar(self.s2)
+        self.group_list_man = ttk.Entry(self.s2)
+        self.group_list_man["width"] = 100
         self.group_list_man["textvariable"]= self.mod_group_list
-        self.group_list_man.pack(padx=20, side="left", pady=10)
+        self.group_list_man.grid(row=2, column=1, sticky="W")
        
         
         self.var_m = tk.IntVar()
-        max_risk = tk.Checkbutton(self.s4, font=TEXT_FONT, bg="palegreen3", text="Max Risk Summary", variable=self.var_m)
-        max_risk.pack()
+        max_risk = tk.Checkbutton(self.s3, font=TEXT_FONT, bg="palegreen3", text="Max Risk Summary", variable=self.var_m)
+        max_risk.grid(row=1, padx=10, sticky="W")
         
         
         self.var_c = tk.IntVar()
         cancer_driver = tk.Checkbutton(self.s4, font=TEXT_FONT, bg="palegreen3", text="Cancer Drivers Summary", variable=self.var_c)
-        cancer_driver.pack(fill="x")
+        cancer_driver.grid(row=1, padx=10, sticky="W")
         
         self.var_h = tk.IntVar()
-        hazard = tk.Checkbutton(self.s4, font=TEXT_FONT, bg="palegreen3", text=" Hazard Index Drivers Summary", variable=self.var_h)
-        hazard.pack(fill="x")
+        hazard = tk.Checkbutton(self.s5, font=TEXT_FONT, bg="palegreen3", text=" Hazard Index Drivers Summary", variable=self.var_h)
+        hazard.grid(row=1, padx=10, sticky="W")
         
         self.var_hi = tk.IntVar()
-        hist = tk.Checkbutton(self.s4, font=TEXT_FONT, bg="palegreen3", text="Risk Histogram", variable=self.var_hi)
-        hist.pack(fill="x")
+        hist = tk.Checkbutton(self.s6, font=TEXT_FONT, bg="palegreen3", text="Risk Histogram", variable=self.var_hi)
+        hist.grid(row=1, padx=10, sticky="W")
         
         self.var_hh = tk.IntVar()
-        hh = tk.Checkbutton(self.s4, font=TEXT_FONT, bg="palegreen3", text="HI Histogram", variable=self.var_hh)
-        hh.pack(fill="x")
+        hh = tk.Checkbutton(self.s7, font=TEXT_FONT, bg="palegreen3", text="HI Histogram", variable=self.var_hh)
+        hh.grid(row=1, padx=10, sticky="W")
         
         self.var_i = tk.IntVar()
-        inc = tk.Checkbutton(self.s4, font=TEXT_FONT, bg="palegreen3", text="Incidence Drivers Summary", variable=self.var_i)
-        inc.pack(fill="x")
+        inc = tk.Checkbutton(self.s8, font=TEXT_FONT, bg="palegreen3", text="Incidence Drivers Summary", variable=self.var_i)
+        inc.grid(row=1, padx=10, sticky="W")
         
         self.var_a = tk.IntVar()
-        ai = tk.Checkbutton(self.s4, font=TEXT_FONT, bg="palegreen3", text="Acute Impacts Summary", variable=self.var_a)
-        ai.pack(fill="x")
+        ai = tk.Checkbutton(self.s9, font=TEXT_FONT, bg="palegreen3", text="Acute Impacts Summary", variable=self.var_a)
+        ai.grid(row=1, padx=10, sticky="W")
         
         self.var_p = tk.IntVar()
-        mp = tk.Checkbutton(self.s4, font=TEXT_FONT, bg="palegreen3", text=" Multi Pathway", variable=self.var_p)
-        mp.pack(fill="x")
+        mp = tk.Checkbutton(self.s10, font=TEXT_FONT, bg="palegreen3", text=" Multi Pathway", variable=self.var_p)
+        mp.grid(row=1, padx=10, sticky="W")
         
         self.var_s = tk.IntVar()
-        s = tk.Checkbutton(self.s4, font=TEXT_FONT, bg="palegreen3", text="Source Type Risk Histogram", variable=self.var_s)
-        s.pack(fill="x")
-        
-        pos = tk.Label(self.s4, font=SUB_FONT, bg="palegreen3", text="Enter the position in the source ID where the\n source ID type begins.The default is 1.")
-        pos.pack(side='left', padx = 10)
-        
-        self.pos_num = ttk.Entry(self.s4)
-        self.pos_num["width"] = 5
-        self.pos_num.pack(side = 'left', padx=5)
-        
-        chars = tk.Label(self.s4, font=SUB_FONT, bg="palegreen3", text="Enter the number of characters of the sourcetype ID")
-        chars.pack()
-        
-        self.chars_num = ttk.Entry(self.s4)
-        self.chars_num["width"] = 5
-        self.chars_num.pack(side="right", padx=10)
-        
-   
+        s = tk.Checkbutton(self.s11, font=TEXT_FONT, bg="palegreen3", text="Source Type Risk Histogram", variable=self.var_s, command=self.set_sourcetype)
+        s.grid(row=1, padx=10, sticky="W")
         
         
+           
         
         #back button
-        back_button = tk.Button(self.s5, text="Back", font=TEXT_FONT, relief='solid', borderwidth=2,
+        back_button = tk.Button(self.s13, text="Back", font=TEXT_FONT, relief='solid', borderwidth=2,
                             command=self.lower)
-        back_button.pack(side="left", padx=5, pady=10)
+        back_button.grid(row=0, column=2, sticky="W", padx=5, pady=10)
         
-        run_button = tk.Button(self.s5, text="Run Reports", font=TEXT_FONT, relief='solid', borderwidth=2,
+        run_button = tk.Button(self.s13, text="Run Reports", font=TEXT_FONT, relief='solid', borderwidth=2,
                             command= self.createReports)
-        run_button.pack(side="right", padx=5, pady=10)
+        run_button.grid(row=0, column=1, sticky="E", padx=5, pady=10)
         
     def browse(self):
         
@@ -175,7 +209,30 @@ class Page1(Page):
         #print(fullpath)
         self.mod_group_list.set(self.fullpath)
         
+    def set_sourcetype(self):
 
+        if self.var_s.get() == 1:
+        
+            self.pos = tk.Label(self.s12, font=SUB_FONT, bg="palegreen3", text="Enter the position in the source ID where the\n source ID type begins.The default is 1.")
+            self.pos.grid(row=1, padx=10, sticky="W")
+            
+            self.pos_num = ttk.Entry(self.s12)
+            self.pos_num["width"] = 5
+            self.pos_num.grid(row=1, column=2, padx=10, sticky="W")
+        
+            self.chars = tk.Label(self.s12, font=SUB_FONT, bg="palegreen3", text="Enter the number of characters \nof the sourcetype ID")
+            self.chars.grid(row=2, padx=10, sticky="W")
+            
+            self.chars_num = ttk.Entry(self.s12)
+            self.chars_num["width"] = 5
+            self.chars_num.grid(row=2, column=2, padx=10, sticky="W")
+        
+        else:
+            if self.pos is not None:
+                self.pos.destroy()
+                self.pos_num.destroy()
+                self.chars.destroy()
+                self.chars_num.destroy()
         
     def createReports(self,  arguments=None):
         
@@ -211,32 +268,39 @@ class Page1(Page):
         if self.var_p.get() == 1:
             reportNames.append('MultiPathway')
         
-#        availableReports = {'MaxRisk' : maxRiskReportModule,
-#                                     'CancerDrivers' : cancerDriversReportModule,
-#                                     'HazardIndexDrivers' : hazardIndexDriversReportModule,
-#                                     'Histogram' : histogramModule,
-#                                     'HI_Histogram' : hiHistogramModule,
-#                                     'IncidenceDrivers' : incidenceDriversReportModule,
-#                                     'AcuteImpacts' : acuteImpactsReportModule,
-#                                     'SourceTypeRiskHistogram' : sourceTypeRiskHistogramModule,
-#                                     'MultiPathway' : multiPathwayModule}
         
-        print("Running report on facilities: " + ', '.join(faclist))
+        running_message = "Running report on facilities: " + ', '.join(faclist)
+        
+        self.scr.configure(state='normal')
+        self.scr.insert(tk.INSERT, running_message)
+        self.scr.insert(tk.INSERT, "\n")
+        self.scr.configure(state='disabled')
 
         summaryMgr = SummaryManager(self.fullpath, faclist)
         
         #loop through for each report selected
         for reportName in reportNames:
+            report_message = "Creating " + reportName + " report."
+            
+            self.scr.configure(state='normal')
+            self.scr.insert(tk.INSERT, report_message)
+            self.scr.insert(tk.INSERT, "\n")
+            self.scr.configure(state='disabled')
+            
             summaryMgr.createReport(self.fullpath, reportName)
             
-#            module = availableReports[reportName]
-#            if module is None:
-#                print("Oops. HEM4 couldn't find your report module.")
-#                return
-#            reportClass = getattr(module, reportName)
-#            instance = reportClass(self.fullpath, faclist, arguments)
-#            instance.writeWithTimestamp()
-               
+            report_complete = reportName +  " complete."
+            self.scr.configure(state='normal')
+            self.scr.insert(tk.INSERT, report_complete)
+            self.scr.insert(tk.INSERT, "\n")
+            self.scr.configure(state='disabled')
+            
+        self.scr.configure(state='normal')
+        self.scr.insert(tk.INSERT, "Summary Reports Complete.")
+        self.scr.insert(tk.INSERT, "\n")
+        self.scr.configure(state='disabled')
+        
+        
     
     def color_config(self, widget, color, event):
          widget.configure(bg=color)
