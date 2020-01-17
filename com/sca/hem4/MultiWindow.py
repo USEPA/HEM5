@@ -184,7 +184,7 @@ class Page1(Page):
         ai.grid(row=1, padx=10, sticky="W")
         
         self.var_p = tk.IntVar()
-        mp = tk.Checkbutton(self.s10, font=TEXT_FONT, bg="palegreen3", text=" Multi Pathway", variable=self.var_p)
+        mp = tk.Checkbutton(self.s10, font=TEXT_FONT, bg="palegreen3", text=" Multipathway", variable=self.var_p)
         mp.grid(row=1, padx=10, sticky="W")
         
         self.var_s = tk.IntVar()
