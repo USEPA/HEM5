@@ -12,10 +12,11 @@ class HazardIndexDrivers(ExcelWriter):
 
     def __init__(self, targetDir, facilityIds, parameters=None):
         self.name = "Hazard Index Drivers Summary"
+        self.categoryName = parameters[0]
         self.categoryFolder = targetDir
         self.facilityIds = facilityIds
 
-        self.filename = os.path.join(targetDir, "hazard_index_drivers.xlsx")
+        self.filename = os.path.join(targetDir, self.categoryName + "_hazard_index_drivers.xlsx")
 
     def getHeader(self):
         return ['Facility ID', 'HI Type', 'HI Total', 'Source ID', 'Pollutant', 'Hazard Index', 'Percentage']

@@ -242,28 +242,39 @@ class Page1(Page):
         faclist = [ item for item in files if os.path.isdir(os.path.join(rootpath, item)) 
                     and 'inputs' not in item.lower() ]
                 
-        #get reports
+        #get reports and set arguments
         reportNames = []
+        reportNameArgs = {}
         if self.var_m.get() == 1:
             reportNames.append('MaxRisk')
+            reportNameArgs['MaxRisk'] = None
         if self.var_c.get() == 1:
             reportNames.append('CancerDrivers')
+            reportNameArgs['CancerDrivers'] = None
         if self.var_h.get() == 1:
             reportNames.append('HazardIndexDrivers')
+            reportNameArgs['HazardIndexDrivers'] = None
         if self.var_hi.get() == 1:
             reportNames.append('Histogram')
+            reportNameArgs['Histogram'] = None
         if self.var_hh.get() == 1:
             reportNames.append('HI_Histogram')
+            reportNameArgs['HI Histogram'] = None
         if self.var_i.get() == 1:
             reportNames.append('IncidenceDrivers')
-        #if self.var_a.get() == 1:
-        #    reportNames.append('AcuteImpacts')
+            reportNameArgs['IncidenceDrivers'] = None
+        if self.var_a.get() == 1:
+            reportNames.append('AcuteImpacts')
+            reportNameArgs['AcuteImpacts'] = None
         if self.var_s.get() == 1:
             reportNames.append('SourceTypeRiskHistogram')
             #pass position number and character number
-            self.pos_num
-            self.chars_num
-            
+            if len(self.pos_num.get()) == 0 or self.pos_num.get() == '0':
+                startpos = 1
+            else:
+                startpos = int(self.pos_num.get()) - 1
+            numchars = int(self.chars_num.get())
+            reportNameArgs['SourceTypeRiskHistogram'] = [startpos, numchars]
             
         if self.var_p.get() == 1:
             reportNames.append('MultiPathway')
@@ -287,7 +298,8 @@ class Page1(Page):
             self.scr.insert(tk.INSERT, "\n")
             self.scr.configure(state='disabled')
             
-            summaryMgr.createReport(self.fullpath, reportName)
+            args = reportNameArgs[reportName]
+            summaryMgr.createReport(self.fullpath, reportName, args)
             
             report_complete = reportName +  " complete."
             self.scr.configure(state='normal')

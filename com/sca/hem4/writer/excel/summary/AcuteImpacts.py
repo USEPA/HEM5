@@ -15,7 +15,7 @@ class AcuteImpacts(ExcelWriter):
         self.categoryFolder = targetDir
         self.facilityIds = facilityIds
 
-        self.filename = os.path.join(targetDir, "acute_impacts.xlsx")
+        self.filename = os.path.join(targetDir, self.categoryName + "_acute_impacts.xlsx")
 
     def getHeader(self):
         return ['Facility ID', 'Pollutant', 'CONC_MG',	'REL', 'AEGL_1_11H', 'ERPG_1', 'IDLH_10', 'AEGL_2_1H', 'ERPG_2',

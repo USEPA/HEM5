@@ -8,10 +8,11 @@ class MaxRisk(ExcelWriter):
 
     def __init__(self, targetDir, facilityIds, parameters=None):
         self.name = "Maximum Risk Summary"
+        self.categoryName = parameters[0]
         self.categoryFolder = targetDir
         self.facilityIds = facilityIds
 
-        self.filename = os.path.join(targetDir, "max_risk.xlsx")
+        self.filename = os.path.join(targetDir, self.categoryName + "_max_risk.xlsx")
 
     def getHeader(self):
         return ['Risk Type', 'FIPS', 'Block', 'Population', 'Risk']
@@ -39,7 +40,7 @@ class MaxRisk(ExcelWriter):
                 hi_repr:'sum', hi_kidn:'sum', hi_ocul:'sum', hi_endo:'sum', hi_hema:'sum',
                 hi_immu:'sum', hi_skel:'sum', hi_sple:'sum', hi_thyr:'sum', hi_whol:'sum'}
 
-        # Aggregate concentration, grouped by FIPS/block
+        # Aggregate mir/HI, grouped by FIPS/block
         risk_summed = blocksummary_df.groupby([fips, block]).agg(aggs)[blockSummaryChronic.getColumns()]
 
         mir_row = risk_summed.loc[risk_summed[mir].idxmax()]

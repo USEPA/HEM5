@@ -42,17 +42,17 @@ class SummaryManager(AltRecAwareSummary):
             print("Problem. There is no Facility Max Risk and HI file")
             return 
 
-        # Define the arguments needed for each summary module
-        self.reportArgs = {'MaxRisk' : None,
-                        'CancerDrivers' : None,
-                        'HazardIndexDrivers' : None,
-                        'Histogram' : None,
-                        'HI_Histogram' : None,
-                        'IncidenceDrivers' : None,
-                        'AcuteImpacts' : None,
-                        'SourceTypeRiskHistogram' : [0,2],
-                        'MultiPathway' : [self.grpname],
-                        'MultiPathwayNonCensus' : [self.grpname]}
+#        # Define the arguments needed for each summary module
+#        self.reportArgs = {'MaxRisk' : [self.grpname],
+#                        'CancerDrivers' : [self.grpname],
+#                        'HazardIndexDrivers' : [self.grpname],
+#                        'Histogram' : [self.grpname],
+#                        'HI_Histogram' : [self.grpname],
+#                        'IncidenceDrivers' : [self.grpname],
+#                        'AcuteImpacts' : [self.grpname],
+#                        'SourceTypeRiskHistogram' : [self.grpname,0,2],
+#                        'MultiPathway' : [self.grpname],
+#                        'MultiPathwayNonCensus' : [self.grpname]}
 
 
         
@@ -76,9 +76,10 @@ class SummaryManager(AltRecAwareSummary):
             print("Oops. HEM4 couldn't find your report module.")
             return
         
-        arguments = self.reportArgs[reportName]        
+#        arguments = self.reportArgs[reportName] 
         reportClass = getattr(module, reportName)
-        instance = reportClass(categoryFolder, self.facilityIds, arguments)
+        reportArgs = [self.grpname, arguments]
+        instance = reportClass(categoryFolder, self.facilityIds, reportArgs)
         instance.writeWithTimestamp()
 
         print("Finished report: " + reportName)

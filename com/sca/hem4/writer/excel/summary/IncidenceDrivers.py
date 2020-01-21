@@ -7,10 +7,11 @@ class IncidenceDrivers(ExcelWriter):
 
     def __init__(self, targetDir, facilityIds, parameters=None):
         self.name = "Incidence Drivers Summary"
+        self.categoryName = parameters[0]
         self.categoryFolder = targetDir
         self.facilityIds = facilityIds
 
-        self.filename = os.path.join(targetDir, "incidence_drivers.xlsx")
+        self.filename = os.path.join(targetDir, self.categoryName + "_incidence_drivers.xlsx")
 
     def getHeader(self):
         return ['Pollutant', 'Incidence', '% of Total Incidence']
