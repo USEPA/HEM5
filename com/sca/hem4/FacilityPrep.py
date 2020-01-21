@@ -266,6 +266,7 @@ class FacilityPrep():
         modeldist = self.model.facops[model_dist][0]
 
         if self.model.altRec_optns.get('altrec', None):
+
             self.innerblks, self.outerblks = self.getBlocksFromUrep(facid, cenx, ceny, cenlon, cenlat, facutmzonenum,
                 hemi, maxdist, modeldist, sourcelocs, op_overlap)
 
@@ -356,6 +357,7 @@ class FacilityPrep():
     
                 # Append user_recs to innerblks
                 self.innerblks = self.innerblks.append(user_recs, ignore_index=True)
+
 
 
         #%%----- Polar receptors ----------

@@ -111,7 +111,6 @@ class UTM:
 
     @staticmethod
     def utm2ll(utmn,utme,zone):
- 
         zonenum = UTM.getZone(zone)
         zonehemi = UTM.getBand(zone)
         zonetxt = UTM.zonetxt(zonenum)
