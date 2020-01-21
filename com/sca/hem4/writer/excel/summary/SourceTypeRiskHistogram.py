@@ -8,6 +8,7 @@ from com.sca.hem4.writer.csv.BlockSummaryChronic import *
 from com.sca.hem4.writer.excel.ExcelWriter import ExcelWriter
 from com.sca.hem4.FacilityPrep import *
 from com.sca.hem4.writer.excel.summary.AltRecAwareSummary import AltRecAwareSummary
+from collections import OrderedDict
 
 class SourceTypeRiskHistogram(ExcelWriter, AltRecAwareSummary):
 
@@ -80,11 +81,10 @@ class SourceTypeRiskHistogram(ExcelWriter, AltRecAwareSummary):
             allinner_df[source_id] = allinner_df[source_id].apply(lambda x: x[self.codePosition:self.codePosition+self.codeLength])
 
 
-            # Aggregate risk, grouped by FIPS/block (or receptor id if we're using alternates)
+            # Aggregate risk, grouped by FIPS/block (or receptor id if we're using alternates) and source
             aggs = {lat:'first', lon:'first', population:'first', 'risk':'sum'}                
             byCols = [rec_id, source_id] if altrec=='Y' else [fips, block, source_id]
             inner_summed = allinner_df.groupby(by=byCols, as_index=False).agg(aggs).reset_index(drop=True)
-
             
             # Drop records that (are not user receptors AND have population = 0)
             if altrec == 'N':
@@ -93,45 +93,13 @@ class SourceTypeRiskHistogram(ExcelWriter, AltRecAwareSummary):
             else:
                 inner_summed.drop(inner_summed[(inner_summed.population == 0) & ("U" not in inner_summed.rec_id)].index,
                                  inplace=True)
-                
-            
+                        
             # Append to sector block risk DF
             sector_blkrisk = sector_blkrisk.append(inner_summed)
-            
-            # Round risk to 1 sig fig
-            inner_summed['risk'] = inner_summed['risk'].apply(lambda x: self.round_to_sigfig(x, 1))
-            
-            for index, row in inner_summed.iterrows():
-                code = row[source_id]
-                risk = row['risk']
-                pop = row[population]
 
-                if not code in codes:
-                    codes[code] = [0, 0, 0, 0, 0]
+            # Aggregate risk by block and source
+            sector_summed = sector_blkrisk.groupby(by=byCols, as_index=False).agg(aggs).reset_index(drop=True)
 
-                # Update the 'overall' code
-                codelist = codes['overall']
-                if risk > codelist[0]:
-                    codelist[0] = risk
-                if risk >= 0.0001:
-                    codelist[1] += pop
-                if risk >= 0.00001:
-                    codelist[2] += pop
-                if risk >= 0.000001:
-                    codelist[3] += pop
-                codelist[4] += (risk * pop) / 70
-
-                # Update the code for this source
-                codelist = codes[code]
-                if risk > codelist[0]:
-                    codelist[0] = risk
-                if risk >= 0.0001:
-                    codelist[1] += pop
-                if risk >= 0.00001:
-                    codelist[2] += pop
-                if risk >= 0.000001:
-                    codelist[3] += pop
-                codelist[4] += (risk * pop) / 70
 
             # Get a list of the all_outer_receptor files (could be more than one)
             listOuter = []
@@ -152,7 +120,7 @@ class SourceTypeRiskHistogram(ExcelWriter, AltRecAwareSummary):
                 allouter_df[source_id] = allouter_df[source_id].apply(lambda x: x[self.codePosition:self.codePosition+self.codeLength])
 
     
-                # Aggregate risk, grouped by FIPS/block (or receptor id if we're using alternates)
+                # Aggregate risk, grouped by FIPS/block (or receptor id if we're using alternates) and source
                 aggs = {lat:'first', lon:'first', population:'first', 'risk':'sum'}                
                 byCols = [rec_id, source_id] if altrec=='Y' else [fips, block, source_id]
                 outer_summed = allouter_df.groupby(by=byCols, as_index=False).agg(aggs).reset_index(drop=True)
@@ -164,61 +132,70 @@ class SourceTypeRiskHistogram(ExcelWriter, AltRecAwareSummary):
                 else:
                     outer_summed.drop(outer_summed[(outer_summed.population == 0) & ("U" not in outer_summed.rec_id)].index,
                                      inplace=True)
-                    
 
                 # Append to sector block risk DF
                 sector_blkrisk = sector_blkrisk.append(outer_summed)
 
-                # Round risk to 1 sig fig
-                outer_summed['risk'] = outer_summed['risk'].apply(lambda x: self.round_to_sigfig(x, 1))
+                # Aggregate risk by block and source
+                sector_summed = sector_blkrisk.groupby(by=byCols, as_index=False).agg(aggs).reset_index(drop=True)
+              
+            
+        # Aggregate sector source risk to just block (or rec_id)
+        aggs = {lat:'first', lon:'first', population:'first', 'risk':'sum'}                
+        byCols = [rec_id] if altrec=='Y' else [fips, block]
+        sectortot_summed = sector_summed.groupby(by=byCols, as_index=False).agg(aggs).reset_index(drop=True)
+                   
+        # Round sector risk to 1 sig fig
+        sector_summed['risk'] = sector_summed['risk'].apply(lambda x: self.round_to_sigfig(x, 1))
+        sectortot_summed['risk'] = sectortot_summed['risk'].apply(lambda x: self.round_to_sigfig(x, 1))
 
-                for index, row in outer_summed.iterrows():
-                    code = row[source_id]
-                    risk = row['risk']
-                    pop = row[population]
-    
-                    if not code in codes:
-                        codes[code] = [0, 0, 0, 0]
 
-                    # Update the 'overall' code
-                    codelist = codes['overall']
-                    if risk > codelist[0]:
-                        codelist[0] = risk
-                    if risk >= 0.0001:
-                        codelist[1] += pop
-                    if risk >= 0.00001:
-                        codelist[2] += pop
-                    if risk >= 0.000001:
-                        codelist[3] += pop
-                    codelist[4] += (risk * pop) / 70
+        # Get population counts per risk level and source type         
+        for index, row in sector_summed.iterrows():
+            code = row[source_id]
+            risk = row['risk']
+            pop = row[population]
 
-                    # Update the code for this source
-                    codelist = codes[code]
-                    if risk > codelist[0]:
-                        codelist[0] = risk
-                    if risk >= 0.0001:
-                        codelist[1] += pop
-                    if risk >= 0.00001:
-                        codelist[2] += pop
-                    if risk >= 0.000001:
-                        codelist[3] += pop
-                    codelist[4] += (risk * pop) / 70
+            if not code in codes:
+                codes[code] = [0, 0, 0, 0, 0]
 
-        # Aggregate sector risk, grouped by FIPS/block (or receptor id if we're using alternates)
-        aggs = {lat:'first', lon:'first', 'risk':'sum'}                
-        byCols = [rec_id, source_id] if altrec=='Y' else [fips, block, source_id]
-        sector_summed = sector_blkrisk.groupby(by=byCols, as_index=False).agg(aggs).reset_index(drop=True)
+            # Update the code for this source
+            codelist = codes[code]
+            if risk > codelist[0]:
+                codelist[0] = risk
+            if risk >= 0.0001:
+                codelist[1] += pop
+            if risk >= 0.00001:
+                codelist[2] += pop
+            if risk >= 0.000001:
+                codelist[3] += pop
+            codelist[4] += (risk * pop) / 70
+
+        
+        # Get overall population counts per risk level
+        for index, row in sectortot_summed.iterrows():
+            risk = row['risk']
+            pop = row[population]
+
+            # Update the 'overall' code
+            codelist = codes['overall']
+            if risk > codelist[0]:
+                codelist[0] = risk
+            if risk >= 0.0001:
+                codelist[1] += pop
+            if risk >= 0.00001:
+                codelist[2] += pop
+            if risk >= 0.000001:
+                codelist[3] += pop
+            codelist[4] += (risk * pop) / 70
+
 
         # Maximum MIR for the entire sector
-        self.sector_mir = round(sector_summed['risk'].max() * 1000000, 3)
-        
-        
-        # Sort codes dictionary by descending cancer risk
-        codes_sorted = {k: v for k, v in sorted(codes.items(), key=lambda item: item[1], reverse=True)}
-        
+        self.sector_mir = round(sectortot_summed['risk'].max() * 1000000, 3)
+                
         self.sourceTypes.insert(0, 'overall')
         for code in self.sourceTypes:
-            codelist = codes_sorted[code]
+            codelist = codes[code]
             maximum.append(self.round_to_sigfig(codelist[0]*1000000))
             hundo.append(codelist[1])
             ten.append(codelist[2])
