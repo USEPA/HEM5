@@ -159,10 +159,10 @@ def in_box(modelblks, sourcelocs, modeldist, maxdist, overlap_dist, model):
             outerblks = outerblks[~outerblks[rec_id].isin(innerblks[rec_id])].copy()
 
             #Do any of these inner or outer blocks overlap this source?
-            innerblks['overlap'] = np.where(np.sqrt((innerblks[utme]-src_x)**2 + 
-                                           (innerblks[utmn]-src_y)**2) <= overlap_dist, "Y", "N")
-            outerblks['overlap'] = np.where(np.sqrt((outerblks[utme]-src_x)**2 + 
-                                           (outerblks[utmn]-src_y)**2) <= overlap_dist, "Y", "N")
+            innerblks['overlap'] = np.where(np.sqrt(np.double((innerblks[utme]-src_x)**2 +
+                                           (innerblks[utmn]-src_y)**2)) <= overlap_dist, "Y", "N")
+            outerblks['overlap'] = np.where(np.sqrt(np.double((outerblks[utme]-src_x)**2 +
+                                           (outerblks[utmn]-src_y)**2)) <= overlap_dist, "Y", "N")
     
 #    print("first innerblks size = ", innerblks.shape, " first outerblks size = ", outerblks.shape)
     
@@ -221,8 +221,8 @@ def in_box(modelblks, sourcelocs, modeldist, maxdist, overlap_dist, model):
         # If this polygon is a census tract (e.g. NATA application), then any outer receptor within tract will be
         # considered an inner receptor. Do not perform this check for the user receptor only application.
         if not model.altRec_optns["altrec"]:
-            outerblks["tract"] = outerblks[idmarplot].str[1:11]
-            polyvertices["tract"] = polyvertices[fac_id].str[0:10]
+            outerblks.loc[:, "tract"] = outerblks[idmarplot].str[1:11]
+            polyvertices.loc[:, "tract"] = polyvertices[fac_id].str[0:10]
             intract = pd.merge(outerblks, polyvertices, how='inner', on='tract')
             if len(intract) > 0:
                 innerblks = innerblks.append(intract).reset_index(drop=True)
@@ -264,7 +264,7 @@ def cntyinzone(lat_min, lon_min, lat_max, lon_max, cenlat, cenlon, maxdist_deg):
     return inzone
 
 #%%
-def getblocks(cenx, ceny, cenlon, cenlat, utmzone, maxdist, modeldist, sourcelocs, overlap_dist, model):
+def getblocks(cenx, ceny, cenlon, cenlat, utmzone, hemi, maxdist, modeldist, sourcelocs, overlap_dist, model):
     
 
     # convert max outer ring distance from meters to degrees latitude
@@ -321,14 +321,14 @@ def getblocks(cenx, ceny, cenlon, cenlat, utmzone, maxdist, modeldist, sourceloc
     #combine all frames df's
     censusblks = pd.concat(frames)
 
-    #convert to utm if necessary
-    censusblks[utms] = censusblks.apply(lambda row: UTM.ll2utm_alt(row[lat], row[lon], utmzone), axis=1)
+    #compute UTMs from lat/lon using the common zone       
+    censusblks[[utmn, utme]] = censusblks.apply(lambda row: UTM.ll2utm_alt(row[lat],row[lon],utmzone,hemi), 
+                                               result_type="expand", axis=1)
 
-    #split utms column into utmn, utme, utmz
-    censusblks[[utmn, utme, utmz]] = pd.DataFrame(censusblks.utms.values.tolist(), index= censusblks.index)
-    #clean up censusblks df
-    del censusblks[utms]
+    #set utmz as the common zone
+    censusblks[utmz] = utmzone
     
+   
     #coerce hill and elevation into floats
     censusblks[hill] = pd.to_numeric(censusblks[hill], errors='coerce').fillna(0)
     censusblks[elev] = pd.to_numeric(censusblks[elev], errors='coerce').fillna(0)

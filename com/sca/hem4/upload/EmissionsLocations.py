@@ -28,9 +28,9 @@ class EmissionsLocations(InputFile):
         self.skiprows = 1
 
         # Specify dtypes for all fields
-        self.numericColumns = [lon,lat,utmzone,lengthx,lengthy,angle,horzdim,vertdim,areavolrelhgt,
+        self.numericColumns = [lon,lat,lengthx,lengthy,angle,horzdim,vertdim,areavolrelhgt,
                                stkht,stkdia,stkvel,stktemp,elev,x2,y2]
-        self.strColumns = [fac_id,source_id,location_type,source_type]
+        self.strColumns = [fac_id,source_id,location_type,source_type,utmzone]
 
         #EMISSIONS LOCATION excel to dataframe
         # HEADER------------------------

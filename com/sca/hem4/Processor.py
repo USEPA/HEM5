@@ -65,11 +65,21 @@ class Processor():
                 
         
         #create a Google Earth KML of all sources to be modeled
-        kmlWriter = KMLWriter()
-        if kmlWriter is not None:
-            kmlWriter.write_kml_emis_loc(self.model)
-            Logger.logMessage("KMZ for all sources completed")
-            pass
+        try:
+            kmlWriter = KMLWriter()
+            if kmlWriter is not None:
+                kmlWriter.write_kml_emis_loc(self.model)
+                Logger.logMessage("KMZ for all sources completed")
+                pass
+            
+        except Exception as ex:
+                self.exception = ex
+                fullStackInfo=''.join(traceback.format_exception(
+                    etype=type(ex), value=ex, tb=ex.__traceback__))
+                message = "An error occurred while trying to create the KML file of all facilities:\n" + fullStackInfo
+                print(message)
+                Logger.logMessage(message)
+           
 
         Logger.logMessage("Preparing Inputs for " + str(
             self.model.facids.count()) + " facilities\n")
