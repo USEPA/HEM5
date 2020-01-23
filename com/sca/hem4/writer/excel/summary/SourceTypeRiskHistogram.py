@@ -29,18 +29,7 @@ class SourceTypeRiskHistogram(ExcelWriter, AltRecAwareSummary):
         self.riskCache = {}
 
     def getHeader(self):
-        header = ['', 'Maximum Overall']
-
-        # Open the emisloc dataframe and find all unique source type codes
-        emislocFile = os.path.join(self.categoryFolder, "inputs/emisloc.xlsx")
-        emisloc = EmissionsLocations(emislocFile)
-
-        sourceIds = emisloc.dataframe[source_id].unique()
-        sourceTypes = [id[self.codePosition:self.codePosition+self.codeLength] for id in sourceIds]
-        self.sourceTypes = list(set(sourceTypes))
-        header.extend(self.sourceTypes)
-        self.header = header
-        return self.header
+        return ['']
 
     def generateOutputs(self):
         Logger.log("Creating " + self.name + " report...", None, False)
@@ -51,7 +40,7 @@ class SourceTypeRiskHistogram(ExcelWriter, AltRecAwareSummary):
         faclist.replace(to_replace={'acute':{"nan":"N"}}, inplace=True)
 
         # Create a list to hold the values for each bucket
-        maximum = ['Maximum (in 1 million)']
+        maximum = []
         hundo = ['>= 100 in 1 million']
         ten = ['>= 10 in 1 million']
         one = ['>= 1 in 1 million']
@@ -192,17 +181,45 @@ class SourceTypeRiskHistogram(ExcelWriter, AltRecAwareSummary):
 
         # Maximum MIR for the entire sector
         self.sector_mir = round(sectortot_summed['risk'].max() * 1000000, 3)
-                
-        self.sourceTypes.insert(0, 'overall')
+
+        # Prepend the header, sorting by maximums...
+        header = ['', 'Maximum Overall']
+
+        # Open the emisloc dataframe and find all unique source type codes
+        emislocFile = os.path.join(self.categoryFolder, "inputs/emisloc.xlsx")
+        emisloc = EmissionsLocations(emislocFile)
+
+        # Get a list of all source types
+        sourceIds = emisloc.dataframe[source_id].unique()
+        sourceTypes = [id[self.codePosition:self.codePosition+self.codeLength] for id in sourceIds]
+        self.sourceTypes = list(set(sourceTypes))
+
+        # Get maximum values only on the first pass...these will be used to sort the source types
         for code in self.sourceTypes:
             codelist = codes[code]
             maximum.append(self.round_to_sigfig(codelist[0]*1000000))
+
+        # Re-sort source types based on maximum values (decending) and then compile values again.
+        maximum, self.sourceTypes = (list(t) for t in zip(*sorted( zip(maximum, self.sourceTypes), reverse=True )))
+
+        maximum.insert(0, 'Maximum (in 1 million)')
+
+        # The max value is the first one after the label (after the sort...)
+        maximum.insert(1, maximum[1])
+
+        header = ['', 'Maximum Overall']
+        header.extend(self.sourceTypes)
+
+        self.sourceTypes.insert(0, 'overall')
+        for code in self.sourceTypes:
+            codelist = codes[code]
             hundo.append(codelist[1])
             ten.append(codelist[2])
             one.append(codelist[3])
             incidences.append(self.round_to_sigfig(codelist[4]))
 
         allvalues = [['Cancer Risk'], maximum, ['Number of people'], hundo, ten, one, [''], incidences]
+        allvalues.insert(0, header)
 
         histogram_df = pd.DataFrame(allvalues, columns=self.header).astype(dtype=int, errors='ignore')
 
