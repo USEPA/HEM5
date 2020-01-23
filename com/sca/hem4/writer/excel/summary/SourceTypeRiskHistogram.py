@@ -29,7 +29,7 @@ class SourceTypeRiskHistogram(ExcelWriter, AltRecAwareSummary):
         self.riskCache = {}
 
     def getHeader(self):
-        return ['']
+        return [' ']
 
     def generateOutputs(self):
         Logger.log("Creating " + self.name + " report...", None, False)
@@ -201,15 +201,14 @@ class SourceTypeRiskHistogram(ExcelWriter, AltRecAwareSummary):
 
         # Re-sort source types based on maximum values (decending) and then compile values again.
         maximum, self.sourceTypes = (list(t) for t in zip(*sorted( zip(maximum, self.sourceTypes), reverse=True )))
-
         maximum.insert(0, 'Maximum (in 1 million)')
-
-        # The max value is the first one after the label (after the sort...)
+        # The max value is the first one after the label (because we sorted!)
         maximum.insert(1, maximum[1])
 
         header = ['', 'Maximum Overall']
         header.extend(self.sourceTypes)
 
+        # Finally, re-create the histogram using the sorted version of the source types!
         self.sourceTypes.insert(0, 'overall')
         for code in self.sourceTypes:
             codelist = codes[code]
@@ -274,7 +273,6 @@ class SourceTypeRiskHistogram(ExcelWriter, AltRecAwareSummary):
         "population to exceed the given risk level."]
         
         self.appendHeaderAtLocation(headers=sector_mir_txt, startingrow=13, startingcol=0)
-
         self.appendHeaderAtLocation(headers=notes, startingrow=15, startingcol=0)
 
     def round_to_sigfig(self, x, sig=1):
