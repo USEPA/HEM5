@@ -84,10 +84,11 @@ class KMLWriter():
                         maxdist = d
                         maxpair = pair
                 avglat, avglon = self.midpoint(maxpair[0], maxpair[1])
+                                
             else:
                 avglat = latlon_array[0,0]
                 avglon = latlon_array[0,1]
-
+            
             # Setup an Emission Sources folder for this facility
             name_str = "Facility " + facid + " Emission sources"
             es_folder = kml.Folder(ns=self.ns, name=name_str)
