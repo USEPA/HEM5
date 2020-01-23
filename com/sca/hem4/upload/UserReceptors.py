@@ -18,16 +18,16 @@ class UserReceptors(DependentInputFile):
         faclist_df = self.dependency
         
         # Specify dtypes for all fields
-        self.numericColumns = [lon, lat, elev, hill, population]
+        self.numericColumns = [lon, lat, elev, hill]
         self.strColumns = [fac_id,location_type, utmzone, rec_type, rec_id]
 
         if self.csvFormat:
             ureceptor_df = self.readFromPathCsv(
-                (fac_id, location_type, lon, lat, utmzone, elev, rec_type, rec_id, hill, population))
+                (fac_id, location_type, lon, lat, utmzone, elev, rec_type, rec_id, hill))
         else:
             ureceptor_df = self.readFromPath(
-                (fac_id, location_type, lon, lat, utmzone, elev, rec_type, rec_id, hill, population))
-
+                (fac_id, location_type, lon, lat, utmzone, elev, rec_type, rec_id, hill))
+        
         #check for unassigned user receptors
         check_receptor_assignment = ureceptor_df[fac_id]
 
