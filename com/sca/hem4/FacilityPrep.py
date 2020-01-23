@@ -255,7 +255,7 @@ class FacilityPrep():
             sourcelocs = sourcelocs.fillna({source_type:'', lengthx:0, lengthy:0, angle:0, "utme_x2":0, "utmn_y2":0})
             sourcelocs = sourcelocs.reset_index(drop=True)
 
-        # Compute the coordinates of the facililty center
+        # Compute the coordinates of the facililty center        
         cenx, ceny, cenlon, cenlat, max_srcdist, vertx_a, verty_a = UTM.center(sourcelocs, facutmzonenum, hemi)
 
         self.model.computedValues['cenlat'] = cenlat

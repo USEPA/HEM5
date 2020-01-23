@@ -160,11 +160,11 @@ class Page1(Page):
         
         
         self.var_c = tk.IntVar()
-        cancer_driver = tk.Checkbutton(self.s4, font=TEXT_FONT, bg="palegreen3", text="Cancer Drivers Summary", variable=self.var_c)
+        cancer_driver = tk.Checkbutton(self.s4, font=TEXT_FONT, bg="palegreen3", text="Cancer Drivers", variable=self.var_c)
         cancer_driver.grid(row=1, padx=10, sticky="W")
         
         self.var_h = tk.IntVar()
-        hazard = tk.Checkbutton(self.s5, font=TEXT_FONT, bg="palegreen3", text=" Hazard Index Drivers Summary", variable=self.var_h)
+        hazard = tk.Checkbutton(self.s5, font=TEXT_FONT, bg="palegreen3", text="Hazard Index Drivers", variable=self.var_h)
         hazard.grid(row=1, padx=10, sticky="W")
         
         self.var_hi = tk.IntVar()
@@ -172,19 +172,19 @@ class Page1(Page):
         hist.grid(row=1, padx=10, sticky="W")
         
         self.var_hh = tk.IntVar()
-        hh = tk.Checkbutton(self.s7, font=TEXT_FONT, bg="palegreen3", text="HI Histogram", variable=self.var_hh)
+        hh = tk.Checkbutton(self.s7, font=TEXT_FONT, bg="palegreen3", text="Hazard Index Histogram", variable=self.var_hh)
         hh.grid(row=1, padx=10, sticky="W")
         
         self.var_i = tk.IntVar()
-        inc = tk.Checkbutton(self.s8, font=TEXT_FONT, bg="palegreen3", text="Incidence Drivers Summary", variable=self.var_i)
+        inc = tk.Checkbutton(self.s8, font=TEXT_FONT, bg="palegreen3", text="Incidence Drivers", variable=self.var_i)
         inc.grid(row=1, padx=10, sticky="W")
         
         self.var_a = tk.IntVar()
-        ai = tk.Checkbutton(self.s9, font=TEXT_FONT, bg="palegreen3", text="Acute Impacts Summary", variable=self.var_a)
+        ai = tk.Checkbutton(self.s9, font=TEXT_FONT, bg="palegreen3", text="Acute Impacts", variable=self.var_a)
         ai.grid(row=1, padx=10, sticky="W")
         
         self.var_p = tk.IntVar()
-        mp = tk.Checkbutton(self.s10, font=TEXT_FONT, bg="palegreen3", text=" Multi Pathway", variable=self.var_p)
+        mp = tk.Checkbutton(self.s10, font=TEXT_FONT, bg="palegreen3", text="Multipathway", variable=self.var_p)
         mp.grid(row=1, padx=10, sticky="W")
         
         self.var_s = tk.IntVar()
@@ -259,7 +259,7 @@ class Page1(Page):
             reportNameArgs['Histogram'] = None
         if self.var_hh.get() == 1:
             reportNames.append('HI_Histogram')
-            reportNameArgs['HI Histogram'] = None
+            reportNameArgs['HI_Histogram'] = None
         if self.var_i.get() == 1:
             reportNames.append('IncidenceDrivers')
             reportNameArgs['IncidenceDrivers'] = None
@@ -274,10 +274,10 @@ class Page1(Page):
             else:
                 startpos = int(self.pos_num.get()) - 1
             numchars = int(self.chars_num.get())
-            reportNameArgs['SourceTypeRiskHistogram'] = [startpos, numchars]
-            
+            reportNameArgs['SourceTypeRiskHistogram'] = [startpos, numchars]          
         if self.var_p.get() == 1:
             reportNames.append('MultiPathway')
+            reportNameArgs['MultiPathway'] = None
         
         
         running_message = "Running report on facilities: " + ', '.join(faclist)
@@ -288,7 +288,7 @@ class Page1(Page):
         self.scr.configure(state='disabled')
 
         summaryMgr = SummaryManager(self.fullpath, faclist)
-        
+                
         #loop through for each report selected
         for reportName in reportNames:
             report_message = "Creating " + reportName + " report."

@@ -228,7 +228,8 @@ class UTM:
     
         vertx_a = np.array(vertx_l)
         verty_a = np.array(verty_l)
-    
+
+        
         # Combine the x and y vertices lists into list of tuples and then get a
         # unique list of vertices of the form (x, y) where x=utme and y=utmn
         sourceverts = list(zip(vertx_l, verty_l))
@@ -238,25 +239,31 @@ class UTM:
         # Also find the corners of the modeling domain
     
         max_dist = 0
-        max_x = min_x = unique_verts[0][0]
-        max_y = min_y = unique_verts[0][1]
+        max_x = max_y = 0
+        min_x = min_y = 99999999
     
         if len(unique_verts) > 1: #more than one source coordinate
 
             for i in range(0, len(unique_verts)-1):
-                dist = (unique_verts[i][0] - unique_verts[i+1][0])**2 + (unique_verts[i][1] - unique_verts[i+1][1])**2
-                if dist > max_dist:
-                    max_x = max(max_x, unique_verts[i+1][0])
-                    max_y = max(max_y, unique_verts[i+1][1])
-                    min_x = min(min_x, unique_verts[i+1][0])
-                    min_y = min(min_y, unique_verts[i+1][1])
-                    max_dist = m.sqrt(dist)
-                    xmax1 = unique_verts[i][0]
-                    ymax1 = unique_verts[i][1]
-                    xmax2 = unique_verts[i+1][0]
-                    ymax2 = unique_verts[i+1][1]
-    
-    
+                
+                # corners
+                max_x = max(max_x, unique_verts[i][0])
+                max_y = max(max_y, unique_verts[i][1])
+                min_x = min(min_x, unique_verts[i][0])
+                min_y = min(min_y, unique_verts[i][1])
+                
+                # find farthest apart
+                j = i + 1
+                for k in range(j, len(unique_verts)-1):
+                    dist = m.sqrt((unique_verts[i][0] - unique_verts[k][0])**2 + 
+                                  (unique_verts[i][1] - unique_verts[k][1])**2)
+                    if dist > max_dist:
+                        max_dist = dist
+                        xmax1 = unique_verts[i][0]
+                        ymax1 = unique_verts[i][1]
+                        xmax2 = unique_verts[k][0]
+                        ymax2 = unique_verts[k][1]
+                                    
             # Calculate the center of the facility in utm coordinates
             cenx = (xmax1 + xmax2) / 2
             ceny = (ymax1 + ymax2) / 2
