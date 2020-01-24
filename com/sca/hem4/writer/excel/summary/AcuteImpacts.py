@@ -58,11 +58,15 @@ class AcuteImpacts(ExcelWriter, InputFile, AltRecAwareSummary):
 
             acute = AcuteChemicalMaxNonCensus(targetDir=targetDir, facilityId=facilityId) if self.altrec == 'Y' else \
                 AcuteChemicalMax(targetDir=targetDir, facilityId=facilityId)
-            acute_df = acute.createDataframe()
 
-            acute_df[fac_id] = facilityId
+            try:
+                acute_df = acute.createDataframe()
 
-            allAcute_df = allAcute_df.append(acute_df)
+                acute_df[fac_id] = facilityId
+
+                allAcute_df = allAcute_df.append(acute_df)
+            except FileNotFoundError as e:
+                Logger.logMessage("Skipped facility " + facilityId + ". Couldn't find acute information.")
 
 
         # Unit conversion for acute concentration

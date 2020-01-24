@@ -11,6 +11,7 @@ import com.sca.hem4.writer.excel.summary.AcuteImpacts as acuteImpactsReportModul
 import com.sca.hem4.writer.excel.summary.SourceTypeRiskHistogram as sourceTypeRiskHistogramModule
 import com.sca.hem4.writer.excel.summary.MultiPathway as multiPathwayModule
 import com.sca.hem4.writer.excel.summary.MultiPathwayNonCensus as multiPathwayModuleNonCensus
+from com.sca.hem4.visualize.AcuteImpactsVisualizer import AcuteImpactsVisualizer
 from com.sca.hem4.writer.excel.summary.AltRecAwareSummary import AltRecAwareSummary
 
 
@@ -31,6 +32,8 @@ class SummaryManager(AltRecAwareSummary):
                                  'SourceTypeRiskHistogram' : sourceTypeRiskHistogramModule,
                                  'MultiPathway' : multiPathwayModule,
                                  'MultiPathwayNonCensus' : multiPathwayModuleNonCensus}
+
+        self.afterReportRun = {'AcuteImpacts' : self.visualizeAcuteImpacts}
 
         # Get modeling group name from the Facililty Max Risk and HI file
         skeleton = os.path.join(self.categoryFolder, '*_facility_max_risk_and_hi.xlsx')
@@ -82,4 +85,13 @@ class SummaryManager(AltRecAwareSummary):
         instance.writeWithTimestamp()
 
         print("Finished report: " + reportName)
+
+        if reportName in self.afterReportRun:
+            print("Running post-report action for " + reportName)
+            action = self.afterReportRun[reportName]
+            action(categoryFolder)
+
+    def visualizeAcuteImpacts(self, categoryFolder):
+        visualizer = AcuteImpactsVisualizer(sourceDir=categoryFolder)
+        visualizer.visualize()
 

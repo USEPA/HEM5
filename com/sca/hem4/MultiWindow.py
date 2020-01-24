@@ -16,7 +16,10 @@ import os
 import glob
 import importlib 
 
-from PIL import ImageTk, Image
+from PIL import ImageTk
+import PIL.Image
+from pandastable import *
+import pandas as pd
 
 maxRiskReportModule = importlib.import_module("com.sca.hem4.writer.excel.summary.MaxRisk")
 cancerDriversReportModule = importlib.import_module("com.sca.hem4.writer.excel.summary.CancerDrivers")
@@ -276,7 +279,7 @@ class Page2(Page):
        prepared_for.pack(padx=45, pady=30, side="left")
        
        
-       image1 = ImageTk.PhotoImage(Image.open('images\smokestack.jpg'))
+       image1 = ImageTk.PhotoImage(PIL.Image.open('images\smokestack.jpg'))
        ione = tk.Label(self.s3, image=image1)
        ione.image = image1 # keep a reference!
        ione.pack(padx=50, side="left")
@@ -333,6 +336,103 @@ class Page2(Page):
     def color_config(self, widget, color, event):
         widget.configure(bg=color)
 
+class Page3(Page):
+    def __init__(self, nav, *args, **kwargs):
+        Page.__init__(self, *args, **kwargs)
+
+        container = tk.Frame(self, bg="palegreen3")
+        #        self.buttonframe.pack(side="right", fill="y", expand=False)
+        container.pack(side="top", fill="both", expand=True)
+
+        self.s=ttk.Style()
+        print(self.s.theme_names())
+        self.s.theme_use('clam')
+
+        #create grid
+        self.s1 = tk.Frame(container, width=750, height=100, bg="palegreen3")
+        self.s2 = tk.Frame(container, width=750, height=100, bg="palegreen3")
+        self.s3 = tk.Frame(container, width=750, height=100, pady=5, padx=5, bg="palegreen3")
+        self.s4 = tk.Frame(container, width=750, height=100, pady=5, padx=5, bg="palegreen3")
+        self.s5 = tk.Frame(container, width=750, height=100, pady=5, padx=5, bg="palegreen3")
+
+        self.s1.pack(fill="x")
+        self.s2.pack(fill="x")
+        self.s3.pack(fill="x")
+        self.s4.pack(fill="x")
+        self.s5.pack(fill="y")
+
+        #title
+        title = tk.Label(self.s1, text="Output viewing and analysis", font=TITLE_FONT, bg="palegreen3")
+        title.pack(pady=10, side="top")
+
+        button_file = tk.Button(self.s2, text="Open a facility or source category output file",
+                                font=TEXT_FONT, relief='solid', borderwidth=2, command=self.browse_button)
+        button_maps = tk.Button(self.s3, text="Open a chronic or acute map",
+                                font=TEXT_FONT, relief='solid', borderwidth=2, command=self.maps_button)
+
+        button_file.pack(side="left", padx=5, pady=10)
+        button_maps.pack(side="left", padx=5, pady=10)
+
+        #back button
+        back_button = tk.Button(self.s5, text="Back", font=TEXT_FONT, relief='solid', borderwidth=2,
+                                command=self.lower)
+        back_button.pack(side="left", padx=5, pady=10)
+
+
+    def browse_button(self):
+        datatypes = {'fips':np.str,'Fips':np.str,'FIPS':np.str,'FIPS + Block':np.str, \
+                     'block':np.str,'BLOCK':np.str,'Block':np.str,'Src Cat':np.str, \
+                     'Facility ID':np.str,'Facil_id':np.str,'Facility_id':np.str,'facility_id':np.str, \
+                     'source_id':np.str,'Source_id':np.str,'SOURCE_ID':np.str,'SRCID':np.str, \
+                     'FACNAME':np.str,'can_blk':np.str,'resp_blk':np.str,'liver_blk':np.str, \
+                     'neuro_blk':np.str,'devel_blk':np.str,'repro_blk':np.str,'kidney_blk':np.str, \
+                     'ocular_blk':np.str,'endo_blk':np.str,'hema_blk':np.str,'immun_blk':np.str, \
+                     'skel_blk':np.str,'spleen_blk':np.str,'thyroid_blk':np.str,'whole_blk':np.str, \
+                     'lat':np.float64, 'lon':np.float64}
+
+        filename = filedialog.askopenfilename(filetypes = [("Excel or csv files","*.xls; *xlsx; *.csv*")])
+        if filename.split(".")[-1].lower() in ["xlsx", "xls"]:
+            df = pd.read_excel(filename)
+        else:
+            df = pd.read_csv(filename, dtype=datatypes)
+        curr_windo=tk.Toplevel()
+        curr_windo.title(filename)
+        curr_windo.geometry('900x600+40+20')
+        pt = Table(curr_windo, dataframe = df, showtoolbar=True, showstatusbar=True)
+        pt.autoResizeColumns()
+        pt.colheadercolor='#448BB9'
+        pt.floatprecision = 6
+        pt.show()
+
+    def maps_button(self):
+        filename = filedialog.askopenfilename(filetypes = [("html or kml files","*.html; *.kml; *.kmz")])
+        webbrowser.open(filename)
+
+    def browse(self):
+
+        self.fullpath = tk.filedialog.askdirectory()
+        #print(fullpath)
+        self.mod_group_list.set(self.fullpath)
+
+    def lift_nav(self):
+        self.lower()
+    #        self.b1.destroy()
+    #
+    #        self.b1 = tk.Button(self.buttonframe, text="Back", font=TEXT_FONT,
+    #                       relief='solid', borderwidth=2, bg='lightgrey')
+    #        self.b1.bind("<Enter>", partial(self.color_config, self.b1, "white"))
+    #        self.b1.bind("<Leave>", partial(self.color_config, self.b1, "lightgrey"))
+    ##        b2 = tk.Button(buttonframe, text="Page 2", command=p2.lift)
+    ##        b3 = tk.Button(buttonframe, text="Page 3", command=p3.lift)
+    ##
+    #        self.b1.pack(side="bottom", fill="x", padx=5, pady=5)
+    #       self.hem4 = hem4
+
+
+    def color_config(self, widget, color, event):
+        widget.configure(bg=color)
+
+
 class MainView(tk.Frame):
     def __init__(self, master, *args, **kwargs):
         tk.Frame.__init__(self, master=master, *args, **kwargs)
@@ -347,15 +447,17 @@ class MainView(tk.Frame):
         self.hem = Hem4(home, messageQueue, callbackQueue)
         #   start = Page1(self)
         self.nav = Page2(self)
-#        hem = Page3(self)
         self.summary = Page1(self)
-       
+        self.analyze = Page3(self)
+
 #        start.place(in_=container, x=0, y=0, relwidth=1, relheight=1)
         self.nav.place(in_=container, x=0, y=0, relwidth=1, relheight=1)
         self.hem.place(in_=container, x=0, y=0, relwidth=1, relheight=1)
-        self.summary.place(in_=container, x=0, y=0, relwidth=1, relheight=1) 
+        self.summary.place(in_=container, x=0, y=0, relwidth=1, relheight=1)
+        self.analyze.place(in_=container, x=0, y=0, relwidth=1, relheight=1)
         self.summary.lower()
         self.hem.lower()
+        self.analyze.lower()
         
      
         self.s=ttk.Style()
@@ -415,7 +517,8 @@ class MainView(tk.Frame):
         risk.bind("<Enter>", partial(self.color_config, risk, "white"))
         risk.bind("<Leave>", partial(self.color_config, risk, "lightgrey"))
 
-        view = tk.Button(self.s5, text= "View and Analyze Outputs (Disabled) ", font=TEXT_FONT, relief='solid', borderwidth=2, bg='lightgrey')
+        view = tk.Button(self.s5, text= "View and Analyze Outputs", font=TEXT_FONT, relief='solid', borderwidth=2, bg='lightgrey',
+                         command=self.analyze.lift)
         view.pack(padx=20, pady=50)
         view.bind("<Enter>", partial(self.color_config, risk, "white"))
         view.bind("<Leave>", partial(self.color_config, risk, "lightgrey"))

@@ -5,6 +5,8 @@ Created on Thu Mar  7 08:04:27 2019
 @author: MMORRIS
 """
 import os
+import warnings
+
 import pandas as pd
 import geopandas as gp
 from shapely.geometry import Point
@@ -18,7 +20,7 @@ from com.sca.hem4.writer.excel.summary.AcuteImpacts import *
 
 pd.set_option('display.max_columns', 500)
 
-class Visualize():
+class AcuteImpactsVisualizer():
 
     def __init__(self, sourceDir):
         self.sourceDir = sourceDir
@@ -27,6 +29,9 @@ class Visualize():
         self.facilityIds = [ item for item in files if os.path.isdir(os.path.join(rootpath, item))
                                        and 'inputs' not in item.lower() ]
     def visualize(self):
+
+        # Suppress various bokeh warnings
+        warnings.filterwarnings("ignore")
 
         flag_list = []
         acuteImpacts = AcuteImpacts(targetDir=self.sourceDir, facilityIds=self.facilityIds, parameters=None)
@@ -59,7 +64,8 @@ class Visualize():
                    'ERPG-2':'ERPG-2\n(mg/m3)',\
                    'AEGL-1 8-hr':'AEGL-1  (8-hr)\n(mg/m3)',\
                    'AEGL-2 8-hr':'AEGL-2  (8-hr)\n(mg/m3)'}
-        
+
+        links = {}
         for Fac, HAP, refType in flag_list:
             
             path = self.sourceDir + '/' + Fac + '/'
@@ -81,9 +87,9 @@ class Visualize():
             f = {distance: 'first', angle: 'first', aconc: 'sum'}
             df = HAP_df.groupby([lat, lon], as_index=False).agg(f)
             df['HQ'] = df[aconc]/refVal/1000
-            if (os.path.isdir(self.sourceDir + 'Acute Maps') == 0):
-                os.mkdir(self.sourceDir + 'Acute Maps')
-            ac_File = '%s%s%s%s%s' %(self.sourceDir, 'Acute Maps/', Fac+'_', HAP+'_', refType+'.csv')
+            if os.path.isdir(path + '/Acute Maps') == 0:
+                os.mkdir(path + '/Acute Maps')
+            ac_File = '%s%s%s%s%s' %(path, '/Acute Maps/', Fac+'_', HAP+'_', refType+'.csv')
             df.to_csv(path_or_buf = ac_File, mode = 'w+')
               
               #Convert df to geo df
@@ -140,9 +146,18 @@ class Visualize():
             p.add_layout(labels)
             curdoc().add_root(p)
             
-            mapName = '%s%s%s%s%s' %(self.sourceDir, 'Acute Maps/', Fac+'_', HAP+'_', refType+'.html')
-            
+            mapName = '%s%s%s%s%s' %(path, '/Acute Maps/', Fac+'_', HAP+'_', refType+'.html')
+            key = Fac + '_' + HAP + '_' + refType
+            filename = Fac + '/Acute Maps/' + key + '.html'
+            links[key] = filename
+
             save(p, filename = mapName)
 
-visualizer = Visualize(sourceDir="output/STN")
-visualizer.visualize()
+        # Create a simple HTML landing page with links to the generated files
+        # root = self.sourceDir + "/acute_impacts.html"
+        # with open(root, 'w') as f:
+        #     f.write('<html><body>')
+        #     for key in links:
+        #         link = links[key]
+        #         f.write('<a href="' + link + '">' + key + '</a>')
+        #     f.write('</body></html>')
