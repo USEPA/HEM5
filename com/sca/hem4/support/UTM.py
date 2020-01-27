@@ -4,7 +4,7 @@ import numpy as np
 import sys
 import math as m
 import pandas as pd
-#from pyproj import Proj, transform, Transformer
+from pyproj import Proj, transform, Transformer
 from com.sca.hem4.log.Logger import Logger
 
 utmzone = 'utmzone';
