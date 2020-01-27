@@ -854,7 +854,7 @@ class FacilityPrep():
 
     # Determine inner and outer blocks from the set of alternate receptors.
     def getBlocksFromUrep(self, facid, cenx, ceny, cenlon, cenlat, utmZone, hemi, maxdist, modeldist, sourcelocs, overlap_dist):
-
+        
         # convert max outer ring distance from meters to degrees latitude
         maxdist_deg = maxdist*39.36/36/2000/60
         
@@ -880,7 +880,7 @@ class FacilityPrep():
                                     result_type="expand", axis=1)
 
         # Set utmzone as the common zone
-        altrecs[utmzone] = utmZone
+        altrecs[utmz] = utmZone
 
         #coerce hill and elevation into floats
         altrecs[hill] = pd.to_numeric(altrecs[hill], errors='coerce').fillna(0)

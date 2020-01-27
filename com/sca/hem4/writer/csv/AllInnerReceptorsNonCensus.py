@@ -32,6 +32,7 @@ class AllInnerReceptorsNonCensus(CsvWriter, InputFile):
         InputFile.__init__(self, path, createDataframe)
 
         self.innerBlocksCache = {}
+        self.filename = path
         self.acute_yn = acuteyn
         
 
