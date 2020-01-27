@@ -1,5 +1,7 @@
 from com.sca.hem4.writer.excel.AcuteChemicalMax import AcuteChemicalMax
+from com.sca.hem4.writer.excel.AcuteChemicalMaxNonCensus import AcuteChemicalMaxNonCensus
 from com.sca.hem4.writer.excel.RiskBreakdown import *
+from com.sca.hem4.writer.excel.summary.AltRecAwareSummary import AltRecAwareSummary
 
 hq_rel = 'hq_rel'
 hq_aegl1 = 'hq_aegl1'
@@ -8,19 +10,40 @@ hq_idlh = 'hq_idlh'
 hq_aegl2 = 'hq_aegl2'
 hq_erpg2 = 'hq_erpg2'
 
-class AcuteImpacts(ExcelWriter):
+class AcuteImpacts(ExcelWriter, InputFile, AltRecAwareSummary):
 
     def __init__(self, targetDir, facilityIds, parameters=None):
         self.name = "Acute Impacts Summary"
         self.categoryName = parameters[0]
         self.categoryFolder = targetDir
         self.facilityIds = facilityIds
-        
-        self.filename = os.path.join(targetDir, self.categoryName + "_acute_impacts.xlsx")
+
+        path = os.path.join(targetDir, self.categoryName + "_acute_impacts.xlsx")
+
+        firstFacility = facilityIds[0]
+
+        InputFile.__init__(self, path, False)
+
+        self.filename = path
+        self.targetDir = targetDir
+        self.altrec = self.determineAltRec(targetDir=os.path.join(targetDir, firstFacility), facilityId=firstFacility)
 
     def getHeader(self):
-        return ['Facility ID', 'Pollutant', 'CONC_MG',	'REL', 'AEGL_1_11H', 'ERPG_1', 'IDLH_10', 'AEGL_2_1H', 'ERPG_2',
-            'HQ_REL	', 'HQ_AEGL1', 'HQ_ERPG1', 'HQ_IDLH', 'HQ_AEGL2', 'HQ_ERPG2', 'FIP', 'Block', 'Distance', 'Angle']
+        if self.altrec == 'Y':
+            return ['Facility ID', 'Pollutant', 'CONC_MG',	'REL', 'AEGL_1_11H', 'ERPG_1', 'IDLH_10', 'AEGL_2_1H', 'ERPG_2',
+                    'HQ_REL	', 'HQ_AEGL1', 'HQ_ERPG1', 'HQ_IDLH', 'HQ_AEGL2', 'HQ_ERPG2', 'Receptor ID', 'Distance', 'Angle']
+        else:
+            return ['Facility ID', 'Pollutant', 'CONC_MG',	'REL', 'AEGL_1_11H', 'ERPG_1', 'IDLH_10', 'AEGL_2_1H', 'ERPG_2',
+                'HQ_REL	', 'HQ_AEGL1', 'HQ_ERPG1', 'HQ_IDLH', 'HQ_AEGL2', 'HQ_ERPG2', 'FIPS', 'Block', 'Distance', 'Angle']
+
+
+    def getColumns(self):
+        if self.altrec == 'Y':
+            return[fac_id, pollutant, aconc, rel, aegl_1_1h, erpg_1, idlh_10, aegl_2_1h, erpg_2,
+               hq_rel, hq_aegl1, hq_erpg1, hq_idlh, hq_aegl2, hq_erpg2, rec_id, distance, angle]
+        else:
+            return [fac_id, pollutant, aconc, rel, aegl_1_1h, erpg_1, idlh_10, aegl_2_1h, erpg_2,
+               hq_rel, hq_aegl1, hq_erpg1, hq_idlh, hq_aegl2, hq_erpg2, fips, block, distance, angle]
 
     def generateOutputs(self):
         Logger.log("Creating " + self.name + " report...", None, False)
@@ -30,12 +53,18 @@ class AcuteImpacts(ExcelWriter):
         for facilityId in self.facilityIds:
             targetDir = self.categoryFolder + "/" + facilityId
 
-            acute = AcuteChemicalMax(targetDir=targetDir, facilityId=facilityId)
-            acute_df = acute.createDataframe()
 
-            acute_df[fac_id] = facilityId
+            acute = AcuteChemicalMaxNonCensus(targetDir=targetDir, facilityId=facilityId) if self.altrec == 'Y' else \
+                AcuteChemicalMax(targetDir=targetDir, facilityId=facilityId)
 
-            allAcute_df = allAcute_df.append(acute_df)
+            try:
+                acute_df = acute.createDataframe()
+
+                acute_df[fac_id] = facilityId
+
+                allAcute_df = allAcute_df.append(acute_df)
+            except FileNotFoundError as e:
+                Logger.logMessage("Skipped facility " + facilityId + ". Couldn't find acute information.")
 
 
         # Unit conversion for acute concentration
@@ -49,8 +78,13 @@ class AcuteImpacts(ExcelWriter):
         allAcute_df[hq_aegl2] = allAcute_df.apply(lambda x: (x[aconc] / x[aegl_2_1h]) if x[aegl_2_1h] > 0 else 0, axis=1)
         allAcute_df[hq_erpg2] = allAcute_df.apply(lambda x: (x[aconc] / x[erpg_2]) if x[erpg_2] > 0 else 0, axis=1)
 
-        allAcute_df = allAcute_df[[fac_id, pollutant, aconc, rel, aegl_1_1h, erpg_1, idlh_10, aegl_2_1h, erpg_2,
-                               hq_rel, hq_aegl1, hq_erpg1, hq_idlh, hq_aegl2, hq_erpg2, fips, block, distance, angle]]
+        if self.altrec == 'Y':
+            allAcute_df = allAcute_df[[fac_id, pollutant, aconc, rel, aegl_1_1h, erpg_1, idlh_10, aegl_2_1h, erpg_2,
+                   hq_rel, hq_aegl1, hq_erpg1, hq_idlh, hq_aegl2, hq_erpg2, rec_id, distance, angle]]
+        else:
+            allAcute_df = allAcute_df[[fac_id, pollutant, aconc, rel, aegl_1_1h, erpg_1, idlh_10, aegl_2_1h, erpg_2,
+                   hq_rel, hq_aegl1, hq_erpg1, hq_idlh, hq_aegl2, hq_erpg2, fips, block, distance, angle]]
+
         allAcute_df.sort_values(by=[fac_id, pollutant], ascending=True, inplace=True)
         allAcute_df.reset_index(inplace=True, drop=True)
 
@@ -58,3 +92,17 @@ class AcuteImpacts(ExcelWriter):
         self.dataframe = allAcute_df
         self.data = self.dataframe.values
         yield self.dataframe
+
+    def createDataframe(self):
+        # Type setting for XLS reading
+        self.numericColumns = [aconc, rel, aegl_1_1h, erpg_1, idlh_10, aegl_2_1h, erpg_2,
+                               hq_rel, hq_aegl1, hq_erpg1, hq_idlh, hq_aegl2, hq_erpg2, distance, angle]
+
+        if self.altrec == 'Y':
+            self.strColumns = [fac_id, pollutant, rec_id]
+        else:
+            self.strColumns = [fac_id, pollutant, fips, block]
+
+        self.skiprows = 3
+        df = self.readFromPath(self.getColumns())
+        return df.fillna("")
