@@ -20,6 +20,10 @@ from com.sca.hem4.writer.excel.summary.AcuteImpacts import *
 
 pd.set_option('display.max_columns', 500)
 
+#------------------------------------------
+# Creates html files with maps displaying acute impact data. CSV files are also created
+# should someone want to create their own visualization with the raw data.
+#------------------------------------------
 class AcuteImpactsVisualizer():
 
     def __init__(self, sourceDir):
@@ -38,17 +42,16 @@ class AcuteImpactsVisualizer():
 
         flag_df = acuteImpacts.createDataframe()
 
-        #flag_df['POLLUTANT'] = flag_df['POLLUTANT'].str.lower()
         for index, row in flag_df.iterrows():
-            if row[hq_rel] >= 0.00000005:
+            if row[hq_rel] >= 1.5:
                 flag_list.append((row.FACID,row.pollutant, "REL"))
-            if row[hq_aegl1] >= 0.00000005:
+            if row[hq_aegl1] >= 1.5:
                 flag_list.append((row[fac_id],row.pollutant, "AEGL-1 1-hr"))
-            if row[hq_erpg1] >= 0.00000005:
+            if row[hq_erpg1] >= 1.5:
                 flag_list.append((row[fac_id],row.pollutant, "ERPG-1"))
-            if row[hq_aegl2] >= 0.00000005:
+            if row[hq_aegl2] >= 1.5:
                 flag_list.append((row[fac_id],row.pollutant, "AEGL-2 1-hr"))
-            if row[hq_erpg2] >= 0.00000005:
+            if row[hq_erpg2] >= 1.5:
                 flag_list.append((row[fac_id],row.pollutant, "ERPG-2"))
         
         # Find the HEM dose-response library and create df of it
@@ -130,7 +133,11 @@ class AcuteImpactsVisualizer():
                        title=title)
             
             p.add_tile(ESRI_tile)
+
+            # NOTE: the following line was removed from Mark's original code because
+            # there was a problem with the import of the enumerated value.
             #p.add_tile(STAMEN_TONER_LABELS)
+
             p.circle('x', 'y', color = 'yellow', size = 7, source=source)
             p.xaxis.visible = False
             p.yaxis.visible = False
@@ -152,12 +159,3 @@ class AcuteImpactsVisualizer():
             links[key] = filename
 
             save(p, filename = mapName)
-
-        # Create a simple HTML landing page with links to the generated files
-        # root = self.sourceDir + "/acute_impacts.html"
-        # with open(root, 'w') as f:
-        #     f.write('<html><body>')
-        #     for key in links:
-        #         link = links[key]
-        #         f.write('<a href="' + link + '">' + key + '</a>')
-        #     f.write('</body></html>')
