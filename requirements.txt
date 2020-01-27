@@ -11,3 +11,4 @@ Fiona==1.8.13
 GDAL==3.0.3
 Rtree==0.9.3
 Shapely==1.6.4.post2
+geopandas==0.6.2
