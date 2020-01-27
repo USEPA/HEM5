@@ -590,10 +590,18 @@ class Hem4(tk.Frame):
         
         #add emissions variation checkbox
         self.check_emisvar = tk.IntVar()
-        self.emisvar_sel = tk.Checkbutton(self.s5, text="Add Emissions Variations", 
+        self.emisvar_sel = tk.Checkbutton(self.s5, text="Add emissions variations to the inputs", 
                                           variable = self.check_emisvar, font=TEXT_FONT,
                                           bg='palegreen3', command = self.add_variation)
         self.emisvar_sel.grid(row=3, column=0, sticky='E', padx = 85)
+        
+        #add temporal output variations
+        self.check_tempvar = tk.IntVar()
+        self.tempvar_sel = tk.Checkbutton(self.s5, text="Show temporal variations in the outputs", 
+                                          variable = self.check_tempvar, font=TEXT_FONT,
+                                          bg='palegreen3', command = self.add_temporal)
+        self.tempvar_sel.grid(row=3, column=0, sticky='W', padx = 85)
+        
 
         
     def is_valid_extension(self, filepath):
@@ -621,6 +629,9 @@ class Hem4(tk.Frame):
         else:
             return os.path.abspath(filename)
 
+
+#%% functions for uploading inputs
+    
     def uploadFacilitiesList(self):
         """
         Function for uploading Facilities List option file. Also creates
@@ -952,6 +963,135 @@ class Hem4(tk.Frame):
             self.emisvar_list.set(fullpath)
             [self.scr.insert(tk.INSERT, msg) for msg in self.model.emisvar.log]
     
+    
+    
+#%% PLace for Creating Optional Inputs    
+    
+        
+    def create_optional(self, inputtype):
+        """ function for creating optional tab"""
+        
+        additional = False
+        dep = False
+        tempvar = False
+        
+        #check to see what the input is
+        
+        if inputtype == 'buoyant':
+            additional = True            
+        elif inputtype == 'poly':
+            additional = True   
+        elif inputtype == 'bldgdw':   
+            additional = True            
+        elif inputtype == 'part':            
+            dep =True            
+        elif inputtype == 'land':
+            dep =True
+        elif inputtype == 'season':
+            dep =True
+        elif inputtype == 'temp':
+            tempvar = True
+            
+    
+        # determine logic for creation
+        if hasattr(self, 'optionalinputtab'):
+            
+            pass
+        
+        else:
+            
+            if additional == True:
+                #create optional input tab
+                self.optionalinputtab = tk.Frame(self.tabControl, bg='palegreen3')
+                self.optionalinputtab.grid_rowconfigure(10, weight=4)
+    
+                
+                self.tabControl.insert(1, self.optionalinputtab, text='Additional Inputs')
+                
+                
+                #do buttons
+                
+                if hasattr('self', 'depinputtab'):
+                    self.nexttab.destroy()
+                    #put next tab on optionalinput  tab
+                    self.nexttab = tk.Button(self.optionalinputtab, font=TEXT_FONT, bg='lightgrey', relief='solid', borderwidth=2,
+                                             command = self.switchtodepinput)
+                    self.nexttab.grid(row=10, sticky='W')
+                    
+                    
+                    #destroy back button on dep and make back button from dep to optional
+                    self.main_back.destroy()
+                    
+                    #add back buttons
+                    self.opt_back = tk.Button(self.optionalinputtab, text="BACK", font=TEXT_FONT, bg='lightgrey', relief='solid', borderwidth=2,
+                                  command=self.switchtooptional)
+                    self.opt_back.grid(row=10, column=0, sticky="W", padx=5, pady=5)
+                    
+                
+                else:
+                    
+                    self.run_button.destroy()
+                    self.run_button = tk.Button(self.optionalinputtab, text='RUN', fg="green", bg='lightgrey', relief='solid', borderwidth=2,
+                                        command=self.run, font=TEXT_FONT)
+                    self.run_button.grid(row=10, column=0, sticky="E", padx=5, pady=5)
+                    
+                    #put next button on main 
+                    self.nexttab = tk.Button(self.main, font=TEXT_FONT, text='NEXT',  bg='lightgrey', relief='solid', borderwidth=2,
+                                             command = self.switchtooptional)
+                    self.nexttab.grid(row=10, column=0, sticky='E ')
+                    
+                     #add back button
+                    self.main_back = tk.Button(self.optionalinputtab, text="BACK", font=TEXT_FONT, bg='lightgrey', relief='solid', borderwidth=2,
+                                      command=self.backtomain)
+                    self.main_back.grid(row=10, column=0, sticky="W", padx=5, pady=5)
+                
+                self.inst_space = tk.Frame(self.optionalinputtab, width=750, height=50, bg="palegreen3", pady=5, padx=5)
+                self.inst_space.grid(row=2, column=0, sticky="nsew")
+                
+                self.add_optional_instructions(self.inst_space) 
+                
+                
+            
+        if hasattr(self, 'depinputtab'):
+            pass
+        
+        else:
+            
+            if dep == True:
+                #crete deposition inputs
+                self.depinputtab = tk.Frame(self.tabControl, bg='palegreen3') 
+                self.depinputtab.grid_rowconfigure(8, weight=4)
+                self.tabControl.insert(1, self.depinputtab, text='Dep/Depl Inputs')
+                
+        
+                 #create optional input tab
+                self.depinputtab = tk.Frame(self.tabControl, bg='palegreen3')            
+                self.tabControl.insert(1, self.depinputtab, text='Dep/Depl Inputs')
+                           
+                #put run button on optional input tab and next button on main
+                self.run_button.destroy()
+                
+                self.run_button = tk.Button(self.depinputtab, text='RUN', fg="green", bg='lightgrey', relief='solid', borderwidth=2,
+                                    command=self.run, font=TEXT_FONT)
+                self.run_button.grid(row=10, column=0, sticky="E", padx=5, pady=5)
+                
+                self.nexttab = tk.Button(self.main, font=TEXT_FONT, text='NEXT',  bg='lightgrey', relief='solid', borderwidth=2,
+                                         command = self.switchtodepinput)
+                self.nexttab.grid(row=10, column=0, sticky='E', padx=5, pady=5)
+                
+                
+                #add back button
+                self.main_back = tk.Button(self.depinputtab, text="BACK", font=TEXT_FONT, bg='lightgrey', relief='solid', borderwidth=2,
+                                  command=self.backtomain)
+                self.main_back.grid(row=10, column=0, sticky="W", padx=5, pady=5)
+    
+                
+                self.inst_space = tk.Frame(self.depinputtab, width=750, height=50, bg="palegreen3", pady=5, padx=5)
+                self.inst_space.grid(row=2, column=0, sticky="nsew")
+                
+                self.add_optional_instructions(self.inst_space)
+      
+    
     def add_ur(self):
         """
         Function for creating row and upload widgets for user receptors
@@ -1029,119 +1169,41 @@ class Hem4(tk.Frame):
         
         #if optional input tab already exists
         if hasattr(self, "optionalinputtab"):
-            
-            ##create row for bouyant line in it
-             #create row for buoyant line input
-            self.s7 = tk.Frame(self.optionalinputtab, width=250, height=50, pady=5, padx=5, bg="palegreen3")
-            self.s7.grid(row=3, column=0, columnspan=2, sticky="nsew")
-            
-            
-            #Buoyant Line  label
-            self.b_label = tk.Label(self.s7, font=TEXT_FONT, bg="palegreen3",  
-                                     text="Please select associated Buoyant Line"+
-                                     " Source Parameter file:")
-            self.b_label.grid(row=1, sticky="W")
-            
-            #buoyant line file upload button
-            self.buoyant_up = tk.Button(self.s7, font=TEXT_FONT, bg='lightgrey', relief='solid', borderwidth=2,
-                                         command = lambda: self.uploadbuoyant())
-            self.buoyant_up["text"] = "Browse"
-            self.buoyant_up.grid(row=2, column=0, sticky='W')
-            #event handler for instructions (Button 1 is the left mouse click)
-            self.buoyant_up.bind('<Enter>', 
-                                 lambda e:self.browse("instructions/buoyant_browse.txt"))
-            
-            
-            #buoyant line file text entry
-            self.buoyant_list = tk.StringVar(self.s7)
-            self.buoyant_list_man = ttk.Entry(self.s7)
-            self.buoyant_list_man["width"] = 100
-            self.buoyant_list_man["textvariable"]= self.buoyant_list
-            self.buoyant_list_man.grid(row=2, column=0, sticky='E', padx=85)
-            #event handler for instructions (Button 1 is the left mouse click)
-            self.buoyant_list_man.bind('<Button-1>', 
-                                       lambda e:self.manual("instructions/buoyant_browse.txt"))
-        
+            pass
         else:
-            #create optional input tab
-            self.optionalinputtab = tk.Frame(self.tabControl, bg='palegreen3')            
-            self.tabControl.insert(1, self.optionalinputtab, text='Additional Inputs')
-            
-    
-        
-            
-            if hasattr('self', 'depinputtab'):
-                #put next tab on optionalinput  tab
-                self.nexttab.destroy()
-                self.nexttab = tk.Button(self.optionalinputtab, font=TEXT_FONT, bg='lightgrey', relief='solid', borderwidth=2,
-                                         command = self.switchtodepinput)
-                self.nexttab.grid(row=10, sticky='W')
-                
-                
-                #destroy back button on dep and make back button from dep to optional
-                self.main_back.destroy()
-                
-                #add back buttons
-                self.opt_back = tk.Button(self.optionalinputtab, text="BACK", font=TEXT_FONT, bg='lightgrey', relief='solid', borderwidth=2,
-                              command=self.switchtooptional)
-                self.opt_back.grid(row=10, column=0, sticky="W", padx=5, pady=5)
-                 
-            else:
-            
-                #put next button on main 
-                self.nexttab = tk.Button(self.main, font=TEXT_FONT, text='NEXT',  bg='lightgrey', relief='solid', borderwidth=2,
-                                         command = self.switchtooptional)
-                self.nexttab.grid(row=10, column=0, sticky='E', padx=5, pady=5)
-                
-                 #put run button on optional input tab
-                self.run_button.destroy()
-                self.run_button = tk.Button(self.optionalinputtab, text='RUN', fg="green", bg='lightgrey', relief='solid', borderwidth=2,
-                                    command=self.run, font=TEXT_FONT)
-                self.run_button.grid(row=9, column=0, sticky="E", padx=5, pady=5)
-                
-                            #add back buttons
-                self.main_back = tk.Button(self.optionalinputtab, text="BACK", font=TEXT_FONT, bg='lightgrey', relief='solid', borderwidth=2,
-                                  command=self.backtomain)
-                self.main_back.grid(row=10, column=0, sticky="W", padx=5, pady=5)
-                
-                
-            
-            self.inst_space = tk.Frame(self.optionalinputtab, width=750, height=50, bg="palegreen3", pady=5, padx=5)
-            self.inst_space.grid(row=2, column=0, sticky="nsew")
-            
-            self.add_optional_instructions(self.inst_space) 
+            self.create_optional('buoyant')
 
-             #create row for buoyant line input
-            self.s7 = tk.Frame(self.optionalinputtab, width=250, height=50, pady=5, padx=5, bg="palegreen3")
-            self.s7.grid(row=3, column=0, columnspan=2, sticky="nsew")
-            
-            
-            #Buoyant Line  label
-            self.b_label = tk.Label(self.s7, font=TEXT_FONT, bg="palegreen3",  
-                                     text="Please select associated Buoyant Line"+
-                                     " Source Parameter file:")
-            self.b_label.grid(row=1, sticky="W")
-            
-            #buoyant line file upload button
-            self.buoyant_up = tk.Button(self.s7, font=TEXT_FONT, bg='lightgrey', relief='solid', borderwidth=2,
-                                         command = lambda: self.uploadbuoyant())
-            self.buoyant_up["text"] = "Browse"
-            self.buoyant_up.grid(row=2, column=0, sticky='W')
-            #event handler for instructions (Button 1 is the left mouse click)
-            self.buoyant_up.bind('<Enter>', 
-                                 lambda e:self.browse("instructions/buoyant_browse.txt"))
-            
-            
-            #buoyant line file text entry
-            self.buoyant_list = tk.StringVar(self.s7)
-            self.buoyant_list_man = ttk.Entry(self.s7)
-            self.buoyant_list_man["width"] = 100
-            self.buoyant_list_man["textvariable"]= self.buoyant_list
-            self.buoyant_list_man.grid(row=2, column=0, sticky='E', padx=85)
-            #event handler for instructions (Button 1 is the left mouse click)
-            self.buoyant_list_man.bind('<Button-1>', 
-                                       lambda e:self.manual("instructions/buoyant_browse.txt"))
+         #create row for buoyant line input
+        self.s7 = tk.Frame(self.optionalinputtab, width=250, height=50, pady=5, padx=5, bg="palegreen3")
+        self.s7.grid(row=3, column=0, columnspan=2, sticky="nsew")
         
+        
+        #Buoyant Line  label
+        self.b_label = tk.Label(self.s7, font=TEXT_FONT, bg="palegreen3",  
+                                 text="Please select associated Buoyant Line"+
+                                 " Source Parameter file:")
+        self.b_label.grid(row=1, sticky="W")
+        
+        #buoyant line file upload button
+        self.buoyant_up = tk.Button(self.s7, font=TEXT_FONT, bg='lightgrey', relief='solid', borderwidth=2,
+                                     command = lambda: self.uploadbuoyant())
+        self.buoyant_up["text"] = "Browse"
+        self.buoyant_up.grid(row=2, column=0, sticky='W')
+        #event handler for instructions (Button 1 is the left mouse click)
+        self.buoyant_up.bind('<Enter>', 
+                             lambda e:self.browse("instructions/buoyant_browse.txt"))
+        
+        
+        #buoyant line file text entry
+        self.buoyant_list = tk.StringVar(self.s7)
+        self.buoyant_list_man = ttk.Entry(self.s7)
+        self.buoyant_list_man["width"] = 100
+        self.buoyant_list_man["textvariable"]= self.buoyant_list
+        self.buoyant_list_man.grid(row=2, column=0, sticky='E', padx=85)
+        #event handler for instructions (Button 1 is the left mouse click)
+        self.buoyant_list_man.bind('<Button-1>', 
+                                   lambda e:self.manual("instructions/buoyant_browse.txt"))
+    
     
     
     def add_poly(self):
@@ -1150,110 +1212,37 @@ class Hem4(tk.Frame):
         """
         #if optional input tab already exists
         if hasattr(self, "optionalinputtab"):
-            
-            ##create row for polyvertex inputs
-            #create row for poly
-            self.s8 = tk.Frame(self.optionalinputtab, width=250, height=50, pady=5, padx=5, bg="palegreen3")
-            self.s8.grid(row=4, column=0, columnspan=2, sticky="nsew")
-            
-            #Polygon sources label
-            self.poly_label = tk.Label(self.s8, font=TEXT_FONT, bg="palegreen3",  
-                                  text="Please select associated Polyvertex file.")
-            self.poly_label.grid(row=1, sticky="W")
-            
-            #polygon sources upload button
-            self.poly_up = tk.Button(self.s8, font=TEXT_FONT, bg='lightgrey', relief='solid', borderwidth=2,
-                                      command = lambda: self.uploadPolyvertex())
-            self.poly_up["text"] = "Browse"
-            self.poly_up.grid(row=2, column=0, sticky="W")
-            #event handler for instructions (Button 1 is the left mouse click)
-            self.poly_up.bind('<Enter>', 
-                              lambda e:self.browse("instructions/poly_browse.txt"))
-           
-            #polygon sources loccation file text entry
-            self.poly_list = tk.StringVar(self.s8)
-            self.poly_list_man = ttk.Entry(self.s8)
-            self.poly_list_man["width"] = 100
-            self.poly_list_man["textvariable"]= self.poly_list
-            self.poly_list_man.grid(row=2, column=0, sticky='E', padx=85)
-            #event handler for instructions (Button 1 is the left mouse click)
-            self.poly_list_man.bind('<Button-1>', 
-                                    lambda e:self.manual("instructions/poly_browse.txt"))
-        
-
+            pass
         else:
-            #create optional input tab
-            self.optionalinputtab = tk.Frame(self.tabControl, bg='palegreen3')            
-            self.tabControl.insert(1, self.optionalinputtab, text='Additional Inputs')
-            
-           
-
-            if hasattr('self', 'depinputtab'):
-                self.nexttab.destroy()
-                #put next tab on optionalinput  tab
-                self.nexttab = tk.Button(self.optionalinputtab, font=TEXT_FONT, bg='lightgrey', relief='solid', borderwidth=2,
-                                         command = self.switchtodepinput)
-                self.nexttab.grid(row=10, sticky='W')
-                
-                
-                #destroy back button on dep and make back button from dep to optional
-                self.main_back.destroy()
-                
-                #add back buttons
-                self.opt_back = tk.Button(self.optionalinputtab, text="BACK", font=TEXT_FONT, bg='lightgrey', relief='solid', borderwidth=2,
-                              command=self.switchtooptional)
-                self.opt_back.grid(row=10, column=0, sticky="W", padx=5, pady=5)
-                
-            
-            else:
-                
-                self.run_button.destroy()
-                self.run_button = tk.Button(self.optionalinputtab, text='RUN', fg="green", bg='lightgrey', relief='solid', borderwidth=2,
-                                    command=self.run, font=TEXT_FONT)
-                self.run_button.grid(row=10, column=0, sticky="E", padx=5, pady=5)
-                
-                #put next button on main 
-                self.nexttab = tk.Button(self.main, font=TEXT_FONT, text='NEXT',  bg='lightgrey', relief='solid', borderwidth=2,
-                                         command = self.switchtooptional)
-                self.nexttab.grid(row=10, column=0, sticky='E ')
-                
-                 #add back button
-                self.main_back = tk.Button(self.optionalinputtab, text="BACK", font=TEXT_FONT, bg='lightgrey', relief='solid', borderwidth=2,
-                                  command=self.backtomain)
-                self.main_back.grid(row=10, column=0, sticky="W", padx=5, pady=5)
-            
-            self.inst_space = tk.Frame(self.optionalinputtab, width=750, height=50, bg="palegreen3", pady=5, padx=5)
-            self.inst_space.grid(row=2, column=0, sticky="nsew")
-            
-            self.add_optional_instructions(self.inst_space) 
+            self.create_optional('poly')
                             
-            #create row for poly
-            self.s8 = tk.Frame(self.optionalinputtab, width=250, height=50, pady=5, padx=5, bg="palegreen3")
-            self.s8.grid(row=4, column=0, columnspan=2, sticky="nsew")
-            
-            #Polygon sources label
-            self.poly_label = tk.Label(self.s8, font=TEXT_FONT, bg="palegreen3",  
-                                  text="Please select associated Polyvertex file.")
-            self.poly_label.grid(row=1, sticky="W")
-            
-            #polygon sources upload button
-            self.poly_up = tk.Button(self.s8, font=TEXT_FONT, bg='lightgrey', relief='solid', borderwidth=2,
-                                      command = lambda: self.uploadPolyvertex())
-            self.poly_up["text"] = "Browse"
-            self.poly_up.grid(row=2, column=0, sticky="W")
-            #event handler for instructions (Button 1 is the left mouse click)
-            self.poly_up.bind('<Enter>', 
-                              lambda e:self.browse("instructions/poly_browse.txt"))
-           
-            #polygon sources loccation file text entry
-            self.poly_list = tk.StringVar(self.s8)
-            self.poly_list_man = ttk.Entry(self.s8)
-            self.poly_list_man["width"] = 100
-            self.poly_list_man["textvariable"]= self.poly_list
-            self.poly_list_man.grid(row=2, column=0, sticky='E', padx=85)
-            #event handler for instructions (Button 1 is the left mouse click)
-            self.poly_list_man.bind('<Button-1>', 
-                                    lambda e:self.manual("instructions/poly_browse.txt"))
+        #create row for poly
+        self.s8 = tk.Frame(self.optionalinputtab, width=250, height=50, pady=5, padx=5, bg="palegreen3")
+        self.s8.grid(row=4, column=0, columnspan=2, sticky="nsew")
+        
+        #Polygon sources label
+        self.poly_label = tk.Label(self.s8, font=TEXT_FONT, bg="palegreen3",  
+                              text="Please select associated Polyvertex file.")
+        self.poly_label.grid(row=1, sticky="W")
+        
+        #polygon sources upload button
+        self.poly_up = tk.Button(self.s8, font=TEXT_FONT, bg='lightgrey', relief='solid', borderwidth=2,
+                                  command = lambda: self.uploadPolyvertex())
+        self.poly_up["text"] = "Browse"
+        self.poly_up.grid(row=2, column=0, sticky="W")
+        #event handler for instructions (Button 1 is the left mouse click)
+        self.poly_up.bind('<Enter>', 
+                          lambda e:self.browse("instructions/poly_browse.txt"))
+       
+        #polygon sources loccation file text entry
+        self.poly_list = tk.StringVar(self.s8)
+        self.poly_list_man = ttk.Entry(self.s8)
+        self.poly_list_man["width"] = 100
+        self.poly_list_man["textvariable"]= self.poly_list
+        self.poly_list_man.grid(row=2, column=0, sticky='E', padx=85)
+        #event handler for instructions (Button 1 is the left mouse click)
+        self.poly_list_man.bind('<Button-1>', 
+                                lambda e:self.manual("instructions/poly_browse.txt"))
     
     
     def add_bldgdw(self):
@@ -1263,113 +1252,39 @@ class Hem4(tk.Frame):
 
         #if optional input tab already exists
         if hasattr(self, "optionalinputtab"):
-            
-            ##create row for buildingdownwash inputs
-            #create optional input tab
-            self.optionalinputtab = tk.Frame(self.tabControl, bg='palegreen3')            
-            self.tabControl.add(self.optionalinputtab, text='Additional Inputs')  
-        
-            #create row for building downwash
-            self.s9 = tk.Frame(self.optionalinputtab, width=250, height=50, padx=5, bg="palegreen3")
-            self.s9.grid(row=5, column=0, columnspan=2, sticky="nsew")
-            
-            # building dw labels
-            self.bldgdw_label = tk.Label(self.s9,
-                                         text="Please select associated Building" + 
-                                         " Dimensions file", font=TEXT_FONT, bg="palegreen3")
-            self.bldgdw_label.grid(row=1, sticky="W")
-            
-            #building dw upload button
-            self.bldgdw_up = tk.Button(self.s9, font=TEXT_FONT, bg='lightgrey', relief='solid', borderwidth=2,
-                                        command = lambda: self.uploadBuildingDownwash())
-            self.bldgdw_up["text"] = "Browse"
-            self.bldgdw_up.grid(row=2, column=0, sticky="W")
-            #event handler for instructions (Button 1 is the left mouse click)
-            self.bldgdw_up.bind('<Enter>', 
-                              lambda e:self.browse("instructions/bd_browse.txt"))
-            
-            #polygon sources loccation file text entry
-            self.bldgdw_list = tk.StringVar(self.s9)
-            self.bldgdw_list_man = ttk.Entry(self.s9)
-            self.bldgdw_list_man["width"] = 100
-            self.bldgdw_list_man["textvariable"]= self.bldgdw_list
-            self.bldgdw_list_man.grid(row=2, column=0, sticky='E', padx=85)
-            #event handler for instructions (Button 1 is the left mouse click)
-            self.bldgdw_list_man.bind('<Button-1>', 
-                                    lambda e:self.manual("instructions/bd_man.txt"))
-        
+            pass
         else:
             #create optional input tab
-            self.optionalinputtab = tk.Frame(self.tabControl, bg='palegreen3')            
-            self.tabControl.insert(1, self.optionalinputtab, text='Additional Inputs')
-            
-            self.inst_space = tk.Frame(self.optionalinputtab, width=750, height=50, bg="palegreen3", pady=5, padx=5)
-            self.inst_space.grid(row=2, column=0, sticky="nsew")
-            
-            #add back button
-            self.main_back = tk.Button(self.optionalinputtab, text="BACK", font=TEXT_FONT, bg='lightgrey', relief='solid', borderwidth=2,
-                              command=self.backtomain)
-            self.main_back.grid(row=10, column=0, sticky="W", padx=5, pady=5)
-
-            if hasattr('self', 'depinputtab'):
-                 #put next tab on optionalinput  tab
-                self.nexttab.destroy()
-                self.nexttab = tk.Button(self.optionalinputtab, font=TEXT_FONT, bg='lightgrey', relief='solid', borderwidth=2,
-                                         command = self.switchtodepinput)
-                self.nexttab.grid(row=10, sticky='W')
-                
-                
-                #destroy back button on dep and make back button from dep to optional
-                self.main_back.destroy()
-                
-                #add back buttons
-                self.opt_back = tk.Button(self.optionalinputtab, text="BACK", font=TEXT_FONT, bg='lightgrey', relief='solid', borderwidth=2,
-                              command=self.switchtooptional)
-                self.opt_back.grid(row=10, column=0, sticky="W", padx=5, pady=5)
-                
-            
-            else:
-                
-                self.run_button.destroy()
-                self.run_button = tk.Button(self.optionalinputtab, text='RUN', fg="green", bg='lightgrey', relief='solid', borderwidth=2,
-                                    command=self.run, font=TEXT_FONT)
-                self.run_button.grid(row=10, column=0, sticky="E", padx=5, pady=5)
-                
-                #put next button on main 
-                self.nexttab = tk.Button(self.main, font=TEXT_FONT, text='NEXT',  bg='lightgrey', relief='solid', borderwidth=2,
-                                         command=self.switchtooptional)
-                self.nexttab.grid(row=10, column=0, sticky='E', padx=5, pady=5)
-            
-            self.add_optional_instructions(self.inst_space) 
+            self.create_optional('bldgdw')
         
-            #create row for building downwash
-            self.s9 = tk.Frame(self.optionalinputtab, width=250, height=50, padx=5, bg="palegreen3")
-            self.s9.grid(row=5, column=0, columnspan=2, sticky="nsew")
-            
-            # building dw labels
-            self.bldgdw_label = tk.Label(self.s9,
-                                         text="Please select associated Building" + 
-                                         " Dimensions file", font=TEXT_FONT, bg="palegreen3")
-            self.bldgdw_label.grid(row=1, sticky="W")
-            
-            #building dw upload button
-            self.bldgdw_up = tk.Button(self.s9, font=TEXT_FONT, bg='lightgrey', relief='solid', borderwidth=2,
-                                        command = lambda: self.uploadBuildingDownwash())
-            self.bldgdw_up["text"] = "Browse"
-            self.bldgdw_up.grid(row=2, column=0, sticky="W")
-            #event handler for instructions (Button 1 is the left mouse click)
-            self.bldgdw_up.bind('<Enter>', 
-                              lambda e:self.browse("instructions/bd_browse.txt"))
-            
-            #polygon sources loccation file text entry
-            self.bldgdw_list = tk.StringVar(self.s9)
-            self.bldgdw_list_man = ttk.Entry(self.s9)
-            self.bldgdw_list_man["width"] = 100
-            self.bldgdw_list_man["textvariable"]= self.bldgdw_list
-            self.bldgdw_list_man.grid(row=2, column=0, sticky='E', padx=85)
-            #event handler for instructions (Button 1 is the left mouse click)
-            self.bldgdw_list_man.bind('<Button-1>', 
-                                    lambda e:self.manual("instructions/bd_man.txt"))
+        #create row for building downwash
+        self.s9 = tk.Frame(self.optionalinputtab, width=250, height=50, padx=5, bg="palegreen3")
+        self.s9.grid(row=5, column=0, columnspan=2, sticky="nsew")
+        
+        # building dw labels
+        self.bldgdw_label = tk.Label(self.s9,
+                                     text="Please select associated Building" + 
+                                     " Dimensions file", font=TEXT_FONT, bg="palegreen3")
+        self.bldgdw_label.grid(row=1, sticky="W")
+        
+        #building dw upload button
+        self.bldgdw_up = tk.Button(self.s9, font=TEXT_FONT, bg='lightgrey', relief='solid', borderwidth=2,
+                                    command = lambda: self.uploadBuildingDownwash())
+        self.bldgdw_up["text"] = "Browse"
+        self.bldgdw_up.grid(row=2, column=0, sticky="W")
+        #event handler for instructions (Button 1 is the left mouse click)
+        self.bldgdw_up.bind('<Enter>', 
+                          lambda e:self.browse("instructions/bd_browse.txt"))
+        
+        #polygon sources loccation file text entry
+        self.bldgdw_list = tk.StringVar(self.s9)
+        self.bldgdw_list_man = ttk.Entry(self.s9)
+        self.bldgdw_list_man["width"] = 100
+        self.bldgdw_list_man["textvariable"]= self.bldgdw_list
+        self.bldgdw_list_man.grid(row=2, column=0, sticky='E', padx=85)
+        #event handler for instructions (Button 1 is the left mouse click)
+        self.bldgdw_list_man.bind('<Button-1>', 
+                                lambda e:self.manual("instructions/bd_man.txt"))
         
         
         
@@ -1380,88 +1295,37 @@ class Hem4(tk.Frame):
         
         #if deposition/depletion input tab already exists
         if hasattr(self, "depinputtab"):
-            
-            ##create row for particle size input
-            self.s10 = tk.Frame(self.depinputtab, width=250, height=50, pady=5, padx=5, bg="palegreen3")
-            self.s10.grid(row=3, column=0, columnspan=2, sticky="nsew")
-            
-            #particle size label
-            part_label = tk.Label(self.s10, font=TEXT_FONT, bg="palegreen3", 
-                                  text="Upload the file containing size information for particle matter emissions:")
-            part_label.grid(row=0, sticky="W")
-        
-            #particle depositionsize file upload button
-            self.dep_part_up = tk.Button(self.s10, font=TEXT_FONT, bg='lightgrey', relief='solid', borderwidth=2,
-                                          command = lambda: self.uploadParticle(self.model.depdeplt))
-            self.dep_part_up["text"] = "Browse"
-            self.dep_part_up.grid(row=1, column=0, sticky="W")
-            self.dep_part_up.bind('<Enter>', 
-                                  lambda e:self.browse("instructions/dep_part_browse.txt"))
-             
-            #particle size file text entry
-            self.dep_part = tk.StringVar(self.s10)
-            self.dep_part_man = ttk.Entry(self.s10)
-            self.dep_part_man["width"] = 100
-            self.dep_part_man["textvariable"]= self.dep_part
-            self.dep_part_man.grid(row=1, column=0, sticky='E', padx=85)
-            #event handler for instructions (Button 1 is the left mouse click)
-            self.dep_part_man.bind('<Button-1>', 
-                                   lambda e:self.manual("instructions/dep_part_man.txt"))
-        
+           pass
         else:
             #create optional input tab
-            self.depinputtab = tk.Frame(self.tabControl, bg='palegreen3')            
-            self.tabControl.insert(1, self.depinputtab, text='Dep/Depl Inputs')
-                       
-            #put run button on optional input tab and next button on main
-            self.run_button.destroy()
-            
-            self.run_button = tk.Button(self.depinputtab, text='RUN', fg="green", bg='lightgrey', relief='solid', borderwidth=2,
-                                command=self.run, font=TEXT_FONT)
-            self.run_button.grid(row=10, column=0, sticky="E", padx=5, pady=5)
-            
-            self.nexttab = tk.Button(self.main, font=TEXT_FONT, text='NEXT',  bg='lightgrey', relief='solid', borderwidth=2,
-                                     command = self.switchtodepinput)
-            self.nexttab.grid(row=10, column=0, sticky='E', padx=5, pady=5)
-            
-            
-            #add back button
-            self.main_back = tk.Button(self.depinputtab, text="BACK", font=TEXT_FONT, bg='lightgrey', relief='solid', borderwidth=2,
-                              command=self.backtomain)
-            self.main_back.grid(row=10, column=0, sticky="W", padx=5, pady=5)
-
-            
-            self.inst_space = tk.Frame(self.depinputtab, width=750, height=50, bg="palegreen3", pady=5, padx=5)
-            self.inst_space.grid(row=2, column=0, sticky="nsew")
-            
-            self.add_optional_instructions(self.inst_space) 
+            self.create_optional('part')
         
-            #create column for particle size file
-            self.s10 = tk.Frame(self.depinputtab, width=250, height=50, pady=5, padx=5, bg="palegreen3")
-            self.s10.grid(row=3, column=0, columnspan=2, sticky="nsew")
-            
-            #particle size label
-            part_label = tk.Label(self.s10, font=TEXT_FONT, bg="palegreen3", 
-                                  text="Upload the file containing size information for particle matter emissions:")
-            part_label.grid(row=0, sticky="W")
+        #create column for particle size file
+        self.s10 = tk.Frame(self.depinputtab, width=250, height=50, pady=5, padx=5, bg="palegreen3")
+        self.s10.grid(row=3, column=0, columnspan=2, sticky="nsew")
         
-            #particle depositionsize file upload button
-            self.dep_part_up = tk.Button(self.s10, font=TEXT_FONT, bg='lightgrey', relief='solid', borderwidth=2,
-                                          command = lambda: self.uploadParticle(self.model.depdeplt))
-            self.dep_part_up["text"] = "Browse"
-            self.dep_part_up.grid(row=1, column=0, sticky="W")
-            self.dep_part_up.bind('<Enter>', 
-                                  lambda e:self.browse("instructions/dep_part_browse.txt"))
-             
-            #particle size file text entry
-            self.dep_part = tk.StringVar(self.s10)
-            self.dep_part_man = ttk.Entry(self.s10)
-            self.dep_part_man["width"] = 100
-            self.dep_part_man["textvariable"]= self.dep_part
-            self.dep_part_man.grid(row=1, column=0, sticky='E', padx=85)
-            #event handler for instructions (Button 1 is the left mouse click)
-            self.dep_part_man.bind('<Button-1>', 
-                                   lambda e:self.manual("instructions/dep_part_man.txt"))
+        #particle size label
+        part_label = tk.Label(self.s10, font=TEXT_FONT, bg="palegreen3", 
+                              text="Upload the file containing size information for particle matter emissions:")
+        part_label.grid(row=0, sticky="W")
+    
+        #particle depositionsize file upload button
+        self.dep_part_up = tk.Button(self.s10, font=TEXT_FONT, bg='lightgrey', relief='solid', borderwidth=2,
+                                      command = lambda: self.uploadParticle(self.model.depdeplt))
+        self.dep_part_up["text"] = "Browse"
+        self.dep_part_up.grid(row=1, column=0, sticky="W")
+        self.dep_part_up.bind('<Enter>', 
+                              lambda e:self.browse("instructions/dep_part_browse.txt"))
+         
+        #particle size file text entry
+        self.dep_part = tk.StringVar(self.s10)
+        self.dep_part_man = ttk.Entry(self.s10)
+        self.dep_part_man["width"] = 100
+        self.dep_part_man["textvariable"]= self.dep_part
+        self.dep_part_man.grid(row=1, column=0, sticky='E', padx=85)
+        #event handler for instructions (Button 1 is the left mouse click)
+        self.dep_part_man.bind('<Button-1>', 
+                               lambda e:self.manual("instructions/dep_part_man.txt"))
               
         
     def add_land(self):
@@ -1471,88 +1335,37 @@ class Hem4(tk.Frame):
         """
          #if deposition/depletion input tab already exists
         if hasattr(self, "depinputtab"):
-            
-            ##create row for land use inputs
-            self.s11 = tk.Frame(self.depinputtab, width=250, height=50, pady=5, padx=5, bg="palegreen3")
-            self.s11.grid(row=4, column=0, columnspan=2, sticky="nsew")
-            
-            #land use size label
-            land_label = tk.Label(self.s11, font=TEXT_FONT, bg="palegreen3", 
-                                  text="Upload the file containing land use information:")
-            land_label.grid(row=0, sticky="W")
-        
-            #laand use file upload button
-            self.dep_land_up = tk.Button(self.s11, font=TEXT_FONT, bg='lightgrey', relief='solid', borderwidth=2,
-                                          command = lambda: self.uploadLandUse())
-            self.dep_land_up["text"] = "Browse"
-            self.dep_land_up.grid(row=1, column=0, sticky="W")
-            self.dep_land_up.bind('<Enter>', 
-                                  lambda e:self.browse("instructions/dep_land_browse.txt"))
-             
-            #land use file text entry
-            self.dep_land = tk.StringVar(self.s11)
-            self.dep_land_man = ttk.Entry(self.s11)
-            self.dep_land_man["width"] = 100
-            self.dep_land_man["textvariable"]= self.dep_land
-            self.dep_land_man.grid(row=1, column=0, sticky='E', padx=85)
-            #event handler for instructions (Button 1 is the left mouse click)
-            self.dep_land_man.bind('<Button-1>', 
-                                   lambda e:self.manual("instructions/dep_land_man.txt"))
-
-        
+            pass
         else:
             
-            #create optional input tab
-            self.depinputtab = tk.Frame(self.tabControl, bg='palegreen3')            
-            self.tabControl.insert(1, self.depinputtab, text='Dep/Depl Inputs')
-            
-                        #put run button on optional input tab and next button on main
-            self.run_button.destroy()
-            
-            self.run_button = tk.Button(self.depinputtab, text='RUN', fg="green", bg='lightgrey', relief='solid', borderwidth=2,
-                                command=self.run, font=TEXT_FONT)
-            self.run_button.grid(row=10, column=0, sticky="E", padx=5, pady=5)
-            
-            self.nexttab = tk.Button(self.main, font=TEXT_FONT, text='NEXT',  bg='lightgrey', relief='solid', borderwidth=2,
-                                     command = self.switchtodepinput)
-            self.nexttab.grid(row=10, column=0, sticky='E', padx=5, pady=5)
-            
-            #add back button
-            self.main_back = tk.Button(self.depinputtab, text="BACK", font=TEXT_FONT, bg='lightgrey', relief='solid', borderwidth=2,
-                              command=self.backtomain)
-            self.main_back.grid(row=10, column=0, sticky="W", padx=5, pady=5)
-            
-            self.inst_space = tk.Frame(self.depinputtab, width=750, height=50, bg="palegreen3", pady=5, padx=5)
-            self.inst_space.grid(row=2, column=0, sticky="nsew")
-            
-            self.add_optional_instructions(self.inst_space) 
+            self.create_optional('land')
         
-            #create column for land use file
-            self.s11 = tk.Frame(self.depinputtab, width=250, height=50, pady=5, padx=5, bg="palegreen3")
-            self.s11.grid(row=4, column=0, columnspan=2, sticky="nsew")
-            
-            #land use size label
-            land_label = tk.Label(self.s11, font=TEXT_FONT, bg="palegreen3", 
-                                  text="Upload the file containing land use information:")
-            land_label.grid(row=0, sticky="W")
+        #create column for land use file
+        self.s11 = tk.Frame(self.depinputtab, width=250, height=50, pady=5, padx=5, bg="palegreen3")
+        self.s11.grid(row=4, column=0, columnspan=2, sticky="nsew")
         
-            #laand use file upload button
-            self.dep_land_up = tk.Button(self.s11, font=TEXT_FONT, bg='lightgrey', relief='solid', borderwidth=2,
-                                          command = lambda: self.uploadLandUse())
-            self.dep_land_up["text"] = "Browse"
-            self.dep_land_up.grid(row=1, column=0, sticky="W")
-            self.dep_land_up.bind('<Enter>', 
-                                  lambda e:self.browse("instructions/dep_land_browse.txt"))
-             
-            #land use file text entry
-            self.dep_land = tk.StringVar(self.s11)
-            self.dep_land_man = ttk.Entry(self.s11)
-            self.dep_land_man["width"] = 100
-            self.dep_land_man["textvariable"]= self.dep_land
-            self.dep_land_man.grid(row=1, column=0, sticky='E', padx=85)
-            #event handler for instructions (Button 1 is the left mouse click)
-            self.dep_land_man.bind('<Button-1>', 
-                                   lambda e:self.manual("instructions/dep_land_man.txt"))
+        #land use size label
+        land_label = tk.Label(self.s11, font=TEXT_FONT, bg="palegreen3", 
+                              text="Upload the file containing land use information:")
+        land_label.grid(row=0, sticky="W")
+    
+        #laand use file upload button
+        self.dep_land_up = tk.Button(self.s11, font=TEXT_FONT, bg='lightgrey', relief='solid', borderwidth=2,
+                                      command = lambda: self.uploadLandUse())
+        self.dep_land_up["text"] = "Browse"
+        self.dep_land_up.grid(row=1, column=0, sticky="W")
+        self.dep_land_up.bind('<Enter>', 
+                              lambda e:self.browse("instructions/dep_land_browse.txt"))
+         
+        #land use file text entry
+        self.dep_land = tk.StringVar(self.s11)
+        self.dep_land_man = ttk.Entry(self.s11)
+        self.dep_land_man["width"] = 100
+        self.dep_land_man["textvariable"]= self.dep_land
+        self.dep_land_man.grid(row=1, column=0, sticky='E', padx=85)
+        #event handler for instructions (Button 1 is the left mouse click)
+        self.dep_land_man.bind('<Button-1>', 
+                               lambda e:self.manual("instructions/dep_land_man.txt"))
         
         
     def add_seasons(self):
@@ -1561,87 +1374,38 @@ class Hem4(tk.Frame):
         """
          #if deposition/depletion input tab already exists
         if hasattr(self, "depinputtab"):
-            
-            #create column for land use file
-            self.s12 = tk.Frame(self.depinputtab, width=250, height=50, pady=5, padx=5, bg="palegreen3")
-            self.s12.grid(row=5, column=0, columnspan=2, sticky="nsew")
-            
-            #land use size label
-            seasons_label = tk.Label(self.s12, font=TEXT_FONT, bg="palegreen3", 
-                                 text="Upload the file containing seasonal vegetation information:")
-            seasons_label.grid(row=0, sticky="W")
-        
-            #laand use file upload button
-            self.dep_seasons_up = tk.Button(self.s12, font=TEXT_FONT, bg='lightgrey', relief='solid', borderwidth=2,
-                                         command = lambda: self.uploadSeasons())
-            self.dep_seasons_up["text"] = "Browse"
-            self.dep_seasons_up.grid(row=1, column=0, sticky="W")
-            self.dep_seasons_up.bind('<Enter>', 
-                                 lambda e:self.browse("instructions/dep_veg_browse.txt"))
-             
-            #land use file text entry
-            self.dep_seasons = tk.StringVar(self.s12)
-            self.dep_seasons_man = ttk.Entry(self.s12)
-            self.dep_seasons_man["width"] = 100
-            self.dep_seasons_man["textvariable"]= self.dep_seasons
-            self.dep_seasons_man.grid(row=1, column=0, sticky='E', padx=85)
-            #event handler for instructions (Button 1 is the left mouse click)
-            self.dep_seasons_man.bind('<Button-1>', 
-                                  lambda e:self.manual("instructions/dep_veg_man.txt"))
-        
+           pass
         else:
             #create optional input tab
-            self.depinputtab = tk.Frame(self.tabControl, bg='palegreen3')            
-            self.tabControl.insert(1, self.depinputtab, text='Dep/Depl Inputs') 
-            
-            #put run button on optional input tab and next button on main
-            self.run_button.destroy()
-            
-            self.run_button = tk.Button(self.depinputtab, text='RUN', fg="green", bg='lightgrey', relief='solid', borderwidth=2,
-                                command=self.run, font=TEXT_FONT)
-            self.run_button.grid(row=10, column=0, sticky="E", padx=5, pady=5)
-            
-            self.nexttab = tk.Button(self.main, text='NEXT', font=TEXT_FONT, bg='lightgrey', relief='solid', borderwidth=2,
-                                     command=self.switchtodepinput)
-            self.nexttab.grid(row=10, column=0, sticky='E', padx=5, pady=5)
-            
-            #add back button
-            self.main_back = tk.Button(self.depinputtab, text="BACK", font=TEXT_FONT, bg='lightgrey', relief='solid', borderwidth=2,
-                              command=self.backtomain)
-            self.main_back.grid(row=10, column=0, sticky="W", padx=5, pady=5)
-            
-            self.inst_space = tk.Frame(self.depinputtab, width=750, height=50, bg="palegreen3", pady=5, padx=5)
-            self.inst_space.grid(row=2, column=0, sticky="nsew")
-            
-            self.add_optional_instructions(self.inst_space) 
+            self.create_optional('season')
         
+
+        #create column for land use file
+        self.s12 = tk.Frame(self.depinputtab, width=250, height=50, pady=5, padx=5, bg="palegreen3")
+        self.s12.grid(row=5, column=0, columnspan=2, sticky="nsew")
         
-            #create column for land use file
-            self.s12 = tk.Frame(self.depinputtab, width=250, height=50, pady=5, padx=5, bg="palegreen3")
-            self.s12.grid(row=5, column=0, columnspan=2, sticky="nsew")
-            
-            #land use size label
-            seasons_label = tk.Label(self.s12, font=TEXT_FONT, bg="palegreen3", 
-                                 text="Upload the file containing seasonal vegetation information:")
-            seasons_label.grid(row=0, sticky="W")
-        
-            #laand use file upload button
-            self.dep_seasons_up = tk.Button(self.s12, font=TEXT_FONT, bg='lightgrey', relief='solid', borderwidth=2,
-                                         command = lambda: self.uploadSeasons())
-            self.dep_seasons_up["text"] = "Browse"
-            self.dep_seasons_up.grid(row=1, column=0, sticky="W")
-            self.dep_seasons_up.bind('<Enter>', 
-                                 lambda e:self.browse("instructions/dep_veg_browse.txt"))
-             
-            #land use file text entry
-            self.dep_seasons = tk.StringVar(self.s12)
-            self.dep_seasons_man = ttk.Entry(self.s12)
-            self.dep_seasons_man["width"] = 100
-            self.dep_seasons_man["textvariable"]= self.dep_seasons
-            self.dep_seasons_man.grid(row=1, column=0, sticky='E', padx=85)
-            #event handler for instructions (Button 1 is the left mouse click)
-            self.dep_seasons_man.bind('<Button-1>', 
-                                  lambda e:self.manual("instructions/dep_veg_man.txt"))
+        #land use size label
+        seasons_label = tk.Label(self.s12, font=TEXT_FONT, bg="palegreen3", 
+                             text="Upload the file containing seasonal vegetation information:")
+        seasons_label.grid(row=0, sticky="W")
+    
+        #laand use file upload button
+        self.dep_seasons_up = tk.Button(self.s12, font=TEXT_FONT, bg='lightgrey', relief='solid', borderwidth=2,
+                                     command = lambda: self.uploadSeasons())
+        self.dep_seasons_up["text"] = "Browse"
+        self.dep_seasons_up.grid(row=1, column=0, sticky="W")
+        self.dep_seasons_up.bind('<Enter>', 
+                             lambda e:self.browse("instructions/dep_veg_browse.txt"))
+         
+        #land use file text entry
+        self.dep_seasons = tk.StringVar(self.s12)
+        self.dep_seasons_man = ttk.Entry(self.s12)
+        self.dep_seasons_man["width"] = 100
+        self.dep_seasons_man["textvariable"]= self.dep_seasons
+        self.dep_seasons_man.grid(row=1, column=0, sticky='E', padx=85)
+        #event handler for instructions (Button 1 is the left mouse click)
+        self.dep_seasons_man.bind('<Button-1>', 
+                              lambda e:self.manual("instructions/dep_veg_man.txt"))
         
     def add_variation(self):
         """
@@ -1691,11 +1455,37 @@ class Hem4(tk.Frame):
         #if checked and then unchecked
         elif self.check_emisvar.get() == 0:
             if hasattr(self, 'emisvar_on'):
-                    self.emisvar_list_man.destroy()
+                    self.emisvar_list_man.destroy() 
                     self.emisvar_on.destroy()
                     self.emisvar_label.destroy()
                    
 
+    def add_temporal(self):
+        
+        
+        if self.check_tempvar.get() == 1:
+            #emissions variation label
+                self.tempvar_label = tk.Label(self.s5, font=TEXT_FONT, bg="palegreen3", 
+                                     text="What diurnal (hourly) resolution would you like?")
+                self.tempvar_label.grid(row=5, column=0, sticky="W", padx=85)
+            
+                tkvar = tk.StringVar(self.s5)
+                choices = {1, 2, 3, 4, 6, 8, 12, 24}
+                tkvar.set(1) # set the default option
+
+                self.popupMenu = tk.OptionMenu(self.s5, tkvar, *choices)
+                self.popupMenu.grid(row=5, column=0, sticky='E', padx = 85)
+                
+        
+        
+        
+        #if checked and then unchecked
+        elif self.check_tempvar.get() == 0:
+            if hasattr(self, 'tempvar_on'):
+                    self.emisvar_list_man.destroy()
+                    self.emisvar_on.destroy()
+                    self.emisvar_label.destroy()
+    
     def set_altrec(self):
         self.model.altRec_optns['altrec'] = self.check_altrec.get()
 
