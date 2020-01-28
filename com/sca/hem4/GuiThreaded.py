@@ -1424,13 +1424,13 @@ class Hem4(tk.Frame):
                 self.emisvar_label = tk.Label(self.s5, font=TEXT_FONT, bg="palegreen3", 
                                      text="Please select an Emissions Variation"+
                                      " file:")
-                self.emisvar_label.grid(row=3, sticky="W")
+                self.emisvar_label.grid(row=6, sticky="W")
             
                 #emissions variation upload button
                 self.emisvar_on = tk.Button(self.s5, font=TEXT_FONT, bg='lightgrey', relief='solid', borderwidth=2,
                                        command = lambda: self.uploadVariation())
                 self.emisvar_on["text"] = "Browse"
-                self.emisvar_on.grid(row=4, column=0, sticky="W")
+                self.emisvar_on.grid(row=7, column=0, sticky="W")
                 #self.emisvar_on.bind('<Enter>', 
                                #lambda e:self.browse("instructions/urep_browse.txt"))
                 
@@ -1439,7 +1439,7 @@ class Hem4(tk.Frame):
                 self.emisvar_list_man = ttk.Entry(self.s5)
                 self.emisvar_list_man["width"] = 100
                 self.emisvar_list_man["textvariable"]= self.emisvar_list
-                self.emisvar_list_man.grid(row=4, column=0, sticky='E', padx=85)
+                self.emisvar_list_man.grid(row=7, column=0, sticky='E', padx=85)
                 #event handler for instructions (Button 1 is the left mouse click)
                 #self.emisvar_list_man.bind('<Button-1>', 
                                        #lambda e:self.manual("instructions/urep_man.txt"))
@@ -1467,24 +1467,31 @@ class Hem4(tk.Frame):
             #emissions variation label
                 self.tempvar_label = tk.Label(self.s5, font=TEXT_FONT, bg="palegreen3", 
                                      text="What diurnal (hourly) resolution would you like?")
-                self.tempvar_label.grid(row=5, column=0, sticky="W", padx=85)
-            
+                self.tempvar_label.grid(row=5, column=0, sticky="W", padx=85, pady=20)
+             
                 tkvar = tk.StringVar(self.s5)
                 choices = {1, 2, 3, 4, 6, 8, 12, 24}
                 tkvar.set(1) # set the default option
 
                 self.popupMenu = tk.OptionMenu(self.s5, tkvar, *choices)
-                self.popupMenu.grid(row=5, column=0, sticky='E', padx = 85)
+                self.popupMenu.grid(row=5, column=0, sticky="E", padx = 300, pady=10)
+                
+                #add emissions variation checkbox
+                self.check_dr = tk.IntVar()
+                self.dr_sel = tk.Checkbutton(self.s5, text="Include seasonal variations in diurnally\n resolved concentrations output", 
+                                          variable = self.check_emisvar, font=TEXT_FONT,
+                                          bg='palegreen3')
+                self.dr_sel.grid(row=5, column=0, sticky="E")
                 
         
         
         
         #if checked and then unchecked
         elif self.check_tempvar.get() == 0:
-            if hasattr(self, 'tempvar_on'):
-                    self.emisvar_list_man.destroy()
-                    self.emisvar_on.destroy()
-                    self.emisvar_label.destroy()
+            if hasattr(self, 'tempvar_label'):
+                    self.popupMenu.destroy()
+                    self.tempvar_label.destroy()
+                    self.dr_sel.destroy()
     
     def set_altrec(self):
         self.model.altRec_optns['altrec'] = self.check_altrec.get()
