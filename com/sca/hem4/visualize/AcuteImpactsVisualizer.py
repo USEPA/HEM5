@@ -9,8 +9,10 @@ import warnings
 
 import pandas as pd
 import geopandas as gp
+from fiona import _shim, schema
 from shapely.geometry import Point
 from bokeh.io import curdoc
+from bokeh.tile_providers import STAMEN_TONER_LABELS
 from bokeh.models import WMTSTileSource, LabelSet, ColumnDataSource, HoverTool,\
     WheelZoomTool, ZoomInTool, ZoomOutTool, PanTool, ResetTool, SaveTool
 from bokeh.plotting import figure, save
@@ -45,7 +47,7 @@ class AcuteImpactsVisualizer():
 
         for index, row in flag_df.iterrows():
             if row[hq_rel] >= 1.5:
-                flag_list.append((row.FACID,row.pollutant, "REL"))
+                flag_list.append((row[fac_id],row.pollutant, "REL"))
             if row[hq_aegl1] >= 1.5:
                 flag_list.append((row[fac_id],row.pollutant, "AEGL-1 1-hr"))
             if row[hq_erpg1] >= 1.5:
@@ -137,6 +139,7 @@ class AcuteImpactsVisualizer():
                        title=title)
             
             p.add_tile(ESRI_tile)
+            p.add_tile(STAMEN_TONER_LABELS)
 
             # NOTE: the following line was removed from Mark's original code because
             # there was a problem with the import of the enumerated value.
