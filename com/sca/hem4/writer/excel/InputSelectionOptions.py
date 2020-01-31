@@ -59,7 +59,7 @@ class InputSelectionOptions(ExcelWriter, InputFile):
         title2 = self.model.model_optns['titletwo']
         dep_type = facoptions['pdep'].iloc[0] + '/' + facoptions['vdep'].iloc[0]
         depl_type = facoptions['pdepl'].iloc[0] + '/' + facoptions['vdepl'].iloc[0]
-        ruralurban = self.model.model_optns['urban']
+        ruralurban = facoptions['rural_urban'].iloc[0]
         phase = self.model.model_optns['phase']
         dep_yn = facoptions['dep'].iloc[0]
         depl_yn = facoptions['depl'].iloc[0]
@@ -76,7 +76,7 @@ class InputSelectionOptions(ExcelWriter, InputFile):
         max_dist = facoptions['max_dist'].iloc[0]
         mod_dist = facoptions['model_dist'].iloc[0]
         allrecpts_yn = facoptions['all_rcpts'].iloc[0]
-        first_ring = facoptions['ring1'].iloc[0]
+        first_ring = self.model.computedValues['firstring']
         grpname = self.model.group_name  
         faclist_file = self.model.faclist.path
         emisloc_file = self.model.emisloc.path

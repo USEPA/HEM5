@@ -11,6 +11,8 @@ import tkinter.ttk as ttk
 from tkinter import scrolledtext
 from functools import partial
 from com.sca.hem4.GuiThreaded import Hem4
+from com.sca.hem4.writer.excel.FacilityMaxRiskandHI import FacilityMaxRiskandHI
+from com.sca.hem4.log import Logger
 
 import queue
 
@@ -239,11 +241,27 @@ class Page1(Page):
         
     def createReports(self,  arguments=None):
         
-        # Figure out which facilities will be included in the report
-        files = os.listdir(self.fullpath)
-        rootpath = self.fullpath+'/'
-        faclist = [ item for item in files if os.path.isdir(os.path.join(rootpath, item)) 
-                    and 'inputs' not in item.lower() ]
+        # Figure out which facilities will be included in the report.
+        # Facilities listed in the facility_max_risk_and_hi HEM4 output will be used
+        # and the modeling group name is taken from the first part of the filename.
+        
+        skeleton = os.path.join(self.fullpath, '*facility_max_risk_and_hi.xl*')
+        fname = glob.glob(skeleton)
+        if fname:
+            head, tail = os.path.split(fname[0])
+            groupname = tail[:tail.find('facility_max_risk_and_hi')-1]
+            facmaxrisk = FacilityMaxRiskandHI(targetDir=self.fullpath, filenameOverride=tail)
+            facmaxrisk_df = facmaxrisk.createDataframe()
+            faclist = facmaxrisk_df['Facil_id'].tolist()
+        else:
+            Logger.logMessage("Cannot generate summaries because there is no Facility_Max_Risk_and_HI Excel file \
+                              in the folder you selected.")
+            return 
+        
+#        files = os.listdir(self.fullpath)
+#        rootpath = self.fullpath+'/'
+#        faclist = [ item for item in files if os.path.isdir(os.path.join(rootpath, item)) 
+#                    and 'inputs' not in item.lower() ]
                 
         #get reports and set arguments
         reportNames = []
@@ -290,7 +308,7 @@ class Page1(Page):
         self.scr.insert(tk.INSERT, "\n")
         self.scr.configure(state='disabled')
 
-        summaryMgr = SummaryManager(self.fullpath, faclist)
+        summaryMgr = SummaryManager(self.fullpath, groupname, faclist)
                 
         #loop through for each report selected
         for reportName in reportNames:
