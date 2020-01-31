@@ -67,13 +67,17 @@ class FacilityPrep():
         if self.model.facops[model_dist][0] == 0:
             self.model.facops.loc[:, model_dist] = 3000
 
-        # Radials
+        # Radials: default is 16, minimum number is 4
         if self.model.facops[radial][0] == 0:
             self.model.facops.loc[:, radial] = 16
+        if self.model.facops[radial][0] < 4:
+            self.model.facops.loc[:, radial] = 4
 
-        # Circles
+        # Circles: default is 13, minimum number is 3
         if self.model.facops[circles][0] == 0:
             self.model.facops.loc[:, circles] = 13
+        if self.model.facops[circles][0] < 3:
+            self.model.facops.loc[:, circles] = 3
 
         # Overlap Distance
         if self.model.facops[overlap_dist][0] == 0:
@@ -100,6 +104,15 @@ class FacilityPrep():
                                     horzdim:0, vertdim:0, areavolrelhgt:0, stkht:0, stkdia: 0,
                                     stkvel:0, stktemp:0, elev:0, x2:0, y2:0})
         emislocs = emislocs.reset_index(drop = True)
+        
+        # Area source angle must be >= 0 and < 90. If not, skip this facility
+        anglechk = emislocs[(emislocs['angle'] < 0) | emislocs['angle'] >= 90]
+        if not anglechk.empty:
+            emessage = ("Facility " + facid + " has an area source angle that is not between 0 and 90 degrees. \
+                         The facility will be skipped")
+            Logger.logMessage(emessage)
+            raise Exception(emessage)
+            
         
         # Determine the utm zone to use for this facility. Also get the hemisphere (N or S).
         facutmzonenum, hemi = UTM.zone2use(emislocs)
@@ -377,6 +390,10 @@ class FacilityPrep():
             firstring = normal_round(max(ring1b, 100))
         else:
             firstring = self.model.facops[ring1][0]
+        
+        # Store first ring in computedValues
+        self.model.computedValues['firstring'] = firstring
+        
         polar_dist = []
         polar_dist.append(firstring)
 

@@ -48,7 +48,7 @@ class AcuteImpacts(ExcelWriter, InputFile, AltRecAwareSummary):
     def generateOutputs(self):
         Logger.log("Creating " + self.name + " report...", None, False)
 
-        # Load the acute chemical unpopulated output for each facility
+        # Load the acute chemical max output for each facility
         allAcute_df = pd.DataFrame()
         for facilityId in self.facilityIds:
             targetDir = self.categoryFolder + "/" + facilityId
