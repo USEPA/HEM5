@@ -49,7 +49,8 @@ class FacilityPrep():
                                    dep:{"nan":"N"}, depl:{"nan":"N"}, phase:{"nan":""}, pdep:{"nan":"NO"}, 
                                    pdepl:{"nan":"NO"}, vdep:{"nan":"NO"}, vdepl:{"nan":"NO"}, 
                                    all_rcpts:{"nan":"Y"}, user_rcpt:{"nan":"N"}, bldg_dw:{"nan":"N"}, 
-                                   fastall:{"nan":"N"}, acute:{"nan":"N"}}, inplace=True)
+                                   fastall:{"nan":"N"}, acute:{"nan":"N"}, fac_center:{"nan":"N"},
+                                   ring_distances:{"nan":""}}, inplace=True)
 
         self.model.facops = self.model.facops.reset_index(drop = True)
 
@@ -93,6 +94,45 @@ class FacilityPrep():
         op_circles = self.model.facops[circles][0]
         op_radial = self.model.facops[radial][0]
         op_overlap = self.model.facops[overlap_dist][0]
+
+        # Facility center...should start with either "U" (meaning UTM coords) or "L" (meaning lat/lon)
+        # and contain two values
+        center_spec = self.model.facops[fac_center][0]
+        spec_valid = True
+        if center_spec.startswith("U"):
+            components = center_spec.split(',')
+            if len(components) != 3:
+                spec_valid = False
+        elif center_spec.startswith("L"):
+            components = center_spec.split(',')
+            if len(components) != 3:
+                spec_valid = False
+        else:
+            spec_valid = False
+
+        if not spec_valid:
+            Logger.logMessage("Invalid facility center specified: " + center_spec)
+            Logger.logMessage("Using default (calculated) center instead.")
+            self.model.facops[fac_center][0] = ""
+
+        # Ring distances...at least 3 values, all must be > 0 and <= 50000, values must be increasing
+        distance_spec = self.model.facops[ring_distances][0]
+        spec_valid = True
+        distances = distance_spec.split(',')
+        if len(distances) < 3:
+            spec_valid = False
+        else:
+            prev = 0
+            for d in distances:
+                if d <= prev or d > 50000:
+                    spec_valid = False
+                prev = d
+
+        if not spec_valid:
+            Logger.logMessage("Invalid ring distances specified: " + distance_spec)
+            Logger.logMessage("Using default (calculated) distances instead.")
+            self.model.facops[ring_distances][0] = ""
+
 
         #%%---------- Emission Locations --------------------------------------
 
@@ -372,6 +412,7 @@ class FacilityPrep():
                 self.innerblks = self.innerblks.append(user_recs, ignore_index=True)
 
 
+        # >= 3 rings, must be > 0 && <= 50000, and monotonically increasing
 
         #%%----- Polar receptors ----------
 
