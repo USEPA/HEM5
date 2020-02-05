@@ -253,10 +253,19 @@ class Page1(Page):
         try:
             
             # Figure out which facilities will be included in the report
-            files = os.listdir(self.fullpath)
-            rootpath = self.fullpath+'/'
-            faclist = [ item for item in files if os.path.isdir(os.path.join(rootpath, item)) 
-                        and 'inputs' not in item.lower() ]
+            skeleton = os.path.join(self.fullpath, '*facility_max_risk_and_hi.xl*')
+            fname = glob.glob(skeleton)
+            if fname:
+                head, tail = os.path.split(fname[0])
+                groupname = tail[:tail.find('facility_max_risk_and_hi')-1]
+                facmaxrisk = FacilityMaxRiskandHI(targetDir=self.fullpath, filenameOverride=tail)
+                facmaxrisk_df = facmaxrisk.createDataframe()
+                faclist = facmaxrisk_df['Facil_id'].tolist()
+            else:
+                Logger.logMessage("Cannot generate summaries because there is no Facility_Max_Risk_and_HI Excel file \
+                                  in the folder you selected.")
+                ready = False 
+          
             
         except:
             
@@ -268,19 +277,7 @@ class Page1(Page):
         # Facilities listed in the facility_max_risk_and_hi HEM4 output will be used
         # and the modeling group name is taken from the first part of the filename.
         
-        skeleton = os.path.join(self.fullpath, '*facility_max_risk_and_hi.xl*')
-        fname = glob.glob(skeleton)
-        if fname:
-            head, tail = os.path.split(fname[0])
-            groupname = tail[:tail.find('facility_max_risk_and_hi')-1]
-            facmaxrisk = FacilityMaxRiskandHI(targetDir=self.fullpath, filenameOverride=tail)
-            facmaxrisk_df = facmaxrisk.createDataframe()
-            faclist = facmaxrisk_df['Facil_id'].tolist()
-        else:
-            Logger.logMessage("Cannot generate summaries because there is no Facility_Max_Risk_and_HI Excel file \
-                              in the folder you selected.")
-            ready = False 
-      
+        
                 
         #get reports and set arguments
         reportNames = []
