@@ -5,7 +5,7 @@ import sys
 import math as m
 import pandas as pd
 
-from pyproj import Proj, transform, Transformer, _datadir, datadir
+#from pyproj import Proj, transform, Transformer, _datadir, datadir
 from com.sca.hem4.log.Logger import Logger
 
 utmzone = 'utmzone';

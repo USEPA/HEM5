@@ -334,7 +334,7 @@ class Page1(Page):
                 "Please select one or more report types to run.")
             
             ready = False
-        else
+        else:
            
             #check if source type has been selected
             if self.var_s.get() == 1:
