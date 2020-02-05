@@ -312,6 +312,33 @@ class Page1(Page):
         self.scr.insert(tk.INSERT, "\n")
         self.scr.configure(state='disabled')
         
+        #reset inputs
+        if self.var_m.get() == 1:
+            self.var_m.deselect()
+        if self.var_c.get() == 1:
+            self.var_c.deselect()
+        if self.var_h.get() == 1:
+           self.var_h.deselect()
+        if self.var_hi.get() == 1:
+            self.var_hi.deselect()
+        if self.var_hh.get() == 1:
+            self.var_hh.deselect()
+        if self.var_i.get() == 1:
+            self.var_i.deselect()
+        if self.var_a.get() == 1:
+            self.var_a.deselect()
+        if self.var_s.get() == 1:
+            self.var_s.deselect()
+            #pass position number and character number
+            if len(self.pos_num.get()) == 1:
+                self.pos_num.deselect()
+            self.chars.num.set('')
+            
+            reportNameArgs['SourceTypeRiskHistogram'] = [startpos, numchars]          
+        if self.var_p.get() == 1:
+           self.var_p.deselect()
+        
+        
         
     
     def color_config(self, widget, color, event):
