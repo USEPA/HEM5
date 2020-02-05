@@ -240,11 +240,24 @@ class Page1(Page):
         
     def createReports(self,  arguments=None):
         
-        # Figure out which facilities will be included in the report
-        files = os.listdir(self.fullpath)
-        rootpath = self.fullpath+'/'
-        faclist = [ item for item in files if os.path.isdir(os.path.join(rootpath, item)) 
-                    and 'inputs' not in item.lower() ]
+        ready= False
+        
+         #check to see if there is a directory location
+
+        try:
+            
+            # Figure out which facilities will be included in the report
+            files = os.listdir(self.fullpath)
+            rootpath = self.fullpath+'/'
+            faclist = [ item for item in files if os.path.isdir(os.path.join(rootpath, item)) 
+                        and 'inputs' not in item.lower() ]
+            
+        except:
+            
+             messagebox.showinfo("No facilities selected",
+                "Please select a run folder.")
+             
+             ready = False
                 
         #get reports and set arguments
         reportNames = []
@@ -286,8 +299,6 @@ class Page1(Page):
         
         
         #add run checks
-        ready = False
-        
         if (self.var_m.get() != 1 or 
             self.var_c.get() != 1 or
             self.var_h.get() != 1 or
@@ -303,29 +314,22 @@ class Page1(Page):
             ready = False
         else:
             
-            #check to see if there is a directory location
-            if files == '' or files == ' ' or files == None:
-                messagebox.showinfo("No facilities selected",
-                "Please select a run folder.")
+           
+            #check if source type has been selected
+            if self.var_s.get() == 1:
+                if numchars == '' or numchars ==' ' or numchars == None:
+                    messagebox.showinfo('Missing sourcetype id characters',
+                                        'Please enter the number of characters of the sourcetype ID.')
                 
-                ready = False
-            else:
+                    ready = False
                 
-                #check if source type has been selected
-                if self.var_s.get() == 1:
-                    if numchars == '' or numchars ==' ' or numchars == None:
-                        messagebox.showinfo('Missing sourcetype id characters',
-                                            'Please enter the number of characters of the sourcetype ID.')
-                    
-                        ready = False
-                    
-                    else:
-                        
-                        ready = True
-                        
                 else:
+                    
                     ready = True
-                        
+                    
+            else:
+                ready = True
+                    
                     
         #if checks have been passed 
         if ready == True:
