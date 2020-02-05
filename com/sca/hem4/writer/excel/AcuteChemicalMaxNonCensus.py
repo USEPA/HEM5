@@ -46,7 +46,7 @@ class AcuteChemicalMaxNonCensus(ExcelWriter, InputFile):
 
     def getColumns(self):
         return [pollutant, aconc, aconc_sci, aegl_1_1h,aegl_1_8h,aegl_2_1h,aegl_2_8h,erpg_1,erpg_2,
-                mrl,rel,idlh_10,teel_0,teel_1, population, distance, angle, elev, hill, rec_id,
+                idlh_10,mrl,rel,teel_0,teel_1, population, distance, angle, elev, hill, rec_id,
                 utme, utmn, lat, lon, rec_type, notes]
 
     def generateOutputs(self):

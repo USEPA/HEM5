@@ -4,7 +4,8 @@ import numpy as np
 import sys
 import math as m
 import pandas as pd
-#from pyproj import Proj, transform, Transformer
+
+from pyproj import Proj, transform, Transformer, _datadir, datadir
 from com.sca.hem4.log.Logger import Logger
 
 utmzone = 'utmzone';
@@ -239,8 +240,8 @@ class UTM:
         # Also find the corners of the modeling domain
     
         max_dist = 0
-        max_x = max_y = 0
-        min_x = min_y = 99999999
+        max_x = min_x = vertx_a[0]
+        max_y = min_y = verty_a[0]
     
         if len(unique_verts) > 1: #more than one source coordinate
 

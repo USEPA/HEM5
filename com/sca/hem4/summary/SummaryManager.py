@@ -11,14 +11,17 @@ import com.sca.hem4.writer.excel.summary.AcuteImpacts as acuteImpactsReportModul
 import com.sca.hem4.writer.excel.summary.SourceTypeRiskHistogram as sourceTypeRiskHistogramModule
 import com.sca.hem4.writer.excel.summary.MultiPathway as multiPathwayModule
 import com.sca.hem4.writer.excel.summary.MultiPathwayNonCensus as multiPathwayModuleNonCensus
+from com.sca.hem4.log import Logger
+from com.sca.hem4.visualize.AcuteImpactsVisualizer import AcuteImpactsVisualizer
 from com.sca.hem4.writer.excel.summary.AltRecAwareSummary import AltRecAwareSummary
 
 
 class SummaryManager(AltRecAwareSummary):
 
-    def __init__(self, targetDir, facilitylist):
+    def __init__(self, targetDir, groupName, facilitylist):
         
         self.categoryFolder = targetDir
+        self.grpname = groupName
         self.facilityIds = facilitylist
 
         self.availableReports = {'MaxRisk' : maxRiskReportModule,
@@ -32,27 +35,17 @@ class SummaryManager(AltRecAwareSummary):
                                  'MultiPathway' : multiPathwayModule,
                                  'MultiPathwayNonCensus' : multiPathwayModuleNonCensus}
 
-        # Get modeling group name from the Facililty Max Risk and HI file
-        skeleton = os.path.join(self.categoryFolder, '*_facility_max_risk_and_hi.xlsx')
-        fname = glob.glob(skeleton)
-        if fname:
-            head, tail = os.path.split(glob.glob(skeleton)[0])
-            self.grpname = tail[:tail.find('facility_max_risk_and_hi')-1]
-        else:
-            print("Problem. There is no Facility Max Risk and HI file")
-            return 
+        self.afterReportRun = {'AcuteImpacts' : self.visualizeAcuteImpacts}
 
-#        # Define the arguments needed for each summary module
-#        self.reportArgs = {'MaxRisk' : [self.grpname],
-#                        'CancerDrivers' : [self.grpname],
-#                        'HazardIndexDrivers' : [self.grpname],
-#                        'Histogram' : [self.grpname],
-#                        'HI_Histogram' : [self.grpname],
-#                        'IncidenceDrivers' : [self.grpname],
-#                        'AcuteImpacts' : [self.grpname],
-#                        'SourceTypeRiskHistogram' : [self.grpname,0,2],
-#                        'MultiPathway' : [self.grpname],
-#                        'MultiPathwayNonCensus' : [self.grpname]}
+#        # Get modeling group name from the beginning of the Facililty Max Risk and HI filename
+#        skeleton = os.path.join(self.categoryFolder, '*_facility_max_risk_and_hi.*')
+#        fname = glob.glob(skeleton)
+#        if fname:
+#            head, tail = os.path.split(fname[0])
+#            self.grpname = tail[:tail.find('facility_max_risk_and_hi')-1]
+#        else:
+#            Logger.logMessage("Cannot generate summaries because there is no Facility Max Risk and HI file")
+#            return 
 
 
         
@@ -69,18 +62,27 @@ class SummaryManager(AltRecAwareSummary):
         if altrec == 'Y' and reportName == 'MultiPathway':
             reportName = "MultiPathwayNonCensus"
 
-        print("\r\n Starting report: " + reportName)
+        Logger.logMessage("Starting report: " + reportName)
                 
         module = self.availableReports[reportName]
         if module is None:
-            print("Oops. HEM4 couldn't find your report module.")
+            Logger.logMessage("Oops. HEM4 couldn't find your report module.")
             return
         
-#        arguments = self.reportArgs[reportName] 
         reportClass = getattr(module, reportName)
         reportArgs = [self.grpname, arguments]
         instance = reportClass(categoryFolder, self.facilityIds, reportArgs)
         instance.writeWithTimestamp()
 
-        print("Finished report: " + reportName)
+        Logger.logMessage("Finished report: " + reportName)
+
+        if reportName in self.afterReportRun:
+            Logger.logMessage("Running post-report action for " + reportName)
+            action = self.afterReportRun[reportName]
+            action(categoryFolder)
+            Logger.logMessage("Finished post-report action for " + reportName)
+
+    def visualizeAcuteImpacts(self, categoryFolder):
+        visualizer = AcuteImpactsVisualizer(sourceDir=categoryFolder)
+        visualizer.visualize()
 
