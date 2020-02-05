@@ -8,9 +8,13 @@ Created on Sun Jul 28 23:29:19 2019
 import tkinter as tk
 import webbrowser
 import tkinter.ttk as ttk
-from tkinter import scrolledtext
 from functools import partial
 from com.sca.hem4.GuiThreaded import Hem4
+
+from concurrent.futures import ThreadPoolExecutor
+from threading import Event
+from tkinter import messagebox
+from tkinter import scrolledtext
 
 import queue
 
@@ -280,65 +284,112 @@ class Page1(Page):
             reportNameArgs['MultiPathway'] = None
         
         
-        running_message = "Running report on facilities: " + ', '.join(faclist)
         
-        self.scr.configure(state='normal')
-        self.scr.insert(tk.INSERT, running_message)
-        self.scr.insert(tk.INSERT, "\n")
-        self.scr.configure(state='disabled')
-
-        summaryMgr = SummaryManager(self.fullpath, faclist)
+        #add run checks
+        ready = False
+        
+        if (self.var_m.get() != 1 or 
+            self.var_c.get() != 1 or
+            self.var_h.get() != 1 or
+            self.var_hi.get() != 1 or
+            self.var_hh.get() != 1 or
+            self.var_i.get() != 1 or
+            self.var_a.get() != 1 or
+            self.var_s.get() != 1):
+            
+            messagebox.showinfo("No report selected",
+                "Please select one or more report types to run.")
+            
+            ready = False
+        else:
+            
+            #check to see if there is a directory location
+            if files == '' or files == ' ' or files == None:
+                messagebox.showinfo("No facilities selected",
+                "Please select a run folder.")
                 
-        #loop through for each report selected
-        for reportName in reportNames:
-            report_message = "Creating " + reportName + " report."
+                ready = False
+            else:
+                
+                #check if source type has been selected
+                if self.var_s.get() == 1:
+                    if numchars == '' or numchars ==' ' or numchars == None:
+                        messagebox.showinfo('Missing sourcetype id characters',
+                                            'Please enter the number of characters of the sourcetype ID.')
+                    
+                        ready = False
+                    
+                    else:
+                        
+                        ready = True
+                        
+                else:
+                    ready = True
+                        
+                    
+        #if checks have been passed 
+        if ready == True:
+        
+        
+            running_message = "Running report on facilities: " + ', '.join(faclist)
             
             self.scr.configure(state='normal')
-            self.scr.insert(tk.INSERT, report_message)
+            self.scr.insert(tk.INSERT, running_message)
+            self.scr.insert(tk.INSERT, "\n")
+            self.scr.configure(state='disabled')
+    
+            summaryMgr = SummaryManager(self.fullpath, faclist)
+                    
+            #loop through for each report selected
+            for reportName in reportNames:
+                report_message = "Creating " + reportName + " report."
+                
+                self.scr.configure(state='normal')
+                self.scr.insert(tk.INSERT, report_message)
+                self.scr.insert(tk.INSERT, "\n")
+                self.scr.configure(state='disabled')
+                
+                args = reportNameArgs[reportName]
+                summaryMgr.createReport(self.fullpath, reportName, args)
+                
+                report_complete = reportName +  " complete."
+                self.scr.configure(state='normal')
+                self.scr.insert(tk.INSERT, report_complete)
+                self.scr.insert(tk.INSERT, "\n")
+                self.scr.configure(state='disabled')
+                
+            self.scr.configure(state='normal')
+            self.scr.insert(tk.INSERT, "Summary Reports Complete.")
             self.scr.insert(tk.INSERT, "\n")
             self.scr.configure(state='disabled')
             
-            args = reportNameArgs[reportName]
-            summaryMgr.createReport(self.fullpath, reportName, args)
+            #reset inputs
+            if self.var_m.get() == 1:
+                self.var_m.deselect()
+            if self.var_c.get() == 1:
+                self.var_c.deselect()
+            if self.var_h.get() == 1:
+               self.var_h.deselect()
+            if self.var_hi.get() == 1:
+                self.var_hi.deselect()
+            if self.var_hh.get() == 1:
+                self.var_hh.deselect()
+            if self.var_i.get() == 1:
+                self.var_i.deselect()
+            if self.var_a.get() == 1:
+                self.var_a.deselect()
+            if self.var_s.get() == 1:
+                self.var_s.deselect()
+                #pass position number and character number
+                if len(self.pos_num.get()) == 1:
+                    self.pos_num.deselect()
+                self.chars.num.set('')
+                
+                reportNameArgs['SourceTypeRiskHistogram'] = [startpos, numchars]          
+            if self.var_p.get() == 1:
+               self.var_p.deselect()
             
-            report_complete = reportName +  " complete."
-            self.scr.configure(state='normal')
-            self.scr.insert(tk.INSERT, report_complete)
-            self.scr.insert(tk.INSERT, "\n")
-            self.scr.configure(state='disabled')
             
-        self.scr.configure(state='normal')
-        self.scr.insert(tk.INSERT, "Summary Reports Complete.")
-        self.scr.insert(tk.INSERT, "\n")
-        self.scr.configure(state='disabled')
-        
-        #reset inputs
-        if self.var_m.get() == 1:
-            self.var_m.deselect()
-        if self.var_c.get() == 1:
-            self.var_c.deselect()
-        if self.var_h.get() == 1:
-           self.var_h.deselect()
-        if self.var_hi.get() == 1:
-            self.var_hi.deselect()
-        if self.var_hh.get() == 1:
-            self.var_hh.deselect()
-        if self.var_i.get() == 1:
-            self.var_i.deselect()
-        if self.var_a.get() == 1:
-            self.var_a.deselect()
-        if self.var_s.get() == 1:
-            self.var_s.deselect()
-            #pass position number and character number
-            if len(self.pos_num.get()) == 1:
-                self.pos_num.deselect()
-            self.chars.num.set('')
-            
-            reportNameArgs['SourceTypeRiskHistogram'] = [startpos, numchars]          
-        if self.var_p.get() == 1:
-           self.var_p.deselect()
-        
-        
         
     
     def color_config(self, widget, color, event):
