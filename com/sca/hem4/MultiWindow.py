@@ -164,44 +164,43 @@ class Page1(Page):
        
         
         self.var_m = tk.IntVar()
-        max_risk = tk.Checkbutton(self.s3, font=TEXT_FONT, bg="palegreen3", text="Max Risk Summary", variable=self.var_m)
-        max_risk.grid(row=1, padx=10, sticky="W")
+        self.max_risk = tk.Checkbutton(self.s3, font=TEXT_FONT, bg="palegreen3", text="Max Risk Summary", variable=self.var_m)
+        self.max_risk.grid(row=1, padx=10, sticky="W")
         
         
         self.var_c = tk.IntVar()
-        cancer_driver = tk.Checkbutton(self.s4, font=TEXT_FONT, bg="palegreen3", text="Cancer Drivers", variable=self.var_c)
-        cancer_driver.grid(row=1, padx=10, sticky="W")
+        self.cancer_driver = tk.Checkbutton(self.s4, font=TEXT_FONT, bg="palegreen3", text="Cancer Drivers", variable=self.var_c)
+        self.cancer_driver.grid(row=1, padx=10, sticky="W")
         
         self.var_h = tk.IntVar()
-        hazard = tk.Checkbutton(self.s5, font=TEXT_FONT, bg="palegreen3", text="Hazard Index Drivers", variable=self.var_h)
-        hazard.grid(row=1, padx=10, sticky="W")
+        self.hazard = tk.Checkbutton(self.s5, font=TEXT_FONT, bg="palegreen3", text="Hazard Index Drivers", variable=self.var_h)
+        self.hazard.grid(row=1, padx=10, sticky="W")
         
         self.var_hi = tk.IntVar()
-        hist = tk.Checkbutton(self.s6, font=TEXT_FONT, bg="palegreen3", text="Risk Histogram", variable=self.var_hi)
-        hist.grid(row=1, padx=10, sticky="W")
+        self.hist = tk.Checkbutton(self.s6, font=TEXT_FONT, bg="palegreen3", text="Risk Histogram", variable=self.var_hi)
+        self.hist.grid(row=1, padx=10, sticky="W")
         
         self.var_hh = tk.IntVar()
-        hh = tk.Checkbutton(self.s7, font=TEXT_FONT, bg="palegreen3", text="Hazard Index Histogram", variable=self.var_hh)
-        hh.grid(row=1, padx=10, sticky="W")
+        self.hh = tk.Checkbutton(self.s7, font=TEXT_FONT, bg="palegreen3", text="Hazard Index Histogram", variable=self.var_hh)
+        self.hh.grid(row=1, padx=10, sticky="W")
         
         self.var_i = tk.IntVar()
-        inc = tk.Checkbutton(self.s8, font=TEXT_FONT, bg="palegreen3", text="Incidence Drivers", variable=self.var_i)
-        inc.grid(row=1, padx=10, sticky="W")
+        self.inc = tk.Checkbutton(self.s8, font=TEXT_FONT, bg="palegreen3", text="Incidence Drivers", variable=self.var_i)
+        self.inc.grid(row=1, padx=10, sticky="W")
         
         self.var_a = tk.IntVar()
-        ai = tk.Checkbutton(self.s9, font=TEXT_FONT, bg="palegreen3", text="Acute Impacts", variable=self.var_a)
-        ai.grid(row=1, padx=10, sticky="W")
+        self.ai = tk.Checkbutton(self.s9, font=TEXT_FONT, bg="palegreen3", text="Acute Impacts", variable=self.var_a)
+        self.ai.grid(row=1, padx=10, sticky="W")
         
         self.var_p = tk.IntVar()
-        mp = tk.Checkbutton(self.s10, font=TEXT_FONT, bg="palegreen3", text="Multipathway", variable=self.var_p)
-        mp.grid(row=1, padx=10, sticky="W")
+        self.mp = tk.Checkbutton(self.s10, font=TEXT_FONT, bg="palegreen3", text="Multipathway", variable=self.var_p)
+        self.mp.grid(row=1, padx=10, sticky="W")
         
         self.var_s = tk.IntVar()
-        s = tk.Checkbutton(self.s11, font=TEXT_FONT, bg="palegreen3", text="Source Type Risk Histogram", variable=self.var_s, command=self.set_sourcetype)
-        s.grid(row=1, padx=10, sticky="W")
+        self.s = tk.Checkbutton(self.s11, font=TEXT_FONT, bg="palegreen3", text="Source Type Risk Histogram", variable=self.var_s, command=self.set_sourcetype)
+        self.s.grid(row=1, padx=10, sticky="W")
         
-        
-           
+                   
         
         #back button
         back_button = tk.Button(self.s13, text="Back", font=TEXT_FONT, relief='solid', borderwidth=2,
@@ -303,6 +302,7 @@ class Page1(Page):
         if self.var_a.get() == 1:
             reportNames.append('AcuteImpacts')
             reportNameArgs['AcuteImpacts'] = None
+        
         if self.var_s.get() == 1:
             reportNames.append('SourceTypeRiskHistogram')
             #pass position number and character number
@@ -318,13 +318,13 @@ class Page1(Page):
        
 
         #add run checks
-        if (self.var_m.get() != 1 or 
-            self.var_c.get() != 1 or
-            self.var_h.get() != 1 or
-            self.var_hi.get() != 1 or
-            self.var_hh.get() != 1 or
-            self.var_i.get() != 1 or
-            self.var_a.get() != 1 or
+        if (self.var_m.get() != 1 and 
+            self.var_c.get() != 1 and
+            self.var_h.get() != 1 and
+            self.var_hi.get() != 1 and
+            self.var_hh.get() != 1 and
+            self.var_i.get() != 1 and
+            self.var_a.get() != 1 and
             self.var_s.get() != 1):
             
             messagebox.showinfo("No report selected",
@@ -387,29 +387,27 @@ class Page1(Page):
             
             #reset inputs
             if self.var_m.get() == 1:
-                self.var_m.deselect()
+                self.max_risk.deselect()
             if self.var_c.get() == 1:
-                self.var_c.deselect()
+                self.cancer_driver.deselect()
             if self.var_h.get() == 1:
-               self.var_h.deselect()
+               self.hazard.deselect()
             if self.var_hi.get() == 1:
-                self.var_hi.deselect()
+                self.hist.deselect()
             if self.var_hh.get() == 1:
-                self.var_hh.deselect()
+                self.hh.deselect()
             if self.var_i.get() == 1:
-                self.var_i.deselect()
+                self.inc.deselect()
             if self.var_a.get() == 1:
-                self.var_a.deselect()
+                self.ai.deselect()
             if self.var_s.get() == 1:
-                self.var_s.deselect()
+                self.s.deselect()
                 #pass position number and character number
-                if len(self.pos_num.get()) == 1:
-                    self.pos_num.deselect()
+                self.pos_num.set('')
                 self.chars.num.set('')
-                
-                reportNameArgs['SourceTypeRiskHistogram'] = [startpos, numchars]          
+    
             if self.var_p.get() == 1:
-               self.var_p.deselect()
+               self.mp.deselect()
             
             
         
