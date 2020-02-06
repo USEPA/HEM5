@@ -147,7 +147,8 @@ class AcuteImpactsVisualizer():
             p = figure(plot_width=800, plot_height=600, tools = tools,\
                        x_range=(avg_x-3000, avg_x+3000), y_range=(avg_y-3000, avg_y+3000),\
                        title=title)
-            
+
+            p.toolbar.active_scroll = p.select_one(WheelZoomTool)
             p.add_tile(ESRI_tile)
             p.add_tile(STAMEN_TONER_LABELS)
 
