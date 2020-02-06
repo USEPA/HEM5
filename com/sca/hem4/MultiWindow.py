@@ -191,7 +191,7 @@ class Page1(Page):
         self.var_a = tk.IntVar()
         ai = tk.Checkbutton(self.s9, font=TEXT_FONT, bg="palegreen3", text="Acute Impacts", variable=self.var_a)
         ai.grid(row=1, padx=10, sticky="W")
-        
+
         self.var_p = tk.IntVar()
         mp = tk.Checkbutton(self.s10, font=TEXT_FONT, bg="palegreen3", text="Multipathway", variable=self.var_p)
         mp.grid(row=1, padx=10, sticky="W")
@@ -564,10 +564,7 @@ class Page3(Page):
                      'lat':np.float64, 'lon':np.float64}
 
         filename = filedialog.askopenfilename(filetypes = [("Excel or csv files","*.xls; *xlsx; *.csv*")])
-        if filename.split(".")[-1].lower() in ["xlsx", "xls"]:
-            df = pd.read_excel(filename)
-        else:
-            df = pd.read_csv(filename, dtype=datatypes)
+        df = pd.read_csv(filename, dtype=datatypes)
         curr_windo=tk.Toplevel()
         curr_windo.title(filename)
         curr_windo.geometry('900x600+40+20')

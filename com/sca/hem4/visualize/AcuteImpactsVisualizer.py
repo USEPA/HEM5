@@ -34,7 +34,7 @@ class AcuteImpactsVisualizer():
         files = os.listdir(sourceDir)
         rootpath = sourceDir+'/'
         self.facilityIds = [ item for item in files if os.path.isdir(os.path.join(rootpath, item))
-                                       and 'inputs' not in item.lower() ]
+                                       and 'inputs' not in item.lower() and 'acute maps' not in item.lower() ]
     def visualize(self):
 
         # Suppress various bokeh warnings
@@ -96,9 +96,9 @@ class AcuteImpactsVisualizer():
             f = {distance: 'first', angle: 'first', aconc: 'sum'}
             df = HAP_df.groupby([lat, lon], as_index=False).agg(f)
             df['HQ'] = df[aconc]/refVal/1000
-            if os.path.isdir(path + '/Acute Maps') == 0:
-                os.mkdir(path + '/Acute Maps')
-            ac_File = '%s%s%s%s%s' %(path, '/Acute Maps/', Fac+'_', HAP+'_', refType+'.csv')
+            if os.path.isdir(self.sourceDir + '/Acute Maps') == 0:
+                os.mkdir(self.sourceDir + '/Acute Maps')
+            ac_File = '%s%s%s%s%s' %(self.sourceDir, '/Acute Maps/', Fac+'_', HAP+'_', refType+'.csv')
             df.to_csv(path_or_buf = ac_File, mode = 'w+')
               
               #Convert df to geo df
@@ -154,15 +154,15 @@ class AcuteImpactsVisualizer():
             p.border_fill_color = None
             
             labels = LabelSet(x='x', y='y', text='HQ', source = source,\
-                              level='glyph', x_offset=0, y_offset=0, text_font_size='8pt',\
+                              x_offset=0, y_offset=0, text_font_size='8pt',\
                               text_color='black', background_fill_color='yellow',\
                               text_font_style='bold', text_align='center', text_baseline='middle')
             p.add_layout(labels)
             curdoc().add_root(p)
             
-            mapName = '%s%s%s%s%s' %(path, '/Acute Maps/', Fac+'_', HAP+'_', refType+'.html')
+            mapName = '%s%s%s%s%s' %(self.sourceDir, '/Acute Maps/', Fac+'_', HAP+'_', refType+'.html')
             key = Fac + '_' + HAP + '_' + refType
-            filename = Fac + '/Acute Maps/' + key + '.html'
+            filename = '/Acute Maps/' + key + '.html'
             links[key] = filename
 
             save(p, filename = mapName)

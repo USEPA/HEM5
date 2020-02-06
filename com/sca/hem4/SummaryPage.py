@@ -219,7 +219,7 @@ class SummaryPage():
         files = os.listdir(self.fullpath)
         rootpath = self.fullpath+'/'
         faclist = [ item for item in files if os.path.isdir(os.path.join(rootpath, item)) 
-                    and 'inputs' not in item.lower() ]
+                    and 'inputs' not in item.lower() and 'acute maps' not in item.lower() ]
                 
         #get reports
         reportNames = []

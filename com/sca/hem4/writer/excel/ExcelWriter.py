@@ -25,8 +25,10 @@ class ExcelWriter(Writer):
         workbook.add_worksheet()
         workbook.close()
 
-        self.insertTimestamp()
-        self.appendHeaderAtLocation(self.getHeader(), startingrow=3)
+        # Note: we are removing the timestamp and extra lines at the request of Mark from EPA.
+        # These extra lines at the top make pandastable work a little funny!
+        #self.insertTimestamp()
+        self.appendHeaderAtLocation(self.getHeader(), startingrow=0)
         for data in self.generateOutputs():
             if data is not None:
                 self.appendToFile(data)
