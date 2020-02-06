@@ -13,8 +13,9 @@ from fiona import _shim, schema
 from shapely.geometry import Point
 from bokeh.io import curdoc
 from bokeh.tile_providers import STAMEN_TONER_LABELS
-from bokeh.models import WMTSTileSource, LabelSet, ColumnDataSource, HoverTool,\
+from bokeh.models import WMTSTileSource, LabelSet, ColumnDataSource, HoverTool, \
     WheelZoomTool, ZoomInTool, ZoomOutTool, PanTool, ResetTool, SaveTool
+from bokeh.models.widgets import Panel, Tabs
 from bokeh.plotting import figure, save
 
 from com.sca.hem4.writer.csv.AllPolarReceptors import AllPolarReceptors
@@ -56,7 +57,18 @@ class AcuteImpactsVisualizer():
                 flag_list.append((row[fac_id],row.pollutant, "AEGL-2 1-hr"))
             if row[hq_erpg2] >= 1.5:
                 flag_list.append((row[fac_id],row.pollutant, "ERPG-2"))
-        
+
+        flag_list.sort()
+
+        # If the flag file has no cases of interest, don't do anything.
+        # Otherwise, create a directory for the created acute files.
+        if len(flag_list)==0:
+            Logger.logMessage("No cases of interest found for acute data.")
+            return
+        else:
+            if os.path.isdir(self.sourceDir + '/Acute Maps') == 0:
+                os.mkdir(self.sourceDir + '/Acute Maps')
+
         # Find the HEM dose-response library and create df of it
         # Under the HEM4 dir names, "Reference" would be "Resources"
         RefFile = 'resources/Dose_Response_Library.xlsx'
@@ -71,11 +83,12 @@ class AcuteImpactsVisualizer():
                    'AEGL-1 8-hr':'AEGL-1  (8-hr)\n(mg/m3)',\
                    'AEGL-2 8-hr':'AEGL-2  (8-hr)\n(mg/m3)'}
 
-        if len(flag_list) == 0:
-            Logger.logMessage("No pollutant/HQ combintions met the defined threshold.")
+        tablist=[]
+        for acuteset in (flag_list):
 
-        links = {}
-        for Fac, HAP, refType in flag_list:
+            Fac = acuteset[0]
+            HAP = acuteset[1]
+            refType = acuteset[2]
             
             path = self.sourceDir + '/' + Fac + '/'
 
@@ -96,8 +109,6 @@ class AcuteImpactsVisualizer():
             f = {distance: 'first', angle: 'first', aconc: 'sum'}
             df = HAP_df.groupby([lat, lon], as_index=False).agg(f)
             df['HQ'] = df[aconc]/refVal/1000
-            if os.path.isdir(self.sourceDir + '/Acute Maps') == 0:
-                os.mkdir(self.sourceDir + '/Acute Maps')
             ac_File = '%s%s%s%s%s' %(self.sourceDir, '/Acute Maps/', Fac+'_', HAP+'_', refType+'.csv')
             df.to_csv(path_or_buf = ac_File, mode = 'w+')
               
@@ -108,7 +119,6 @@ class AcuteImpactsVisualizer():
             gdf = gdf.to_crs(epsg=3857)
             
             ESRI_tile = WMTSTileSource(url='https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{Z}/{Y}/{X}.jpg')
-            OPEN_tile = WMTSTileSource(url='http://c.tile.openstreetmap.org/{Z}/{X}/{Y}.png')
             
             gdf['x'] = gdf.centroid.map(lambda p: p.x)
             gdf['y'] = gdf.centroid.map(lambda p: p.y)
@@ -141,10 +151,6 @@ class AcuteImpactsVisualizer():
             p.add_tile(ESRI_tile)
             p.add_tile(STAMEN_TONER_LABELS)
 
-            # NOTE: the following line was removed from Mark's original code because
-            # there was a problem with the import of the enumerated value.
-            #p.add_tile(STAMEN_TONER_LABELS)
-
             p.circle('x', 'y', color = 'yellow', size = 7, source=source)
             p.xaxis.visible = False
             p.yaxis.visible = False
@@ -161,8 +167,12 @@ class AcuteImpactsVisualizer():
             curdoc().add_root(p)
             
             mapName = '%s%s%s%s%s' %(self.sourceDir, '/Acute Maps/', Fac+'_', HAP+'_', refType+'.html')
-            key = Fac + '_' + HAP + '_' + refType
-            filename = '/Acute Maps/' + key + '.html'
-            links[key] = filename
-
             save(p, filename = mapName)
+            tab = Panel(child=p, title=HAP.title() + " (" + refType +")")
+            tablist.append(tab)
+
+        tabs = Tabs(tabs=tablist)
+        curdoc().add_root(tabs)
+
+        mapName2 = '%s%s%s' %(self.sourceDir, '/Acute Maps/', "All Acute Maps.html")
+        save(tabs, filename = mapName2, title="All Acute HQ Maps")
