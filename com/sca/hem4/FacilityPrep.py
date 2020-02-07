@@ -144,7 +144,8 @@ class FacilityPrep():
         # Last ring distance must equal max distance for correct outer block interpolation
         distlist = self.ring_distances.split(",")
         if distlist[-1] != self.model.facops[max_dist][0]:
-            self.ring_distances += ",50000"
+            maxdist_str = "," + str(self.model.facops[max_dist][0])
+            self.ring_distances += maxdist_str
 
         #%%---------- Emission Locations --------------------------------------
 
@@ -333,11 +334,7 @@ class FacilityPrep():
                 ceny, cenx, zone, hemi, epsg = UTM.ll2utm(cenlat, cenlon)
             else:
                 ceny = int(float(components[1]))
-#                if not (ceny.endswith("S") or ceny.endswith("N")):
-#                    ceny = ceny + "N"
                 cenx = int(float(components[2]))
-#                if not (cenx.endswith("S") or cenx.endswith("N")):
-#                    cenx = cenx + "N"
 
                 zone = components[3].strip()
                 cenlat, cenlon = UTM.utm2ll(ceny, cenx, zone)
