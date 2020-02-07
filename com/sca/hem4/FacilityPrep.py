@@ -124,12 +124,13 @@ class FacilityPrep():
         if len(distances) < 3:
             spec_valid = False
         else:
+            ring_distance = int(float(distances[0]))
+            if self.model.facops[model_dist][0] < ring_distance:
+                Logger.logMessage("Error: First ring is greater than modeling distance!")
+                spec_valid = False
             prev = 0
-            for d in distances:
-                ring_distance = int(d)
-                if self.model.facops[model_dist][0] < ring_distance:
-                    Logger.logMessage("Error: First ring is greater than modeling distance!")
-                    spec_valid = False
+            for d in distances[1:]:
+                ring_distance = int(float(d))
                 if ring_distance <= prev or ring_distance > 50000:
                     spec_valid = False
                 prev = ring_distance
@@ -138,7 +139,12 @@ class FacilityPrep():
             Logger.logMessage("Invalid ring distances specified: " + distance_spec)
             Logger.logMessage("Using default (calculated) distances instead.")
             self.model.facops[ring_distances][0] = ""
+            
         self.ring_distances = self.model.facops[ring_distances][0]
+        # Last ring distance must equal max distance for correct outer block interpolation
+        distlist = self.ring_distances.split(",")
+        if distlist[-1] != self.model.facops[max_dist][0]:
+            self.ring_distances += ",50000"
 
         #%%---------- Emission Locations --------------------------------------
 
@@ -326,14 +332,14 @@ class FacilityPrep():
                 cenlon = float(components[2])
                 ceny, cenx, zone, hemi, epsg = UTM.ll2utm(cenlat, cenlon)
             else:
-                ceny = components[1]
-                if not (ceny.endswith("S") or ceny.endswith("N")):
-                    ceny = ceny + "N"
-                cenx = components[2]
-                if not (cenx.endswith("S") or cenx.endswith("N")):
-                    cenx = cenx + "N"
+                ceny = int(float(components[1]))
+#                if not (ceny.endswith("S") or ceny.endswith("N")):
+#                    ceny = ceny + "N"
+                cenx = int(float(components[2]))
+#                if not (cenx.endswith("S") or cenx.endswith("N")):
+#                    cenx = cenx + "N"
 
-                zone = components[3]
+                zone = components[3].strip()
                 cenlat, cenlon = UTM.utm2ll(ceny, cenx, zone)
 
             Logger.logMessage("Using facility center [x, y, lat, lon] = [" + str(cenx) + ", " + str(ceny) + ", " +
@@ -445,7 +451,7 @@ class FacilityPrep():
 
         # Compute the first polar ring distance ......
         if self.ring_distances != "":
-            distances = distance_spec.split(',')
+            distances = self.ring_distances.split(',')
             self.model.computedValues['firstring'] = float(distances[0])
             polar_dist = [float(x) for x in distances]
             Logger.logMessage("Using defined rings: " + str(polar_dist)[1:-1] )

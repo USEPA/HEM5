@@ -43,3 +43,6 @@ class DoseResponse(InputFile):
              mrl,rel,idlh_10,teel_0,teel_1,comments,drvalues,group_ure,tef,acute_con))
         
         self.dataframe.fillna(0, inplace=True)
+        
+        # lower case the pollutant name for easier merging later
+        self.dataframe[pollutant] = self.dataframe[pollutant].str.lower()

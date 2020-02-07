@@ -31,6 +31,9 @@ class HAPEmissions(InputFile):
         #fill Nan with 0
         hapemis_df.fillna(0)
 
+        #lower case the pollutant names for better merging
+        hapemis_df[pollutant] = hapemis_df[pollutant].str.lower()
+        
         #turn part_frac into a decimal
         hapemis_df[part_frac] = hapemis_df[part_frac] / 100
 
