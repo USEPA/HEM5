@@ -141,11 +141,13 @@ class FacilityPrep():
             self.model.facops[ring_distances][0] = ""
             
         self.ring_distances = self.model.facops[ring_distances][0]
-        # Last ring distance must equal max distance for correct outer block interpolation
-        distlist = self.ring_distances.split(",")
-        if distlist[-1] != self.model.facops[max_dist][0]:
-            maxdist_str = "," + str(self.model.facops[max_dist][0])
-            self.ring_distances += maxdist_str
+        # If there are user supplied ring distances then the last one must equal max distance 
+        # for correct outer block interpolation
+        if self.ring_distances != "":
+            distlist = self.ring_distances.split(",")
+            if distlist[-1] != self.model.facops[max_dist][0]:
+                maxdist_str = "," + str(self.model.facops[max_dist][0])
+                self.ring_distances += maxdist_str
 
         #%%---------- Emission Locations --------------------------------------
 
