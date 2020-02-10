@@ -35,3 +35,7 @@ class TargetOrganEndpoints(InputFile):
         self.dataframe = self.readFromPath(
             (pollutant,epa_woe,resp,liver,neuro,dev,reprod,kidney,ocular,endoc,hemato,
              immune,skeletal,spleen,thyroid,wholebod))
+        
+        # Lower case the pollutant name for easier merging later
+        self.dataframe[pollutant] = self.dataframe[pollutant].str.lower()
+        

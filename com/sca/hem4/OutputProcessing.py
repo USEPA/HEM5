@@ -293,7 +293,7 @@ class Process_outputs():
 
         #create facility kml
         kmlWriter = KMLWriter()
-        
+                
         if not altrec:
             kmlWriter.write_facility_kml(self.facid, self.model.computedValues['cenlat'], 
                                      self.model.computedValues['cenlon'], self.outdir, self.model)

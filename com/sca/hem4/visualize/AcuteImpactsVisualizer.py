@@ -159,6 +159,11 @@ class AcuteImpactsVisualizer():
             p.ygrid.visible = False
             p.background_fill_color = None
             p.border_fill_color = None
+
+#            labels = LabelSet(x='x', y='y', text='HQ', source = source,\
+#                              level='glyph', x_offset=0, y_offset=0, text_font_size='8pt',\
+#                              text_color='black', background_fill_color='yellow',\
+#                              text_font_style='bold', text_align='center', text_baseline='middle')
             
             labels = LabelSet(x='x', y='y', text='HQ', source = source,\
                               x_offset=0, y_offset=0, text_font_size='8pt',\

@@ -410,8 +410,7 @@ class AllOuterReceptors(CsvWriter, InputFile):
             srcid_df['key'] = 1
             outerblks_subset['key'] = 1
             outerblks_subset2 = pd.merge(outerblks_subset, srcid_df, on=['key'])
-        
-        
+                
             # Get the 4 surrounding polar Aermod concs of each outer receptor
             cs1r1 = pd.merge(outerblks_subset2, self.polarconcs[['sector','ring','source_id','result','aresult','emis_type']],
                              how='left', left_on=['s1','r1','source_id'],

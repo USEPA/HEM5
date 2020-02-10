@@ -49,7 +49,8 @@ class FacilityPrep():
                                    dep:{"nan":"N"}, depl:{"nan":"N"}, phase:{"nan":""}, pdep:{"nan":"NO"}, 
                                    pdepl:{"nan":"NO"}, vdep:{"nan":"NO"}, vdepl:{"nan":"NO"}, 
                                    all_rcpts:{"nan":"Y"}, user_rcpt:{"nan":"N"}, bldg_dw:{"nan":"N"}, 
-                                   fastall:{"nan":"N"}, acute:{"nan":"N"}}, inplace=True)
+                                   fastall:{"nan":"N"}, acute:{"nan":"N"}, fac_center:{"nan":""},
+                                   ring_distances:{"nan":""}}, inplace=True)
 
         self.model.facops = self.model.facops.reset_index(drop = True)
 
@@ -93,6 +94,60 @@ class FacilityPrep():
         op_circles = self.model.facops[circles][0]
         op_radial = self.model.facops[radial][0]
         op_overlap = self.model.facops[overlap_dist][0]
+
+        # Facility center...comma separated list that should start with either "U" (meaning UTM coords) or "L"
+        # (meaning lat/lon) and contain two values if lat/lon (lat,lon) or three values if UTM (northing,easting,zone)
+        center_spec = self.model.facops[fac_center][0]
+        spec_valid = True
+        if center_spec.startswith("U"):
+            components = center_spec.split(',')
+            if len(components) != 4:
+                spec_valid = False
+        elif center_spec.startswith("L"):
+            components = center_spec.split(',')
+            if len(components) != 3:
+                spec_valid = False
+        else:
+            spec_valid = False
+
+        if center_spec != "" and not spec_valid:
+            Logger.logMessage("Invalid facility center specified: " + center_spec)
+            Logger.logMessage("Using default (calculated) center instead.")
+            self.model.facops[fac_center][0] = ""
+        self.fac_center = self.model.facops[fac_center][0]
+
+        # Ring distances...comma separated list that contains at least 3 values, all must be > 0 and <= 50000, and
+        # values must be increasing
+        distance_spec = self.model.facops[ring_distances][0]
+        spec_valid = True
+        distances = distance_spec.split(',')
+        if len(distances) < 3:
+            spec_valid = False
+        else:
+            ring_distance = int(float(distances[0]))
+            if self.model.facops[model_dist][0] < ring_distance:
+                Logger.logMessage("Error: First ring is greater than modeling distance!")
+                spec_valid = False
+            prev = 0
+            for d in distances[1:]:
+                ring_distance = int(float(d))
+                if ring_distance <= prev or ring_distance > 50000:
+                    spec_valid = False
+                prev = ring_distance
+
+        if distance_spec != "" and not spec_valid:
+            Logger.logMessage("Invalid ring distances specified: " + distance_spec)
+            Logger.logMessage("Using default (calculated) distances instead.")
+            self.model.facops[ring_distances][0] = ""
+            
+        self.ring_distances = self.model.facops[ring_distances][0]
+        # If there are user supplied ring distances then the last one must equal max distance 
+        # for correct outer block interpolation
+        if self.ring_distances != "":
+            distlist = self.ring_distances.split(",")
+            if float(distlist[-1]) != self.model.facops[max_dist][0]:
+                maxdist_str = "," + str(self.model.facops[max_dist][0])
+                self.ring_distances += maxdist_str
 
         #%%---------- Emission Locations --------------------------------------
 
@@ -268,9 +323,26 @@ class FacilityPrep():
             sourcelocs = sourcelocs.fillna({source_type:'', lengthx:0, lengthy:0, angle:0, "utme_x2":0, "utmn_y2":0})
             sourcelocs = sourcelocs.reset_index(drop=True)
 
-        # Compute the coordinates of the facililty center        
-        cenx, ceny, cenlon, cenlat, max_srcdist, vertx_a, verty_a = UTM.center(sourcelocs, facutmzonenum, hemi)
+        # Compute the coordinates of the facililty center if not specified in options
+        if (self.fac_center == "" or self.ring_distances == ""):
+            cenx, ceny, cenlon, cenlat, max_srcdist, vertx_a, verty_a = UTM.center(sourcelocs, facutmzonenum, hemi)
 
+        if self.fac_center != "":
+            # Grab the specified center and translate to/from UTM
+            components = center_spec.split(',')
+            if components[0] == "L":
+                cenlat = float(components[1])
+                cenlon = float(components[2])
+                ceny, cenx, zone, hemi, epsg = UTM.ll2utm(cenlat, cenlon)
+            else:
+                ceny = int(float(components[1]))
+                cenx = int(float(components[2]))
+
+                zone = components[3].strip()
+                cenlat, cenlon = UTM.utm2ll(ceny, cenx, zone)
+
+            Logger.logMessage("Using facility center [x, y, lat, lon] = [" + str(cenx) + ", " + str(ceny) + ", " +
+                              str(cenlat) + ", " + str(cenlon) + "]")
         self.model.computedValues['cenlat'] = cenlat
         self.model.computedValues['cenlon'] = cenlon
 
@@ -372,76 +444,82 @@ class FacilityPrep():
                 self.innerblks = self.innerblks.append(user_recs, ignore_index=True)
 
 
+        # >= 3 rings, must be > 0 && <= 50000, and monotonically increasing
 
         #%%----- Polar receptors ----------
 
-        #..... Compute the first polar ring distance ......
-                
-        # First find the farthest distance to any source.
-        maxsrcd = 0
-        for i in range(0, len(vertx_a)):
-            dist_cen = math.sqrt((vertx_a[i] - cenx)**2 + (verty_a[i] - ceny)**2)
-            maxsrcd = max(maxsrcd, dist_cen)
-
-        # If user first ring is > 100m, then use it, else first ring is maxsrcd + overlap.
-        if self.model.facops[ring1][0] <= 100:
-            ring1a = max(maxsrcd+op_overlap, 100)
-            ring1b = min(ring1a, op_maxdist)
-            firstring = normal_round(max(ring1b, 100))
+        # Compute the first polar ring distance ......
+        if self.ring_distances != "":
+            distances = self.ring_distances.split(',')
+            self.model.computedValues['firstring'] = float(distances[0])
+            polar_dist = [float(x) for x in distances]
+            Logger.logMessage("Using defined rings: " + str(polar_dist)[1:-1] )
         else:
-            firstring = self.model.facops[ring1][0]
-        
-        # Store first ring in computedValues
-        self.model.computedValues['firstring'] = firstring
-        
-        polar_dist = []
-        polar_dist.append(firstring)
+            # First find the farthest distance to any source.
+            maxsrcd = 0
+            for i in range(0, len(vertx_a)):
+                dist_cen = math.sqrt((vertx_a[i] - cenx)**2 + (verty_a[i] - ceny)**2)
+                maxsrcd = max(maxsrcd, dist_cen)
 
-            
-        # Make sure modeling distance is not less than first ring distance
-        if self.model.facops[model_dist][0] < firstring:
-            emessage = "Error! Modeling distance is less than first ring."
-            Logger.logMessage(emessage)
-            raise Exception("Modeling distance is less than first ring")
-        
-        #.... Compute the rest of the polar ring distances (logarithmically spaced) .......
+            # If user first ring is > 100m, then use it, else first ring is maxsrcd + overlap.
+            if self.model.facops[ring1][0] <= 100:
+                ring1a = max(maxsrcd+op_overlap, 100)
+                ring1b = min(ring1a, op_maxdist)
+                firstring = normal_round(max(ring1b, 100))
+            else:
+                firstring = self.model.facops[ring1][0]
 
-        if op_modeldist < op_maxdist:
-            # first handle ring distances inside the modeling distance
-            k = 1
-            if op_modeldist <= polar_dist[0]:
-                N_in = 0
-                N_out = op_circles
-                D_st2 = polar_dist[0]
-            else:            
-                N_in = normal_round(math.log(op_modeldist/polar_dist[0])/math.log(op_maxdist/polar_dist[0]) * (op_circles - 2))
+            # Store first ring in computedValues
+            self.model.computedValues['firstring'] = firstring
+
+            polar_dist = []
+            polar_dist.append(firstring)
+
+
+            # Make sure modeling distance is not less than first ring distance
+            if self.model.facops[model_dist][0] < firstring:
+                emessage = "Error! Modeling distance is less than first ring."
+                Logger.logMessage(emessage)
+                raise Exception("Modeling distance is less than first ring")
+
+            #.... Compute the rest of the polar ring distances (logarithmically spaced) .......
+
+            if op_modeldist < op_maxdist:
+                # first handle ring distances inside the modeling distance
+                k = 1
+                if op_modeldist <= polar_dist[0]:
+                    N_in = 0
+                    N_out = op_circles
+                    D_st2 = polar_dist[0]
+                else:
+                    N_in = normal_round(math.log(op_modeldist/polar_dist[0])/math.log(op_maxdist/polar_dist[0]) * (op_circles - 2))
+                    while k < N_in:
+                        next_dist = round(polar_dist[k-1] * ((op_modeldist/polar_dist[0])**(1/N_in)), -1)
+                        polar_dist.append(next_dist)
+                        k = k + 1
+                    # set a ring at the modeling distance
+                    next_dist = op_modeldist
+                    polar_dist.append(next_dist)
+                    k = k + 1
+                    N_out = op_circles - 1 - N_in
+                    D_st2 = op_modeldist
+                # next, handle ring distances outside the modeling distance
+                while k < op_circles - 1:
+                    next_dist = round(polar_dist[k-1] * ((op_maxdist/D_st2)**(1/N_out)), -2)
+                    polar_dist.append(next_dist)
+                    k = k + 1
+                # set the last ring distance to the domain distance
+                polar_dist.append(op_maxdist)
+            else:
+                # model distance = domain distance
+                k = 1
+                N_in = normal_round(math.log(op_modeldist/polar_dist[0])/math.log(op_maxdist/polar_dist[0]) * (op_circles - 1))
                 while k < N_in:
                     next_dist = round(polar_dist[k-1] * ((op_modeldist/polar_dist[0])**(1/N_in)), -1)
                     polar_dist.append(next_dist)
                     k = k + 1
-                # set a ring at the modeling distance
-                next_dist = op_modeldist
-                polar_dist.append(next_dist)
-                k = k + 1
-                N_out = op_circles - 1 - N_in
-                D_st2 = op_modeldist
-            # next, handle ring distances outside the modeling distance
-            while k < op_circles - 1:
-                next_dist = round(polar_dist[k-1] * ((op_maxdist/D_st2)**(1/N_out)), -2)
-                polar_dist.append(next_dist)
-                k = k + 1
-            # set the last ring distance to the domain distance
-            polar_dist.append(op_maxdist)
-        else:
-            # model distance = domain distance
-            k = 1
-            N_in = normal_round(math.log(op_modeldist/polar_dist[0])/math.log(op_maxdist/polar_dist[0]) * (op_circles - 1))
-            while k < N_in:
-                next_dist = round(polar_dist[k-1] * ((op_modeldist/polar_dist[0])**(1/N_in)), -1)
-                polar_dist.append(next_dist)
-                k = k + 1
-            # set the last ring distance to the domain distance
-            polar_dist.append(op_maxdist)            
+                # set the last ring distance to the domain distance
+                polar_dist.append(op_maxdist)
 
         # setup list of polar angles
         start = 0.

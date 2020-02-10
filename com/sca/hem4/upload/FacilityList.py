@@ -28,7 +28,8 @@ bldg_dw = 'bldg_dw';
 urban_pop = 'urban_pop';
 fastall = 'fastall';
 hivalu = 'hivalu';
-
+fac_center = 'fac_center'
+ring_distances = 'ring_distances'
 class FacilityList(InputFile):
     
     def __init__(self, path):
@@ -43,15 +44,17 @@ class FacilityList(InputFile):
         self.numericColumns = [max_dist,model_dist,radial,circles,overlap_dist,hours,multiplier,
                                ring1,urban_pop,hivalu]
         self.strColumns = [fac_id,met_station,rural_urban,acute,elev,dep,depl,phase,pdep,pdepl,
-                           vdep,vdepl,all_rcpts,user_rcpt,bldg_dw,fastall]
+                           vdep,vdepl,all_rcpts,user_rcpt,bldg_dw,fastall,fac_center,ring_distances]
 
         # FACILITIES LIST excel to dataframe
         # HEADER----------------------
-        # FacilityID|met_station|rural_urban|urban_pop|max_dist|model_dist|radials|circles|overlap_dist|ring1|acute|hours|
+        # FacilityID|met_station|rural_urban|urban_pop|max_dist|model_dist|radials|circles|overlap_dist|ring1|fac_center|
+        # ring_distances|acute|hours|
         # multiplier|hivalu|dep|depl|phase|pdep|pdepl|vdep|vdepl|elev|All_rcpts|user_rcpt|bldg_dw|fastall
 
         faclist_df = self.readFromPath(
-            (fac_id,met_station,rural_urban,urban_pop,max_dist,model_dist,radial,circles,overlap_dist, ring1, acute,
+            (fac_id,met_station,rural_urban,urban_pop,max_dist,model_dist,radial,circles,overlap_dist, ring1,
+             fac_center,ring_distances, acute,
              hours,multiplier,hivalu,dep,depl,phase,pdep,pdepl,vdep,vdepl,elev,all_rcpts,
              user_rcpt,bldg_dw,fastall)
         )
