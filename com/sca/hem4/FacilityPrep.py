@@ -145,7 +145,7 @@ class FacilityPrep():
         # for correct outer block interpolation
         if self.ring_distances != "":
             distlist = self.ring_distances.split(",")
-            if distlist[-1] != self.model.facops[max_dist][0]:
+            if float(distlist[-1]) != self.model.facops[max_dist][0]:
                 maxdist_str = "," + str(self.model.facops[max_dist][0])
                 self.ring_distances += maxdist_str
 
