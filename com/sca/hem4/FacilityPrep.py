@@ -42,7 +42,7 @@ class FacilityPrep():
 
         # Replace NaN with blank, No or 0
         # Note: use of elevations or all receptors are defaulted to Y, acute hours is defaulted to 1
-        #       and acute multiplier is defaulted to 10
+        #       , acute multiplier is defaulted to 10, and emission variation is defaulted to N
         self.model.facops = self.model.facops.fillna({radial:0, circles:0, overlap_dist:0, hours:1, multiplier:10,
                                 ring1:0, urban_pop:0, hivalu:1})
         self.model.facops.replace(to_replace={met_station:{"nan":"N"}, rural_urban:{"nan":""}, elev:{"nan":"Y"}, 
@@ -50,7 +50,7 @@ class FacilityPrep():
                                    pdepl:{"nan":"NO"}, vdep:{"nan":"NO"}, vdepl:{"nan":"NO"}, 
                                    all_rcpts:{"nan":"Y"}, user_rcpt:{"nan":"N"}, bldg_dw:{"nan":"N"}, 
                                    fastall:{"nan":"N"}, acute:{"nan":"N"}, fac_center:{"nan":""},
-                                   ring_distances:{"nan":""}}, inplace=True)
+                                   ring_distances:{"nan":""}, emis_var:{"nan":"N"}}, inplace=True)
 
         self.model.facops = self.model.facops.reset_index(drop = True)
 
@@ -141,6 +141,7 @@ class FacilityPrep():
             self.model.facops[ring_distances][0] = ""
             
         self.ring_distances = self.model.facops[ring_distances][0]
+
         # If there are user supplied ring distances then the last one must equal max distance 
         # for correct outer block interpolation
         if self.ring_distances != "":

@@ -28,8 +28,9 @@ bldg_dw = 'bldg_dw';
 urban_pop = 'urban_pop';
 fastall = 'fastall';
 hivalu = 'hivalu';
-fac_center = 'fac_center'
-ring_distances = 'ring_distances'
+fac_center = 'fac_center';
+ring_distances = 'ring_distances';
+emis_var = 'emis_var';
 class FacilityList(InputFile):
     
     def __init__(self, path):
@@ -44,7 +45,7 @@ class FacilityList(InputFile):
         self.numericColumns = [max_dist,model_dist,radial,circles,overlap_dist,hours,multiplier,
                                ring1,urban_pop,hivalu]
         self.strColumns = [fac_id,met_station,rural_urban,acute,elev,dep,depl,phase,pdep,pdepl,
-                           vdep,vdepl,all_rcpts,user_rcpt,bldg_dw,fastall,fac_center,ring_distances]
+                           vdep,vdepl,all_rcpts,user_rcpt,bldg_dw,fastall,fac_center,ring_distances,emis_var]
 
         # FACILITIES LIST excel to dataframe
         # HEADER----------------------
@@ -56,7 +57,7 @@ class FacilityList(InputFile):
             (fac_id,met_station,rural_urban,urban_pop,max_dist,model_dist,radial,circles,overlap_dist, ring1,
              fac_center,ring_distances, acute,
              hours,multiplier,hivalu,dep,depl,phase,pdep,pdepl,vdep,vdepl,elev,all_rcpts,
-             user_rcpt,bldg_dw,fastall)
+             user_rcpt,bldg_dw,fastall,emis_var)
         )
             
         
