@@ -134,6 +134,7 @@ class Process_outputs():
         if self.temporal:
             temporal = Temporal(self.outdir, self.facid, self.model, self.plot_df)
             temporal.write()
+            Logger.logMessage("Completed Temporal output")
 
 
         #----------- create Ring_Summary_Chronic data -----------------
