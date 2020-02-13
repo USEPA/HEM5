@@ -712,7 +712,7 @@ class MainView(tk.Frame):
 
 if __name__ == "__main__":
     root = tk.Tk()
-#    root.iconbitmap('images/Mark_crop.ico')
+    root.iconbitmap('images/HEM4.ico')
     main = MainView(root)
     main.pack(side="top", fill="both", expand=True)
     root.wm_minsize(1000,750)
