@@ -23,9 +23,9 @@ from com.sca.hem4.writer.excel.hem3.Hem3AcuteChemicalPopulated import Hem3AcuteC
 from com.sca.hem4.writer.excel.hem3.Hem3MaximumIndividualRisks import Hem3MaximumIndividualRisks
 from com.sca.hem4.writer.excel.hem3.Hem3RiskBreakdown import Hem3RiskBreakdown
 
-hem3Dirname = "C:\\Multi_HEM3\\hem3_output_all_sources_qa1"
-hem4Dirname = "C:\\HEM4_v10\\HEM4v10\\output\\All_Sources_QA1"
 facid = "fac1-nc"
+hem3Dirname = "C:\\Multi_HEM3\\hem3_output_all_sources_qa1" + "\\" + facid
+hem4Dirname = "C:\\HEM4_v10\\HEM4v10\\output\\All_Sources_QA1" + "\\" + facid
 acute = 'Y'
 
 class Hem3Comparer():
