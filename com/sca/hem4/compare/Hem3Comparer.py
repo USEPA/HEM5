@@ -198,7 +198,7 @@ class Hem3Comparer():
         hem3File = facid + "_acute_bkdn.xlsx"
         hem4File = facid + "_acute_bkdn.xlsx"
         diffFile = "diff_acute_bkdn.xlsx"
-        joinColumns = [pollutant]
+        joinColumns = [source_id, pollutant]
         diffColumns = [aconc_pop, aconc_all]
         #------------------------------------------#
         hem4bkdn = AcuteBreakdown(targetDir=self.hem4Dir, facilityId=None, model=None, plot_df=None,
