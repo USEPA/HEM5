@@ -129,7 +129,7 @@ def check_dep(dataframe):
             inputs.append(options)
         i += 1
      
-    #print(inputs)  
+    print("inputs", inputs)  
      
     return(inputs)
 

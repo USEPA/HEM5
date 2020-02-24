@@ -679,6 +679,7 @@ class Hem4(tk.Frame):
                     
             #check depostion and depletion        
             deposition_depletion = check_dep(self.model.faclist.dataframe)
+            print('dep+dep variable:', deposition_depletion)
             
             #pull out facilities using depdeplt 
             self.model.depdeplt = [x[0] for x in deposition_depletion]
@@ -686,7 +687,7 @@ class Hem4(tk.Frame):
             
             #pull out conditional inputs
             conditional = set([y for x in deposition_depletion for y in x[1:]])
-            
+            #print('conditional', conditional)
             
             if conditional is not None:
                 #enable deposition and depletion input tab
@@ -696,7 +697,7 @@ class Hem4(tk.Frame):
                 #if deposition or depletion present load gas params library
                 self.uploader.uploadLibrary("gas params")
                 for required in conditional:
-                    print(required)
+                    print("required", required)
                     if required == 'particle size':
                         self.add_particle()        
                     
@@ -1002,6 +1003,7 @@ class Hem4(tk.Frame):
         else:
             
             if additional == True:
+                print('ADAD')
                 #create optional input tab
                 self.optionalinputtab = tk.Frame(self.tabControl, bg='palegreen3')
                 self.optionalinputtab.grid_rowconfigure(10, weight=4)
@@ -1059,15 +1061,13 @@ class Hem4(tk.Frame):
         else:
             
             if dep == True:
+                print("DEPDEP")
                 #crete deposition inputs
                 self.depinputtab = tk.Frame(self.tabControl, bg='palegreen3') 
                 self.depinputtab.grid_rowconfigure(8, weight=4)
                 self.tabControl.insert(1, self.depinputtab, text='Dep/Depl Inputs')
                 
-        
-                 #create optional input tab
-                self.depinputtab = tk.Frame(self.tabControl, bg='palegreen3')            
-                self.tabControl.insert(1, self.depinputtab, text='Dep/Depl Inputs')
+    
                            
                 #put run button on optional input tab and next button on main
                 self.run_button.destroy()

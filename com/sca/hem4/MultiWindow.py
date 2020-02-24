@@ -26,7 +26,7 @@ import importlib
 
 from PIL import ImageTk
 import PIL.Image
-from pandastable import *
+#from pandastable import *
 import pandas as pd
 
 maxRiskReportModule = importlib.import_module("com.sca.hem4.writer.excel.summary.MaxRisk")
