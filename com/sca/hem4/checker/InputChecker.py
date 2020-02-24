@@ -79,10 +79,7 @@ class InputChecker():
                     result['dependencies'].append(user_rcpt)
                     
                     
-                #add bldgdw
-                
-                
-                #add dep/depl
+          
               
                          
         try:
@@ -212,7 +209,11 @@ class InputChecker():
             
             if option is 'user_rcpt':
                 
+                
+                
                 try:
+                    
+                    print("checked user receptors")
                     
                     self.model.ureceptr.dataframe
             
@@ -248,6 +249,7 @@ class InputChecker():
                 
                 try:
                     
+                    print("checked buoyant")
                     self.model.multibuoy.dataframe
                 
                 except AttributeError:
@@ -287,7 +289,7 @@ class InputChecker():
             elif option is 'polyvertex':
                 
                 try: 
-                    
+                    print("checked polyvertex")
                     self.model.multipoly.dataframe
                     
                 except AttributeError:
@@ -327,7 +329,7 @@ class InputChecker():
             elif option is 'downwash':
             
                 try:
-                    
+                    print("checked downwash")
                     self.model.bldgdw.dataframe
                     
                 except AttributeError:
