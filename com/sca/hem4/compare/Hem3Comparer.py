@@ -23,8 +23,9 @@ from com.sca.hem4.writer.excel.hem3.Hem3AcuteChemicalPopulated import Hem3AcuteC
 from com.sca.hem4.writer.excel.hem3.Hem3MaximumIndividualRisks import Hem3MaximumIndividualRisks
 from com.sca.hem4.writer.excel.hem3.Hem3RiskBreakdown import Hem3RiskBreakdown
 
-hem3Dirname = "C:\HEM-inputs\comparison\HEM3_unittest"
-hem4Dirname = "C:\\Users\Chris Stolte\IdeaProjects\HEM\\fixtures\\output"
+facid = "fac1-nc"
+hem3Dirname = "C:\\Multi_HEM3\\hem3_output_all_sources_qa1" + "\\" + facid
+hem4Dirname = "C:\\HEM4_v10\\HEM4v10\\output\\All_Sources_QA1" + "\\" + facid
 acute = 'Y'
 
 class Hem3Comparer():
@@ -49,8 +50,8 @@ class Hem3Comparer():
     def compare(self):
 
         #---------- All inner receptors -----------#
-        hem3File = "01043110000366247_all_inner_receptors.csv"
-        hem4File = "01043110000366247_all_inner_receptors.csv"
+        hem3File = facid + "_all_inner_receptors.csv"
+        hem4File = facid + "_inner_receptors.csv"
         diffFile = "diff_all_inner_receptors.csv"
         joinColumns = [fips, block, source_id, pollutant]
         diffColumns = [conc]
@@ -69,8 +70,8 @@ class Hem3Comparer():
         allinner_diff.appendToFile(diff_df)
 
         #---------- All polar receptors -----------#
-        hem3File = "01043110000366247_all_polar_receptors.csv"
-        hem4File = "01043110000366247_all_polar_receptors.csv"
+        hem3File = facid + "_all_polar_receptors.csv"
+        hem4File = facid + "_all_polar_receptors.csv"
         diffFile = "diff_all_polar_receptors.csv"
         joinColumns = [sector, ring, source_id, pollutant]
         diffColumns = [conc]
@@ -89,8 +90,8 @@ class Hem3Comparer():
         allpolar_diff.appendToFile(diff_df)
 
         #---------- Maximum individual risks -----------#
-        hem3File = "01043110000366247_maximum_indiv_risks.xlsx"
-        hem4File = "01043110000366247_maximum_indiv_risks.xlsx"
+        hem3File = facid + "_maximum_indiv_risks.xlsx"
+        hem4File = facid + "_maximum_indiv_risks.xlsx"
 
         diffFile = "diff_maximum_indiv_risks.xlsx"
         joinColumns = [parameter]
@@ -107,8 +108,8 @@ class Hem3Comparer():
         risks_diff.appendToFile(diff_df)
 
         #---------- Risk breakdown -----------#
-        hem3File = "01043110000366247_risk_breakdown.xlsx"
-        hem4File = "01043110000366247_risk_breakdown.xlsx"
+        hem3File = facid + "_risk_breakdown.xlsx"
+        hem4File = facid + "_risk_breakdown.xlsx"
         diffFile = "diff_risk_breakdown.xlsx"
         joinColumns = [site_type, parameter, source_id, pollutant]
         diffColumns = [value]
@@ -124,8 +125,8 @@ class Hem3Comparer():
         risks_diff.appendToFile(diff_df)
 
         #---------- Block Summary Chronic -----------#
-        hem3File = "01043110000366247_Block_summary_chronic.csv"
-        hem4File = "01043110000366247_block_summary_chronic.csv"
+        hem3File = facid + "_block_summary_chronic.csv"
+        hem4File = facid + "_block_summary_chronic.csv"
         diffFile = "diff_block_summary_chronic.csv"
         joinColumns = [fips, block]
         diffColumns = [mir, hi_resp, hi_live, hi_neur, hi_deve,
@@ -142,8 +143,8 @@ class Hem3Comparer():
         summary_diff.appendToFile(diff_df)
 
         #---------- Ring Summary Chronic -----------#
-        hem3File = "01043110000366247_ring_summary_chronic.csv"
-        hem4File = "01043110000366247_ring_summary_chronic.csv"
+        hem3File = facid + "_ring_summary_chronic.csv"
+        hem4File = facid + "_ring_summary_chronic.csv"
         diffFile = "diff_ring_summary_chronic.csv"
         joinColumns = [utme, utmn]
         diffColumns = [mir, hi_resp, hi_live, hi_neur, hi_deve,
@@ -160,8 +161,8 @@ class Hem3Comparer():
         summary_diff.appendToFile(diff_df)
 
         #---------- Acute Chemical Max -----------#
-        hem3File = "01043110000366247_acute_chem_max.xlsx"
-        hem4File = "01043110000366247_acute_chem_max.xlsx"
+        hem3File = facid + "_acute_chem_max.xlsx"
+        hem4File = facid + "_acute_chem_max.xlsx"
         diffFile = "diff_acute_chem_max.xlsx"
         joinColumns = [pollutant]
         diffColumns = [aconc]
@@ -177,8 +178,8 @@ class Hem3Comparer():
         max_diff.appendToFile(diff_df)
 
         #---------- Acute Chemical Pop -----------#
-        hem3File = "01043110000366247_acute_chem_pop.xlsx"
-        hem4File = "01043110000366247_acute_chem_pop.xlsx"
+        hem3File = facid + "_acute_chem_pop.xlsx"
+        hem4File = facid + "_acute_chem_pop.xlsx"
         diffFile = "diff_acute_chem_pop.xlsx"
         joinColumns = [pollutant]
         diffColumns = [aconc]
@@ -194,10 +195,10 @@ class Hem3Comparer():
         pop_diff.appendToFile(diff_df)
 
         #---------- Acute Breakdown -----------#
-        hem3File = "01043110000366247_acute_bkdn.xlsx"
-        hem4File = "01043110000366247_acute_bkdn.xlsx"
+        hem3File = facid + "_acute_bkdn.xlsx"
+        hem4File = facid + "_acute_bkdn.xlsx"
         diffFile = "diff_acute_bkdn.xlsx"
-        joinColumns = [pollutant]
+        joinColumns = [source_id, pollutant]
         diffColumns = [aconc_pop, aconc_all]
         #------------------------------------------#
         hem4bkdn = AcuteBreakdown(targetDir=self.hem4Dir, facilityId=None, model=None, plot_df=None,
@@ -211,8 +212,8 @@ class Hem3Comparer():
         bkdn_diff.appendToFile(diff_df)
 
         #---------- All outer receptors -----------#
-        hem3File = "01043110000366247_all_outer_receptors.csv"
-        hem4File = "01043110000366247_all_outer_receptors.csv"
+        hem3File = facid + "_all_outer_receptors.csv"
+        hem4File = facid + "_all_outer_receptors.csv"
         diffFile = "diff_all_outer_receptors.csv"
         joinColumns = [fips, block, source_id, pollutant]
         diffColumns = [conc]
