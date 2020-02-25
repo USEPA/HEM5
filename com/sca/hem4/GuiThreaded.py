@@ -94,7 +94,10 @@ class Hem4(tk.Frame):
         
         #status for working with optional inputs
         self.optionaltab = False
+        self.hiddenoptab = False
+        
         self.deptab = False
+        self.hiddendeptab = False
 
         self.createWidgets()
         
@@ -247,8 +250,8 @@ class Hem4(tk.Frame):
                 self.s9.destroy()
                 
             self.nexttab.destroy()
-            self.optionalinputtab.grid_forget()
-            
+            self.tabControl.hide(self.optionalinputtab)
+            self.hiddenoptab = True
             
             
         if hasattr(self, "depinputtab"): 
@@ -280,8 +283,11 @@ class Hem4(tk.Frame):
                 self.s12.destroy()
             
             self.nexttab.destroy()
-            self.depinputtab.destroy()
-
+            self.tabControl.hide(self.depinputtab)
+            self.hiddendeptab = True
+              
+              
+            
             
             
         #destroy stop
@@ -1000,29 +1006,26 @@ class Hem4(tk.Frame):
             dep =True
         elif inputtype == 'season':
             dep =True
-        elif inputtype == 'temp':
-            tempvar = True
-            
-    
+
         # determine logic for creation
         if hasattr(self, 'optionalinputtab'):
-            
             pass
-        
+    
         else: 
             
             if additional == True:
                 print('ADAD')
+                
+                
                 #create optional input tab
                 self.optionalinputtab = tk.Frame(self.tabControl, bg='palegreen3')
-                print('IT HAS BEEN CREATED')
+                print('ADDITIONAL TAB CREATED')
                 self.optionalinputtab.grid_rowconfigure(10, weight=4)
      
-                print('IT HAS BEEN GRIDED')
+                print('tabs', self.tabControl.tabs())
 
                 self.tabControl.insert(1, self.optionalinputtab, text='Additional Inputs')
                 
-                print('IT HAS BEEN INSERTED')
 
                 #do buttons
                 
@@ -1182,7 +1185,13 @@ class Hem4(tk.Frame):
         
         #if optional input tab already exists
         if hasattr(self, "optionalinputtab"):
-            pass
+            
+            if self.hiddenoptab == True:
+              
+              self.tabControl.add(self.optionalinputtab, text='Additional Inputs')
+              
+              self.hiddenoptab = False
+            
         else:
             self.create_optional('buoyant')
 
@@ -1225,8 +1234,14 @@ class Hem4(tk.Frame):
         """
         #if optional input tab already exists
         if hasattr(self, "optionalinputtab"):
-            print('in this run it exists!!!')
-            pass
+            
+            if self.hiddenoptab == True:
+              
+              self.tabControl.add(self.optionalinputtab, text='Additional Inputs')
+              
+              self.hiddenoptab = False
+            
+        
         else:
             self.create_optional('poly')
             print('in this run it doesnt exists!!!')
@@ -1268,8 +1283,14 @@ class Hem4(tk.Frame):
 
         #if optional input tab already exists
         if hasattr(self, "optionalinputtab"):
-            print('In this run it exists!!')
-            pass
+            
+            if self.hiddenoptab == True:
+              
+              self.tabControl.add(self.optionalinputtab, text='Additional Inputs')
+              
+              self.hiddenoptab = False
+            
+        
         else:
             #create optional input tab
             print('In this run it doesnt exist')
@@ -1313,7 +1334,13 @@ class Hem4(tk.Frame):
         
         #if deposition/depletion input tab already exists
         if hasattr(self, "depinputtab"):
-           pass
+           
+            if self.hiddendeptab == True:
+              
+              self.tabControl.add(self.depinputtab, text='Additional Inputs')
+            
+              self.hiddendeptab = False
+        
         else:
             #create optional input tab
             self.create_optional('part')
@@ -1353,7 +1380,13 @@ class Hem4(tk.Frame):
         """
          #if deposition/depletion input tab already exists
         if hasattr(self, "depinputtab"):
-            pass
+            
+            if self.hiddendeptab == True:
+              
+              self.tabControl.add(self.depinputtab, text='Additional Inputs')
+            
+              self.hiddendeptab = False
+        
         else:
             
             self.create_optional('land')
@@ -1392,7 +1425,13 @@ class Hem4(tk.Frame):
         """
          #if deposition/depletion input tab already exists
         if hasattr(self, "depinputtab"):
-           pass
+           
+            if self.hiddendeptab == True:
+              
+              self.tabControl.add(self.depinputtab, text='Additional Inputs')
+              
+              self.hiddendeptab = False
+            
         else:
             #create optional input tab
             self.create_optional('season')
