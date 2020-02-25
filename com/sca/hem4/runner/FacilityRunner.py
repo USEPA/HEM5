@@ -372,8 +372,14 @@ class FacilityRunner():
                 if os.path.isfile(fac_folder + "maxhour.plt"):
                     os.remove(fac_folder + "maxhour.plt")
                 shutil.move(maxfile, fac_folder)
-            
-            
+
+            # if a temporal seasonhr.plt plotfile was output by Aermod, move it too
+            seasonhrfile = os.path.join("aermod", "seasonhr.plt")
+            if os.path.isfile(seasonhrfile):
+                if os.path.isfile(fac_folder + "seasonhr.plt"):
+                    os.remove(fac_folder + "seasonhr.plt")
+                shutil.move(seasonhrfile, fac_folder)
+
             # for deposition runs, change the names of aermod.out and aermod.inp
             if phasetype != None:
                 
