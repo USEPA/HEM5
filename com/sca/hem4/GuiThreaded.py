@@ -94,7 +94,10 @@ class Hem4(tk.Frame):
         
         #status for working with optional inputs
         self.optionaltab = False
+        self.hiddenoptab = False
+        
         self.deptab = False
+        self.hiddendeptab = False
 
         self.createWidgets()
         
@@ -127,8 +130,9 @@ class Hem4(tk.Frame):
 
         else:
             # If we're not running, the only thing to do is reset the GUI...
-            Logger.logMessage("HEM4 stopped")
             self.reset_gui()
+            Logger.logMessage("HEM4 stopped")
+            
 
     def display_app_quit(self):
         self.enable_widgets(self.main, False)
@@ -246,7 +250,8 @@ class Hem4(tk.Frame):
                 self.s9.destroy()
                 
             self.nexttab.destroy()
-            self.optionalinputtab.destroy()
+            self.tabControl.hide(self.optionalinputtab)
+            self.hiddenoptab = True
             
             
         if hasattr(self, "depinputtab"): 
@@ -278,8 +283,11 @@ class Hem4(tk.Frame):
                 self.s12.destroy()
             
             self.nexttab.destroy()
-            self.depinputtab.destroy()
-
+            self.tabControl.hide(self.depinputtab)
+            self.hiddendeptab = True
+              
+              
+            
             
             
         #destroy stop
@@ -589,13 +597,6 @@ class Hem4(tk.Frame):
                                    lambda e:self.manual("instructions/emis_man.txt"))
          
         
-        #add emissions variation checkbox
-        self.check_emisvar = tk.IntVar()
-        self.emisvar_sel = tk.Checkbutton(self.s5, text="Add emissions variations to the inputs", 
-                                          variable = self.check_emisvar, font=TEXT_FONT,
-                                          bg='palegreen3', command = self.add_variation)
-        self.emisvar_sel.grid(row=3, column=0, sticky='E', padx = 85)
-        
         #add temporal output variations
         self.check_tempvar = tk.IntVar()
         self.tempvar_sel = tk.Checkbutton(self.s5, text="Show temporal variations in the outputs", 
@@ -660,6 +661,20 @@ class Hem4(tk.Frame):
                     self.urep_list_man.destroy()
                     self.ur_label.destroy()
                     self.s6.destroy()
+                    
+            #trigger additional inputs for emisvar
+            if 'Y' in self.model.faclist.dataframe['emis_var'].tolist():
+                #create user receptors
+                self.add_variation()
+                
+            else:
+                if hasattr(self, ''):
+                    self.emisvar_label.destroy()
+                    self.emisvar_list_man.destroy()
+                    self.emisvar_list.destroy()
+                    self.emisvar_on.destroy()
+                
+            
                     
             #trigger additional inputs for building downwash
             if 'Y' in self.model.faclist.dataframe['bldg_dw'].tolist():
@@ -991,27 +1006,27 @@ class Hem4(tk.Frame):
             dep =True
         elif inputtype == 'season':
             dep =True
-        elif inputtype == 'temp':
-            tempvar = True
-            
-    
+
         # determine logic for creation
         if hasattr(self, 'optionalinputtab'):
-            
             pass
-        
-        else:
+    
+        else: 
             
             if additional == True:
                 print('ADAD')
+                
+                
                 #create optional input tab
                 self.optionalinputtab = tk.Frame(self.tabControl, bg='palegreen3')
+                print('ADDITIONAL TAB CREATED')
                 self.optionalinputtab.grid_rowconfigure(10, weight=4)
-    
-                
+     
+                print('tabs', self.tabControl.tabs())
+
                 self.tabControl.insert(1, self.optionalinputtab, text='Additional Inputs')
                 
-                
+
                 #do buttons
                 
                 if hasattr('self', 'depinputtab'):
@@ -1170,7 +1185,13 @@ class Hem4(tk.Frame):
         
         #if optional input tab already exists
         if hasattr(self, "optionalinputtab"):
-            pass
+            
+            if self.hiddenoptab == True:
+              
+              self.tabControl.add(self.optionalinputtab, text='Additional Inputs')
+              
+              self.hiddenoptab = False
+            
         else:
             self.create_optional('buoyant')
 
@@ -1213,9 +1234,18 @@ class Hem4(tk.Frame):
         """
         #if optional input tab already exists
         if hasattr(self, "optionalinputtab"):
-            pass
+            
+            if self.hiddenoptab == True:
+              
+              self.tabControl.add(self.optionalinputtab, text='Additional Inputs')
+              
+              self.hiddenoptab = False
+            
+        
         else:
             self.create_optional('poly')
+            print('in this run it doesnt exists!!!')
+
                             
         #create row for poly
         self.s8 = tk.Frame(self.optionalinputtab, width=250, height=50, pady=5, padx=5, bg="palegreen3")
@@ -1253,9 +1283,17 @@ class Hem4(tk.Frame):
 
         #if optional input tab already exists
         if hasattr(self, "optionalinputtab"):
-            pass
+            
+            if self.hiddenoptab == True:
+              
+              self.tabControl.add(self.optionalinputtab, text='Additional Inputs')
+              
+              self.hiddenoptab = False
+            
+        
         else:
             #create optional input tab
+            print('In this run it doesnt exist')
             self.create_optional('bldgdw')
         
         #create row for building downwash
@@ -1296,7 +1334,13 @@ class Hem4(tk.Frame):
         
         #if deposition/depletion input tab already exists
         if hasattr(self, "depinputtab"):
-           pass
+           
+            if self.hiddendeptab == True:
+              
+              self.tabControl.add(self.depinputtab, text='Additional Inputs')
+            
+              self.hiddendeptab = False
+        
         else:
             #create optional input tab
             self.create_optional('part')
@@ -1336,7 +1380,13 @@ class Hem4(tk.Frame):
         """
          #if deposition/depletion input tab already exists
         if hasattr(self, "depinputtab"):
-            pass
+            
+            if self.hiddendeptab == True:
+              
+              self.tabControl.add(self.depinputtab, text='Additional Inputs')
+            
+              self.hiddendeptab = False
+        
         else:
             
             self.create_optional('land')
@@ -1375,7 +1425,13 @@ class Hem4(tk.Frame):
         """
          #if deposition/depletion input tab already exists
         if hasattr(self, "depinputtab"):
-           pass
+           
+            if self.hiddendeptab == True:
+              
+              self.tabControl.add(self.depinputtab, text='Additional Inputs')
+              
+              self.hiddendeptab = False
+            
         else:
             #create optional input tab
             self.create_optional('season')
@@ -1412,54 +1468,46 @@ class Hem4(tk.Frame):
         """
         Function for creating temporal variation input space
         """
-        
-        if self.check_emisvar.get() == 1:
             
-            if hasattr(self.model.emisloc, 'dataframe'):
-                #create row for emissions variation
+        if hasattr(self.model.emisloc, 'dataframe'):
+            #create row for emissions variation
 #                self.s5 = tk.Frame(self.main, width=250, height=100, bg="palegreen3", pady=5, 
 #                                    padx=5)
 #                self.s5.grid(row=4, column=0, columnspan=2, sticky="nsew")
-                
-                #emissions variation label
-                self.emisvar_label = tk.Label(self.s5, font=TEXT_FONT, bg="palegreen3", 
-                                     text="Please select an Emissions Variation"+
-                                     " file:")
-                self.emisvar_label.grid(row=6, sticky="W")
             
-                #emissions variation upload button
-                self.emisvar_on = tk.Button(self.s5, font=TEXT_FONT, bg='lightgrey', relief='solid', borderwidth=2,
-                                       command = lambda: self.uploadVariation())
-                self.emisvar_on["text"] = "Browse"
-                self.emisvar_on.grid(row=7, column=0, sticky="W")
-                #self.emisvar_on.bind('<Enter>', 
-                               #lambda e:self.browse("instructions/urep_browse.txt"))
-                
-                #emissions variation text entry
-                self.emisvar_list = tk.StringVar(self.s5)
-                self.emisvar_list_man = ttk.Entry(self.s5)
-                self.emisvar_list_man["width"] = 100
-                self.emisvar_list_man["textvariable"]= self.emisvar_list
-                self.emisvar_list_man.grid(row=7, column=0, sticky='E', padx=85)
-                #event handler for instructions (Button 1 is the left mouse click)
-                #self.emisvar_list_man.bind('<Button-1>', 
-                                       #lambda e:self.manual("instructions/urep_man.txt"))
+            #emissions variation label
+            self.emisvar_label = tk.Label(self.s5, font=TEXT_FONT, bg="palegreen3", 
+                                 text="Please select an Emissions Variation"+
+                                 " file:")
+            self.emisvar_label.grid(row=6, sticky="W")
+        
+            #emissions variation upload button
+            self.emisvar_on = tk.Button(self.s5, font=TEXT_FONT, bg='lightgrey', relief='solid', borderwidth=2,
+                                   command = lambda: self.uploadVariation())
+            self.emisvar_on["text"] = "Browse"
+            self.emisvar_on.grid(row=7, column=0, sticky="W")
+            #self.emisvar_on.bind('<Enter>', 
+                           #lambda e:self.browse("instructions/urep_browse.txt"))
             
-            else:
-                 messagebox.showinfo("Emissions Location File Missing",
-                "Please upload an Emissions Location file before selecting"+
-                " a temporal emissions variation file.")
-                 
-                 #uncheck the box
-                 self.check_emisvar.set(0)
+            #emissions variation text entry
+            self.emisvar_list = tk.StringVar(self.s5)
+            self.emisvar_list_man = ttk.Entry(self.s5)
+            self.emisvar_list_man["width"] = 100
+            self.emisvar_list_man["textvariable"]= self.emisvar_list
+            self.emisvar_list_man.grid(row=7, column=0, sticky='E', padx=85)
+            #event handler for instructions (Button 1 is the left mouse click)
+            #self.emisvar_list_man.bind('<Button-1>', 
+                                   #lambda e:self.manual("instructions/urep_man.txt"))
+        
+        else:
+             messagebox.showinfo("Emissions Location File Missing",
+            "Please upload an Emissions Location file before selecting"+
+            " a temporal emissions variation file.")
+             
+             #uncheck the box
+             self.check_emisvar.set(0)
             
-        #if checked and then unchecked
-        elif self.check_emisvar.get() == 0:
-            if hasattr(self, 'emisvar_on'):
-                    self.emisvar_list_man.destroy() 
-                    self.emisvar_on.destroy()
-                    self.emisvar_label.destroy()
-                   
+
 
     def add_temporal(self):
         
@@ -1470,17 +1518,17 @@ class Hem4(tk.Frame):
                                      text="What diurnal (hourly) resolution would you like?")
                 self.tempvar_label.grid(row=5, column=0, sticky="W", padx=85, pady=20)
              
-                tkvar = tk.StringVar(self.s5)
+                self.tkvar = tk.StringVar(self.s5)
                 choices = {1, 2, 3, 4, 6, 8, 12, 24}
-                tkvar.set(1) # set the default option
+                self.tkvar.set(1) # set the default option
 
-                self.popupMenu = tk.OptionMenu(self.s5, tkvar, *choices)
+                self.popupMenu = tk.OptionMenu(self.s5, self.tkvar, *choices)
                 self.popupMenu.grid(row=5, column=0, sticky="E", padx = 300, pady=10)
                 
                 #add emissions variation checkbox
                 self.check_dr = tk.IntVar()
                 self.dr_sel = tk.Checkbutton(self.s5, text="Include seasonal variations in diurnally\n resolved concentrations output", 
-                                          variable = self.check_emisvar, font=TEXT_FONT,
+                                          variable = self.check_dr, font=TEXT_FONT,
                                           bg='palegreen3')
                 self.dr_sel.grid(row=5, column=0, sticky="E")
                 
@@ -1561,6 +1609,14 @@ class Hem4(tk.Frame):
         """
 
         self.ready = False
+        
+        #add temp_var to model ## add to checks 
+        if self.check_tempvar.get() == 1:
+            self.model.tempvar = self.tkvar
+            
+            if self.check_dr.get() == 1:
+                self.model.seasonvar = True
+            
 
         #Check inputs
         check_inputs = InputChecker(self.model)
