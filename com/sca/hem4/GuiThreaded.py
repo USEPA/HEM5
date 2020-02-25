@@ -14,6 +14,7 @@ from concurrent.futures import ThreadPoolExecutor
 from threading import Event
 from tkinter import messagebox
 from tkinter import scrolledtext
+import numpy as np
 
 import datetime
 from com.sca.hem4.Processor import Processor
@@ -692,7 +693,35 @@ class Hem4(tk.Frame):
                     self.bldgdw_label.destroy()
                     self.s9.destroy()
                     
-            #check depostion and depletion        
+            #check depostion and depletion   
+            
+                #default to both if values in 
+            print('This is what is in deposition and depletion', type(self.model.faclist.dataframe['phase'].tolist()[0]))
+            for i, r in self.model.faclist.dataframe.iterrows():
+                
+                if r['phase'] == None or r['phase'] == np.nan or r['phase']== 'nan':
+                    
+                    if ('DO' or 'WO' or 'WD' or 'NO' in r['vdep'].upper() and 
+                        'DO' or 'WO' or 'WD' or 'NO' in r['pdep'].upper()):
+                        
+                        self.model.faclist.dataframe.at[i, 'phase'] = 'B'
+                        
+                    elif ('DO' or 'WO' or 'WD' or 'NO' in r['vdep'].upper() and 
+                          'DO' or 'WO' or 'WD' in r['pdepl'].upper()):
+                        
+                        self.model.faclist.dataframe.at[i, 'phase'] = 'B'
+                        
+                    elif ('DO' or 'WO' or 'WD' or 'NO' in r['pdep'].upper() and 
+                          'DO' or 'WO' or 'WD' in r['vdepl'].upper()):
+                        
+                        self.model.faclist.dataframe.at[i, 'phase'] = 'B'
+                        
+                    elif ('DO' or 'WO' or 'WD' or 'NO' in r['vdepl'].upper() and 
+                          'DO' or 'WO' or 'WD' in r['pdepl'].upper()):
+                        
+                        self.model.faclist.dataframe.at[i, 'phase'] = 'B'
+            
+            
             deposition_depletion = check_dep(self.model.faclist.dataframe)
             print('dep+dep variable:', deposition_depletion)
             
@@ -1009,8 +1038,20 @@ class Hem4(tk.Frame):
 
         # determine logic for creation
         if hasattr(self, 'optionalinputtab'):
-            pass
-    
+            if hasattr('self', 'depinputtab'):
+                pass
+            else:
+                self.run_button.destroy()
+                self.run_button = tk.Button(self.optionalinputtab, text='RUN', fg="green", bg='lightgrey', relief='solid', borderwidth=2,
+                                    command=self.run, font=TEXT_FONT)
+                self.run_button.grid(row=10, column=0, sticky="E", padx=5, pady=5)
+                
+                #put next button on main 
+                self.nexttab = tk.Button(self.main, font=TEXT_FONT, text='NEXT',  bg='lightgrey', relief='solid', borderwidth=2,
+                                         command = self.switchtooptional)
+                self.nexttab.grid(row=10, column=0, sticky='E ')
+            
+
         else: 
             
             if additional == True:
@@ -1071,7 +1112,18 @@ class Hem4(tk.Frame):
                 
             
         if hasattr(self, 'depinputtab'):
-            pass
+             
+            
+            #put run button on optional input tab and next button on main
+                self.run_button.destroy()
+                
+                self.run_button = tk.Button(self.depinputtab, text='RUN', fg="green", bg='lightgrey', relief='solid', borderwidth=2,
+                                    command=self.run, font=TEXT_FONT)
+                self.run_button.grid(row=10, column=0, sticky="E", padx=5, pady=5)
+                
+                self.nexttab = tk.Button(self.main, font=TEXT_FONT, text='NEXT',  bg='lightgrey', relief='solid', borderwidth=2,
+                                         command = self.switchtodepinput)
+                self.nexttab.grid(row=10, column=0, sticky='E', padx=5, pady=5)
         
         else:
             

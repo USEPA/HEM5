@@ -17,7 +17,8 @@ def check_dep(dataframe):
     """
     
     inputs = []
-    
+                
+            
     
     phase = dataframe[['fac_id', 'phase']].values
 
