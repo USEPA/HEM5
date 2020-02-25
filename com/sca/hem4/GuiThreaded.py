@@ -1479,11 +1479,11 @@ class Hem4(tk.Frame):
                                      text="What diurnal (hourly) resolution would you like?")
                 self.tempvar_label.grid(row=5, column=0, sticky="W", padx=85, pady=20)
              
-                tkvar = tk.StringVar(self.s5)
+                self.tkvar = tk.StringVar(self.s5)
                 choices = {1, 2, 3, 4, 6, 8, 12, 24}
-                tkvar.set(1) # set the default option
+                self.tkvar.set(1) # set the default option
 
-                self.popupMenu = tk.OptionMenu(self.s5, tkvar, *choices)
+                self.popupMenu = tk.OptionMenu(self.s5, self.tkvar, *choices)
                 self.popupMenu.grid(row=5, column=0, sticky="E", padx = 300, pady=10)
                 
                 #add emissions variation checkbox
@@ -1570,6 +1570,14 @@ class Hem4(tk.Frame):
         """
 
         self.ready = False
+        
+        #add temp_var to model ## add to checks 
+        if self.check_tempvar.get() == 1:
+            self.model.tempvar = self.tkvar
+            
+            if self.check_dr.get() == 1:
+                self.model.seasonvar = True
+            
 
         #Check inputs
         check_inputs = InputChecker(self.model)
