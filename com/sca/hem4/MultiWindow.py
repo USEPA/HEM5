@@ -688,8 +688,8 @@ class MainView(tk.Frame):
         view = tk.Button(self.s5, text= "View and Analyze Outputs", font=TEXT_FONT, relief='solid', borderwidth=2, bg='lightgrey',
                          command=self.analyze.lift)
         view.pack(padx=20, pady=50)
-        view.bind("<Enter>", partial(self.color_config, risk, "white"))
-        view.bind("<Leave>", partial(self.color_config, risk, "lightgrey"))
+        view.bind("<Enter>", partial(self.color_config, view, "white"))
+        view.bind("<Leave>", partial(self.color_config, view, "lightgrey"))
 
         
 #        #back button
