@@ -49,7 +49,7 @@ class Particle(DependentInputFile):
                 mass_fracs = fac_search[fac_search[source_id] == s][mass_frac].tolist()
 
                 if sum(mass_fracs) != 1:
-                    incomplete.append[str(fac) + ': ' + str(s)]
+                    incomplete.append(str(fac) + ': ' + str(s))
 
 
         if len(incomplete) > 0:
