@@ -8,6 +8,7 @@ Created on Fri Aug 31 20:13:09 2018
 from com.sca.hem4.upload.DependentInputFile import DependentInputFile
 from tkinter import messagebox
 from com.sca.hem4.model.Model import *
+from decimal import Decimal
 
 part_diam = 'part_diam';
 mass_frac = 'mass_frac';
@@ -32,8 +33,15 @@ class Particle(DependentInputFile):
         # Read the particle file
         particle_allfacs = self.readFromPath((fac_id, source_id, part_diam,mass_frac, part_dens))
         
+        
         # Subset the particle data to the facilities being modeled
         particle_df = particle_allfacs.loc[particle_allfacs[fac_id].isin(facid_list)]
+
+        # Default NaN to 0 and convert float64 values to decimal with 3 decimal places
+        particle_df.fillna({part_diam:0, mass_frac:0, part_dens:0})
+        particle_df[part_diam] = particle_df[part_diam].apply(lambda x: round(Decimal(x), 3))
+        particle_df[mass_frac] = particle_df[mass_frac].apply(lambda x: round(Decimal(x), 3))
+        particle_df[part_dens] = particle_df[part_dens].apply(lambda x: round(Decimal(x), 3))
 
         particle_df[mass_frac] = particle_df[mass_frac] / 100
 
