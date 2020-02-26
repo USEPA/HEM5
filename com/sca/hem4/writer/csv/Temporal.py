@@ -151,10 +151,8 @@ class Temporal(CsvWriter):
         innerconc_df = pd.DataFrame(dlist, columns=col_list)
 
         # --------------------------------------------------------------------------------------------------
-        # Now do outer receptors...this is a slight variant of the logic found in AllOuterReceptors.
+        # Now do outer receptors...
         # --------------------------------------------------------------------------------------------------
-
-        # sort by receptor, season?, hour
         if self.seasonal:
             self.temporal_outer_df.sort_values(by=[source_id, utme, utmn, seas, hour], inplace=True)
         else:
@@ -163,192 +161,121 @@ class Temporal(CsvWriter):
         # copy the emission types from the regular plot_df
         self.temporal_outer_df = self.temporal_outer_df.merge(right=self.plot_df, on=[source_id, utme, utmn, elev, hill])
 
-        polarplot_df = self.temporal_outer_df
+        polarplot_df = self.temporal_outer_df[new_cols].copy()
+        
+        # add the new concentration columns, based on user selections
+        polarplot_df = pd.concat([innerplot_df, pd.DataFrame(columns=self.conc_cols)])
+        polarplot_df.reset_index()
+        
+        # create array of unique source_id's
+        srcids = polarplot_df[source_id].unique().tolist()        
+        dlist = []
 
-        # Assign sector and ring to polar concs from polarplot_df and set an index
-        # of source_id + sector + ring
-        self.polarconcs = pd.merge(polarplot_df, self.model.polargrid[['utme', 'utmn', 'sector', 'ring']],
-                                   how='inner', on=['utme', 'utmn'])
-        self.polarconcs['newindex'] = self.polarconcs['source_id'] \
-                                      + 's' + self.polarconcs['sector'].apply(str) \
-                                      + 'r' + self.polarconcs['ring'].apply(str)
-        self.polarconcs.set_index(['newindex'], inplace=True)
+        iterate over self.model.outerblks_df:
+            link blk to
+        for x in srcids:
+            polarplot_onesrcid = polarplot_df[self.plotcols[self.rtype]].loc[polarplot_df[source_id] == x]
+            hapemis_onesrcid = self.model.runstream_hapemis[[source_id,pollutant,emis_tpy,part_frac]] \
+                .loc[self.model.runstream_hapemis[source_id] == x]
+            for row1 in polarplot_onesrcid.itertuples():
+                for row2 in hapemis_onesrcid.itertuples():
+        
+                    record = None
+                    key = (row1.utme, row1.utmn)
+                    if key in self.innblkCache:
+                        record = self.innblkCache.get(key)
+                    else:
+                        record = self.model.outerblks_df.loc[(self.model.outerblks_df[utme] == row1[1]) & (self.model.outerblks_df[utmn] == row1[2])]
+                        self.innblkCache[key] = record
 
-        # QA - make sure merge retained all rows
-        if self.polarconcs.shape[0] != polarplot_df.shape[0]:
-            print("Error! self.polarconcs has wrong number of rows in AllOuterReceptors")
+                    d_fips = record[fips].values[0]
+                    d_idmarplot = record[idmarplot].values[0]
+                    d_block = d_idmarplot[-10:]
+                    d_lat = record[lat].values[0]
+                    d_lon = record[lon].values[0]
+                    d_pollutant = row2.pollutant
+                    d_population = record[population].values[0]
+                    d_overlap = record[overlap].values[0]
+                    d_emistype = row1.emis_type
+                    d_modeled = 'I'
 
-        #subset outer blocks DF to needed columns and sort by increasing distance
-        outerblks_subset = self.model.outerblks_df[[fips, idmarplot, lat, lon, elev,
-                                                    'distance', 'angle', population, overlap,
-                                                    's', 'ring_loc']].copy()
-        outerblks_subset['block'] = outerblks_subset['idmarplot'].str[5:]
-        outerblks_subset.sort_values(by=['distance'], axis=0, inplace=True)
+                    # ring and sector of this outer block
+                    # ring_loc = row[19]
+                    # cs = row[17]
+                    #
+                    # # define the four surrounding polar sector/rings for this outer block
+                    # s = ((row[14] * self.model.numsectors)/360.0 % self.model.numsectors) + 1
+                    #
+                    # if int(s) == self.model.numsectors:
+                    #     s1 = self.model.numsectors
+                    #     s2 = 1
+                    # else:
+                    #     s1 = int(s)
+                    #     s2 = int(s) + 1
+                    #
+                    # r1 = int(row[19])
+                    # if r1 == self.model.numrings:
+                    #     r1 = r1 - 1
+                    #
+                    # r2 = int(row[19]) + 1
+                    # if r2 > self.model.numrings:
+                    #     r2 = self.model.numrings
+                    #
+                    # s1r1 = np.logical_and(self.model.all_polar_receptors_df[:, 6] == s1, self.model.all_polar_receptors_df[:,7] == r1 )
+                    # s1r2 = np.logical_and(self.model.all_polar_receptors_df[:, 6] == s1, self.model.all_polar_receptors_df[:,7] == r2 )
+                    # s2r1 = np.logical_and(self.model.all_polar_receptors_df[:, 6] == s2, self.model.all_polar_receptors_df[:,7] == r1 )
+                    # s2r2 = np.logical_and(self.model.all_polar_receptors_df[:, 6] == s2, self.model.all_polar_receptors_df[:,7] == r2 )
+                    #
+                    # co1 = self.model.all_polar_receptors_df[s1r1]
+                    # co2 = self.model.all_polar_receptors_df[s1r2]
+                    # co3 = self.model.all_polar_receptors_df[s2r1]
+                    # co4 = self.model.all_polar_receptors_df[s2r2]
+                    #
+                    # # full has polar conc records for the 4 surrounding polar receptors
+                    # full = np.concatenate((co1, co2, co3, co4), axis=0)
 
-        # Define sector/ring of 4 surrounding polar receptors of each outer receptor
-        a_s = outerblks_subset['s'].values
-        a_ringloc = outerblks_subset['ring_loc'].values
-        as1, as2, ar1, ar2 = self.compute_s1s2r1r2(a_s, a_ringloc)
-        outerblks_subset['s1'] = as1.tolist()
-        outerblks_subset['s2'] = as2.tolist()
-        outerblks_subset['r1'] = ar1.tolist()
-        outerblks_subset['r2'] = ar2.tolist()
 
-        # Assign each source_id to every outer receptor
-        srcids = self.polarconcs['source_id'].unique().tolist()
-        srcid_df = pd.DataFrame(srcids, columns=['source_id'])
-        srcid_df['key'] = 1
-        outerblks_subset['key'] = 1
-        outerblks_subset2 = pd.merge(outerblks_subset, srcid_df, on=['key'])
+                    # subset to specific source id and pollutant
+                    # sub = full[(full[:,0] == srcpolrow[0]) & (full[:,2] == srcpolrow[1])]
+                    #
+                    # # polar concs of 4 surrounding polar receptors
+                    # concentration = sub[:, 3]
+                    #
+                    # d_sourceid = srcpolrow[0]
+                    # d_pollutant = srcpolrow[1]
+                    #
+                    # # interpolate
+                    # if concentration[0] == 0 or concentration[1] == 0:
+                    #     R_s12 = max(concentration[0], concentration[1])
+                    # else:
+                    #     Lnr_s12 = (math.log(conc[0]) * (int(ring_loc)+1-ring_loc)) + (math.log(concentration[1]) * (ring_loc-int(ring_loc)))
+                    #     R_s12 = math.exp(Lnr_s12)
+                    #
+                    # if concentration[2] == 0 or concentration[3] == 0:
+                    #     R_s34 = max(concentration[2], concentration[3] )
+                    # else:
+                    #     Lnr_s34 = (math.log(concentration[2]) * (int(ring_loc)+1-ring_loc)) + (math.log(concentration[3] ) * (ring_loc-int(ring_loc)))
+                    #     R_s34 = math.exp(Lnr_s34)
 
-        # Get the 4 surrounding polar Aermod concs of each outer receptor
-        cs1r1 = pd.merge(outerblks_subset2, self.polarconcs[['sector','ring','source_id','conc','emis_type']],
-                         how='left', left_on=['s1','r1','source_id'],
-                         right_on=['sector','ring','source_id'])
-        cs1r1.rename(columns={"conc":"result_s1r1"}, inplace=True)
-        cs1r2 = pd.merge(outerblks_subset2, self.polarconcs[['sector','ring','source_id','conc']],
-                         how='left', left_on=['s1','r2','source_id'],
-                         right_on=['sector','ring','source_id'])
-        cs1r2.rename(columns={"conc":"result_s1r2"}, inplace=True)
-        cs2r1 = pd.merge(outerblks_subset2, self.polarconcs[['sector','ring','source_id','conc']],
-                         how='left', left_on=['s2','r1','source_id'],
-                         right_on=['sector','ring','source_id'])
-        cs2r1.rename(columns={"conc":"result_s2r1"}, inplace=True)
-        cs2r2 = pd.merge(outerblks_subset2, self.polarconcs[['sector','ring','source_id','conc']],
-                         how='left', left_on=['s2','r2','source_id'],
-                         right_on=['sector','ring','source_id'])
-        cs2r2.rename(columns={"conc":"result_s2r2"}, inplace=True)
-
-        outer4interp = cs1r1.copy()
-        outer4interp['result_s1r2'] = cs1r2['result_s1r2']
-        outer4interp['result_s2r1'] = cs2r1['result_s2r1']
-        outer4interp['result_s2r2'] = cs2r2['result_s2r2']
-
-        # Interpolate polar Aermod concs to each outer receptor; store results in arrays
-        a_ccs1r1 = outer4interp['result_s1r1'].values
-        a_ccs1r2 = outer4interp['result_s1r2'].values
-        a_ccs2r1 = outer4interp['result_s2r1'].values
-        a_ccs2r2 = outer4interp['result_s2r2'].values
-        a_sectfrac = outer4interp['s'].values
-        a_ringfrac = outer4interp['ring_loc'].values
-        a_intconc = self.interpolate(a_ccs1r1, a_ccs1r2, a_ccs2r1, a_ccs2r2, a_sectfrac, a_ringfrac)
-
-        #   Apply emissions to interpolated outer concs and write
-
-        outerconcs = outer4interp[['fips', 'block', 'lat', 'lon', 'elev', 'population', 'overlap',
-                                   'emis_type', 'source_id']]
-        outerconcs['intconc'] = a_intconc
-
-        num_rows_outer_recs = outerblks_subset.shape[0]
-        num_rows_hapemis = self.model.runstream_hapemis.shape[0]
-        num_rows_output = num_rows_outer_recs * num_rows_hapemis
-        num_srcids = len(srcids)
-
-        #  Write no more than 14,000,000 rows to a given CSV output file
-        if num_rows_output <= 14000000:
-
-            # One output file
-
-            outer_polconcs = pd.merge(outerconcs, self.model.runstream_hapemis[[source_id,pollutant,emis_tpy,part_frac]],
-                                      on=[source_id])
-
-            if 'C' in outer_polconcs['emis_type'].values:
-                d_concs = []
-                records_to_avg = int(96 / len(self.conc_cols))
-                recs = polarplot_df.loc[(polarplot_df[utme] == row1[1]) & (innerplot_df[utmn] == row1[2])]
-
-                column = 0
-                for c in self.conc_cols:
-                    offset = int(column * records_to_avg)
-                    values = recs[conc].values[offset:offset+records_to_avg]
-                    average = sum(values) / records_to_avg
-                    d_concs.append(average * row2.emis_tpy * self.cf)
-                    column+= 1
-                outer_polconcs['conc'] = d_concs
-
-            else:
-                outer_polconcs_p = outer_polconcs[outer_polconcs['emis_type']=='P']
-                outer_polconcs_v = outer_polconcs[outer_polconcs['emis_type']=='V']
-
-                p_concs = []
-                v_concs = []
-                for c in self.conc_cols:
-                    p_concs.append(outer_polconcs_p['intconc'] * outer_polconcs_p['emis_tpy'] \
-                                   * outer_polconcs_p['part_frac'] * self.cf)
-                    v_concs.append(outer_polconcs_v['intconc'] * outer_polconcs_v['emis_tpy'] \
-                                   * ( 1 - outer_polconcs_v['part_frac']) * self.cf)
-                outer_polconcs_p['conc'] = p_concs
-                outer_polconcs_v['conc'] = v_concs
-                outer_polconcs = outer_polconcs_p.append(outer_polconcs_v, ignore_index=True)
-
-            outerconc_df = outer_polconcs[col_list]
-
-        else:
-
-            # Multiple output files
-
-            # compute the number of CSV files (batches) to output and number of rows from outerconcs to use in
-            # each batch.
-            num_batches = int(round(num_rows_output/14000000))
-            num_outerconc_rows_per_batch = int(round(14000000 / num_rows_hapemis)) * num_srcids
-
-            for k in range(num_batches):
-                start = k * num_outerconc_rows_per_batch
-                end = start + num_outerconc_rows_per_batch
-                outerconcs_batch = outerconcs[start:end]
-                outer_polconcs = pd.merge(outerconcs_batch, self.model.runstream_hapemis[[source_id,pollutant,emis_tpy]],
-                                          on=[source_id])
-
-                if 'C' in outer_polconcs['emis_type'].values:
                     d_concs = []
+                    records_to_avg = int(96 / len(self.conc_cols))
+                    recs = innerplot_df.loc[(innerplot_df[utme] == row1[1]) & (innerplot_df[utmn] == row1[2])]
+
+                    column = 0
                     for c in self.conc_cols:
-                        d_concs.append(outer_polconcs['intconc'] * outer_polconcs['emis_tpy'] * self.cf)
-                    outer_polconcs['conc'] = d_concs
+                        offset = int(column * records_to_avg)
+                        values = recs[conc].values[offset:offset+records_to_avg]
+                        average = sum(values) / records_to_avg
 
-                else:
-                    outer_polconcs_p = outer_polconcs[outer_polconcs['emis_type']=='P']
-                    outer_polconcs_v = outer_polconcs[outer_polconcs['emis_type']=='V']
+                        d_concs.append(average * row2.emis_tpy * self.cf) # R_s12*(int(cs)+1-cs) + R_s34*(cs-int(cs)
+                        column+= 1
 
-                    p_concs = []
-                    v_concs = []
-                    for c in self.conc_cols:
-                        p_concs.append(outer_polconcs_p['intconc'] * outer_polconcs_p['emis_tpy'] \
-                                       * outer_polconcs_p['part_frac'] * self.cf)
-                        v_concs.append(outer_polconcs_v['intconc'] * outer_polconcs_v['emis_tpy'] \
-                                       * ( 1 - outer_polconcs_v['part_frac']) * self.cf)
-                    outer_polconcs_p['conc'] = p_concs
-                    outer_polconcs_v['conc'] = v_concs
-                    outer_polconcs = outer_polconcs_p.append(outer_polconcs_v, ignore_index=True)
 
-                outerconc_df = outer_polconcs[col_list]
+        datalist = [d_fips, d_block, d_population, d_lat, d_lon, d_pollutant, d_emistype, d_overlap, d_modeled]
+        datalist.extend(d_concs)
 
-            # Last batch
-            outerconcs_batch = outerconcs[end:]
-            outer_polconcs = pd.merge(outerconcs_batch, self.model.runstream_hapemis[[source_id,pollutant,emis_tpy]],
-                                      on=[source_id])
-
-            if 'C' in outer_polconcs['emis_type'].values:
-                d_concs = []
-                for c in self.conc_cols:
-                    d_concs.append(outer_polconcs['intconc'] * outer_polconcs['emis_tpy'] * self.cf)
-                outer_polconcs['conc'] = d_concs
-
-            else:
-                outer_polconcs_p = outer_polconcs[outer_polconcs['emis_type']=='P']
-                outer_polconcs_v = outer_polconcs[outer_polconcs['emis_type']=='V']
-
-                p_concs = []
-                v_concs = []
-                for c in self.conc_cols:
-                    p_concs.append(outer_polconcs_p['intconc'] * outer_polconcs_p['emis_tpy'] \
-                                   * outer_polconcs_p['part_frac'] * self.cf)
-                    v_concs.append(outer_polconcs_v['intconc'] * outer_polconcs_v['emis_tpy'] \
-                                   * ( 1 - outer_polconcs_v['part_frac']) * self.cf)
-                outer_polconcs_p['conc'] = p_concs
-                outer_polconcs_v['conc'] = v_concs
-                outer_polconcs = outer_polconcs_p.append(outer_polconcs_v, ignore_index=True)
-
-            outerconc_df = outer_polconcs[col_list]
+        dlist.append(datalist)
+        outerconc_df = pd.DataFrame(dlist, columns=self.headers)
 
         self.dataframe = innerconc_df.append(outerconc_df)
         self.data = self.dataframe.values
