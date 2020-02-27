@@ -562,7 +562,10 @@ class Page3(Page):
                      'lat':np.float64, 'lon':np.float64}
 
         filename = filedialog.askopenfilename(filetypes = [("Excel or csv files","*.xls; *xlsx; *.csv*")])
-        df = pd.read_csv(filename, dtype=datatypes)
+        if filename.split(".")[-1].lower() in ["xlsx", "xls"]:
+            df = pd.read_excel(filename)
+        else:
+            df = pd.read_csv(filename, dtype=datatypes)
         curr_windo=tk.Toplevel()
         curr_windo.title(filename)
         curr_windo.geometry('900x600+40+20')
