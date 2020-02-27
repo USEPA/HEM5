@@ -26,7 +26,7 @@ class CensusUpdater():
         for state in self.stateCodeMap.values():
 
             Logger.logMessage("Opening " + state + " for migration...")
-            pathToFile = r'C:\Users\Steve Fudge\OneDrive - SC&A, Inc\Projects\HEM4\census\Blks_' + state + '.json'
+            pathToFile = r'census\Blks_' + state + '.json'
 
             with open(pathToFile, "r") as read_file:
                 data = json.load(read_file)
