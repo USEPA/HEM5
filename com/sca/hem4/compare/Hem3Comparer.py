@@ -24,8 +24,8 @@ from com.sca.hem4.writer.excel.hem3.Hem3MaximumIndividualRisks import Hem3Maximu
 from com.sca.hem4.writer.excel.hem3.Hem3RiskBreakdown import Hem3RiskBreakdown
 
 facid = "fac1-nc"
-hem3Dirname = "C:\\Multi_HEM3\\hem3_output_all_sources_qa1" + "\\" + facid
-hem4Dirname = "C:\\HEM4_v10\\HEM4v10\\output\\All_Sources_QA1" + "\\" + facid
+hem3Dirname = "C:\\Temp\\hem3files" + "\\" + facid
+hem4Dirname = "C:\\Temp\\hem4files" + "\\" + facid
 acute = 'Y'
 
 class Hem3Comparer():
@@ -51,7 +51,7 @@ class Hem3Comparer():
 
         #---------- All inner receptors -----------#
         hem3File = facid + "_all_inner_receptors.csv"
-        hem4File = facid + "_inner_receptors.csv"
+        hem4File = facid + "_all_inner_receptors.csv"
         diffFile = "diff_all_inner_receptors.csv"
         joinColumns = [fips, block, source_id, pollutant]
         diffColumns = [conc]
@@ -161,7 +161,7 @@ class Hem3Comparer():
         summary_diff.appendToFile(diff_df)
 
         #---------- Acute Chemical Max -----------#
-        hem3File = facid + "_acute_chem_max.xlsx"
+        hem3File = facid + "_acute_chem_unpop.xlsx"
         hem4File = facid + "_acute_chem_max.xlsx"
         diffFile = "diff_acute_chem_max.xlsx"
         joinColumns = [pollutant]
