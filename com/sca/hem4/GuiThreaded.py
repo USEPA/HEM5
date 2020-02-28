@@ -697,29 +697,29 @@ class Hem4(tk.Frame):
             
                 #default to both if values in 
             print('This is what is in deposition and depletion', type(self.model.faclist.dataframe['phase'].tolist()[0]))
-            for i, r in self.model.faclist.dataframe.iterrows():
-                
-                if r['phase'] == None or r['phase'] == np.nan or r['phase']== 'nan':
-                    
-                    if ('DO' or 'WO' or 'WD' or 'NO' in r['vdep'].upper() and 
-                        'DO' or 'WO' or 'WD' or 'NO' in r['pdep'].upper()):
-                        
-                        self.model.faclist.dataframe.at[i, 'phase'] = 'B'
-                        
-                    elif ('DO' or 'WO' or 'WD' or 'NO' in r['vdep'].upper() and 
-                          'DO' or 'WO' or 'WD' in r['pdepl'].upper()):
-                        
-                        self.model.faclist.dataframe.at[i, 'phase'] = 'B'
-                        
-                    elif ('DO' or 'WO' or 'WD' or 'NO' in r['pdep'].upper() and 
-                          'DO' or 'WO' or 'WD' in r['vdepl'].upper()):
-                        
-                        self.model.faclist.dataframe.at[i, 'phase'] = 'B'
-                        
-                    elif ('DO' or 'WO' or 'WD' or 'NO' in r['vdepl'].upper() and 
-                          'DO' or 'WO' or 'WD' in r['pdepl'].upper()):
-                        
-                        self.model.faclist.dataframe.at[i, 'phase'] = 'B'
+#            for i, r in self.model.faclist.dataframe.iterrows():
+#                
+#                if r['phase'] == None or r['phase'] == np.nan or r['phase']== 'nan':
+#                    
+#                    if ('DO' or 'WO' or 'WD' or 'NO' in r['vdep'].upper() and 
+#                        'DO' or 'WO' or 'WD' or 'NO' in r['pdep'].upper()):
+#                        
+#                        self.model.faclist.dataframe.at[i, 'phase'] = 'B'
+#                        
+#                    elif ('DO' or 'WO' or 'WD' or 'NO' in r['vdep'].upper() and 
+#                          'DO' or 'WO' or 'WD' in r['pdepl'].upper()):
+#                        
+#                        self.model.faclist.dataframe.at[i, 'phase'] = 'B'
+#                        
+#                    elif ('DO' or 'WO' or 'WD' or 'NO' in r['pdep'].upper() and 
+#                          'DO' or 'WO' or 'WD' in r['vdepl'].upper()):
+#                        
+#                        self.model.faclist.dataframe.at[i, 'phase'] = 'B'
+#                        
+#                    elif ('DO' or 'WO' or 'WD' or 'NO' in r['vdepl'].upper() and 
+#                          'DO' or 'WO' or 'WD' in r['pdepl'].upper()):
+#                        
+#                        self.model.faclist.dataframe.at[i, 'phase'] = 'B'
             
             
             deposition_depletion = check_dep(self.model.faclist.dataframe)
