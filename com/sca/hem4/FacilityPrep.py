@@ -310,7 +310,7 @@ class FacilityPrep():
             #gasparams_df = None
 
         #%%---------- Get Census Block Receptors --------------------------------------
-        
+               
         # Keep necessary source location columns
         sourcelocs = emislocs[[fac_id,source_id,source_type,lat,lon,utme,utmn,utmzone
             ,lengthx,lengthy,angle,"utme_x2","utmn_y2"]].copy()
@@ -571,6 +571,7 @@ class FacilityPrep():
 
         # set rec_type of polar receptors
         polar_df[rec_type] = 'PG'
+        
         
         #%%----- Add sector and ring to inner and outer receptors ----------
 

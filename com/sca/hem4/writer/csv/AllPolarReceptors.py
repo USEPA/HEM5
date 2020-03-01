@@ -62,7 +62,7 @@ class AllPolarReceptors(CsvWriter, InputFile):
             longitude
             overlap (Y/N)
         """
-
+        
         # Units conversion factor
         self.cf = 2000*0.4536/3600/8760
                 
@@ -141,13 +141,13 @@ class AllPolarReceptors(CsvWriter, InputFile):
 
         dlist = []
         col_list = self.getColumns()
-
+            
         # process polar concs one source_id at a time
         for x in srcids:
             polarplot_onesrcid = polarplot_df[self.plotcols[self.rtype]].loc[polarplot_df[source_id] == x]
             hapemis_onesrcid = self.model.runstream_hapemis[[source_id,pollutant,emis_tpy,part_frac]] \
                                .loc[self.model.runstream_hapemis[source_id] == x]
-            
+                        
             for row1 in polarplot_onesrcid.itertuples():
                 for row2 in hapemis_onesrcid.itertuples():
                                         
@@ -201,6 +201,8 @@ class AllPolarReceptors(CsvWriter, InputFile):
                         
 
                     dlist.append(dict(zip(col_list, datalist)))
+                        
+
 
         all_polar_receptors_df = pd.DataFrame(dlist, columns=col_list)
 
