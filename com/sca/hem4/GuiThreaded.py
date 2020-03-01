@@ -1498,47 +1498,38 @@ class Hem4(tk.Frame):
         
     def add_variation(self):
         """
-        Function for creating temporal variation input space
+        Function for creating emission variation input space
         """
             
-        if hasattr(self.model.emisloc, 'dataframe'):
-            #create row for emissions variation
+        #create row for emissions variation
 #                self.s5 = tk.Frame(self.main, width=250, height=100, bg="palegreen3", pady=5, 
 #                                    padx=5)
 #                self.s5.grid(row=4, column=0, columnspan=2, sticky="nsew")
-            
-            #emissions variation label
-            self.emisvar_label = tk.Label(self.s5, font=TEXT_FONT, bg="palegreen3", 
-                                 text="Please select an Emissions Variation"+
-                                 " file:")
-            self.emisvar_label.grid(row=6, sticky="W")
         
-            #emissions variation upload button
-            self.emisvar_on = tk.Button(self.s5, font=TEXT_FONT, bg='lightgrey', relief='solid', borderwidth=2,
-                                   command = lambda: self.uploadVariation())
-            self.emisvar_on["text"] = "Browse"
-            self.emisvar_on.grid(row=7, column=0, sticky="W")
-            #self.emisvar_on.bind('<Enter>', 
-                           #lambda e:self.browse("instructions/urep_browse.txt"))
-            
-            #emissions variation text entry
-            self.emisvar_list = tk.StringVar(self.s5)
-            self.emisvar_list_man = ttk.Entry(self.s5)
-            self.emisvar_list_man["width"] = 100
-            self.emisvar_list_man["textvariable"]= self.emisvar_list
-            self.emisvar_list_man.grid(row=7, column=0, sticky='E', padx=85)
-            #event handler for instructions (Button 1 is the left mouse click)
-            #self.emisvar_list_man.bind('<Button-1>', 
-                                   #lambda e:self.manual("instructions/urep_man.txt"))
+        #emissions variation label
+        self.emisvar_label = tk.Label(self.s5, font=TEXT_FONT, bg="palegreen3", 
+                             text="Please select an Emissions Variation"+
+                             " file:")
+        self.emisvar_label.grid(row=6, sticky="W")
+    
+        #emissions variation upload button
+        self.emisvar_on = tk.Button(self.s5, font=TEXT_FONT, bg='lightgrey', relief='solid', borderwidth=2,
+                               command = lambda: self.uploadVariation())
+        self.emisvar_on["text"] = "Browse"
+        self.emisvar_on.grid(row=7, column=0, sticky="W")
+        #self.emisvar_on.bind('<Enter>', 
+                       #lambda e:self.browse("instructions/urep_browse.txt"))
         
-        else:
-             messagebox.showinfo("Emissions Location File Missing",
-            "Please upload an Emissions Location file before selecting"+
-            " a temporal emissions variation file.")
-             
-             #uncheck the box
-             self.check_emisvar.set(0)
-            
+        #emissions variation text entry
+        self.emisvar_list = tk.StringVar(self.s5)
+        self.emisvar_list_man = ttk.Entry(self.s5)
+        self.emisvar_list_man["width"] = 100
+        self.emisvar_list_man["textvariable"]= self.emisvar_list
+        self.emisvar_list_man.grid(row=7, column=0, sticky='E', padx=85)
+        #event handler for instructions (Button 1 is the left mouse click)
+        #self.emisvar_list_man.bind('<Button-1>', 
+        #lambda e:self.manual("instructions/urep_man.txt"))
+                    
 
 
     def add_temporal(self):

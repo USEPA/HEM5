@@ -646,11 +646,11 @@ class Runstream():
 
         for i in np.arange(len(recx)):
             if self.eleva == "Y":
-                redec = ("RE DISCCART  " + str(recx[i]) + " " + str(recy[i]) + 
+                redec = ("RE DISCCART  " + str("{:.0f}".format(recx[i])) + " " + str("{:.0f}".format(recy[i])) + 
                          " " + str(normal_round(rece[i])) + " " + 
                          str(normal_round(rech[i])) + "\n")
             else:
-                redec = "RE DISCCART  " + str(recx[i]) + " " + str(recy[i]) + "\n"
+                redec = "RE DISCCART  " + str("{:.0f}".format(recx[i])) + " " + str("{:.0f}".format(recy[i])) + "\n"
             self.inp_f.write(redec)
 
             

@@ -147,8 +147,8 @@ class UTM:
         # see https://pyproj4.github.io/pyproj/stable/advanced_examples.html#optimize-transformations
         utme, utmn = transformer.transform(lon, lat)
 
-        utme = int(utme)
-        utmn = int(utmn)
+        utme = round(utme)
+        utmn = round(utmn)
         
         return utmn, utme, zone, hemi, epsg
         
@@ -171,7 +171,7 @@ class UTM:
 
             transformer = UTM.getTransformer(realepsg, epsgUsed)
             utme, utmn = transformer.transform(realE, realN)
-            return int(utmn), int(utme)
+            return round(utmn), round(utme)
   
     @staticmethod
     def center(sourcelocs, facutmznum, fachemi):
@@ -266,14 +266,14 @@ class UTM:
                         ymax2 = unique_verts[k][1]
                                     
             # Calculate the center of the facility in utm coordinates
-            cenx = (xmax1 + xmax2) / 2
-            ceny = (ymax1 + ymax2) / 2
+            cenx = round((xmax1 + xmax2) / 2)
+            ceny = round((ymax1 + ymax2) / 2)
             
         else: #single source coordinate
     
             # Calculate the center of the facility in utm coordinates
-            cenx = max_x
-            ceny = max_y
+            cenx = round(max_x)
+            ceny = round(max_y)
 
 
         # Compute the lat/lon of the center
