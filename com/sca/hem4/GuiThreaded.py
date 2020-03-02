@@ -250,7 +250,7 @@ class Hem4(tk.Frame):
                 self.bldgdw_label.destroy()
                 self.s9.destroy()
                 
-            self.nexttab.destroy()
+            
             self.tabControl.hide(self.optionalinputtab)
             self.hiddenoptab = True
             
