@@ -12,6 +12,7 @@ from com.sca.hem4.writer.csv.AllPolarReceptors import *
 from com.sca.hem4.writer.csv.BlockSummaryChronicNonCensus import BlockSummaryChronicNonCensus
 from com.sca.hem4.writer.csv.RingSummaryChronic import RingSummaryChronic
 from com.sca.hem4.writer.csv.BlockSummaryChronic import *
+from com.sca.hem4.writer.csv.Temporal import Temporal
 from com.sca.hem4.writer.excel.AcuteChemicalMax import AcuteChemicalMax
 from com.sca.hem4.writer.excel.AcuteChemicalMaxNonCensus import AcuteChemicalMaxNonCensus
 from com.sca.hem4.writer.excel.AcuteChemicalPopulatedNonCensus import AcuteChemicalPopulatedNonCensus
@@ -55,7 +56,8 @@ class Process_outputs():
         self.abort = abort
 
         self.acute_yn = self.runstream.facoptn_df.iloc[0][acute]
-        
+        self.temporal = True # needs to come from model opts
+
         # Units conversion factor
         self.cf = 2000*0.4536/3600/8760
 
@@ -126,6 +128,13 @@ class Process_outputs():
         if self.abort.is_set():
             Logger.logMessage("Terminating output processing...")
             return
+
+
+        #----------- create temporal output file if necessary -----------------
+        if self.temporal:
+            temporal = Temporal(self.outdir, self.facid, self.model, self.plot_df)
+            temporal.write()
+            Logger.logMessage("Completed Temporal output")
 
 
         #----------- create Ring_Summary_Chronic data -----------------
