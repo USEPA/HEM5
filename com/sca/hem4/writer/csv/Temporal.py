@@ -22,14 +22,15 @@ class Temporal(CsvWriter):
         self.fac_dir = targetDir
         self.filename = os.path.join(targetDir, facilityId + "_temporal.csv")
 
-        # initialize cache for inner census block data
+        # initialize cache for outer/outer census block data
         self.innblkCache = {}
+        self.outblkCache = {}
 
         self.rtype = model.model_optns['runtype']
         self.resolution = 12 # should come from model.facops or similar...
         self.seasonal = 'N' # again, needs to come from model opts
 
-        self.temporal_inner_df = None
+        self.temporal_outer_df = None
         self.temporal_outer_df = None
 
     def getHeader(self):
@@ -68,8 +69,13 @@ class Temporal(CsvWriter):
                          1: [utme,utmn,source_id,conc,ddp,wdp, emis_type],
                          2: [utme,utmn,source_id,conc,ddp, emis_type],
                          3: [utme,utmn,source_id,conc,wdp, emis_type]}
-        
-        # Open up the temporal plot file and set up both inner and outer slices
+
+        self.plotoutercols = {0: [lat,lon,source_id,conc, emis_type],
+                         1: [lat,lon,source_id,conc,ddp,wdp, emis_type],
+                         2: [lat,lon,source_id,conc,ddp, emis_type],
+                         3: [lat,lon,source_id,conc,wdp, emis_type]}
+
+        # Open up the temporal plot file and set up both outer and outer slices
         pfile = open(self.fac_dir + '/seasonhr.plt', "r")
         self.readPlotfile(pfile)
 
@@ -82,7 +88,7 @@ class Temporal(CsvWriter):
         # copy the emission types from the regular plot_df
         self.temporal_inner_df = self.temporal_inner_df.merge(right=self.plot_df, on=[source_id, utme, utmn, elev, hill])
 
-        new_cols = [utme, utmn, elev, hill, source_id, conc, emis_type]
+        new_cols = [utme, utmn, source_id, conc, emis_type, seas, hour]
         innerplot_df = self.temporal_inner_df[new_cols].copy()
 
         # add the new concentration columns, based on user selections
@@ -159,34 +165,110 @@ class Temporal(CsvWriter):
             self.temporal_outer_df.sort_values(by=[source_id, utme, utmn, hour], inplace=True)
 
         # copy the emission types from the regular plot_df
-        self.temporal_outer_df = self.temporal_outer_df.merge(right=self.plot_df, on=[source_id, utme, utmn, elev, hill])
+        self.temporal_outer_df = self.temporal_outer_df.merge(right=self.plot_df, on=[source_id, utme, utmn, elev, hill],
+              how='left')
 
         polarplot_df = self.temporal_outer_df[new_cols].copy()
         
         # add the new concentration columns, based on user selections
-        polarplot_df = pd.concat([innerplot_df, pd.DataFrame(columns=self.conc_cols)])
+        polarplot_df = pd.concat([polarplot_df, pd.DataFrame(columns=self.conc_cols)])
         polarplot_df.reset_index()
-        
-        # create array of unique source_id's
-        srcids = polarplot_df[source_id].unique().tolist()        
+
         dlist = []
 
-        iterate over self.model.outerblks_df:
-            link blk to
+        # outer blocks
+        outblks = self.model.outerblks_df[[fips, idmarplot, lat, lon, elev, 'distance', 'angle', population, overlap,
+               's', 'ring_loc']].copy()
+        
+        # polar receptors
+        plrrecp = self.model.polargrid[['utme', 'utmn', 'sector', 'ring']].copy()
+
+        # Merge Seasonhr polar concs with polar receptors
+        polarconcs = polarplot_df.merge(right=plrrecp, how='outer', on=['utme', 'utmn'])
+
+        d_list = []
+        for index, row in outblks.iterrows():
+            d_fips = row[fips]
+            d_block = row[idmarplot][5:]
+            d_lat = row[lat]
+            d_lon = row[lon]
+            d_population = row[population]
+            d_overlap = row[overlap]
+
+            # Determine the 4 surrounding polar sector/ring combinations (s1,r1), (s1,r2), (s2,r1), and (s2,r2)
+            if int(row['s']) == self.model.numsectors:
+                s1 = self.model.numsectors
+                s2 = 1
+            else:
+                s1 = int(row['s'])
+                s2 = int(row['s']) + 1
+        
+            r1 = int(row['ring_loc'])
+            if r1 == self.model.numrings:
+                r1 = r1 - 1
+            r2 = int(row['ring_loc']) + 1
+            if r2 > self.model.numrings:
+                r2 = self.model.numrings
+        
+            # Retrieve the 4 surrounding concs from the polarconcs DF
+            conc_s1r1 = polarconcs.loc[(polarconcs['sector'] == s1) & (polarconcs['ring'] == r1)]
+            conc_s1r2 = polarconcs.loc[(polarconcs['sector'] == s1) & (polarconcs['ring'] == r2)]
+            conc_s2r1 = polarconcs.loc[(polarconcs['sector'] == s2) & (polarconcs['ring'] == r1)]
+            conc_s2r2 = polarconcs.loc[(polarconcs['sector'] == s2) & (polarconcs['ring'] == r2)]
+        
+            for i in range(0, len(conc_s1r1)):
+                d_emistype = conc_s1r1[emis_type].values[i]
+                d_seas = conc_s1r1[seas].values[i]
+                d_hour = conc_s1r1[hour].values[i]
+                d_sourceid = conc_s1r1[source_id].values[i]
+                
+                s1r1 = conc_s1r1[conc].values[i]
+                s1r2 = conc_s1r2[conc].values[i]
+                s2r1 = conc_s2r1[conc].values[i]
+                s2r2 = conc_s2r2[conc].values[i]
+                
+                # Interpolate
+                if s1r1 == 0 or s1r2 == 0:
+                    R_s12 = max(s1r1, s1r2)
+                else:
+                    Lnr_s12 = ((math.log(s1r1) * (int(row['ring_loc'])+1-row['ring_loc'])) +
+                               (math.log(s1r2) * (row['ring_loc']-int(row['ring_loc']))))
+                    R_s12 = math.exp(Lnr_s12)
+            
+                if s2r1 == 0 or s2r2 == 0:
+                    R_s34 = max(s2r1, s2r2)
+                else:
+                    Lnr_s34 = ((math.log(s2r1) * (int(row['ring_loc'])+1-row['ring_loc'])) +
+                               (math.log(s2r2) * (row['ring_loc']-int(row['ring_loc']))))
+                    R_s34 = math.exp(Lnr_s34)
+            
+                d_iconc = R_s12*(int(row['s'])+1-row['s']) + R_s34*(row['s']-int(row['s']))
+
+                columns = [fips, block, source_id, population, lat, lon, emis_type, overlap, conc, seas, hour]
+                datalist = [d_fips, d_block, d_sourceid, d_population, d_lat, d_lon, d_emistype, d_overlap, d_iconc, d_seas, d_hour]
+                dlist.append(dict(zip(columns, datalist)))
+
+        # Append to outer concs list
+        outerplot_df = pd.DataFrame(dlist, columns=columns)
+
+        # create array of unique source_id's
+        srcids = outerplot_df[source_id].unique().tolist()
+
+        # process outer concs one source_id at a time
         for x in srcids:
-            polarplot_onesrcid = polarplot_df[self.plotcols[self.rtype]].loc[polarplot_df[source_id] == x]
+            outerplot_onesrcid = outerplot_df[self.plotoutercols[self.rtype]].loc[outerplot_df[source_id] == x]
             hapemis_onesrcid = self.model.runstream_hapemis[[source_id,pollutant,emis_tpy,part_frac]] \
                 .loc[self.model.runstream_hapemis[source_id] == x]
-            for row1 in polarplot_onesrcid.itertuples():
+            for row1 in outerplot_onesrcid.itertuples():
                 for row2 in hapemis_onesrcid.itertuples():
-        
+
                     record = None
-                    key = (row1.utme, row1.utmn)
-                    if key in self.innblkCache:
-                        record = self.innblkCache.get(key)
+                    key = (row1.lat, row1.lon)
+                    if key in self.outblkCache:
+                        record = self.outblkCache.get(key)
                     else:
-                        record = self.model.outerblks_df.loc[(self.model.outerblks_df[utme] == row1[1]) & (self.model.outerblks_df[utmn] == row1[2])]
-                        self.innblkCache[key] = record
+                        record = self.model.outerblks_df.loc[(self.model.outerblks_df[lat] == row1[1]) & (self.model.outerblks_df[lon] == row1[2])]
+                        self.outblkCache[key] = record
 
                     d_fips = record[fips].values[0]
                     d_idmarplot = record[idmarplot].values[0]
@@ -199,67 +281,9 @@ class Temporal(CsvWriter):
                     d_emistype = row1.emis_type
                     d_modeled = 'I'
 
-                    # ring and sector of this outer block
-                    # ring_loc = row[19]
-                    # cs = row[17]
-                    #
-                    # # define the four surrounding polar sector/rings for this outer block
-                    # s = ((row[14] * self.model.numsectors)/360.0 % self.model.numsectors) + 1
-                    #
-                    # if int(s) == self.model.numsectors:
-                    #     s1 = self.model.numsectors
-                    #     s2 = 1
-                    # else:
-                    #     s1 = int(s)
-                    #     s2 = int(s) + 1
-                    #
-                    # r1 = int(row[19])
-                    # if r1 == self.model.numrings:
-                    #     r1 = r1 - 1
-                    #
-                    # r2 = int(row[19]) + 1
-                    # if r2 > self.model.numrings:
-                    #     r2 = self.model.numrings
-                    #
-                    # s1r1 = np.logical_and(self.model.all_polar_receptors_df[:, 6] == s1, self.model.all_polar_receptors_df[:,7] == r1 )
-                    # s1r2 = np.logical_and(self.model.all_polar_receptors_df[:, 6] == s1, self.model.all_polar_receptors_df[:,7] == r2 )
-                    # s2r1 = np.logical_and(self.model.all_polar_receptors_df[:, 6] == s2, self.model.all_polar_receptors_df[:,7] == r1 )
-                    # s2r2 = np.logical_and(self.model.all_polar_receptors_df[:, 6] == s2, self.model.all_polar_receptors_df[:,7] == r2 )
-                    #
-                    # co1 = self.model.all_polar_receptors_df[s1r1]
-                    # co2 = self.model.all_polar_receptors_df[s1r2]
-                    # co3 = self.model.all_polar_receptors_df[s2r1]
-                    # co4 = self.model.all_polar_receptors_df[s2r2]
-                    #
-                    # # full has polar conc records for the 4 surrounding polar receptors
-                    # full = np.concatenate((co1, co2, co3, co4), axis=0)
-
-
-                    # subset to specific source id and pollutant
-                    # sub = full[(full[:,0] == srcpolrow[0]) & (full[:,2] == srcpolrow[1])]
-                    #
-                    # # polar concs of 4 surrounding polar receptors
-                    # concentration = sub[:, 3]
-                    #
-                    # d_sourceid = srcpolrow[0]
-                    # d_pollutant = srcpolrow[1]
-                    #
-                    # # interpolate
-                    # if concentration[0] == 0 or concentration[1] == 0:
-                    #     R_s12 = max(concentration[0], concentration[1])
-                    # else:
-                    #     Lnr_s12 = (math.log(conc[0]) * (int(ring_loc)+1-ring_loc)) + (math.log(concentration[1]) * (ring_loc-int(ring_loc)))
-                    #     R_s12 = math.exp(Lnr_s12)
-                    #
-                    # if concentration[2] == 0 or concentration[3] == 0:
-                    #     R_s34 = max(concentration[2], concentration[3] )
-                    # else:
-                    #     Lnr_s34 = (math.log(concentration[2]) * (int(ring_loc)+1-ring_loc)) + (math.log(concentration[3] ) * (ring_loc-int(ring_loc)))
-                    #     R_s34 = math.exp(Lnr_s34)
-
                     d_concs = []
                     records_to_avg = int(96 / len(self.conc_cols))
-                    recs = innerplot_df.loc[(innerplot_df[utme] == row1[1]) & (innerplot_df[utmn] == row1[2])]
+                    recs = outerplot_df.loc[(outerplot_df[lat] == row1[1]) & (outerplot_df[lon] == row1[2])]
 
                     column = 0
                     for c in self.conc_cols:
@@ -267,15 +291,20 @@ class Temporal(CsvWriter):
                         values = recs[conc].values[offset:offset+records_to_avg]
                         average = sum(values) / records_to_avg
 
-                        d_concs.append(average * row2.emis_tpy * self.cf) # R_s12*(int(cs)+1-cs) + R_s34*(cs-int(cs)
+                        if d_emistype == 'C':
+                            d_concs.append(average * row2.emis_tpy * self.cf)
+                        elif d_emistype == 'P':
+                            d_concs.append(average * row2.emis_tpy * self.cf * row2.part_frac)
+                        else:
+                            d_concs.append(average * row2.emis_tpy * self.cf * (1 - row2.part_frac))
                         column+= 1
 
+                    datalist = [d_fips, d_block, d_population, d_lat, d_lon, d_pollutant, d_emistype, d_overlap, d_modeled]
+                    datalist.extend(d_concs)
 
-        datalist = [d_fips, d_block, d_population, d_lat, d_lon, d_pollutant, d_emistype, d_overlap, d_modeled]
-        datalist.extend(d_concs)
+                    dlist.append(dict(zip(col_list, datalist)))
 
-        dlist.append(datalist)
-        outerconc_df = pd.DataFrame(dlist, columns=self.headers)
+        outerconc_df = pd.DataFrame(dlist, columns=col_list)
 
         self.dataframe = innerconc_df.append(outerconc_df)
         self.data = self.dataframe.values
@@ -312,59 +341,6 @@ class Temporal(CsvWriter):
         plot_df.utme = plot_df.utme.round()
         plot_df.utmn = plot_df.utmn.round()
 
-        # Extract Chronic inner concs from temporal plotfile and round the utm coordinates
+        # Extract Chronic outer concs from temporal plotfile and round the utm coordinates
         self.temporal_inner_df = plot_df.query("net_id != 'POLGRID1'").copy()
         self.temporal_outer_df = plot_df.query("net_id == 'POLGRID1'").copy()
-
-    def interpolate(self, conc_s1r1, conc_s1r2, conc_s2r1, conc_s2r2, s, ring_loc):
-        # Interpolate 4 concentrations to the point defined by (s, ring_loc)
-
-        # initialize the output array
-        ic = np.zeros(len(conc_s1r1), dtype=float)
-
-        for i in np.arange(len(conc_s1r1)):
-
-            if conc_s1r1[i] == 0 or conc_s1r2[i] == 0:
-                R_s12 = max(conc_s1r1[i], conc_s1r2[i])
-            else:
-                Lnr_s12 = ((math.log(conc_s1r1[i]) * (int(ring_loc[i])+1-ring_loc[i])) +
-                           (math.log(conc_s1r2[i]) * (ring_loc[i]-int(ring_loc[i]))))
-                R_s12 = math.exp(Lnr_s12)
-
-            if conc_s2r1[i] == 0 or conc_s2r2[i] == 0:
-                R_s34 = max(conc_s2r1[i], conc_s2r2[i])
-            else:
-                Lnr_s34 = ((math.log(conc_s2r1[i]) * (int(ring_loc[i])+1-ring_loc[i])) +
-                           (math.log(conc_s2r2[i]) * (ring_loc[i]-int(ring_loc[i]))))
-                R_s34 = math.exp(Lnr_s34)
-
-            ic[i] = R_s12*(int(s[i])+1-s[i]) + R_s34*(s[i]-int(s[i]))
-
-        return ic
-
-
-    def compute_s1s2r1r2(self, ar_s, ar_r):
-        # Define the four surrounding polar sector/rings for each outer block
-
-        # Initialize output arrays
-        s1 = np.zeros(len(ar_s), dtype=int)
-        s2 = np.zeros(len(ar_s), dtype=int)
-        r1 = np.zeros(len(ar_s), dtype=int)
-        r2 = np.zeros(len(ar_s), dtype=int)
-
-        for i in np.arange(len(ar_s)):
-            if int(ar_s[i]) == self.model.numsectors:
-                s1[i] = self.model.numsectors
-                s2[i] = 1
-            else:
-                s1[i] = int(ar_s[i])
-                s2[i] = int(ar_s[i]) + 1
-
-            r1[i] = int(ar_r[i])
-            if r1[i] == self.model.numrings:
-                r1[i] = r1[i] - 1
-            r2[i] = int(ar_r[i]) + 1
-            if r2[i] > self.model.numrings:
-                r2[i] = self.model.numrings
-
-        return s1, s2, r1, r2

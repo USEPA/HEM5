@@ -458,7 +458,10 @@ class FacilityRunner():
                 converters={utme:np.float64,utmn:np.float64,result:np.float64,wdp:np.float64,elev:np.float64,hill:np.float64
                        ,flag:np.float64,avg_time:np.str,source_id:np.str,num_yrs:np.int64,net_id:np.str},
                 comment='*')
-        
+
+        plotf_df.utme = plotf_df.utme.round()
+        plotf_df.utmn = plotf_df.utmn.round()
+
         return plotf_df
     
 
