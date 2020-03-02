@@ -7,8 +7,9 @@ pygeoif==0.7
 xlsxwriter==1.1.2
 openpyxl==2.5.3
 ttkthemes==2.3.0
-Fiona==1.8.13
-GDAL==3.0.3
-Rtree==0.9.3
-Shapely==1.6.4.post2
-geopandas==0.6.2
+Fiona==1.8.11
+GDAL==3.0.2
+Rtree==0.8.3
+Shapely==1.6.4
+geopandas==0.4.1
+geopy==1.21.0
