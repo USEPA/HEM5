@@ -27,8 +27,8 @@ class Temporal(CsvWriter):
         self.outblkCache = {}
 
         self.rtype = model.model_optns['runtype']
-        self.resolution = 12 # should come from model.facops or similar...
-        self.seasonal = 'N' # again, needs to come from model opts
+        self.resolution = model.tempvar
+        self.seasonal = model.seasonvar
 
         self.temporal_outer_df = None
         self.temporal_outer_df = None

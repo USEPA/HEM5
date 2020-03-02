@@ -1668,11 +1668,11 @@ class Hem4(tk.Frame):
         
         #add temp_var to model ## add to checks 
         if self.check_tempvar.get() == 1:
-            self.model.tempvar = self.tkvar
-            
-            if self.check_dr.get() == 1:
-                self.model.seasonvar = True
-            
+            self.model.temporal = True
+            self.model.tempvar = int(self.tkvar.get())
+            self.model.seasonvar = True if self.check_dr.get() == 1 else False
+        else:
+            self.model.temporal = False
 
         #Check inputs
         check_inputs = InputChecker(self.model)

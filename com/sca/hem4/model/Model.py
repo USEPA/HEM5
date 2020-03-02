@@ -85,6 +85,7 @@ class Model():
         self.sourcelocs = None
         self.group_name = None
         self.rootoutput = None
+        self.temporal = None
         self.tempvar = None
         self.seasonvar = None
         
@@ -139,6 +140,7 @@ class Model():
         self.save = None
         self.group_name = None
         self.rootoutput = None
+        self.temporal = None
         self.tempvar = None
         self.seasonvar = None
 

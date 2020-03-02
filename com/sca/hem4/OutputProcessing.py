@@ -56,7 +56,7 @@ class Process_outputs():
         self.abort = abort
 
         self.acute_yn = self.runstream.facoptn_df.iloc[0][acute]
-        self.temporal = True # needs to come from model opts
+        self.temporal = self.model.temporal
 
         # Units conversion factor
         self.cf = 2000*0.4536/3600/8760
