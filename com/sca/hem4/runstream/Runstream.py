@@ -776,13 +776,15 @@ class Runstream():
                   " plotfile.plt 35 \n")
             self.inp_f.write(ou)
 
-        for k in np.arange(len(self.uniqsrcs)):
-
-            ou = ("OU SEASONHR " + self.uniqsrcs[k] +
-
-                  " seasonhr.plt 36 \n")
-
-            self.inp_f.write(ou)
+        # Output seasonhr plot file if temporal output is requested
+        if self.model.temporal == True:
+            for k in np.arange(len(self.uniqsrcs)):
+    
+                ou = ("OU SEASONHR " + self.uniqsrcs[k] +
+    
+                      " seasonhr.plt 36 \n")
+    
+                self.inp_f.write(ou)
 
         if acute == "Y":
             hivalstr = str(self.facoptn_df['hivalu'][0])
