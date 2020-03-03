@@ -38,7 +38,6 @@ class Temporal(CsvWriter, InputFile):
         self.seasonal = model.seasonvar
 
         self.temporal_outer_df = None
-        self.temporal_outer_df = None
 
     def getHeader(self):
         defaultHeader = ['Fips', 'Block', 'Population', 'Lat', 'Lon', 'Pollutant', 'Emis_type', 'Overlap', 'Modeled']
