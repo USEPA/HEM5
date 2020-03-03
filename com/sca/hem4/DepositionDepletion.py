@@ -4,10 +4,103 @@ Created on Mon Aug 13 15:21:42 2018
 
 @author: dlindsey
 """
-
+import numpy as np
 #for testing
 #facops = pd.read_excel("Template_Multi_Facility_List_Options_dep_deplt_test.xlsx")
 #facops.rename(columns={'FacilityID':'fac_id'}, inplace=True)
+
+
+def check_phase(r):
+    
+    print('facility', r['fac_id'])
+                
+    print('vdep:', r['vdep'])
+    
+    print('vdepl:', r['vdepl'])
+    
+    print('pdep:', r['pdep'])
+    
+    print ('pdepl:', r['pdepl'])
+    
+    if r['vdep'] is not np.nan:
+        if r['vdep'] is not 'NO':
+            vdep = r['vdep'].upper()
+    else:
+        vdep = ''
+    
+    
+    if r['vdepl'] is not np.nan:
+        if r['vdepl'] is not 'NO':
+            vdepl = r['vdepl']
+        
+    else:
+        vdepl = ''
+    
+    
+    if r['pdep'] is not np.nan:
+        if r['pdep'] is not 'NO':
+            pdep = r['pdep']
+        
+    else:
+        pdep = ''
+    
+    if r['pdepl'] is not np.nan:
+        if r['pdepl'] is not 'NO':
+            pdepl = r['pdepl']
+        
+    else:
+        pdepl = ''
+        
+        
+    poss = ['DO', 'WO', 'WD']
+    
+    
+    phaseResult = []
+    
+    
+    if vdep in poss or vdepl in poss:
+        if pdep in poss:
+            phase = 'B'
+            phaseResult.append(phase)
+            
+        elif pdepl in poss:
+            phase = 'B'
+            phaseResult.append(phase)      
+    
+    if vdep in poss or vdepl in poss: 
+    
+        if pdep not in poss:
+            phase = 'V'
+            phaseResult.append(phase)
+            
+        elif pdepl not in poss:
+            phase = 'V'
+            phaseResult.append(phase)
+        
+    if pdep in poss or pdepl in poss:
+    
+        if vdep not in poss:
+            phase = 'P'
+            phaseResult.append(phase)
+            
+        elif vdepl not in poss:
+            phase = 'P'
+            phaseResult.append(phase)
+    
+
+        
+    if len(phaseResult) > 1:
+        phaseResult = 'B'
+        
+    elif len(phaseResult) == 1:
+        phaseResult = phaseResult[0]
+        
+    else:
+        phaseResult = ''
+        
+     
+    print(phaseResult)
+    return(phaseResult)
 
 def check_dep(dataframe):
     """
@@ -23,6 +116,10 @@ def check_dep(dataframe):
     phase = dataframe[['fac_id', 'phase']].values
 
     
+#    phase = phaseList
+#    print('NEW PHASE LIST:', phase)
+
+    
     deposition = dataframe['dep'].tolist()
     vapor_depo = dataframe['vdep'].tolist()
     part_depo = dataframe['pdep'].tolist()
@@ -31,16 +128,16 @@ def check_dep(dataframe):
     vapor_depl = dataframe['vdepl'].tolist()
     part_depl = dataframe['pdepl'].tolist()
     
-    print("phase", phase)
-    
-    print("deposition:", deposition, type(deposition))
-    print("vapor deposition:", vapor_depo)
-    print("particle deposition:", part_depo)
-    
-    
-    print("depletion:", depletion)
-    print("vapor depletion", vapor_depl)
-    print("particle depletion", part_depl)
+#    print("phase", phase)
+#    
+#    print("deposition:", deposition, type(deposition))
+#    print("vapor deposition:", vapor_depo)
+#    print("particle deposition:", part_depo)
+#    
+#    
+#    print("depletion:", depletion)
+#    print("vapor depletion", vapor_depl)
+#    print("particle depletion", part_depl)
     
     #loop through each positionally
     i = 0
