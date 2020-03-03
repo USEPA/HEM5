@@ -283,7 +283,6 @@ class Hem4(tk.Frame):
 #                self.dep_veg.destroy()
                 self.s12.destroy()
             
-            self.nexttab.destroy()
             self.tabControl.hide(self.depinputtab)
             self.hiddendeptab = True
               
