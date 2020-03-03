@@ -153,7 +153,7 @@ class Hem3AllInnerReceptors(CsvWriter, InputFile):
 
     def createDataframe(self):
         # Type setting for CSV reading
-        if self.acute_yn:
+        if self.acute_yn == 'Y':
             self.numericColumns = [lat, lon, conc, aconc, elev, drydep, wetdep, population]
         else:
             self.numericColumns = [lat, lon, conc, elev, drydep, wetdep, population]

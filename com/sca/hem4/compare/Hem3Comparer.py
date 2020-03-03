@@ -7,11 +7,13 @@ from com.sca.hem4.writer.csv.AllOuterReceptors import *
 from com.sca.hem4.writer.csv.AllPolarReceptors import AllPolarReceptors, sector, ring
 from com.sca.hem4.writer.csv.BlockSummaryChronic import BlockSummaryChronic
 from com.sca.hem4.writer.csv.RingSummaryChronic import RingSummaryChronic
+from com.sca.hem4.writer.csv.Temporal import Temporal
 from com.sca.hem4.writer.csv.hem3.Hem3AllInnerReceptors import Hem3AllInnerReceptors
 from com.sca.hem4.writer.csv.hem3.Hem3AllOuterReceptors import Hem3AllOuterReceptors
 from com.sca.hem4.writer.csv.hem3.Hem3AllPolarReceptors import Hem3AllPolarReceptors
 from com.sca.hem4.writer.csv.hem3.Hem3BlockSummaryChronic import Hem3BlockSummaryChronic
 from com.sca.hem4.writer.csv.hem3.Hem3RingSummaryChronic import Hem3RingSummaryChronic
+from com.sca.hem4.writer.csv.hem3.Hem3Temporal import Hem3Temporal
 from com.sca.hem4.writer.excel.AcuteBreakdown import aconc_pop, aconc_all, AcuteBreakdown
 from com.sca.hem4.writer.excel.AcuteChemicalMax import AcuteChemicalMax
 from com.sca.hem4.writer.excel.AcuteChemicalPopulated import AcuteChemicalPopulated
@@ -24,24 +26,21 @@ from com.sca.hem4.writer.excel.hem3.Hem3MaximumIndividualRisks import Hem3Maximu
 from com.sca.hem4.writer.excel.hem3.Hem3RiskBreakdown import Hem3RiskBreakdown
 
 facid = "fac1-nc"
-hem3Dirname = "C:\\Temp\\hem3files" + "\\" + facid
-hem4Dirname = "C:\\Temp\\hem4files" + "\\" + facid
+hem3Dirname = "C:\\Hem-inputs\\comparison\\Hem3"
+hem4Dirname = "C:\\Hem-inputs\\comparison\\Hem4"
 acute = 'Y'
+temporal = 'Y'
+temporal_cols = 8
 
 class Hem3Comparer():
 
-    def __init__(self, hem3Dir, hem4Dir, acute):
-        self.hem3Dir = hem3Dir
-        self.hem4Dir = hem4Dir
-        self.acute = acute
-
-class Hem3Comparer():
-
-    def __init__(self, hem3Dir, hem4Dir, acute):
+    def __init__(self, hem3Dir, hem4Dir, acute, temporal, temporal_cols):
         self.hem3Dir = hem3Dir
         self.hem4Dir = hem4Dir
         self.diff_target = self.hem4Dir + "\diff"
         self.acute = acute
+        self.temporal = temporal
+        self.temporal_cols = temporal_cols
 
         if not (os.path.exists(self.diff_target) or os.path.isdir(self.diff_target)):
             print("Creating diff directory for results...")
@@ -50,44 +49,71 @@ class Hem3Comparer():
     def compare(self):
 
         #---------- All inner receptors -----------#
-        hem3File = facid + "_all_inner_receptors.csv"
-        hem4File = facid + "_all_inner_receptors.csv"
-        diffFile = "diff_all_inner_receptors.csv"
-        joinColumns = [fips, block, source_id, pollutant]
-        diffColumns = [conc]
-        if self.acute:
-            diffColumns.append(aconc)
+        # hem3File = facid + "_all_inner_receptors.csv"
+        # hem4File = facid + "_all_inner_receptors.csv"
+        # diffFile = "diff_all_inner_receptors.csv"
+        # joinColumns = [fips, block, source_id, pollutant]
+        # diffColumns = [conc]
+        # if self.acute:
+        #     diffColumns.append(aconc)
+        #
+        # #------------------------------------------#
+        # hem4allinner = AllInnerReceptors(targetDir=self.hem4Dir, facilityId=None, model=None, plot_df=None,
+        #      acuteyn=self.acute, filenameOverride=hem4File)
+        # hem3allinner = Hem3AllInnerReceptors(targetDir=self.hem3Dir, facilityId=None, model=None, plot_df=None,
+        #      acuteyn=self.acute, filenameOverride=hem3File)
+        # allinner_diff = AllInnerReceptors(targetDir=self.diff_target, facilityId=None, model=None, plot_df=None,
+        #       acuteyn=self.acute, filenameOverride=diffFile)
+        # allinner_diff.writeHeader()
+        # diff_df = self.calculateNumericDiffs(hem3allinner, hem4allinner, joinColumns, diffColumns)
+        # allinner_diff.appendToFile(diff_df)
+        #
+        # #---------- All polar receptors -----------#
+        # hem3File = facid + "_all_polar_receptors.csv"
+        # hem4File = facid + "_all_polar_receptors.csv"
+        # diffFile = "diff_all_polar_receptors.csv"
+        # joinColumns = [sector, ring, source_id, pollutant]
+        # diffColumns = [conc]
+        # if self.acute:
+        #     diffColumns.append(aconc)
+        #
+        # #------------------------------------------#
+        # hem4allpolar = AllPolarReceptors(targetDir=self.hem4Dir, facilityId=None, model=None, plot_df=None,
+        #      acuteyn=self.acute, filenameOverride=hem4File)
+        # hem3allpolar = Hem3AllPolarReceptors(targetDir=self.hem3Dir, facilityId=None, model=None, plot_df=None,
+        #      acuteyn=self.acute, filenameOverride=hem3File)
+        # allpolar_diff = AllPolarReceptors(targetDir=self.diff_target, facilityId=None, model=None, plot_df=None,
+        #     acuteyn=self.acute, filenameOverride=diffFile)
+        # allpolar_diff.writeHeader()
+        # diff_df = self.calculateNumericDiffs(hem3allpolar, hem4allpolar, joinColumns, diffColumns)
+        # allpolar_diff.appendToFile(diff_df)
 
-        #------------------------------------------#
-        hem4allinner = AllInnerReceptors(targetDir=self.hem4Dir, facilityId=None, model=None, plot_df=None,
-             acuteyn=self.acute, filenameOverride=hem4File)
-        hem3allinner = Hem3AllInnerReceptors(targetDir=self.hem3Dir, facilityId=None, model=None, plot_df=None,
-             acuteyn=self.acute, filenameOverride=hem3File)
-        allinner_diff = AllInnerReceptors(targetDir=self.diff_target, facilityId=None, model=None, plot_df=None,
-              acuteyn=self.acute, filenameOverride=diffFile)
-        allinner_diff.writeHeader()
-        diff_df = self.calculateNumericDiffs(hem3allinner, hem4allinner, joinColumns, diffColumns)
-        allinner_diff.appendToFile(diff_df)
+        if self.temporal:
+            #---------- Temporal output -----------#
+            hem3File = facid + "_temporal.csv"
+            hem4File = facid + "_temporal.csv"
+            diffFile = "diff_temporal.csv"
+            joinColumns = [fips, block, pollutant]
+            diffColumns = ['C_01', 'C_02', 'C_03', 'C_04', 'C_05', 'C_06', 'C_07', 'C_08']
 
-        #---------- All polar receptors -----------#
-        hem3File = facid + "_all_polar_receptors.csv"
-        hem4File = facid + "_all_polar_receptors.csv"
-        diffFile = "diff_all_polar_receptors.csv"
-        joinColumns = [sector, ring, source_id, pollutant]
-        diffColumns = [conc]
-        if self.acute:
-            diffColumns.append(aconc)
-
-        #------------------------------------------#
-        hem4allpolar = AllPolarReceptors(targetDir=self.hem4Dir, facilityId=None, model=None, plot_df=None,
-             acuteyn=self.acute, filenameOverride=hem4File)
-        hem3allpolar = Hem3AllPolarReceptors(targetDir=self.hem3Dir, facilityId=None, model=None, plot_df=None,
-             acuteyn=self.acute, filenameOverride=hem3File)
-        allpolar_diff = AllPolarReceptors(targetDir=self.diff_target, facilityId=None, model=None, plot_df=None,
-            acuteyn=self.acute, filenameOverride=diffFile)
-        allpolar_diff.writeHeader()
-        diff_df = self.calculateNumericDiffs(hem3allpolar, hem4allpolar, joinColumns, diffColumns)
-        allpolar_diff.appendToFile(diff_df)
+            model = Model()
+            model.tempvar = 12
+            model.model_optns = {}
+            model.model_optns['runtype'] = 0
+            model.seasonvar = True
+            #------------------------------------------#
+            hem4temporal = Temporal(targetDir=self.hem4Dir, facilityId=None,
+                model=model, plot_df=None,
+                                             filenameOverride=hem4File)
+            hem3temporal = Hem3Temporal(targetDir=self.hem3Dir, facilityId=None,
+                model=model, plot_df=None,
+                                             filenameOverride=hem3File)
+            temporal_diff = Temporal(targetDir=self.diff_target, facilityId=None,
+                 model=model, plot_df=None,
+                                              filenameOverride=diffFile)
+            temporal_diff.writeHeader()
+            diff_df = self.calculateNumericDiffs(hem3temporal, hem4temporal, joinColumns, diffColumns)
+            temporal_diff.appendToFile(diff_df)
 
         #---------- Maximum individual risks -----------#
         hem3File = facid + "_maximum_indiv_risks.xlsx"
@@ -278,5 +304,5 @@ class Hem3Comparer():
         rounded = round(x, sig-int(floor(log10(abs(x))))-1)
         return rounded
 
-comparer = Hem3Comparer(hem3Dirname, hem4Dirname, acute)
+comparer = Hem3Comparer(hem3Dirname, hem4Dirname, acute, temporal, temporal_cols)
 comparer.compare()

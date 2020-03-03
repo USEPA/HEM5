@@ -10,17 +10,24 @@ nhrs = 'nhrs'
 seas = 'seas'
 hour = 'hour'
 timeblk = 'timeblk'
-class Temporal(CsvWriter):
+class Temporal(CsvWriter, InputFile):
     """
     Provides the annual average pollutant concentrations at different time periods (depending on the temporal option
     chosen) for all pollutants and receptors.
     """
 
-    def __init__(self, targetDir, facilityId, model, plot_df):
-        CsvWriter.__init__(self, model, plot_df)
+    def __init__(self, targetDir=None, facilityId=None, model=None, plot_df=None,
+                 filenameOverride=None, createDataframe=False):
+        # Initialization for CSV reading/writing. If no file name override, use the
+        # default construction.
+        self.targetDir = targetDir
+        filename = facilityId + "_temporal.csv" if filenameOverride is None else filenameOverride
+        path = os.path.join(self.targetDir, filename)
 
-        self.fac_dir = targetDir
-        self.filename = os.path.join(targetDir, facilityId + "_temporal.csv")
+        CsvWriter.__init__(self, model, plot_df)
+        InputFile.__init__(self, path, createDataframe)
+
+        self.filename = path
 
         # initialize cache for outer/outer census block data
         self.innblkCache = {}
@@ -35,14 +42,14 @@ class Temporal(CsvWriter):
 
     def getHeader(self):
         defaultHeader = ['Fips', 'Block', 'Population', 'Lat', 'Lon', 'Pollutant', 'Emis_type', 'Overlap', 'Modeled']
-        return self.extendsCols(defaultHeader)
+        return self.extendCols(defaultHeader)
 
     def getColumns(self):
         defaulsCols = [fips, block, population, lat, lon, pollutant, emis_type, overlap, modeled]
-        return self.extendsCols(defaulsCols)
+        return self.extendCols(defaulsCols)
 
-    def extendsCols(self, default):
-        n_seas = 4 if self.seasonal == 'Y' else 1
+    def extendCols(self, default):
+        n_seas = 4 if self.seasonal else 1
         n_hrblk = round(24/self.resolution)
         concCols = n_seas * n_hrblk
 
@@ -64,7 +71,6 @@ class Temporal(CsvWriter):
 
         # Aermod runtype (with or without deposition) determines what columns are in the aermod plotfile.
         # Set accordingly in a dictionary.
-        self.rtype = self.model.model_optns['runtype']
         self.plotcols = {0: [utme,utmn,source_id,conc, emis_type],
                          1: [utme,utmn,source_id,conc,ddp,wdp, emis_type],
                          2: [utme,utmn,source_id,conc,ddp, emis_type],
@@ -76,7 +82,7 @@ class Temporal(CsvWriter):
                          3: [lat,lon,source_id,conc,wdp, emis_type]}
 
         # Open up the temporal plot file and set up both outer and outer slices
-        pfile = open(self.fac_dir + '/seasonhr.plt', "r")
+        pfile = open(self.targetDir + '/seasonhr.plt', "r")
         self.readPlotfile(pfile)
 
         # sort by receptor, season?, hour
@@ -344,3 +350,11 @@ class Temporal(CsvWriter):
         # Extract Chronic outer concs from temporal plotfile and round the utm coordinates
         self.temporal_inner_df = plot_df.query("net_id != 'POLGRID1'").copy()
         self.temporal_outer_df = plot_df.query("net_id == 'POLGRID1'").copy()
+
+    def createDataframe(self):
+        # Type setting for CSV reading
+        self.numericColumns = [lat, lon, population]
+        self.numericColumns = self.extendCols(self.numericColumns)
+        self.strColumns = [fips, block, emis_type, pollutant, overlap, modeled]
+        df = self.readFromPathCsv(self.getColumns())
+        return df.fillna("")
