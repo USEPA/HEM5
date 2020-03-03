@@ -76,7 +76,7 @@ class Runstream():
     # deposition & depletion --------------------------------------------------
         
         #logic for phase setting in model options
-        
+                
         if phase['phase'] == 'P':
             optdp = phase['settings'][0]
             titletwo = "CO TITLETWO  Particle-phase emissions \n"

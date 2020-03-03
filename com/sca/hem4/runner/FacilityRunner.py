@@ -25,8 +25,8 @@ class FacilityRunner():
         
         #put phase in model_optns
         fac = self.model.faclist.dataframe.loc[self.model.faclist.dataframe[fac_id] == self.facilityId]
-
-        if 'nan' in fac['phase'].tolist()[0]:
+        
+        if fac['phase'][0] == "":
             self.model.model_optns['phase'] = None
 
         else:
@@ -59,7 +59,7 @@ class FacilityRunner():
         except Exception as e:
                 
                 Logger.logMessage(str(e))
-        
+
 
         # phases dictionary
         if self.model.model_optns['phase'] != None:
@@ -144,6 +144,7 @@ class FacilityRunner():
                     # Now put the plotfile into a dataframe
                     plot_df = self.readplotf(pfile, self.model.model_optns['runtype'])
                 
+
                 # Set the emis_type column in plot_df
                 if phases['phase'] == None:
                     plot_df['emis_type'] = 'C'
