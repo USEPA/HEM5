@@ -22,11 +22,11 @@ class FacilityRunner():
         
     
     def setup(self):
-        
+                
         #put phase in model_optns
         fac = self.model.faclist.dataframe.loc[self.model.faclist.dataframe[fac_id] == self.facilityId]
         
-        if fac['phase'][0] == "":
+        if fac['phase'].iloc[0] == "":
             self.model.model_optns['phase'] = None
 
         else:
