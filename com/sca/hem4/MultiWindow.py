@@ -9,10 +9,12 @@ import tkinter as tk
 import webbrowser
 import tkinter.ttk as ttk
 from functools import partial
+
+from pandastable import Table, filedialog, np
+
 from com.sca.hem4.GuiThreaded import Hem4
 from com.sca.hem4.writer.excel.FacilityMaxRiskandHI import FacilityMaxRiskandHI
 from com.sca.hem4.log import Logger
-
 from concurrent.futures import ThreadPoolExecutor
 from threading import Event
 from tkinter import messagebox
