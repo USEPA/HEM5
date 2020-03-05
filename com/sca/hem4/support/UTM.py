@@ -255,7 +255,7 @@ class UTM:
                 
                 # find farthest apart
                 j = i + 1
-                for k in range(j, len(unique_verts)-1):
+                for k in range(j, len(unique_verts)):
                     dist = m.sqrt((unique_verts[i][0] - unique_verts[k][0])**2 + 
                                   (unique_verts[i][1] - unique_verts[k][1])**2)
                     if dist > max_dist:

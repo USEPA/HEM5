@@ -56,7 +56,12 @@ class Hem4(tk.Frame):
 #        self.s=ttk.Style()
 #        print(self.s.theme_names())
 #        self.s.theme_use('clam')
-                
+
+        # Set an environment variable needed for a HEM4 distribution
+        if getattr(sys, 'frozen', False):
+            os.environ['PROJ_LIB'] = os.path.join(os.path.split(__file__)[0], 'pyproj')
+        else :
+            pass                
         
         self.running = False
         self.aborted = False
@@ -283,7 +288,6 @@ class Hem4(tk.Frame):
 #                self.dep_veg.destroy()
                 self.s12.destroy()
             
-            self.nexttab.destroy()
             self.tabControl.hide(self.depinputtab)
             self.hiddendeptab = True
               
