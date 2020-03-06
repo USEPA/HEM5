@@ -103,7 +103,7 @@ class Model():
         self.risk_by_latlon = None
         self.max_indiv_risk_df = None
         self.facops = None
-        self.model.sourceExclusion = defaultdict(list)
+        self.sourceExclusion = defaultdict(list)
 
         # Initialize model options
         self.initializeAltRecOptions()
@@ -144,7 +144,7 @@ class Model():
         self.temporal = None
         self.tempvar = None
         self.seasonvar = None
-        self.model.sourceExclusion = defaultdict(list)
+        self.sourceExclusion = defaultdict(list)
 
         # Initialize model options
         self.initializeAltRecOptions()

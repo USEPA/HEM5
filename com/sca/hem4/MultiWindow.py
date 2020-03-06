@@ -10,7 +10,7 @@ import webbrowser
 import tkinter.ttk as ttk
 from functools import partial
 
-from pandastable import Table, filedialog, np
+#from pandastable import Table, filedialog, np
 
 from com.sca.hem4.GuiThreaded import Hem4
 from com.sca.hem4.writer.excel.FacilityMaxRiskandHI import FacilityMaxRiskandHI
@@ -28,7 +28,6 @@ import importlib
 
 from PIL import ImageTk
 import PIL.Image
-#from pandastable import *
 import pandas as pd
 
 maxRiskReportModule = importlib.import_module("com.sca.hem4.writer.excel.summary.MaxRisk")

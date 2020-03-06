@@ -200,49 +200,6 @@ class FacilityPrep():
         # Replace NaN with blank or 0
         hapemis = hapemis.fillna({emis_tpy:0, part_frac:0})
         hapemis = hapemis.reset_index(drop = True)
-        
-        #look through hapemis for facilities that are running deposition or depletion
-        hapDep = self.model.hapemis.dataframe[self.model.hapemis.dataframe.isin(self.model.depdeplt)]
-        
-        #now check phase in facilities list option file
-        facDep = self.model.faclist.dataframe[self.model.faclist.dataframe.isin(self.model.depdeplt)]
-        
-        for i, r in facDep.iterrows():
-            if r['phase'] == 'P' or r['phase'] == 'V':
-                
-                #look at pollutants
-                pols = hapDep[hapDep['fac_id'] == r['fac_id']]
-                
-                #get sourcelist
-                sourcesList = set(pols['source_id'].tolist())
-                print('Sources', sourcesList)
-                
-                for source in sourcesList:
-                    
-                    if r['phase'] == 'P':
-                        #get the sum of part frac
-                        polSum = sum(pols[pols['source_id'] == source]['part_frac'].tolist())
-                        print('P PolSum:', polSum)
-                        
-                        #if they are zero then its not particulate at all 
-                        if polSum == 0:
-                            
-                            #add it to the list of source exclusions
-                            self.model.sourceExclusion[r['fac_id']].append(source)
-                        
-                    elif r['phase'] == 'V':
-                        
-                        #get
-                        so = pols[pols['source_id'] == source]['part_frac'].tolist()
-                        print('V:', so)
-                        polSum = sum(so)
-                        allPart = len(so) * 100
-                        
-                        #if they are all particle (100%)
-                        if polSum == allPart:
-                            
-                            #add it to the list of source exclusions
-                            self.model.sourceExclusion[r['fac_id']].append(source)
                             
                         
 
