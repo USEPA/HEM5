@@ -103,6 +103,6 @@ class AcuteImpacts(ExcelWriter, InputFile, AltRecAwareSummary):
         else:
             self.strColumns = [fac_id, pollutant, fips, block]
 
-        self.skiprows = 3
+        self.skiprows = 0
         df = self.readFromPath(self.getColumns())
         return df.fillna("")
