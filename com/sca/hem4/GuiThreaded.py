@@ -29,7 +29,7 @@ from com.sca.hem4.SaveState import SaveState
 from tkinter.simpledialog import Dialog, Toplevel
 from ttkthemes import ThemedStyle
 
-
+from collections import defaultdict
 
 
 TITLE_FONT= ("Verdana", 14)
@@ -705,6 +705,7 @@ class Hem4(tk.Frame):
                 self.model.faclist.dataframe.at[i, 'phase'] = phase
             
             deposition_depletion = check_dep(self.model.faclist.dataframe)
+        
             
             #pull out facilities using depdeplt 
             self.model.depdeplt = [x[0] for x in deposition_depletion]
@@ -772,7 +773,10 @@ class Hem4(tk.Frame):
             # Update the UI
             self.hap_list.set(fullpath)
             [self.scr.insert(tk.INSERT, msg) for msg in self.model.hapemis.log]
-
+            
+                
+            
+    
     def uploadEmissionLocations(self):
         """
         Function for uploading Emissions Locations file. Also creates optional 
