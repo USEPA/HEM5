@@ -50,7 +50,8 @@ class FacilityPrep():
                                    pdepl:{"nan":"NO"}, vdep:{"nan":"NO"}, vdepl:{"nan":"NO"}, 
                                    all_rcpts:{"nan":"Y"}, user_rcpt:{"nan":"N"}, bldg_dw:{"nan":"N"}, 
                                    fastall:{"nan":"N"}, acute:{"nan":"N"}, fac_center:{"nan":""},
-                                   ring_distances:{"nan":""}, emis_var:{"nan":"N"}}, inplace=True)
+                                   'ring_distances':{"nan":""}, emis_var:{"nan":"N"}, annual:{"nan":"Y"},
+                                   period_start:{"nan":""}, period_end:{"nan":""}}, inplace=True)
 
         self.model.facops = self.model.facops.reset_index(drop = True)
 
@@ -118,7 +119,7 @@ class FacilityPrep():
 
         # Ring distances...comma separated list that contains at least 3 values, all must be > 0 and <= 50000, and
         # values must be increasing
-        distance_spec = self.model.facops[ring_distances][0]
+        distance_spec = self.model.facops['ring_distances'][0]
         spec_valid = True
         distances = distance_spec.split(',')
         if len(distances) < 3:
@@ -138,9 +139,9 @@ class FacilityPrep():
         if distance_spec != "" and not spec_valid:
             Logger.logMessage("Invalid ring distances specified: " + distance_spec)
             Logger.logMessage("Using default (calculated) distances instead.")
-            self.model.facops[ring_distances][0] = ""
+            self.model.facops['ring_distances'][0] = ""
             
-        self.ring_distances = self.model.facops[ring_distances][0]
+        self.ring_distances = self.model.facops['ring_distances'][0]
 
         # If there are user supplied ring distances then the last one must equal max distance 
         # for correct outer block interpolation
@@ -150,6 +151,55 @@ class FacilityPrep():
                 maxdist_str = "," + str(self.model.facops[max_dist][0])
                 self.ring_distances += maxdist_str
 
+        met_annual = self.model.facops['annual'][0]
+        spec_valid = True
+        self.period_start_components = ""
+        period_start_spec = self.model.facops[period_start][0]
+        if met_annual == "Y":
+            if period_start_spec != "":
+                Logger.logMessage("Period start specified but ignored because annual = 'Y'")
+            else:
+                Logger.logMessage("Using annual met option.")
+        else:
+            starts = period_start_spec.split(',')
+            if len(starts) < 3 or len(starts) > 4:
+                spec_valid = False
+            else:
+                for c in starts:
+                    self.period_start_components += c + " "
+        
+            if period_start_spec != "" and not spec_valid:
+                Logger.logMessage("Invalid period start specified: " + period_start_spec)
+                Logger.logMessage("Using annual instead.")
+                self.model.facops[annual][0] = 'Y'
+                self.model.facops[period_start][0] = ""
+            else:
+                Logger.logMessage("Using period start = " + self.period_start_components)
+                self.model.facops['period_start'] = self.period_start_components
+
+        spec_valid = True
+        self.period_end_components = ""
+        period_end_spec = self.model.facops[period_end][0]
+        if met_annual == "Y":
+            if period_end_spec != "":
+                Logger.logMessage("Period end specified but ignored because annual = 'Y'")
+        else:
+            ends = period_end_spec.split(',')
+            if len(ends) < 3 or len(ends) > 4:
+                spec_valid = False
+            else:
+                for c in ends:
+                    self.period_end_components += c + " "
+
+            if period_end_spec != "" and not spec_valid:
+                Logger.logMessage("Invalid period end specified: " + period_end_spec)
+                Logger.logMessage("Using annual instead.")
+                self.model.facops[annual][0] = 'Y'
+                self.model.facops[period_end][0] = ""
+            else:
+                Logger.logMessage("Using period end = " + self.period_end_components)
+                self.model.facops['period_end'] = self.period_end_components
+            
         #%%---------- Emission Locations --------------------------------------
 
         # Get emission location info for this facility
