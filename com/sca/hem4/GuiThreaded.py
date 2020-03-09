@@ -1700,12 +1700,13 @@ class Hem4(tk.Frame):
                         
                         
                         #get deposition exclusions
-                        print('Checking depletion....')
+                        print('Checking depletion.... against', self.model.depdeplt)
+                        
                         #look through hapemis for facilities that are running deposition or depletion
-                        hapDep = self.model.hapemis.dataframe[self.model.hapemis.dataframe.isin(self.model.depdeplt)]
+                        hapDep = self.model.hapemis.dataframe[self.model.hapemis.dataframe['fac_id'].isin(self.model.depdeplt)]
                         
                         #now check phase in facilities list option file
-                        facDep = self.model.faclist.dataframe[self.model.faclist.dataframe.isin(self.model.depdeplt)]
+                        facDep = self.model.faclist.dataframe[self.model.faclist.dataframe['fac_id'].isin(self.model.depdeplt)]
                         
                         
                         
@@ -1717,9 +1718,10 @@ class Hem4(tk.Frame):
                                 
                                 #get sourcelist
                                 sourcesList = set(pols['source_id'].tolist())
-                                print(r['fac_id'], r['phase'], 'Sources', sourcesList)
+                                #print(r['fac_id'], r['phase'], 'Sources:', sourcesList)
                                 
                                 for source in sourcesList:
+                                    print('Source', source)
                                     
                                     if r['phase'] == 'P':
                                         #get the sum of part frac
@@ -1730,7 +1732,7 @@ class Hem4(tk.Frame):
                                         if polSum == 0:
                                             
                                             #add it to the list of source exclusions
-                                            self.model.sourceExclusion[r['fac_id']].append(source)
+                                            self.model.sourceExclusion.append(source)
                                         
                                     elif r['phase'] == 'V':
                                         
@@ -1744,7 +1746,7 @@ class Hem4(tk.Frame):
                                         if polSum == allPart:
                                             
                                             #add it to the list of source exclusions
-                                            self.model.sourceExclusion[r['fac_id']].append(source)
+                                            self.model.sourceExclusion.append(source)
                             
                             else:
                                 self.ready = True
