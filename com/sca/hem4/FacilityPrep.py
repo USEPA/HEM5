@@ -589,17 +589,17 @@ class FacilityPrep():
              zip(*self.outerblks.apply(lambda row: self.calc_ring_sector(polar_dist,row[distance],row[angle],op_radial), axis=1))
 
         
-        # export innerblks to an Excel file in the Working directory
-        innerblks_path = "working/innerblk_receptors.xlsx"
-        innerblks_con = pd.ExcelWriter(innerblks_path)
-        self.innerblks.to_excel(innerblks_con,'Sheet1')
-        innerblks_con.save()
-
-        # export outerblks to an Excel file in the Working directory
-        outerblks_path = "working/outerblk_receptors.xlsx"
-        outerblks_con = pd.ExcelWriter(outerblks_path)
-        self.outerblks.to_excel(outerblks_con,'Sheet1')
-        outerblks_con.save()
+#        # export innerblks to an Excel file in the Working directory
+#        innerblks_path = "working/innerblk_receptors.xlsx"
+#        innerblks_con = pd.ExcelWriter(innerblks_path)
+#        self.innerblks.to_excel(innerblks_con,'Sheet1')
+#        innerblks_con.save()
+#
+#        # export outerblks to an Excel file in the Working directory
+#        outerblks_path = "working/outerblk_receptors.xlsx"
+#        outerblks_con = pd.ExcelWriter(outerblks_path)
+#        self.outerblks.to_excel(outerblks_con,'Sheet1')
+#        outerblks_con.save()
 
         #%%------ Elevations and hill height ---------
 
@@ -621,21 +621,21 @@ class FacilityPrep():
             emislocs[hill] = 0
 
         
-        # Assign the polar grid data frame to the model (exclude avgelev column)
-        self.model.polargrid = polar_df.drop('avgelev', axis=1)
+        # Assign the polar grid data frame to the model
+        self.model.polargrid = polar_df
 
 
-        # export polar_df to an Excel file in the Working directory
-        polardf_path = "working/" + facid + "_polar_receptors.xlsx"
-        polardf_con = pd.ExcelWriter(polardf_path)
-        polar_df.to_excel(polardf_con,'Sheet1')
-        polardf_con.save()
-
-        # export emislocs to an Excel file in the Working directory
-        emislocs_path = "working/" + facid + "_emislocs.xlsx"
-        emislocs_con = pd.ExcelWriter(emislocs_path)
-        emislocs.to_excel(emislocs_con,'Sheet1')
-        emislocs_con.save()
+#        # export polar_df to an Excel file in the Working directory
+#        polardf_path = "working/" + facid + "_polar_receptors.xlsx"
+#        polardf_con = pd.ExcelWriter(polardf_path)
+#        polar_df.to_excel(polardf_con,'Sheet1')
+#        polardf_con.save()
+#
+#        # export emislocs to an Excel file in the Working directory
+#        emislocs_path = "working/" + facid + "_emislocs.xlsx"
+#        emislocs_con = pd.ExcelWriter(emislocs_path)
+#        emislocs.to_excel(emislocs_con,'Sheet1')
+#        emislocs_con.save()
 
         
         #%% this is where runstream file will be compiled
