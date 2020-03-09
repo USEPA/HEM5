@@ -29,7 +29,7 @@ from com.sca.hem4.SaveState import SaveState
 from tkinter.simpledialog import Dialog, Toplevel
 from ttkthemes import ThemedStyle
 
-
+from collections import defaultdict
 
 
 TITLE_FONT= ("Verdana", 14)
@@ -710,10 +710,11 @@ class Hem4(tk.Frame):
                 self.model.faclist.dataframe.at[i, 'phase'] = phase
             
             deposition_depletion = check_dep(self.model.faclist.dataframe)
+        
             
             #pull out facilities using depdeplt 
             self.model.depdeplt = [x[0] for x in deposition_depletion]
-           # print(self.model.depdeplt)
+            print('DEPDEP:', self.model.depdeplt)
             
             #pull out conditional inputs
             conditional = set([y for x in deposition_depletion for y in x[1:]])
@@ -777,7 +778,10 @@ class Hem4(tk.Frame):
             # Update the UI
             self.hap_list.set(fullpath)
             [self.scr.insert(tk.INSERT, msg) for msg in self.model.hapemis.log]
-
+            
+                
+            
+    
     def uploadEmissionLocations(self):
         """
         Function for uploading Emissions Locations file. Also creates optional 
@@ -1693,9 +1697,59 @@ class Hem4(tk.Frame):
                     
                     else:
                         self.ready = True
-            
-            else:
-                self.ready = True
+                        
+                        
+                        #get deposition exclusions
+                        print('Checking depletion.... against', self.model.depdeplt)
+                        
+                        #look through hapemis for facilities that are running deposition or depletion
+                        hapDep = self.model.hapemis.dataframe[self.model.hapemis.dataframe['fac_id'].isin(self.model.depdeplt)]
+                        
+                        #now check phase in facilities list option file
+                        facDep = self.model.faclist.dataframe[self.model.faclist.dataframe['fac_id'].isin(self.model.depdeplt)]
+                        
+                        
+                        
+                        for i, r in facDep.iterrows():
+                            if r['phase'] in ['P', 'V', 'B']:
+                                
+                                #look at pollutants
+                                pols = hapDep[hapDep['fac_id'] == r['fac_id']]
+                                
+                                #get sourcelist
+                                sourcesList = set(pols['source_id'].tolist())
+                                #print(r['fac_id'], r['phase'], 'Sources:', sourcesList)
+                                
+                                for source in sourcesList:
+                                    print('Source', source)
+                                    
+                                    if r['phase'] == 'P':
+                                        #get the sum of part frac
+                                        polSum = sum(pols[pols['source_id'] == source]['part_frac'].tolist())
+                                        print('P PolSum:', polSum)
+                                        
+                                        #if they are zero then its not particulate at all 
+                                        if polSum == 0:
+                                            
+                                            #add it to the list of source exclusions
+                                            self.model.sourceExclusion.append(source)
+                                        
+                                    elif r['phase'] == 'V':
+                                        
+                                        #get
+                                        so = pols[pols['source_id'] == source]['part_frac'].tolist()
+                                        print('V:', so)
+                                        polSum = sum(so)
+                                        allPart = len(so) * 100
+                                        
+                                        #if they are all particle (100%)
+                                        if polSum == allPart:
+                                            
+                                            #add it to the list of source exclusions
+                                            self.model.sourceExclusion.append(source)
+                            
+                            else:
+                                self.ready = True
         
 
        #%%if the object is ready

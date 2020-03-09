@@ -200,6 +200,8 @@ class FacilityPrep():
         # Replace NaN with blank or 0
         hapemis = hapemis.fillna({emis_tpy:0, part_frac:0})
         hapemis = hapemis.reset_index(drop = True)
+                            
+                        
 
 
         #%%---------- Optional Buoyant Line Parameters -----------------------------------------
