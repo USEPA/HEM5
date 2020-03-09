@@ -465,6 +465,7 @@ class Runstream():
     
             elif srct[index] == 'I':
                 # subset polyver_df to one source_id
+                
                 poly_srid = list(self.polyver_df[self.polyver_df['source_id']==
                                                  srid[index]]['source_id'][:])
                 
@@ -494,14 +495,14 @@ class Runstream():
                 vert_start = "SO AREAVERT " + str(poly_srid[0]) + " "
                 vert_coor = ""
                 for i in np.arange(len(poly_srid)):
-                    if (i+1) % 6 == 0 or i == len(poly_srid):
+                    if (i+1) % 6 == 0 or i == len(poly_srid)-1:
                         vert_coor = (vert_coor + str(poly_utme[i]) + " " + 
                                      str(poly_utmn[i]) + " ")
                         
                         vert_line = vert_start + vert_coor + "\n"
                         self.inp_f.write(vert_line)
                         
-                        vert_coor = str(poly_utme[i]) + " " + str(poly_utmn[i]) + " "
+                        vert_coor = ""
                     else:
                         vert_coor = (vert_coor + str(poly_utme[i]) + " " + 
                                      str(poly_utmn[i]) + " ")
@@ -943,9 +944,6 @@ class Runstream():
         """
         Compiles and writes parameters for emissions variation
         """
-
-#        #Debug
-#        import pdb; pdb.set_trace() 
         
         #get row
         sourcevar =  self.emisvar_df[self.emisvar_df["source_id"] == srid]
