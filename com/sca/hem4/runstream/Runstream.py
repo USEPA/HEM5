@@ -36,6 +36,9 @@ class Runstream():
         self.emisvar_df = emisvar_df
         self.model = model
         self.urban = False
+
+        # Facility ID
+        self.facid = self.facoptn_df['fac_id'][0]                 
         
         #open file to write
         self.inp_f = open(os.path.join("aermod", "aermod.inp"), "w")
@@ -46,11 +49,7 @@ class Runstream():
         """
         Creates CO section of Aermod.inp file
         """
-           
-    # Facility ID -------------------------------------------------------------
-          
-        facid = self.facoptn_df['fac_id'][0]                 
-   
+              
     # Hours -------------------------------------------------------------------
                 
         self.hours = self.facoptn_df['hours'][0]                      
@@ -123,7 +122,7 @@ class Runstream():
     # CO Section ----------------------------------------------------------
         
         co1 = "CO STARTING  \n"
-        co2 = "CO TITLEONE  " + str(facid) + "\n"
+        co2 = "CO TITLEONE  " + str(self.facid) + "\n"
         co3 = titletwo   
         co4 = "CO MODELOPT  CONC  BETA " + optdp + optel + optfa + "\n"  
     
@@ -740,11 +739,15 @@ class Runstream():
         """
         Writes the ME section to aer.inp
         """
+        user_station = self.facoptn_df['met_station'].iloc[0]
+        if user_station == 'nan':
+            surf_file, upper_file, surfdata_str, uairdata_str, prof_base, distance, year = \
+                                    fm.find_met(cenlat, cenlon)
+        else:
+            surf_file, upper_file, surfdata_str, uairdata_str, prof_base, distance, year = \
+                                    fm.return_met(self.facid, cenlat, cenlon, user_station)
+            
         
-        surf_file, upper_file, surfdata_str, uairdata_str, prof_base, distance = fm.find_met(cenlat, cenlon)
-    
-        year = 2016 #How do we update this when we update the meteorology files?
-    
         jsta = 1
         
         if ( year % 4 ) == 0:
