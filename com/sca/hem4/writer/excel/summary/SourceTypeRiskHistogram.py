@@ -9,6 +9,8 @@ from com.sca.hem4.writer.excel.ExcelWriter import ExcelWriter
 from com.sca.hem4.FacilityPrep import *
 from com.sca.hem4.writer.excel.summary.AltRecAwareSummary import AltRecAwareSummary
 from collections import OrderedDict
+from com.sca.hem4.support.NormalRounding import normal_round
+
 
 class SourceTypeRiskHistogram(ExcelWriter, AltRecAwareSummary):
 
@@ -282,5 +284,5 @@ class SourceTypeRiskHistogram(ExcelWriter, AltRecAwareSummary):
         if math.isnan(x):
             return float('NaN')
 
-        rounded = round(x, sig-int(floor(log10(abs(x))))-1)
+        rounded = normal_round(x, sig-int(floor(log10(abs(x))))-1)
         return rounded
