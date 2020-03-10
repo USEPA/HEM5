@@ -339,12 +339,14 @@ class InputChecker():
                     psource = set(self.model.multipoly.dataframe[self.model.multipoly.dataframe[fac_id].isin(in_pol)][source_id])
                     esource = set(self.model.emisloc.dataframe[self.model.emisloc.dataframe[fac_id].isin(in_emis)][source_id])
             
-                    if psource != esource:
-                        logMsg6 = ("Source ids for Emissions Locations and Polygon Vertex file"+ 
-                                   " do not match, please upload corresponding files.")
-                        result['result'] =  logMsg6
-                        return result
+                    for p in psource:
+                        if p not in list(esource):
                             
+                            logMsg6 = ("Source ids for Emissions Locations and Polygon Vertex file"+ 
+                                       " do not match, please upload corresponding files.")
+                            result['result'] =  logMsg6
+                            return result
+                                
             
             elif option is 'downwash':
             
