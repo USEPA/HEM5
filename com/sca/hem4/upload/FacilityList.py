@@ -31,6 +31,9 @@ hivalu = 'hivalu';
 fac_center = 'fac_center';
 ring_distances = 'ring_distances';
 emis_var = 'emis_var';
+annual = 'annual'
+period_start = 'period_start'
+period_end = 'period_end'
 class FacilityList(InputFile):
     
     def __init__(self, path):
@@ -45,25 +48,19 @@ class FacilityList(InputFile):
         self.numericColumns = [max_dist,model_dist,radial,circles,overlap_dist,hours,multiplier,
                                ring1,urban_pop,hivalu]
         self.strColumns = [fac_id,met_station,rural_urban,acute,elev,dep,depl,phase,pdep,pdepl,
-                           vdep,vdepl,all_rcpts,user_rcpt,bldg_dw,fastall,fac_center,ring_distances,emis_var]
+                           vdep,vdepl,all_rcpts,user_rcpt,bldg_dw,fastall,fac_center,ring_distances,emis_var,
+                           annual,period_start,period_end]
 
         # FACILITIES LIST excel to dataframe
-        # HEADER----------------------
-        # FacilityID|met_station|rural_urban|urban_pop|max_dist|model_dist|radials|circles|overlap_dist|ring1|fac_center|
-        # ring_distances|acute|hours|
-        # multiplier|hivalu|dep|depl|phase|pdep|pdepl|vdep|vdepl|elev|All_rcpts|user_rcpt|bldg_dw|fastall
-
         faclist_df = self.readFromPath(
             (fac_id,met_station,rural_urban,urban_pop,max_dist,model_dist,radial,circles,overlap_dist, ring1,
              fac_center,ring_distances, acute,
              hours,multiplier,hivalu,dep,depl,phase,pdep,pdepl,vdep,vdepl,elev,all_rcpts,
-             user_rcpt,bldg_dw,fastall,emis_var)
+             user_rcpt,bldg_dw,fastall,emis_var,annual,period_start,period_end)
         )
-            
-        
-        #checkif urban_rural has a u and if it does if there is a urban pop 
-        #value greater than zero
-        
+
+        # check if urban_rural has a u and if it does if there is a urban pop
+        # value greater than zero
         urban = faclist_df[faclist_df[rural_urban] == 'U']
         missing_pop = [] 
         for index, row in urban.iterrows():
@@ -81,4 +78,4 @@ class FacilityList(InputFile):
         elif len(missing_pop) > 0:
              messagebox.showinfo("Missing Urban Population Values", "The urban" + 
                                  " urban population values for: " + 
-                                 ", ".join(missing_pop))          
+                                 ", ".join(missing_pop))
