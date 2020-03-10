@@ -138,6 +138,7 @@ class InputChecker():
                 
                 if 'I' in self.model.emisloc.dataframe[source_type].tolist():
                     result['dependencies'].append('polyvertex')
+                    print('POLYVERTEX FOUND')
                     
                 if 'B' in self.model.emisloc.dataframe[source_type].tolist():
                     result['dependencies'].append('bouyant')
@@ -324,7 +325,26 @@ class InputChecker():
                         result['result'] =  logMsg9b
                         result['reset'] = 'poly_vertex'
                         return result
-                
+                    
+                    #check source ids
+                    #make sure source ids match in hap emissions and emissions location
+                    #for facilities in faclist file
+                    
+                    pfac = set(self.model.multipoly.dataframe[fac_id])
+                    efac = set(self.model.emisloc.dataframe[fac_id])
+                    
+                    in_pol = list(fids.intersection(pfac)) 
+                    in_emis = list(fids.intersection(efac))
+                    
+                    psource = set(self.model.multipoly.dataframe[self.model.multipoly.dataframe[fac_id].isin(in_pol)][source_id])
+                    esource = set(self.model.emisloc.dataframe[self.model.emisloc.dataframe[fac_id].isin(in_emis)][source_id])
+            
+                    if psource != esource:
+                        logMsg6 = ("Source ids for Emissions Locations and Polygon Vertex file"+ 
+                                   " do not match, please upload corresponding files.")
+                        result['result'] =  logMsg6
+                        return result
+                            
             
             elif option is 'downwash':
             
