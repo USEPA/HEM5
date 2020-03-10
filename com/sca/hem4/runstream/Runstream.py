@@ -764,9 +764,9 @@ class Runstream():
         me_sud = "ME SURFDATA  " + surfdata_str +  "\n"
         me_uad = "ME UAIRDATA  " + uairdata_str + "\n"
         me_prb = "ME PROFBASE  " + str(prof_base) + "\n"
-
+        
         me_strtend = ""
-        if self.facoptn_df['annual'][0] != 'Y':
+        if self.facoptn_df['annual'][0] != 'Y' and self.facoptn_df['period_start'][0] != '' and self.facoptn_df['period_end'][0] != '':
             me_strtend = "ME STARTEND  " + self.facoptn_df['period_start'][0] + self.facoptn_df['period_end'][0] + "\n"
         mef = "ME FINISHED \n"
     
