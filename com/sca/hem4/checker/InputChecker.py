@@ -78,8 +78,9 @@ class InputChecker():
                 if 'Y' in self.model.faclist.dataframe[user_rcpt].tolist():
                     result['dependencies'].append(user_rcpt)
                     
-                    
-          
+                #building downwash  
+                if 'Y' in self.model.faclist.dataframe[bldg_dw].tolist():
+                    result['dependencies'].append('downwash')
               
                          
         try:
@@ -246,14 +247,14 @@ class InputChecker():
                         return result
                        
                 
-            elif option is 'bouyant_line':
+            elif option is 'bouyant':
                 
                 try:
                     
                     print("checked buoyant")
                     self.model.multibuoy.dataframe
                 
-                except AttributeError:
+                except:
                     logMsg8 = ("Buoyant Line parameters are specified in the " + 
                                " Facilities List Options file, please upload " + 
                                " buoyant line sources for " )
@@ -293,7 +294,7 @@ class InputChecker():
                     print("checked polyvertex")
                     self.model.multipoly.dataframe
                     
-                except AttributeError:
+                except:
                     
                     logMsg9 = ("Polyvertex parameters are specified in the " + 
                                " Facilities List Options file, please upload " + 
@@ -339,12 +340,14 @@ class InputChecker():
                     psource = set(self.model.multipoly.dataframe[self.model.multipoly.dataframe[fac_id].isin(in_pol)][source_id])
                     esource = set(self.model.emisloc.dataframe[self.model.emisloc.dataframe[fac_id].isin(in_emis)][source_id])
             
-                    if psource != esource:
-                        logMsg6 = ("Source ids for Emissions Locations and Polygon Vertex file"+ 
-                                   " do not match, please upload corresponding files.")
-                        result['result'] =  logMsg6
-                        return result
+                    for p in psource:
+                        if p not in list(esource):
                             
+                            logMsg6 = ("Source ids for Emissions Locations and Polygon Vertex file"+ 
+                                       " do not match, please upload corresponding files.")
+                            result['result'] =  logMsg6
+                            return result
+                                
             
             elif option is 'downwash':
             
@@ -352,7 +355,7 @@ class InputChecker():
                     print("checked downwash")
                     self.model.bldgdw.dataframe
                     
-                except AttributeError:
+                except:
                     
                     logMsg14 = ("Building downwash parameters are specified in "+
                                   "the Facilities List Options file, please " +
@@ -426,7 +429,7 @@ class InputChecker():
                     
                     self.model.landuse.dataframe
                     
-                except AttributeError:
+                except:
                     
                     logMsg11 = ("Vapor deposition or depletion parameters" +
                                 " are specified in the Facilities List Options" +
@@ -441,7 +444,7 @@ class InputChecker():
                         
                         self.model.seasons.dataframe
                         
-                    except AttributeError:
+                    except:
                         
                         logMsg12 = ("Vapor deposition or depletion parameters" +
                                 " are specified in the Facilities List Options" +
@@ -506,7 +509,7 @@ class InputChecker():
                     
                         self.model.partdep.dataframe
                     
-                    except AttributeError:
+                    except:
                     
                         logMsg15 = ("Particle deposition or depletion parameters" +
                                     " are specified in the Facilities List Options" +
@@ -523,7 +526,7 @@ class InputChecker():
                         
                             self.model.landuse.dataframe
                         
-                        except AttributeError:
+                        except:
                         
                             logMsg16 = ("Vapor deposition or depletion parameters" +
                                     " are specified in the Facilities List Options" +
@@ -540,7 +543,7 @@ class InputChecker():
                                 
                                 self.model.seasons.dataframe
                                 
-                            except AttributeError:
+                            except:
                                 
                                 logMsg17 = ("Vapor deposition or depletion parameters" +
                                         " are specified in the Facilities List Options" +
