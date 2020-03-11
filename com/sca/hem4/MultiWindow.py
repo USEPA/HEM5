@@ -313,6 +313,7 @@ class Page1(Page):
                 startpos = int(self.pos_num.get()) - 1
             numchars = int(self.chars_num.get())
             reportNameArgs['SourceTypeRiskHistogram'] = [startpos, numchars]          
+
         if self.var_p.get() == 1:
             reportNames.append('MultiPathway')
             reportNameArgs['MultiPathway'] = None
@@ -326,7 +327,8 @@ class Page1(Page):
             self.var_hh.get() != 1 and
             self.var_i.get() != 1 and
             self.var_a.get() != 1 and
-            self.var_s.get() != 1):
+            self.var_s.get() != 1  and
+            self.var_p.get() != 1):
             
             messagebox.showinfo("No report selected",
                 "Please select one or more report types to run.")
