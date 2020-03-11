@@ -173,7 +173,6 @@ class KMLWriter():
         kmztype = 'allsources'
         allkmz_fname = allkml_fname.replace('.kml', '.kmz')
         self.createKMZ(kmztype, allkml_fname, allkmz_fname)
-        
 
     def write_facility_kml(self, facid, faccen_lat, faccen_lon, outdir, model):
         """
@@ -1296,9 +1295,7 @@ class KMLWriter():
         kmztype = 'facilityrisk'
         fackmz_fname = fackml_fname.replace('.kml', '.kmz')
         self.createKMZ(kmztype, fackml_fname, fackmz_fname)
-        
-        
-        
+
     def calcHI(self, conc, rfc, endpoint):
         """
         Compute a specific HI value
@@ -1313,8 +1310,27 @@ class KMLWriter():
         :param kml: a fastKml KML instance
         """
         file = open(filename, "w")
-        file.write(unescape(kml.to_string(prettyprint=True)))
+
+        pretty = kml.to_string(prettyprint=True)
+        usingPhysicalWidth = self.usePhysicalWidth(pretty)
+        file.write(unescape(usingPhysicalWidth))
         file.close()
+
+    # Currently fastkml does not implement the gx extension types, but we want to specify a physical width
+    # instead of a pixel width. Therefore we are falling back on some hackery to replace the generated
+    # <width> tags with <gx:physicalWidth> tags.
+    def usePhysicalWidth(self, input):
+
+        # First add the gx namespace to the KML element
+        defaultNS = 'xmlns="http://www.opengis.net/kml/2.2"'
+        gxNS = 'xmlns:gx="http://www.google.com/kml/ext/2.2"'
+
+        # ...then, replace widths with physicalWidths
+        input = input.replace(defaultNS, defaultNS + " " + gxNS)
+        input = input.replace('<width>', '<gx:physicalWidth>')
+        input = input.replace('</width>', '</gx:physicalWidth>')
+
+        return input
 
     def createKMZ(self, ftype, kmlfname, kmzfname):
         """

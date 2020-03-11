@@ -52,16 +52,18 @@ class Runstream():
               
     # Hours -------------------------------------------------------------------
                 
-        self.hours = self.facoptn_df['hours'][0]                      
+        self.hours_value = int(self.facoptn_df['hours'][0])
     
         av_t = [1,2,3,4,6,8,12,24]          # Possible Averaging Time Periods
-    
+
+        self.annual = self.facoptn_df['annual'][0] == "Y"
+        met_annual = " ANNUAL " if self.annual else " PERIOD "
         if self.facoptn_df['acute'][0] == 'N':
-            self.hours = " ANNUAL "
-        elif (self.hours in av_t) == 1:
-            self.hours = str(self.hours) + " ANNUAL "
+            self.hours = met_annual
+        elif self.hours_value in av_t:
+            self.hours = str(self.hours_value) + met_annual
         else:
-            self. hours = str(1) + " ANNUAL "
+            self.hours = str(1) + met_annual
             
     # Elevations --------------------------------------------------------------
            
@@ -762,8 +764,11 @@ class Runstream():
         me_sud = "ME SURFDATA  " + surfdata_str +  "\n"
         me_uad = "ME UAIRDATA  " + uairdata_str + "\n"
         me_prb = "ME PROFBASE  " + str(prof_base) + "\n"
-        # me_day = "ME DAYRANGE  " + str(jsta) + "-" + str(jend) + "\n"
-        mef    = "ME FINISHED \n" 
+        
+        me_strtend = ""
+        if self.facoptn_df['annual'][0] != 'Y' and self.facoptn_df['period_start'][0] != '' and self.facoptn_df['period_end'][0] != '':
+            me_strtend = "ME STARTEND  " + self.facoptn_df['period_start'][0] + self.facoptn_df['period_end'][0] + "\n"
+        mef = "ME FINISHED \n"
     
         self.inp_f.write(mes)
         self.inp_f.write(me_sfc)
@@ -771,7 +776,9 @@ class Runstream():
         self.inp_f.write(me_sud)
         self.inp_f.write(me_uad)
         self.inp_f.write(me_prb)
-        # inp_f.write(me_day)
+
+        if len(me_strtend) > 0:
+            self.inp_f.write(me_strtend)
         self.inp_f.write(mef)
 
         return surf_file, distance
@@ -791,9 +798,10 @@ class Runstream():
     
         ou = "OU FILEFORM EXP \n"
         self.inp_f.write(ou)
- 
+
+        met_annual_keyword = " ANNUAL " if self.annual else " PERIOD "
         for j in np.arange(len(self.uniqsrcs)):  
-            ou = ("OU PLOTFILE ANNUAL " + self.uniqsrcs[j] + 
+            ou = ("OU PLOTFILE" + met_annual_keyword + self.uniqsrcs[j] +
                   " plotfile.plt 35 \n")
             self.inp_f.write(ou)
 
