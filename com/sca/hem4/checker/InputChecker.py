@@ -287,6 +287,25 @@ class InputChecker():
                         #set ureceptr model option to TRUE
                         self.model.model_optns['ureceptr'] = True
                         
+                    efac = set(self.model.emisloc.dataframe[fac_id])
+                    
+                    in_b = list(fids.intersection(bids)) 
+                    in_emis = list(fids.intersection(efac))
+                    
+                    bsource = set(self.model.multibuoy.dataframe[self.model.multibuoy.dataframe[fac_id].isin(in_b)][source_id])
+                    esource = set(self.model.emisloc.dataframe[self.model.emisloc.dataframe[fac_id].isin(in_emis)][source_id])
+            
+                    for b in bsource:
+                        if b not in list(esource):
+                            
+                            logMsg8c = ("Source ids for Emissions Locations and Buoyant Line Source file"+ 
+                                       " do not match, please upload corresponding files.")
+                            result['result'] =  logMsg8c
+                            return result
+                        
+                    
+                    
+                        
                 
             elif option is 'polyvertex':
                 
@@ -311,8 +330,8 @@ class InputChecker():
                     #check facility ids against polyvertex ids
                     pids = set(self.model.multipoly.dataframe[fac_id])
                     fids = set(self.model.emisloc.dataframe[self.model.emisloc.dataframe[source_type] == 'I'][fac_id].values)
-                    print('pids', pids)
-                    print('fids', fids)
+                    #print('pids', pids)
+                    #print('fids', fids)
                     
                     if fids.intersection(pids) != fids:
                         
@@ -331,10 +350,10 @@ class InputChecker():
                     #make sure source ids match in hap emissions and emissions location
                     #for facilities in faclist file
                     
-                    pfac = set(self.model.multipoly.dataframe[fac_id])
+                    
                     efac = set(self.model.emisloc.dataframe[fac_id])
                     
-                    in_pol = list(fids.intersection(pfac)) 
+                    in_pol = list(fids.intersection(pids)) 
                     in_emis = list(fids.intersection(efac))
                     
                     psource = set(self.model.multipoly.dataframe[self.model.multipoly.dataframe[fac_id].isin(in_pol)][source_id])
@@ -343,9 +362,9 @@ class InputChecker():
                     for p in psource:
                         if p not in list(esource):
                             
-                            logMsg6 = ("Source ids for Emissions Locations and Polygon Vertex file"+ 
+                            logMsg9c = ("Source ids for Emissions Locations and Polygon Vertex file"+ 
                                        " do not match, please upload corresponding files.")
-                            result['result'] =  logMsg6
+                            result['result'] =  logMsg9c
                             return result
                                 
             
@@ -387,6 +406,27 @@ class InputChecker():
                         return result
                     
                     
+                    
+                    #check source ids
+                    #make sure source ids match in hap emissions and emissions location
+                    #for facilities in faclist file
+                    
+                   
+                    efac = set(self.model.emisloc.dataframe[fac_id])
+                    
+                    in_dw = list(fids.intersection(dids)) 
+                    in_emis = list(fids.intersection(efac))
+                    
+                    bdsource = set(self.model.bldgdw.dataframe[self.model.bldgdw.dataframe[fac_id].isin(in_dw)][source_id])
+                    esource = set(self.model.emisloc.dataframe[self.model.emisloc.dataframe[fac_id].isin(in_emis)][source_id])
+            
+                    for d in bdsource:
+                        if d not in list(esource):
+                            
+                            logMsg14c = ("Source ids for Emissions Locations and Building Downwash file"+ 
+                                       " do not match, please upload corresponding files.")
+                            result['result'] =  logMsg14c
+                            return result
             
             elif option is 'particle':
                 
@@ -421,6 +461,28 @@ class InputChecker():
                         result['result'] =  logMsg10b
                         result['reset'] = 'particle'
                         return result
+                    
+                    
+                    #check source ids
+                    #make sure source ids match in hap emissions and emissions location
+                    #for facilities in faclist file
+                    
+                   
+                    efac = set(self.model.emisloc.dataframe[fac_id])
+                    
+                    in_part = list(fids.intersection(partids)) 
+                    in_emis = list(fids.intersection(efac))
+                    
+                    partsource = set(self.model.partdep.dataframe[self.model.partdep.dataframe[fac_id].isin(in_part)][source_id])
+                    esource = set(self.model.emisloc.dataframe[self.model.emisloc.dataframe[fac_id].isin(in_emis)][source_id])
+            
+                    for part in partsource:
+                        if part not in list(esource):
+                            
+                            logMsg10c = ("Source ids for Emissions Locations and Particle Size file"+ 
+                                       " do not match, please upload corresponding files.")
+                            result['result'] =  logMsg10c
+                            return result
             
             
             elif option is 'vapor':

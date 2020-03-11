@@ -170,6 +170,7 @@ def check_dep(dataframe):
                 elif 'WD' in vapor_depo[i] and 'WD' in vapor_depl[i]:
                     options.append('land use')
                     options.append('seasons')
+                    
             
             inputs.append(options)
       
@@ -236,8 +237,8 @@ def sort(facops):
     """
 
     """
-    print('facility slice:', facops)
-    print('phase', facops['phase'])
+    #print('facility slice:', facops)
+    #Sprint('phase', facops['phase'])
     phase = facops['phase'].tolist()[0].upper()                    # Phase
 
     depos = facops['dep'].fillna("").tolist()[0]                       # Deposition
@@ -338,7 +339,7 @@ def single_phase(phase, depos, deple, vdepo, pdepo, vdepl, pdepl):
         if pdepl == 'NO' or vdepl == 'NO':
             opts.append("")
 
-
+    print('Keyword', opts)
     return {'phase': phase, 'settings': opts}
 
     ## split it into two lists, duplicate the row and call dep_sort on each?
