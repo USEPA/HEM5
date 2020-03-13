@@ -10,7 +10,7 @@ import webbrowser
 import tkinter.ttk as ttk
 from functools import partial
 
- #from pandastable import Table, filedialog, np
+from pandastable import Table, filedialog, np
 
 from com.sca.hem4.GuiThreaded import Hem4
 from com.sca.hem4.writer.excel.FacilityMaxRiskandHI import FacilityMaxRiskandHI
@@ -250,7 +250,7 @@ class Page1(Page):
 
          executor = ThreadPoolExecutor(max_workers=1)
          future = executor.submit(self.createReports)
-         future.add_done_callback(self.reset_reports)           
+         #future.add_done_callback(self.reset_reports)           
         
     def createReports(self,  arguments=None):
         
@@ -399,10 +399,7 @@ class Page1(Page):
             self.scr.insert(tk.INSERT, "\n")
             self.scr.configure(state='disabled')
             
-        
-    def reset_reports(self):
-        
-        #reset inputs
+            
         if self.var_m.get() == 1:
             self.max_risk.deselect()
         if self.var_c.get() == 1:
@@ -426,6 +423,34 @@ class Page1(Page):
         if self.var_p.get() == 1:
            self.mp.deselect()
             
+ 
+#needs work       
+#    def reset_reports(self):
+#        
+#        #reset inputs
+#        if self.var_m.get() == 1:
+#            self.max_risk.deselect()
+#        if self.var_c.get() == 1:
+#            self.cancer_driver.deselect()
+#        if self.var_h.get() == 1:
+#           self.hazard.deselect()
+#        if self.var_hi.get() == 1:
+#            self.hist.deselect()
+#        if self.var_hh.get() == 1:
+#            self.hh.deselect()
+#        if self.var_i.get() == 1:
+#            self.inc.deselect()
+#        if self.var_a.get() == 1:
+#            self.ai.deselect()
+#        if self.var_s.get() == 1:
+#            self.s.deselect()
+#            #pass position number and character number
+#            self.pos_num.set('')
+#            self.chars.num.set('')
+#
+#        if self.var_p.get() == 1:
+#           self.mp.deselect()
+#            
             
         
     
