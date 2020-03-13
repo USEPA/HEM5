@@ -10,7 +10,7 @@ import webbrowser
 import tkinter.ttk as ttk
 from functools import partial
 
-#from pandastable import Table, filedialog, np
+ #from pandastable import Table, filedialog, np
 
 from com.sca.hem4.GuiThreaded import Hem4
 from com.sca.hem4.writer.excel.FacilityMaxRiskandHI import FacilityMaxRiskandHI
@@ -19,6 +19,7 @@ from concurrent.futures import ThreadPoolExecutor
 from threading import Event
 from tkinter import messagebox
 from tkinter import scrolledtext
+
 
 import queue
 
@@ -209,7 +210,7 @@ class Page1(Page):
         back_button.grid(row=0, column=2, sticky="W", padx=5, pady=10)
         
         run_button = tk.Button(self.s13, text="Run Reports", font=TEXT_FONT, relief='solid', borderwidth=2,
-                            command= self.createReports)
+                            command= self.run_reports)
         run_button.grid(row=0, column=1, sticky="E", padx=5, pady=10)
         
     def browse(self):
@@ -242,8 +243,18 @@ class Page1(Page):
                 self.pos_num.destroy()
                 self.chars.destroy()
                 self.chars_num.destroy()
+                
+                
+                
+    def run_reports(self):
+
+         executor = ThreadPoolExecutor(max_workers=1)
+         future = executor.submit(self.createReports)
+         future.add_done_callback(self.reset_reports)           
         
     def createReports(self,  arguments=None):
+        
+        
         
 
         ready= False
@@ -388,29 +399,32 @@ class Page1(Page):
             self.scr.insert(tk.INSERT, "\n")
             self.scr.configure(state='disabled')
             
-            #reset inputs
-            if self.var_m.get() == 1:
-                self.max_risk.deselect()
-            if self.var_c.get() == 1:
-                self.cancer_driver.deselect()
-            if self.var_h.get() == 1:
-               self.hazard.deselect()
-            if self.var_hi.get() == 1:
-                self.hist.deselect()
-            if self.var_hh.get() == 1:
-                self.hh.deselect()
-            if self.var_i.get() == 1:
-                self.inc.deselect()
-            if self.var_a.get() == 1:
-                self.ai.deselect()
-            if self.var_s.get() == 1:
-                self.s.deselect()
-                #pass position number and character number
-                self.pos_num.set('')
-                self.chars.num.set('')
-    
-            if self.var_p.get() == 1:
-               self.mp.deselect()
+        
+    def reset_reports(self):
+        
+        #reset inputs
+        if self.var_m.get() == 1:
+            self.max_risk.deselect()
+        if self.var_c.get() == 1:
+            self.cancer_driver.deselect()
+        if self.var_h.get() == 1:
+           self.hazard.deselect()
+        if self.var_hi.get() == 1:
+            self.hist.deselect()
+        if self.var_hh.get() == 1:
+            self.hh.deselect()
+        if self.var_i.get() == 1:
+            self.inc.deselect()
+        if self.var_a.get() == 1:
+            self.ai.deselect()
+        if self.var_s.get() == 1:
+            self.s.deselect()
+            #pass position number and character number
+            self.pos_num.set('')
+            self.chars.num.set('')
+
+        if self.var_p.get() == 1:
+           self.mp.deselect()
             
             
         
