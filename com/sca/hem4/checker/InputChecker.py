@@ -287,22 +287,7 @@ class InputChecker():
                         #set ureceptr model option to TRUE
                         self.model.model_optns['ureceptr'] = True
                         
-                    efac = set(self.model.emisloc.dataframe[fac_id])
-                    
-                    in_b = list(fids.intersection(bids)) 
-                    in_emis = list(fids.intersection(efac))
-                    
-                    bsource = set(self.model.multibuoy.dataframe[self.model.multibuoy.dataframe[fac_id].isin(in_b)][source_id])
-                    esource = set(self.model.emisloc.dataframe[self.model.emisloc.dataframe[fac_id].isin(in_emis)][source_id])
-            
-                    for b in bsource:
-                        if b not in list(esource):
-                            
-                            logMsg8c = ("Source ids for Emissions Locations and Buoyant Line Source file"+ 
-                                       " do not match, please upload corresponding files.")
-                            result['result'] =  logMsg8c
-                            return result
-                        
+                       
                     
                     
                         
