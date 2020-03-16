@@ -8,6 +8,7 @@ import numpy as np
 #for testing
 #facops = pd.read_excel("Template_Multi_Facility_List_Options_dep_deplt_test.xlsx")
 #facops.rename(columns={'FacilityID':'fac_id'}, inplace=True)
+from com.sca.hem4.upload.EmissionsLocations import method
 
 
 def check_phase(r):
@@ -102,7 +103,7 @@ def check_phase(r):
     print(phaseResult)
     return(phaseResult)
 
-def check_dep(dataframe):
+def check_dep(faclist_df, emisloc_df):
     """
     Looks through deposition and depletion flags and returns optional inputs and 
     dataframe with keywords.
@@ -113,20 +114,20 @@ def check_dep(dataframe):
                 
             
     
-    phase = dataframe[['fac_id', 'phase']].values
+    phase = faclist_df[['fac_id', 'phase']].values
 
     
 #    phase = phaseList
 #    print('NEW PHASE LIST:', phase)
 
     
-    deposition = dataframe['dep'].tolist()
-    vapor_depo = dataframe['vdep'].tolist()
-    part_depo = dataframe['pdep'].tolist()
+    deposition = faclist_df['dep'].tolist()
+    vapor_depo = faclist_df['vdep'].tolist()
+    part_depo = faclist_df['pdep'].tolist()
     
-    depletion = dataframe['depl'].tolist()
-    vapor_depl = dataframe['vdepl'].tolist()
-    part_depl = dataframe['pdepl'].tolist()
+    depletion = faclist_df['depl'].tolist()
+    vapor_depl = faclist_df['vdepl'].tolist()
+    part_depl = faclist_df['pdepl'].tolist()
     
 #    print("phase", phase)
 #    
@@ -145,11 +146,13 @@ def check_dep(dataframe):
         
         
         if p == 'P':
-            #add facid
-            options = [fac_id]
-            options.append('particle size')
-      
-            inputs.append(options)
+
+            if usingMethodOne(emisloc_df):
+                #add facid
+                options = [fac_id]
+                options.append('particle size')
+
+                inputs.append(options)
                             
         elif p == 'V':
             #add facid
@@ -180,7 +183,8 @@ def check_dep(dataframe):
             if (deposition[i] == 'Y' and depletion[i] != 'Y'): 
             
                 if 'DO' or 'WO' or 'WD' in part_depo[i]:
-                    options.append('particle size')
+                    if usingMethodOne(emisloc_df):
+                        options.append('particle size')
                 
                     if 'WD' or 'DO' in vapor_depo[i]:
                         options.append('land use')
@@ -193,7 +197,10 @@ def check_dep(dataframe):
             elif (depletion[i] == 'Y' and deposition[i] != 'Y'):
                 
                 if 'DO' or 'WO' or 'WD' in part_depl[i]:
-                    options.append('particle size')
+
+                    if usingMethodOne(emisloc_df):
+                        options.append('particle size')
+
                     if 'WD' or 'DO' in vapor_depl[i]:
                         options.append('land use')
                         options.append('seasons')                        
@@ -203,14 +210,17 @@ def check_dep(dataframe):
                     options.append('seasons')
                     
                 elif 'NO' in part_depl[i] and 'NO' in vapor_depl[i]:
-                    options.append('particle size')
+                    if usingMethodOne(emisloc_df):
+                        options.append('particle size')
     
     
             elif (deposition[i] == 'Y' and depletion[i] == 'Y'):
                 
                 if ('DO' or 'WO' or 'WD' in part_depo[i] and 
                     'DO' or 'WO' or 'WD' in part_depl[i]):
-                    options.append('particle size')
+
+                    if usingMethodOne(emisloc_df):
+                        options.append('particle size')
                     
                     if ('WD' or 'DO' in vapor_depo[i] and 
                         'WD' or 'DO' in vapor_depl[i]):
@@ -230,6 +240,9 @@ def check_dep(dataframe):
     print("inputs", inputs)  
      
     return(inputs)
+
+def usingMethodOne(emisloc_df):
+    return 1 in emisloc_df[method].values
 
 def sort(facops):
 
