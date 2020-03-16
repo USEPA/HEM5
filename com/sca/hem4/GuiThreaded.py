@@ -1041,11 +1041,11 @@ class Hem4(tk.Frame):
                 self.tabControl.insert(1, self.optionalinputtab, text='Additional Inputs')
                 
                 #get tab info
-                print('tabs:', self.tabControl.tabs())
-                print('number of tabs:', self.tabControl.index('end'))
-                
-                print('position', self.tabControl.index(self.tabControl.select()))
-                
+#                print('tabs:', self.tabControl.tabs())
+#                print('number of tabs:', self.tabControl.index('end'))
+#                
+#                print('position', self.tabControl.index(self.tabControl.select()))
+#                
                 
                 #destroy run button if it hasn't been but do not put it anywhere just yet
                 if hasattr(self, 'run_button'):
