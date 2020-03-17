@@ -179,7 +179,7 @@ class FacilityRunner():
                 try:
                     self.runstream = self.prep_fac.createRunstream(self.facilityId, r)
                     
-                except Exception as e:
+                except BaseException as e:
                 
                     Logger.logMessage(str(e))
                 

@@ -879,11 +879,11 @@ class Runstream():
        #get values for this source id
         if srid not in self.model.sourceExclusion:
             emisloc = self.emisloc_df.loc[self.emisloc_df.source_id == srid]
-            method2 = emisloc[method] == 2
+            method2 = emisloc[method].iloc[0] == 2
 
             if method2:
-                massfrac_val = emisloc[massfrac]
-                partdiam_val = emisloc[partdiam]
+                massfrac_val = emisloc[massfrac].iloc[0]
+                partdiam_val = emisloc[partdiam].iloc[0]
                 someth2 = "SO METHOD_2 " + srid + " " + str(massfrac_val) + " " + str(partdiam_val) + "\n"
                 self.inp_f.write(someth2)
             else:

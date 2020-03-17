@@ -43,6 +43,11 @@ class EmissionsLocations(InputFile):
             (fac_id,source_id,location_type,lon,lat,utmzone,source_type,lengthx,lengthy,angle,
              horzdim,vertdim,areavolrelhgt,stkht,stkdia,stkvel,stktemp,elev,x2,y2,method,massfrac,partdiam))
 
+        # We need to do this now, since the GUI needs to know right away whether or not to prompt
+        # for a particle file.
+        emisloc_df = emisloc_df.fillna({method:1, massfrac:1, partdiam:1})
+        emisloc_df = emisloc_df.reset_index(drop=True)
+
         #record upload in log
         emis_num = set(emisloc_df[fac_id])
         self.log.append("Uploaded emissions location file for " + str(len(emis_num)) + " facilities\n")
