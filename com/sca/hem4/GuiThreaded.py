@@ -702,13 +702,24 @@ class Hem4(tk.Frame):
         Function for uploading Hap Emissions file
         """
         
-        fullpath = self.openFile(askopenfilename())
-        if fullpath is not None:
-            self.uploader.upload("hapemis", fullpath)
-
-            # Update the UI
-            self.hap_list.set(fullpath)
-            [self.scr.insert(tk.INSERT, msg) for msg in self.model.hapemis.log]
+        try:
+            
+            self.model.faclist.dataframe
+            
+        except:
+        
+            messagebox.showinfo('Error', "Please upload a Facilities List Options file " +
+                             "before uploading the Hap Emissions file.")
+            
+        else:
+            
+            fullpath = self.openFile(askopenfilename())
+            if fullpath is not None:
+                self.uploader.upload("hapemis", fullpath)
+    
+                # Update the UI
+                self.hap_list.set(fullpath)
+                [self.scr.insert(tk.INSERT, msg) for msg in self.model.hapemis.log]
             
                 
             
@@ -719,112 +730,135 @@ class Hem4(tk.Frame):
         input spaces if indicated in file or removes optional spaces if upload
         is triggered again and there are no optional inputs indicated
         """
-        fullpath = self.openFile(askopenfilename())
-        if fullpath is not None:
-            self.uploader.upload("emisloc", fullpath)
-
-            # Update the UI
-            self.emisloc_list.set(fullpath)
-            [self.scr.insert(tk.INSERT, msg) for msg in self.model.emisloc.log]
+        
+        try: 
             
-            #trigger additional inputs for buoyant line and polyvertex
-            if 'I' in self.model.emisloc.dataframe['source_type'].tolist():
-                
-                #enable optional input tab
-                self.optionaltab = False
-                
-                #create polyvertex upload 
-                self.add_poly()
-                
-            else:
-                #reset gui if reuploading
-                
-                if hasattr(self, 's8'):
-                    self.poly_list_man.destroy()
-                    self.poly_up.destroy()
-                    self.poly_label.destroy()
-                    self.s8.destroy()
+            self.model.faclist.dataframe
+            
+        except:
+            
+            messagebox.showinfo('Error', "Please upload a Facilities List Options file first")
+            
+            
+        else:
+            
+            try:
+            
+                self.model.hapemis.dataframe
                     
+            except:
+            
+                messagebox.showinfo('Error', "Please upload Hap Emissions file before " +
+                                  "uploading the Emissions Location file")
+                
+            else:
+  
+                fullpath = self.openFile(askopenfilename())
+                if fullpath is not None:
+                    self.uploader.upload("emisloc", fullpath)
+        
+                    # Update the UI
+                    self.emisloc_list.set(fullpath)
+                    [self.scr.insert(tk.INSERT, msg) for msg in self.model.emisloc.log]
                     
-            if 'B' in self.model.emisloc.dataframe['source_type'].tolist():
-                
-                #enable optional input tab
-                self.optionaltab = False
-                
-                #create buoyant line upload
-                self.add_buoyant()
-                
-            else:
-                #reset gui if reuploading    
-                 if hasattr(self, 's7'):
-                    self.buoyant_list_man.destroy()
-                    self.buoyant_up.destroy()
-                    self.b_label.destroy()
-                    self.s7.destroy()
-
-            # Deposition and depletion check
-
-            # set phase column in faclist dataframe to None
-            self.model.faclist.dataframe['phase'] = None
-
-            for i, r in self.model.faclist.dataframe.iterrows():
-
-                phase = check_phase(r)
-                #                phaseList.append([r['fac_id'], phase])
-                self.model.faclist.dataframe.at[i, 'phase'] = phase
-
-            deposition_depletion = check_dep(self.model.faclist.dataframe, self.model.emisloc.dataframe)
-
-            #pull out facilities using depdeplt
-            self.model.depdeplt = [x[0] for x in deposition_depletion]
-            print('DEPDEP:', self.model.depdeplt)
-
-            #pull out conditional inputs
-            conditional = set([y for x in deposition_depletion for y in x[1:]])
-            #print('conditional', conditional)
-
-            if conditional is not None:
-                #enable deposition and depletion input tab
-                self.deptab = True
-
-
-                #if deposition or depletion present load gas params library
-                self.uploader.uploadLibrary("gas params")
-                for required in conditional:
-                    print("required", required)
-                    if required == 'particle size':
-                        self.add_particle()
-
-                    elif required == 'land use':
-                        self.add_land()
-
-                    elif required == 'seasons':
-                        self.add_seasons()
-
-            else:
-                # clear on new input without dep/deplt
-                if hasattr(self, 's12'):
-                    # clear particle
-                    if hasattr(self, 'dep_part'):
-                        self.dep_part_up.destroy()
-                        self.dep_part_man.destroy()
-                        self.dep_part.set('')
-                    #                        self.dep_part.destroy()
-                    # clear land
-                    if hasattr(self, 'dep_land'):
-                        self.dep_land_up.destroy()
-                        self.dep_land_man.destroy()
-                        self.dep_land.set('')
-                    #                        self.dep_land.destroy()
-
-                    # clear vegetation
-                    if hasattr(self, 'dep_seasons'):
-                        self.dep_seasons_up.destroy()
-                        self.dep_seasons_man.destroy()
-                        self.dep_seasons.set('')
-                    #                        self.dep_seasons.destroy()
-
-                    self.s12.destroy()
+                    #trigger additional inputs for buoyant line and polyvertex
+                    if 'I' in self.model.emisloc.dataframe['source_type'].tolist():
+                        
+                        #enable optional input tab
+                        self.optionaltab = False
+                        
+                        #create polyvertex upload 
+                        self.add_poly()
+                        
+                    else:
+                        #reset gui if reuploading
+                        
+                        if hasattr(self, 's8'):
+                            self.poly_list_man.destroy()
+                            self.poly_up.destroy()
+                            self.poly_label.destroy()
+                            self.s8.destroy()
+                            
+                            
+                    if 'B' in self.model.emisloc.dataframe['source_type'].tolist():
+                        
+                        #enable optional input tab
+                        self.optionaltab = False
+                        
+                        #create buoyant line upload
+                        self.add_buoyant()
+                        
+                    else:
+                        #reset gui if reuploading    
+                         if hasattr(self, 's7'):
+                            self.buoyant_list_man.destroy()
+                            self.buoyant_up.destroy()
+                            self.b_label.destroy()
+                            self.s7.destroy()
+        
+                    # Deposition and depletion check
+        
+                    # set phase column in faclist dataframe to None
+                    self.model.faclist.dataframe['phase'] = None
+        
+                    for i, r in self.model.faclist.dataframe.iterrows():
+        
+                        phase = check_phase(r)
+                        #                phaseList.append([r['fac_id'], phase])
+                        self.model.faclist.dataframe.at[i, 'phase'] = phase
+        
+                    deposition_depletion = check_dep(self.model.faclist.dataframe, self.model.emisloc.dataframe)
+        
+                    #pull out facilities using depdeplt
+                    self.model.depdeplt = [x[0] for x in deposition_depletion]
+                    print('DEPDEP:', self.model.depdeplt)
+        
+                    #pull out conditional inputs
+                    conditional = set([y for x in deposition_depletion for y in x[1:]])
+                    #print('conditional', conditional)
+        
+                    if conditional is not None:
+                        #enable deposition and depletion input tab
+                        self.deptab = True
+        
+        
+                        #if deposition or depletion present load gas params library
+                        self.uploader.uploadLibrary("gas params")
+                        for required in conditional:
+                            print("required", required)
+                            if required == 'particle size':
+                                self.add_particle()
+        
+                            elif required == 'land use':
+                                self.add_land()
+        
+                            elif required == 'seasons':
+                                self.add_seasons()
+        
+                    else:
+                        # clear on new input without dep/deplt
+                        if hasattr(self, 's12'):
+                            # clear particle
+                            if hasattr(self, 'dep_part'):
+                                self.dep_part_up.destroy()
+                                self.dep_part_man.destroy()
+                                self.dep_part.set('')
+                            #                        self.dep_part.destroy()
+                            # clear land
+                            if hasattr(self, 'dep_land'):
+                                self.dep_land_up.destroy()
+                                self.dep_land_man.destroy()
+                                self.dep_land.set('')
+                            #                        self.dep_land.destroy()
+        
+                            # clear vegetation
+                            if hasattr(self, 'dep_seasons'):
+                                self.dep_seasons_up.destroy()
+                                self.dep_seasons_man.destroy()
+                                self.dep_seasons.set('')
+                            #                        self.dep_seasons.destroy()
+    
+                        self.s12.destroy()
 
     def uploadPolyvertex(self):
         """
@@ -1173,7 +1207,7 @@ class Hem4(tk.Frame):
 
         #user recptors label
         self.urepalt_label = tk.Label(self.alturep, font=TEXT_FONT, bg="palegreen3",
-                                 text="Please select an alternate User Receptor"+
+                                  text="Please select an alternate User Receptor"+
                                       " CSV file:")
         self.urepalt_label.grid(row=1, sticky="W")
 
