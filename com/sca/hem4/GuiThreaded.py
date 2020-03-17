@@ -529,7 +529,7 @@ class Hem4(tk.Frame):
 
         #facilities label
         fac_label = tk.Label(self.s3, font=TEXT_FONT, bg="palegreen3", 
-                             text="Please select a Facilities List Options file:")
+                             text="1. Please select a Facilities List Options file:")
         fac_label.grid(row=3, sticky="W")
         
         #facilities upload button
@@ -553,7 +553,7 @@ class Hem4(tk.Frame):
                 
         #Hap emissions label
         hap_label = tk.Label(self.s4, font=TEXT_FONT, bg="palegreen3",  
-                             text="Please select the associated HAP Emissions file:")
+                             text="2. Please select the associated HAP Emissions file:")
         hap_label.grid(row=1, sticky="W")
         
         #hap emissions upload button
@@ -578,7 +578,7 @@ class Hem4(tk.Frame):
         
         #Emissions location label
         emisloc_label = tk.Label(self.s5, font=TEXT_FONT, bg="palegreen3",  
-                                 text="Please select the associated Emissions" +
+                                 text="3. Please select the associated Emissions" +
                                  " Locations file:")
         emisloc_label.grid(row=1, sticky="W")
         
