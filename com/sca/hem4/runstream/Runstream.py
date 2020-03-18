@@ -916,9 +916,7 @@ class Runstream():
             pollutants = (self.hapemis[(self.hapemis['source_id'] == srid)
                                         & (self.hapemis['part_frac'] < 1)]['pollutant'].str.lower())
             pollutants.reset_index(drop=True, inplace=True)
-                
-            print('Checking Vapor:', pollutants['fac_id'])
-            
+                           
             params = self.model.gasparams.dataframe.loc[self.model.gasparams.dataframe['pollutant'].isin(pollutants)]
             params.reset_index(drop=True, inplace=True)
                     
