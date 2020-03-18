@@ -10,7 +10,7 @@ import webbrowser
 import tkinter.ttk as ttk
 from functools import partial
 
-#from pandastable import Table, filedialog, np
+from pandastable import Table, filedialog, np
 
 from com.sca.hem4.GuiThreaded import Hem4
 from com.sca.hem4.writer.excel.FacilityMaxRiskandHI import FacilityMaxRiskandHI
@@ -496,30 +496,30 @@ class Page2(Page):
        ione = tk.Label(self.s3, image=image1)
        ione.image = image1 # keep a reference!
        ione.pack(padx=50, side="left")
-       
-                
+
        prepared_by = tk.Label(self.s2, text="Prepared by: \nSC&A Incorporated\n" +
                             "1414 Raleigh Rd, Suite 450\nChapel Hill, NC 27517", 
                              font=TEXT_FONT, bg="palegreen3") 
        prepared_by.pack(padx=150, pady=30)
-       
-       
-#       image2 = ImageTk.PhotoImage(Image.open('images\residential.jpg'))s
-#       itwo = tk.Label(self.s3, image=image2)
-#       itwo.image = image2 # keep a reference!
-#       itwo.pack(padx=20, side="right")
+
+       img = PIL.Image.open('images\\usersguides.jpg')
+       img = img.resize((200, 115), PIL.Image.ANTIALIAS)
+       image2 = ImageTk.PhotoImage(img)
+       itwo = tk.Label(self.s3, image=image2)
+       itwo.image = image2 # keep a reference!
+       itwo.pack(padx=50, side="right")
        
 
         
         ## hyperlink 
        link_to_site = tk.Label(self.s3, text="EPA HEM4 Webpage (link)", 
                                font=TEXT_FONT, bg="palegreen3")
-       link_to_site.pack(pady=30, padx=100)
+       link_to_site.pack(pady=30, padx=20)
        link_to_site.bind('<Button-1>', hyperlink1)
         
        link_to_userguide = tk.Label(self.s3, text="HEM4 User's Guide (link)", 
                                       font=TEXT_FONT, bg="palegreen3")
-       link_to_userguide.pack(pady=10, padx=100)
+       link_to_userguide.pack(pady=10, padx=20)
        link_to_userguide.bind("<Button-1>", hyperlink2)
         
        self.b1 = tk.Button(self.s3, text="Start Menu", font=TEXT_FONT, 
