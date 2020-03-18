@@ -175,6 +175,8 @@ class Hem4(tk.Frame):
         self.enable_widgets(self.hap_up, True)
         self.enable_widgets(self.emisloc_up, True)
 
+        self.enable_widgets(self.main, True)
+
         if self.urep is not None:
             self.enable_widgets(self.urep, True)
         if self.urepaltButton is not None:
@@ -355,8 +357,7 @@ class Hem4(tk.Frame):
         
         self.dynamic_inst["textvariable"] = self.instruction_instance 
         self.dynamic_inst.grid(row=1, column=0)
-        
-        
+
     def add_optional_instructions(self, placeholder):
         """
         Function adds a dynamic instructions instance to optional input tab
@@ -381,9 +382,6 @@ class Hem4(tk.Frame):
     def backtomenu(self):
         self.lower()
         self.reset_gui()
-    
-    
-        
 
     def createWidgets(self):
         """
@@ -608,9 +606,7 @@ class Hem4(tk.Frame):
                                           variable = self.check_tempvar, font=TEXT_FONT,
                                           bg='palegreen3', command = self.add_temporal)
         self.tempvar_sel.grid(row=3, column=0, sticky='W', padx = 85)
-        
 
-        
     def is_valid_extension(self, filepath):
         """
         Function checks to make sure excel/csv files are selected for inputs
@@ -720,10 +716,7 @@ class Hem4(tk.Frame):
                 # Update the UI
                 self.hap_list.set(fullpath)
                 [self.scr.insert(tk.INSERT, msg) for msg in self.model.hapemis.log]
-            
-                
-            
-    
+
     def uploadEmissionLocations(self):
         """
         Function for uploading Emissions Locations file. Also creates optional 
@@ -952,9 +945,6 @@ class Hem4(tk.Frame):
             # Update the UI
             self.bldgdw_list.set(fullpath)
             [self.scr.insert(tk.INSERT, msg) for msg in self.model.bldgdw.log]
-    
-
-
 
     def uploadParticle(self, facilities):
         """ 
@@ -973,9 +963,7 @@ class Hem4(tk.Frame):
             # Update the UI
             self.dep_part.set(fullpath)
             [self.scr.insert(tk.INSERT, msg) for msg in self.model.partdep.log]
-            
-    
-    
+
     def uploadLandUse(self):
         """ 
         Function for uploading land use information
@@ -993,8 +981,7 @@ class Hem4(tk.Frame):
             # Update the UI
             self.dep_land.set(fullpath)
             [self.scr.insert(tk.INSERT, msg) for msg in self.model.landuse.log]
-            
-    
+
     def uploadSeasons(self):
         """ 
         Function for uploading seasonal vegetation information
@@ -1012,9 +999,7 @@ class Hem4(tk.Frame):
             # Update the UI
             self.dep_seasons.set(fullpath)
             [self.scr.insert(tk.INSERT, msg) for msg in self.model.seasons.log]
-    
-    
-    
+
     def uploadVariation(self):
         """
         Function for uploading emissions variation inputs
@@ -1157,8 +1142,7 @@ class Hem4(tk.Frame):
                 self.inst_space.grid(row=2, column=0, sticky="nsew")
                 
                 self.add_optional_instructions(self.inst_space)
-      
-    
+
     def add_ur(self):
         """
         Function for creating row and upload widgets for user receptors
@@ -1276,9 +1260,7 @@ class Hem4(tk.Frame):
         #event handler for instructions (Button 1 is the left mouse click)
         self.buoyant_list_man.bind('<Button-1>', 
                                    lambda e:self.manual("instructions/buoyant_browse.txt"))
-    
-    
-    
+
     def add_poly(self):
         """
         Function for creating row and polyvertex file upload widgets
@@ -1325,8 +1307,7 @@ class Hem4(tk.Frame):
         #event handler for instructions (Button 1 is the left mouse click)
         self.poly_list_man.bind('<Button-1>', 
                                 lambda e:self.manual("instructions/poly_browse.txt"))
-    
-    
+
     def add_bldgdw(self):
         """ 
         Function for creating row and building downwash file upload widgets
@@ -1375,9 +1356,7 @@ class Hem4(tk.Frame):
         #event handler for instructions (Button 1 is the left mouse click)
         self.bldgdw_list_man.bind('<Button-1>', 
                                 lambda e:self.manual("instructions/bd_man.txt"))
-        
-        
-        
+
     def add_particle(self):
         """
         Function for creating column for particle size file upload widgets
@@ -1422,8 +1401,7 @@ class Hem4(tk.Frame):
         #event handler for instructions (Button 1 is the left mouse click)
         self.dep_part_man.bind('<Button-1>', 
                                lambda e:self.manual("instructions/dep_part_man.txt"))
-              
-        
+
     def add_land(self):
         
         """
@@ -1468,8 +1446,7 @@ class Hem4(tk.Frame):
         #event handler for instructions (Button 1 is the left mouse click)
         self.dep_land_man.bind('<Button-1>', 
                                lambda e:self.manual("instructions/dep_land_man.txt"))
-        
-        
+
     def add_seasons(self):
         """
         Function for creating column for seasonal vegetation upload widgets
@@ -1548,8 +1525,6 @@ class Hem4(tk.Frame):
         #event handler for instructions (Button 1 is the left mouse click)
         #self.emisvar_list_man.bind('<Button-1>', 
         #lambda e:self.manual("instructions/urep_man.txt"))
-                    
-
 
     def add_temporal(self):
         
@@ -1648,9 +1623,7 @@ class Hem4(tk.Frame):
         elif pos == 2:
             
             self.run()
-            
-            
-    
+
     def backtab(self):
         total = self.tabControl.index('end')
                 
@@ -1663,10 +1636,7 @@ class Hem4(tk.Frame):
         elif pos == 2:
             
             self.tabControl.select(1)
-            
 
-
-        
              
 #%% Run function with checks if somethign is missing raise the error here and 
 #   create an additional dialogue before trying to run the file
@@ -1817,7 +1787,6 @@ class Hem4(tk.Frame):
                 except Exception as e:
                 
                     Logger.logMessage(str(e))
-                
 
     def process(self):
         """
