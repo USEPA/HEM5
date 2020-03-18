@@ -208,7 +208,7 @@ class FacilityPrep():
         # Replace NaN with blank or 0. utmzone defaults to "0N"
         emislocs = emislocs.fillna({utmzone:'0N', source_type:'', lengthx:0, lengthy:0, angle:0,
                                     horzdim:0, vertdim:0, areavolrelhgt:0, stkht:0, stkdia: 0,
-                                    stkvel:0, stktemp:0, elev:0, x2:0, y2:0})
+                                    stkvel:0, stktemp:0, elev:0, x2:0, y2:0, method:1, massfrac:1, partdiam:1})
         emislocs = emislocs.reset_index(drop = True)
         
         # Area source angle must be >= 0 and < 90. If not, skip this facility
