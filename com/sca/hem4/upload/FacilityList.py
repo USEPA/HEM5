@@ -47,7 +47,7 @@ class FacilityList(InputFile):
         # Specify dtypes for all fields
         self.numericColumns = [max_dist,model_dist,radial,circles,overlap_dist,hours,multiplier,
                                ring1,urban_pop,hivalu]
-        self.strColumns = [fac_id,met_station,rural_urban,acute,elev,dep,depl,phase,pdep,pdepl,
+        self.strColumns = [fac_id,met_station,rural_urban,acute,elev,dep,depl,pdep,pdepl,
                            vdep,vdepl,all_rcpts,user_rcpt,bldg_dw,fastall,fac_center,ring_distances,emis_var,
                            annual,period_start,period_end]
 
@@ -55,7 +55,7 @@ class FacilityList(InputFile):
         faclist_df = self.readFromPath(
             (fac_id,met_station,rural_urban,urban_pop,max_dist,model_dist,radial,circles,overlap_dist, ring1,
              fac_center,ring_distances, acute,
-             hours,multiplier,hivalu,dep,depl,phase,pdep,pdepl,vdep,vdepl,elev,all_rcpts,
+             hours,multiplier,hivalu,dep,depl,pdep,pdepl,vdep,vdepl,elev,all_rcpts,
              user_rcpt,bldg_dw,fastall,emis_var,annual,period_start,period_end)
         )
 

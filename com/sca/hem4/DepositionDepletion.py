@@ -57,8 +57,7 @@ def check_phase(r):
     
     
     phaseResult = []
-    
-    
+     
     if vdep in poss or vdepl in poss:
         if pdep in poss:
             phase = 'B'
