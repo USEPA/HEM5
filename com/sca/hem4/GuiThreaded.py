@@ -144,7 +144,7 @@ class Hem4(tk.Frame):
         self.enable_widgets(self.main, False)
 
         message = "HEM4 is stopping. Please wait."
-        tk.Label(self, text=message, font=TEXT_FONT, bg="palegreen3").pack()
+        tk.Label(self, text=message, font=TEXT_FONT, bg="alice blue").pack()
 
     def disable_buttons(self):
         self.enable_widgets(self.run_button, False)
@@ -352,7 +352,7 @@ class Hem4(tk.Frame):
         global instruction_instance
         self.instruction_instance = tk.StringVar(placeholder1)
         self.instruction_instance.set(" ")
-        self.dynamic_inst = tk.Label(placeholder2, wraplength=600, font=TEXT_FONT, pady=5, bg='palegreen3') 
+        self.dynamic_inst = tk.Label(placeholder2, wraplength=600, font=TEXT_FONT, pady=5, bg='alice blue') 
         self.dynamic_inst.config(height=4)
         
         self.dynamic_inst["textvariable"] = self.instruction_instance 
@@ -366,14 +366,14 @@ class Hem4(tk.Frame):
         
         if hasattr(self, "optionalinputtab"):
             
-            self.optional_inst = tk.Label(placeholder, wraplength=600, font=TEXT_FONT, pady=5, bg='palegreen3') 
+            self.optional_inst = tk.Label(placeholder, wraplength=600, font=TEXT_FONT, pady=5, bg='alice blue') 
             self.optional_inst.config(height=4)
         
             self.optional_inst["textvariable"] = self.instruction_instance 
             self.optional_inst.grid(row=1, column=0)
         
         if hasattr(self, "depinputtab"):
-            self.dep_inst = tk.Label(placeholder, wraplength=600, font=TEXT_FONT, pady=5, bg='palegreen3') 
+            self.dep_inst = tk.Label(placeholder, wraplength=600, font=TEXT_FONT, pady=5, bg='alice blue') 
             self.dep_inst.config(height=4)
         
             self.dep_inst["textvariable"] = self.instruction_instance 
@@ -393,9 +393,9 @@ class Hem4(tk.Frame):
         """
         
         self.noteStyler = ttk.Style()
-        self.noteStyler.configure("TNotebook", background="palegreen3", borderwidth=0)
-        self.noteStyler.configure("TNotebook.Tab", background="palegreen3", borderwidth=0)
-        self.noteStyler.configure("TFrame", background="palegreen3", borderwidth=0)
+        self.noteStyler.configure("TNotebook", background="alice blue", borderwidth=0)
+        self.noteStyler.configure("TNotebook.Tab", background="alice blue", borderwidth=0)
+        self.noteStyler.configure("TFrame", background="alice blue", borderwidth=0)
 
         
         # Tab Control introduced here --------------------------------------
@@ -403,20 +403,20 @@ class Hem4(tk.Frame):
 
         if hasattr('self', 'main'):
             if self.main is None:
-                self.main = tk.Frame(self.tabControl, bg='palegreen3')            # Create a tab
+                self.main = tk.Frame(self.tabControl, bg='alice blue')            # Create a tab
                 self.tabControl.add(self.main, text='HEM4')
                 
         else:
             
-            self.main = tk.Frame(self.tabControl, bg='palegreen3')            # Create a tab
+            self.main = tk.Frame(self.tabControl, bg='alice blue')            # Create a tab
             self.tabControl.add(self.main, text='HEM4')      # Add the tab
 
-        self.tab2 = tk.Frame(self.tabControl, bg='palegreen3')            # Add a second tab
+        self.tab2 = tk.Frame(self.tabControl, bg='alice blue')            # Add a second tab
         self.tabControl.add(self.tab2, text='Log')      # Make second tab visible
 
 
 
-        tab3 = tk.Frame(self.tabControl, bg='palegreen3')            # Add a third tab
+        tab3 = tk.Frame(self.tabControl, bg='alice blue')            # Add a third tab
         self.tabControl.add(tab3, text='Census')      # Make third tab visible
 
         self.tabControl.pack(expand=1, fill="both")  # Pack to make visible
@@ -427,11 +427,11 @@ class Hem4(tk.Frame):
         self.censusupdates.grid(column=0, row=1)
 
         #create discreet sections for GUI in tab3
-        self.cu1 = tk.Frame(self.censusupdates, width=1000, height=200, background="palegreen3")
+        self.cu1 = tk.Frame(self.censusupdates, width=1000, height=200, background="alice blue")
         self.cu1.grid(row=0)
 
         # census update label
-        cu_label = tk.Label(self.cu1, font=TEXT_FONT, bg="palegreen3",
+        cu_label = tk.Label(self.cu1, font=TEXT_FONT, bg="alice blue",
                              text="Please select a census update file:")
         cu_label.grid(row=1, sticky="W")
 
@@ -453,13 +453,13 @@ class Hem4(tk.Frame):
         self.cu_update.grid(row=3, column=0, sticky="W", padx=85, pady=20)
 
         #create discreet sections for GUI in tab1
-        self.s1 = tk.Frame(self.main, width=750, height=50, bg="palegreen3")
-        self.s2 = tk.Frame(self.main, width=1000, height=50, bg="palegreen3")
-        self.s3 = tk.Frame(self.main, width=750, height=50, bg="palegreen3", pady=5, padx=5)
-        self.s4 = tk.Frame(self.main, width=750, height=50, bg="palegreen3", pady=5, padx=5)
-        self.s5 = tk.Frame(self.main, width=750, height=50, bg="palegreen3", pady=5, padx=5)
+        self.s1 = tk.Frame(self.main, width=750, height=50, bg="alice blue")
+        self.s2 = tk.Frame(self.main, width=1000, height=50, bg="alice blue")
+        self.s3 = tk.Frame(self.main, width=750, height=50, bg="alice blue", pady=5, padx=5)
+        self.s4 = tk.Frame(self.main, width=750, height=50, bg="alice blue", pady=5, padx=5)
+        self.s5 = tk.Frame(self.main, width=750, height=50, bg="alice blue", pady=5, padx=5)
         
-        self.alturep = tk.Frame(self.main, width=250, height=250,  bg="palegreen3", pady=5, padx=5)
+        self.alturep = tk.Frame(self.main, width=250, height=250,  bg="alice blue", pady=5, padx=5)
 
 
         self.s1.grid(row=0)
@@ -480,7 +480,7 @@ class Hem4(tk.Frame):
         #self.s1.grid_propagate(0)
     
 # create container frame to hold log
-        self.log = tk.Frame(self.tab2, bg="palegreen3")
+        self.log = tk.Frame(self.tab2, bg="alice blue")
         self.log.pack()
         
         # Adding a Textbox Entry widget
@@ -508,7 +508,7 @@ class Hem4(tk.Frame):
         self.add_instructions(self.s2, self.s1)
 
 # %% Setting up each file upload space (includes browse button, and manual text entry for file path)
-        group_label = tk.Label(self.s3, font=TEXT_FONT, bg="palegreen3", 
+        group_label = tk.Label(self.s3, font=TEXT_FONT, bg="alice blue", 
                              text="Name Run Group (optional):")
         group_label.grid(row=0, sticky="W")
         #group text entry
@@ -521,12 +521,12 @@ class Hem4(tk.Frame):
         
         self.check_altrec = tk.BooleanVar()
         self.altrec_sel = tk.Checkbutton(self.alturep, text="Use alternate receptors",
-                                           variable = self.check_altrec, bg='palegreen3',
+                                           variable = self.check_altrec, bg='alice blue',
                                            command = self.set_altrec, font=TEXT_FONT)
         self.altrec_sel.grid(row=0, column=0, sticky='W')
 
         #facilities label
-        fac_label = tk.Label(self.s3, font=TEXT_FONT, bg="palegreen3", 
+        fac_label = tk.Label(self.s3, font=TEXT_FONT, bg="alice blue", 
                              text="1. Please select a Facilities List Options file:")
         fac_label.grid(row=3, sticky="W")
         
@@ -550,7 +550,7 @@ class Hem4(tk.Frame):
         
                 
         #Hap emissions label
-        hap_label = tk.Label(self.s4, font=TEXT_FONT, bg="palegreen3",  
+        hap_label = tk.Label(self.s4, font=TEXT_FONT, bg="alice blue",  
                              text="2. Please select the associated HAP Emissions file:")
         hap_label.grid(row=1, sticky="W")
         
@@ -575,7 +575,7 @@ class Hem4(tk.Frame):
         
         
         #Emissions location label
-        emisloc_label = tk.Label(self.s5, font=TEXT_FONT, bg="palegreen3",  
+        emisloc_label = tk.Label(self.s5, font=TEXT_FONT, bg="alice blue",  
                                  text="3. Please select the associated Emissions" +
                                  " Locations file:")
         emisloc_label.grid(row=1, sticky="W")
@@ -604,7 +604,7 @@ class Hem4(tk.Frame):
         self.check_tempvar = tk.IntVar()
         self.tempvar_sel = tk.Checkbutton(self.s5, text="Show temporal variations in the outputs", 
                                           variable = self.check_tempvar, font=TEXT_FONT,
-                                          bg='palegreen3', command = self.add_temporal)
+                                          bg='alice blue', command = self.add_temporal)
         self.tempvar_sel.grid(row=3, column=0, sticky='W', padx = 85)
 
     def is_valid_extension(self, filepath):
@@ -1050,7 +1050,7 @@ class Hem4(tk.Frame):
                 
                 
                 #create optional input tab
-                self.optionalinputtab = tk.Frame(self.tabControl, bg='palegreen3')
+                self.optionalinputtab = tk.Frame(self.tabControl, bg='alice blue')
                 self.optionalinputtab.grid_rowconfigure(10, weight=4)
                 self.tabControl.insert(1, self.optionalinputtab, text='Additional Inputs')
                 
@@ -1089,7 +1089,7 @@ class Hem4(tk.Frame):
                 self.optback.grid(row=10, column=0, sticky="W", padx=5, pady=5)
                 
                 
-                self.inst_space = tk.Frame(self.optionalinputtab, width=750, height=50, bg="palegreen3", pady=5, padx=5)
+                self.inst_space = tk.Frame(self.optionalinputtab, width=750, height=50, bg="alice blue", pady=5, padx=5)
                 self.inst_space.grid(row=2, column=0, sticky="nsew")
                 
                 self.add_optional_instructions(self.inst_space) 
@@ -1105,7 +1105,7 @@ class Hem4(tk.Frame):
             if dep == True:
                 
                 #crete deposition inputs
-                self.depinputtab = tk.Frame(self.tabControl, bg='palegreen3') 
+                self.depinputtab = tk.Frame(self.tabControl, bg='alice blue') 
                 self.depinputtab.grid_rowconfigure(8, weight=4)
                 self.tabControl.insert(1, self.depinputtab, text='Dep/Depl Inputs')
                 
@@ -1138,7 +1138,7 @@ class Hem4(tk.Frame):
                 self.depback.grid(row=10, column=0, sticky="W", padx=5, pady=5)
     
                 
-                self.inst_space = tk.Frame(self.depinputtab, width=750, height=50, bg="palegreen3", pady=5, padx=5)
+                self.inst_space = tk.Frame(self.depinputtab, width=750, height=50, bg="alice blue", pady=5, padx=5)
                 self.inst_space.grid(row=2, column=0, sticky="nsew")
                 
                 self.add_optional_instructions(self.inst_space)
@@ -1153,11 +1153,11 @@ class Hem4(tk.Frame):
         man = "instructions/urep_man.txt"
 
         #create row for user receptors
-        self.s6 = tk.Frame(self.main, width=250, height=50, pady=5, padx=5, bg="palegreen3")
+        self.s6 = tk.Frame(self.main, width=250, height=50, pady=5, padx=5, bg="alice blue")
         self.s6.grid(row=6, column=0, columnspan=2, sticky="nsew")
         
         #user recptors label
-        self.ur_label = tk.Label(self.s6, font=TEXT_FONT, bg="palegreen3", 
+        self.ur_label = tk.Label(self.s6, font=TEXT_FONT, bg="alice blue", 
                              text="Please select an associated User Receptor"+
                              " file:")
         self.ur_label.grid(row=0, sticky="W")
@@ -1190,7 +1190,7 @@ class Hem4(tk.Frame):
         man = "instructions/urepalt_man.txt"
 
         #user recptors label
-        self.urepalt_label = tk.Label(self.alturep, font=TEXT_FONT, bg="palegreen3",
+        self.urepalt_label = tk.Label(self.alturep, font=TEXT_FONT, bg="alice blue",
                                   text="Please select an alternate User Receptor"+
                                       " CSV file:")
         self.urepalt_label.grid(row=1, sticky="W")
@@ -1231,12 +1231,12 @@ class Hem4(tk.Frame):
             self.create_optional('buoyant')
 
          #create row for buoyant line input
-        self.s7 = tk.Frame(self.optionalinputtab, width=250, height=50, pady=5, padx=5, bg="palegreen3")
+        self.s7 = tk.Frame(self.optionalinputtab, width=250, height=50, pady=5, padx=5, bg="alice blue")
         self.s7.grid(row=3, column=0, columnspan=2, sticky="nsew")
         
         
         #Buoyant Line  label
-        self.b_label = tk.Label(self.s7, font=TEXT_FONT, bg="palegreen3",  
+        self.b_label = tk.Label(self.s7, font=TEXT_FONT, bg="alice blue",  
                                  text="Please select associated Buoyant Line"+
                                  " Source Parameter file:")
         self.b_label.grid(row=1, sticky="W")
@@ -1281,11 +1281,11 @@ class Hem4(tk.Frame):
 
                             
         #create row for poly
-        self.s8 = tk.Frame(self.optionalinputtab, width=250, height=50, pady=5, padx=5, bg="palegreen3")
+        self.s8 = tk.Frame(self.optionalinputtab, width=250, height=50, pady=5, padx=5, bg="alice blue")
         self.s8.grid(row=4, column=0, columnspan=2, sticky="nsew")
         
         #Polygon sources label
-        self.poly_label = tk.Label(self.s8, font=TEXT_FONT, bg="palegreen3",  
+        self.poly_label = tk.Label(self.s8, font=TEXT_FONT, bg="alice blue",  
                               text="Please select associated Polyvertex file.")
         self.poly_label.grid(row=1, sticky="W")
         
@@ -1329,13 +1329,13 @@ class Hem4(tk.Frame):
             self.create_optional('bldgdw')
         
         #create row for building downwash
-        self.s9 = tk.Frame(self.optionalinputtab, width=250, height=50, padx=5, bg="palegreen3")
+        self.s9 = tk.Frame(self.optionalinputtab, width=250, height=50, padx=5, bg="alice blue")
         self.s9.grid(row=5, column=0, columnspan=2, sticky="nsew")
         
         # building dw labels
         self.bldgdw_label = tk.Label(self.s9,
                                      text="Please select associated Building" + 
-                                     " Dimensions file", font=TEXT_FONT, bg="palegreen3")
+                                     " Dimensions file", font=TEXT_FONT, bg="alice blue")
         self.bldgdw_label.grid(row=1, sticky="W")
         
         #building dw upload button
@@ -1376,11 +1376,11 @@ class Hem4(tk.Frame):
             self.create_optional('part')
         
         #create column for particle size file
-        self.s10 = tk.Frame(self.depinputtab, width=250, height=50, pady=5, padx=5, bg="palegreen3")
+        self.s10 = tk.Frame(self.depinputtab, width=250, height=50, pady=5, padx=5, bg="alice blue")
         self.s10.grid(row=3, column=0, columnspan=2, sticky="nsew")
         
         #particle size label
-        part_label = tk.Label(self.s10, font=TEXT_FONT, bg="palegreen3", 
+        part_label = tk.Label(self.s10, font=TEXT_FONT, bg="alice blue", 
                               text="Upload the file containing size information for particle matter emissions:")
         part_label.grid(row=0, sticky="W")
     
@@ -1421,11 +1421,11 @@ class Hem4(tk.Frame):
             self.create_optional('land')
         
         #create column for land use file
-        self.s11 = tk.Frame(self.depinputtab, width=250, height=50, pady=5, padx=5, bg="palegreen3")
+        self.s11 = tk.Frame(self.depinputtab, width=250, height=50, pady=5, padx=5, bg="alice blue")
         self.s11.grid(row=4, column=0, columnspan=2, sticky="nsew")
         
         #land use size label
-        land_label = tk.Label(self.s11, font=TEXT_FONT, bg="palegreen3", 
+        land_label = tk.Label(self.s11, font=TEXT_FONT, bg="alice blue", 
                               text="Upload the file containing land use information:")
         land_label.grid(row=0, sticky="W")
     
@@ -1466,11 +1466,11 @@ class Hem4(tk.Frame):
         
 
         #create column for land use file
-        self.s12 = tk.Frame(self.depinputtab, width=250, height=50, pady=5, padx=5, bg="palegreen3")
+        self.s12 = tk.Frame(self.depinputtab, width=250, height=50, pady=5, padx=5, bg="alice blue")
         self.s12.grid(row=5, column=0, columnspan=2, sticky="nsew")
         
         #land use size label
-        seasons_label = tk.Label(self.s12, font=TEXT_FONT, bg="palegreen3", 
+        seasons_label = tk.Label(self.s12, font=TEXT_FONT, bg="alice blue", 
                              text="Upload the file containing seasonal vegetation information:")
         seasons_label.grid(row=0, sticky="W")
     
@@ -1498,12 +1498,12 @@ class Hem4(tk.Frame):
         """
             
         #create row for emissions variation
-#                self.s5 = tk.Frame(self.main, width=250, height=100, bg="palegreen3", pady=5, 
+#                self.s5 = tk.Frame(self.main, width=250, height=100, bg="alice blue", pady=5, 
 #                                    padx=5)
 #                self.s5.grid(row=4, column=0, columnspan=2, sticky="nsew")
         
         #emissions variation label
-        self.emisvar_label = tk.Label(self.s5, font=TEXT_FONT, bg="palegreen3", 
+        self.emisvar_label = tk.Label(self.s5, font=TEXT_FONT, bg="alice blue", 
                              text="Please select an Emissions Variation"+
                              " file:")
         self.emisvar_label.grid(row=6, sticky="W")
@@ -1531,7 +1531,7 @@ class Hem4(tk.Frame):
         
         if self.check_tempvar.get() == 1:
             #emissions variation label
-                self.tempvar_label = tk.Label(self.s5, font=TEXT_FONT, bg="palegreen3", 
+                self.tempvar_label = tk.Label(self.s5, font=TEXT_FONT, bg="alice blue", 
                                      text="What diurnal (hourly) resolution would you like?")
                 self.tempvar_label.grid(row=5, column=0, sticky="W", padx=85, pady=20)
              
@@ -1546,7 +1546,7 @@ class Hem4(tk.Frame):
                 self.check_dr = tk.IntVar()
                 self.dr_sel = tk.Checkbutton(self.s5, text="Include seasonal variations in diurnally\n resolved concentrations output", 
                                           variable = self.check_dr, font=TEXT_FONT,
-                                          bg='palegreen3')
+                                          bg='alice blue')
                 self.dr_sel.grid(row=5, column=0, sticky="E")
                 
         
