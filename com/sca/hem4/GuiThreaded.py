@@ -712,9 +712,13 @@ class Hem4(tk.Frame):
             fullpath = self.openFile(askopenfilename())
             if fullpath is not None:
                 self.uploader.upload("hapemis", fullpath)
-    
-                # Update the UI
-                self.hap_list.set(fullpath)
+
+                if self.model.hapemis.dataframe is None:
+                    messagebox.showinfo('Error', "There was a problem uploading the HAP emissions file. " +
+                                        "Check the log for details.")
+                else:
+                    # Update the UI
+                    self.hap_list.set(fullpath)
                 [self.scr.insert(tk.INSERT, msg) for msg in self.model.hapemis.log]
 
     def uploadEmissionLocations(self):
