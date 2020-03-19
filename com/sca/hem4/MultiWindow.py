@@ -459,77 +459,85 @@ class Page1(Page):
 
 class Page2(Page):
     def __init__(self, *args, **kwargs):
-       Page.__init__(self, *args, **kwargs)
-   
-       container = tk.Frame(self, bg="palegreen3")
-#        self.buttonframe.pack(side="right", fill="y", expand=False)
-       container.pack(side="top", fill="both", expand=True)
-       
-       self.s1 = tk.Frame(container, width=600, height=50, bg="palegreen3")
-       self.s2 = tk.Frame(container, width=600, height=50, bg="palegreen3")
-       self.s3 = tk.Frame(container, width=600, height=50, pady=5, padx=5, bg="palegreen3")
-       self.s4 = tk.Frame(container, width=600, height=50, pady=5, padx=5, bg="palegreen3")
-       self.s5 = tk.Frame(container, width=600, height=50, pady=5, padx=5, bg="palegreen3")
-          
-       self.s1.pack(fill="x")
-       self.s2.pack(fill="x")
-       self.s3.pack(fill="x")
-       self.s4.pack(fill="x")
-       self.s5.pack(fill="x")
-        
-        #title in first grid space 
-       title1 = tk.Label(self.s1, text="HEM4", font=TITLE_FONT, bg="palegreen3")
-       title1.pack(side="top", pady=20)
-        
-       title2 = tk.Label(self.s1, text="Human Exposure Model\n Version 4-Open Source ", font=TEXT_FONT, bg="palegreen3")
-       title2.pack()
-        
+        Page.__init__(self, *args, **kwargs)
 
-       #some information
-       prepared_for = tk.Label(self.s2, text="Prepared for: \nAir Toxics" +
-                            " Assessment Group \nU.S. EPA \nResearch Triangle Park, NC 27711", 
+        container = tk.Frame(self, bg="palegreen3")
+        #        self.buttonframe.pack(side="right", fill="y", expand=False)
+        container.pack(side="top", fill="both", expand=True)
+
+        self.s1 = tk.Frame(container, width=600, height=50, bg="palegreen3")
+        self.s2 = tk.Frame(container, width=600, height=50, bg="palegreen3")
+        self.s3 = tk.Frame(container, width=600, height=50, pady=5, padx=5, bg="palegreen3")
+        self.s4 = tk.Frame(container, width=600, height=50, pady=5, padx=5, bg="palegreen3")
+        self.s5 = tk.Frame(container, width=600, height=50, pady=5, padx=5, bg="palegreen3")
+
+        self.s1.pack(fill="x")
+        self.s2.pack(fill="x")
+        self.s3.pack(fill="x")
+        self.s4.pack(fill="x")
+        self.s5.pack(fill="x")
+
+        #title in first grid space
+        title1 = tk.Label(self.s1, text="HEM4", font=TITLE_FONT, bg="palegreen3")
+        title1.pack(side="top", pady=20)
+
+        title2 = tk.Label(self.s1, text="Human Exposure Model\n Version 4-Open Source ", font=TEXT_FONT, bg="palegreen3")
+        title2.pack()
+
+
+        #some information
+        prepared_for = tk.Label(self.s2, text="Prepared for: \nAir Toxics" +
+                            " Assessment Group \nU.S. EPA \nResearch Triangle Park, NC 27711",
                              font=TEXT_FONT, bg="palegreen3")
-       prepared_for.pack(padx=45, pady=30, side="left")
-       
-       
-       image1 = ImageTk.PhotoImage(PIL.Image.open('images\smokestack.jpg'))
-       ione = tk.Label(self.s3, image=image1)
-       ione.image = image1 # keep a reference!
-       ione.pack(padx=50, side="left")
+        prepared_for.pack(padx=45, pady=30, side="left")
 
-       prepared_by = tk.Label(self.s2, text="Prepared by: \nSC&A Incorporated\n" +
-                            "1414 Raleigh Rd, Suite 450\nChapel Hill, NC 27517", 
-                             font=TEXT_FONT, bg="palegreen3") 
-       prepared_by.pack(padx=150, pady=30)
 
-       img = PIL.Image.open('images\\usersguides.jpg')
-       img = img.resize((200, 115), PIL.Image.ANTIALIAS)
-       image2 = ImageTk.PhotoImage(img)
-       itwo = tk.Label(self.s3, image=image2)
-       itwo.image = image2 # keep a reference!
-       itwo.pack(padx=50, side="right")
-       
+        image1 = ImageTk.PhotoImage(PIL.Image.open('images\smokestack.jpg'))
+        ione = tk.Label(self.s3, image=image1)
+        ione.image = image1 # keep a reference!
+        ione.pack(padx=50, side="left")
 
-        
-        ## hyperlink 
-       link_to_site = tk.Label(self.s3, text="EPA HEM4 Webpage (link)", 
-                               font=TEXT_FONT, bg="palegreen3")
-       link_to_site.pack(pady=30, padx=20)
-       link_to_site.bind('<Button-1>', hyperlink1)
-        
-       link_to_userguide = tk.Label(self.s3, text="HEM4 User's Guide (link)", 
-                                      font=TEXT_FONT, bg="palegreen3")
-       link_to_userguide.pack(pady=10, padx=20)
-       link_to_userguide.bind("<Button-1>", hyperlink2)
-        
-       self.b1 = tk.Button(self.s3, text="Start Menu", font=TEXT_FONT, 
-                       relief='solid', borderwidth=2, bg='lightgrey', command=self.lift_nav)
-       self.b1.bind("<Enter>", partial(self.color_config, self.b1, "white"))
-       self.b1.bind("<Leave>", partial(self.color_config, self.b1, "lightgrey"))
-#
-       self.b1.pack(pady=20)
+        prepared_by = tk.Label(self.s2, text="Prepared by: \nSC&A Incorporated\n" +
+                            "1414 Raleigh Rd, Suite 450\nChapel Hill, NC 27517",
+                             font=TEXT_FONT, bg="palegreen3")
+        prepared_by.pack(padx=150, pady=30)
 
-       #start.show()
+        self.s3top = tk.Frame(self.s3, pady=5, padx=5, bg="palegreen3")
+        self.s3top.pack(fill="both", expand=True)
+
+        self.s3bottom = tk.Frame(self.s3, pady=5, padx=5, bg="palegreen3")
+        self.s3bottom.pack(fill="both", expand=True)
+
+        img = PIL.Image.open('images\\usersguides.jpg')
+        img = img.resize((400, 230), PIL.Image.ANTIALIAS)
+        image2 = ImageTk.PhotoImage(img)
+        itwo = tk.Label(self.s3bottom, image=image2)
+        itwo.image = image2 # keep a reference!
+        itwo.pack(padx=0, pady=0, side="right")
+
+        self.s3topright = tk.Frame(self.s3top, height="30", pady=5, padx=5, bg="palegreen3")
+        self.s3topright.pack(fill="both")
+
+        self.b1 = tk.Button(self.s3topright, text="Start Menu", font=TEXT_FONT,
+                           relief='solid', borderwidth=2, bg='lightgrey', command=self.lift_nav)
+        self.b1.bind("<Enter>", partial(self.color_config, self.b1, "white"))
+        self.b1.bind("<Leave>", partial(self.color_config, self.b1, "lightgrey"))
+        self.b1.pack(padx=10, pady=0, side="right")
+
+
+        self.s3topleft = tk.Frame(self.s3top, pady=5, padx=5, bg="palegreen3")
+        self.s3topleft.pack(fill="both", expand=True)
+
+        ## hyperlink
+        link_to_site = tk.Label(self.s3topleft, text="EPA HEM4 Webpage (link)",
+                               font=TEXT_FONT, bg="palegreen3", anchor="e")
+        link_to_site.pack(pady=10,fill="x", expand=True)
+        link_to_site.bind('<Button-1>', hyperlink1)
+
+        link_to_userguide = tk.Label(self.s3topleft, text="HEM4 User's Guide (link)",
+                                      font=TEXT_FONT, bg="palegreen3", anchor="e")
+        link_to_userguide.pack(fill="x", expand=True)
+        link_to_userguide.bind("<Button-1>", hyperlink2)
 
     def lift_nav(self):
         self.lower()
