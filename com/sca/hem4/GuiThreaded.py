@@ -9,6 +9,8 @@ import queue
 import sys
 import tkinter as tk
 import tkinter.ttk as ttk
+import pickle
+
 
 from concurrent.futures import ThreadPoolExecutor
 from threading import Event
@@ -16,7 +18,7 @@ from tkinter import messagebox
 from tkinter import scrolledtext
 import numpy as np
 
-import datetime
+from datetime import datetime
 from com.sca.hem4.Processor import Processor
 from com.sca.hem4.log.Logger import Logger
 from com.sca.hem4.tools.CensusUpdater import CensusUpdater
@@ -30,6 +32,7 @@ from tkinter.simpledialog import Dialog, Toplevel
 from ttkthemes import ThemedStyle
 
 from collections import defaultdict
+import uuid
 
 
 TITLE_FONT= ("Verdana", 14)
@@ -299,11 +302,11 @@ class Hem4(tk.Frame):
         if hasattr(self, 'stop'):
             self.stop.destroy()
         
-        #add start button
-        self.run_button = tk.Button(self.main, text='RUN', fg="green", bg='lightgrey', relief='solid', borderwidth=2,
-                                    command=self.run, font=TEXT_FONT)
-        self.run_button.grid(row=10, column=0, sticky="E", padx=5, pady=5)
-        
+#        #add start button
+#        self.run_button = tk.Button(self.main, text='RUN', fg="green", bg='lightgrey', relief='solid', borderwidth=2,
+#                                    command=self.run, font=TEXT_FONT)
+#        self.run_button.grid(row=10, column=0, sticky="E", padx=5, pady=5)
+#        
         global instruction_instance
         self.instruction_instance.set(" ")
 
@@ -498,7 +501,7 @@ class Hem4(tk.Frame):
         
         
         #run only appears once the required files have been set
-        self.run_button = tk.Button(self.main, text='RUN', fg="green", bg='lightgrey', relief='solid', borderwidth=2,
+        self.run_button = tk.Button(self.main, text='NEXT', fg="green", bg='lightgrey', relief='solid', borderwidth=2,
                                     command=self.run, font=TEXT_FONT)
         self.run_button.grid(row=10, column=0, sticky="E", padx=5, pady=5)
         
@@ -1766,14 +1769,34 @@ class Hem4(tk.Frame):
                 self.tab2.lift()
                 Logger.logMessage("\nHEM4 is starting...")
                 
+    
+                
                  #set run name
                 if len(self.group_list.get()) > 0:
                     self.model.group_name = self.group_list.get()
                     
-                    
                 else:
                     
-                    self.model.group_name = None
+                    runid = str(uuid.uuid4())[:7]
+                    self.model.group_name = "rungroup_" + str(datetime.now().strftime('%Y_%m_%d_%H_%M_%S'))
+                
+                #set output folder
+                self.model.rootoutput = "output/" + self.model.group_name + "/"
+                if os.path.exists(self.model.rootoutput):
+                    shutil.rmtree(self.model.rootoutput)                
+                os.makedirs(self.model.rootoutput)
+                
+                #set save folder
+                save_state = SaveState(self.model.group_name, self.model)
+                self.model.save = save_state
+                
+                #save model
+                model_loc = save_state.save_folder + "/model.pkl"
+                modelHandler = open(model_loc, 'wb') 
+                pickle.dump(self.model, modelHandler)
+                modelHandler.close()
+                print("saving model")
+                
                     
                 if hasattr(self, 'run_button'):
                     self.run_button.destroy()

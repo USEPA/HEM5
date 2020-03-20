@@ -19,6 +19,7 @@ from concurrent.futures import ThreadPoolExecutor
 from threading import Event
 from tkinter import messagebox
 from tkinter import scrolledtext
+import pickle
 
 
 import queue
@@ -430,29 +431,7 @@ class Page1(Page):
 #        #reset inputs
 #        if self.var_m.get() == 1:
 #            self.max_risk.deselect()
-#        if self.var_c.get() == 1:
-#            self.cancer_driver.deselect()
-#        if self.var_h.get() == 1:
-#           self.hazard.deselect()
-#        if self.var_hi.get() == 1:
-#            self.hist.deselect()
-#        if self.var_hh.get() == 1:
-#            self.hh.deselect()
-#        if self.var_i.get() == 1:
-#            self.inc.deselect()
-#        if self.var_a.get() == 1:
-#            self.ai.deselect()
-#        if self.var_s.get() == 1:
-#            self.s.deselect()
-#            #pass position number and character number
-#            self.pos_num.set('')
-#            self.chars.num.set('')
-#
-#        if self.var_p.get() == 1:
-#           self.mp.deselect()
-#            
-            
-        
+#    
     
     def color_config(self, widget, color, event):
          widget.configure(bg=color)
@@ -913,24 +892,20 @@ class MainView(tk.Frame):
         
         #resume a facility run
         #first get all incomplete runs
-#        incomplete_facs = os.listdir("save")
-        resume = tk.Label(self.s3, text= "Resume Previous Run (DISABLED)", bg='palegreen3', 
+        incomplete_facs = os.listdir("save")
+        resume = tk.Label(self.s3, text= "Select a previously incompleted run", bg='palegreen3', 
                                font=TEXT_FONT).pack()
 #
-#        if len(incomplete_facs) > 1:
-#            resume_var = tk.StringVar(self.s3).set(incomplete_facs[1])
-#            resumeMenu = tk.OptionMenu(self.s3, resume_var, *incomplete_facs)
-#            
-#            resumeMenu.grid(row=2)
-#        
-#        #summarize risk
-#        completed_facs = os.listdir("output")
-#        ignore = ['HAP_ignored.log', 'hem4.log', 'SC_max_risk_and_hi.xlsx']
-#        folders = [x for x in completed_facs if x not in ignore]
-#        
-#        sum_var = tk.StringVar(self.s4).set(folders[1])
-#        popupMenu = tk.OptionMenu(self.s4, sum_var, *folders)
-#        popupMenu.grid(row = 2)
+        if len(incomplete_facs) > 1:
+            self.resume_var = tk.StringVar(self.s3)
+            self.resume_var.set(incomplete_facs[1])
+            self.resumeMenu = tk.OptionMenu(self.s3, self.resume_var, *incomplete_facs)
+            
+            self.resumeMenu.pack()
+
+        self.resume_button = tk.Button(self.s3, text="Resume", font=TEXT_FONT, relief='solid', borderwidth=2, bg='lightgrey',
+                             command=self.resume_run)
+        self.resume_button.pack()
         
         risk = tk.Button(self.s4, text= "Run Risk Summary Programs", font=TEXT_FONT, relief='solid', borderwidth=2, bg='lightgrey',
                              command=self.summary.lift)
@@ -962,6 +937,46 @@ class MainView(tk.Frame):
 
     def open_hem4(self):
         self.hem.reset_gui()
+        
+        
+    def show_resume(self):
+        self.resume_button = tk.Button(self.s3, text="Resume", font=TEXT_FONT, relief='solid', borderwidth=2, bg='lightgrey',
+                             command=self.resume_run)
+        
+        
+    def resume_run(self):
+        
+        #get folder
+        resume_folder = self.resume_var
+        resume_loc = 'save/'+self.resume_var.get()
+        
+        resumemodel = resume_loc + '/model.pkl'
+        #unpickle model
+        modelfile = open(resumemodel,'rb')
+        unpk_model = pickle.load(modelfile)
+        modelfile.close()
+        
+        self.model = unpk_model
+        
+        #unpickle facids
+        resumefac = resume_loc + "/remaining_facs.pkl"
+        facfile = open(resumefac,'rb')
+        unpk_facids = pickle.load(facfile)
+        facfile.close()
+        
+        
+        #replace facids
+        self.model.facids = unpk_facids
+        
+        print(self.model.faclist)
+        
+    
+        self.hem.run()
+        
+        #self.hem.lift()
+        
+        
+        
 
 if __name__ == "__main__":
     root = tk.Tk()

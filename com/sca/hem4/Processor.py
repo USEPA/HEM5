@@ -35,16 +35,16 @@ class Processor():
         # Create run id for saving model. Default to cat_timestamp if no group
         # Also create a root output folder using the user supplied group name.
         # If no group name, output folder name will use date/time stamp        
-        if self.model.group_name != None:
-            runid = self.model.group_name
-        else: 
-            runid = str(uuid.uuid4())[:7]
-            self.model.group_name = "rungroup_" + str(datetime.now().strftime('%Y_%m_%d_%H_%M_%S'))
-
-        self.model.rootoutput = "output/" + self.model.group_name + "/"
-        if os.path.exists(self.model.rootoutput):
-            shutil.rmtree(self.model.rootoutput)                
-        os.makedirs(self.model.rootoutput)
+#        if self.model.group_name != None:
+#            runid = self.model.group_name
+#        else: 
+#            runid = str(uuid.uuid4())[:7]
+#            self.model.group_name = "rungroup_" + str(datetime.now().strftime('%Y_%m_%d_%H_%M_%S'))
+#
+#        self.model.rootoutput = "output/" + self.model.group_name + "/"
+#        if os.path.exists(self.model.rootoutput):
+#            shutil.rmtree(self.model.rootoutput)                
+#        os.makedirs(self.model.rootoutput)
 
         # create Inputs folder
         inputspkgr = InputsPackager(self.model.rootoutput, self.model)
@@ -58,8 +58,8 @@ class Processor():
             
         #print(runid)
         #create save model
-        save_state = SaveState(runid, self.model)
-        self.model.save = save_state
+#        save_state = SaveState(runid, self.model)
+#        self.model.save = save_state
 
         threadLocal.abort = False
                 
@@ -147,6 +147,11 @@ class Processor():
                 #reset model options aftr facility
                 self.model.model_optns = defaultdict()
                 
+#                try:  
+#                    self.model.save.remove_folder()
+#                except:
+#                    pass
+#                
                 
 
         Logger.logMessage("HEM4 Modeling Completed. Finished modeling all" +
@@ -157,10 +162,7 @@ class Processor():
         
          #remove save folder after a completed run
 
-        try:  
-            self.model.save.remove_folder()
-        except:
-            pass
+        
         
 
         return success

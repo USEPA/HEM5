@@ -397,8 +397,7 @@ class FacilityRunner():
                 os.rename(oldname, newname)    
 
                 
-            #if successful save state
-            self.model.save.save_model(self.facilityId)
+            
             
             
             
@@ -478,7 +477,9 @@ class FacilityRunner():
                                             self.runstream, plot_df, self.abort)
             outputProcess.process()
                         
-
+            #if successful save state
+            self.model.save.save_model(self.facilityId)
+            
             pace =  str(round((time.time()- self.start)/60, 2)) + ' minutes'
             Logger.logMessage("Finished calculations for " + self.facilityId + 
                               ' after ' + pace + "\n")
