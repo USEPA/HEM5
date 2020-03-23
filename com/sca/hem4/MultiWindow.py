@@ -852,9 +852,9 @@ class MainView(tk.Frame):
 #        self.buttonframe.pack(side="right", fill="y", expand=False)
         container.pack(fill="both", expand=True)
 
-        messageQueue = queue.Queue()
-        callbackQueue = queue.Queue() 
-        self.hem = Hem4(home, messageQueue, callbackQueue)
+        self.messageQueue = queue.Queue()
+        self.callbackQueue = queue.Queue() 
+        self.hem = Hem4(home, self.messageQueue, self.callbackQueue)
         #   start = Page1(self)
         self.nav = Page2(self)
         self.summary = Page1(self)
@@ -978,49 +978,56 @@ class MainView(tk.Frame):
         #replace facids
         self.model.facids = unpk_facids
         
+        self.hem.resume(unpk_model)
+        
+        self.hem.run()
 
-        #tell user to check the Progress/Log section
-        override = messagebox.askokcancel("Confirm HEM4 Run", "Clicking 'OK'"+
-                               " will start HEM4. Check the log tabs for" +
-                               " updates on facility runs.")
-
-        if override:
-            global instruction_instance
-            self.hem.instruction_instance.set("HEM4 Running, check the log tab for updates")
-            self.hem.tab2.lift()
-            Logger.logMessage("\nHEM4 is starting...")
-            
-            #set output folder
-            self.model.rootoutput = "output/" + self.model.group_name + "/"
-
-            #set save folder
-            save_state = SaveState(self.model.group_name, self.model)
-            self.model.save = save_state
-            
-            #save model
-            model_loc = save_state.save_folder + "model.pkl"
-            modelHandler = open(model_loc, 'wb') 
-            pickle.dump(self.model, modelHandler)
-            modelHandler.close()
-            print("saving model")
-            
-                
-
-            self.hem.run_button.destroy()
-            
-            self.stop = tk.Button(self.hem.main, text="STOP", fg="red", font=TEXT_FONT, bg='lightgrey', relief='solid', borderwidth=2,
-                          command=self.hem.quit_app)
-            self.stop.grid(row=0, column=0, sticky="E", padx=5, pady=5)
+#        #tell user to check the Progress/Log section
+#        override = messagebox.askokcancel("Confirm HEM4 Run", "Clicking 'OK'"+
+#                               " will start HEM4. Check the log tabs for" +
+#                               " updates on facility runs.")
+#        
+#        self.after(25, self.after_callback)
+#        self.after(500, self.check_processing)
+#        
+#        
+#        if override:
+#            global instruction_instance
+#            self.hem.instruction_instance.set("HEM4 Running, check the log tab for updates")
+#            self.hem.tab2.lift()
+#            Logger.logMessage("\nHEM4 is starting...")
+#            
+#            #set output folder
+#            self.model.rootoutput = "output/" + self.model.group_name + "/"
+#
+#            #set save folder
+#            save_state = SaveState(self.model.group_name, self.model)
+#            self.model.save = save_state
+#            
+#            #save model
+#            model_loc = save_state.save_folder + "model.pkl"
+#            modelHandler = open(model_loc, 'wb') 
+#            pickle.dump(self.model, modelHandler)
+#            modelHandler.close()
+#            print("saving model")
+#            
+#                
+#
+#            self.hem.run_button.destroy()
+#            
+#            self.stop = tk.Button(self.hem.main, text="STOP", fg="red", font=TEXT_FONT, bg='lightgrey', relief='solid', borderwidth=2,
+#                          command=self.hem.quit_app)
+#            self.stop.grid(row=0, column=0, sticky="E", padx=5, pady=5)
+#    
+#            try:
+#                self.process()
+#                
+#            except Exception as e:
+#            
+#                Logger.logMessage(str(e))
     
-            try:
-                self.process()
-                
-            except Exception as e:
-            
-                Logger.logMessage(str(e))
-    
 
-        #self.hem.run()
+        
         
         self.hem.lift()
         

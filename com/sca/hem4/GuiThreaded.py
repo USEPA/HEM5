@@ -114,7 +114,26 @@ class Hem4(tk.Frame):
         self.after(500, self.check_processing)
 
         Logger.messageQueue = messageQueue
-
+        
+        self.resume_run=False
+    
+    def resume(self, resume):
+        
+        self.resume_run=True
+        
+        self.uploadFacilitiesList(resume)
+        self.uploadHAPEmissions(resume)
+        self.uploadEmissionLocations(resume)
+        self.uploadUserReceptors(resume)
+        self.uploadbuoyant(resume)
+        self.uploadPolyvertex(resume)
+        self.uploadBuildingDownwash(resume)
+        self.uploadParticle(resume)
+        self.uploadLandUse(resume)
+        self.uploadSeasons(resume)
+        self.uploadVariation(resume)
+        self.uploadAltReceptors(resume)
+        
 
     def close(self):
         Logger.close(True)
@@ -122,6 +141,7 @@ class Hem4(tk.Frame):
 #%% Quit Function    
     def quit_app(self):
         """
+        
         Function handles quiting HEM4 by closing the window containing
         the GUI and exiting all background processes & threads
         """
@@ -642,365 +662,491 @@ class Hem4(tk.Frame):
 
 #%% functions for uploading inputs
     
-    def uploadFacilitiesList(self):
+    def uploadFacilitiesList(self, resume=None):
         """
         Function for uploading Facilities List option file. Also creates
         user receptor input space if indicated
         """
         
-        fullpath = self.openFile(askopenfilename())
-        if fullpath is not None:
-            self.uploader.upload("faclist", fullpath)
-
-            self.model.facids = self.model.faclist.dataframe['fac_id']
-
-            # Update the UI
-            self.fac_list.set(fullpath)
-            [self.scr.insert(tk.INSERT, msg) for msg in self.model.faclist.log]
+        if self.resume_run == True:
             
-            #trigger additional inputs fo user recptors, assuming we are not in "user receptors only" mode
-            if 'Y' in self.model.faclist.dataframe['user_rcpt'].tolist():
-                #create user receptors
-                self.add_ur()
-                
-            else:
-                if hasattr(self, 's6'):
-                    self.urep.destroy()
-                    self.urep_list_man.destroy()
-                    self.ur_label.destroy()
-                    self.s6.destroy()
-                    
-            #trigger additional inputs for emisvar
-            if 'Y' in self.model.faclist.dataframe['emis_var'].tolist():
-                #create user receptors
-                self.add_variation()
-                
-            else:
-                if hasattr(self, ''):
-                    self.emisvar_label.destroy()
-                    self.emisvar_list_man.destroy()
-                    self.emisvar_list.destroy()
-                    self.emisvar_on.destroy()
-                
-            
-                    
-            #trigger additional inputs for building downwash
-            if 'Y' in self.model.faclist.dataframe['bldg_dw'].tolist():
-                
-                #enable optional input tab
-                self.optionaltab = True
-                
-                #create building downwash input
-                self.add_bldgdw()
-            
-            else:
-                if hasattr(self, 's9'):
-                    self.bldgdw_up.destroy()
-                    self.bldgdw_list_man.destroy()
-                    self.bldgdw_label.destroy()
-                    self.s9.destroy()
-                    
-            #check depostion and depletion   
-#            phaseList = []
-            
-            #set phase column in faclist dataframe to None
-            self.model.faclist.dataframe['phase'] = None
-
-            for i, r in self.model.faclist.dataframe.iterrows():
-                
-                phase = check_phase(r)
-#                phaseList.append([r['fac_id'], phase])
-                self.model.faclist.dataframe.at[i, 'phase'] = phase
-            
-            deposition_depletion = check_dep(self.model.faclist.dataframe)
+            self.model.faclist = resume.faclist
         
-            
-            #pull out facilities using depdeplt 
-            self.model.depdeplt = [x[0] for x in deposition_depletion]
-            print('DEPDEP:', self.model.depdeplt)
-            
-            #pull out conditional inputs
-            conditional = set([y for x in deposition_depletion for y in x[1:]])
-            #print('conditional', conditional)
-            
-            if conditional is not None:
-                #enable deposition and depletion input tab
-                self.deptab = True                
+        else:
+            fullpath = self.openFile(askopenfilename())
+            if fullpath is not None:
+                self.uploader.upload("faclist", fullpath)
+    
+                self.model.facids = self.model.faclist.dataframe['fac_id']
+    
+                # Update the UI
+                self.fac_list.set(fullpath)
+                [self.scr.insert(tk.INSERT, msg) for msg in self.model.faclist.log]
                 
-                
-                #if deposition or depletion present load gas params library
-                self.uploader.uploadLibrary("gas params")
-                for required in conditional:
-                    print("required", required)
-                    if required == 'particle size':
-                        self.add_particle()        
+                #trigger additional inputs fo user recptors, assuming we are not in "user receptors only" mode
+                if 'Y' in self.model.faclist.dataframe['user_rcpt'].tolist():
+                    #create user receptors
+                    self.add_ur()
                     
-                    elif required == 'land use':
-                        self.add_land()
-                    
-                    elif required == 'seasons':
-                        self.add_seasons()
+                else:
+                    if hasattr(self, 's6'):
+                        self.urep.destroy()
+                        self.urep_list_man.destroy()
+                        self.ur_label.destroy()
+                        self.s6.destroy()
                         
-            else:
-                #clear on new input without dep/deplt
-                if hasattr(self, 's12'):
-                    #clear particle
-                    if hasattr(self, 'dep_part'):
-                        self.dep_part_up.destroy()
-                        self.dep_part_man.destroy()
-                        self.dep_part.set('')
-#                        self.dep_part.destroy()
-                    #clear land
-                    if hasattr(self, 'dep_land'):
-                        self.dep_land_up.destroy()
-                        self.dep_land_man.destroy()
-                        self.dep_land.set('')
-#                        self.dep_land.destroy()
-
-                    #clear vegetation
-                    if hasattr(self, 'dep_seasons'):
-                        self.dep_seasons_up.destroy()
-                        self.dep_seasons_man.destroy()
-                        self.dep_seasons.set('')
-#                        self.dep_seasons.destroy()
-
-
-                    self.s12.destroy()                        
+                #trigger additional inputs for emisvar
+                if 'Y' in self.model.faclist.dataframe['emis_var'].tolist():
+                    #create user receptors
+                    self.add_variation()
+                    
+                else:
+                    if hasattr(self, ''):
+                        self.emisvar_label.destroy()
+                        self.emisvar_list_man.destroy()
+                        self.emisvar_list.destroy()
+                        self.emisvar_on.destroy()
+                    
+                
+                        
+                #trigger additional inputs for building downwash
+                if 'Y' in self.model.faclist.dataframe['bldg_dw'].tolist():
+                    
+                    #enable optional input tab
+                    self.optionaltab = True
+                    
+                    #create building downwash input
+                    self.add_bldgdw()
+                
+                else:
+                    if hasattr(self, 's9'):
+                        self.bldgdw_up.destroy()
+                        self.bldgdw_list_man.destroy()
+                        self.bldgdw_label.destroy()
+                        self.s9.destroy()
+                        
+                #check depostion and depletion   
+    #            phaseList = []
+                
+                #set phase column in faclist dataframe to None
+                self.model.faclist.dataframe['phase'] = None
+    
+                for i, r in self.model.faclist.dataframe.iterrows():
+                    
+                    phase = check_phase(r)
+    #                phaseList.append([r['fac_id'], phase])
+                    self.model.faclist.dataframe.at[i, 'phase'] = phase
+                
+                deposition_depletion = check_dep(self.model.faclist.dataframe)
+            
+                
+                #pull out facilities using depdeplt 
+                self.model.depdeplt = [x[0] for x in deposition_depletion]
+                print('DEPDEP:', self.model.depdeplt)
+                
+                #pull out conditional inputs
+                conditional = set([y for x in deposition_depletion for y in x[1:]])
+                #print('conditional', conditional)
+                
+                if conditional is not None:
+                    #enable deposition and depletion input tab
+                    self.deptab = True                
+                    
+                    
+                    #if deposition or depletion present load gas params library
+                    self.uploader.uploadLibrary("gas params")
+                    for required in conditional:
+                        print("required", required)
+                        if required == 'particle size':
+                            self.add_particle()        
+                        
+                        elif required == 'land use':
+                            self.add_land()
+                        
+                        elif required == 'seasons':
+                            self.add_seasons()
+                            
+                else:
+                    #clear on new input without dep/deplt
+                    if hasattr(self, 's12'):
+                        #clear particle
+                        if hasattr(self, 'dep_part'):
+                            self.dep_part_up.destroy()
+                            self.dep_part_man.destroy()
+                            self.dep_part.set('')
+    #                        self.dep_part.destroy()
+                        #clear land
+                        if hasattr(self, 'dep_land'):
+                            self.dep_land_up.destroy()
+                            self.dep_land_man.destroy()
+                            self.dep_land.set('')
+    #                        self.dep_land.destroy()
+    
+                        #clear vegetation
+                        if hasattr(self, 'dep_seasons'):
+                            self.dep_seasons_up.destroy()
+                            self.dep_seasons_man.destroy()
+                            self.dep_seasons.set('')
+    #                        self.dep_seasons.destroy()
+    
+    
+                        self.s12.destroy()                        
                     
             
 
-    def uploadHAPEmissions(self):
+    def uploadHAPEmissions(self, resume=None):
         """
         Function for uploading Hap Emissions file
         """
-        
-        fullpath = self.openFile(askopenfilename())
-        if fullpath is not None:
-            self.uploader.upload("hapemis", fullpath)
-
-            # Update the UI
-            self.hap_list.set(fullpath)
-            [self.scr.insert(tk.INSERT, msg) for msg in self.model.hapemis.log]
+        if self.resume_run == True:
             
+            self.model.hapemis = resume.hapemis
+        
+        else:
+            fullpath = self.openFile(askopenfilename())
+            if fullpath is not None:
+                self.uploader.upload("hapemis", fullpath)
+    
+                # Update the UI
+                self.hap_list.set(fullpath)
+                [self.scr.insert(tk.INSERT, msg) for msg in self.model.hapemis.log]
                 
+                    
             
     
-    def uploadEmissionLocations(self):
+    def uploadEmissionLocations(self, resume=None):
         """
         Function for uploading Emissions Locations file. Also creates optional 
         input spaces if indicated in file or removes optional spaces if upload
         is triggered again and there are no optional inputs indicated
         """
-        fullpath = self.openFile(askopenfilename())
-        if fullpath is not None:
-            self.uploader.upload("emisloc", fullpath)
-
-            # Update the UI
-            self.emisloc_list.set(fullpath)
-            [self.scr.insert(tk.INSERT, msg) for msg in self.model.emisloc.log]
+        if self.resume_run == True:
             
-            #trigger additional inputs for buoyant line and polyvertex
-            if 'I' in self.model.emisloc.dataframe['source_type'].tolist():
+            self.model.emisloc = resume.emisloc
+        
+        else:
+        
+            fullpath = self.openFile(askopenfilename())
+            if fullpath is not None:
+                self.uploader.upload("emisloc", fullpath)
+    
+                # Update the UI
+                self.emisloc_list.set(fullpath)
+                [self.scr.insert(tk.INSERT, msg) for msg in self.model.emisloc.log]
                 
-                #enable optional input tab
-                self.optionaltab = False
-                
-                #create polyvertex upload 
-                self.add_poly()
-                
-            else:
-                #reset gui if reuploading
-                
-                if hasattr(self, 's8'):
-                    self.poly_list_man.destroy()
-                    self.poly_up.destroy()
-                    self.poly_label.destroy()
-                    self.s8.destroy()
+                #trigger additional inputs for buoyant line and polyvertex
+                if 'I' in self.model.emisloc.dataframe['source_type'].tolist():
                     
+                    #enable optional input tab
+                    self.optionaltab = False
                     
-            if 'B' in self.model.emisloc.dataframe['source_type'].tolist():
+                    #create polyvertex upload 
+                    self.add_poly()
+                    
+                else:
+                    #reset gui if reuploading
+                    
+                    if hasattr(self, 's8'):
+                        self.poly_list_man.destroy()
+                        self.poly_up.destroy()
+                        self.poly_label.destroy()
+                        self.s8.destroy()
+                        
+                        
+                if 'B' in self.model.emisloc.dataframe['source_type'].tolist():
+                    
+                    #enable optional input tab
+                    self.optionaltab = False
+                    
+                    #create buoyant line upload
+                    self.add_buoyant()
+                    
+                else:
+                    #reset gui if reuploading    
+                     if hasattr(self, 's7'):
+                        self.buoyant_list_man.destroy()
+                        self.buoyant_up.destroy()
+                        self.b_label.destroy()
+                        self.s7.destroy()
                 
-                #enable optional input tab
-                self.optionaltab = False
-                
-                #create buoyant line upload
-                self.add_buoyant()
-                
-            else:
-                #reset gui if reuploading    
-                 if hasattr(self, 's7'):
-                    self.buoyant_list_man.destroy()
-                    self.buoyant_up.destroy()
-                    self.b_label.destroy()
-                    self.s7.destroy()
-            
-    def uploadPolyvertex(self):
+    def uploadPolyvertex(self, resume=None):
         """
         Function for uploading polyvertex source file
         """
         
-        if self.model.emisloc.dataframe is None:
-            messagebox.showinfo("Emissions Locations File Missing",
-                "Please upload an Emissions Locations file before adding" +
-                " a Polyvertex file.")
-        fullpath = self.openFile(askopenfilename())
-        if fullpath is not None:
-            self.uploader.uploadDependent("polyvertex", fullpath, 
-                                                   self.model.emisloc.dataframe)
+        if self.resume_run == True:
+            
+            try:
+            
+                self.model.multipoly = resume.multipoly
+                
+            except:
+                
+                self.model.multipoly = None
+        
+        else:
+        
+            if self.model.emisloc.dataframe is None:
+                messagebox.showinfo("Emissions Locations File Missing",
+                    "Please upload an Emissions Locations file before adding" +
+                    " a Polyvertex file.")
+            fullpath = self.openFile(askopenfilename())
+            if fullpath is not None:
+                self.uploader.uploadDependent("polyvertex", fullpath, 
+                                                       self.model.emisloc.dataframe)
+    
+    
+                # Update the UI
+                self.poly_list.set(fullpath)
+                [self.scr.insert(tk.INSERT, msg) for msg in self.model.multipoly.log]
 
-
-            # Update the UI
-            self.poly_list.set(fullpath)
-            [self.scr.insert(tk.INSERT, msg) for msg in self.model.multipoly.log]
-
-    def uploadbuoyant(self):
+    def uploadbuoyant(self, resume=None):
         """
         Function for uploading buoyant line parameter file
         """
-
-        if self.model.emisloc.dataframe is None:
-            messagebox.showinfo("Emissions Locations File Missing",
-                "Please upload an Emissions Locations file before adding"+ 
-                " a buoyant line file.")
+        if self.resume_run == True:
+            
+            try:
+                
+                self.model.multibuoy = resume.multibuoy
+                
+            except:
+                
+                self.model.multibuoy = None
         
-        fullpath = self.openFile(askopenfilename())
-        if fullpath is not None:
-            self.uploader.uploadDependent("buoyant line", fullpath, 
-                                                   self.model.emisloc.dataframe)
+        else:
+    
+            if self.model.emisloc.dataframe is None:
+                messagebox.showinfo("Emissions Locations File Missing",
+                    "Please upload an Emissions Locations file before adding"+ 
+                    " a buoyant line file.")
+            
+            fullpath = self.openFile(askopenfilename())
+            if fullpath is not None:
+                self.uploader.uploadDependent("buoyant line", fullpath, 
+                                                       self.model.emisloc.dataframe)
+    
+                # Update the UI
+                self.buoyant_list.set(fullpath)
+                [self.scr.insert(tk.INSERT, msg) for msg in self.model.multibuoy.log]
 
-            # Update the UI
-            self.buoyant_list.set(fullpath)
-            [self.scr.insert(tk.INSERT, msg) for msg in self.model.multibuoy.log]
-
-    def uploadUserReceptors(self):
+    def uploadUserReceptors(self, resume=None):
         """
         Function for uploading user receptors
         """
-
-        if self.model.faclist is None:
-            messagebox.showinfo("Facilities List Option File Missing",
-                "Please upload a Facilities List Options file before selecting"+
-                " a User Receptors file.")
-            return
-
-        fullpath = self.openFile(askopenfilename())
-        if fullpath is not None:
-
-            self.uploader.uploadDependent("user receptors", fullpath, 
-                                          self.model.faclist.dataframe)
+        
+        if self.resume_run == True:
             
-            self.model.model_optns['ureceptr'] = True
-            # Update the UI
-            self.urep_list.set(fullpath)
-            [self.scr.insert(tk.INSERT, msg) for msg in self.model.ureceptr.log]
+            try:
+            
+                self.model.ureceptr = resume.ureceptr
+                
+            except:
+                
+                self.model.ureceptr = None
+        
+        else:
 
-    def uploadAltReceptors(self):
+            if self.model.faclist is None:
+                messagebox.showinfo("Facilities List Option File Missing",
+                    "Please upload a Facilities List Options file before selecting"+
+                    " a User Receptors file.")
+                return
+    
+            fullpath = self.openFile(askopenfilename())
+            if fullpath is not None:
+    
+                self.uploader.uploadDependent("user receptors", fullpath, 
+                                              self.model.faclist.dataframe)
+                
+                self.model.model_optns['ureceptr'] = True
+                # Update the UI
+                self.urep_list.set(fullpath)
+                [self.scr.insert(tk.INSERT, msg) for msg in self.model.ureceptr.log]
+
+    def uploadAltReceptors(self, resume=None):
         """
         Function for uploading Alternate Receptors
         """
+        if self.resume_run == True:
+            
+            try:
+            
+                self.model.altreceptr = resume.altreceptr
+                
+            except:
+                
+                self.model.altreceptr = None
+        
+        else:
 
-        fullpath = self.openFile(askopenfilename())
-        if fullpath is not None:
-                        
-            self.uploader.upload("alt receptors", fullpath)
-            self.model.altRec_optns["path"] = fullpath
+            fullpath = self.openFile(askopenfilename())
+            if fullpath is not None:
+                            
+                self.uploader.upload("alt receptors", fullpath)
+                self.model.altRec_optns["path"] = fullpath
+    
+                # Update the UI
+                self.urepalt_list.set(fullpath)
+                [self.scr.insert(tk.INSERT, msg) for msg in self.model.altreceptr.log]
 
-            # Update the UI
-            self.urepalt_list.set(fullpath)
-            [self.scr.insert(tk.INSERT, msg) for msg in self.model.altreceptr.log]
-
-    def uploadBuildingDownwash(self):
+    def uploadBuildingDownwash(self, resume=None):
         """ 
         Function for uploading building downwash
         """
-        if self.model.faclist.dataframe is None:
-            messagebox.showinfo("Facilities List Option File Missing",
-                "Please upload a Facilities List Options file before selecting"+
-                " a building downwash file.")
-
-        fullpath = self.openFile(askopenfilename())
-        if fullpath is not None: 
-            self.uploader.uploadDependent("building downwash", fullpath, 
-                                          self.model.faclist.dataframe)
-
-            # Update the UI
-            self.bldgdw_list.set(fullpath)
-            [self.scr.insert(tk.INSERT, msg) for msg in self.model.bldgdw.log]
+        
+        if self.resume_run == True:
+            
+            try:
+                
+                self.model.bldgdw = resume.bldgdw
+                
+            except:
+                
+                self.model.bldgdw = None
+        
+        else:
+            
+            if self.model.faclist.dataframe is None:
+                messagebox.showinfo("Facilities List Option File Missing",
+                    "Please upload a Facilities List Options file before selecting"+
+                    " a building downwash file.")
     
+            fullpath = self.openFile(askopenfilename())
+            if fullpath is not None: 
+                self.uploader.uploadDependent("building downwash", fullpath, 
+                                              self.model.faclist.dataframe)
+    
+                # Update the UI
+                self.bldgdw_list.set(fullpath)
+                [self.scr.insert(tk.INSERT, msg) for msg in self.model.bldgdw.log]
+        
 
 
 
-    def uploadParticle(self, facilities):
+    def uploadParticle(self, facilities, resume=None):
         """ 
         Function for uploading particle size
         """
-        if self.model.faclist.dataframe is None:
-            messagebox.showinfo("Facilities List Option File Missing",
-                "Please upload a Facilities List Options file before selecting"+
-                " a particle file.")
-
-        fullpath = self.openFile(askopenfilename())
-        if fullpath is not None: 
-            self.uploader.uploadDependent("particle depletion", fullpath, 
-                                           self.model.faclist.dataframe, facilities)
-
-            # Update the UI
-            self.dep_part.set(fullpath)
-            [self.scr.insert(tk.INSERT, msg) for msg in self.model.partdep.log]
+        
+        if self.resume_run == True:
             
+            try:
+                
+                self.model.partdep = resume.partdep
+                
+            except:
+                
+                self.model.partdep = None
+            
+                
+                
+        else:
+            if self.model.faclist.dataframe is None:
+                messagebox.showinfo("Facilities List Option File Missing",
+                    "Please upload a Facilities List Options file before selecting"+
+                    " a particle file.")
     
+            fullpath = self.openFile(askopenfilename())
+            if fullpath is not None: 
+                self.uploader.uploadDependent("particle depletion", fullpath, 
+                                               self.model.faclist.dataframe, facilities)
     
-    def uploadLandUse(self):
+                # Update the UI
+                self.dep_part.set(fullpath)
+                [self.scr.insert(tk.INSERT, msg) for msg in self.model.partdep.log]
+                
+        
+        
+    def uploadLandUse(self, resume=None):
         """ 
         Function for uploading land use information
         """
-        if self.model.faclist.dataframe is None:
-            messagebox.showinfo("Facilities List Option File Missing",
-                "Please upload a Facilities List Options file before selecting"+
-                " a particle file.")
-
-        fullpath = self.openFile(askopenfilename())
-        if fullpath is not None: 
-            self.uploader.uploadDependent("land use", fullpath, 
-                                          self.model.faclist.dataframe)
-
-            # Update the UI
-            self.dep_land.set(fullpath)
-            [self.scr.insert(tk.INSERT, msg) for msg in self.model.landuse.log]
+        if self.resume_run == True:
+            
+            try:
+                
+            
+                self.model.landuse = resume.landuse
+                
+            except:
+                
+                self.model.landuse = None
+                
+        
+        else:
+            if self.model.faclist.dataframe is None:
+                messagebox.showinfo("Facilities List Option File Missing",
+                    "Please upload a Facilities List Options file before selecting"+
+                    " a particle file.")
+    
+            fullpath = self.openFile(askopenfilename())
+            if fullpath is not None: 
+                self.uploader.uploadDependent("land use", fullpath, 
+                                              self.model.faclist.dataframe)
+    
+                # Update the UI
+                self.dep_land.set(fullpath)
+                [self.scr.insert(tk.INSERT, msg) for msg in self.model.landuse.log]
             
     
-    def uploadSeasons(self):
+    def uploadSeasons(self, resume=None):
         """ 
         Function for uploading seasonal vegetation information
         """
-        if self.model.faclist.dataframe is None:
-            messagebox.showinfo("Facilities List Option File Missing",
-                "Please upload a Facilities List Options file before selecting"+
-                " a particle file.")
-
-        fullpath = self.openFile(askopenfilename())
-        if fullpath is not None: 
-            self.uploader.uploadDependent("seasons", fullpath, 
-                                          self.model.faclist.dataframe)
-
-            # Update the UI
-            self.dep_seasons.set(fullpath)
-            [self.scr.insert(tk.INSERT, msg) for msg in self.model.seasons.log]
+        if self.resume_run == True:
+            
+            try:
+            
+                self.model.seasons = resume.seasons
+                
+            except:
+                
+                self.model.seasons = None
+        
+        else:
+        
+            if self.model.faclist.dataframe is None:
+                messagebox.showinfo("Facilities List Option File Missing",
+                    "Please upload a Facilities List Options file before selecting"+
+                    " a particle file.")
     
+            fullpath = self.openFile(askopenfilename())
+            if fullpath is not None: 
+                self.uploader.uploadDependent("seasons", fullpath, 
+                                              self.model.faclist.dataframe)
     
+                # Update the UI
+                self.dep_seasons.set(fullpath)
+                [self.scr.insert(tk.INSERT, msg) for msg in self.model.seasons.log]
+        
+        
     
-    def uploadVariation(self):
+    def uploadVariation(self, resume=None):
         """
         Function for uploading emissions variation inputs
         """
-        fullpath = self.openFile(askopenfilename())
-        if fullpath is not None:
-            self.uploader.uploadDependent("emissions variation", fullpath, 
-                                          self.model.emisloc.dataframe)
+        
+        if self.resume_run == True:
             
-             # Update the UI
-            self.emisvar_list.set(fullpath)
-            [self.scr.insert(tk.INSERT, msg) for msg in self.model.emisvar.log]
+            try:
+            
+                self.model.emisvar = resume.emisvar
+                
+            except:
+                
+                self.model.emisvar = None
+        
+        else:
+            
+            fullpath = self.openFile(askopenfilename())
+            if fullpath is not None:
+                self.uploader.uploadDependent("emissions variation", fullpath, 
+                                              self.model.emisloc.dataframe)
+                
+                 # Update the UI
+                self.emisvar_list.set(fullpath)
+                [self.scr.insert(tk.INSERT, msg) for msg in self.model.emisvar.log]
     
     
     
@@ -1705,55 +1851,57 @@ class Hem4(tk.Frame):
                         #get deposition exclusions
                         print('Checking depletion.... against', self.model.depdeplt)
                         
-                        #look through hapemis for facilities that are running deposition or depletion
-                        hapDep = self.model.hapemis.dataframe[self.model.hapemis.dataframe['fac_id'].isin(self.model.depdeplt)]
+                        if self.model.depdeplt != None:
                         
-                        #now check phase in facilities list option file
-                        facDep = self.model.faclist.dataframe[self.model.faclist.dataframe['fac_id'].isin(self.model.depdeplt)]
-                        
-                        
-                        
-                        for i, r in facDep.iterrows():
-                            if r['phase'] in ['P', 'V', 'B']:
-                                
-                                #look at pollutants
-                                pols = hapDep[hapDep['fac_id'] == r['fac_id']]
-                                
-                                #get sourcelist
-                                sourcesList = set(pols['source_id'].tolist())
-                                #print(r['fac_id'], r['phase'], 'Sources:', sourcesList)
-                                
-                                for source in sourcesList:
-                                    print('Source', source)
-                                    
-                                    if r['phase'] == 'P':
-                                        #get the sum of part frac
-                                        polSum = sum(pols[pols['source_id'] == source]['part_frac'].tolist())
-                                        print('P PolSum:', polSum)
-                                        
-                                        #if they are zero then its not particulate at all 
-                                        if polSum == 0:
-                                            
-                                            #add it to the list of source exclusions
-                                            self.model.sourceExclusion.append(source)
-                                        
-                                    elif r['phase'] == 'V':
-                                        
-                                        #get
-                                        so = pols[pols['source_id'] == source]['part_frac'].tolist()
-                                        print('V:', so)
-                                        polSum = sum(so)
-                                        allPart = len(so) * 100
-                                        
-                                        #if they are all particle (100%)
-                                        if polSum == allPart:
-                                            
-                                            #add it to the list of source exclusions
-                                            self.model.sourceExclusion.append(source)
+                            #look through hapemis for facilities that are running deposition or depletion
+                            hapDep = self.model.hapemis.dataframe[self.model.hapemis.dataframe['fac_id'].isin(self.model.depdeplt)]
                             
-                            else:
-                                self.ready = True
-        
+                            #now check phase in facilities list option file
+                            facDep = self.model.faclist.dataframe[self.model.faclist.dataframe['fac_id'].isin(self.model.depdeplt)]
+                            
+                            
+                            
+                            for i, r in facDep.iterrows():
+                                if r['phase'] in ['P', 'V', 'B']:
+                                    
+                                    #look at pollutants
+                                    pols = hapDep[hapDep['fac_id'] == r['fac_id']]
+                                    
+                                    #get sourcelist
+                                    sourcesList = set(pols['source_id'].tolist())
+                                    #print(r['fac_id'], r['phase'], 'Sources:', sourcesList)
+                                    
+                                    for source in sourcesList:
+                                        print('Source', source)
+                                        
+                                        if r['phase'] == 'P':
+                                            #get the sum of part frac
+                                            polSum = sum(pols[pols['source_id'] == source]['part_frac'].tolist())
+                                            print('P PolSum:', polSum)
+                                            
+                                            #if they are zero then its not particulate at all 
+                                            if polSum == 0:
+                                                
+                                                #add it to the list of source exclusions
+                                                self.model.sourceExclusion.append(source)
+                                            
+                                        elif r['phase'] == 'V':
+                                            
+                                            #get
+                                            so = pols[pols['source_id'] == source]['part_frac'].tolist()
+                                            print('V:', so)
+                                            polSum = sum(so)
+                                            allPart = len(so) * 100
+                                            
+                                            #if they are all particle (100%)
+                                            if polSum == allPart:
+                                                
+                                                #add it to the list of source exclusions
+                                                self.model.sourceExclusion.append(source)
+                                
+                                else:
+                                    self.ready = True
+            
 
        #%%if the object is ready
         if self.ready == True:

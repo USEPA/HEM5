@@ -70,7 +70,7 @@ class Processor():
             if kmlWriter is not None:
                 kmlWriter.write_kml_emis_loc(self.model)
                 Logger.logMessage("KMZ for all sources completed")
-                pass
+                
             
         except Exception as ex:
                 self.exception = ex
@@ -80,76 +80,80 @@ class Processor():
                 print(message)
                 Logger.logMessage(message)
            
-
-        Logger.logMessage("Preparing Inputs for " + str(
-            self.model.facids.count()) + " facilities\n")
-        
-        fac_list = []
-        for index, row in self.model.faclist.dataframe.iterrows():
+        else:
             
-            facid = row[0]
-            #print(facid)
-            fac_list.append(facid)
-            num = 1
-
-#        Logger.logMessage("The facility ids being modeled: , False)
-        print("The facility ids being modeled: " + ", ".join(fac_list))
-
-        success = False
-
-        # Create output files with headers for any source-category outputs that will be appended
-        # to facility by facility. These won't have any data for now.
-        self.createSourceCategoryOutputs()
-        
-        for facid in fac_list:
-            print(facid)
-            if self.abort.is_set():
-                Logger.logMessage("Aborting processing...")
-                print("abort")
-                return
+            Logger.logMessage("Preparing Inputs for " + str(
+                self.model.facids.count()) + " facilities\n")
             
+            print("Preparing Inputs for " + str(
+                self.model.facids.count()) + " facilities\n")   
             
-            
-            #save version of this gui as is? constantly overwrite it once each facility is done?
-            Logger.logMessage("Running facility " + str(num) + " of " +
-                              str(len(fac_list)))
-            
+            fac_list = []
+            for index, row in self.model.faclist.dataframe.iterrows():
+                
+                facid = row[0]
+                #print(facid)
+                fac_list.append(facid)
+                num = 1
+    
+    #        Logger.logMessage("The facility ids being modeled: , False)
+            print("The facility ids being modeled: " + ", ".join(fac_list))
+    
             success = False
-                        
-            try:
-                runner = FacilityRunner(facid, self.model, self.abort)
-                runner.setup()
-
-                
-            except Exception as ex:
-
-                self.exception = ex
-                fullStackInfo=''.join(traceback.format_exception(
-                    etype=type(ex), value=ex, tb=ex.__traceback__))
-
-                message = "An error occurred while running a facility:\n" + fullStackInfo
-                print(message)
-                Logger.logMessage(message)
-                
-                
-            else:
-                ## if the try is successful this is where we would update the 
-                # dataframes or cache the last processed facility so that when 
-                # restart we know which faciltiy we want to start on
-                # increment facility count
+    
+            # Create output files with headers for any source-category outputs that will be appended
+            # to facility by facility. These won't have any data for now.
+            self.createSourceCategoryOutputs()
             
-              
-
-                num += 1
-                success = True
+            for facid in fac_list:
+                print(facid)
+                if self.abort.is_set():
+                    Logger.logMessage("Aborting processing...")
+                    print("abort")
+                    return
                 
-
-                #reset model options aftr facility
-                self.model.model_optns = defaultdict()
                 
-#                try:  
-#                    self.model.save.remove_folder()
-#                except:
+                
+                #save version of this gui as is? constantly overwrite it once each facility is done?
+                Logger.logMessage("Running facility " + str(num) + " of " +
+                                  str(len(fac_list)))
+                
+                success = False
+                            
+                try:
+                    runner = FacilityRunner(facid, self.model, self.abort)
+                    runner.setup()
+    
+                    
+                except Exception as ex:
+    
+                    self.exception = ex
+                    fullStackInfo=''.join(traceback.format_exception(
+                        etype=type(ex), value=ex, tb=ex.__traceback__))
+    
+                    message = "An error occurred while running a facility:\n" + fullStackInfo
+                    print(message)
+                    Logger.logMessage(message)
+                    
+                    
+                else:
+                    ## if the try is successful this is where we would update the 
+                    # dataframes or cache the last processed facility so that when 
+                    # restart we know which faciltiy we want to start on
+                    # increment facility count
+                
+                  
+    
+                    num += 1
+                    success = True
+                    
+    
+                    #reset model options aftr facility
+                    self.model.model_optns = defaultdict()
+                    
+    #                try:  
+    #                    self.model.save.remove_folder()
+    #                except:
 #                    pass
 #                
                 
