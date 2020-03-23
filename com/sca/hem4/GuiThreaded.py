@@ -1290,7 +1290,7 @@ class Hem4(tk.Frame):
         
         #Polygon sources label
         self.poly_label = tk.Label(self.s8, font=TEXT_FONT, bg="alice blue",  
-                              text="Please select associated Polyvertex file.")
+                              text="Please select associated Polyvertex file:")
         self.poly_label.grid(row=1, sticky="W")
         
         #polygon sources upload button
@@ -1339,7 +1339,7 @@ class Hem4(tk.Frame):
         # building dw labels
         self.bldgdw_label = tk.Label(self.s9,
                                      text="Please select associated Building" + 
-                                     " Dimensions file", font=TEXT_FONT, bg="alice blue")
+                                     " Dimensions file:", font=TEXT_FONT, bg="alice blue")
         self.bldgdw_label.grid(row=1, sticky="W")
         
         #building dw upload button
