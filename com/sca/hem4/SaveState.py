@@ -55,7 +55,7 @@ class SaveState():
                       'seasons', 'emisvar'])
        
         #get list of attributes and write them 
-        remaining_facs = self.model.facids.tolist().remove(facid)
+        remaining_facs = self.model.facids.tolist()[1:]
         #print("model attributes", self.model.__dict__)
         remaining_loc = self.save_folder + "/remaining_facs.pkl" 
         

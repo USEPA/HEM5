@@ -11,7 +11,17 @@ import tkinter.ttk as ttk
 from functools import partial
 
 #from pandastable import Table, filedialog, np
-
+from datetime import datetime
+from com.sca.hem4.Processor import Processor
+from com.sca.hem4.log.Logger import Logger
+from com.sca.hem4.tools.CensusUpdater import CensusUpdater
+from com.sca.hem4.model.Model import Model
+from com.sca.hem4.upload.FileUploader import FileUploader
+from tkinter.filedialog import askopenfilename
+from com.sca.hem4.checker.InputChecker import InputChecker
+from com.sca.hem4.DepositionDepletion import check_dep, check_phase
+from com.sca.hem4.SaveState import SaveState
+from tkinter.simpledialog import Dialog, Toplevel
 from com.sca.hem4.GuiThreaded import Hem4
 from com.sca.hem4.writer.excel.FacilityMaxRiskandHI import FacilityMaxRiskandHI
 from com.sca.hem4.log import Logger
@@ -968,15 +978,125 @@ class MainView(tk.Frame):
         #replace facids
         self.model.facids = unpk_facids
         
-        print(self.model.faclist)
-        
+
+        #tell user to check the Progress/Log section
+        override = messagebox.askokcancel("Confirm HEM4 Run", "Clicking 'OK'"+
+                               " will start HEM4. Check the log tabs for" +
+                               " updates on facility runs.")
+
+        if override:
+            global instruction_instance
+            self.hem.instruction_instance.set("HEM4 Running, check the log tab for updates")
+            self.hem.tab2.lift()
+            Logger.logMessage("\nHEM4 is starting...")
+            
+            #set output folder
+            self.model.rootoutput = "output/" + self.model.group_name + "/"
+
+            #set save folder
+            save_state = SaveState(self.model.group_name, self.model)
+            self.model.save = save_state
+            
+            #save model
+            model_loc = save_state.save_folder + "model.pkl"
+            modelHandler = open(model_loc, 'wb') 
+            pickle.dump(self.model, modelHandler)
+            modelHandler.close()
+            print("saving model")
+            
+                
+
+            self.hem.run_button.destroy()
+            
+            self.stop = tk.Button(self.hem.main, text="STOP", fg="red", font=TEXT_FONT, bg='lightgrey', relief='solid', borderwidth=2,
+                          command=self.hem.quit_app)
+            self.stop.grid(row=0, column=0, sticky="E", padx=5, pady=5)
     
-        self.hem.run()
+            try:
+                self.process()
+                
+            except Exception as e:
+            
+                Logger.logMessage(str(e))
+    
+
+        #self.hem.run()
         
-        #self.hem.lift()
+        self.hem.lift()
         
+    def process(self):    
+        """
+        Function creates thread for running HEM4 concurrently with tkinter GUI
+        """
+        executor = ThreadPoolExecutor(max_workers=1)
+    
+        self.running = True
+        self.hem.disable_buttons()
         
-        
+        self.processor = Processor(self.model, Event())
+        future = executor.submit(self.processor.process)
+        future.add_done_callback(self.processing_finish)
+    
+    def processing_finish(self, future):
+        """
+        Callback that gets run in the same thread as the processor, after the target method
+        has finished. It's purpose is to update the shared callback queue so that the main
+        thread can update the GUI (which cannot be done in this thread!)
+        :param future:
+        :return: None
+        """
+        self.callbackQueue.put(self.finish_run)
+    
+    def finish_run(self):
+        """
+        Return Hem4 running state to False, and either reset or quit the GUI, depending on
+        whether or not the processing finished naturally or was aborted.
+        :return: None
+        """
+        self.running = False
+    
+        if self.hem.aborted:
+            self.hem.reset_gui()
+        else:
+            self.hem.reset_gui()
+    
+    def check_processing(self):
+        """
+        Check the callback queue to see if the processing thread has indicated that
+        it's finished running. If an entry is found, it's the method to run that
+        instructs this class how to reset/kill the GUI. If not, schedule another
+        check soon.
+        :return: None
+        """
+        try:
+            callback = self.callbackQueue.get(block=False)
+        except queue.Empty: #raised when queue is empty
+            self.after(500, self.check_processing)
+            return
+    
+        print("About to call callback...")
+        callback()
+    
+    def after_callback(self):
+        """
+        Function listens on thread RUnning HEM4 for error and completion messages
+        logged via queue method
+        """
+        try:
+            message = self.messageQueue.get(block=False)
+        except queue.Empty:
+            # let's try again later
+            self.after(25, self.after_callback)
+            return
+    
+        print('after_callback got', message)
+        if message is not None:
+            self.hem.scr.configure(state='normal')
+            self.hem.scr.insert(tk.INSERT, message)
+            self.hem.scr.insert(tk.INSERT, "\n")
+            self.hem.scr.configure(state='disabled')
+            self.after(25, self.after_callback)
+
 
 if __name__ == "__main__":
     root = tk.Tk()
