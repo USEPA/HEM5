@@ -1329,7 +1329,7 @@ class Hem4(tk.Frame):
         
         else:
             #create optional input tab
-            print('In this run it doesnt exist')
+            #print('In this run it doesnt exist')
             self.create_optional('bldgdw')
         
         #create row for building downwash
