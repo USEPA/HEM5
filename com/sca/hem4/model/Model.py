@@ -104,7 +104,6 @@ class Model():
         self.max_indiv_risk_df = None
         self.facops = None
         self.sourceExclusion = []
-        self.aermod = None
 
         # Initialize model options
         self.initializeAltRecOptions()
@@ -146,7 +145,6 @@ class Model():
         self.tempvar = None
         self.seasonvar = None
         self.sourceExclusion = []
-        self.aermod = None
 
         # Initialize model options
         self.initializeAltRecOptions()

@@ -238,24 +238,23 @@ class FacilityRunner():
                     
                     # Append temp_df to plot_df
                     plot_df = plot_df.append(temp_df, ignore_index=True)
-                    
  
-                    #TODO: Remove the below 4 lines for production version. For QA only.
-                    plotdf_path = "working/plot_df.xlsx"
-                    plotdf_con = pd.ExcelWriter(plotdf_path)
-                    plot_df.to_excel(plotdf_con,'Sheet1')
-                    plotdf_con.save()
+            #TODO: Remove the below 4 lines for production version. For QA only.
+            plotdf_path = "working/plot_df.xlsx"
+            plotdf_con = pd.ExcelWriter(plotdf_path)
+            plot_df.to_excel(plotdf_con,'Sheet1')
+            plotdf_con.save()
+    
+            # Process outputs for this facility
+            try:
             
-                    # Process outputs for this facility
-                    try:
-                    
-                        self.process_outputs(fac_folder, plot_df)
-                        
-                    except Exception as e:
-                        
-                        Logger.logMessage(str(e))
+                self.process_outputs(fac_folder, plot_df)
                 
-           
+            except Exception as e:
+                
+                Logger.logMessage(str(e))
+                
+            
                
     
     def prep(self):
@@ -311,13 +310,11 @@ class FacilityRunner():
         current_time = now.strftime("%H:%M:%S")
         if 'AERMOD Finishes UN-successfully' in message:
             success = False
-            self.model.aermod = False
             Logger.logMessage("Aermod ran unsuccessfully. Please check the "+
                               "error section of the aermod.out file. Ended at time "+
                               current_time)
         else:
             success = True
-            self.aermod = True
             Logger.logMessage("Aermod ran successfully. Ended at time " + current_time)
         check.close()
 
@@ -401,7 +398,8 @@ class FacilityRunner():
                 os.rename(oldname, newname)    
 
                 
-            
+            #if successful save state
+            self.model.save.save_model(self.facilityId)
             
             
             
@@ -481,9 +479,7 @@ class FacilityRunner():
                                             self.runstream, plot_df, self.abort)
             outputProcess.process()
                         
-            #if successful save state
-            self.model.save.save_model(self.facilityId)
-            
+
             pace =  str(round((time.time()- self.start)/60, 2)) + ' minutes'
             Logger.logMessage("Finished calculations for " + self.facilityId + 
                               ' after ' + pace + "\n")
