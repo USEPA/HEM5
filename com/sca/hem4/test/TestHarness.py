@@ -37,6 +37,9 @@ class TestHarness:
         self.model.facids = self.model.faclist.dataframe["fac_id"]
         uploader.upload("hapemis", "fixtures/input/hapemis.xlsx")
         uploader.upload("emisloc", "fixtures/input/emisloc.xlsx")
+
+        #set phase column in faclist dataframe to None
+        self.model.faclist.dataframe['phase'] = None
         
         uploader.uploadDependent("user receptors", "fixtures/input/urec.xlsx",
                                  self.model.faclist.dataframe)

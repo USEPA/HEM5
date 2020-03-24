@@ -152,7 +152,7 @@ class Hem4(tk.Frame):
         self.enable_widgets(self.main, False)
 
         message = "HEM4 is stopping. Please wait."
-        tk.Label(self, text=message, font=TEXT_FONT, bg="palegreen3").pack()
+        tk.Label(self, text=message, font=TEXT_FONT, bg="alice blue").pack()
 
     def disable_buttons(self):
         self.enable_widgets(self.run_button, False)
@@ -182,6 +182,8 @@ class Hem4(tk.Frame):
         self.enable_widgets(self.fac_up, True)
         self.enable_widgets(self.hap_up, True)
         self.enable_widgets(self.emisloc_up, True)
+
+        self.enable_widgets(self.main, True)
 
         if self.urep is not None:
             self.enable_widgets(self.urep, True)
@@ -358,13 +360,12 @@ class Hem4(tk.Frame):
         global instruction_instance
         self.instruction_instance = tk.StringVar(placeholder1)
         self.instruction_instance.set(" ")
-        self.dynamic_inst = tk.Label(placeholder2, wraplength=600, font=TEXT_FONT, pady=5, bg='palegreen3') 
+        self.dynamic_inst = tk.Label(placeholder2, wraplength=600, font=TEXT_FONT, pady=5, bg='alice blue') 
         self.dynamic_inst.config(height=4)
         
         self.dynamic_inst["textvariable"] = self.instruction_instance 
         self.dynamic_inst.grid(row=1, column=0)
-        
-        
+
     def add_optional_instructions(self, placeholder):
         """
         Function adds a dynamic instructions instance to optional input tab
@@ -373,14 +374,14 @@ class Hem4(tk.Frame):
         
         if hasattr(self, "optionalinputtab"):
             
-            self.optional_inst = tk.Label(placeholder, wraplength=600, font=TEXT_FONT, pady=5, bg='palegreen3') 
+            self.optional_inst = tk.Label(placeholder, wraplength=600, font=TEXT_FONT, pady=5, bg='alice blue') 
             self.optional_inst.config(height=4)
         
             self.optional_inst["textvariable"] = self.instruction_instance 
             self.optional_inst.grid(row=1, column=0)
         
         if hasattr(self, "depinputtab"):
-            self.dep_inst = tk.Label(placeholder, wraplength=600, font=TEXT_FONT, pady=5, bg='palegreen3') 
+            self.dep_inst = tk.Label(placeholder, wraplength=600, font=TEXT_FONT, pady=5, bg='alice blue') 
             self.dep_inst.config(height=4)
         
             self.dep_inst["textvariable"] = self.instruction_instance 
@@ -389,9 +390,6 @@ class Hem4(tk.Frame):
     def backtomenu(self):
         self.lower()
         self.reset_gui()
-    
-    
-        
 
     def createWidgets(self):
         """
@@ -403,9 +401,9 @@ class Hem4(tk.Frame):
         """
         
         self.noteStyler = ttk.Style()
-        self.noteStyler.configure("TNotebook", background="palegreen3", borderwidth=0)
-        self.noteStyler.configure("TNotebook.Tab", background="palegreen3", borderwidth=0)
-        self.noteStyler.configure("TFrame", background="palegreen3", borderwidth=0)
+        self.noteStyler.configure("TNotebook", background="alice blue", borderwidth=0)
+        self.noteStyler.configure("TNotebook.Tab", background="alice blue", borderwidth=0)
+        self.noteStyler.configure("TFrame", background="alice blue", borderwidth=0)
 
         
         # Tab Control introduced here --------------------------------------
@@ -413,20 +411,20 @@ class Hem4(tk.Frame):
 
         if hasattr('self', 'main'):
             if self.main is None:
-                self.main = tk.Frame(self.tabControl, bg='palegreen3')            # Create a tab
+                self.main = tk.Frame(self.tabControl, bg='alice blue')            # Create a tab
                 self.tabControl.add(self.main, text='HEM4')
                 
         else:
             
-            self.main = tk.Frame(self.tabControl, bg='palegreen3')            # Create a tab
+            self.main = tk.Frame(self.tabControl, bg='alice blue')            # Create a tab
             self.tabControl.add(self.main, text='HEM4')      # Add the tab
 
-        self.tab2 = tk.Frame(self.tabControl, bg='palegreen3')            # Add a second tab
+        self.tab2 = tk.Frame(self.tabControl, bg='alice blue')            # Add a second tab
         self.tabControl.add(self.tab2, text='Log')      # Make second tab visible
 
 
 
-        tab3 = tk.Frame(self.tabControl, bg='palegreen3')            # Add a third tab
+        tab3 = tk.Frame(self.tabControl, bg='alice blue')            # Add a third tab
         self.tabControl.add(tab3, text='Census')      # Make third tab visible
 
         self.tabControl.pack(expand=1, fill="both")  # Pack to make visible
@@ -437,11 +435,11 @@ class Hem4(tk.Frame):
         self.censusupdates.grid(column=0, row=1)
 
         #create discreet sections for GUI in tab3
-        self.cu1 = tk.Frame(self.censusupdates, width=1000, height=200, background="palegreen3")
+        self.cu1 = tk.Frame(self.censusupdates, width=1000, height=200, background="alice blue")
         self.cu1.grid(row=0)
 
         # census update label
-        cu_label = tk.Label(self.cu1, font=TEXT_FONT, bg="palegreen3",
+        cu_label = tk.Label(self.cu1, font=TEXT_FONT, bg="alice blue",
                              text="Please select a census update file:")
         cu_label.grid(row=1, sticky="W")
 
@@ -463,13 +461,13 @@ class Hem4(tk.Frame):
         self.cu_update.grid(row=3, column=0, sticky="W", padx=85, pady=20)
 
         #create discreet sections for GUI in tab1
-        self.s1 = tk.Frame(self.main, width=750, height=50, bg="palegreen3")
-        self.s2 = tk.Frame(self.main, width=1000, height=50, bg="palegreen3")
-        self.s3 = tk.Frame(self.main, width=750, height=50, bg="palegreen3", pady=5, padx=5)
-        self.s4 = tk.Frame(self.main, width=750, height=50, bg="palegreen3", pady=5, padx=5)
-        self.s5 = tk.Frame(self.main, width=750, height=50, bg="palegreen3", pady=5, padx=5)
+        self.s1 = tk.Frame(self.main, width=750, height=50, bg="alice blue")
+        self.s2 = tk.Frame(self.main, width=1000, height=50, bg="alice blue")
+        self.s3 = tk.Frame(self.main, width=750, height=50, bg="alice blue", pady=5, padx=5)
+        self.s4 = tk.Frame(self.main, width=750, height=50, bg="alice blue", pady=5, padx=5)
+        self.s5 = tk.Frame(self.main, width=750, height=50, bg="alice blue", pady=5, padx=5)
         
-        self.alturep = tk.Frame(self.main, width=250, height=250,  bg="palegreen3", pady=5, padx=5)
+        self.alturep = tk.Frame(self.main, width=250, height=250,  bg="alice blue", pady=5, padx=5)
 
 
         self.s1.grid(row=0)
@@ -490,7 +488,7 @@ class Hem4(tk.Frame):
         #self.s1.grid_propagate(0)
     
 # create container frame to hold log
-        self.log = tk.Frame(self.tab2, bg="palegreen3")
+        self.log = tk.Frame(self.tab2, bg="alice blue")
         self.log.pack()
         
         # Adding a Textbox Entry widget
@@ -518,7 +516,7 @@ class Hem4(tk.Frame):
         self.add_instructions(self.s2, self.s1)
 
 # %% Setting up each file upload space (includes browse button, and manual text entry for file path)
-        group_label = tk.Label(self.s3, font=TEXT_FONT, bg="palegreen3", 
+        group_label = tk.Label(self.s3, font=TEXT_FONT, bg="alice blue", 
                              text="Name Run Group (optional):")
         group_label.grid(row=0, sticky="W")
         #group text entry
@@ -531,13 +529,13 @@ class Hem4(tk.Frame):
         
         self.check_altrec = tk.BooleanVar()
         self.altrec_sel = tk.Checkbutton(self.alturep, text="Use alternate receptors",
-                                           variable = self.check_altrec, bg='palegreen3',
+                                           variable = self.check_altrec, bg='alice blue',
                                            command = self.set_altrec, font=TEXT_FONT)
         self.altrec_sel.grid(row=0, column=0, sticky='W')
 
         #facilities label
-        fac_label = tk.Label(self.s3, font=TEXT_FONT, bg="palegreen3", 
-                             text="Please select a Facilities List Options file:")
+        fac_label = tk.Label(self.s3, font=TEXT_FONT, bg="alice blue", 
+                             text="1. Please select a Facilities List Options file:")
         fac_label.grid(row=3, sticky="W")
         
         #facilities upload button
@@ -560,8 +558,8 @@ class Hem4(tk.Frame):
         
                 
         #Hap emissions label
-        hap_label = tk.Label(self.s4, font=TEXT_FONT, bg="palegreen3",  
-                             text="Please select the associated HAP Emissions file:")
+        hap_label = tk.Label(self.s4, font=TEXT_FONT, bg="alice blue",  
+                             text="2. Please select the associated HAP Emissions file:")
         hap_label.grid(row=1, sticky="W")
         
         #hap emissions upload button
@@ -585,8 +583,8 @@ class Hem4(tk.Frame):
         
         
         #Emissions location label
-        emisloc_label = tk.Label(self.s5, font=TEXT_FONT, bg="palegreen3",  
-                                 text="Please select the associated Emissions" +
+        emisloc_label = tk.Label(self.s5, font=TEXT_FONT, bg="alice blue",  
+                                 text="3. Please select the associated Emissions" +
                                  " Locations file:")
         emisloc_label.grid(row=1, sticky="W")
         
@@ -614,11 +612,9 @@ class Hem4(tk.Frame):
         self.check_tempvar = tk.IntVar()
         self.tempvar_sel = tk.Checkbutton(self.s5, text="Show temporal variations in the outputs", 
                                           variable = self.check_tempvar, font=TEXT_FONT,
-                                          bg='palegreen3', command = self.add_temporal)
+                                          bg='alice blue', command = self.add_temporal)
         self.tempvar_sel.grid(row=3, column=0, sticky='W', padx = 85)
-        
 
-        
     def is_valid_extension(self, filepath):
         """
         Function checks to make sure excel/csv files are selected for inputs
@@ -783,15 +779,20 @@ class Hem4(tk.Frame):
         """
         Function for uploading Hap Emissions file
         """
-        if self.resume_run == True:
+        try: 
             
-            self.model.hapemis = resume.hapemis
-        
+            self.model.faclist.dataframe
+            
+        except:
+            
+            messagebox.showinfo('Error', "Please upload a Facilities List Options file first")
+            
+            
         else:
             fullpath = self.openFile(askopenfilename())
             if fullpath is not None:
                 self.uploader.upload("hapemis", fullpath)
-    
+        
                 # Update the UI
                 self.hap_list.set(fullpath)
                 [self.scr.insert(tk.INSERT, msg) for msg in self.model.hapemis.log]
@@ -805,309 +806,292 @@ class Hem4(tk.Frame):
         input spaces if indicated in file or removes optional spaces if upload
         is triggered again and there are no optional inputs indicated
         """
-        if self.resume_run == True:
+        
+        try: 
             
-            self.model.emisloc = resume.emisloc
-        
+            self.model.faclist.dataframe
+            
+        except:
+            
+            messagebox.showinfo('Error', "Please upload a Facilities List Options file first")
+            
+            
         else:
+            
+            try:
+            
+                self.model.hapemis.dataframe
+                    
+            except:
+            
+                messagebox.showinfo('Error', "Please upload Hap Emissions file before " +
+                                  "uploading the Emissions Location file")
+                
+            else:
+  
+                fullpath = self.openFile(askopenfilename())
+                if fullpath is not None:
+                    self.uploader.upload("emisloc", fullpath)
         
-            fullpath = self.openFile(askopenfilename())
-            if fullpath is not None:
-                self.uploader.upload("emisloc", fullpath)
+                    # Update the UI
+                    self.emisloc_list.set(fullpath)
+                    [self.scr.insert(tk.INSERT, msg) for msg in self.model.emisloc.log]
+                    
+                    #trigger additional inputs for buoyant line and polyvertex
+                    if 'I' in self.model.emisloc.dataframe['source_type'].tolist():
+                        
+                        #enable optional input tab
+                        self.optionaltab = False
+                        
+                        #create polyvertex upload 
+                        self.add_poly()
+                        
+                    else:
+                        #reset gui if reuploading
+                        
+                        if hasattr(self, 's8'):
+                            self.poly_list_man.destroy()
+                            self.poly_up.destroy()
+                            self.poly_label.destroy()
+                            self.s8.destroy()
+                            
+                            
+                    if 'B' in self.model.emisloc.dataframe['source_type'].tolist():
+                        
+                        #enable optional input tab
+                        self.optionaltab = False
+                        
+                        #create buoyant line upload
+                        self.add_buoyant()
+                        
+                    else:
+                        #reset gui if reuploading    
+                         if hasattr(self, 's7'):
+                            self.buoyant_list_man.destroy()
+                            self.buoyant_up.destroy()
+                            self.b_label.destroy()
+                            self.s7.destroy()
+        
+                    # Deposition and depletion check
+        
+                    # set phase column in faclist dataframe to None
+                    self.model.faclist.dataframe['phase'] = None
+        
+                    for i, r in self.model.faclist.dataframe.iterrows():
+        
+                        phase = check_phase(r)
+                        #                phaseList.append([r['fac_id'], phase])
+                        self.model.faclist.dataframe.at[i, 'phase'] = phase
+        
+                    deposition_depletion = check_dep(self.model.faclist.dataframe, self.model.emisloc.dataframe)
+        
+                    #pull out facilities using depdeplt
+                    self.model.depdeplt = [x[0] for x in deposition_depletion]
+                    print('DEPDEP:', self.model.depdeplt)
+        
+                    #pull out conditional inputs
+                    conditional = set([y for x in deposition_depletion for y in x[1:]])
+                    #print('conditional', conditional)
+        
+                    if conditional is not None:
+                        #enable deposition and depletion input tab
+                        self.deptab = True
+        
+        
+                        #if deposition or depletion present load gas params library
+                        self.uploader.uploadLibrary("gas params")
+                        for required in conditional:
+                            print("required", required)
+                            if required == 'particle size':
+                                self.add_particle()
+        
+                            elif required == 'land use':
+                                self.add_land()
+        
+                            elif required == 'seasons':
+                                self.add_seasons()
+        
+                    else:
+                        # clear on new input without dep/deplt
+                        if hasattr(self, 's12'):
+                            # clear particle
+                            if hasattr(self, 'dep_part'):
+                                self.dep_part_up.destroy()
+                                self.dep_part_man.destroy()
+                                self.dep_part.set('')
+                            #                        self.dep_part.destroy()
+                            # clear land
+                            if hasattr(self, 'dep_land'):
+                                self.dep_land_up.destroy()
+                                self.dep_land_man.destroy()
+                                self.dep_land.set('')
+                            #                        self.dep_land.destroy()
+        
+                            # clear vegetation
+                            if hasattr(self, 'dep_seasons'):
+                                self.dep_seasons_up.destroy()
+                                self.dep_seasons_man.destroy()
+                                self.dep_seasons.set('')
+                            #                        self.dep_seasons.destroy()
     
-                # Update the UI
-                self.emisloc_list.set(fullpath)
-                [self.scr.insert(tk.INSERT, msg) for msg in self.model.emisloc.log]
-                
-                #trigger additional inputs for buoyant line and polyvertex
-                if 'I' in self.model.emisloc.dataframe['source_type'].tolist():
-                    
-                    #enable optional input tab
-                    self.optionaltab = False
-                    
-                    #create polyvertex upload 
-                    self.add_poly()
-                    
-                else:
-                    #reset gui if reuploading
-                    
-                    if hasattr(self, 's8'):
-                        self.poly_list_man.destroy()
-                        self.poly_up.destroy()
-                        self.poly_label.destroy()
-                        self.s8.destroy()
-                        
-                        
-                if 'B' in self.model.emisloc.dataframe['source_type'].tolist():
-                    
-                    #enable optional input tab
-                    self.optionaltab = False
-                    
-                    #create buoyant line upload
-                    self.add_buoyant()
-                    
-                else:
-                    #reset gui if reuploading    
-                     if hasattr(self, 's7'):
-                        self.buoyant_list_man.destroy()
-                        self.buoyant_up.destroy()
-                        self.b_label.destroy()
-                        self.s7.destroy()
-                
-    def uploadPolyvertex(self, resume=None):
+                        self.s12.destroy()
+
+    def uploadPolyvertex(self):
         """
         Function for uploading polyvertex source file
         """
         
-        if self.resume_run == True:
-            
-            try:
-            
-                self.model.multipoly = resume.multipoly
-                
-            except:
-                
-                self.model.multipoly = None
+
         
-        else:
-        
-            if self.model.emisloc.dataframe is None:
-                messagebox.showinfo("Emissions Locations File Missing",
-                    "Please upload an Emissions Locations file before adding" +
-                    " a Polyvertex file.")
-            fullpath = self.openFile(askopenfilename())
-            if fullpath is not None:
-                self.uploader.uploadDependent("polyvertex", fullpath, 
-                                                       self.model.emisloc.dataframe)
-    
-    
-                # Update the UI
-                self.poly_list.set(fullpath)
-                [self.scr.insert(tk.INSERT, msg) for msg in self.model.multipoly.log]
+        if self.model.emisloc.dataframe is None:
+            messagebox.showinfo("Emissions Locations File Missing",
+                "Please upload an Emissions Locations file before adding" +
+                " a Polyvertex file.")
+        fullpath = self.openFile(askopenfilename())
+        if fullpath is not None:
+            self.uploader.uploadDependent("polyvertex", fullpath, 
+                                                   self.model.emisloc.dataframe)
+
+
+            # Update the UI
+            self.poly_list.set(fullpath)
+            [self.scr.insert(tk.INSERT, msg) for msg in self.model.multipoly.log]
 
     def uploadbuoyant(self, resume=None):
         """
         Function for uploading buoyant line parameter file
         """
-        if self.resume_run == True:
-            
-            try:
-                
-                self.model.multibuoy = resume.multibuoy
-                
-            except:
-                
-                self.model.multibuoy = None
+
+    
+        if self.model.emisloc.dataframe is None:
+            messagebox.showinfo("Emissions Locations File Missing",
+                "Please upload an Emissions Locations file before adding"+ 
+                " a buoyant line file.")
         
-        else:
-    
-            if self.model.emisloc.dataframe is None:
-                messagebox.showinfo("Emissions Locations File Missing",
-                    "Please upload an Emissions Locations file before adding"+ 
-                    " a buoyant line file.")
-            
-            fullpath = self.openFile(askopenfilename())
-            if fullpath is not None:
-                self.uploader.uploadDependent("buoyant line", fullpath, 
-                                                       self.model.emisloc.dataframe)
-    
-                # Update the UI
-                self.buoyant_list.set(fullpath)
-                [self.scr.insert(tk.INSERT, msg) for msg in self.model.multibuoy.log]
+        fullpath = self.openFile(askopenfilename())
+        if fullpath is not None:
+            self.uploader.uploadDependent("buoyant line", fullpath, 
+                                                   self.model.emisloc.dataframe)
+
+            # Update the UI
+            self.buoyant_list.set(fullpath)
+            [self.scr.insert(tk.INSERT, msg) for msg in self.model.multibuoy.log]
 
     def uploadUserReceptors(self, resume=None):
         """
         Function for uploading user receptors
         """
         
-        if self.resume_run == True:
-            
-            try:
-            
-                self.model.ureceptr = resume.ureceptr
-                
-            except:
-                
-                self.model.ureceptr = None
-        
-        else:
 
-            if self.model.faclist is None:
-                messagebox.showinfo("Facilities List Option File Missing",
-                    "Please upload a Facilities List Options file before selecting"+
-                    " a User Receptors file.")
-                return
-    
-            fullpath = self.openFile(askopenfilename())
-            if fullpath is not None:
-    
-                self.uploader.uploadDependent("user receptors", fullpath, 
-                                              self.model.faclist.dataframe)
-                
-                self.model.model_optns['ureceptr'] = True
-                # Update the UI
-                self.urep_list.set(fullpath)
+        if self.model.faclist is None:
+            messagebox.showinfo("Facilities List Option File Missing",
+                "Please upload a Facilities List Options file before selecting"+
+                " a User Receptors file.")
+            return
+
+        fullpath = self.openFile(askopenfilename())
+        if fullpath is not None:
+
+            self.uploader.uploadDependent("user receptors", fullpath, 
+                                          self.model.faclist.dataframe)
+            
+            self.model.model_optns['ureceptr'] = True
+            # Update the UI
+            self.urep_list.set(fullpath)
                 [self.scr.insert(tk.INSERT, msg) for msg in self.model.ureceptr.log]
 
     def uploadAltReceptors(self, resume=None):
         """
         Function for uploading Alternate Receptors
         """
-        if self.resume_run == True:
-            
-            try:
-            
-                self.model.altreceptr = resume.altreceptr
-                
-            except:
-                
-                self.model.altreceptr = None
-        
-        else:
 
-            fullpath = self.openFile(askopenfilename())
-            if fullpath is not None:
-                            
-                self.uploader.upload("alt receptors", fullpath)
-                self.model.altRec_optns["path"] = fullpath
-    
-                # Update the UI
-                self.urepalt_list.set(fullpath)
-                [self.scr.insert(tk.INSERT, msg) for msg in self.model.altreceptr.log]
+
+        fullpath = self.openFile(askopenfilename())
+        if fullpath is not None:
+                        
+            self.uploader.upload("alt receptors", fullpath)
+            self.model.altRec_optns["path"] = fullpath
+
+            # Update the UI
+            self.urepalt_list.set(fullpath)
+            [self.scr.insert(tk.INSERT, msg) for msg in self.model.altreceptr.log]
 
     def uploadBuildingDownwash(self, resume=None):
         """ 
         Function for uploading building downwash
         """
-        
-        if self.resume_run == True:
-            
-            try:
-                
-                self.model.bldgdw = resume.bldgdw
-                
-            except:
-                
-                self.model.bldgdw = None
-        
-        else:
-            
-            if self.model.faclist.dataframe is None:
-                messagebox.showinfo("Facilities List Option File Missing",
-                    "Please upload a Facilities List Options file before selecting"+
-                    " a building downwash file.")
-    
-            fullpath = self.openFile(askopenfilename())
-            if fullpath is not None: 
-                self.uploader.uploadDependent("building downwash", fullpath, 
-                                              self.model.faclist.dataframe)
-    
-                # Update the UI
-                self.bldgdw_list.set(fullpath)
-                [self.scr.insert(tk.INSERT, msg) for msg in self.model.bldgdw.log]
-        
 
+        if self.model.faclist.dataframe is None:
+            messagebox.showinfo("Facilities List Option File Missing",
+                "Please upload a Facilities List Options file before selecting"+
+                " a building downwash file.")
+
+        fullpath = self.openFile(askopenfilename())
+        if fullpath is not None: 
+            self.uploader.uploadDependent("building downwash", fullpath, 
+                                          self.model.faclist.dataframe)
+
+            # Update the UI
+            self.bldgdw_list.set(fullpath)
+            [self.scr.insert(tk.INSERT, msg) for msg in self.model.bldgdw.log]
 
 
     def uploadParticle(self, facilities, resume=None):
         """ 
         Function for uploading particle size
         """
-        
-        if self.resume_run == True:
-            
-            try:
-                
-                self.model.partdep = resume.partdep
-                
-            except:
-                
-                self.model.partdep = None
-            
-                
-                
-        else:
-            if self.model.faclist.dataframe is None:
-                messagebox.showinfo("Facilities List Option File Missing",
-                    "Please upload a Facilities List Options file before selecting"+
-                    " a particle file.")
-    
-            fullpath = self.openFile(askopenfilename())
-            if fullpath is not None: 
-                self.uploader.uploadDependent("particle depletion", fullpath, 
-                                               self.model.faclist.dataframe, facilities)
-    
-                # Update the UI
-                self.dep_part.set(fullpath)
-                [self.scr.insert(tk.INSERT, msg) for msg in self.model.partdep.log]
-                
-        
-        
-    def uploadLandUse(self, resume=None):
+        if self.model.faclist.dataframe is None:
+            messagebox.showinfo("Facilities List Option File Missing",
+                "Please upload a Facilities List Options file before selecting"+
+                " a particle file.")
+
+        fullpath = self.openFile(askopenfilename())
+        if fullpath is not None: 
+            self.uploader.uploadDependent("particle depletion", fullpath, 
+                                           self.model.faclist.dataframe, facilities)
+
+            # Update the UI
+            self.dep_part.set(fullpath)
+            [self.scr.insert(tk.INSERT, msg) for msg in self.model.partdep.log]
+
+    def uploadLandUse(self):
         """ 
         Function for uploading land use information
         """
-        if self.resume_run == True:
-            
-            try:
-                
-            
-                self.model.landuse = resume.landuse
-                
-            except:
-                
-                self.model.landuse = None
-                
-        
-        else:
-            if self.model.faclist.dataframe is None:
-                messagebox.showinfo("Facilities List Option File Missing",
-                    "Please upload a Facilities List Options file before selecting"+
-                    " a particle file.")
-    
-            fullpath = self.openFile(askopenfilename())
-            if fullpath is not None: 
-                self.uploader.uploadDependent("land use", fullpath, 
-                                              self.model.faclist.dataframe)
-    
-                # Update the UI
-                self.dep_land.set(fullpath)
-                [self.scr.insert(tk.INSERT, msg) for msg in self.model.landuse.log]
-            
-    
-    def uploadSeasons(self, resume=None):
+        if self.model.faclist.dataframe is None:
+            messagebox.showinfo("Facilities List Option File Missing",
+                "Please upload a Facilities List Options file before selecting"+
+                " a particle file.")
+
+        fullpath = self.openFile(askopenfilename())
+        if fullpath is not None: 
+            self.uploader.uploadDependent("land use", fullpath, 
+                                          self.model.faclist.dataframe)
+
+            # Update the UI
+            self.dep_land.set(fullpath)
+            [self.scr.insert(tk.INSERT, msg) for msg in self.model.landuse.log]
+
+    def uploadSeasons(self):
         """ 
         Function for uploading seasonal vegetation information
         """
-        if self.resume_run == True:
-            
-            try:
-            
-                self.model.seasons = resume.seasons
-                
-            except:
-                
-                self.model.seasons = None
-        
-        else:
-        
-            if self.model.faclist.dataframe is None:
-                messagebox.showinfo("Facilities List Option File Missing",
-                    "Please upload a Facilities List Options file before selecting"+
-                    " a particle file.")
-    
-            fullpath = self.openFile(askopenfilename())
-            if fullpath is not None: 
-                self.uploader.uploadDependent("seasons", fullpath, 
-                                              self.model.faclist.dataframe)
-    
-                # Update the UI
-                self.dep_seasons.set(fullpath)
-                [self.scr.insert(tk.INSERT, msg) for msg in self.model.seasons.log]
-        
-        
-    
-    def uploadVariation(self, resume=None):
+        if self.model.faclist.dataframe is None:
+            messagebox.showinfo("Facilities List Option File Missing",
+                "Please upload a Facilities List Options file before selecting"+
+                " a particle file.")
+
+        fullpath = self.openFile(askopenfilename())
+        if fullpath is not None: 
+            self.uploader.uploadDependent("seasons", fullpath, 
+                                          self.model.faclist.dataframe)
+
+            # Update the UI
+            self.dep_seasons.set(fullpath)
+            [self.scr.insert(tk.INSERT, msg) for msg in self.model.seasons.log]
+
+    def uploadVariation(self):
+
         """
         Function for uploading emissions variation inputs
         """
@@ -1170,7 +1154,7 @@ class Hem4(tk.Frame):
                 
                 
                 #create optional input tab
-                self.optionalinputtab = tk.Frame(self.tabControl, bg='palegreen3')
+                self.optionalinputtab = tk.Frame(self.tabControl, bg='alice blue')
                 self.optionalinputtab.grid_rowconfigure(10, weight=4)
                 self.tabControl.insert(1, self.optionalinputtab, text='Additional Inputs')
                 
@@ -1209,7 +1193,7 @@ class Hem4(tk.Frame):
                 self.optback.grid(row=10, column=0, sticky="W", padx=5, pady=5)
                 
                 
-                self.inst_space = tk.Frame(self.optionalinputtab, width=750, height=50, bg="palegreen3", pady=5, padx=5)
+                self.inst_space = tk.Frame(self.optionalinputtab, width=750, height=50, bg="alice blue", pady=5, padx=5)
                 self.inst_space.grid(row=2, column=0, sticky="nsew")
                 
                 self.add_optional_instructions(self.inst_space) 
@@ -1225,7 +1209,7 @@ class Hem4(tk.Frame):
             if dep == True:
                 
                 #crete deposition inputs
-                self.depinputtab = tk.Frame(self.tabControl, bg='palegreen3') 
+                self.depinputtab = tk.Frame(self.tabControl, bg='alice blue') 
                 self.depinputtab.grid_rowconfigure(8, weight=4)
                 self.tabControl.insert(1, self.depinputtab, text='Dep/Depl Inputs')
                 
@@ -1258,12 +1242,11 @@ class Hem4(tk.Frame):
                 self.depback.grid(row=10, column=0, sticky="W", padx=5, pady=5)
     
                 
-                self.inst_space = tk.Frame(self.depinputtab, width=750, height=50, bg="palegreen3", pady=5, padx=5)
+                self.inst_space = tk.Frame(self.depinputtab, width=750, height=50, bg="alice blue", pady=5, padx=5)
                 self.inst_space.grid(row=2, column=0, sticky="nsew")
                 
                 self.add_optional_instructions(self.inst_space)
-      
-    
+
     def add_ur(self):
         """
         Function for creating row and upload widgets for user receptors
@@ -1274,11 +1257,11 @@ class Hem4(tk.Frame):
         man = "instructions/urep_man.txt"
 
         #create row for user receptors
-        self.s6 = tk.Frame(self.main, width=250, height=50, pady=5, padx=5, bg="palegreen3")
+        self.s6 = tk.Frame(self.main, width=250, height=50, pady=5, padx=5, bg="alice blue")
         self.s6.grid(row=6, column=0, columnspan=2, sticky="nsew")
         
         #user recptors label
-        self.ur_label = tk.Label(self.s6, font=TEXT_FONT, bg="palegreen3", 
+        self.ur_label = tk.Label(self.s6, font=TEXT_FONT, bg="alice blue", 
                              text="Please select an associated User Receptor"+
                              " file:")
         self.ur_label.grid(row=0, sticky="W")
@@ -1311,8 +1294,8 @@ class Hem4(tk.Frame):
         man = "instructions/urepalt_man.txt"
 
         #user recptors label
-        self.urepalt_label = tk.Label(self.alturep, font=TEXT_FONT, bg="palegreen3",
-                                 text="Please select an alternate User Receptor"+
+        self.urepalt_label = tk.Label(self.alturep, font=TEXT_FONT, bg="alice blue",
+                                  text="Please select an alternate User Receptor"+
                                       " CSV file:")
         self.urepalt_label.grid(row=1, sticky="W")
 
@@ -1352,12 +1335,12 @@ class Hem4(tk.Frame):
             self.create_optional('buoyant')
 
          #create row for buoyant line input
-        self.s7 = tk.Frame(self.optionalinputtab, width=250, height=50, pady=5, padx=5, bg="palegreen3")
+        self.s7 = tk.Frame(self.optionalinputtab, width=250, height=50, pady=5, padx=5, bg="alice blue")
         self.s7.grid(row=3, column=0, columnspan=2, sticky="nsew")
         
         
         #Buoyant Line  label
-        self.b_label = tk.Label(self.s7, font=TEXT_FONT, bg="palegreen3",  
+        self.b_label = tk.Label(self.s7, font=TEXT_FONT, bg="alice blue",  
                                  text="Please select associated Buoyant Line"+
                                  " Source Parameter file:")
         self.b_label.grid(row=1, sticky="W")
@@ -1381,9 +1364,7 @@ class Hem4(tk.Frame):
         #event handler for instructions (Button 1 is the left mouse click)
         self.buoyant_list_man.bind('<Button-1>', 
                                    lambda e:self.manual("instructions/buoyant_browse.txt"))
-    
-    
-    
+
     def add_poly(self):
         """
         Function for creating row and polyvertex file upload widgets
@@ -1404,12 +1385,12 @@ class Hem4(tk.Frame):
 
                             
         #create row for poly
-        self.s8 = tk.Frame(self.optionalinputtab, width=250, height=50, pady=5, padx=5, bg="palegreen3")
+        self.s8 = tk.Frame(self.optionalinputtab, width=250, height=50, pady=5, padx=5, bg="alice blue")
         self.s8.grid(row=4, column=0, columnspan=2, sticky="nsew")
         
         #Polygon sources label
-        self.poly_label = tk.Label(self.s8, font=TEXT_FONT, bg="palegreen3",  
-                              text="Please select associated Polyvertex file.")
+        self.poly_label = tk.Label(self.s8, font=TEXT_FONT, bg="alice blue",  
+                              text="Please select associated Polyvertex file:")
         self.poly_label.grid(row=1, sticky="W")
         
         #polygon sources upload button
@@ -1430,8 +1411,7 @@ class Hem4(tk.Frame):
         #event handler for instructions (Button 1 is the left mouse click)
         self.poly_list_man.bind('<Button-1>', 
                                 lambda e:self.manual("instructions/poly_browse.txt"))
-    
-    
+
     def add_bldgdw(self):
         """ 
         Function for creating row and building downwash file upload widgets
@@ -1449,17 +1429,17 @@ class Hem4(tk.Frame):
         
         else:
             #create optional input tab
-            print('In this run it doesnt exist')
+            #print('In this run it doesnt exist')
             self.create_optional('bldgdw')
         
         #create row for building downwash
-        self.s9 = tk.Frame(self.optionalinputtab, width=250, height=50, padx=5, bg="palegreen3")
+        self.s9 = tk.Frame(self.optionalinputtab, width=250, height=50, padx=5, bg="alice blue")
         self.s9.grid(row=5, column=0, columnspan=2, sticky="nsew")
         
         # building dw labels
         self.bldgdw_label = tk.Label(self.s9,
                                      text="Please select associated Building" + 
-                                     " Dimensions file", font=TEXT_FONT, bg="palegreen3")
+                                     " Dimensions file:", font=TEXT_FONT, bg="alice blue")
         self.bldgdw_label.grid(row=1, sticky="W")
         
         #building dw upload button
@@ -1480,9 +1460,7 @@ class Hem4(tk.Frame):
         #event handler for instructions (Button 1 is the left mouse click)
         self.bldgdw_list_man.bind('<Button-1>', 
                                 lambda e:self.manual("instructions/bd_man.txt"))
-        
-        
-        
+
     def add_particle(self):
         """
         Function for creating column for particle size file upload widgets
@@ -1502,11 +1480,11 @@ class Hem4(tk.Frame):
             self.create_optional('part')
         
         #create column for particle size file
-        self.s10 = tk.Frame(self.depinputtab, width=250, height=50, pady=5, padx=5, bg="palegreen3")
+        self.s10 = tk.Frame(self.depinputtab, width=250, height=50, pady=5, padx=5, bg="alice blue")
         self.s10.grid(row=3, column=0, columnspan=2, sticky="nsew")
         
         #particle size label
-        part_label = tk.Label(self.s10, font=TEXT_FONT, bg="palegreen3", 
+        part_label = tk.Label(self.s10, font=TEXT_FONT, bg="alice blue", 
                               text="Upload the file containing size information for particle matter emissions:")
         part_label.grid(row=0, sticky="W")
     
@@ -1527,8 +1505,7 @@ class Hem4(tk.Frame):
         #event handler for instructions (Button 1 is the left mouse click)
         self.dep_part_man.bind('<Button-1>', 
                                lambda e:self.manual("instructions/dep_part_man.txt"))
-              
-        
+
     def add_land(self):
         
         """
@@ -1548,11 +1525,11 @@ class Hem4(tk.Frame):
             self.create_optional('land')
         
         #create column for land use file
-        self.s11 = tk.Frame(self.depinputtab, width=250, height=50, pady=5, padx=5, bg="palegreen3")
+        self.s11 = tk.Frame(self.depinputtab, width=250, height=50, pady=5, padx=5, bg="alice blue")
         self.s11.grid(row=4, column=0, columnspan=2, sticky="nsew")
         
         #land use size label
-        land_label = tk.Label(self.s11, font=TEXT_FONT, bg="palegreen3", 
+        land_label = tk.Label(self.s11, font=TEXT_FONT, bg="alice blue", 
                               text="Upload the file containing land use information:")
         land_label.grid(row=0, sticky="W")
     
@@ -1573,8 +1550,7 @@ class Hem4(tk.Frame):
         #event handler for instructions (Button 1 is the left mouse click)
         self.dep_land_man.bind('<Button-1>', 
                                lambda e:self.manual("instructions/dep_land_man.txt"))
-        
-        
+
     def add_seasons(self):
         """
         Function for creating column for seasonal vegetation upload widgets
@@ -1594,11 +1570,11 @@ class Hem4(tk.Frame):
         
 
         #create column for land use file
-        self.s12 = tk.Frame(self.depinputtab, width=250, height=50, pady=5, padx=5, bg="palegreen3")
+        self.s12 = tk.Frame(self.depinputtab, width=250, height=50, pady=5, padx=5, bg="alice blue")
         self.s12.grid(row=5, column=0, columnspan=2, sticky="nsew")
         
         #land use size label
-        seasons_label = tk.Label(self.s12, font=TEXT_FONT, bg="palegreen3", 
+        seasons_label = tk.Label(self.s12, font=TEXT_FONT, bg="alice blue", 
                              text="Upload the file containing seasonal vegetation information:")
         seasons_label.grid(row=0, sticky="W")
     
@@ -1626,12 +1602,12 @@ class Hem4(tk.Frame):
         """
             
         #create row for emissions variation
-#                self.s5 = tk.Frame(self.main, width=250, height=100, bg="palegreen3", pady=5, 
+#                self.s5 = tk.Frame(self.main, width=250, height=100, bg="alice blue", pady=5, 
 #                                    padx=5)
 #                self.s5.grid(row=4, column=0, columnspan=2, sticky="nsew")
         
         #emissions variation label
-        self.emisvar_label = tk.Label(self.s5, font=TEXT_FONT, bg="palegreen3", 
+        self.emisvar_label = tk.Label(self.s5, font=TEXT_FONT, bg="alice blue", 
                              text="Please select an Emissions Variation"+
                              " file:")
         self.emisvar_label.grid(row=6, sticky="W")
@@ -1653,15 +1629,13 @@ class Hem4(tk.Frame):
         #event handler for instructions (Button 1 is the left mouse click)
         #self.emisvar_list_man.bind('<Button-1>', 
         #lambda e:self.manual("instructions/urep_man.txt"))
-                    
-
 
     def add_temporal(self):
         
         
         if self.check_tempvar.get() == 1:
             #emissions variation label
-                self.tempvar_label = tk.Label(self.s5, font=TEXT_FONT, bg="palegreen3", 
+                self.tempvar_label = tk.Label(self.s5, font=TEXT_FONT, bg="alice blue", 
                                      text="What diurnal (hourly) resolution would you like?")
                 self.tempvar_label.grid(row=5, column=0, sticky="W", padx=85, pady=20)
              
@@ -1676,7 +1650,7 @@ class Hem4(tk.Frame):
                 self.check_dr = tk.IntVar()
                 self.dr_sel = tk.Checkbutton(self.s5, text="Include seasonal variations in diurnally\n resolved concentrations output", 
                                           variable = self.check_dr, font=TEXT_FONT,
-                                          bg='palegreen3')
+                                          bg='alice blue')
                 self.dr_sel.grid(row=5, column=0, sticky="E")
                 
         
@@ -1753,9 +1727,7 @@ class Hem4(tk.Frame):
         elif pos == 2:
             
             self.run()
-            
-            
-    
+
     def backtab(self):
         total = self.tabControl.index('end')
                 
@@ -1768,10 +1740,7 @@ class Hem4(tk.Frame):
         elif pos == 2:
             
             self.tabControl.select(1)
-            
 
-
-        
              
 #%% Run function with checks if somethign is missing raise the error here and 
 #   create an additional dialogue before trying to run the file
@@ -1947,7 +1916,6 @@ class Hem4(tk.Frame):
                 except Exception as e:
                 
                     Logger.logMessage(str(e))
-                
 
     def process(self):
         """

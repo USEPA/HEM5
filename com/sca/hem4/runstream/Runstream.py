@@ -12,6 +12,7 @@ import com.sca.hem4.FindMet as fm
 from com.sca.hem4.model.Model import *
 from com.sca.hem4.support.UTM import *
 from com.sca.hem4.support.NormalRounding import *
+from com.sca.hem4.upload.EmissionsLocations import *
 
 class Runstream():
     """
@@ -109,7 +110,7 @@ class Runstream():
             titletwo = "CO TITLETWO  Combined particle and vapor-phase emissions \n"
     
         self.model.model_optns['titletwo'] = titletwo
-        
+
     # Building downwash option ------------------------------------------------
         self.blddw = self.facoptn_df['bldg_dw'][0]
         
@@ -877,35 +878,31 @@ class Runstream():
             
        #get values for this source id
         if srid not in self.model.sourceExclusion:
-            
-            partdia_source = self.partdia_df[self.partdia_df['source_id'] == srid]
-            part_diam = partdia_source['part_diam'].tolist()
-            part_dens = partdia_source['part_dens'].tolist()
-            mass_frac = partdia_source['mass_frac'].tolist()
-            
-    
-            sopdiam = ("SO PARTDIAM " + str(srid) + " " +
-                       " ".join(map(str, part_diam)) +"\n")
-            sopdens = ("SO PARTDENS " + str(srid) + " " +
-                       " ".join(map(str, part_dens))+"\n")
-            somassf = ("SO MASSFRAX " + str(srid) + " " +
-                       " ".join(map(str, mass_frac))+"\n")
-            
-            #print(sopdiam)
-            #print(sopdens)
-            #print(somassf)
-            self.inp_f.write(sopdiam)
-            self.inp_f.write(somassf)
-            self.inp_f.write(sopdens)
-            
-            #method 2 tbd
-    #         if part_met2 == "Y":
-    #        partme2_df = pd.read_excel(r"Currently not a created file") 
-    #        sourc = list(partme2_df['Source ID'][:])
-    #        sr_pos = sourc.index(srid[index])
-    #        someth2 = "SO METHOD_2 " + str(srid[index]) + " " + str(partme2_df['Fine Mass'][sr_pos]) + \
-    #            " " + str(partme2_df['Dmm'][sr_pos]) + "\n"
-    #        inp_f.write(someth2)
+            emisloc = self.emisloc_df.loc[self.emisloc_df.source_id == srid]
+            method2 = emisloc[method].iloc[0] == 2
+
+            if method2:
+                massfrac_val = emisloc[massfrac].iloc[0]
+                partdiam_val = emisloc[partdiam].iloc[0]
+                someth2 = "SO METHOD_2 " + srid + " " + str(massfrac_val) + " " + str(partdiam_val) + "\n"
+                self.inp_f.write(someth2)
+            else:
+                partdia_source = self.partdia_df[self.partdia_df['source_id'] == srid]
+                part_diam = partdia_source['part_diam'].tolist()
+                part_dens = partdia_source['part_dens'].tolist()
+                mass_frac = partdia_source['mass_frac'].tolist()
+
+
+                sopdiam = ("SO PARTDIAM " + str(srid) + " " +
+                           " ".join(map(str, part_diam)) +"\n")
+                sopdens = ("SO PARTDENS " + str(srid) + " " +
+                           " ".join(map(str, part_dens))+"\n")
+                somassf = ("SO MASSFRAX " + str(srid) + " " +
+                           " ".join(map(str, mass_frac))+"\n")
+
+                self.inp_f.write(sopdiam)
+                self.inp_f.write(somassf)
+                self.inp_f.write(sopdens)
 
     def get_vapor(self, srid):
         """
@@ -916,9 +913,7 @@ class Runstream():
             pollutants = (self.hapemis[(self.hapemis['source_id'] == srid)
                                         & (self.hapemis['part_frac'] < 1)]['pollutant'].str.lower())
             pollutants.reset_index(drop=True, inplace=True)
-                
-            print('Checking Vapor:', pollutants['fac_id'])
-            
+                           
             params = self.model.gasparams.dataframe.loc[self.model.gasparams.dataframe['pollutant'].isin(pollutants)]
             params.reset_index(drop=True, inplace=True)
                     

@@ -1,3 +1,4 @@
+from com.sca.hem4.log import Logger
 from com.sca.hem4.upload.InputFile import InputFile
 from tkinter import messagebox
 import os
@@ -27,6 +28,14 @@ class HAPEmissions(InputFile):
         # HEADER------------------------
         # FacilityID|SourceID|HEM3chem|SumEmissionTPY|FractionParticulate
         hapemis_df = self.readFromPath((fac_id,source_id,pollutant,emis_tpy,part_frac))
+
+        if len(hapemis_df.loc[(hapemis_df[part_frac] < 0)]) > 0:
+            Logger.logMessage("Found negative percentage value(s) in HAP emissions fraction particulate column.")
+            return
+
+        if len(hapemis_df.loc[(hapemis_df[part_frac] > 100)]) > 0:
+            Logger.logMessage("Found percentage value(s) in HAP emissions fraction particulate column larger than 100.")
+            return
 
         #fill Nan with 0
         hapemis_df.fillna(0)

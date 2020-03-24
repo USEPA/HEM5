@@ -66,7 +66,7 @@ def return_met(facid, faclat, faclon, surfname):
                     "That station is not in the meteorlogical library. The facility will be skipped")
         Logger.logMessage(emessage)
         raise Exception(emessage)
-    
+     
     facility = (faclon, faclat)    
     station = (metrow['surflon'].iloc[0], metrow['surflat'].iloc[0])
     distance2fac = distance(lonlat(*facility), lonlat(*station)).meters
@@ -75,7 +75,7 @@ def return_met(facid, faclat, faclon, surfname):
     surfyear = metrow['surfyear'].iloc[0]
     # Note: remove white space from surfcity and uacity, Aermod will not allow spaces in the city name
     surfdata_str = str(metrow['surfwban'].iloc[0]) + " " + str(metrow['surfyear'].iloc[0]) + " " + str(metrow['surfcity'].iloc[0]).replace(" ","")
-    uairdata_str = str(metrow['uawban'].iloc[0]) + " " + str(metrow['surfyear'].loc[0]) + " " + str(metrow['uacity'].iloc[0]).replace(" ","")
+    uairdata_str = str(metrow['uawban'].iloc[0]) + " " + str(metrow['surfyear'].iloc[0]) + " " + str(metrow['uacity'].iloc[0]).replace(" ","")
     prof_base = str(metrow['elev'].iloc[0])
     
     return surf_file, upper_file, surfdata_str, uairdata_str, prof_base, distance2fac, surfyear

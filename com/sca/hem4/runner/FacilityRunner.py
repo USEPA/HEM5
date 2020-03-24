@@ -32,6 +32,7 @@ class FacilityRunner():
         else:
             self.model.model_optns['phase'] = fac['phase'].tolist()[0]
 
+        
 #        if self.model.group_name != None:
 #            
 #            Logger.logMessage("RUN GROUP: " + self.model.group_name)
@@ -109,7 +110,7 @@ class FacilityRunner():
             #check aermod run and move aermod.inp, aermod.out, and plot.plt files to facility folder
             check = False
             try:
-                check = self.check_run(fac_folder, None)
+                check = self.check_run(fac_folder, self.phase)
             
             except Exception as e:
                 
@@ -179,7 +180,7 @@ class FacilityRunner():
                 try:
                     self.runstream = self.prep_fac.createRunstream(self.facilityId, r)
                     
-                except Exception as e:
+                except BaseException as e:
                 
                     Logger.logMessage(str(e))
                 
@@ -320,7 +321,7 @@ class FacilityRunner():
         check.close()
 
         if success == True:
-            
+             
             #determine which plotfile we are using based on phases
             if self.phase == 'P' or phasetype =='P':
                 
@@ -337,7 +338,7 @@ class FacilityRunner():
                 
                   # listing directories
                 print ("The dir is: %s"%os.listdir('aermod'))
-                #rename for particle
+                #rename for vapor
                 os.rename('aermod/plotfile.plt','aermod/plotfile_v.plt')
                 plt_version = 'plotfile_v.plt'
                 

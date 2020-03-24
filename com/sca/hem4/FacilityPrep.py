@@ -34,7 +34,7 @@ class FacilityPrep():
         self.model.facops = self.model.faclist.dataframe.loc[self.model.faclist.dataframe[fac_id] == facid]
 
         # Set defaults of the facility options
-        if self.model.facops[max_dist].isnull().sum() > 0 or self.model.facops.iloc[0][max_dist] > 50000:
+        if self.model.facops[max_dist].isnull().sum() > 0:
             self.model.facops.loc[:, max_dist] = 50000
 
         if self.model.facops[model_dist].isnull().sum() > 0:
@@ -61,32 +61,54 @@ class FacilityPrep():
 
         #  Maximum Distance
         if self.model.facops[max_dist][0] >= 50000:
+            Logger.logMessage("max distance value " + str(self.model.facops[max_dist][0]) +
+                              " out of range. Defaulting to 50000.")
             self.model.facops.loc[:, max_dist] = 50000
         elif self.model.facops[max_dist][0] == 0:
+            Logger.logMessage("max distance value " + str(self.model.facops[max_dist][0]) +
+                              " out of range. Defaulting to 50000.")
             self.model.facops.loc[:, max_dist] = 50000
 
         # Modeled Distance of Receptors
         if self.model.facops[model_dist][0] == 0:
+            Logger.logMessage("model distance value " + str(self.model.facops[model_dist][0]) +
+                              " out of range. Defaulting to 3000.")
             self.model.facops.loc[:, model_dist] = 3000
 
         # Radials: default is 16, minimum number is 4
         if self.model.facops[radial][0] == 0:
+            Logger.logMessage("radial value " + str(self.model.facops[radial][0]) +
+                              " out of range. Defaulting to 16.")
             self.model.facops.loc[:, radial] = 16
+
         if self.model.facops[radial][0] < 4:
+            Logger.logMessage("radial value " + str(self.model.facops[radial][0]) +
+                              " out of range. Defaulting to 4.")
             self.model.facops.loc[:, radial] = 4
 
         # Circles: default is 13, minimum number is 3
         if self.model.facops[circles][0] == 0:
+            Logger.logMessage("circles value " + str(self.model.facops[circles][0]) +
+                              " out of range. Defaulting to 13.")
             self.model.facops.loc[:, circles] = 13
+
         if self.model.facops[circles][0] < 3:
+            Logger.logMessage("circles value " + str(self.model.facops[circles][0]) +
+                              " out of range. Defaulting to 3.")
             self.model.facops.loc[:, circles] = 3
 
         # Overlap Distance
         if self.model.facops[overlap_dist][0] == 0:
+            Logger.logMessage("overlap distance value " + str(self.model.facops[overlap_dist][0]) +
+                              " out of range. Defaulting to 30.")
             self.model.facops.loc[:, overlap_dist] = 30
         elif self.model.facops[overlap_dist][0] < 1:
+            Logger.logMessage("overlap distance value " + str(self.model.facops[overlap_dist][0]) +
+                              " out of range. Defaulting to 30.")
             self.model.facops.loc[:, overlap_dist] = 30
         elif self.model.facops[overlap_dist][0] > 500:
+            Logger.logMessage("overlap distance value " + str(self.model.facops[overlap_dist][0]) +
+                              " out of range. Defaulting to 30.")
             self.model.facops.loc[:, overlap_dist] = 30
         
 
@@ -208,7 +230,7 @@ class FacilityPrep():
         # Replace NaN with blank or 0. utmzone defaults to "0N"
         emislocs = emislocs.fillna({utmzone:'0N', source_type:'', lengthx:0, lengthy:0, angle:0,
                                     horzdim:0, vertdim:0, areavolrelhgt:0, stkht:0, stkdia: 0,
-                                    stkvel:0, stktemp:0, elev:0, x2:0, y2:0})
+                                    stkvel:0, stktemp:0, elev:0, x2:0, y2:0, method:1, massfrac:1, partdiam:1})
         emislocs = emislocs.reset_index(drop = True)
         
         # Area source angle must be >= 0 and < 90. If not, skip this facility

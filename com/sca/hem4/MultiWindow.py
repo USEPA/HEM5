@@ -11,9 +11,9 @@ import tkinter.ttk as ttk
 from functools import partial
 import shutil
 
+
 #from pandastable import Table, filedialog, np
 from datetime import datetime
-from com.sca.hem4.ResumeProcessor import resumeProcessor
 from com.sca.hem4.log.Logger import Logger
 from com.sca.hem4.tools.CensusUpdater import CensusUpdater
 from com.sca.hem4.model.Model import Model
@@ -93,15 +93,15 @@ class Page1(Page):
         Page.__init__(self, *args, **kwargs)
         
         self.noteStyler = ttk.Style()
-        self.noteStyler.configure("TNotebook", background="palegreen3", borderwidth=0)
-        self.noteStyler.configure("TNotebook.Tab", background="palegreen3", borderwidth=0)
-        self.noteStyler.configure("TFrame", background="palegreen3", borderwidth=0)
+        self.noteStyler.configure("TNotebook", background="alice blue", borderwidth=0)
+        self.noteStyler.configure("TNotebook.Tab", background="alice blue", borderwidth=0)
+        self.noteStyler.configure("TFrame", background="alice blue", borderwidth=0)
 
         
         # Tab Control introduced here --------------------------------------
         self.tabControl = ttk.Notebook(self, style='TNotebook')     # Create Tab Control
         
-        self.container = tk.Frame(self, bg="palegreen3")
+        self.container = tk.Frame(self, bg="alice blue")
 #        self.buttonframe.pack(side="right", fill="y", expand=False)
         
         self.s=ttk.Style()
@@ -111,7 +111,7 @@ class Page1(Page):
         
         self.tabControl.add(self.container, text='Summaries')      # Add the tab
 
-        self.log2 = tk.Frame(self.tabControl, bg='palegreen3')            # Add a second tab
+        self.log2 = tk.Frame(self.tabControl, bg='alice blue')            # Add a second tab
         self.tabControl.add(self.log2, text='Log')      # Make second tab visible
     
         
@@ -123,19 +123,19 @@ class Page1(Page):
         self.tabControl.pack(expand=1, fill="both")  # Pack to make visible
 
          #create grid
-        self.s1 = tk.Frame(self.container, width=750, height=100, bg="palegreen3")
-        self.s2 = tk.Frame(self.container, width=750, height=100, bg="palegreen3")
-        self.s3 = tk.Frame(self.container, width=750, height=100, pady=5, padx=5, bg="palegreen3")
-        self.s4 = tk.Frame(self.container, width=750, height=100, pady=5, padx=5, bg="palegreen3")
-        self.s5 = tk.Frame(self.container, width=750, height=100, pady=5, padx=5, bg="palegreen3")
-        self.s6 = tk.Frame(self.container, width=750, height=100, pady=5, padx=5, bg="palegreen3")
-        self.s7 = tk.Frame(self.container, width=750, height=100, pady=5, padx=5, bg="palegreen3")
-        self.s8 = tk.Frame(self.container, width=750, height=100, pady=5, padx=5, bg="palegreen3")
-        self.s9 = tk.Frame(self.container, width=750, height=100, pady=5, padx=5, bg="palegreen3")
-        self.s10 = tk.Frame(self.container, width=750, height=100, pady=5, padx=5, bg="palegreen3")
-        self.s11 = tk.Frame(self.container, width=750, height=100, pady=5, padx=5, bg="palegreen3")
-        self.s12 = tk.Frame(self.container, width=750, height=100, pady=5, padx=5, bg="palegreen3")
-        self.s13 = tk.Frame(self.container, width=750, height=100, pady=5, padx=5, bg="palegreen3")
+        self.s1 = tk.Frame(self.container, width=750, height=100, bg="alice blue")
+        self.s2 = tk.Frame(self.container, width=750, height=100, bg="alice blue")
+        self.s3 = tk.Frame(self.container, width=750, height=100, pady=5, padx=5, bg="alice blue")
+        self.s4 = tk.Frame(self.container, width=750, height=100, pady=5, padx=5, bg="alice blue")
+        self.s5 = tk.Frame(self.container, width=750, height=100, pady=5, padx=5, bg="alice blue")
+        self.s6 = tk.Frame(self.container, width=750, height=100, pady=5, padx=5, bg="alice blue")
+        self.s7 = tk.Frame(self.container, width=750, height=100, pady=5, padx=5, bg="alice blue")
+        self.s8 = tk.Frame(self.container, width=750, height=100, pady=5, padx=5, bg="alice blue")
+        self.s9 = tk.Frame(self.container, width=750, height=100, pady=5, padx=5, bg="alice blue")
+        self.s10 = tk.Frame(self.container, width=750, height=100, pady=5, padx=5, bg="alice blue")
+        self.s11 = tk.Frame(self.container, width=750, height=100, pady=5, padx=5, bg="alice blue")
+        self.s12 = tk.Frame(self.container, width=750, height=100, pady=5, padx=5, bg="alice blue")
+        self.s13 = tk.Frame(self.container, width=750, height=100, pady=5, padx=5, bg="alice blue")
 
           
         self.s1.grid(row=0)
@@ -159,17 +159,17 @@ class Page1(Page):
 
         
         #title
-        title = tk.Label(self.s1, text="Risk Summary", font=TITLE_FONT, bg="palegreen3")
+        title = tk.Label(self.s1, text="Risk Summary", font=TITLE_FONT, bg="alice blue")
 
         title.grid(row = 1)
         
         #instructions
-        instructions = tk.Label(self.s1, text="Select one or more risk summary programs", font=TEXT_FONT, bg="palegreen3")
+        instructions = tk.Label(self.s1, text="Select one or more risk summary programs", font=TEXT_FONT, bg="alice blue")
         instructions.grid_columnconfigure(1, weight=1)
         instructions.grid(row=2)
         
          #modeling group label
-        group_label = tk.Label(self.s1, font=TEXT_FONT, bg="palegreen3", 
+        group_label = tk.Label(self.s1, font=TEXT_FONT, bg="alice blue", 
                              text="Please identify the location of the HEM4 results to be summarized:")
         group_label.grid(row=3)
         
@@ -187,40 +187,40 @@ class Page1(Page):
        
         
         self.var_m = tk.IntVar()
-        self.max_risk = tk.Checkbutton(self.s3, font=TEXT_FONT, bg="palegreen3", text="Max Risk Summary", variable=self.var_m)
+        self.max_risk = tk.Checkbutton(self.s3, font=TEXT_FONT, bg="alice blue", text="Max Risk Summary", variable=self.var_m)
         self.max_risk.grid(row=1, padx=10, sticky="W")
         
         
         self.var_c = tk.IntVar()
-        self.cancer_driver = tk.Checkbutton(self.s4, font=TEXT_FONT, bg="palegreen3", text="Cancer Drivers", variable=self.var_c)
+        self.cancer_driver = tk.Checkbutton(self.s4, font=TEXT_FONT, bg="alice blue", text="Cancer Drivers", variable=self.var_c)
         self.cancer_driver.grid(row=1, padx=10, sticky="W")
         
         self.var_h = tk.IntVar()
-        self.hazard = tk.Checkbutton(self.s5, font=TEXT_FONT, bg="palegreen3", text="Hazard Index Drivers", variable=self.var_h)
+        self.hazard = tk.Checkbutton(self.s5, font=TEXT_FONT, bg="alice blue", text="Hazard Index Drivers", variable=self.var_h)
         self.hazard.grid(row=1, padx=10, sticky="W")
         
         self.var_hi = tk.IntVar()
-        self.hist = tk.Checkbutton(self.s6, font=TEXT_FONT, bg="palegreen3", text="Risk Histogram", variable=self.var_hi)
+        self.hist = tk.Checkbutton(self.s6, font=TEXT_FONT, bg="alice blue", text="Risk Histogram", variable=self.var_hi)
         self.hist.grid(row=1, padx=10, sticky="W")
         
         self.var_hh = tk.IntVar()
-        self.hh = tk.Checkbutton(self.s7, font=TEXT_FONT, bg="palegreen3", text="Hazard Index Histogram", variable=self.var_hh)
+        self.hh = tk.Checkbutton(self.s7, font=TEXT_FONT, bg="alice blue", text="Hazard Index Histogram", variable=self.var_hh)
         self.hh.grid(row=1, padx=10, sticky="W")
         
         self.var_i = tk.IntVar()
-        self.inc = tk.Checkbutton(self.s8, font=TEXT_FONT, bg="palegreen3", text="Incidence Drivers", variable=self.var_i)
+        self.inc = tk.Checkbutton(self.s8, font=TEXT_FONT, bg="alice blue", text="Incidence Drivers", variable=self.var_i)
         self.inc.grid(row=1, padx=10, sticky="W")
         
         self.var_a = tk.IntVar()
-        self.ai = tk.Checkbutton(self.s9, font=TEXT_FONT, bg="palegreen3", text="Acute Impacts", variable=self.var_a)
+        self.ai = tk.Checkbutton(self.s9, font=TEXT_FONT, bg="alice blue", text="Acute Impacts", variable=self.var_a)
         self.ai.grid(row=1, padx=10, sticky="W")
 
         self.var_p = tk.IntVar()
-        self.mp = tk.Checkbutton(self.s10, font=TEXT_FONT, bg="palegreen3", text="Multipathway", variable=self.var_p)
+        self.mp = tk.Checkbutton(self.s10, font=TEXT_FONT, bg="alice blue", text="Multipathway", variable=self.var_p)
         self.mp.grid(row=1, padx=10, sticky="W")
         
         self.var_s = tk.IntVar()
-        self.s = tk.Checkbutton(self.s11, font=TEXT_FONT, bg="palegreen3", text="Source Type Risk Histogram", variable=self.var_s, command=self.set_sourcetype)
+        self.s = tk.Checkbutton(self.s11, font=TEXT_FONT, bg="alice blue", text="Source Type Risk Histogram", variable=self.var_s, command=self.set_sourcetype)
         self.s.grid(row=1, padx=10, sticky="W")
         
                    
@@ -244,14 +244,14 @@ class Page1(Page):
 
         if self.var_s.get() == 1:
         
-            self.pos = tk.Label(self.s12, font=SUB_FONT, bg="palegreen3", text="Enter the position in the source ID where the\n source ID type begins.The default is 1.")
+            self.pos = tk.Label(self.s12, font=SUB_FONT, bg="alice blue", text="Enter the position in the source ID where the\n source ID type begins.The default is 1.")
             self.pos.grid(row=1, padx=10, sticky="W")
             
             self.pos_num = ttk.Entry(self.s12)
             self.pos_num["width"] = 5
             self.pos_num.grid(row=1, column=2, padx=10, sticky="W")
         
-            self.chars = tk.Label(self.s12, font=SUB_FONT, bg="palegreen3", text="Enter the number of characters \nof the sourcetype ID")
+            self.chars = tk.Label(self.s12, font=SUB_FONT, bg="alice blue", text="Enter the number of characters \nof the sourcetype ID")
             self.chars.grid(row=2, padx=10, sticky="W")
             
             self.chars_num = ttk.Entry(self.s12)
@@ -458,77 +458,85 @@ class Page1(Page):
 
 class Page2(Page):
     def __init__(self, *args, **kwargs):
-       Page.__init__(self, *args, **kwargs)
-   
-       container = tk.Frame(self, bg="palegreen3")
-#        self.buttonframe.pack(side="right", fill="y", expand=False)
-       container.pack(side="top", fill="both", expand=True)
-       
-       self.s1 = tk.Frame(container, width=600, height=50, bg="palegreen3")
-       self.s2 = tk.Frame(container, width=600, height=50, bg="palegreen3")
-       self.s3 = tk.Frame(container, width=600, height=50, pady=5, padx=5, bg="palegreen3")
-       self.s4 = tk.Frame(container, width=600, height=50, pady=5, padx=5, bg="palegreen3")
-       self.s5 = tk.Frame(container, width=600, height=50, pady=5, padx=5, bg="palegreen3")
-          
-       self.s1.pack(fill="x")
-       self.s2.pack(fill="x")
-       self.s3.pack(fill="x")
-       self.s4.pack(fill="x")
-       self.s5.pack(fill="x")
-        
-        #title in first grid space 
-       title1 = tk.Label(self.s1, text="HEM4", font=TITLE_FONT, bg="palegreen3")
-       title1.pack(side="top", pady=20)
-        
-       title2 = tk.Label(self.s1, text="Human Exposure Model\n Version 4-Open Source ", font=TEXT_FONT, bg="palegreen3")
-       title2.pack()
-        
+        Page.__init__(self, *args, **kwargs)
 
-       #some information
-       prepared_for = tk.Label(self.s2, text="Prepared for: \nAir Toxics" +
-                            " Assessment Group \nU.S. EPA \nResearch Triangle Park, NC 27711", 
-                             font=TEXT_FONT, bg="palegreen3")
-       prepared_for.pack(padx=45, pady=30, side="left")
-       
-       
-       image1 = ImageTk.PhotoImage(PIL.Image.open('images\smokestack.jpg'))
-       ione = tk.Label(self.s3, image=image1)
-       ione.image = image1 # keep a reference!
-       ione.pack(padx=50, side="left")
-       
-                
-       prepared_by = tk.Label(self.s2, text="Prepared by: \nSC&A Incorporated\n" +
-                            "1414 Raleigh Rd, Suite 450\nChapel Hill, NC 27517", 
-                             font=TEXT_FONT, bg="palegreen3") 
-       prepared_by.pack(padx=150, pady=30)
-       
-       
-#       image2 = ImageTk.PhotoImage(Image.open('images\residential.jpg'))s
-#       itwo = tk.Label(self.s3, image=image2)
-#       itwo.image = image2 # keep a reference!
-#       itwo.pack(padx=20, side="right")
-       
+        container = tk.Frame(self, bg="alice blue")
+        #        self.buttonframe.pack(side="right", fill="y", expand=False)
+        container.pack(side="top", fill="both", expand=True)
 
-        
-        ## hyperlink 
-       link_to_site = tk.Label(self.s3, text="EPA HEM4 Webpage (link)", 
-                               font=TEXT_FONT, bg="palegreen3")
-       link_to_site.pack(pady=30, padx=100)
-       link_to_site.bind('<Button-1>', hyperlink1)
-        
-       link_to_userguide = tk.Label(self.s3, text="HEM4 User's Guide (link)", 
-                                      font=TEXT_FONT, bg="palegreen3")
-       link_to_userguide.pack(pady=10, padx=100)
-       link_to_userguide.bind("<Button-1>", hyperlink2)
-        
-       self.b1 = tk.Button(self.s3, text="Start Menu", font=TEXT_FONT, 
-                       relief='solid', borderwidth=2, bg='lightgrey', command=self.lift_nav)
-       self.b1.bind("<Enter>", partial(self.color_config, self.b1, "white"))
-       self.b1.bind("<Leave>", partial(self.color_config, self.b1, "lightgrey"))
-#
-       self.b1.pack(pady=20)
+        self.s1 = tk.Frame(container, width=600, height=50, bg="alice blue")
+        self.s2 = tk.Frame(container, width=600, height=50, bg="alice blue")
+        self.s3 = tk.Frame(container, width=600, height=50, pady=5, padx=5, bg="alice blue")
+        self.s4 = tk.Frame(container, width=600, height=50, pady=5, padx=5, bg="alice blue")
+        self.s5 = tk.Frame(container, width=600, height=50, pady=5, padx=5, bg="alice blue")
 
-       #start.show()
+        self.s1.pack(fill="x")
+        self.s2.pack(fill="x")
+        self.s3.pack(fill="x")
+        self.s4.pack(fill="x")
+        self.s5.pack(fill="x")
+
+        #title in first grid space
+        title1 = tk.Label(self.s1, text="HEM4", font=TITLE_FONT, bg="alice blue")
+        title1.pack(side="top", pady=20)
+
+        title2 = tk.Label(self.s1, text="Human Exposure Model\n Version 4-Open Source ", font=TEXT_FONT, bg="alice blue")
+        title2.pack()
+
+
+        #some information
+        prepared_for = tk.Label(self.s2, text="Prepared for: \nAir Toxics" +
+                            " Assessment Group \nU.S. EPA \nResearch Triangle Park, NC 27711",
+                             font=TEXT_FONT, bg="alice blue")
+        prepared_for.pack(padx=45, pady=30, side="left")
+
+
+        image1 = ImageTk.PhotoImage(PIL.Image.open('images\smokestack.jpg'))
+        ione = tk.Label(self.s3, image=image1)
+        ione.image = image1 # keep a reference!
+        ione.pack(padx=50, side="left")
+
+        prepared_by = tk.Label(self.s2, text="Prepared by: \nSC&A Incorporated\n" +
+                            "1414 Raleigh Rd, Suite 450\nChapel Hill, NC 27517",
+                             font=TEXT_FONT, bg="alice blue")
+        prepared_by.pack(padx=150, pady=30)
+
+        self.s3top = tk.Frame(self.s3, pady=5, padx=5, bg="alice blue")
+        self.s3top.pack(fill="both", expand=True)
+
+        self.s3bottom = tk.Frame(self.s3, pady=5, padx=5, bg="alice blue")
+        self.s3bottom.pack(fill="both", expand=True)
+
+        img = PIL.Image.open('images\\usersguides.jpg')
+        img = img.resize((400, 230), PIL.Image.ANTIALIAS)
+        image2 = ImageTk.PhotoImage(img)
+        itwo = tk.Label(self.s3bottom, image=image2)
+        itwo.image = image2 # keep a reference!
+        itwo.pack(padx=0, pady=0, side="right")
+
+        self.s3topright = tk.Frame(self.s3top, height="30", pady=5, padx=5, bg="alice blue")
+        self.s3topright.pack(fill="both")
+
+        self.b1 = tk.Button(self.s3topright, text="Start Menu", font=TEXT_FONT,
+                           relief='solid', borderwidth=2, bg='lightgrey', command=self.lift_nav)
+        self.b1.bind("<Enter>", partial(self.color_config, self.b1, "white"))
+        self.b1.bind("<Leave>", partial(self.color_config, self.b1, "lightgrey"))
+        self.b1.pack(padx=10, pady=0, side="right")
+
+
+        self.s3topleft = tk.Frame(self.s3top, pady=5, padx=5, bg="alice blue")
+        self.s3topleft.pack(fill="both", expand=True)
+
+        ## hyperlink
+        link_to_site = tk.Label(self.s3topleft, text="EPA HEM4 Webpage (link)",
+                               font=TEXT_FONT, bg="alice blue", anchor="e")
+        link_to_site.pack(pady=10,fill="x", expand=True)
+        link_to_site.bind('<Button-1>', hyperlink1)
+
+        link_to_userguide = tk.Label(self.s3topleft, text="HEM4 User's Guide (link)",
+                                      font=TEXT_FONT, bg="alice blue", anchor="e")
+        link_to_userguide.pack(fill="x", expand=True)
+        link_to_userguide.bind("<Button-1>", hyperlink2)
 
     def lift_nav(self):
         self.lower()
@@ -552,7 +560,7 @@ class Page3(Page):
     def __init__(self, nav, *args, **kwargs):
         Page.__init__(self, *args, **kwargs)
 
-        container = tk.Frame(self, bg="palegreen3")
+        container = tk.Frame(self, bg="alice blue")
         #        self.buttonframe.pack(side="right", fill="y", expand=False)
         container.pack(side="top", fill="both", expand=True)
 
@@ -561,11 +569,11 @@ class Page3(Page):
         self.s.theme_use('clam')
 
         #create grid
-        self.s1 = tk.Frame(container, width=750, height=100, bg="palegreen3")
-        self.s2 = tk.Frame(container, width=750, height=100, bg="palegreen3")
-        self.s3 = tk.Frame(container, width=750, height=100, pady=5, padx=5, bg="palegreen3")
-        self.s4 = tk.Frame(container, width=750, height=100, pady=5, padx=5, bg="palegreen3")
-        self.s5 = tk.Frame(container, width=750, height=100, pady=5, padx=5, bg="palegreen3")
+        self.s1 = tk.Frame(container, width=750, height=100, bg="alice blue")
+        self.s2 = tk.Frame(container, width=750, height=100, bg="alice blue")
+        self.s3 = tk.Frame(container, width=750, height=100, pady=5, padx=5, bg="alice blue")
+        self.s4 = tk.Frame(container, width=750, height=100, pady=5, padx=5, bg="alice blue")
+        self.s5 = tk.Frame(container, width=750, height=100, pady=5, padx=5, bg="alice blue")
 
         self.s1.pack(fill="x")
         self.s2.pack(fill="x")
@@ -574,7 +582,7 @@ class Page3(Page):
         self.s5.pack(fill="y")
 
         #title
-        title = tk.Label(self.s1, text="Output viewing and analysis", font=TITLE_FONT, bg="palegreen3")
+        title = tk.Label(self.s1, text="Output viewing and analysis", font=TITLE_FONT, bg="alice blue")
         title.pack(pady=10, side="top")
 
         button_file = tk.Button(self.s2, text="Open a facility or source category output file",
@@ -858,7 +866,7 @@ class MainView(tk.Frame):
         tk.Frame.__init__(self, master=master, *args, **kwargs)
      
         home = self.master
-        container = tk.Frame(self, bg="palegreen3")
+        container = tk.Frame(self, bg="alice blue")
 #        self.buttonframe.pack(side="right", fill="y", expand=False)
         container.pack(fill="both", expand=True)
 
@@ -886,11 +894,11 @@ class MainView(tk.Frame):
         
          #create grid
 
-        self.s1 = tk.Frame(container, width=750, height=100, bg="palegreen3")
-        self.s2 = tk.Frame(container, width=750, height=100, bg="palegreen3")
-        self.s3 = tk.Frame(container, width=750, height=100, pady=5, padx=5, bg="palegreen3")
-        self.s4 = tk.Frame(container, width=750, height=100, pady=5, padx=5, bg="palegreen3")
-        self.s5 = tk.Frame(container, width=750, height=100, pady=5, padx=5, bg="palegreen3")
+        self.s1 = tk.Frame(container, width=750, height=100, bg="alice blue")
+        self.s2 = tk.Frame(container, width=750, height=100, bg="alice blue")
+        self.s3 = tk.Frame(container, width=750, height=100, pady=5, padx=5, bg="alice blue")
+        self.s4 = tk.Frame(container, width=750, height=100, pady=5, padx=5, bg="alice blue")
+        self.s5 = tk.Frame(container, width=750, height=100, pady=5, padx=5, bg="alice blue")
 
         self.s1.pack(fill="x")
         self.s2.pack(fill="x")
@@ -900,7 +908,7 @@ class MainView(tk.Frame):
 
         
         #title
-        title = tk.Label(self.s1, text="What would you like to do?", font=TITLE_FONT, bg="palegreen3")
+        title = tk.Label(self.s1, text="What would you like to do?", font=TITLE_FONT, bg="alice blue")
         title.pack(padx=20, pady=50)
         
         #new facility run
@@ -912,6 +920,7 @@ class MainView(tk.Frame):
         
         #resume a facility run
         #first get all incomplete runs
+
         incomplete_facs = os.listdir("save")
         resume = tk.Label(self.s3, text= "Select a previously incompleted run", bg='palegreen3', 
                                font=TEXT_FONT).pack()

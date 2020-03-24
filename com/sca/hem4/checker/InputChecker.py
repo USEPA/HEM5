@@ -43,7 +43,7 @@ class InputChecker():
     def check_required(self):
         
         #store result in dictionary
-        result = {'result': None, 'dependencies': [], 'reset': None  }
+        result = {'result': None, 'dependencies': [], 'reset': None  } 
         
         #check if dataframe exists        
         try:
