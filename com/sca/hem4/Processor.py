@@ -2,6 +2,7 @@ import os
 import shutil
 import threading
 from datetime import datetime
+import pdb
 
 from com.sca.hem4.SaveState import SaveState
 from com.sca.hem4.log.Logger import Logger
@@ -32,19 +33,6 @@ class Processor():
 
     def process(self):
 
-        # Create run id for saving model. Default to cat_timestamp if no group
-        # Also create a root output folder using the user supplied group name.
-        # If no group name, output folder name will use date/time stamp        
-        if self.model.group_name != None:
-            runid = self.model.group_name
-        else: 
-            runid = str(uuid.uuid4())[:7]
-            self.model.group_name = "rungroup_" + str(datetime.now().strftime('%Y_%m_%d_%H_%M_%S'))
-
-        self.model.rootoutput = "output/" + self.model.group_name + "/"
-        if os.path.exists(self.model.rootoutput):
-            shutil.rmtree(self.model.rootoutput)                
-        os.makedirs(self.model.rootoutput)
 
         # create Inputs folder
         inputspkgr = InputsPackager(self.model.rootoutput, self.model)
@@ -53,16 +41,9 @@ class Processor():
        
         Logger.logMessage("RUN GROUP: " + self.model.group_name)
         
-#            runid = datetime.datetime.now().strftime("%Y-%H-%M-%p")
-#            print(runid)
-            
-        #print(runid)
-        #create save model
-        save_state = SaveState(runid, self.model)
-        self.model.save = save_state
 
         threadLocal.abort = False
-                
+
         
         #create a Google Earth KML of all sources to be modeled
         try:
@@ -70,7 +51,7 @@ class Processor():
             if kmlWriter is not None:
                 kmlWriter.write_kml_emis_loc(self.model)
                 Logger.logMessage("KMZ for all sources completed")
-                pass
+                
             
         except Exception as ex:
                 self.exception = ex
@@ -80,66 +61,85 @@ class Processor():
                 print(message)
                 Logger.logMessage(message)
            
-
-        Logger.logMessage("Preparing Inputs for " + str(
-            self.model.facids.count()) + " facilities\n")
-        
-        fac_list = []
-        for index, row in self.model.faclist.dataframe.iterrows():
+        else:
+          
+            print(str(self.model.facids.count()))
             
-            facid = row[0]
-            #print(facid)
-            fac_list.append(facid)
-            num = 1
-
-#        Logger.logMessage("The facility ids being modeled: , False)
-        print("The facility ids being modeled: " + ", ".join(fac_list))
-
-        success = False
-
-        # Create output files with headers for any source-category outputs that will be appended
-        # to facility by facility. These won't have any data for now.
-        self.createSourceCategoryOutputs()
-        
-        for facid in fac_list:
-            print(facid)
-            if self.abort.is_set():
-                Logger.logMessage("Aborting processing...")
-                print("abort")
-                return
+            Logger.logMessage("Preparing Inputs for " + str(self.model.facids.count()) + " facilities\n")
             
-            
-            
-            #save version of this gui as is? constantly overwrite it once each facility is done?
-            Logger.logMessage("Running facility " + str(num) + " of " +
-                              str(len(fac_list)))
-            
+           
+            fac_list = []
+            for index, row in self.model.faclist.dataframe.iterrows():
+                
+                facid = row[0]
+                #print(facid)
+                fac_list.append(facid)
+                num = 1
+    
+    #        Logger.logMessage("The facility ids being modeled: , False)
+            Logger.logMessage("The facility ids being modeled: " + ", ".join(fac_list))
+    
             success = False
-                        
-            try:
-                runner = FacilityRunner(facid, self.model, self.abort)
-                runner.setup()
-
-                
-            except Exception as ex:
-
-                self.exception = ex
-                fullStackInfo=''.join(traceback.format_exception(
-                    etype=type(ex), value=ex, tb=ex.__traceback__))
-
-                message = "An error occurred while running a facility:\n" + fullStackInfo
-                print(message)
-                Logger.logMessage(message)
-                
-                
-            else:
-                ## if the try is successful this is where we would update the 
-                # dataframes or cache the last processed facility so that when 
-                # restart we know which faciltiy we want to start on
-                # increment facility count
+    
+            # Create output files with headers for any source-category outputs that will be appended
+            # to facility by facility. These won't have any data for now.
+            self.createSourceCategoryOutputs()
             
-              
-
+            self.skipped = []
+            for facid in fac_list:
+                print(facid)
+                if self.abort.is_set():
+                    Logger.logMessage("Aborting processing...")
+                    print("abort")
+                    return
+                
+                
+                
+                #save version of this gui as is? constantly overwrite it once each facility is done?
+                Logger.logMessage("Running facility " + str(num) + " of " +
+                                  str(len(fac_list)))
+                
+                success = False
+                
+                
+                try:
+                    runner = FacilityRunner(facid, self.model, self.abort)
+                    runner.setup()
+    
+                    
+                except Exception as ex:
+    
+                    self.exception = ex
+                    fullStackInfo=''.join(traceback.format_exception(
+                        etype=type(ex), value=ex, tb=ex.__traceback__))
+    
+                    message = "An error occurred while running a facility:\n" + fullStackInfo
+                    print(message)
+                    Logger.logMessage(message)
+                    
+                    
+                    
+                    
+                    
+                
+                    ## if the try is successful this is where we would update the 
+                    # dataframes or cache the last processed facility so that when 
+                    # restart we know which faciltiy we want to start on
+                    # increment facility count
+                
+                  
+                try:
+                    self.model.aermod
+                    
+                except:
+                    
+                    pass
+                
+                else:
+                    if self.model.aermod == False:
+                        self.skipped.append(facid)
+                        self.model.aermod = None
+                    
                 num += 1
                 success = True
                 
@@ -147,20 +147,32 @@ class Processor():
                 #reset model options aftr facility
                 self.model.model_optns = defaultdict()
                 
-                
-
-        Logger.logMessage("HEM4 Modeling Completed. Finished modeling all" +
+#                try:  
+#                    self.model.save.remove_folder()
+#                except:
+#                    pass
+        if self.abort.is_set():
+            
+            
+            Logger.logMessage('HEM4 RUN GROUP: ' + str(self.model.group_name) + ' canceled')    
+        
+        elif len(self.skipped) == 0:
+            
+            self.model.save.remove_folder()
+            
+            Logger.logMessage("HEM4 Modeling Completed. Finished modeling all" +
                           " facilities. Check the log tab for error messages."+
                           " Modeling results are located in the Output"+
                           " subfolder of the HEM4 folder.")
 
-        
+        else:
+
+            self.model.save.remove_folder()
+            
+            Logger.logMessage("HEM4 Modeling not completed for " + ", ".join(self.skipped))
          #remove save folder after a completed run
 
-        try:  
-            self.model.save.remove_folder()
-        except:
-            pass
+        
         
 
         return success

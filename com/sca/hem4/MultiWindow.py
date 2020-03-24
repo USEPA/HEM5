@@ -9,16 +9,37 @@ import tkinter as tk
 import webbrowser
 import tkinter.ttk as ttk
 from functools import partial
+import shutil
 
-from pandastable import Table, filedialog, np
 
+#from pandastable import Table, filedialog, np
+from datetime import datetime
+from com.sca.hem4.log.Logger import Logger
+from com.sca.hem4.tools.CensusUpdater import CensusUpdater
+from com.sca.hem4.model.Model import Model
+from com.sca.hem4.upload.FileUploader import FileUploader
+from tkinter.filedialog import askopenfilename
+from com.sca.hem4.checker.InputChecker import InputChecker
+from com.sca.hem4.DepositionDepletion import check_dep, check_phase
+from com.sca.hem4.SaveState import SaveState
+from tkinter.simpledialog import Dialog, Toplevel
 from com.sca.hem4.GuiThreaded import Hem4
 from com.sca.hem4.writer.excel.FacilityMaxRiskandHI import FacilityMaxRiskandHI
 from com.sca.hem4.log import Logger
 from concurrent.futures import ThreadPoolExecutor
-from threading import Event
+import threading
 from tkinter import messagebox
 from tkinter import scrolledtext
+import pickle
+
+from com.sca.hem4.runner.FacilityRunner import FacilityRunner
+from com.sca.hem4.writer.excel.FacilityCancerRiskExp import FacilityCancerRiskExp
+from com.sca.hem4.writer.excel.FacilityTOSHIExp import FacilityTOSHIExp
+from com.sca.hem4.writer.kml.KMLWriter import KMLWriter
+from com.sca.hem4.inputsfolder.InputsPackager import InputsPackager
+
+import traceback
+from collections import defaultdict
 
 
 import queue
@@ -430,29 +451,7 @@ class Page1(Page):
 #        #reset inputs
 #        if self.var_m.get() == 1:
 #            self.max_risk.deselect()
-#        if self.var_c.get() == 1:
-#            self.cancer_driver.deselect()
-#        if self.var_h.get() == 1:
-#           self.hazard.deselect()
-#        if self.var_hi.get() == 1:
-#            self.hist.deselect()
-#        if self.var_hh.get() == 1:
-#            self.hh.deselect()
-#        if self.var_i.get() == 1:
-#            self.inc.deselect()
-#        if self.var_a.get() == 1:
-#            self.ai.deselect()
-#        if self.var_s.get() == 1:
-#            self.s.deselect()
-#            #pass position number and character number
-#            self.pos_num.set('')
-#            self.chars.num.set('')
-#
-#        if self.var_p.get() == 1:
-#           self.mp.deselect()
-#            
-            
-        
+#    
     
     def color_config(self, widget, color, event):
          widget.configure(bg=color)
@@ -871,9 +870,9 @@ class MainView(tk.Frame):
 #        self.buttonframe.pack(side="right", fill="y", expand=False)
         container.pack(fill="both", expand=True)
 
-        messageQueue = queue.Queue()
-        callbackQueue = queue.Queue() 
-        self.hem = Hem4(home, messageQueue, callbackQueue)
+        self.messageQueue = queue.Queue()
+        self.callbackQueue = queue.Queue() 
+        self.hem = Hem4(home, self.messageQueue, self.callbackQueue)
         #   start = Page1(self)
         self.nav = Page2(self)
         self.summary = Page1(self)
@@ -921,24 +920,21 @@ class MainView(tk.Frame):
         
         #resume a facility run
         #first get all incomplete runs
-#        incomplete_facs = os.listdir("save")
-        resume = tk.Label(self.s3, text= "Resume Previous Run (DISABLED)", bg='alice blue', 
+
+        incomplete_facs = os.listdir("save")
+        resume = tk.Label(self.s3, text= "Select a previously incompleted run", bg='alice blue', 
                                font=TEXT_FONT).pack()
 #
-#        if len(incomplete_facs) > 1:
-#            resume_var = tk.StringVar(self.s3).set(incomplete_facs[1])
-#            resumeMenu = tk.OptionMenu(self.s3, resume_var, *incomplete_facs)
-#            
-#            resumeMenu.grid(row=2)
-#        
-#        #summarize risk
-#        completed_facs = os.listdir("output")
-#        ignore = ['HAP_ignored.log', 'hem4.log', 'SC_max_risk_and_hi.xlsx']
-#        folders = [x for x in completed_facs if x not in ignore]
-#        
-#        sum_var = tk.StringVar(self.s4).set(folders[1])
-#        popupMenu = tk.OptionMenu(self.s4, sum_var, *folders)
-#        popupMenu.grid(row = 2)
+        if len(incomplete_facs) > 0:
+            self.resume_var = tk.StringVar(self.s3)
+            self.resume_var.set(incomplete_facs[0])
+            self.resumeMenu = tk.OptionMenu(self.s3, self.resume_var, *incomplete_facs)
+            
+            self.resumeMenu.pack()
+
+        self.resume_button = tk.Button(self.s3, text="Resume", font=TEXT_FONT, relief='solid', borderwidth=2, bg='lightgrey',
+                             command=self.thread_resume)
+        self.resume_button.pack()
         
         risk = tk.Button(self.s4, text= "Run Risk Summary Programs", font=TEXT_FONT, relief='solid', borderwidth=2, bg='lightgrey',
                              command=self.summary.lift)
@@ -970,6 +966,312 @@ class MainView(tk.Frame):
 
     def open_hem4(self):
         self.hem.reset_gui()
+        
+        
+    def thread_resume(self):
+        executor = ThreadPoolExecutor(max_workers=1)
+#
+        self.running = True
+#        
+        future = executor.submit(self.resume_run)
+        future.add_done_callback(self.processing_finish)
+        
+        last = self.hem.tabControl.index('end')
+        log = last - 2
+        
+        self.hem.tabControl.select(log)
+        
+        self.hem.lift()
+      
+        
+        
+    def resume_run(self):
+        
+        #get folder
+        resume_folder = self.resume_var
+        resume_loc = 'save/'+self.resume_var.get()
+        
+        resumemodel = resume_loc + '/model.pkl'
+        #unpickle model
+        modelfile = open(resumemodel,'rb')
+        unpk_model = pickle.load(modelfile)
+        modelfile.close()
+        
+        self.model = unpk_model
+        
+        #unpickle facids
+        resumefac = resume_loc + "/remaining_facs.pkl"
+        
+        
+        facfile = open(resumefac,'rb')
+        
+        try:
+            unpk_facids = pickle.load(facfile)
+            facfile.close()
+        
+        except:
+            
+            unpk_facids = self.model.faclist.dataframe['fac_id'].tolist()
+            
+        
+        
+        self.abort = threading.Event()
+        
+        self.aborted = False
+
+
+        #replace facids
+        self.model.facids = unpk_facids
+        print('facids', unpk_facids)
+        
+        
+        self.stop = tk.Button(self.hem.main, text="STOP", fg="red", font=TEXT_FONT, bg='lightgrey', relief='solid', borderwidth=2,
+                              command=self.quit_app)
+        self.stop.grid(row=0, column=0, sticky="E", padx=5, pady=5)
+        
+        self.process()
+        
+       
+
+
+# 
+
+    def process(self):
+        """
+        Function creates thread for running HEM4 concurrently with tkinter GUI
+        """
+        
+        
+        # create Inputs folder
+        inputspkgr = InputsPackager(self.model.rootoutput, self.model)
+        inputspkgr.createInputs()
+
+       
+        Logger.logMessage("RUN GROUP: " + self.model.group_name)
+        
+        threadLocal = threading.local()
+
+        threadLocal.abort = False
+
+
+#        Logger.logMessage("Preparing Inputs for " + str(self.model.facids.count()) + " facilities\n")
+        
+        
+       
+        fac_list = []
+        for i in self.model.facids:
+            
+            facid = i
+            print(facid)
+            fac_list.append(facid)
+            num = 1
+
+#        Logger.logMessage("The facility ids being modeled: , False)
+        print("The facility ids being modeled: " + ", ".join(fac_list))
+
+        success = False
+
+        # Create output files with headers for any source-category outputs that will be appended
+        # to facility by facility. These won't have any data for now.
+        self.createSourceCategoryOutputs()
+        
+        self.skipped=[]
+        for facid in fac_list:
+            print(facid)
+            if self.abort.is_set():
+                Logger.logMessage("Aborting processing...")
+                print("abort")
+                return
+            
+            
+            
+            print("Running facility " + str(num) + " of " +
+                              str(len(fac_list)))
+            
+            success = False
+                        
+            try:
+                runner = FacilityRunner(facid, self.model, self.abort)
+                runner.setup()
+
+                
+            except Exception as ex:
+
+                self.exception = ex
+                fullStackInfo=''.join(traceback.format_exception(
+                    etype=type(ex), value=ex, tb=ex.__traceback__))
+
+                message = "An error occurred while running a facility:\n" + fullStackInfo
+                print(message)
+                Logger.logMessage(message)
+                
+                
+     
+            ## if the try is successful this is where we would update the 
+            # dataframes or cache the last processed facility so that when 
+            # restart we know which faciltiy we want to start on
+            # increment facility count
+        
+          
+              
+            try:
+                self.model.aermod
+                
+            except:
+                
+                pass
+            
+            else:
+                self.skipped.append(facid)
+                self.model.aermod = None
+            
+            num += 1
+            success = True
+            
+
+            #reset model options aftr facility
+            self.model.model_optns = defaultdict()
+            
+#                try:  
+#                    self.model.save.remove_folder()
+#                except:
+#                    pass
+#                
+        if self.abort.is_set():
+            
+            self.stop.destroy()
+            
+            Logger.logMessage('HEM4 RUN GROUP: ' + str(self.model.group_name) + ' canceled.')    
+        
+        elif len(self.skipped) == 0:
+            
+            self.model.save.remove_folder()
+            self.stop.destroy()
+            
+            Logger.logMessage("HEM4 Modeling Completed. Finished modeling all" +
+                          " facilities. Check the log tab for error messages."+
+                          " Modeling results are located in the Output"+
+                          " subfolder of the HEM4 folder.")
+
+        else:
+
+            self.model.save.remove_folder()
+            self.stop.destroy()
+            
+            Logger.logMessage("HEM4 Modeling not completed for " + ", ".join(self.skipped))
+         #remove save folder after a completed run
+        
+
+     #remove save folder after a completed run
+
+    
+    
+
+            return success
+
+    def processing_finish(self, future):
+        """
+        Callback that gets run in the same thread as the processor, after the target method
+        has finished. It's purpose is to update the shared callback queue so that the main
+        thread can update the GUI (which cannot be done in this thread!)
+        :param future:
+        :return: None
+        """
+        self.callbackQueue.put(self.finish_run)
+
+    def finish_run(self):
+        """
+        Return Hem4 running state to False, and either reset or quit the GUI, depending on
+        whether or not the processing finished naturally or was aborted.
+        :return: None
+        """
+        self.running = False
+
+#        if self.aborted:
+#            self.reset_gui()
+#        else:
+#            self.reset_gui()
+    
+    def abortProcessing(self):
+        self.abort.set()
+        
+    def quit_app(self):
+        """
+        
+        Function handles quiting HEM4 by closing the window containing
+        the GUI and exiting all background processes & threads
+        """
+        if self.running:
+            override = messagebox.askokcancel("Confirm HEM4 Resume Quit", "Are you "+
+                                              "sure? HEM4 is currently running. Clicking 'OK' will stop HEM4.")
+
+            if override:
+                # Abort the thread and wait for it to stop...once it has
+                # completed, it will signal this class to kill the GUI
+                Logger.logMessage("Stopping HEM4...")
+                self.abortProcessing()
+                self.aborted = True
+
+
+        else:
+            # If we're not running, the only thing to do is reset the GUI...
+            self.reset_gui()
+            Logger.logMessage("HEM4 stopped")
+    
+    def check_processing(self):
+        """
+        Check the callback queue to see if the processing thread has indicated that
+        it's finished running. If an entry is found, it's the method to run that
+        instructs this class how to reset/kill the GUI. If not, schedule another
+        check soon.
+        :return: None
+        """
+        try:
+            callback = self.callbackQueue.get(block=False)
+        except queue.Empty: #raised when queue is empty
+            self.after(500, self.check_processing)
+            return
+
+        print("About to call callback...")
+        callback()
+
+    def after_callback(self):
+        """
+        Function listens on thread RUnning HEM4 for error and completion messages
+        logged via queue method
+        """
+        try:
+            message = self.messageQueue.get(block=False)
+        except queue.Empty:
+            # let's try again later
+            self.after(25, self.after_callback)
+            return
+
+        print('after_callback got', message)
+        if message is not None:
+            self.hem.scr.configure(state='normal')
+            self.hem.scr.insert(tk.INSERT, message)
+            self.hem.scr.insert(tk.INSERT, "\n")
+            self.hem.scr.configure(state='disabled')
+            self.after(25, self.after_callback)
+            
+            
+    def createSourceCategoryOutputs(self):
+        
+        # Create Facility Max Risk and HI file
+        fac_max_risk = FacilityMaxRiskandHI(self.model.rootoutput, None, self.model, None, None)
+        fac_max_risk.write()
+        
+        # Create Facility Cancer Risk Exposure file
+        fac_canexp = FacilityCancerRiskExp(self.model.rootoutput, None, self.model, None)
+        fac_canexp.write()
+        
+        # Create Facility TOSHI Exposure file
+        fac_hiexp = FacilityTOSHIExp(self.model.rootoutput, None, self.model, None)
+        fac_hiexp.write()
+
+
+
 
 if __name__ == "__main__":
     root = tk.Tk()
