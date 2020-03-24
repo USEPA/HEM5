@@ -9,9 +9,6 @@ import queue
 import sys
 import tkinter as tk
 import tkinter.ttk as ttk
-import pickle
-import shutil
-
 
 from concurrent.futures import ThreadPoolExecutor
 from threading import Event
@@ -19,7 +16,7 @@ from tkinter import messagebox
 from tkinter import scrolledtext
 import numpy as np
 
-from datetime import datetime
+import datetime
 from com.sca.hem4.Processor import Processor
 from com.sca.hem4.log.Logger import Logger
 from com.sca.hem4.tools.CensusUpdater import CensusUpdater
@@ -33,7 +30,6 @@ from tkinter.simpledialog import Dialog, Toplevel
 from ttkthemes import ThemedStyle
 
 from collections import defaultdict
-import uuid
 
 
 TITLE_FONT= ("Verdana", 14)
@@ -115,9 +111,6 @@ class Hem4(tk.Frame):
         self.after(500, self.check_processing)
 
         Logger.messageQueue = messageQueue
-        
-        self.resume_run=False
-    
 
 
     def close(self):
@@ -126,7 +119,6 @@ class Hem4(tk.Frame):
 #%% Quit Function    
     def quit_app(self):
         """
-        
         Function handles quiting HEM4 by closing the window containing
         the GUI and exiting all background processes & threads
         """
@@ -309,11 +301,11 @@ class Hem4(tk.Frame):
         if hasattr(self, 'stop'):
             self.stop.destroy()
         
-#        #add start button
-#        self.run_button = tk.Button(self.main, text='RUN', fg="green", bg='lightgrey', relief='solid', borderwidth=2,
-#                                    command=self.run, font=TEXT_FONT)
-#        self.run_button.grid(row=10, column=0, sticky="E", padx=5, pady=5)
-#        
+        #add start button
+        self.run_button = tk.Button(self.main, text='RUN', fg="green", bg='lightgrey', relief='solid', borderwidth=2,
+                                    command=self.run, font=TEXT_FONT)
+        self.run_button.grid(row=10, column=0, sticky="E", padx=5, pady=5)
+        
         global instruction_instance
         self.instruction_instance.set(" ")
 
@@ -504,7 +496,7 @@ class Hem4(tk.Frame):
         
         
         #run only appears once the required files have been set
-        self.run_button = tk.Button(self.main, text='NEXT', fg="green", bg='lightgrey', relief='solid', borderwidth=2,
+        self.run_button = tk.Button(self.main, text='RUN', fg="green", bg='lightgrey', relief='solid', borderwidth=2,
                                     command=self.run, font=TEXT_FONT)
         self.run_button.grid(row=10, column=0, sticky="E", padx=5, pady=5)
         
@@ -643,164 +635,93 @@ class Hem4(tk.Frame):
 
 #%% functions for uploading inputs
     
-    def uploadFacilitiesList(self, resume=None):
+    def uploadFacilitiesList(self):
         """
         Function for uploading Facilities List option file. Also creates
         user receptor input space if indicated
         """
         
-        if self.resume_run == True:
-            
-            self.model.faclist = resume.faclist
-        
-        else:
-            fullpath = self.openFile(askopenfilename())
-            if fullpath is not None:
-                self.uploader.upload("faclist", fullpath)
-    
-                self.model.facids = self.model.faclist.dataframe['fac_id']
-    
-                # Update the UI
-                self.fac_list.set(fullpath)
-                [self.scr.insert(tk.INSERT, msg) for msg in self.model.faclist.log]
-                
-                #trigger additional inputs fo user recptors, assuming we are not in "user receptors only" mode
-                if 'Y' in self.model.faclist.dataframe['user_rcpt'].tolist():
-                    #create user receptors
-                    self.add_ur()
-                    
-                else:
-                    if hasattr(self, 's6'):
-                        self.urep.destroy()
-                        self.urep_list_man.destroy()
-                        self.ur_label.destroy()
-                        self.s6.destroy()
-                        
-                #trigger additional inputs for emisvar
-                if 'Y' in self.model.faclist.dataframe['emis_var'].tolist():
-                    #create user receptors
-                    self.add_variation()
-                    
-                else:
-                    if hasattr(self, ''):
-                        self.emisvar_label.destroy()
-                        self.emisvar_list_man.destroy()
-                        self.emisvar_list.destroy()
-                        self.emisvar_on.destroy()
-                    
-                
-                        
-                #trigger additional inputs for building downwash
-                if 'Y' in self.model.faclist.dataframe['bldg_dw'].tolist():
-                    
-                    #enable optional input tab
-                    self.optionaltab = True
-                    
-                    #create building downwash input
-                    self.add_bldgdw()
-                
-                else:
-                    if hasattr(self, 's9'):
-                        self.bldgdw_up.destroy()
-                        self.bldgdw_list_man.destroy()
-                        self.bldgdw_label.destroy()
-                        self.s9.destroy()
-                        
-                #check depostion and depletion   
-    #            phaseList = []
-                
-                #set phase column in faclist dataframe to None
-                self.model.faclist.dataframe['phase'] = None
-    
-                for i, r in self.model.faclist.dataframe.iterrows():
-                    
-                    phase = check_phase(r)
-    #                phaseList.append([r['fac_id'], phase])
-                    self.model.faclist.dataframe.at[i, 'phase'] = phase
-                
-                deposition_depletion = check_dep(self.model.faclist.dataframe)
-            
-                
-                #pull out facilities using depdeplt 
-                self.model.depdeplt = [x[0] for x in deposition_depletion]
-                print('DEPDEP:', self.model.depdeplt)
-                
-                #pull out conditional inputs
-                conditional = set([y for x in deposition_depletion for y in x[1:]])
-                #print('conditional', conditional)
-                
-                if conditional is not None:
-                    #enable deposition and depletion input tab
-                    self.deptab = True                
-                    
-                    
-                    #if deposition or depletion present load gas params library
-                    self.uploader.uploadLibrary("gas params")
-                    for required in conditional:
-                        print("required", required)
-                        if required == 'particle size':
-                            self.add_particle()        
-                        
-                        elif required == 'land use':
-                            self.add_land()
-                        
-                        elif required == 'seasons':
-                            self.add_seasons()
-                            
-                else:
-                    #clear on new input without dep/deplt
-                    if hasattr(self, 's12'):
-                        #clear particle
-                        if hasattr(self, 'dep_part'):
-                            self.dep_part_up.destroy()
-                            self.dep_part_man.destroy()
-                            self.dep_part.set('')
-    #                        self.dep_part.destroy()
-                        #clear land
-                        if hasattr(self, 'dep_land'):
-                            self.dep_land_up.destroy()
-                            self.dep_land_man.destroy()
-                            self.dep_land.set('')
-    #                        self.dep_land.destroy()
-    
-                        #clear vegetation
-                        if hasattr(self, 'dep_seasons'):
-                            self.dep_seasons_up.destroy()
-                            self.dep_seasons_man.destroy()
-                            self.dep_seasons.set('')
-    #                        self.dep_seasons.destroy()
-    
-    
-                        self.s12.destroy()                        
-                    
-            
+        fullpath = self.openFile(askopenfilename())
+        if fullpath is not None:
+            self.uploader.upload("faclist", fullpath)
 
-    def uploadHAPEmissions(self, resume=None):
+            self.model.facids = self.model.faclist.dataframe['fac_id']
+
+            # Update the UI
+            self.fac_list.set(fullpath)
+            [self.scr.insert(tk.INSERT, msg) for msg in self.model.faclist.log]
+            
+            #trigger additional inputs fo user recptors, assuming we are not in "user receptors only" mode
+            if 'Y' in self.model.faclist.dataframe['user_rcpt'].tolist():
+                #create user receptors
+                self.add_ur()
+                
+            else:
+                if hasattr(self, 's6'):
+                    self.urep.destroy()
+                    self.urep_list_man.destroy()
+                    self.ur_label.destroy()
+                    self.s6.destroy()
+                    
+            #trigger additional inputs for emisvar
+            if 'Y' in self.model.faclist.dataframe['emis_var'].tolist():
+                #create user receptors
+                self.add_variation()
+                
+            else:
+                if hasattr(self, ''):
+                    self.emisvar_label.destroy()
+                    self.emisvar_list_man.destroy()
+                    self.emisvar_list.destroy()
+                    self.emisvar_on.destroy()
+                
+            
+                    
+            #trigger additional inputs for building downwash
+            if 'Y' in self.model.faclist.dataframe['bldg_dw'].tolist():
+                
+                #enable optional input tab
+                self.optionaltab = True
+                
+                #create building downwash input
+                self.add_bldgdw()
+            
+            else:
+                if hasattr(self, 's9'):
+                    self.bldgdw_up.destroy()
+                    self.bldgdw_list_man.destroy()
+                    self.bldgdw_label.destroy()
+                    self.s9.destroy()
+
+    def uploadHAPEmissions(self):
         """
         Function for uploading Hap Emissions file
         """
-        try: 
+        
+        try:
             
             self.model.faclist.dataframe
             
         except:
-            
-            messagebox.showinfo('Error', "Please upload a Facilities List Options file first")
-            
+        
+            messagebox.showinfo('Error', "Please upload a Facilities List Options file " +
+                             "before uploading the Hap Emissions file.")
             
         else:
+            
             fullpath = self.openFile(askopenfilename())
             if fullpath is not None:
                 self.uploader.upload("hapemis", fullpath)
-        
-                # Update the UI
-                self.hap_list.set(fullpath)
+
+                if self.model.hapemis.dataframe is None:
+                    messagebox.showinfo('Error', "There was a problem uploading the HAP emissions file. " +
+                                        "Check the log for details.")
+                else:
+                    # Update the UI
+                    self.hap_list.set(fullpath)
                 [self.scr.insert(tk.INSERT, msg) for msg in self.model.hapemis.log]
-                
-                    
-            
-    
-    def uploadEmissionLocations(self, resume=None):
+
+    def uploadEmissionLocations(self):
         """
         Function for uploading Emissions Locations file. Also creates optional 
         input spaces if indicated in file or removes optional spaces if upload
@@ -941,8 +862,6 @@ class Hem4(tk.Frame):
         Function for uploading polyvertex source file
         """
         
-
-        
         if self.model.emisloc.dataframe is None:
             messagebox.showinfo("Emissions Locations File Missing",
                 "Please upload an Emissions Locations file before adding" +
@@ -957,12 +876,11 @@ class Hem4(tk.Frame):
             self.poly_list.set(fullpath)
             [self.scr.insert(tk.INSERT, msg) for msg in self.model.multipoly.log]
 
-    def uploadbuoyant(self, resume=None):
+    def uploadbuoyant(self):
         """
         Function for uploading buoyant line parameter file
         """
 
-    
         if self.model.emisloc.dataframe is None:
             messagebox.showinfo("Emissions Locations File Missing",
                 "Please upload an Emissions Locations file before adding"+ 
@@ -977,11 +895,10 @@ class Hem4(tk.Frame):
             self.buoyant_list.set(fullpath)
             [self.scr.insert(tk.INSERT, msg) for msg in self.model.multibuoy.log]
 
-    def uploadUserReceptors(self, resume=None):
+    def uploadUserReceptors(self):
         """
         Function for uploading user receptors
         """
-        
 
         if self.model.faclist is None:
             messagebox.showinfo("Facilities List Option File Missing",
@@ -1000,11 +917,10 @@ class Hem4(tk.Frame):
             self.urep_list.set(fullpath)
             [self.scr.insert(tk.INSERT, msg) for msg in self.model.ureceptr.log]
 
-    def uploadAltReceptors(self, resume=None):
+    def uploadAltReceptors(self):
         """
         Function for uploading Alternate Receptors
         """
-
 
         fullpath = self.openFile(askopenfilename())
         if fullpath is not None:
@@ -1016,11 +932,10 @@ class Hem4(tk.Frame):
             self.urepalt_list.set(fullpath)
             [self.scr.insert(tk.INSERT, msg) for msg in self.model.altreceptr.log]
 
-    def uploadBuildingDownwash(self, resume=None):
+    def uploadBuildingDownwash(self):
         """ 
         Function for uploading building downwash
         """
-
         if self.model.faclist.dataframe is None:
             messagebox.showinfo("Facilities List Option File Missing",
                 "Please upload a Facilities List Options file before selecting"+
@@ -1035,8 +950,7 @@ class Hem4(tk.Frame):
             self.bldgdw_list.set(fullpath)
             [self.scr.insert(tk.INSERT, msg) for msg in self.model.bldgdw.log]
 
-
-    def uploadParticle(self, facilities, resume=None):
+    def uploadParticle(self, facilities):
         """ 
         Function for uploading particle size
         """
@@ -1091,31 +1005,17 @@ class Hem4(tk.Frame):
             [self.scr.insert(tk.INSERT, msg) for msg in self.model.seasons.log]
 
     def uploadVariation(self):
-
         """
         Function for uploading emissions variation inputs
         """
-        
-        if self.resume_run == True:
+        fullpath = self.openFile(askopenfilename())
+        if fullpath is not None:
+            self.uploader.uploadDependent("emissions variation", fullpath, 
+                                          self.model.emisloc.dataframe)
             
-            try:
-            
-                self.model.emisvar = resume.emisvar
-                
-            except:
-                
-                self.model.emisvar = None
-        
-        else:
-            
-            fullpath = self.openFile(askopenfilename())
-            if fullpath is not None:
-                self.uploader.uploadDependent("emissions variation", fullpath, 
-                                              self.model.emisloc.dataframe)
-                
-                 # Update the UI
-                self.emisvar_list.set(fullpath)
-                [self.scr.insert(tk.INSERT, msg) for msg in self.model.emisvar.log]
+             # Update the UI
+            self.emisvar_list.set(fullpath)
+            [self.scr.insert(tk.INSERT, msg) for msg in self.model.emisvar.log]
     
     
     
@@ -1805,57 +1705,55 @@ class Hem4(tk.Frame):
                         #get deposition exclusions
                         print('Checking depletion.... against', self.model.depdeplt)
                         
-                        if self.model.depdeplt != None:
+                        #look through hapemis for facilities that are running deposition or depletion
+                        hapDep = self.model.hapemis.dataframe[self.model.hapemis.dataframe['fac_id'].isin(self.model.depdeplt)]
                         
-                            #look through hapemis for facilities that are running deposition or depletion
-                            hapDep = self.model.hapemis.dataframe[self.model.hapemis.dataframe['fac_id'].isin(self.model.depdeplt)]
-                            
-                            #now check phase in facilities list option file
-                            facDep = self.model.faclist.dataframe[self.model.faclist.dataframe['fac_id'].isin(self.model.depdeplt)]
-                            
-                            
-                            
-                            for i, r in facDep.iterrows():
-                                if r['phase'] in ['P', 'V', 'B']:
-                                    
-                                    #look at pollutants
-                                    pols = hapDep[hapDep['fac_id'] == r['fac_id']]
-                                    
-                                    #get sourcelist
-                                    sourcesList = set(pols['source_id'].tolist())
-                                    #print(r['fac_id'], r['phase'], 'Sources:', sourcesList)
-                                    
-                                    for source in sourcesList:
-                                        print('Source', source)
-                                        
-                                        if r['phase'] == 'P':
-                                            #get the sum of part frac
-                                            polSum = sum(pols[pols['source_id'] == source]['part_frac'].tolist())
-                                            print('P PolSum:', polSum)
-                                            
-                                            #if they are zero then its not particulate at all 
-                                            if polSum == 0:
-                                                
-                                                #add it to the list of source exclusions
-                                                self.model.sourceExclusion.append(source)
-                                            
-                                        elif r['phase'] == 'V':
-                                            
-                                            #get
-                                            so = pols[pols['source_id'] == source]['part_frac'].tolist()
-                                            print('V:', so)
-                                            polSum = sum(so)
-                                            allPart = len(so) * 100
-                                            
-                                            #if they are all particle (100%)
-                                            if polSum == allPart:
-                                                
-                                                #add it to the list of source exclusions
-                                                self.model.sourceExclusion.append(source)
+                        #now check phase in facilities list option file
+                        facDep = self.model.faclist.dataframe[self.model.faclist.dataframe['fac_id'].isin(self.model.depdeplt)]
+                        
+                        
+                        
+                        for i, r in facDep.iterrows():
+                            if r['phase'] in ['P', 'V', 'B']:
                                 
-                                else:
-                                    self.ready = True
-            
+                                #look at pollutants
+                                pols = hapDep[hapDep['fac_id'] == r['fac_id']]
+                                
+                                #get sourcelist
+                                sourcesList = set(pols['source_id'].tolist())
+                                #print(r['fac_id'], r['phase'], 'Sources:', sourcesList)
+                                
+                                for source in sourcesList:
+                                    print('Source', source)
+                                    
+                                    if r['phase'] == 'P':
+                                        #get the sum of part frac
+                                        polSum = sum(pols[pols['source_id'] == source]['part_frac'].tolist())
+                                        print('P PolSum:', polSum)
+                                        
+                                        #if they are zero then its not particulate at all 
+                                        if polSum == 0:
+                                            
+                                            #add it to the list of source exclusions
+                                            self.model.sourceExclusion.append(source)
+                                        
+                                    elif r['phase'] == 'V':
+                                        
+                                        #get
+                                        so = pols[pols['source_id'] == source]['part_frac'].tolist()
+                                        print('V:', so)
+                                        polSum = sum(so)
+                                        allPart = len(so) * 100
+                                        
+                                        #if they are all particle (100%)
+                                        if polSum == allPart:
+                                            
+                                            #add it to the list of source exclusions
+                                            self.model.sourceExclusion.append(source)
+                            
+                            else:
+                                self.ready = True
+        
 
        #%%if the object is ready
         if self.ready == True:
@@ -1871,34 +1769,14 @@ class Hem4(tk.Frame):
                 self.tab2.lift()
                 Logger.logMessage("\nHEM4 is starting...")
                 
-    
-                
                  #set run name
                 if len(self.group_list.get()) > 0:
                     self.model.group_name = self.group_list.get()
                     
+                    
                 else:
                     
-                    runid = str(uuid.uuid4())[:7]
-                    self.model.group_name = "rungroup_" + str(datetime.now().strftime('%Y_%m_%d_%H_%M_%S'))
-                
-                #set output folder
-                self.model.rootoutput = "output/" + self.model.group_name + "/"
-                if os.path.exists(self.model.rootoutput):
-                    shutil.rmtree(self.model.rootoutput)                
-                os.makedirs(self.model.rootoutput)
-                
-                #set save folder
-                save_state = SaveState(self.model.group_name, self.model)
-                self.model.save = save_state
-                
-                #save model
-                model_loc = save_state.save_folder + "/model.pkl"
-                modelHandler = open(model_loc, 'wb') 
-                pickle.dump(self.model, modelHandler)
-                modelHandler.close()
-                print("saving model")
-                
+                    self.model.group_name = None
                     
                 if hasattr(self, 'run_button'):
                     self.run_button.destroy()
@@ -1909,9 +1787,6 @@ class Hem4(tk.Frame):
         
                 try:
                     self.process()
-                    last = self.tabControl.index('end')
-                    log = last - 2
-                    self.tabControl.select(log)
                     
                 except Exception as e:
                 
