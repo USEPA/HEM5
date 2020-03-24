@@ -51,6 +51,7 @@ import importlib
 from PIL import ImageTk
 import PIL.Image
 import pandas as pd
+import numpy as np
 
 maxRiskReportModule = importlib.import_module("com.sca.hem4.writer.excel.summary.MaxRisk")
 cancerDriversReportModule = importlib.import_module("com.sca.hem4.writer.excel.summary.CancerDrivers")
