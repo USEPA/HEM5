@@ -117,23 +117,7 @@ class Hem4(tk.Frame):
         
         self.resume_run=False
     
-    def resume(self, resume):
-        
-        self.resume_run=True
-        
-        self.uploadFacilitiesList(resume)
-        self.uploadHAPEmissions(resume)
-        self.uploadEmissionLocations(resume)
-        self.uploadUserReceptors(resume)
-        self.uploadbuoyant(resume)
-        self.uploadPolyvertex(resume)
-        self.uploadBuildingDownwash(resume)
-        self.uploadParticle(resume)
-        self.uploadLandUse(resume)
-        self.uploadSeasons(resume)
-        self.uploadVariation(resume)
-        self.uploadAltReceptors(resume)
-        
+
 
     def close(self):
         Logger.close(True)
@@ -1955,6 +1939,9 @@ class Hem4(tk.Frame):
         
                 try:
                     self.process()
+                    last = self.tabControl.index('end')
+                    log = last - 2
+                    self.tabControl.select(log)
                     
                 except Exception as e:
                 

@@ -50,12 +50,11 @@ class SaveState():
         
         print("removing fac id:", facid)
         
-        attr_list = (['faclist', 'emisloc', 'hapemis', 'multipoly', 'multibuoy',
-                      'ureceptr', 'haplib', 'bldgdw', 'partdep', 'landuse', 
-                      'seasons', 'emisvar'])
-       
         #get list of attributes and write them 
         remaining_facs = self.model.facids.tolist()[1:]
+        
+        print('Remaining facility ids', remaining_facs)
+        
         #print("model attributes", self.model.__dict__)
         remaining_loc = self.save_folder + "/remaining_facs.pkl" 
         

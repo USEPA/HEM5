@@ -12,7 +12,7 @@ from functools import partial
 
 #from pandastable import Table, filedialog, np
 from datetime import datetime
-from com.sca.hem4.Processor import Processor
+from com.sca.hem4.ResumeProcessor import resumeProcessor
 from com.sca.hem4.log.Logger import Logger
 from com.sca.hem4.tools.CensusUpdater import CensusUpdater
 from com.sca.hem4.model.Model import Model
@@ -26,10 +26,19 @@ from com.sca.hem4.GuiThreaded import Hem4
 from com.sca.hem4.writer.excel.FacilityMaxRiskandHI import FacilityMaxRiskandHI
 from com.sca.hem4.log import Logger
 from concurrent.futures import ThreadPoolExecutor
-from threading import Event
+import threading
 from tkinter import messagebox
 from tkinter import scrolledtext
 import pickle
+
+from com.sca.hem4.runner.FacilityRunner import FacilityRunner
+from com.sca.hem4.writer.excel.FacilityCancerRiskExp import FacilityCancerRiskExp
+from com.sca.hem4.writer.excel.FacilityTOSHIExp import FacilityTOSHIExp
+from com.sca.hem4.writer.kml.KMLWriter import KMLWriter
+from com.sca.hem4.inputsfolder.InputsPackager import InputsPackager
+
+import traceback
+from collections import defaultdict
 
 
 import queue
@@ -906,15 +915,15 @@ class MainView(tk.Frame):
         resume = tk.Label(self.s3, text= "Select a previously incompleted run", bg='palegreen3', 
                                font=TEXT_FONT).pack()
 #
-        if len(incomplete_facs) > 1:
+        if len(incomplete_facs) > 0:
             self.resume_var = tk.StringVar(self.s3)
-            self.resume_var.set(incomplete_facs[1])
+            self.resume_var.set(incomplete_facs[0])
             self.resumeMenu = tk.OptionMenu(self.s3, self.resume_var, *incomplete_facs)
             
             self.resumeMenu.pack()
 
         self.resume_button = tk.Button(self.s3, text="Resume", font=TEXT_FONT, relief='solid', borderwidth=2, bg='lightgrey',
-                             command=self.resume_run)
+                             command=self.thread_resume)
         self.resume_button.pack()
         
         risk = tk.Button(self.s4, text= "Run Risk Summary Programs", font=TEXT_FONT, relief='solid', borderwidth=2, bg='lightgrey',
@@ -949,9 +958,21 @@ class MainView(tk.Frame):
         self.hem.reset_gui()
         
         
-    def show_resume(self):
-        self.resume_button = tk.Button(self.s3, text="Resume", font=TEXT_FONT, relief='solid', borderwidth=2, bg='lightgrey',
-                             command=self.resume_run)
+    def thread_resume(self):
+        executor = ThreadPoolExecutor(max_workers=1)
+#
+        self.running = True
+#        
+        future = executor.submit(self.resume_run)
+        future.add_done_callback(self.processing_finish)
+        
+        last = self.hem.tabControl.index('end')
+        log = last - 2
+        
+        self.hem.tabControl.select(log)
+        
+        self.hem.lift()
+      
         
         
     def resume_run(self):
@@ -974,76 +995,149 @@ class MainView(tk.Frame):
         unpk_facids = pickle.load(facfile)
         facfile.close()
         
+        self.abort = threading.Event()
         
+        self.aborted = False
+
+
         #replace facids
         self.model.facids = unpk_facids
+        print('facids', unpk_facids)
         
-        self.hem.resume(unpk_model)
         
-        self.hem.run()
+        self.stop = tk.Button(self.hem.main, text="STOP", fg="red", font=TEXT_FONT, bg='lightgrey', relief='solid', borderwidth=2,
+                              command=self.quit_app)
+        self.stop.grid(row=0, column=0, sticky="E", padx=5, pady=5)
+        
+        self.process()
+        
+       
 
-#        #tell user to check the Progress/Log section
-#        override = messagebox.askokcancel("Confirm HEM4 Run", "Clicking 'OK'"+
-#                               " will start HEM4. Check the log tabs for" +
-#                               " updates on facility runs.")
-#        
-#        self.after(25, self.after_callback)
-#        self.after(500, self.check_processing)
-#        
-#        
-#        if override:
-#            global instruction_instance
-#            self.hem.instruction_instance.set("HEM4 Running, check the log tab for updates")
-#            self.hem.tab2.lift()
-#            Logger.logMessage("\nHEM4 is starting...")
-#            
-#            #set output folder
-#            self.model.rootoutput = "output/" + self.model.group_name + "/"
-#
-#            #set save folder
-#            save_state = SaveState(self.model.group_name, self.model)
-#            self.model.save = save_state
-#            
-#            #save model
-#            model_loc = save_state.save_folder + "model.pkl"
-#            modelHandler = open(model_loc, 'wb') 
-#            pickle.dump(self.model, modelHandler)
-#            modelHandler.close()
-#            print("saving model")
-#            
-#                
-#
-#            self.hem.run_button.destroy()
-#            
-#            self.stop = tk.Button(self.hem.main, text="STOP", fg="red", font=TEXT_FONT, bg='lightgrey', relief='solid', borderwidth=2,
-#                          command=self.hem.quit_app)
-#            self.stop.grid(row=0, column=0, sticky="E", padx=5, pady=5)
-#    
-#            try:
-#                self.process()
-#                
-#            except Exception as e:
-#            
-#                Logger.logMessage(str(e))
-    
 
-        
-        
-        self.hem.lift()
-        
-    def process(self):    
+# 
+
+    def process(self):
         """
         Function creates thread for running HEM4 concurrently with tkinter GUI
         """
-        executor = ThreadPoolExecutor(max_workers=1)
-    
-        self.running = True
-        self.hem.disable_buttons()
         
-        self.processor = Processor(self.model, Event())
-        future = executor.submit(self.processor.process)
-        future.add_done_callback(self.processing_finish)
+        
+        # create Inputs folder
+        inputspkgr = InputsPackager(self.model.rootoutput, self.model)
+        inputspkgr.createInputs()
+
+       
+        Logger.logMessage("RUN GROUP: " + self.model.group_name)
+        
+        threadLocal = threading.local()
+
+        threadLocal.abort = False
+
+
+#        Logger.logMessage("Preparing Inputs for " + str(self.model.facids.count()) + " facilities\n")
+        
+        
+       
+        fac_list = []
+        for i in self.model.facids:
+            
+            facid = i
+            print(facid)
+            fac_list.append(facid)
+            num = 1
+
+#        Logger.logMessage("The facility ids being modeled: , False)
+        print("The facility ids being modeled: " + ", ".join(fac_list))
+
+        success = False
+
+        # Create output files with headers for any source-category outputs that will be appended
+        # to facility by facility. These won't have any data for now.
+        self.createSourceCategoryOutputs()
+        
+        skipped=0
+        for facid in fac_list:
+            print(facid)
+            if self.abort.is_set():
+                Logger.logMessage("Aborting processing...")
+                print("abort")
+                return
+            
+            
+            
+            print("Running facility " + str(num) + " of " +
+                              str(len(fac_list)))
+            
+            success = False
+                        
+            try:
+                runner = FacilityRunner(facid, self.model, self.abort)
+                runner.setup()
+
+                
+            except Exception as ex:
+
+                self.exception = ex
+                fullStackInfo=''.join(traceback.format_exception(
+                    etype=type(ex), value=ex, tb=ex.__traceback__))
+
+                message = "An error occurred while running a facility:\n" + fullStackInfo
+                print(message)
+                Logger.logMessage(message)
+                
+                skipped += 1
+     
+            ## if the try is successful this is where we would update the 
+            # dataframes or cache the last processed facility so that when 
+            # restart we know which faciltiy we want to start on
+            # increment facility count
+        
+          
+
+            num += 1
+            success = True
+            
+
+            #reset model options aftr facility
+            self.model.model_optns = defaultdict()
+            
+#                try:  
+#                    self.model.save.remove_folder()
+#                except:
+#                    pass
+#                
+        if self.abort == True:
+            
+            self.stop.destroy()
+            
+            Logger.logMessage('HEM4 RUN GROUP: ' + str(self.model.group_name) + ' canceled.')    
+        
+        elif skipped == 0:
+            
+            self.model.save.remove_folder()
+            self.stop.destroy()
+            
+            Logger.logMessage("HEM4 Modeling Completed. Finished modeling all" +
+                          " facilities. Check the log tab for error messages."+
+                          " Modeling results are located in the Output"+
+                          " subfolder of the HEM4 folder.")
+
+        else:
+
+            self.model.save.remove_folder()
+            self.stop.destroy()
+            
+            Logger.logMessage("HEM4 Modeling not completed for " + str(skipped) + " Please check logs for skipped facilities")
+         #remove save folder after a completed run
+        
+
+     #remove save folder after a completed run
+
     
+    
+
+            return success
+
     def processing_finish(self, future):
         """
         Callback that gets run in the same thread as the processor, after the target method
@@ -1053,7 +1147,7 @@ class MainView(tk.Frame):
         :return: None
         """
         self.callbackQueue.put(self.finish_run)
-    
+
     def finish_run(self):
         """
         Return Hem4 running state to False, and either reset or quit the GUI, depending on
@@ -1061,11 +1155,37 @@ class MainView(tk.Frame):
         :return: None
         """
         self.running = False
+
+#        if self.aborted:
+#            self.reset_gui()
+#        else:
+#            self.reset_gui()
     
-        if self.hem.aborted:
-            self.hem.reset_gui()
+    def abortProcessing(self):
+        self.abort.set()
+        
+    def quit_app(self):
+        """
+        
+        Function handles quiting HEM4 by closing the window containing
+        the GUI and exiting all background processes & threads
+        """
+        if self.running:
+            override = messagebox.askokcancel("Confirm HEM4 Resume Quit", "Are you "+
+                                              "sure? HEM4 is currently running. Clicking 'OK' will stop HEM4.")
+
+            if override:
+                # Abort the thread and wait for it to stop...once it has
+                # completed, it will signal this class to kill the GUI
+                Logger.logMessage("Stopping HEM4...")
+                self.abortProcessing()
+                self.aborted = True
+
+
         else:
-            self.hem.reset_gui()
+            # If we're not running, the only thing to do is reset the GUI...
+            self.reset_gui()
+            Logger.logMessage("HEM4 stopped")
     
     def check_processing(self):
         """
@@ -1080,10 +1200,10 @@ class MainView(tk.Frame):
         except queue.Empty: #raised when queue is empty
             self.after(500, self.check_processing)
             return
-    
+
         print("About to call callback...")
         callback()
-    
+
     def after_callback(self):
         """
         Function listens on thread RUnning HEM4 for error and completion messages
@@ -1095,7 +1215,7 @@ class MainView(tk.Frame):
             # let's try again later
             self.after(25, self.after_callback)
             return
-    
+
         print('after_callback got', message)
         if message is not None:
             self.hem.scr.configure(state='normal')
@@ -1103,6 +1223,23 @@ class MainView(tk.Frame):
             self.hem.scr.insert(tk.INSERT, "\n")
             self.hem.scr.configure(state='disabled')
             self.after(25, self.after_callback)
+            
+            
+    def createSourceCategoryOutputs(self):
+        
+        # Create Facility Max Risk and HI file
+        fac_max_risk = FacilityMaxRiskandHI(self.model.rootoutput, None, self.model, None, None)
+        fac_max_risk.write()
+        
+        # Create Facility Cancer Risk Exposure file
+        fac_canexp = FacilityCancerRiskExp(self.model.rootoutput, None, self.model, None)
+        fac_canexp.write()
+        
+        # Create Facility TOSHI Exposure file
+        fac_hiexp = FacilityTOSHIExp(self.model.rootoutput, None, self.model, None)
+        fac_hiexp.write()
+
+
 
 
 if __name__ == "__main__":

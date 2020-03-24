@@ -2,6 +2,7 @@ import os
 import shutil
 import threading
 from datetime import datetime
+import pdb
 
 from com.sca.hem4.SaveState import SaveState
 from com.sca.hem4.log.Logger import Logger
@@ -32,19 +33,6 @@ class Processor():
 
     def process(self):
 
-        # Create run id for saving model. Default to cat_timestamp if no group
-        # Also create a root output folder using the user supplied group name.
-        # If no group name, output folder name will use date/time stamp        
-#        if self.model.group_name != None:
-#            runid = self.model.group_name
-#        else: 
-#            runid = str(uuid.uuid4())[:7]
-#            self.model.group_name = "rungroup_" + str(datetime.now().strftime('%Y_%m_%d_%H_%M_%S'))
-#
-#        self.model.rootoutput = "output/" + self.model.group_name + "/"
-#        if os.path.exists(self.model.rootoutput):
-#            shutil.rmtree(self.model.rootoutput)                
-#        os.makedirs(self.model.rootoutput)
 
         # create Inputs folder
         inputspkgr = InputsPackager(self.model.rootoutput, self.model)
@@ -53,16 +41,9 @@ class Processor():
        
         Logger.logMessage("RUN GROUP: " + self.model.group_name)
         
-#            runid = datetime.datetime.now().strftime("%Y-%H-%M-%p")
-#            print(runid)
-            
-        #print(runid)
-        #create save model
-#        save_state = SaveState(runid, self.model)
-#        self.model.save = save_state
 
         threadLocal.abort = False
-                
+        pdb.set_trace()
         
         #create a Google Earth KML of all sources to be modeled
         try:
@@ -81,13 +62,12 @@ class Processor():
                 Logger.logMessage(message)
            
         else:
+          
+            print(str(self.model.facids.count()))
             
-            Logger.logMessage("Preparing Inputs for " + str(
-                self.model.facids.count()) + " facilities\n")
+            Logger.logMessage("Preparing Inputs for " + str(self.model.facids.count()) + " facilities\n")
             
-            print("Preparing Inputs for " + str(
-                self.model.facids.count()) + " facilities\n")   
-            
+           
             fac_list = []
             for index, row in self.model.faclist.dataframe.iterrows():
                 
@@ -97,7 +77,7 @@ class Processor():
                 num = 1
     
     #        Logger.logMessage("The facility ids being modeled: , False)
-            print("The facility ids being modeled: " + ", ".join(fac_list))
+            Logger.logMessage("The facility ids being modeled: " + ", ".join(fac_list))
     
             success = False
     
@@ -105,6 +85,7 @@ class Processor():
             # to facility by facility. These won't have any data for now.
             self.createSourceCategoryOutputs()
             
+            skipped = 0
             for facid in fac_list:
                 print(facid)
                 if self.abort.is_set():
@@ -119,7 +100,8 @@ class Processor():
                                   str(len(fac_list)))
                 
                 success = False
-                            
+                
+                
                 try:
                     runner = FacilityRunner(facid, self.model, self.abort)
                     runner.setup()
@@ -134,9 +116,12 @@ class Processor():
                     message = "An error occurred while running a facility:\n" + fullStackInfo
                     print(message)
                     Logger.logMessage(message)
+                    skipped += 1
                     
                     
-                else:
+                    
+                    
+                
                     ## if the try is successful this is where we would update the 
                     # dataframes or cache the last processed facility so that when 
                     # restart we know which faciltiy we want to start on
@@ -144,26 +129,36 @@ class Processor():
                 
                   
     
-                    num += 1
-                    success = True
-                    
-    
-                    #reset model options aftr facility
-                    self.model.model_optns = defaultdict()
-                    
-    #                try:  
-    #                    self.model.save.remove_folder()
-    #                except:
-#                    pass
-#                
+                num += 1
+                success = True
                 
 
-        Logger.logMessage("HEM4 Modeling Completed. Finished modeling all" +
+                #reset model options aftr facility
+                self.model.model_optns = defaultdict()
+                
+#                try:  
+#                    self.model.save.remove_folder()
+#                except:
+#                    pass
+        if self.abort == True:
+            
+            
+            Logger.logMessage('HEM4 RUN GROUP: ' + str(self.model.group_name) + ' canceled')    
+        
+        elif skipped == 0:
+            
+            self.model.save.remove_folder()
+            
+            Logger.logMessage("HEM4 Modeling Completed. Finished modeling all" +
                           " facilities. Check the log tab for error messages."+
                           " Modeling results are located in the Output"+
                           " subfolder of the HEM4 folder.")
 
-        
+        else:
+
+            self.model.save.remove_folder()
+            
+            Logger.logMessage("HEM4 Modeling not completed for " + str(skipped) + " Please check logs for skipped facilities")
          #remove save folder after a completed run
 
         
