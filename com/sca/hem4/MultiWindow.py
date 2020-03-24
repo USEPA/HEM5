@@ -12,7 +12,7 @@ from functools import partial
 import shutil
 
 
-#from pandastable import Table, filedialog, np
+from pandastable import Table, filedialog, np
 from datetime import datetime
 from com.sca.hem4.log.Logger import Logger
 from com.sca.hem4.tools.CensusUpdater import CensusUpdater
@@ -51,7 +51,6 @@ import importlib
 from PIL import ImageTk
 import PIL.Image
 import pandas as pd
-import numpy as np
 
 maxRiskReportModule = importlib.import_module("com.sca.hem4.writer.excel.summary.MaxRisk")
 cancerDriversReportModule = importlib.import_module("com.sca.hem4.writer.excel.summary.CancerDrivers")
@@ -281,8 +280,8 @@ class Page1(Page):
 
         ready= False
         
-         #check to see if there is a directory location
-
+        #check to see if there is a directory location
+                 
         try:
             
             # Figure out which facilities will be included in the report
@@ -336,7 +335,7 @@ class Page1(Page):
         if self.var_a.get() == 1:
             reportNames.append('AcuteImpacts')
             reportNameArgs['AcuteImpacts'] = None
-        
+                
         if self.var_s.get() == 1:
             reportNames.append('SourceTypeRiskHistogram')
             #pass position number and character number
