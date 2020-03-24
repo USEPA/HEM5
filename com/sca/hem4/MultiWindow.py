@@ -10,6 +10,7 @@ import webbrowser
 import tkinter.ttk as ttk
 from functools import partial
 
+from PyQt5 import QtGui
 from pandastable import Table, filedialog, np
 
 from com.sca.hem4.GuiThreaded import Hem4
@@ -971,10 +972,26 @@ class MainView(tk.Frame):
     def open_hem4(self):
         self.hem.reset_gui()
 
+    @staticmethod
+    def center_main():
+        # Gets the requested values of the height and widht.
+        windowWidth = root.winfo_reqwidth()
+        windowHeight = root.winfo_reqheight()
+        print("Width",windowWidth,"Height",windowHeight)
+
+        # Gets both half the screen width/height and window width/height
+        positionRight = int(root.winfo_screenwidth()/2 - (windowWidth + windowWidth/2))
+        positionDown = int(root.winfo_screenheight()/2 - (windowHeight/2 + 100))
+
+        # Positions the window in the center of the page.
+        root.geometry("+{}+{}".format(positionRight, positionDown))
+
 if __name__ == "__main__":
     root = tk.Tk()
     root.iconbitmap('images/HEM4.ico')
     main = MainView(root)
     main.pack(side="top", fill="both", expand=True)
     root.wm_minsize(1000,750)
+
+    main.after(20, MainView.center_main)
     root.mainloop()

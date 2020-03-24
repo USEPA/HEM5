@@ -479,17 +479,15 @@ class Hem4(tk.Frame):
 #        self.s10.grid(row=10, column=2, columnspan=2, sticky="nsew")   
         #self.s1.grid_propagate(0)
     
-# create container frame to hold log
+        # create container frame to hold log
         self.log = tk.Frame(self.tab2, bg="alice blue")
         self.log.pack()
         
         # Adding a Textbox Entry widget
-#        scrolW  = 65; scrolH  =  25
         self.scr = scrolledtext.ScrolledText(self.log, wrap=tk.WORD, width=1000, height=1000, font=LOG_FONT)
         self.scr.pack()
        
-#%% Set Back, Run, and User Guide buttons        
-      
+        #%% Set Back, Run, and User Guide buttons
         self.back =  tk.Button(self.main, text="BACK", font=TEXT_FONT, bg='lightgrey', relief='solid', borderwidth=2,
                               command=self.backtomenu)
         self.back.grid(row=10, column=0, sticky="W", padx=5, pady=5)
@@ -498,7 +496,7 @@ class Hem4(tk.Frame):
         #run only appears once the required files have been set
         self.run_button = tk.Button(self.main, text='RUN', fg="green", bg='lightgrey', relief='solid', borderwidth=2,
                                     command=self.run, font=TEXT_FONT)
-        self.run_button.grid(row=10, column=0, sticky="E", padx=5, pady=5)
+        self.run_button.grid(row=10, column=0, sticky="E", padx=10, pady=5)
         
         self.guide = tk.Button(self.main, font=TEXT_FONT, text="User Guide", bg='lightgrey', relief='solid', borderwidth=2,
                                command=self.user_guide)
@@ -1078,7 +1076,7 @@ class Hem4(tk.Frame):
                 
                     self.nextmain = tk.Button(self.main, font=TEXT_FONT, text='NEXT',  bg='lightgrey', relief='solid', borderwidth=2,
                                                  command = self.nexttab)
-                    self.nextmain.grid(row=10, column=0, sticky='E ')
+                    self.nextmain.grid(row=10, column=0, sticky='E ', padx=10, pady=5)
                 
                
                 #add next button to optional input tab
