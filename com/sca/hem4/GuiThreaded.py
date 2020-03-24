@@ -10,6 +10,7 @@ import sys
 import tkinter as tk
 import tkinter.ttk as ttk
 import pickle
+import shutil
 
 
 from concurrent.futures import ThreadPoolExecutor

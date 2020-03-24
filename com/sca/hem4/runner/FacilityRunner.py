@@ -237,23 +237,24 @@ class FacilityRunner():
                     
                     # Append temp_df to plot_df
                     plot_df = plot_df.append(temp_df, ignore_index=True)
+                    
  
-            #TODO: Remove the below 4 lines for production version. For QA only.
-            plotdf_path = "working/plot_df.xlsx"
-            plotdf_con = pd.ExcelWriter(plotdf_path)
-            plot_df.to_excel(plotdf_con,'Sheet1')
-            plotdf_con.save()
-    
-            # Process outputs for this facility
-            try:
+                    #TODO: Remove the below 4 lines for production version. For QA only.
+                    plotdf_path = "working/plot_df.xlsx"
+                    plotdf_con = pd.ExcelWriter(plotdf_path)
+                    plot_df.to_excel(plotdf_con,'Sheet1')
+                    plotdf_con.save()
             
-                self.process_outputs(fac_folder, plot_df)
+                    # Process outputs for this facility
+                    try:
+                    
+                        self.process_outputs(fac_folder, plot_df)
+                        
+                    except Exception as e:
+                        
+                        Logger.logMessage(str(e))
                 
-            except Exception as e:
-                
-                Logger.logMessage(str(e))
-                
-            
+           
                
     
     def prep(self):
@@ -309,6 +310,7 @@ class FacilityRunner():
         current_time = now.strftime("%H:%M:%S")
         if 'AERMOD Finishes UN-successfully' in message:
             success = False
+            self.model.aermod = False
             Logger.logMessage("Aermod ran unsuccessfully. Please check the "+
                               "error section of the aermod.out file. Ended at time "+
                               current_time)

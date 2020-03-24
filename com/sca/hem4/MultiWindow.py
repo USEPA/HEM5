@@ -9,6 +9,7 @@ import tkinter as tk
 import webbrowser
 import tkinter.ttk as ttk
 from functools import partial
+import shutil
 
 #from pandastable import Table, filedialog, np
 from datetime import datetime
@@ -991,9 +992,19 @@ class MainView(tk.Frame):
         
         #unpickle facids
         resumefac = resume_loc + "/remaining_facs.pkl"
+        
+        
         facfile = open(resumefac,'rb')
-        unpk_facids = pickle.load(facfile)
-        facfile.close()
+        
+        try:
+            unpk_facids = pickle.load(facfile)
+            facfile.close()
+        
+        except:
+            
+            unpk_facids = self.model.faclist.dataframe['fac_id'].tolist()
+            
+        
         
         self.abort = threading.Event()
         
@@ -1055,7 +1066,7 @@ class MainView(tk.Frame):
         # to facility by facility. These won't have any data for now.
         self.createSourceCategoryOutputs()
         
-        skipped=0
+        self.skipped=[]
         for facid in fac_list:
             print(facid)
             if self.abort.is_set():
@@ -1085,7 +1096,7 @@ class MainView(tk.Frame):
                 print(message)
                 Logger.logMessage(message)
                 
-                skipped += 1
+                
      
             ## if the try is successful this is where we would update the 
             # dataframes or cache the last processed facility so that when 
@@ -1093,7 +1104,18 @@ class MainView(tk.Frame):
             # increment facility count
         
           
-
+              
+            try:
+                self.model.aermod
+                
+            except:
+                
+                pass
+            
+            else:
+                self.skipped.append(facid)
+                self.model.aermod = None
+            
             num += 1
             success = True
             
@@ -1112,7 +1134,7 @@ class MainView(tk.Frame):
             
             Logger.logMessage('HEM4 RUN GROUP: ' + str(self.model.group_name) + ' canceled.')    
         
-        elif skipped == 0:
+        elif len(self.skipped) == 0:
             
             self.model.save.remove_folder()
             self.stop.destroy()
@@ -1127,7 +1149,7 @@ class MainView(tk.Frame):
             self.model.save.remove_folder()
             self.stop.destroy()
             
-            Logger.logMessage("HEM4 Modeling not completed for " + str(skipped) + " Please check logs for skipped facilities")
+            Logger.logMessage("HEM4 Modeling not completed for " + ", ".join(self.skipped))
          #remove save folder after a completed run
         
 

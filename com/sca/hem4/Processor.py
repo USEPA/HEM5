@@ -85,7 +85,7 @@ class Processor():
             # to facility by facility. These won't have any data for now.
             self.createSourceCategoryOutputs()
             
-            skipped = 0
+            self.skipped = []
             for facid in fac_list:
                 print(facid)
                 if self.abort.is_set():
@@ -116,7 +116,7 @@ class Processor():
                     message = "An error occurred while running a facility:\n" + fullStackInfo
                     print(message)
                     Logger.logMessage(message)
-                    skipped += 1
+                    
                     
                     
                     
@@ -128,7 +128,17 @@ class Processor():
                     # increment facility count
                 
                   
-    
+                try:
+                    self.model.aermod
+                    
+                except:
+                    
+                    pass
+                
+                else:
+                    self.skipped.append(facid)
+                    self.model.aermod = None
+                    
                 num += 1
                 success = True
                 
@@ -140,12 +150,12 @@ class Processor():
 #                    self.model.save.remove_folder()
 #                except:
 #                    pass
-        if self.abort == True:
+        if self.abort.is_set():
             
             
             Logger.logMessage('HEM4 RUN GROUP: ' + str(self.model.group_name) + ' canceled')    
         
-        elif skipped == 0:
+        elif len(self.skipped) == 0:
             
             self.model.save.remove_folder()
             
@@ -158,7 +168,7 @@ class Processor():
 
             self.model.save.remove_folder()
             
-            Logger.logMessage("HEM4 Modeling not completed for " + str(skipped) + " Please check logs for skipped facilities")
+            Logger.logMessage("HEM4 Modeling not completed for " + ", ".join(self.skipped))
          #remove save folder after a completed run
 
         
