@@ -43,7 +43,7 @@ class Processor():
         
 
         threadLocal.abort = False
-        pdb.set_trace()
+
         
         #create a Google Earth KML of all sources to be modeled
         try:

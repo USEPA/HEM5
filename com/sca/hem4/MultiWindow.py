@@ -1106,7 +1106,7 @@ class MainView(tk.Frame):
 #                except:
 #                    pass
 #                
-        if self.abort == True:
+        if self.abort.is_set():
             
             self.stop.destroy()
             
