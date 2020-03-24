@@ -136,8 +136,9 @@ class Processor():
                     pass
                 
                 else:
-                    self.skipped.append(facid)
-                    self.model.aermod = None
+                    if self.model.aermod == False:
+                        self.skipped.append(facid)
+                        self.model.aermod = None
                     
                 num += 1
                 success = True

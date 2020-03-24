@@ -317,6 +317,7 @@ class FacilityRunner():
                               current_time)
         else:
             success = True
+            self.aermod = True
             Logger.logMessage("Aermod ran successfully. Ended at time " + current_time)
         check.close()
 

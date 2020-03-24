@@ -922,7 +922,7 @@ class MainView(tk.Frame):
         #first get all incomplete runs
 
         incomplete_facs = os.listdir("save")
-        resume = tk.Label(self.s3, text= "Select a previously incompleted run", bg='palegreen3', 
+        resume = tk.Label(self.s3, text= "Select a previously incompleted run", bg='alice blue', 
                                font=TEXT_FONT).pack()
 #
         if len(incomplete_facs) > 0:

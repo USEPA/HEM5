@@ -998,7 +998,7 @@ class Hem4(tk.Frame):
             self.model.model_optns['ureceptr'] = True
             # Update the UI
             self.urep_list.set(fullpath)
-                [self.scr.insert(tk.INSERT, msg) for msg in self.model.ureceptr.log]
+            [self.scr.insert(tk.INSERT, msg) for msg in self.model.ureceptr.log]
 
     def uploadAltReceptors(self, resume=None):
         """
