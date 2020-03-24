@@ -810,7 +810,7 @@ class Page3(Page):
             "Y": np.int
         }
 
-        filename = filedialog.askopenfilename(filetypes = [("Excel or csv files","*.xls; *xlsx; *.csv*")])
+        filename = tk.filedialog.askopenfilename(filetypes = [("Excel or csv files","*.xls; *xlsx; *.csv*")])
         if filename.split(".")[-1].lower() in ["xlsx", "xls"]:
             df = pd.read_excel(filename, dtype=datatypes)#Added dtypes here
             ### Removing characters in column names that prevent pandastable calculations
@@ -834,7 +834,7 @@ class Page3(Page):
         pt.show()
 
     def maps_button(self):
-        filename = filedialog.askopenfilename(filetypes = [("html or kml files","*.html; *.kml; *.kmz")])
+        filename = tk.filedialog.askopenfilename(filetypes = [("html or kml files","*.html; *.kml; *.kmz")])
         webbrowser.open(filename)
 
     def browse(self):
