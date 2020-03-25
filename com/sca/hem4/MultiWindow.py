@@ -19,7 +19,6 @@ from com.sca.hem4.tools.CensusUpdater import CensusUpdater
 from com.sca.hem4.model.Model import Model
 from com.sca.hem4.upload.FileUploader import FileUploader
 from tkinter.filedialog import askopenfilename
-from com.sca.hem4.checker.InputChecker import InputChecker
 from com.sca.hem4.DepositionDepletion import check_dep, check_phase
 from com.sca.hem4.SaveState import SaveState
 from tkinter.simpledialog import Dialog, Toplevel
