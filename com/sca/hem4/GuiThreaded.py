@@ -706,72 +706,7 @@ class Hem4(tk.Frame):
                         self.bldgdw_label.destroy()
                         self.s9.destroy()
                         
-                #check depostion and depletion   
-    #            phaseList = []
-                
-                #set phase column in faclist dataframe to None
-                self.model.faclist.dataframe['phase'] = None
-    
-                for i, r in self.model.faclist.dataframe.iterrows():
                     
-                    phase = check_phase(r)
-    #                phaseList.append([r['fac_id'], phase])
-                    self.model.faclist.dataframe.at[i, 'phase'] = phase
-                
-                deposition_depletion = check_dep(self.model.faclist.dataframe)
-            
-                
-                #pull out facilities using depdeplt 
-                self.model.depdeplt = [x[0] for x in deposition_depletion]
-                print('DEPDEP:', self.model.depdeplt)
-                
-                #pull out conditional inputs
-                conditional = set([y for x in deposition_depletion for y in x[1:]])
-                #print('conditional', conditional)
-                
-                if conditional is not None:
-                    #enable deposition and depletion input tab
-                    self.deptab = True                
-                    
-                    
-                    #if deposition or depletion present load gas params library
-                    self.uploader.uploadLibrary("gas params")
-                    for required in conditional:
-                        print("required", required)
-                        if required == 'particle size':
-                            self.add_particle()        
-                        
-                        elif required == 'land use':
-                            self.add_land()
-                        
-                        elif required == 'seasons':
-                            self.add_seasons()
-                            
-                else:
-                    #clear on new input without dep/deplt
-                    if hasattr(self, 's12'):
-                        #clear particle
-                        if hasattr(self, 'dep_part'):
-                            self.dep_part_up.destroy()
-                            self.dep_part_man.destroy()
-                            self.dep_part.set('')
-    #                        self.dep_part.destroy()
-                        #clear land
-                        if hasattr(self, 'dep_land'):
-                            self.dep_land_up.destroy()
-                            self.dep_land_man.destroy()
-                            self.dep_land.set('')
-    #                        self.dep_land.destroy()
-    
-                        #clear vegetation
-                        if hasattr(self, 'dep_seasons'):
-                            self.dep_seasons_up.destroy()
-                            self.dep_seasons_man.destroy()
-                            self.dep_seasons.set('')
-    #                        self.dep_seasons.destroy()
-    
-    
-                        self.s12.destroy()                        
                     
             
 

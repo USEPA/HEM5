@@ -221,6 +221,13 @@ class FacilityPrep():
             else:
                 Logger.logMessage("Using period end = " + self.period_end_components)
                 self.model.facops['period_end'] = self.period_end_components
+
+            if len(starts) != len(ends):
+                Logger.logMessage("Inconsistent period start and end specified (both must include hours, or neither): " + period_start_spec + " : " + period_end_spec)
+                Logger.logMessage("Using annual instead.")
+                self.model.facops[annual][0] = 'Y'
+                self.model.facops[period_start][0] = ""
+                self.model.facops[period_end][0] = ""
             
         #%%---------- Emission Locations --------------------------------------
 

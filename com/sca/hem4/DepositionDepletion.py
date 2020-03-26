@@ -156,22 +156,32 @@ def check_dep(faclist_df, emisloc_df):
         elif p == 'V':
             #add facid
             options = [fac_id]
-            
-            if (deposition[i] == 'Y' and depletion[i] != 'Y'):
+
+            if (deposition[i] == 'Y' or depletion[i] == 'Y'):
                 
-                if 'DO' or 'WD' in vapor_depo[i]:
+                if 'DO' or 'WO' or 'WD' in vapor_depo[i]:
                     options.append('land use')
                     options.append('seasons')
-                    
-            elif deposition[i] == 'Y' and depletion[i] == 'Y':
-                if 'DO' in vapor_depo[i] and 'DO' in vapor_depl[i]:
+
+                if 'DO' or 'WO' or 'WD' in vapor_depl[i]:
                     options.append('land use')
                     options.append('seasons')
             
-            
-                elif 'WD' in vapor_depo[i] and 'WD' in vapor_depl[i]:
-                    options.append('land use')
-                    options.append('seasons')
+#            if (deposition[i] == 'Y' and depletion[i] != 'Y'):
+#                
+#                if 'DO' or 'WD' in vapor_depo[i]:
+#                    options.append('land use')
+#                    options.append('seasons')
+#                    
+#            elif deposition[i] == 'Y' and depletion[i] == 'Y':
+#                if 'DO' in vapor_depo[i] and 'DO' in vapor_depl[i]:
+#                    options.append('land use')
+#                    options.append('seasons')
+#            
+#            
+#                elif 'WD' in vapor_depo[i] and 'WD' in vapor_depl[i]:
+#                    options.append('land use')
+#                    options.append('seasons')
                     
             
             inputs.append(options)
@@ -261,10 +271,10 @@ def sort(facops):
     vdepl = facops['vdepl'].fillna("").tolist()[0]                       # Vapor Depletion
     pdepl = facops['pdepl'].fillna("").tolist()[0]                       # Particle Depletion
 
-    if depos == "":
+    if depos == "" or depos == "nan":
         depos = "N"
 
-    if deple =="":
+    if deple == "" or deple == "nan":
         deple = "N"
 
     ## don't forget to call upper!
@@ -289,7 +299,7 @@ def sort(facops):
 
 ##order matters for phase 'B'-- particle first, then vapor
 def single_phase(phase, depos, deple, vdepo, pdepo, vdepl, pdepl):
-
+    
     opts = []
     if "Y" in depos:
 
