@@ -921,19 +921,18 @@ class MainView(tk.Frame):
         #resume a facility run
         #first get all incomplete runs
 
-        incomplete_facs = os.listdir("save")
-        resume = tk.Label(self.s3, text= "Select a previously incompleted run", bg='alice blue', 
-                               font=TEXT_FONT).pack()
+#        incomplete_facs = os.listdir("save")
+#        resume = tk.Label(self.s3, text= "Select a previously incompleted run", bg='alice blue', 
+#                               font=TEXT_FONT).pack()
 #
-        if len(incomplete_facs) > 0:
-            self.resume_var = tk.StringVar(self.s3)
-            self.resume_var.set(incomplete_facs[0])
-            self.resumeMenu = tk.OptionMenu(self.s3, self.resume_var, *incomplete_facs)
-            
-            self.resumeMenu.pack()
+#        if len(incomplete_facs) > 0:
+#            self.resume_var = tk.StringVar(self.s3)
+#            self.resume_var.set(incomplete_facs[0])
+#            self.resumeMenu = tk.OptionMenu(self.s3, self.resume_var, *incomplete_facs)
+#            
+#            self.resumeMenu.pack()
 
-        self.resume_button = tk.Button(self.s3, text="Resume", font=TEXT_FONT, relief='solid', borderwidth=2, bg='lightgrey',
-                             command=self.thread_resume)
+        self.resume_button = tk.Button(self.s3, text="Resume a previous run (DISABLED)", font=TEXT_FONT, relief='solid', borderwidth=2, bg='lightgrey')
         self.resume_button.pack()
         
         risk = tk.Button(self.s4, text= "Run Risk Summary Programs", font=TEXT_FONT, relief='solid', borderwidth=2, bg='lightgrey',
