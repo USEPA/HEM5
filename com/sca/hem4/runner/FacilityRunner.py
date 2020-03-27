@@ -72,7 +72,9 @@ class FacilityRunner():
         else:
             phases = {'phase': None, 'settings': None}
 
-                
+        #Debug
+        import pdb; pdb.set_trace() 
+               
         #Single run model options
         if self.model.model_optns['phase'] != 'B':
 
