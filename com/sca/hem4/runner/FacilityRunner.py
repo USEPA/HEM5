@@ -246,14 +246,14 @@ class FacilityRunner():
                     plot_df.to_excel(plotdf_con,'Sheet1')
                     plotdf_con.save()
             
-                    # Process outputs for this facility
-                    try:
-                    
-                        self.process_outputs(fac_folder, plot_df)
-                        
-                    except Exception as e:
-                        
-                        Logger.logMessage(str(e))
+        # Process outputs for this facility
+        try:
+        
+            self.process_outputs(fac_folder, plot_df)
+            
+        except Exception as e:
+            
+            Logger.logMessage(str(e))
                 
            
                
