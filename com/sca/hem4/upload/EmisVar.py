@@ -155,6 +155,6 @@ class EmisVar(DependentInputFile):
             self.log.append("Uploaded emissions variations for " + 
                                 " ".join(var_ids))
             self.dataframe = emisvar_df
-            
-        
-        
+
+    def validate(self, df):
+        pass

@@ -60,3 +60,6 @@ class Polyvertex(DependentInputFile):
                             " ".join(check_poly_assignment) + "\n")
 
             self.dataframe = multipoly_df
+
+    def validate(self, df):
+        pass

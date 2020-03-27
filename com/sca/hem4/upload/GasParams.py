@@ -31,3 +31,6 @@ class GasParams(InputFile):
             (pollutant, da, dw, rcl, henry, valid, source, dw_da_source, rcl_source, notes))
 
         self.dataframe[pollutant] = self.dataframe[pollutant].str.lower()
+
+    def validate(self, df):
+        pass

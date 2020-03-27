@@ -79,3 +79,6 @@ class FacilityList(InputFile):
              messagebox.showinfo("Missing Urban Population Values", "The urban" + 
                                  " urban population values for: " + 
                                  ", ".join(missing_pop))
+
+    def validate(self, df):
+        pass

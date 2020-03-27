@@ -122,3 +122,6 @@ class HAPEmissions(InputFile):
                             " facilities\n")
 
         self.dataframe = hapemis_df
+
+    def validate(self, df):
+        pass

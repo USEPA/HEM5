@@ -7,6 +7,7 @@ from com.sca.hem4.upload.DoseResponse import DoseResponse
 from com.sca.hem4.upload.EmissionsLocations import EmissionsLocations
 from com.sca.hem4.upload.FacilityList import FacilityList
 from com.sca.hem4.upload.HAPEmissions import HAPEmissions
+from com.sca.hem4.upload.MetLib import MetLib
 from com.sca.hem4.upload.TargetOrganEndpoints import TargetOrganEndpoints
 from com.sca.hem4.upload.UserReceptors import UserReceptors
 from com.sca.hem4.upload.AltReceptors import AltReceptors
@@ -28,10 +29,10 @@ class FileUploader():
     def uploadLibrary(self, filetype):
         if filetype == "haplib":
             self.model.haplib = DoseResponse()
-            print("HAPLIB", self.model.haplib)
         elif filetype == "organs":
             self.model.organs = TargetOrganEndpoints()
-            
+        elif filetype == "metlib":
+            self.model.metlib = MetLib()
         elif filetype == "gas params":
             self.model.gasparams = GasParams()
 

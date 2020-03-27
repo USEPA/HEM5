@@ -38,4 +38,6 @@ class TargetOrganEndpoints(InputFile):
         
         # Lower case the pollutant name for easier merging later
         self.dataframe[pollutant] = self.dataframe[pollutant].str.lower()
-        
+
+    def validate(self, df):
+        pass

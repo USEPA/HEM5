@@ -52,3 +52,6 @@ class EmissionsLocations(InputFile):
         emis_num = set(emisloc_df[fac_id])
         self.log.append("Uploaded emissions location file for " + str(len(emis_num)) + " facilities\n")
         self.dataframe = emisloc_df
+
+    def validate(self, df):
+        pass

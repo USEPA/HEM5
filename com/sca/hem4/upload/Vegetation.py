@@ -35,3 +35,6 @@ class Vegetation(DependentInputFile):
         ## figure out how to get fac ids that have particle based on flag or index
 
         self.dataframe = vegetation_df
+
+    def validate(self, df):
+        pass

@@ -68,6 +68,9 @@ class Downwash(DependentInputFile):
                             " ".join(check_downwash_assignment))
 
         self.dataframe = downwash_df
+
+    def validate(self, df):
+        pass
              
          
         

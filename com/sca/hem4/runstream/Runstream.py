@@ -746,10 +746,10 @@ class Runstream():
         user_station = self.facoptn_df['met_station'].iloc[0]
         if user_station == 'nan':
             surf_file, upper_file, surfdata_str, uairdata_str, prof_base, distance, year = \
-                                    fm.find_met(cenlat, cenlon)
+                                    fm.find_met(cenlat, cenlon, self.model.metlib.dataframe)
         else:
             surf_file, upper_file, surfdata_str, uairdata_str, prof_base, distance, year = \
-                                    fm.return_met(self.facid, cenlat, cenlon, user_station)
+                                    fm.return_met(self.facid, cenlat, cenlon, user_station, self.model.metlib.dataframe)
             
         
         jsta = 1
