@@ -312,9 +312,11 @@ class FacilityRunner():
         if 'AERMOD Finishes UN-successfully' in message:
             success = False
             self.model.aermod = False
+
+            
             Logger.logMessage("Aermod ran unsuccessfully. Please check the "+
-                              "error section of the aermod.out file. Ended at time "+
-                              current_time)
+                              "error section of the aermod.out file in the "  + str(self.facilityId) + 
+                              " output folder. Ended at time "+ current_time)
         else:
             success = True
             self.aermod = True

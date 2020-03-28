@@ -310,10 +310,10 @@ class Hem4(tk.Frame):
             self.stop.destroy()
         
 #        #add start button
-#        self.run_button = tk.Button(self.main, text='RUN', fg="green", bg='lightgrey', relief='solid', borderwidth=2,
-#                                    command=self.run, font=TEXT_FONT)
-#        self.run_button.grid(row=10, column=0, sticky="E", padx=5, pady=5)
-#        
+        self.run_button = tk.Button(self.main, text='NEXT', fg="green", bg='lightgrey', relief='solid', borderwidth=2,
+                                    command=self.run, font=TEXT_FONT)
+        self.run_button.grid(row=10, column=0, sticky="E", padx=5, pady=5)
+        
         global instruction_instance
         self.instruction_instance.set(" ")
 
@@ -1883,10 +1883,8 @@ class Hem4(tk.Frame):
         """
         self.running = False
 
-        if self.aborted:
-            self.reset_gui()
-        else:
-            self.reset_gui()
+     
+        self.reset_gui()
 
     def check_processing(self):
         """

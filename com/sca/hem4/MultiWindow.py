@@ -12,7 +12,7 @@ from functools import partial
 import shutil
 
 
-from pandastable import Table, filedialog, np
+#from pandastable import Table, filedialog, np
 from datetime import datetime
 from com.sca.hem4.log.Logger import Logger
 from com.sca.hem4.tools.CensusUpdater import CensusUpdater

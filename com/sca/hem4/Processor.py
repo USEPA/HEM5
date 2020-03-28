@@ -85,12 +85,15 @@ class Processor():
             # to facility by facility. These won't have any data for now.
             self.createSourceCategoryOutputs()
             
+            self.completed = []
             self.skipped = []
             for facid in fac_list:
                 print(facid)
                 if self.abort.is_set():
                     Logger.logMessage("Aborting processing...")
                     print("abort")
+                    
+                    self.model.reset_gui()
                     return
                 
                 
@@ -108,7 +111,8 @@ class Processor():
     
                     
                 except Exception as ex:
-    
+                    
+                    
                     self.exception = ex
                     fullStackInfo=''.join(traceback.format_exception(
                         etype=type(ex), value=ex, tb=ex.__traceback__))
@@ -116,10 +120,6 @@ class Processor():
                     message = "An error occurred while running a facility:\n" + fullStackInfo
                     print(message)
                     Logger.logMessage(message)
-                    
-                    
-                    
-                    
                     
                 
                     ## if the try is successful this is where we would update the 
@@ -137,8 +137,63 @@ class Processor():
                 
                 else:
                     if self.model.aermod == False:
+                        
+                        fac_folder = self.model.rootoutput + str(facid)
+                           
+                        # move plotfile.plt file
+                        plt_version = 'plotfile.plt'
+                        
+                        # Move aermod.inp, aermod.out, and plotfile.plt to the fac output folder
+                        # If phasetype is not empty, rename aermod.out, aermod.inp and plotfile.plt using phasetype
+                        # Replace if one is already in there othewrwise will throw error
+                        if os.path.isfile(fac_folder + 'aermod.out'):
+                            os.remove(fac_folder + 'aermod.out')
+            
+                        if os.path.isfile(fac_folder + 'aermod.inp'):
+                            os.remove(fac_folder + 'aermod.inp')
+            
+                        if os.path.isfile(fac_folder + plt_version):
+                            os.remove(fac_folder + plt_version)
+            
+                        # move aermod.out file
+                        try:
+                            output = os.path.join("aermod", "aermod.out")
+                            shutil.move(output, fac_folder)
+                        except:
+                            pass
+                        
+                        # move aermod.inp file
+                        try:
+                            inpfile = os.path.join("aermod", "aermod.inp")
+                            shutil.move(inpfile, fac_folder)
+                        except:
+                            pass
+                        
+                        try:
+                            pltfile = os.path.join("aermod", plt_version)
+                            shutil.move(pltfile, fac_folder)
+                        except:
+                            pass
+                        
+                        # if an acute maxhour.plt plotfile was output by Aermod, move it too
+                        maxfile = os.path.join("aermod", "maxhour.plt")
+                        if os.path.isfile(maxfile):
+                            if os.path.isfile(fac_folder + "maxhour.plt"):
+                                os.remove(fac_folder + "maxhour.plt")
+                            shutil.move(maxfile, fac_folder)
+            
+                        # if a temporal seasonhr.plt plotfile was output by Aermod, move it too
+                        seasonhrfile = os.path.join("aermod", "seasonhr.plt")
+                        if os.path.isfile(seasonhrfile):
+                            if os.path.isfile(fac_folder + "seasonhr.plt"):
+                                os.remove(fac_folder + "seasonhr.plt")
+                            shutil.move(seasonhrfile, fac_folder)
+                                    
                         self.skipped.append(facid)
                         self.model.aermod = None
+                        
+                    else:
+                        self.completed.append(facid)
                     
                 num += 1
                 success = True
