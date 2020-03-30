@@ -63,13 +63,16 @@ class FacilityRunner():
 
 
         # phases dictionary
-        if self.model.model_optns['phase'] != None:
+        if self.model.model_optns['phase'] in ('P', 'V', 'B'):
             phases = sort(fac)
+            
+        elif self.model.model_optns['phase'] == 'Z':
+            phases = {'phase': 'Z', 'settings': None}
 
         else:
             phases = {'phase': None, 'settings': None}
 
-                
+              
         #Single run model options
         if self.model.model_optns['phase'] != 'B':
 
@@ -136,9 +139,11 @@ class FacilityRunner():
                     # Now put the plotfile into a dataframe
                     plot_df = self.readplotf(vpfile, self.model.model_optns['runtype'])
 
-
+                    
                 else:
                 
+                    # phase is None (C) or Z
+                    
                     # Open the Aermod plotfile
                     pfile = open(fac_folder + 'plotfile.plt', "r")
                     
@@ -148,10 +153,21 @@ class FacilityRunner():
 
                 # Set the emis_type column in plot_df
                 if phases['phase'] == None:
+                    
                     plot_df['emis_type'] = 'C'
+                    
+                elif phases['phase'] == 'Z':
+                    
+                    # Special case where concs by particle and vapor are desired but no deposition/depletion
+                    plot_df['emis_type'] = 'P'
+                    V_df = plot_df.copy()
+                    V_df['emis_type'] = 'V'
+                    plot_df = plot_df.append(V_df, ignore_index=True)
+                    
                 else:
                     plot_df['emis_type'] = phases['phase']
-                                
+ 
+                               
                 # Process outputs for single facility
                 try:
                     

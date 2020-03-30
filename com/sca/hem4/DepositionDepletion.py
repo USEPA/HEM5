@@ -23,41 +23,64 @@ def check_phase(r):
     
     print ('pdepl:', r['pdepl'])
     
-    if r['vdep'] is not np.nan:
-        if r['vdep'] is not 'NO':
+
+    if r['dep'] != 'nan':
+        if r['dep'] != 'N':
+            dep = r['dep'].upper()
+    else:
+        dep = ''
+
+
+    if r['depl'] != 'nan':
+        if r['depl'] != 'N':
+            depl = r['depl'].upper()
+    else:
+        depl = ''
+
+    
+    if r['vdep'] != 'nan':
+        if r['vdep'] != 'NO':
             vdep = r['vdep'].upper()
     else:
         vdep = ''
     
     
-    if r['vdepl'] is not np.nan:
-        if r['vdepl'] is not 'NO':
-            vdepl = r['vdepl']
+    if r['vdepl'] != 'nan':
+        if r['vdepl'] != 'NO':
+            vdepl = r['vdepl'].upper()
         
     else:
         vdepl = ''
     
     
-    if r['pdep'] is not np.nan:
-        if r['pdep'] is not 'NO':
-            pdep = r['pdep']
+    if r['pdep'] != 'nan':
+        if r['pdep'] != 'NO':
+            pdep = r['pdep'].upper()
         
     else:
         pdep = ''
     
-    if r['pdepl'] is not np.nan:
-        if r['pdepl'] is not 'NO':
-            pdepl = r['pdepl']
+    if r['pdepl'] != 'nan':
+        if r['pdepl'] != 'NO':
+            pdepl = r['pdepl'].upper()
         
     else:
         pdepl = ''
         
+
         
     poss = ['DO', 'WO', 'WD']
     
     
     phaseResult = []
-     
+
+
+    if dep == 'Y' and depl == '' and vdep == '' and vdepl == '' and pdep == '' and pdepl == '':
+        # Special case where only breakout of particle and vapor is needed in the outputs, but no dep/depl
+        phase = 'Z'
+        phaseResult.append(phase)
+        
+        
     if vdep in poss or vdepl in poss:
         if pdep in poss:
             phase = 'B'
@@ -294,8 +317,6 @@ def sort(facops):
 
 
 
-
-    ##order matters for pahse 'B'-- particle first, then vapor
 
 ##order matters for phase 'B'-- particle first, then vapor
 def single_phase(phase, depos, deple, vdepo, pdepo, vdepl, pdepl):
