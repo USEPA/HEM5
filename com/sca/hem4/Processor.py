@@ -4,6 +4,8 @@ import threading
 from datetime import datetime
 import pdb
 
+import pandas as pd
+
 from com.sca.hem4.SaveState import SaveState
 from com.sca.hem4.log.Logger import Logger
 from com.sca.hem4.runner.FacilityRunner import FacilityRunner
@@ -224,8 +226,15 @@ class Processor():
 
             self.model.save.remove_folder()
             
-            Logger.logMessage("HEM4 Modeling not completed for " + ", ".join(self.skipped))
-         #remove save folder after a completed run
+            Logger.logMessage("HEM4 successfully modeled " + str(len(self.completed)) + " facilities. HEM4 skipped " + str(len(self.skipped))+ " facilities. Modeling not completed for: " + "/n ".join(self.skipped))
+            
+            #output skipped facilities to csv
+            skipped_path = self.model.rootoutput + 'Skipped_Facilities.xlsx'
+            skipped_df = pd.DataFrame(self.skipped, columns=['Facility'])
+            print(skipped_df)
+            
+            skipped_df.to_excel(skipped_path)
+
 
         
         
