@@ -48,7 +48,7 @@ class Page(tk.Frame):
 #%% HEM4 GUI
 
 
-
+bg_color = 'alice blue'
 class Hem4(tk.Frame):
 
     def __init__ (self, container, messageQueue, callbackQueue, *args, **kwargs):
@@ -79,9 +79,17 @@ class Hem4(tk.Frame):
         self.messageQueue = messageQueue
         
         # Upload the Dose response, Target Organ Endponts, and MetLib libraries
-        self.uploader.uploadLibrary("haplib")
-        self.uploader.uploadLibrary("organs")
-        self.uploader.uploadLibrary("metlib")
+        success = self.uploader.uploadLibrary("haplib")
+        if not success:
+            messagebox.showinfo('Error', "Invalid Dose Response file. Check log for details.")
+
+        success = self.uploader.uploadLibrary("organs")
+        if not success:
+            messagebox.showinfo('Error', "Invalid Target Organs file. Check log for details.")
+
+        success = self.uploader.uploadLibrary("metlib")
+        if not success:
+            messagebox.showinfo('Error', "Invalid Met Libary file. Check log for details.")
 
         # The callback queue is shared by the main thread and the processing thread.
         # The main thread polls it periodically (via the tkinter event loop) to see
@@ -361,7 +369,7 @@ class Hem4(tk.Frame):
         global instruction_instance
         self.instruction_instance = tk.StringVar(placeholder1)
         self.instruction_instance.set(" ")
-        self.dynamic_inst = tk.Label(placeholder2, wraplength=600, font=TEXT_FONT, pady=5, bg='alice blue') 
+        self.dynamic_inst = tk.Label(placeholder2, wraplength=600, font=TEXT_FONT, pady=5, bg=bg_color) 
         self.dynamic_inst.config(height=4)
         
         self.dynamic_inst["textvariable"] = self.instruction_instance 
@@ -375,14 +383,14 @@ class Hem4(tk.Frame):
         
         if hasattr(self, "optionalinputtab"):
             
-            self.optional_inst = tk.Label(placeholder, wraplength=600, font=TEXT_FONT, pady=5, bg='alice blue') 
+            self.optional_inst = tk.Label(placeholder, wraplength=600, font=TEXT_FONT, pady=5, bg=bg_color) 
             self.optional_inst.config(height=4)
         
             self.optional_inst["textvariable"] = self.instruction_instance 
             self.optional_inst.grid(row=1, column=0)
         
         if hasattr(self, "depinputtab"):
-            self.dep_inst = tk.Label(placeholder, wraplength=600, font=TEXT_FONT, pady=5, bg='alice blue') 
+            self.dep_inst = tk.Label(placeholder, wraplength=600, font=TEXT_FONT, pady=5, bg=bg_color) 
             self.dep_inst.config(height=4)
         
             self.dep_inst["textvariable"] = self.instruction_instance 
@@ -412,20 +420,20 @@ class Hem4(tk.Frame):
 
         if hasattr('self', 'main'):
             if self.main is None:
-                self.main = tk.Frame(self.tabControl, bg='alice blue')            # Create a tab
+                self.main = tk.Frame(self.tabControl, bg=bg_color)            # Create a tab
                 self.tabControl.add(self.main, text='HEM4')
                 
         else:
             
-            self.main = tk.Frame(self.tabControl, bg='alice blue')            # Create a tab
+            self.main = tk.Frame(self.tabControl, bg=bg_color)            # Create a tab
             self.tabControl.add(self.main, text='HEM4')      # Add the tab
 
-        self.tab2 = tk.Frame(self.tabControl, bg='alice blue')            # Add a second tab
+        self.tab2 = tk.Frame(self.tabControl, bg=bg_color)            # Add a second tab
         self.tabControl.add(self.tab2, text='Log')      # Make second tab visible
 
 
 
-        tab3 = tk.Frame(self.tabControl, bg='alice blue')            # Add a third tab
+        tab3 = tk.Frame(self.tabControl, bg=bg_color)            # Add a third tab
         self.tabControl.add(tab3, text='Census')      # Make third tab visible
 
         self.tabControl.pack(expand=1, fill="both")  # Pack to make visible
@@ -530,7 +538,7 @@ class Hem4(tk.Frame):
         
         self.check_altrec = tk.BooleanVar()
         self.altrec_sel = tk.Checkbutton(self.alturep, text="Use alternate receptors",
-                                           variable = self.check_altrec, bg='alice blue',
+                                           variable = self.check_altrec, bg=bg_color,
                                            command = self.set_altrec, font=TEXT_FONT)
         self.altrec_sel.grid(row=0, column=0, sticky='W')
 
@@ -613,7 +621,7 @@ class Hem4(tk.Frame):
         self.check_tempvar = tk.IntVar()
         self.tempvar_sel = tk.Checkbutton(self.s5, text="Show temporal variations in the outputs", 
                                           variable = self.check_tempvar, font=TEXT_FONT,
-                                          bg='alice blue', command = self.add_temporal)
+                                          bg=bg_color, command = self.add_temporal)
         self.tempvar_sel.grid(row=3, column=0, sticky='W', padx = 85)
 
     def is_valid_extension(self, filepath):
@@ -657,8 +665,11 @@ class Hem4(tk.Frame):
         else:
             fullpath = self.openFile(askopenfilename())
             if fullpath is not None:
-                self.uploader.upload("faclist", fullpath)
-    
+                success = self.uploader.upload("faclist", fullpath)
+                if not success:
+                    messagebox.showinfo('Error', "Invalid Facilities List Options file. Check log for details.")
+                    return
+
                 self.model.facids = self.model.faclist.dataframe['fac_id']
     
                 # Update the UI
@@ -727,15 +738,15 @@ class Hem4(tk.Frame):
         else:
             fullpath = self.openFile(askopenfilename())
             if fullpath is not None:
-                self.uploader.upload("hapemis", fullpath)
-        
+                success = self.uploader.upload("hapemis", fullpath)
+                if not success:
+                    messagebox.showinfo('Error', "Invalid HAP Emissions file. Check log for details.")
+                    return
+
                 # Update the UI
                 self.hap_list.set(fullpath)
                 [self.scr.insert(tk.INSERT, msg) for msg in self.model.hapemis.log]
-                
-                    
-            
-    
+
     def uploadEmissionLocations(self, resume=None):
         """
         Function for uploading Emissions Locations file. Also creates optional 
@@ -767,8 +778,11 @@ class Hem4(tk.Frame):
   
                 fullpath = self.openFile(askopenfilename())
                 if fullpath is not None:
-                    self.uploader.upload("emisloc", fullpath)
-        
+                    success = self.uploader.upload("emisloc", fullpath)
+                    if not success:
+                        messagebox.showinfo('Error', "Invalid Emissions Location file. Check log for details.")
+                        return
+
                     # Update the UI
                     self.emisloc_list.set(fullpath)
                     [self.scr.insert(tk.INSERT, msg) for msg in self.model.emisloc.log]
@@ -835,7 +849,8 @@ class Hem4(tk.Frame):
         
         
                         #if deposition or depletion present load gas params library
-                        self.uploader.uploadLibrary("gas params")
+                        success = self.uploader.uploadLibrary("gas params")
+
                         for required in conditional:
                             print("required", required)
                             if required == 'particle size':
@@ -885,9 +900,10 @@ class Hem4(tk.Frame):
                 " a Polyvertex file.")
         fullpath = self.openFile(askopenfilename())
         if fullpath is not None:
-            self.uploader.uploadDependent("polyvertex", fullpath, 
-                                                   self.model.emisloc.dataframe)
-
+            success = self.uploader.uploadDependent("polyvertex", fullpath, self.model.emisloc.dataframe)
+            if not success:
+                messagebox.showinfo('Error', "Invalid Polyvertex file. Check log for details.")
+                return
 
             # Update the UI
             self.poly_list.set(fullpath)
@@ -906,8 +922,10 @@ class Hem4(tk.Frame):
         
         fullpath = self.openFile(askopenfilename())
         if fullpath is not None:
-            self.uploader.uploadDependent("buoyant line", fullpath, 
-                                                   self.model.emisloc.dataframe)
+            success = self.uploader.uploadDependent("buoyant line", fullpath, self.model.emisloc.dataframe)
+            if not success:
+                messagebox.showinfo('Error', "Invalid Buoyant Line file. Check log for details.")
+                return
 
             # Update the UI
             self.buoyant_list.set(fullpath)
@@ -928,9 +946,11 @@ class Hem4(tk.Frame):
         fullpath = self.openFile(askopenfilename())
         if fullpath is not None:
 
-            self.uploader.uploadDependent("user receptors", fullpath, 
-                                          self.model.faclist.dataframe)
-            
+            success = self.uploader.uploadDependent("user receptors", fullpath, self.model.faclist.dataframe)
+            if not success:
+                messagebox.showinfo('Error', "Invalid User Receptors file. Check log for details.")
+                return
+
             self.model.model_optns['ureceptr'] = True
             # Update the UI
             self.urep_list.set(fullpath)
@@ -945,7 +965,11 @@ class Hem4(tk.Frame):
         fullpath = self.openFile(askopenfilename())
         if fullpath is not None:
                         
-            self.uploader.upload("alt receptors", fullpath)
+            success = self.uploader.upload("alt receptors", fullpath)
+            if not success:
+                messagebox.showinfo('Error', "Invalid alternate receptors file. Check log for details.")
+                return
+
             self.model.altRec_optns["path"] = fullpath
 
             # Update the UI
@@ -964,13 +988,14 @@ class Hem4(tk.Frame):
 
         fullpath = self.openFile(askopenfilename())
         if fullpath is not None: 
-            self.uploader.uploadDependent("building downwash", fullpath, 
-                                          self.model.faclist.dataframe)
+            success = self.uploader.uploadDependent("building downwash", fullpath, self.model.faclist.dataframe)
+            if not success:
+                messagebox.showinfo('Error', "Invalid Building Downwash file. Check log for details.")
+                return
 
             # Update the UI
             self.bldgdw_list.set(fullpath)
             [self.scr.insert(tk.INSERT, msg) for msg in self.model.bldgdw.log]
-
 
     def uploadParticle(self, facilities, resume=None):
         """ 
@@ -983,8 +1008,10 @@ class Hem4(tk.Frame):
 
         fullpath = self.openFile(askopenfilename())
         if fullpath is not None: 
-            self.uploader.uploadDependent("particle depletion", fullpath, 
-                                           self.model.faclist.dataframe, facilities)
+            success = self.uploader.uploadDependent("particle depletion", fullpath, self.model.faclist.dataframe, facilities)
+            if not success:
+                messagebox.showinfo('Error', "Invalid Particle Depletion file. Check log for details.")
+                return
 
             # Update the UI
             self.dep_part.set(fullpath)
@@ -1001,8 +1028,10 @@ class Hem4(tk.Frame):
 
         fullpath = self.openFile(askopenfilename())
         if fullpath is not None: 
-            self.uploader.uploadDependent("land use", fullpath, 
-                                          self.model.faclist.dataframe)
+            success = self.uploader.uploadDependent("land use", fullpath, self.model.faclist.dataframe)
+            if not success:
+                messagebox.showinfo('Error', "Invalid Land Use file. Check log for details.")
+                return
 
             # Update the UI
             self.dep_land.set(fullpath)
@@ -1019,8 +1048,10 @@ class Hem4(tk.Frame):
 
         fullpath = self.openFile(askopenfilename())
         if fullpath is not None: 
-            self.uploader.uploadDependent("seasons", fullpath, 
-                                          self.model.faclist.dataframe)
+            success = self.uploader.uploadDependent("seasons", fullpath, self.model.faclist.dataframe)
+            if not success:
+                messagebox.showinfo('Error', "Invalid Seasons file. Check log for details.")
+                return
 
             # Update the UI
             self.dep_seasons.set(fullpath)
@@ -1046,18 +1077,15 @@ class Hem4(tk.Frame):
             
             fullpath = self.openFile(askopenfilename())
             if fullpath is not None:
-                self.uploader.uploadDependent("emissions variation", fullpath, 
-                                              self.model.emisloc.dataframe)
-                
+                success = self.uploader.uploadDependent("emissions variation", fullpath, self.model.emisloc.dataframe)
+                if not success:
+                    messagebox.showinfo('Error', "Invalid Emissions Variation file. Check log for details.")
+                    return
+
                  # Update the UI
                 self.emisvar_list.set(fullpath)
                 [self.scr.insert(tk.INSERT, msg) for msg in self.model.emisvar.log]
-    
-    
-    
-#%% PLace for Creating Optional Inputs    
-    
-        
+
     def create_optional(self, inputtype):
         """ function for creating optional tab"""
         
@@ -1090,7 +1118,7 @@ class Hem4(tk.Frame):
                 
                 
                 #create optional input tab
-                self.optionalinputtab = tk.Frame(self.tabControl, bg='alice blue')
+                self.optionalinputtab = tk.Frame(self.tabControl, bg=bg_color)
                 self.optionalinputtab.grid_rowconfigure(10, weight=4)
                 self.tabControl.insert(1, self.optionalinputtab, text='Additional Inputs')
                 
@@ -1145,7 +1173,7 @@ class Hem4(tk.Frame):
             if dep == True:
                 
                 #crete deposition inputs
-                self.depinputtab = tk.Frame(self.tabControl, bg='alice blue') 
+                self.depinputtab = tk.Frame(self.tabControl, bg=bg_color) 
                 self.depinputtab.grid_rowconfigure(8, weight=4)
                 self.tabControl.insert(1, self.depinputtab, text='Dep/Depl Inputs')
                 
@@ -1567,10 +1595,8 @@ class Hem4(tk.Frame):
         #lambda e:self.manual("instructions/urep_man.txt"))
 
     def add_temporal(self):
-        
-        
         if self.check_tempvar.get() == 1:
-            #emissions variation label
+                # emissions variation label
                 self.tempvar_label = tk.Label(self.s5, font=TEXT_FONT, bg="alice blue", 
                                      text="What diurnal (hourly) resolution would you like?")
                 self.tempvar_label.grid(row=5, column=0, sticky="W", padx=85, pady=20)
@@ -1586,7 +1612,7 @@ class Hem4(tk.Frame):
                 self.check_dr = tk.IntVar()
                 self.dr_sel = tk.Checkbutton(self.s5, text="Include seasonal variations in diurnally\n resolved concentrations output", 
                                           variable = self.check_dr, font=TEXT_FONT,
-                                          bg='alice blue')
+                                          bg=bg_color)
                 self.dr_sel.grid(row=5, column=0, sticky="E")
                 
         
@@ -1610,9 +1636,9 @@ class Hem4(tk.Frame):
                 self.urepalt_list_man.destroy()
                 self.urepalt_label.destroy()
             
- #%% Event handlers for porting instructions
+    #%% Event handlers for porting instructions
 
-    #reset instructions space
+    # reset instructions space
     def reset_instructions(self):
         """
         Function clears instructions from display box 
@@ -1620,7 +1646,7 @@ class Hem4(tk.Frame):
         global instruction_instance
         self.instruction_instance.set(" ")    
         
-    #general function for browsing instructions
+    # general function for browsing instructions
     def browse(self, location):
         """
         Function looks up text file with instructions for specified input
@@ -1630,7 +1656,7 @@ class Hem4(tk.Frame):
         self.read_inst = open(location, 'r')
         self.instruction_instance.set(self.read_inst.read())
         
-    #general function for manual uploads    
+    # general function for manual uploads
     def manual(self, location):
         """
         Function looks up text file with instructions for specified input 
