@@ -72,9 +72,7 @@ class FacilityRunner():
         else:
             phases = {'phase': None, 'settings': None}
 
-        #Debug
-        import pdb; pdb.set_trace() 
-               
+              
         #Single run model options
         if self.model.model_optns['phase'] != 'B':
 
@@ -161,10 +159,10 @@ class FacilityRunner():
                 elif phases['phase'] == 'Z':
                     
                     # Special case where concs by particle and vapor are desired but no deposition/depletion
-                    plot_df['phase'] = 'P'
+                    plot_df['emis_type'] = 'P'
                     V_df = plot_df.copy()
-                    V_df['phase'] = 'V'
-                    plot_df.append(V_df, ignore_index=True)
+                    V_df['emis_type'] = 'V'
+                    plot_df = plot_df.append(V_df, ignore_index=True)
                     
                 else:
                     plot_df['emis_type'] = phases['phase']
