@@ -14,47 +14,65 @@ class HAPEmissions(InputFile):
 
     def __init__(self, path, haplib):
         self.haplib = haplib
-        
 
         InputFile.__init__(self, path)
 
-    def createDataframe(self):
+    def clean(self, df):
 
-        # Specify dtypes for all fields
-        self.numericColumns = [emis_tpy,part_frac]
-        self.strColumns = [fac_id,source_id,pollutant]
+        cleaned = df.fillna({emis_tpy:0, part_frac:0})
+        cleaned.replace(to_replace={fac_id:{"nan":""}, source_id:{"nan":""}, pollutant:{"nan":""}}, inplace=True)
+        cleaned = cleaned.reset_index(drop = True)
 
-        #HAP EMISSIONS excel to dataframe
-        # HEADER------------------------
-        # FacilityID|SourceID|HEM3chem|SumEmissionTPY|FractionParticulate
-        hapemis_df = self.readFromPath((fac_id,source_id,pollutant,emis_tpy,part_frac))
+        # lower case the pollutant names for better merging
+        cleaned[pollutant] = cleaned[pollutant].str.lower()
 
-        if len(hapemis_df.loc[(hapemis_df[part_frac] < 0)]) > 0:
-            Logger.logMessage("Found negative percentage value(s) in HAP emissions fraction particulate column.")
-            return
+        # turn part_frac into a decimal
+        cleaned[part_frac] = cleaned[part_frac] / 100
 
-        if len(hapemis_df.loc[(hapemis_df[part_frac] > 100)]) > 0:
-            Logger.logMessage("Found percentage value(s) in HAP emissions fraction particulate column larger than 100.")
-            return
-
-        #fill Nan with 0
-        hapemis_df.fillna(0)
-
-        #lower case the pollutant names for better merging
-        hapemis_df[pollutant] = hapemis_df[pollutant].str.lower()
+        # create additional columns, one for particle mass and the other for gas/vapor mass...
+        cleaned[particle] = cleaned[emis_tpy] * cleaned[part_frac]
+        cleaned[gas] = cleaned[emis_tpy] * (1 - cleaned[part_frac])
         
-        #turn part_frac into a decimal
-        hapemis_df[part_frac] = hapemis_df[part_frac] / 100
+        return cleaned
 
-        #create additional columns, one for particle mass and the other for gas/vapor mass...
-        hapemis_df[particle] = hapemis_df[emis_tpy] * hapemis_df[part_frac]
-        hapemis_df[gas] = hapemis_df[emis_tpy] * (1 - hapemis_df[part_frac])
+    def validate(self, df):
+        # ----------------------------------------------------------------------------------
+        # Strict: Invalid values in these columns will cause the upload to fail immediately.
+        # ----------------------------------------------------------------------------------
+        if len(df.loc[(df[fac_id] == '')]) > 0:
+            Logger.logMessage("One or more facility IDs are missing in the HAP Emissions List.")
+            return False
 
-        #get list of pollutants from dose library
+        if len(df.loc[(df[source_id] == '')]) > 0:
+            Logger.logMessage("One or more source IDs are missing in the HAP Emissions List.")
+            return False
+
+        if len(df.loc[(df[pollutant] == '')]) > 0:
+            Logger.logMessage("One or more pollutants are missing in the HAP Emissions List.")
+            return False
+
+        # ----------------------------------------------------------------------------------
+        # Defaulted: Invalid values in these columns will be replaced with a default.
+        # ----------------------------------------------------------------------------------
+        for index, row in df.iterrows():
+
+            facility = row[fac_id]
+
+            if row[emis_tpy] < 0:
+                Logger.logMessage("Facility " + facility + ": emissions value " + str(row[emis_tpy]) +
+                                  " out of range. Defaulting to 0.")
+                row[emis_tpy] = 0
+
+            if row[part_frac] < 0 or row[part_frac] > 100:
+                Logger.logMessage("Facility " + facility + ": particulate fraction value " + str(row[part_frac]) +
+                                  " out of range. Defaulting to 0.")
+                row[part_frac] = 0
+
+        # verify pollutants are present in dose library
         master_list = list(self.haplib.dataframe[pollutant])
         lower = [x.lower() for x in master_list]
 
-        user_haps = set(hapemis_df[pollutant])
+        user_haps = set(df[pollutant])
         missing_pollutants = []
 
         for hap in user_haps:
@@ -62,7 +80,7 @@ class HAPEmissions(InputFile):
                 missing_pollutants.append(hap)
 
         self.log = []
-        #if there are any missing pollutants
+        # if there are any missing pollutants...
         if len(missing_pollutants) > 0:
             fix_pollutants = messagebox.askyesno("Missing Pollutants in Dose "+
                                                  "Response Library", "The "+
@@ -74,21 +92,18 @@ class HAPEmissions(InputFile):
                                                  "your HAP EMissions file?"+
                                                  "(they will be removed "+
                                                  "otherwise). ")
-            #if yes, clear box and empty dataframe
 
-            if fix_pollutants is True:
-                #clear hap emis upload area, how to do this from separate thread...
-                file_path = ''
-
-            #if no, remove them from dataframe
-            elif fix_pollutants is False:
+            if fix_pollutants:
+                Logger.logMessage("Aborting upload of HAP emissions pending resolution of missing pollutants.")
+                return False
+            else:
                 missing = missing_pollutants
                 remove = set(missing)
-                print(remove)
+                Logger.logMessage("Removing these pollutants, which were not found: " +
+                                  "[{0}]".format(", ".join(str(i) for i in missing_pollutants)))
 
-
-                #remove them from data frame
-                # to seperate log file the non-modeled HAP Emissions
+                # remove them from data frame
+                # to separate log file the non-modeled HAP Emissions
                 fileDir = os.path.dirname(os.path.realpath('__file__'))
                 filename = os.path.join(fileDir, "output\HAP_ignored.log")
                 logfile = open(filename, 'w')
@@ -97,31 +112,27 @@ class HAPEmissions(InputFile):
 
                 for p in remove:
 
-                    hapemis_df = hapemis_df[hapemis_df[pollutant] != str(p)]
+                    df = df[df[pollutant] != str(p)]
 
-                    #record upload in log
-                    #add another essage to say the following pollutants were assigned a generic value...
+                    # record upload in log
+                    # add another essage to say the following pollutants were assigned a generic value...
                     self.log.append("Removed " + p + " from hap emissions file\n")
 
-
-
                     #get row so we can write facility and other info
-                    ignored = hapemis_df[hapemis_df[pollutant] == p]
+                    ignored = df[df[pollutant] == p]
 
                     logfile.write("Removed: " + str(ignored))
 
-
                 logfile.close()
 
+        Logger.logMessage("Uploaded HAP emissions file for " + str(len(df)) + " facilities.\n")
+        return True
 
+    def createDataframe(self):
 
-        else:
-            #record upload in log
-            hap_num = set(hapemis_df[fac_id])
-            self.log.append("Uploaded HAP emissions file for " + str(len(hap_num)) +
-                            " facilities\n")
+        # Specify dtypes for all fields
+        self.numericColumns = [emis_tpy,part_frac]
+        self.strColumns = [fac_id,source_id,pollutant]
 
+        hapemis_df = self.readFromPath((fac_id,source_id,pollutant,emis_tpy,part_frac))
         self.dataframe = hapemis_df
-
-    def validate(self, df):
-        pass

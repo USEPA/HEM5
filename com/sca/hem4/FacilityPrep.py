@@ -30,7 +30,6 @@ class FacilityPrep():
     def createRunstream(self, facid, runPhase):
 
         #%%---------- Facility Options --------------------------------------
-
         self.model.facops = self.model.faclist.dataframe.loc[self.model.faclist.dataframe[fac_id] == facid]
 
         op_maxdist = self.model.facops[max_dist][0]
@@ -43,9 +42,7 @@ class FacilityPrep():
         self.fac_center = self.model.facops[fac_center][0]
         self.ring_distances = self.model.facops['ring_distances'][0]
 
-        #%%---------- Emission Locations --------------------------------------
-
-        # Get emission location info for this facility
+        #%%---------- Emissions Locations --------------------------------------
         emislocs = self.model.emisloc.dataframe.loc[self.model.emisloc.dataframe[fac_id] == facid]
 
         # Replace NaN with blank or 0. utmzone defaults to "0N"
@@ -83,18 +80,9 @@ class FacilityPrep():
         # Compute UTM coordinates of lat_x2 and lon_y2 using the common zone
         emislocs[['utmn_y2', 'utme_x2']] = emislocs.apply(lambda row: UTM.ll2utm_alt(row["lat_y2"],row["lon_x2"],facutmzonenum,hemi)
                           , result_type="expand", axis=1)
-        
 
         #%%---------- HAP Emissions --------------------------------------
-
-        # Get emissions data for this facility
         hapemis = self.model.hapemis.dataframe.loc[self.model.hapemis.dataframe[fac_id] == facid]
-
-        # Replace NaN with blank or 0
-        hapemis = hapemis.fillna({emis_tpy:0, part_frac:0})
-        hapemis = hapemis.reset_index(drop = True)
-                            
-                        
 
 
         #%%---------- Optional Buoyant Line Parameters -----------------------------------------

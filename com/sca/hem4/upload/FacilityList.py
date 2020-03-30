@@ -55,21 +55,19 @@ class FacilityList(InputFile):
                            vdep,vdepl,all_rcpts,user_rcpt,bldg_dw,fastall,fac_center,ring_distances,emis_var,
                            annual,period_start,period_end]
 
-        # FACILITIES LIST excel to dataframe
         faclist_df = self.readFromPath(
             (fac_id,met_station,rural_urban,urban_pop,max_dist,model_dist,radial,circles,overlap_dist, ring1,
              fac_center,ring_distances, acute,
              hours,multiplier,hivalu,dep,depl,pdep,pdepl,vdep,vdepl,elev,all_rcpts,
              user_rcpt,bldg_dw,fastall,emis_var,annual,period_start,period_end)
         )
-
         self.dataframe = faclist_df
 
     def clean(self, df):
 
         # Replace NaN with blank, No or 0
-        # Note: use of elevations or all receptors are defaulted to Y, acute hours is defaulted to 1
-        #       , acute multiplier is defaulted to 10, and emission variation is defaulted to N
+        # Note: use of elevations or all receptors are defaulted to Y, acute hours is defaulted to 1,
+        # acute multiplier is defaulted to 10, and emission variation is defaulted to N
         cleaned = df.fillna({radial:0, circles:0, overlap_dist:0, hours:1, multiplier:10,
                                                       ring1:0, urban_pop:0, hivalu:1})
 
@@ -342,5 +340,5 @@ class FacilityList(InputFile):
                     row[period_start] = ""
                     row[period_end] = ""
 
-        Logger.logMessage("Facility " + facility + ": Uploaded facilities options list file for " + str(len(df)) + " facilities.\n")
+        Logger.logMessage("Uploaded facilities options list file for " + str(len(df)) + " facilities.\n")
         return True
