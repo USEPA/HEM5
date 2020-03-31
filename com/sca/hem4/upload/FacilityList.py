@@ -68,7 +68,7 @@ class FacilityList(InputFile):
         # Replace NaN with blank, No or 0
         # Note: use of elevations or all receptors are defaulted to Y, acute hours is defaulted to 1,
         # acute multiplier is defaulted to 10, and emission variation is defaulted to N
-        cleaned = df.fillna({radial:0, circles:0, overlap_dist:0, hours:1, multiplier:10,
+        cleaned = df.fillna({radial:0, circles:0, overlap_dist:0, hours:1, multiplier:10, max_dist: 50000, model_dist: 3000,
                                                       ring1:0, urban_pop:0, hivalu:1})
 
         cleaned.replace(to_replace={rural_urban:{"nan":""}, elev:{"nan":"Y"}, met_station:{"nan":""},
@@ -80,6 +80,22 @@ class FacilityList(InputFile):
                                       period_start:{"nan":""}, period_end:{"nan":""}}, inplace=True)
 
         cleaned = cleaned.reset_index(drop = True)
+
+        # upper case for selected fields
+        cleaned[rural_urban] = cleaned[rural_urban].str.upper()
+        cleaned[acute] = cleaned[acute].str.upper()
+        cleaned[vdep] = cleaned[vdep].str.upper()
+        cleaned[vdepl] = cleaned[vdepl].str.upper()
+        cleaned[pdep] = cleaned[pdep].str.upper()
+        cleaned[pdepl] = cleaned[pdepl].str.upper()
+        cleaned[all_rcpts] = cleaned[all_rcpts].str.upper()
+        cleaned[user_rcpt] = cleaned[user_rcpt].str.upper()
+        cleaned[bldg_dw] = cleaned[bldg_dw].str.upper()
+        cleaned[fastall] = cleaned[fastall].str.upper()
+        cleaned[emis_var] = cleaned[emis_var].str.upper()
+        cleaned[annual] = cleaned[annual].str.upper()
+        cleaned[elev] = cleaned[elev].str.upper()
+
         return cleaned
 
     def validate(self, df):
@@ -89,13 +105,13 @@ class FacilityList(InputFile):
         # ----------------------------------------------------------------------------------
         if len(df.loc[(df[fac_id] == '')]) > 0:
             Logger.logMessage("One or more facility IDs are missing in the Facility List.")
-            return False
+            return None
 
         files = df[met_station].values.tolist()
         files = [file for file in files if file != '']
         if not set(files).issubset(set(self.metlib.dataframe[surffile])):
             Logger.logMessage("One or more met stations referenced in the Facility List are invalid.")
-            return False
+            return None
 
         # ----------------------------------------------------------------------------------
         # Defaulted: Invalid values in these columns will be replaced with a default.
@@ -177,13 +193,12 @@ class FacilityList(InputFile):
             # Facility center...comma separated list that should start with either "U" (meaning UTM coords) or "L"
             # (meaning lat/lon) and contain two values if lat/lon (lat,lon) or three values if UTM (northing,easting,zone)
             center_spec = row[fac_center]
-            row['center_spec'] = center_spec
             spec_valid = True
-            if center_spec.startswith("U"):
+            if center_spec.upper().startswith("U"):
                 components = center_spec.split(',')
                 if len(components) != 4:
                     spec_valid = False
-            elif center_spec.startswith("L"):
+            elif center_spec.upper().startswith("L"):
                 components = center_spec.split(',')
                 if len(components) != 3:
                     spec_valid = False
@@ -249,6 +264,10 @@ class FacilityList(InputFile):
 
             # pdep, pdepl, vdep, vdepl
             valid = ['NO', 'WO', 'DO', 'WD']
+            row[vdep] = row[vdep].upper()
+            row[vdepl] = row[vdepl].upper()
+            row[pdep] = row[pdep].upper()
+            row[pdepl] = row[pdepl].upper()
             if row[vdep] not in valid:
                 Logger.logMessage("Facility " + facility + ": Invalid value for vdep. Defaulting to 'NO'.")
                 row[vdep] = 'NO'
@@ -340,5 +359,7 @@ class FacilityList(InputFile):
                     row[period_start] = ""
                     row[period_end] = ""
 
+            df.loc[index] = row
+
         Logger.logMessage("Uploaded facilities options list file for " + str(len(df)) + " facilities.\n")
-        return True
+        return df

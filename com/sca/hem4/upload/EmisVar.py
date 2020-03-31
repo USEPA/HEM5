@@ -156,5 +156,3 @@ class EmisVar(DependentInputFile):
                                 " ".join(var_ids))
             self.dataframe = emisvar_df
 
-    def validate(self, df):
-        pass

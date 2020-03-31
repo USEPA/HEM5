@@ -24,6 +24,3 @@ class AltReceptors(InputFile):
         self.log.append("Uploaded Alternate Receptors")
 
         self.dataframe = altreceptor_df
-
-    def validate(self, df):
-        pass

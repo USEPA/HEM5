@@ -32,6 +32,3 @@ class PollutantCrosswalk(InputFile):
              tier2ChemName, pbHap, shortPbHap, fullPbHap, note))
 
         self.dataframe = crosswalk_df
-
-    def validate(self, df):
-        pass

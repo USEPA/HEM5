@@ -69,8 +69,6 @@ class Downwash(DependentInputFile):
 
         self.dataframe = downwash_df
 
-    def validate(self, df):
-        pass
              
          
         

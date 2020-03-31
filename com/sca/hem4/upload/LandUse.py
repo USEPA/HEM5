@@ -45,6 +45,3 @@ class LandUse(DependentInputFile):
         ## figure out how to get fac ids that have landuse based on flag or index
 
         self.dataframe = landuse_df
-
-    def validate(self, df):
-        pass

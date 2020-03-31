@@ -49,7 +49,4 @@ class UserReceptors(DependentInputFile):
             check_receptor_assignment = [str(facility) for facility in check_receptor_assignment.unique()]
             self.log.append("Uploaded user receptors for " + " ".join(check_receptor_assignment) + "\n")
 
-            self.dataframe = ureceptor_df ##moved this into the loop
-
-    def validate(self, df):
-        pass
+            self.dataframe = ureceptor_df

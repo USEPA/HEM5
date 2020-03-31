@@ -36,5 +36,3 @@ class Vegetation(DependentInputFile):
 
         self.dataframe = vegetation_df
 
-    def validate(self, df):
-        pass

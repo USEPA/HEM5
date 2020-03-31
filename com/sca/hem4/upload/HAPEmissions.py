@@ -41,15 +41,15 @@ class HAPEmissions(InputFile):
         # ----------------------------------------------------------------------------------
         if len(df.loc[(df[fac_id] == '')]) > 0:
             Logger.logMessage("One or more facility IDs are missing in the HAP Emissions List.")
-            return False
+            return None
 
         if len(df.loc[(df[source_id] == '')]) > 0:
             Logger.logMessage("One or more source IDs are missing in the HAP Emissions List.")
-            return False
+            return None
 
         if len(df.loc[(df[pollutant] == '')]) > 0:
             Logger.logMessage("One or more pollutants are missing in the HAP Emissions List.")
-            return False
+            return None
 
         # ----------------------------------------------------------------------------------
         # Defaulted: Invalid values in these columns will be replaced with a default.
@@ -67,6 +67,8 @@ class HAPEmissions(InputFile):
                 Logger.logMessage("Facility " + facility + ": particulate fraction value " + str(row[part_frac]) +
                                   " out of range. Defaulting to 0.")
                 row[part_frac] = 0
+
+            df.loc[index] = row
 
         # verify pollutants are present in dose library
         master_list = list(self.haplib.dataframe[pollutant])
@@ -95,7 +97,7 @@ class HAPEmissions(InputFile):
 
             if fix_pollutants:
                 Logger.logMessage("Aborting upload of HAP emissions pending resolution of missing pollutants.")
-                return False
+                return None
             else:
                 missing = missing_pollutants
                 remove = set(missing)
@@ -126,7 +128,7 @@ class HAPEmissions(InputFile):
                 logfile.close()
 
         Logger.logMessage("Uploaded HAP emissions file for " + str(len(df)) + " facilities.\n")
-        return True
+        return df
 
     def createDataframe(self):
 

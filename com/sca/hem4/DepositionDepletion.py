@@ -22,40 +22,14 @@ def check_phase(r):
     print('pdep:', r['pdep'])
     
     print ('pdepl:', r['pdepl'])
-    
-    if r['vdep'] is not np.nan:
-        if r['vdep'] is not 'NO':
-            vdep = r['vdep'].upper()
-    else:
-        vdep = ''
-    
-    
-    if r['vdepl'] is not np.nan:
-        if r['vdepl'] is not 'NO':
-            vdepl = r['vdepl']
-        
-    else:
-        vdepl = ''
-    
-    
-    if r['pdep'] is not np.nan:
-        if r['pdep'] is not 'NO':
-            pdep = r['pdep']
-        
-    else:
-        pdep = ''
-    
-    if r['pdepl'] is not np.nan:
-        if r['pdepl'] is not 'NO':
-            pdepl = r['pdepl']
-        
-    else:
-        pdepl = ''
-        
+
+    vdep = r['vdep']
+    vdepl = r['vdepl']
+    pdep = r['pdep']
+    pdepl = r['pdepl']
         
     poss = ['DO', 'WO', 'WD']
-    
-    
+
     phaseResult = []
      
     if vdep in poss or vdepl in poss:

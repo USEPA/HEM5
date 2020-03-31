@@ -39,7 +39,7 @@ class Runstream():
         self.urban = False
 
         # Facility ID
-        self.facid = self.facoptn_df['fac_id'][0]                 
+        self.facid = self.facoptn_df['fac_id'].iloc[0]                 
         
         #open file to write
         self.inp_f = open(os.path.join("aermod", "aermod.inp"), "w")
@@ -53,13 +53,13 @@ class Runstream():
               
     # Hours -------------------------------------------------------------------
                 
-        self.hours_value = int(self.facoptn_df['hours'][0])
+        self.hours_value = int(self.facoptn_df['hours'].iloc[0])
     
         av_t = [1,2,3,4,6,8,12,24]          # Possible Averaging Time Periods
 
-        self.annual = self.facoptn_df['annual'][0] == "Y"
+        self.annual = self.facoptn_df['annual'].iloc[0] == "Y"
         met_annual = " ANNUAL " if self.annual else " PERIOD "
-        if self.facoptn_df['acute'][0] == 'N':
+        if self.facoptn_df['acute'].iloc[0] == 'N':
             self.hours = met_annual
         elif self.hours_value in av_t:
             self.hours = str(self.hours_value) + met_annual
@@ -68,7 +68,7 @@ class Runstream():
             
     # Elevations --------------------------------------------------------------
            
-        self.eleva = self.facoptn_df['elev'][0]                        
+        self.eleva = self.facoptn_df['elev'].iloc[0]                        
 
         if self.model.altRec_optns.get('altrec_flat', None):
             optel = " FLAT "
@@ -97,12 +97,12 @@ class Runstream():
         #logic for phase setting in model options
                 
         if phase['phase'] == 'P':
-            optdp = phase['settings'][0]
+            optdp = phase['settings'].iloc[0]
             titletwo = "CO TITLETWO  Particle-phase emissions \n"
             
         
         elif phase['phase'] == 'V':
-            optdp = phase['settings'][0]
+            optdp = phase['settings'].iloc[0]
             titletwo = "CO TITLETWO  Vapor-phase emissions \n"
             
         else:
@@ -112,10 +112,10 @@ class Runstream():
         self.model.model_optns['titletwo'] = titletwo
 
     # Building downwash option ------------------------------------------------
-        self.blddw = self.facoptn_df['bldg_dw'][0]
+        self.blddw = self.facoptn_df['bldg_dw'].iloc[0]
         
     # FASTALL Model Option for AERMOD -----------------------------------------
-        fasta = self.facoptn_df['fastall'][0]                     
+        fasta = self.facoptn_df['fastall'].iloc[0]                     
     
         if fasta == "Y":
             optfa = " FASTALL "
@@ -594,12 +594,12 @@ class Runstream():
                            str(blemis) + " " + str(relh[index]) + "\n")
                 
                 if first_buoyant == 0:
-                    sobuopa = ("SO BLPINPUT " + str(self.buoyant_df['avgbld_len'][0]) + 
-                               " " + str(self.buoyant_df['avgbld_hgt'][0]) + 
-                               " " + str(self.buoyant_df['avgbld_wid'][0]) + 
-                               " " + str(self.buoyant_df['avglin_wid'][0]) + 
-                               " " + str(self.buoyant_df['avgbld_sep'][0]) + 
-                               " " + str(self.buoyant_df['avgbuoy'][0]) + "\n")
+                    sobuopa = ("SO BLPINPUT " + str(self.buoyant_df['avgbld_len'].iloc[0]) + 
+                               " " + str(self.buoyant_df['avgbld_hgt'].iloc[0]) + 
+                               " " + str(self.buoyant_df['avgbld_wid'].iloc[0]) + 
+                               " " + str(self.buoyant_df['avglin_wid'].iloc[0]) + 
+                               " " + str(self.buoyant_df['avgbld_sep'].iloc[0]) + 
+                               " " + str(self.buoyant_df['avgbuoy'].iloc[0]) + "\n")
                     
                     first_buoyant = 1
                     self.inp_f.write(sobuopa)
@@ -744,7 +744,7 @@ class Runstream():
         Writes the ME section to aer.inp
         """
         user_station = self.facoptn_df['met_station'].iloc[0]
-        if user_station == 'nan':
+        if user_station == '':
             surf_file, upper_file, surfdata_str, uairdata_str, prof_base, distance, year = \
                                     fm.find_met(cenlat, cenlon, self.model.metlib.dataframe)
         else:
@@ -767,8 +767,8 @@ class Runstream():
         me_prb = "ME PROFBASE  " + str(prof_base) + "\n"
         
         me_strtend = ""
-        if self.facoptn_df['annual'][0] != 'Y' and self.facoptn_df['period_start'][0] != '' and self.facoptn_df['period_end'][0] != '':
-            me_strtend = "ME STARTEND  " + self.facoptn_df['period_start'][0] + self.facoptn_df['period_end'][0] + "\n"
+        if self.facoptn_df['annual'].iloc[0] != 'Y' and self.facoptn_df['period_start'].iloc[0] != '' and self.facoptn_df['period_end'].iloc[0] != '':
+            me_strtend = "ME STARTEND  " + self.facoptn_df['period_start'].iloc[0] + self.facoptn_df['period_end'].iloc[0] + "\n"
         mef = "ME FINISHED \n"
     
         self.inp_f.write(mes)
@@ -789,8 +789,8 @@ class Runstream():
         Writes OU section of aer.inp
         """
         
-        acute = self.facoptn_df['acute'][0] #move to ou
-        acute_hrs = self.facoptn_df['hours'][0]
+        acute = self.facoptn_df['acute'].iloc[0] #move to ou
+        acute_hrs = self.facoptn_df['hours'].iloc[0]
         if acute == "":
             acute = "N"
         
@@ -817,7 +817,7 @@ class Runstream():
                 self.inp_f.write(ou)
 
         if acute == "Y":
-            hivalstr = str(self.facoptn_df['hivalu'][0])
+            hivalstr = str(self.facoptn_df['hivalu'].iloc[0])
             recacu = "OU RECTABLE "  + str(acute_hrs) + " " + hivalstr + "\n"
             self.inp_f.write(recacu)
             for k in np.arange(len(self.uniqsrcs)):  
@@ -938,9 +938,9 @@ class Runstream():
             #check gas params dataframe for real values and pull them out for that one source
                     #print('found vapor params', params)
                 
-                    sodepos = ("SO GASDEPOS " + str(srid) + " " + str(params['da'][0]) + 
-                           " " + str(params['dw'][0]) + " " + str(params['rcl'][0]) + 
-                           " " + str(params['henry'][0]) + "\n")
+                    sodepos = ("SO GASDEPOS " + str(srid) + " " + str(params['da'].iloc[0]) + 
+                           " " + str(params['dw'].iloc[0]) + " " + str(params['rcl'].iloc[0]) + 
+                           " " + str(params['henry'].iloc[0]) + "\n")
                     self.inp_f.write(sodepos)
    
     def get_variation(self, srid):

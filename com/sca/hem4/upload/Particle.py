@@ -85,6 +85,3 @@ class Particle(DependentInputFile):
 
             else:
                 self.dataframe = particle_df
-
-    def validate(self, df):
-        pass

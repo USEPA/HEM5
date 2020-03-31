@@ -23,7 +23,7 @@ class InputFile(ABC):
         return
 
     def validate(self, df):
-        return True
+        return df
 
     def clean(self, df):
         return df
@@ -47,8 +47,8 @@ class InputFile(ABC):
                 df = df.astype(dtype=types)
 
                 cleaned = self.clean(df)
-                valid = self.validate(cleaned)
-                return cleaned if valid else None
+                validated = self.validate(cleaned)
+                return validated
 
     # Read values in from a source .csv file. Note that we initially read everything in as a string,
     # and then convert columns which have been specified as numeric to a float64. That way, all empty
@@ -73,8 +73,8 @@ class InputFile(ABC):
                 df = df.astype(dtype=types)
 
                 cleaned = self.clean(df)
-                valid = self.validate(cleaned)
-                return cleaned if valid else None
+                validated = self.validate(cleaned)
+                return validated
 
     # This method is being applied to every cell to guard against values which
     # have only whitespace.

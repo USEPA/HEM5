@@ -56,6 +56,3 @@ class BuoyantLine(DependentInputFile):
                             " ".join(check_buoyant_assignment) + "\n")
             
             self.dataframe = multibuoy_df
-
-    def validate(self, df):
-        pass

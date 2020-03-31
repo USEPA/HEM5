@@ -32,24 +32,19 @@ class FacilityPrep():
         #%%---------- Facility Options --------------------------------------
         self.model.facops = self.model.faclist.dataframe.loc[self.model.faclist.dataframe[fac_id] == facid]
 
-        op_maxdist = self.model.facops[max_dist][0]
-        op_modeldist = self.model.facops[model_dist][0]
-        op_circles = self.model.facops[circles][0]
-        op_radial = self.model.facops[radial][0]
-        op_overlap = self.model.facops[overlap_dist][0]
+        op_maxdist = self.model.facops[max_dist].iloc[0]
+        op_modeldist = self.model.facops[model_dist].iloc[0]
+        op_circles = self.model.facops[circles].iloc[0]
+        op_radial = self.model.facops[radial].iloc[0]
+        op_overlap = self.model.facops[overlap_dist].iloc[0]
 
-        center_spec = self.model.facops['center_spec'][0]
-        self.fac_center = self.model.facops[fac_center][0]
-        self.ring_distances = self.model.facops['ring_distances'][0]
+        self.fac_center = self.model.facops[fac_center].iloc[0]
+        self.ring_distances = self.model.facops['ring_distances'].iloc[0]
 
         #%%---------- Emissions Locations --------------------------------------
         emislocs = self.model.emisloc.dataframe.loc[self.model.emisloc.dataframe[fac_id] == facid]
 
-        # Replace NaN with blank or 0. utmzone defaults to "0N"
-        emislocs = emislocs.fillna({utmzone:'0N', source_type:'', lengthx:0, lengthy:0, angle:0,
-                                    horzdim:0, vertdim:0, areavolrelhgt:0, stkht:0, stkdia: 0,
-                                    stkvel:0, stktemp:0, elev:0, x2:0, y2:0, method:1, massfrac:1, partdiam:1})
-        emislocs = emislocs.reset_index(drop = True)
+
         
         # Area source angle must be >= 0 and < 90. If not, skip this facility
         anglechk = emislocs[(emislocs['angle'] < 0) | emislocs['angle'] >= 90]
@@ -213,7 +208,7 @@ class FacilityPrep():
 
         if self.fac_center != "":
             # Grab the specified center and translate to/from UTM
-            components = center_spec.split(',')
+            components = self.fac_center.split(',')
             if components[0] == "L":
                 cenlat = float(components[1])
                 cenlon = float(components[2])
@@ -230,9 +225,9 @@ class FacilityPrep():
         self.model.computedValues['cenlat'] = cenlat
         self.model.computedValues['cenlon'] = cenlon
 
-        #retrieve blocks
-        maxdist = self.model.facops[max_dist][0]
-        modeldist = self.model.facops[model_dist][0]
+        # retrieve blocks
+        maxdist = self.model.facops[max_dist].iloc[0]
+        modeldist = self.model.facops[model_dist].iloc[0]
 
         if self.model.altRec_optns.get('altrec', None):
 
@@ -346,12 +341,12 @@ class FacilityPrep():
                 maxsrcd = max(maxsrcd, dist_cen)
 
             # If user first ring is > 100m, then use it, else first ring is maxsrcd + overlap.
-            if self.model.facops[ring1][0] <= 100:
+            if self.model.facops[ring1].iloc[0] <= 100:
                 ring1a = max(maxsrcd+op_overlap, 100)
                 ring1b = min(ring1a, op_maxdist)
                 firstring = normal_round(max(ring1b, 100))
             else:
-                firstring = self.model.facops[ring1][0]
+                firstring = self.model.facops[ring1].iloc[0]
 
             # Store first ring in computedValues
             self.model.computedValues['firstring'] = firstring
@@ -361,7 +356,7 @@ class FacilityPrep():
 
 
             # Make sure modeling distance is not less than first ring distance
-            if self.model.facops[model_dist][0] < firstring:
+            if self.model.facops[model_dist].iloc[0] < firstring:
                 emessage = "Error! Modeling distance is less than first ring."
                 Logger.logMessage(emessage)
                 raise Exception("Modeling distance is less than first ring")
@@ -485,7 +480,7 @@ class FacilityPrep():
         #%%------ Elevations and hill height ---------
 
         # if the facility will use elevations, assign them to emission sources and polar receptors        
-        if self.model.facops[elev][0].upper() == "Y":
+        if self.model.facops[elev].iloc[0].upper() == "Y":
             polar_df[elev], polar_df[hill], polar_df['avgelev'] = zip(*polar_df.apply(lambda row: 
                         self.assign_polar_elev_step1(row,self.innerblks,self.outerblks,maxdist), axis=1))
             # If user did not supply any source elevations, compute them. Otherwise, empty
@@ -851,7 +846,7 @@ class FacilityPrep():
 
         # Which location type is being used? If lat/lon, convert to UTM. Otherwise, just copy over
         # the relevant values.
-        ltype = altrecs.iloc[0][location_type]
+        ltype = altrecs[0][location_type]
         if ltype == 'L':
             altrecs[[utmn, utme]] = altrecs.apply(lambda row: UTM.ll2utm_alt(row[lat],row[lon],utmZone,hemi), 
                                     result_type="expand", axis=1)
