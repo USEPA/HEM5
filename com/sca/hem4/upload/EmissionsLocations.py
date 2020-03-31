@@ -49,8 +49,9 @@ class EmissionsLocations(InputFile):
         cleaned.replace(to_replace={fac_id:{"nan":""}, source_id:{"nan":""}}, inplace=True)
         cleaned = cleaned.reset_index(drop = True)
 
-        # upper case the source type
+        # upper case of selected fields
         cleaned[source_type] = cleaned[source_type].str.upper()
+        cleaned[location_type] = cleaned[location_type].str.upper()
 
         return cleaned
 
