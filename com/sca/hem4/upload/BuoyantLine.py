@@ -48,7 +48,7 @@ class BuoyantLine(DependentInputFile):
         # Strict: Invalid values in these columns will cause the upload to fail immediately.
         # ----------------------------------------------------------------------------------
         if len(df.loc[(df[fac_id] == '')]) > 0:
-            Logger.logMessage("One or more facility IDs are missing in the Downwash List.")
+            Logger.logMessage("One or more facility IDs are missing in the Buoyant Line List.")
             return None
 
         for index, row in df.iterrows():

@@ -41,13 +41,13 @@ class Particle(DependentInputFile):
 
         # Default NaN to 0 and convert float64 values to decimal with 3 decimal places
         cleaned = df.fillna({part_diam:0, mass_frac:0, part_dens:0})
+        cleaned.replace(to_replace={fac_id:{"nan":""}, source_id:{"nan":""}}, inplace=True)
+        cleaned = cleaned.reset_index(drop = True)
+
         cleaned[part_diam] = cleaned[part_diam].apply(lambda x: round(Decimal(x), 3))
         cleaned[mass_frac] = cleaned[mass_frac].apply(lambda x: round(Decimal(x), 3))
         cleaned[part_dens] = cleaned[part_dens].apply(lambda x: round(Decimal(x), 3))
         cleaned[mass_frac] = cleaned[mass_frac] / 100
-
-        cleaned.replace(to_replace={fac_id:{"nan":""}, source_id:{"nan":""}}, inplace=True)
-        cleaned = cleaned.reset_index(drop = True)
 
         return cleaned
 
@@ -56,11 +56,11 @@ class Particle(DependentInputFile):
         # Strict: Invalid values in these columns will cause the upload to fail immediately.
         # ----------------------------------------------------------------------------------
         if len(df.loc[(df[fac_id] == '')]) > 0:
-            Logger.logMessage("One or more facility IDs are missing in the HAP Emissions List.")
+            Logger.logMessage("One or more facility IDs are missing in the Particle List.")
             return None
 
         if len(df.loc[(df[source_id] == '')]) > 0:
-            Logger.logMessage("One or more source IDs are missing in the HAP Emissions List.")
+            Logger.logMessage("One or more source IDs are missing in the Particle List.")
             return None
 
         for index, row in df.iterrows():
