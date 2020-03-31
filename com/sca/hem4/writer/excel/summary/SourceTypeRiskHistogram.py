@@ -10,6 +10,8 @@ from com.sca.hem4.FacilityPrep import *
 from com.sca.hem4.writer.excel.summary.AltRecAwareSummary import AltRecAwareSummary
 from collections import OrderedDict
 
+import time
+
 
 class SourceTypeRiskHistogram(ExcelWriter, AltRecAwareSummary):
 
@@ -55,7 +57,9 @@ class SourceTypeRiskHistogram(ExcelWriter, AltRecAwareSummary):
         
         
         for facilityId in self.facilityIds:
-                           
+            
+            tic = time.perf_counter()
+            
             targetDir = self.categoryFolder + "/" + facilityId
 
             altrec = self.determineAltRec(targetDir, facilityId)
@@ -70,7 +74,11 @@ class SourceTypeRiskHistogram(ExcelWriter, AltRecAwareSummary):
             # convert source ids to the code part only, and then group and sum
             allinner_df[source_id] = allinner_df[source_id].apply(lambda x: x[self.codePosition:self.codePosition+self.codeLength])
 
-
+            toc = time.perf_counter()
+            print(f"First section ran in {toc - tic:0.4f} seconds")
+            
+            tic = time.perf_counter()
+            
             # Aggregate risk, grouped by FIPS/block (or receptor id if we're using alternates) and source
             aggs = {lat:'first', lon:'first', population:'first', 'risk':'sum'}                
             byCols = [rec_id, source_id] if altrec=='Y' else [fips, block, source_id]
@@ -90,6 +98,9 @@ class SourceTypeRiskHistogram(ExcelWriter, AltRecAwareSummary):
             # Aggregate risk by block and source
             sector_summed = sector_blkrisk.groupby(by=byCols, as_index=False).agg(aggs).reset_index(drop=True)
 
+            toc = time.perf_counter()
+            print(f"Second section ran in {toc - tic:0.4f} seconds")
+
 
             # Get a list of the all_outer_receptor files (could be more than one)
             listOuter = []
@@ -100,15 +111,32 @@ class SourceTypeRiskHistogram(ExcelWriter, AltRecAwareSummary):
                     listOuter.append(entry)
 
             for f in listOuter:
+
+                tic = time.perf_counter()
+
                 allouter = AllOuterReceptorsNonCensus(targetDir=targetDir, acuteyn=acute_yn, filenameOverride=f) if altrec=='Y' else \
                     AllOuterReceptors(targetDir=targetDir, acuteyn=acute_yn, filenameOverride=f)
                 allouter_df = allouter.createDataframe()
 
+                toc = time.perf_counter()
+                print(f"Third section ran in {toc - tic:0.4f} seconds")
+                tic = time.perf_counter()
+                
+                pollist = allouter_df['pollutant'].tolist()
+                conclist = allouter_df['conc'].tolist()
+                allouter_df['risk'] = self.calculateRisk(pollist, conclist)
+                
                 allouter_df['risk'] = allouter_df.apply(lambda x: self.calculateRisk(x[pollutant], x[conc]), axis=1)
+
+                toc = time.perf_counter()
+                print(f"Fourth section ran in {toc - tic:0.4f} seconds")
+                tic = time.perf_counter()
 
                 # convert source ids to the code part only, and then group and sum
                 allouter_df[source_id] = allouter_df[source_id].apply(lambda x: x[self.codePosition:self.codePosition+self.codeLength])
 
+                toc = time.perf_counter()
+                print(f"Fifth section ran in {toc - tic:0.4f} seconds")
     
                 # Aggregate risk, grouped by FIPS/block (or receptor id if we're using alternates) and source
                 aggs = {lat:'first', lon:'first', population:'first', 'risk':'sum'}                
@@ -128,8 +156,7 @@ class SourceTypeRiskHistogram(ExcelWriter, AltRecAwareSummary):
 
                 # Aggregate risk by block and source
                 sector_summed = sector_blkrisk.groupby(by=byCols, as_index=False).agg(aggs).reset_index(drop=True)
-              
-            
+                          
         # Aggregate sector source risk to just block (or rec_id)
         aggs = {lat:'first', lon:'first', population:'first', 'risk':'sum'}                
         byCols = [rec_id] if altrec=='Y' else [fips, block]
@@ -229,9 +256,12 @@ class SourceTypeRiskHistogram(ExcelWriter, AltRecAwareSummary):
         yield self.dataframe
 
     def calculateRisk(self, pollutant_name, conc):
-        URE = self.getRiskParams(pollutant_name)
-        return conc * URE
-
+        risk = []
+        for i in range(len(pollutant_name)):
+            URE = self.getRiskParams(pollutant_name[i])
+            risk.append(conc[i] * URE)
+        return risk
+    
     def getRiskParams(self, pollutant_name):
         URE = 0.0
 
