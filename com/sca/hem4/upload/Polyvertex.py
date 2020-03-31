@@ -37,6 +37,9 @@ class Polyvertex(DependentInputFile):
         cleaned.replace(to_replace={fac_id:{"nan":""}, source_id:{"nan":""}}, inplace=True)
         cleaned = cleaned.reset_index(drop = True)
 
+        # upper case of selected fields
+        cleaned[location_type] = cleaned[location_type].str.upper()
+
         return cleaned
 
     def validate(self, df):
@@ -50,6 +53,10 @@ class Polyvertex(DependentInputFile):
 
         if len(df.loc[(df[source_id] == '')]) > 0:
             Logger.logMessage("One or more source IDs are missing in the Polyvertex List.")
+            return None
+
+        if len(df.loc[(df[location_type] != 'L') & (df[location_type] != 'U')]) > 0:
+            Logger.logMessage("One or more locations are missing a coordinate system in the Polyvertex List.")
             return None
 
         for index, row in df.iterrows():
