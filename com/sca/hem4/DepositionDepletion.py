@@ -25,45 +25,36 @@ def check_phase(r):
     
 
     if r['dep'] != 'nan':
-        if r['dep'] != 'N':
-            dep = r['dep'].upper()
+        dep = r['dep'].upper()
     else:
         dep = ''
 
 
     if r['depl'] != 'nan':
-        if r['depl'] != 'N':
-            depl = r['depl'].upper()
+        depl = r['depl'].upper()
     else:
         depl = ''
 
     
     if r['vdep'] != 'nan':
-        if r['vdep'] != 'NO':
-            vdep = r['vdep'].upper()
+        vdep = r['vdep'].upper()
     else:
         vdep = ''
     
     
     if r['vdepl'] != 'nan':
-        if r['vdepl'] != 'NO':
-            vdepl = r['vdepl'].upper()
-        
+        vdepl = r['vdepl'].upper()        
     else:
         vdepl = ''
     
     
     if r['pdep'] != 'nan':
-        if r['pdep'] != 'NO':
-            pdep = r['pdep'].upper()
-        
+        pdep = r['pdep'].upper()        
     else:
         pdep = ''
     
     if r['pdepl'] != 'nan':
-        if r['pdepl'] != 'NO':
-            pdepl = r['pdepl'].upper()
-        
+            pdepl = r['pdepl'].upper()       
     else:
         pdepl = ''
         
