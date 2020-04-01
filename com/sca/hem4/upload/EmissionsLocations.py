@@ -43,8 +43,8 @@ class EmissionsLocations(InputFile):
 
     def clean(self, df):
 
-        cleaned = df.fillna({utmzone:'0N', source_type:'', lengthx:0, lengthy:0, angle:0,
-                                    horzdim:0, vertdim:0, areavolrelhgt:0, stkht:0, stkdia: 0,
+        cleaned = df.fillna({utmzone:'0N', source_type:'', lengthx:1, lengthy:1, angle:0,
+                                    horzdim:1, vertdim:1, areavolrelhgt:0, stkht:0,
                                     stkvel:0, stktemp:0, elev:0, x2:0, y2:0, method:1, massfrac:1, partdiam:1})
         cleaned.replace(to_replace={fac_id:{"nan":""}, source_id:{"nan":""}}, inplace=True)
         cleaned = cleaned.reset_index(drop = True)
@@ -123,45 +123,40 @@ class EmissionsLocations(InputFile):
 
             if row[lengthx] <= 0:
                 Logger.logMessage("Facility " + facility + ": Length X value " + str(row[lengthx]) +
-                                  " out of range. Defaulting to 0.")
-                row[lengthx] = 0
+                                  " out of range. Defaulting to 1.")
+                row[lengthx] = 1
             if row[lengthy] <= 0:
                 Logger.logMessage("Facility " + facility + ": Length Y value " + str(row[lengthy]) +
-                                  " out of range. Defaulting to 0.")
-                row[lengthy] = 0
+                                  " out of range. Defaulting to 1.")
+                row[lengthy] = 1
             if row[angle] < 0 or row[angle] >= 90:
                 Logger.logMessage("Facility " + facility + ": angle value " + str(row[angle]) +
                                   " out of range. Defaulting to 0.")
                 row[angle] = 0
             if row[horzdim] <= 0:
                 Logger.logMessage("Facility " + facility + ": Horizontal dim value " + str(row[horzdim]) +
-                                  " out of range. Defaulting to 0.")
-                row[horzdim] = 0
+                                  " out of range. Defaulting to 1.")
+                row[horzdim] = 1
             if row[vertdim] <= 0:
                 Logger.logMessage("Facility " + facility + ": Vertical dim value " + str(row[vertdim]) +
-                                  " out of range. Defaulting to 0.")
-                row[vertdim] = 0
-            if row[areavolrelhgt] <= 0:
+                                  " out of range. Defaulting to 1.")
+                row[vertdim] = 1
+            if row[areavolrelhgt] < 0:
                 Logger.logMessage("Facility " + facility + ": Release height value " + str(row[areavolrelhgt]) +
                                   " out of range. Defaulting to 0.")
                 row[areavolrelhgt] = 0
-            if row[stkht] <= 0:
+            if row[stkht] < 0:
                 Logger.logMessage("Facility " + facility + ": Stack height value " + str(row[stkht]) +
                                   " out of range. Defaulting to 0.")
                 row[stkht] = 0
             if row[stkdia] <= 0:
                 Logger.logMessage("Facility " + facility + ": Stack diameter value " + str(row[stkdia]) +
-                                  " out of range. Defaulting to 0.")
-                row[stkdia] = 0
-            if row[stkvel] <= 0:
+                                  " out of range.")
+                return None
+            if row[stkvel] < 0:
                 Logger.logMessage("Facility " + facility + ": Exit velocity value " + str(row[stkvel]) +
                                   " out of range. Defaulting to 0.")
                 row[stkvel] = 0
-            if row[stktemp] <= 0:
-                Logger.logMessage("Facility " + facility + ": Exit temperature value " + str(row[stktemp]) +
-                                  " out of range. Defaulting to 0.")
-                row[stktemp] = 0
-
             if row[method] not in [1, 2]:
                 Logger.logMessage("Facility " + facility + ": Method value " + str(row[method]) +
                                   " invalid. Defaulting to 1.")

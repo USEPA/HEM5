@@ -11,8 +11,8 @@ from tkinter import messagebox
 class Vegetation(DependentInputFile):
 
     def __init__(self, path, dependency):
-        DependentInputFile.__init__(self, path, dependency)
         self.dependency = dependency
+        DependentInputFile.__init__(self, path, dependency)
 
     def createDataframe(self):
 

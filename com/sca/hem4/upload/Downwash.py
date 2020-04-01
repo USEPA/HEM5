@@ -16,8 +16,8 @@ keyword = 'keyword';
 class Downwash(DependentInputFile):
 
     def __init__(self, path, dependency):
-        DependentInputFile.__init__(self, path, dependency)
         self.faclist_df = dependency
+        DependentInputFile.__init__(self, path, dependency)
 
     def createDataframe(self):
 

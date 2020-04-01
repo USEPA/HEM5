@@ -13,10 +13,10 @@ from com.sca.hem4.model.Model import *
 class EmisVar(DependentInputFile):
 
     def __init__(self, path, dependency):
-        DependentInputFile.__init__(self, path, dependency)
         self.emisloc_df = dependency
         self.path = path
-        
+        DependentInputFile.__init__(self, path, dependency)
+
     def createDataframe(self):
         
         #not calling standard read_file because length of columns is variable

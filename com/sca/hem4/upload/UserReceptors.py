@@ -10,8 +10,8 @@ rec_id = 'rec_id';
 class UserReceptors(DependentInputFile):
 
     def __init__(self, path, dependency, csvFormat):
-        DependentInputFile.__init__(self, path, dependency, csvFormat=csvFormat)
         self.faclist_df = dependency
+        DependentInputFile.__init__(self, path, dependency, csvFormat=csvFormat)
 
     def createDataframe(self):
         
@@ -56,17 +56,17 @@ class UserReceptors(DependentInputFile):
             facility = row[fac_id]
             loc_type = row[location_type]
 
-            maxlon = 180 if type == 'L' else 850000
-            minlon = -180 if type == 'L' else 160000
-            maxlat = 85 if type == 'L' else 10000000
-            minlat = -80 if type == 'L' else 0
+            maxlon = 180 if loc_type == 'L' else 850000
+            minlon = -180 if loc_type == 'L' else 160000
+            maxlat = 85 if loc_type == 'L' else 10000000
+            minlat = -80 if loc_type == 'L' else 0
 
             if row[lon] > maxlon or row[lon] < minlon:
-                Logger.logMessage("Facility " + fac_id + ": lon value " + str(row[lon]) + " out of range " +
+                Logger.logMessage("Facility " + facility + ": lon value " + str(row[lon]) + " out of range " +
                                   "in the User Receptors List.")
                 return None
             if row[lat] > maxlat or row[lat] < minlat:
-                Logger.logMessage("Facility " + fac_id + ": lat value " + str(row[lat]) + " out of range " +
+                Logger.logMessage("Facility " + facility + ": lat value " + str(row[lat]) + " out of range " +
                                   "in the User Receptors List.")
                 return None
 

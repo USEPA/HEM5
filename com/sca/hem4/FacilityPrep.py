@@ -44,17 +44,6 @@ class FacilityPrep():
         #%%---------- Emissions Locations --------------------------------------
         emislocs = self.model.emisloc.dataframe.loc[self.model.emisloc.dataframe[fac_id] == facid]
 
-
-        
-        # Area source angle must be >= 0 and < 90. If not, skip this facility
-        anglechk = emislocs[(emislocs['angle'] < 0) | emislocs['angle'] >= 90]
-        if not anglechk.empty:
-            emessage = ("Facility " + facid + " has an area source angle that is not between 0 and 90 degrees. \
-                         The facility will be skipped")
-            Logger.logMessage(emessage)
-            raise Exception(emessage)
-            
-        
         # Determine the utm zone to use for this facility. Also get the hemisphere (N or S).
         facutmzonenum, hemi = UTM.zone2use(emislocs)
         facutmzonestr = str(facutmzonenum) + hemi
@@ -449,22 +438,22 @@ class FacilityPrep():
 
         # set rec_type of polar receptors
         polar_df[rec_type] = 'PG'
-        
-        
+
         #%%----- Add sector and ring to inner and outer receptors ----------
 
-        # assign sector and ring number (integers) to each inner receptor and compute fractional sector (s) and ring_loc (log weighted) numbers
+        # assign sector and ring number (integers) to each inner receptor and compute fractional sector (s)
+        # and ring_loc (log weighted) numbers
         if self.innerblks.empty == False:
             self.innerblks[sector], self.innerblks["s"], self.innerblks[ring], self.innerblks["ring_loc"] = \
                  zip(*self.innerblks.apply(lambda row: self.calc_ring_sector(polar_dist,row[distance],row[angle],op_radial), axis=1))
         else:
             self.innerblks[sector], self.innerblks["s"], self.innerblks[ring], self.innerblks["ring_loc"] = None, None, None, None
             
-        # assign sector and ring number (integers) to each outer receptor and compute fractional sector (s) and ring_loc (log weighted) numbers
+        # assign sector and ring number (integers) to each outer receptor and compute fractional sector (s)
+        # and ring_loc (log weighted) numbers
         self.outerblks[sector], self.outerblks["s"], self.outerblks[ring], self.outerblks["ring_loc"] = \
              zip(*self.outerblks.apply(lambda row: self.calc_ring_sector(polar_dist,row[distance],row[angle],op_radial), axis=1))
 
-        
 #        # export innerblks to an Excel file in the Working directory
 #        innerblks_path = "working/innerblk_receptors.xlsx"
 #        innerblks_con = pd.ExcelWriter(innerblks_path)
@@ -496,10 +485,8 @@ class FacilityPrep():
             emislocs[elev] = 0
             emislocs[hill] = 0
 
-        
         # Assign the polar grid data frame to the model
         self.model.polargrid = polar_df
-
 
 #        # export polar_df to an Excel file in the Working directory
 #        polardf_path = "working/" + facid + "_polar_receptors.xlsx"
@@ -574,11 +561,11 @@ class FacilityPrep():
         sector1 = polar_row[sector]
         ring1 = polar_row[ring]
 
-        #subset the inner and outer block dataframes to sector, ring
+        # subset the inner and outer block dataframes to sector, ring
         innblks_sub = innblks.loc[(innblks[sector] == sector1) & (innblks[ring] == ring1)]
         outblks_sub = outblks.loc[(outblks[sector] == sector1) & (outblks[ring] == ring1)]
 
-        #initialize variables
+        # initialize variables
         r_nearelev = -999
         r_maxelev = -999
         r_hill = -999
@@ -589,7 +576,7 @@ class FacilityPrep():
         d_test = 0
         d_nearelev = 99999
 
-        #look at inner block subset
+        # look at inner block subset
         for index, row in innblks_sub.iterrows():
             if row[elev] > r_maxelev:
                 r_maxelev = row[elev]
@@ -604,7 +591,7 @@ class FacilityPrep():
                 r_nearelev = row[elev]
 
 
-        #look at outer block subset
+        # look at outer block subset
         for index, row in outblks_sub.iterrows():
             if row[elev] > r_maxelev:
                 r_maxelev = row[elev]
@@ -619,7 +606,7 @@ class FacilityPrep():
                 r_nearelev = row[elev]
 
 
-        #compute average and population elevations
+        # compute average and population elevations
         if r_nblk > 0:
             r_avgelev = r_avgelev/r_nblk
         else:
@@ -630,9 +617,8 @@ class FacilityPrep():
         else:
             r_popelev = -999
 
-        #Note: the max elevation is returned as the elevation for this polar receptor
+        # Note: the max elevation is returned as the elevation for this polar receptor
         return normal_round(r_maxelev), normal_round(r_hill), normal_round(r_avgelev)
-
 
     #%% Assign elevation and hill height to polar receptors that still have missing elevations
     def assign_polar_elev_step2(self, polar_row, innblks, outblks, emislocs):
@@ -655,7 +641,7 @@ class FacilityPrep():
                 r_avgelev = r_nearelev
                 r_popelev = r_nearelev
 
-            #check inner blocks
+            # check inner blocks
             if innblks.empty == False:
                 inner_dist = np.sqrt((innblks[utme] - polar_row[utme])**2 + (innblks[utmn] - polar_row[utmn])**2)
                 mindist_index = inner_dist.values.argmin()
@@ -669,7 +655,7 @@ class FacilityPrep():
                     r_nearhill = innblks[hill].iloc[mindist_index]
                     r_hill = r_nearhill
             
-            #check outer blocks
+            # check outer blocks
             outer_dist = (outblks[utme] - polar_row[utme])**2 + (outblks[utmn] - polar_row[utmn])**2
             mindist_index = outer_dist.values.argmin()
             d_test = outer_dist.iloc[mindist_index]
@@ -690,7 +676,7 @@ class FacilityPrep():
             r_hill = polar_row[hill]
             r_avgelev = -999
 
-        #Note: the max elevation is returned as the elevation for this polar receptor
+        # Note: the max elevation is returned as the elevation for this polar receptor
         return normal_round(r_maxelev), normal_round(r_hill), normal_round(r_avgelev)
 
     #%% Compute the elevation to be used for all emission sources
@@ -721,7 +707,6 @@ class FacilityPrep():
     #%% Define polar receptor dataframe index
     def define_polar_idx(self, s, r):
         return "S" + str(s) + "R" + str(r)
-
 
     #%% Check for receptors overlapping emission sources
     def check_overlap(self, rec_utme, rec_utmn, sourcelocs_df, overlap_dist):
@@ -915,5 +900,3 @@ class FacilityPrep():
                 hill_est = row.hill
         
         return elev_est, hill_est
-
-    

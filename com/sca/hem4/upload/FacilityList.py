@@ -68,8 +68,8 @@ class FacilityList(InputFile):
         # Replace NaN with blank, No or 0
         # Note: use of elevations or all receptors are defaulted to Y, acute hours is defaulted to 1,
         # acute multiplier is defaulted to 10, and emission variation is defaulted to N
-        cleaned = df.fillna({radial:0, circles:0, overlap_dist:0, hours:1, multiplier:10, max_dist: 50000, model_dist: 3000,
-                                                      ring1:0, urban_pop:0, hivalu:1})
+        cleaned = df.fillna({radial:16, circles:13, overlap_dist:30, hours:1, multiplier:10, max_dist: 50000, model_dist: 3000,
+                                                      ring1:100, urban_pop:0, hivalu:1})
 
         cleaned.replace(to_replace={rural_urban:{"nan":""}, elev:{"nan":"Y"}, met_station:{"nan":""},
                                       dep:{"nan":"N"}, depl:{"nan":"N"}, phase:{"nan":""}, pdep:{"nan":"NO"},
@@ -133,17 +133,17 @@ class FacilityList(InputFile):
                     row[urban_pop] = 0
 
             # maximum distance
-            if row[max_dist] >= 50000:
+            if row[max_dist] > 50000:
                 Logger.logMessage("Facility " + facility + ": max distance value " + str(row[max_dist]) +
                                   " out of range. Defaulting to 50000.")
                 row[max_dist] = 50000
-            elif row[max_dist] == 0:
+            elif row[max_dist] <= 0:
                 Logger.logMessage("Facility " + facility + ": max distance value " + str(row[max_dist]) +
                                   " out of range. Defaulting to 50000.")
                 row[max_dist] = 50000
 
             # Modeled Distance of Receptors
-            if row[model_dist] == 0:
+            if row[model_dist] <= 0:
                 Logger.logMessage("Facility " + facility + ": model distance value " + str(row[model_dist]) +
                                   " out of range. Defaulting to 3000.")
                 row[model_dist] = 3000
@@ -185,13 +185,14 @@ class FacilityList(InputFile):
                 row[overlap_dist] = 30
 
             # ring1
-            if row[ring1] < 100 or df[ring1] > df[max_dist]:
+            if row[ring1] < 100 or row[ring1] > row[max_dist]:
                 Logger.logMessage("Facility " + facility + ": ring1 value " + str(row[ring1]) +
                                   " out of range. Defaulting to 100.")
                 row[ring1] = 100
 
             # Facility center...comma separated list that should start with either "U" (meaning UTM coords) or "L"
-            # (meaning lat/lon) and contain two values if lat/lon (lat,lon) or three values if UTM (northing,easting,zone)
+            # (meaning lat/lon) and contain two values if lat/lon (lat,lon) or three values if UTM
+            # (northing,easting,zone)
             center_spec = row[fac_center]
             spec_valid = True
             if center_spec.upper().startswith("U"):

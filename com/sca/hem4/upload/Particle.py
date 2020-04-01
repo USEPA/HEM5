@@ -17,10 +17,10 @@ part_dens = 'part_dens';
 class Particle(DependentInputFile):
 
     def __init__(self, path, dependency, facilities):
-        DependentInputFile.__init__(self, path, dependency, facilities)
         self.faclist_df = dependency
         self.dependency = dependency
         self.facilities = facilities
+        DependentInputFile.__init__(self, path, dependency, facilities)
 
     def createDataframe(self):
 

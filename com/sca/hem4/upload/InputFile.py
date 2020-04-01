@@ -43,8 +43,15 @@ class InputFile(ABC):
                 
             else:
                 df = df.astype(str).applymap(self.convertEmptyToNaN)
+                numeric_only = df.copy()
+
+                numeric_only[self.numericColumns] = numeric_only[self.numericColumns].applymap(InputFile.is_numeric)
+
+                if not numeric_only.equals(df):
+                    Logger.logMessage("Warning: Some non-numeric values were removed from numeric columns.")
+
                 types = self.get_column_types()
-                df = df.astype(dtype=types)
+                df = numeric_only.astype(dtype=types)
 
                 cleaned = self.clean(df)
                 validated = self.validate(cleaned)
@@ -121,3 +128,11 @@ class InputFile(ABC):
         else:
             
             return df
+
+    @staticmethod
+    def is_numeric(x):
+        try:
+            float(x)
+            return x
+        except:
+            return "nan"

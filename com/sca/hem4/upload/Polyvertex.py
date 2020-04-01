@@ -18,8 +18,8 @@ fipstct = 'fipstct';
 class Polyvertex(DependentInputFile):
 
     def __init__(self, path, dependency):
-        DependentInputFile.__init__(self, path, dependency)
         self.emisloc_df = dependency
+        DependentInputFile.__init__(self, path, dependency)
 
     def createDataframe(self):
 
