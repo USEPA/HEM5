@@ -931,17 +931,17 @@ class MainView(tk.Frame):
 #            self.resumeMenu = tk.OptionMenu(self.s3, self.resume_var, *incomplete_facs)
 #            
 #            self.resumeMenu.pack()
-
-        self.resume_button = tk.Button(self.s3, text="Resume a previous run (DISABLED)", font=TEXT_FONT, relief='solid', borderwidth=2, bg='lightgrey')
-        self.resume_button.pack()
+#
+#        self.resume_button = tk.Button(self.s3, text="Resume a previous run (DISABLED)", font=TEXT_FONT, relief='solid', borderwidth=2, bg='lightgrey')
+#        self.resume_button.pack()
         
-        risk = tk.Button(self.s4, text= "Run Risk Summary Programs", font=TEXT_FONT, relief='solid', borderwidth=2, bg='lightgrey',
+        risk = tk.Button(self.s3, text= "Run Risk Summary Programs", font=TEXT_FONT, relief='solid', borderwidth=2, bg='lightgrey',
                              command=self.summary.lift)
         risk.pack(padx=20, pady=50)
         risk.bind("<Enter>", partial(self.color_config, risk, "white"))
         risk.bind("<Leave>", partial(self.color_config, risk, "lightgrey"))
 
-        view = tk.Button(self.s5, text= "View and Analyze Outputs", font=TEXT_FONT, relief='solid', borderwidth=2, bg='lightgrey',
+        view = tk.Button(self.s4, text= "View and Analyze Outputs", font=TEXT_FONT, relief='solid', borderwidth=2, bg='lightgrey',
                          command=self.analyze.lift)
         view.pack(padx=20, pady=50)
         view.bind("<Enter>", partial(self.color_config, view, "white"))
