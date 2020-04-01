@@ -122,11 +122,15 @@ class SourceTypeRiskHistogram(ExcelWriter, AltRecAwareSummary):
                 print(f"Third section ran in {toc - tic:0.4f} seconds")
                 tic = time.perf_counter()
                 
-                pollist = allouter_df['pollutant'].tolist()
-                conclist = allouter_df['conc'].tolist()
-                allouter_df['risk'] = self.calculateRisk(pollist, conclist)
+#                pollist = allouter_df['pollutant'].tolist()
+#                conclist = allouter_df['conc'].tolist()
+#                allouter_df['risk'] = self.calculateRisk(pollist, conclist)
                 
-                allouter_df['risk'] = allouter_df.apply(lambda x: self.calculateRisk(x[pollutant], x[conc]), axis=1)
+                # Merge ure column
+                allouter2_df = pd.merge(allouter_df, self.haplib_df[['pollutant', 'ure']],
+                                    how='left', on='pollutant')
+                
+                allouter2_df['risk'] = allouter2_df[conc] * allouter2_df['ure']
 
                 toc = time.perf_counter()
                 print(f"Fourth section ran in {toc - tic:0.4f} seconds")
