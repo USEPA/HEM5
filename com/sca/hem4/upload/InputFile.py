@@ -43,15 +43,17 @@ class InputFile(ABC):
                 
             else:
                 df = df.astype(str).applymap(self.convertEmptyToNaN)
+
+                # Verify no type errors
                 numeric_only = df.copy()
-
                 numeric_only[self.numericColumns] = numeric_only[self.numericColumns].applymap(InputFile.is_numeric)
-
                 if not numeric_only.equals(df):
-                    Logger.logMessage("Warning: Some non-numeric values were removed from numeric columns.")
+                    Logger.logMessage("Error: Some non-numeric values were found in numeric columns in this data set: " +
+                                      os.path.basename(self.path))
+                    return None
 
                 types = self.get_column_types()
-                df = numeric_only.astype(dtype=types)
+                df = df.astype(dtype=types)
 
                 cleaned = self.clean(df)
                 validated = self.validate(cleaned)
@@ -76,6 +78,15 @@ class InputFile(ABC):
             else:
                 
                 df = df.astype(str).applymap(self.convertEmptyToNaN)
+
+                # Verify no type errors
+                numeric_only = df.copy()
+                numeric_only[self.numericColumns] = numeric_only[self.numericColumns].applymap(InputFile.is_numeric)
+                if not numeric_only.equals(df):
+                    Logger.logMessage("Error: Some non-numeric values were found in numeric columns in this data set: " +
+                                  os.path.basename(self.path))
+                    return None
+
                 types = self.get_column_types()
                 df = df.astype(dtype=types)
 
