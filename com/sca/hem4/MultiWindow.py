@@ -407,8 +407,11 @@ class Page1(Page):
                 self.scr.insert(tk.INSERT, "\n")
                 self.scr.configure(state='disabled')
                 
-                args = reportNameArgs[reportName]
-                summaryMgr.createReport(self.fullpath, reportName, args)
+                try:
+                    args = reportNameArgs[reportName]
+                    summaryMgr.createReport(self.fullpath, reportName, args)
+                except Exception as e:
+                    Logger.logMessage(str(e))
                 
                 report_complete = reportName +  " complete."
                 self.scr.configure(state='normal')
