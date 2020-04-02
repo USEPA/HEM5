@@ -605,13 +605,16 @@ class Hem4(tk.Frame):
         self.emisloc_list_man.bind('<Button-1>', 
                                    lambda e:self.manual("instructions/emis_man.txt"))
          
-        
-        #add temporal output variations
+        # Removed temporal output option. Hard code self.check_tempvar to 0.
         self.check_tempvar = tk.IntVar()
-        self.tempvar_sel = tk.Checkbutton(self.s5, text="Show temporal variations in the outputs", 
-                                          variable = self.check_tempvar, font=TEXT_FONT,
-                                          bg='alice blue', command = self.add_temporal)
-        self.tempvar_sel.grid(row=3, column=0, sticky='W', padx = 85)
+        self.check_tempvar.set(0)
+        
+#        #add temporal output variations
+#        self.check_tempvar = tk.IntVar()
+#        self.tempvar_sel = tk.Checkbutton(self.s5, text="Show temporal variations in the outputs", 
+#                                          variable = self.check_tempvar, font=TEXT_FONT,
+#                                          bg='alice blue', command = self.add_temporal)
+#        self.tempvar_sel.grid(row=3, column=0, sticky='W', padx = 85)
 
     def is_valid_extension(self, filepath):
         """

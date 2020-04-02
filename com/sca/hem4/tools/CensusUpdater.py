@@ -9,7 +9,7 @@ from com.sca.hem4.log.Logger import Logger
 class CensusUpdater():
 
     def __init__(self):
-
+        
         self.previousValue = None
         self.pathToCensusFiles = 'census'
 
@@ -48,13 +48,12 @@ class CensusUpdater():
         for index, row in changeset_df.iterrows():
 
             self.previousValue = ""
-
-            # Hmmmmm....this will probably need to change...
-            blockid = '0' + row["blockid"]
+                        
+            blockid = row["blockid"]
             operation = row["change"].strip()
 
             # Get the two-letter state abbreviation and construct the census file name.
-            state = self.getStateForCode(blockid[1:3])
+            state = self.getStateForCode(blockid[0:2])
             Logger.logMessage("Opening " + state + " for updates...")
             pathToFile = self.pathToCensusFiles + '\\Blks_' + state + '.json'
 

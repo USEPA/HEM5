@@ -841,3 +841,21 @@ class AllOuterReceptors(CsvWriter, InputFile):
 
         df = self.readFromPathCsv(self.getColumns())
         return df.fillna("")
+    
+
+    def createBigDataframe(self):
+        # Type setting for CSV reading
+        if self.acute_yn == 'N':
+            self.numericColumns = [lat, lon, conc, elev, population]
+        else:
+           self.numericColumns = [lat, lon, conc, aconc, elev, population]
+            
+        self.strColumns = [fips, block, source_id, 'emis_type', pollutant, overlap]
+
+        colnames = self.getColumns()
+        self.skiprows = 1
+        reader = pd.read_csv(f, skiprows=self.skiprows, names=colnames, dtype=str, 
+                             na_values=[''], keep_default_na=False, chunksize=100000)
+
+        return reader
+    
