@@ -120,7 +120,7 @@ class HAPEmissions(InputFile):
                     # add another essage to say the following pollutants were assigned a generic value...
                     self.log.append("Removed " + p + " from hap emissions file\n")
 
-                    #get row so we can write facility and other info
+                    # get row so we can write facility and other info
                     ignored = df[df[pollutant] == p]
 
                     logfile.write("Removed: " + str(ignored))
