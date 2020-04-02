@@ -56,7 +56,7 @@ class Polyvertex(DependentInputFile):
             return None
 
         if len(df.loc[(df[location_type] != 'L') & (df[location_type] != 'U')]) > 0:
-            Logger.logMessage("One or more locations are missing a coordinate system in the Polyvertex List.")
+            Logger.logMessage("One or more locations have a missing/invalid coordinate system in the Polyvertex List.")
             return None
 
         for index, row in df.iterrows():
