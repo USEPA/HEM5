@@ -89,11 +89,11 @@ class EmissionsLocations(InputFile):
             minlat = -80 if type == 'L' else 0
 
             if row[lon] > maxlon or row[lon] < minlon:
-                Logger.logMessage("Facility " + fac_id + ": lon value " + str(row[lon]) + " out of range " +
+                Logger.logMessage("Facility " + facility + ": lon value " + str(row[lon]) + " out of range " +
                                   "in the Emissions Locations List.")
                 return None
             if row[lat] > maxlat or row[lat] < minlat:
-                Logger.logMessage("Facility " + fac_id + ": lat value " + str(row[lat]) + " out of range " +
+                Logger.logMessage("Facility " + facility + ": lat value " + str(row[lat]) + " out of range " +
                                   "in the Emissions Locations List.")
                 return None
 

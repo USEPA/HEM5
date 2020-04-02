@@ -86,7 +86,7 @@ class Downwash(DependentInputFile):
                 field = "value_" + str(num)
 
                 if row[keyword] in constrained and row[field] <= 0:
-                    Logger.logMessage("Invalid field value " + str(row[field]) + ".")
+                    Logger.logMessage("Invalid down wash value " + str(row[field]) + ".")
                     return None
 
         # check for unassigned downwash

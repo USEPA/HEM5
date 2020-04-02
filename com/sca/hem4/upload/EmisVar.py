@@ -35,12 +35,12 @@ class EmisVar(DependentInputFile):
             
             emisvar_df.columns = map(str.lower, emisvar_df.columns)
             
-            #rename first three columns
+            # rename first three columns
             emisvar_df.rename(columns={"facility id": fac_id,
                                        "source id": source_id,
                                        emisvar_df.columns[2]: "variation"}, inplace=True)
             
-            #convert all columns to float64 except first three
+            # convert all columns to float64 except first three
             float_cols=[i for i in emisvar_df.columns if i not in ["fac_id","source_id","variation"]]
             for col in float_cols:
                 emisvar_df[col]=pd.to_numeric(emisvar_df[col], errors="coerce")

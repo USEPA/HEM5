@@ -124,7 +124,8 @@ class FacilityList(InputFile):
             # leave it blank here (it will be defaulted in Runstream based on census data)
             valid = ['U', 'R', '']
             if not row[rural_urban] in valid:
-                Logger.logMessage("Facility " + facility + ": rural_urban value invalid. Will be defaulted based on census data.")
+                Logger.logMessage("Facility " + facility +
+                                  ": rural_urban value invalid. Will be defaulted based on census data.")
                 row[rural_urban] = ""
 
             if row[rural_urban] == 'U':
@@ -354,7 +355,9 @@ class FacilityList(InputFile):
                     df['period_end'] = self.period_end_components
 
                 if len(starts) != len(ends):
-                    Logger.logMessage("Facility " + facility + ": Inconsistent period start and end specified (both must include hours, or neither): " + period_start_spec + " : " + period_end_spec)
+                    Logger.logMessage("Facility " + facility +
+                          ": Inconsistent period start and end specified (both must include hours, or neither): " +
+                          period_start_spec + " : " + period_end_spec)
                     Logger.logMessage("Facility " + facility + ": Using annual instead.")
                     row[annual] = 'Y'
                     row[period_start] = ""
