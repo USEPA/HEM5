@@ -12,6 +12,7 @@ from functools import partial
 import shutil
 
 
+from PyQt5 import QtGui
 from pandastable import Table, filedialog, np
 from datetime import datetime
 from com.sca.hem4.log.Logger import Logger
@@ -1272,10 +1273,25 @@ class MainView(tk.Frame):
 
 
 
+    @staticmethod
+    def center_main():
+        # Gets the requested values of the height and width.
+        windowWidth = root.winfo_reqwidth()
+        windowHeight = root.winfo_reqheight()
+
+        # Gets both half the screen width/height and window width/height
+        positionRight = int(root.winfo_screenwidth()/2 - windowWidth)
+        positionDown = int(root.winfo_screenheight()/2 - (windowHeight/2 + 100))
+
+        # Positions the window in the center of the page.
+        root.geometry("+{}+{}".format(positionRight, positionDown))
+
 if __name__ == "__main__":
     root = tk.Tk()
     root.iconbitmap('images/HEM4.ico')
     main = MainView(root)
     main.pack(side="top", fill="both", expand=True)
     root.wm_minsize(1000,750)
+
+    main.after(20, MainView.center_main)
     root.mainloop()
