@@ -30,225 +30,20 @@ class FacilityPrep():
     def createRunstream(self, facid, runPhase):
 
         #%%---------- Facility Options --------------------------------------
-
         self.model.facops = self.model.faclist.dataframe.loc[self.model.faclist.dataframe[fac_id] == facid]
 
-        # Set defaults of the facility options
-        if self.model.facops[max_dist].isnull().sum() > 0:
-            self.model.facops.loc[:, max_dist] = 50000
+        op_maxdist = self.model.facops[max_dist].iloc[0]
+        op_modeldist = self.model.facops[model_dist].iloc[0]
+        op_circles = self.model.facops[circles].iloc[0]
+        op_radial = self.model.facops[radial].iloc[0]
+        op_overlap = self.model.facops[overlap_dist].iloc[0]
 
-        if self.model.facops[model_dist].isnull().sum() > 0:
-            self.model.facops.loc[:, model_dist] = 3000
+        self.fac_center = self.model.facops[fac_center].iloc[0]
+        self.ring_distances = self.model.facops['ring_distances'].iloc[0]
 
-        # Replace NaN with blank, No or 0
-        # Note: use of elevations or all receptors are defaulted to Y, acute hours is defaulted to 1
-        #       , acute multiplier is defaulted to 10, and emission variation is defaulted to N
-        self.model.facops = self.model.facops.fillna({radial:0, circles:0, overlap_dist:0, hours:1, multiplier:10,
-                                ring1:0, urban_pop:0, hivalu:1})
-        self.model.facops.replace(to_replace={rural_urban:{"nan":""}, elev:{"nan":"Y"}, 
-                                   dep:{"nan":"N"}, depl:{"nan":"N"}, phase:{"nan":""}, pdep:{"nan":"NO"}, 
-                                   pdepl:{"nan":"NO"}, vdep:{"nan":"NO"}, vdepl:{"nan":"NO"}, 
-                                   all_rcpts:{"nan":"Y"}, user_rcpt:{"nan":"N"}, bldg_dw:{"nan":"N"}, 
-                                   fastall:{"nan":"N"}, acute:{"nan":"N"}, fac_center:{"nan":""},
-                                   'ring_distances':{"nan":""}, emis_var:{"nan":"N"}, annual:{"nan":"Y"},
-                                   period_start:{"nan":""}, period_end:{"nan":""}}, inplace=True)
-
-        self.model.facops = self.model.facops.reset_index(drop = True)
-
-        
-        
-        #----- Default missing or out of range facility options --------
-
-        #  Maximum Distance
-        if self.model.facops[max_dist][0] >= 50000:
-            Logger.logMessage("max distance value " + str(self.model.facops[max_dist][0]) +
-                              " out of range. Defaulting to 50000.")
-            self.model.facops.loc[:, max_dist] = 50000
-        elif self.model.facops[max_dist][0] == 0:
-            Logger.logMessage("max distance value " + str(self.model.facops[max_dist][0]) +
-                              " out of range. Defaulting to 50000.")
-            self.model.facops.loc[:, max_dist] = 50000
-
-        # Modeled Distance of Receptors
-        if self.model.facops[model_dist][0] == 0:
-            Logger.logMessage("model distance value " + str(self.model.facops[model_dist][0]) +
-                              " out of range. Defaulting to 3000.")
-            self.model.facops.loc[:, model_dist] = 3000
-
-        # Radials: default is 16, minimum number is 4
-        if self.model.facops[radial][0] == 0:
-            Logger.logMessage("radial value " + str(self.model.facops[radial][0]) +
-                              " out of range. Defaulting to 16.")
-            self.model.facops.loc[:, radial] = 16
-
-        if self.model.facops[radial][0] < 4:
-            Logger.logMessage("radial value " + str(self.model.facops[radial][0]) +
-                              " out of range. Defaulting to 4.")
-            self.model.facops.loc[:, radial] = 4
-
-        # Circles: default is 13, minimum number is 3
-        if self.model.facops[circles][0] == 0:
-            Logger.logMessage("circles value " + str(self.model.facops[circles][0]) +
-                              " out of range. Defaulting to 13.")
-            self.model.facops.loc[:, circles] = 13
-
-        if self.model.facops[circles][0] < 3:
-            Logger.logMessage("circles value " + str(self.model.facops[circles][0]) +
-                              " out of range. Defaulting to 3.")
-            self.model.facops.loc[:, circles] = 3
-
-        # Overlap Distance
-        if self.model.facops[overlap_dist][0] == 0:
-            Logger.logMessage("overlap distance value " + str(self.model.facops[overlap_dist][0]) +
-                              " out of range. Defaulting to 30.")
-            self.model.facops.loc[:, overlap_dist] = 30
-        elif self.model.facops[overlap_dist][0] < 1:
-            Logger.logMessage("overlap distance value " + str(self.model.facops[overlap_dist][0]) +
-                              " out of range. Defaulting to 30.")
-            self.model.facops.loc[:, overlap_dist] = 30
-        elif self.model.facops[overlap_dist][0] > 500:
-            Logger.logMessage("overlap distance value " + str(self.model.facops[overlap_dist][0]) +
-                              " out of range. Defaulting to 30.")
-            self.model.facops.loc[:, overlap_dist] = 30
-        
-
-        op_maxdist = self.model.facops[max_dist][0]
-        op_modeldist = self.model.facops[model_dist][0]
-        op_circles = self.model.facops[circles][0]
-        op_radial = self.model.facops[radial][0]
-        op_overlap = self.model.facops[overlap_dist][0]
-
-        # Facility center...comma separated list that should start with either "U" (meaning UTM coords) or "L"
-        # (meaning lat/lon) and contain two values if lat/lon (lat,lon) or three values if UTM (northing,easting,zone)
-        center_spec = self.model.facops[fac_center][0]
-        spec_valid = True
-        if center_spec.startswith("U"):
-            components = center_spec.split(',')
-            if len(components) != 4:
-                spec_valid = False
-        elif center_spec.startswith("L"):
-            components = center_spec.split(',')
-            if len(components) != 3:
-                spec_valid = False
-        else:
-            spec_valid = False
-
-        if center_spec != "" and not spec_valid:
-            Logger.logMessage("Invalid facility center specified: " + center_spec)
-            Logger.logMessage("Using default (calculated) center instead.")
-            self.model.facops[fac_center][0] = ""
-        self.fac_center = self.model.facops[fac_center][0]
-
-        # Ring distances...comma separated list that contains at least 3 values, all must be > 0 and <= 50000, and
-        # values must be increasing
-        distance_spec = self.model.facops['ring_distances'][0]
-        spec_valid = True
-        distances = distance_spec.split(',')
-        if len(distances) < 3:
-            spec_valid = False
-        else:
-            ring_distance = int(float(distances[0]))
-            if self.model.facops[model_dist][0] < ring_distance:
-                Logger.logMessage("Error: First ring is greater than modeling distance!")
-                spec_valid = False
-            prev = 0
-            for d in distances[1:]:
-                ring_distance = int(float(d))
-                if ring_distance <= prev or ring_distance > 50000:
-                    spec_valid = False
-                prev = ring_distance
-
-        if distance_spec != "" and not spec_valid:
-            Logger.logMessage("Invalid ring distances specified: " + distance_spec)
-            Logger.logMessage("Using default (calculated) distances instead.")
-            self.model.facops['ring_distances'][0] = ""
-            
-        self.ring_distances = self.model.facops['ring_distances'][0]
-
-        # If there are user supplied ring distances then the last one must equal max distance 
-        # for correct outer block interpolation
-        if self.ring_distances != "":
-            distlist = self.ring_distances.split(",")
-            if float(distlist[-1]) != self.model.facops[max_dist][0]:
-                maxdist_str = "," + str(self.model.facops[max_dist][0])
-                self.ring_distances += maxdist_str
-
-        met_annual = self.model.facops['annual'][0]
-        spec_valid = True
-        self.period_start_components = ""
-        period_start_spec = self.model.facops[period_start][0]
-        if met_annual == "Y":
-            if period_start_spec != "":
-                Logger.logMessage("Period start specified but ignored because annual = 'Y'")
-            else:
-                Logger.logMessage("Using annual met option.")
-        else:
-            starts = period_start_spec.split(',')
-            if len(starts) < 3 or len(starts) > 4:
-                spec_valid = False
-            else:
-                for c in starts:
-                    self.period_start_components += c + " "
-        
-            if period_start_spec != "" and not spec_valid:
-                Logger.logMessage("Invalid period start specified: " + period_start_spec)
-                Logger.logMessage("Using annual instead.")
-                self.model.facops[annual][0] = 'Y'
-                self.model.facops[period_start][0] = ""
-            else:
-                Logger.logMessage("Using period start = " + self.period_start_components)
-                self.model.facops['period_start'] = self.period_start_components
-
-        spec_valid = True
-        self.period_end_components = ""
-        period_end_spec = self.model.facops[period_end][0]
-        if met_annual == "Y":
-            if period_end_spec != "":
-                Logger.logMessage("Period end specified but ignored because annual = 'Y'")
-        else:
-            ends = period_end_spec.split(',')
-            if len(ends) < 3 or len(ends) > 4:
-                spec_valid = False
-            else:
-                for c in ends:
-                    self.period_end_components += c + " "
-
-            if period_end_spec != "" and not spec_valid:
-                Logger.logMessage("Invalid period end specified: " + period_end_spec)
-                Logger.logMessage("Using annual instead.")
-                self.model.facops[annual][0] = 'Y'
-                self.model.facops[period_end][0] = ""
-            else:
-                Logger.logMessage("Using period end = " + self.period_end_components)
-                self.model.facops['period_end'] = self.period_end_components
-
-            if len(starts) != len(ends):
-                Logger.logMessage("Inconsistent period start and end specified (both must include hours, or neither): " + period_start_spec + " : " + period_end_spec)
-                Logger.logMessage("Using annual instead.")
-                self.model.facops[annual][0] = 'Y'
-                self.model.facops[period_start][0] = ""
-                self.model.facops[period_end][0] = ""
-            
-        #%%---------- Emission Locations --------------------------------------
-
-        # Get emission location info for this facility
+        #%%---------- Emissions Locations --------------------------------------
         emislocs = self.model.emisloc.dataframe.loc[self.model.emisloc.dataframe[fac_id] == facid]
 
-        # Replace NaN with blank or 0. utmzone defaults to "0N"
-        emislocs = emislocs.fillna({utmzone:'0N', source_type:'', lengthx:0, lengthy:0, angle:0,
-                                    horzdim:0, vertdim:0, areavolrelhgt:0, stkht:0, stkdia: 0,
-                                    stkvel:0, stktemp:0, elev:0, x2:0, y2:0, method:1, massfrac:1, partdiam:1})
-        emislocs = emislocs.reset_index(drop = True)
-        
-        # Area source angle must be >= 0 and < 90. If not, skip this facility
-        anglechk = emislocs[(emislocs['angle'] < 0) | emislocs['angle'] >= 90]
-        if not anglechk.empty:
-            emessage = ("Facility " + facid + " has an area source angle that is not between 0 and 90 degrees. \
-                         The facility will be skipped")
-            Logger.logMessage(emessage)
-            raise Exception(emessage)
-            
-        
         # Determine the utm zone to use for this facility. Also get the hemisphere (N or S).
         facutmzonenum, hemi = UTM.zone2use(emislocs)
         facutmzonestr = str(facutmzonenum) + hemi
@@ -269,18 +64,9 @@ class FacilityPrep():
         # Compute UTM coordinates of lat_x2 and lon_y2 using the common zone
         emislocs[['utmn_y2', 'utme_x2']] = emislocs.apply(lambda row: UTM.ll2utm_alt(row["lat_y2"],row["lon_x2"],facutmzonenum,hemi)
                           , result_type="expand", axis=1)
-        
 
         #%%---------- HAP Emissions --------------------------------------
-
-        # Get emissions data for this facility
         hapemis = self.model.hapemis.dataframe.loc[self.model.hapemis.dataframe[fac_id] == facid]
-
-        # Replace NaN with blank or 0
-        hapemis = hapemis.fillna({emis_tpy:0, part_frac:0})
-        hapemis = hapemis.reset_index(drop = True)
-                            
-                        
 
 
         #%%---------- Optional Buoyant Line Parameters -----------------------------------------
@@ -411,7 +197,7 @@ class FacilityPrep():
 
         if self.fac_center != "":
             # Grab the specified center and translate to/from UTM
-            components = center_spec.split(',')
+            components = self.fac_center.split(',')
             if components[0] == "L":
                 cenlat = float(components[1])
                 cenlon = float(components[2])
@@ -428,9 +214,9 @@ class FacilityPrep():
         self.model.computedValues['cenlat'] = cenlat
         self.model.computedValues['cenlon'] = cenlon
 
-        #retrieve blocks
-        maxdist = self.model.facops[max_dist][0]
-        modeldist = self.model.facops[model_dist][0]
+        # retrieve blocks
+        maxdist = self.model.facops[max_dist].iloc[0]
+        modeldist = self.model.facops[model_dist].iloc[0]
 
         if self.model.altRec_optns.get('altrec', None):
 
@@ -544,12 +330,12 @@ class FacilityPrep():
                 maxsrcd = max(maxsrcd, dist_cen)
 
             # If user first ring is > 100m, then use it, else first ring is maxsrcd + overlap.
-            if self.model.facops[ring1][0] <= 100:
+            if self.model.facops[ring1].iloc[0] <= 100:
                 ring1a = max(maxsrcd+op_overlap, 100)
                 ring1b = min(ring1a, op_maxdist)
                 firstring = normal_round(max(ring1b, 100))
             else:
-                firstring = self.model.facops[ring1][0]
+                firstring = self.model.facops[ring1].iloc[0]
 
             # Store first ring in computedValues
             self.model.computedValues['firstring'] = firstring
@@ -559,7 +345,7 @@ class FacilityPrep():
 
 
             # Make sure modeling distance is not less than first ring distance
-            if self.model.facops[model_dist][0] < firstring:
+            if self.model.facops[model_dist].iloc[0] < firstring:
                 emessage = "Error! Modeling distance is less than first ring."
                 Logger.logMessage(emessage)
                 raise Exception("Modeling distance is less than first ring")
@@ -652,22 +438,22 @@ class FacilityPrep():
 
         # set rec_type of polar receptors
         polar_df[rec_type] = 'PG'
-        
-        
+
         #%%----- Add sector and ring to inner and outer receptors ----------
 
-        # assign sector and ring number (integers) to each inner receptor and compute fractional sector (s) and ring_loc (log weighted) numbers
+        # assign sector and ring number (integers) to each inner receptor and compute fractional sector (s)
+        # and ring_loc (log weighted) numbers
         if self.innerblks.empty == False:
             self.innerblks[sector], self.innerblks["s"], self.innerblks[ring], self.innerblks["ring_loc"] = \
                  zip(*self.innerblks.apply(lambda row: self.calc_ring_sector(polar_dist,row[distance],row[angle],op_radial), axis=1))
         else:
             self.innerblks[sector], self.innerblks["s"], self.innerblks[ring], self.innerblks["ring_loc"] = None, None, None, None
             
-        # assign sector and ring number (integers) to each outer receptor and compute fractional sector (s) and ring_loc (log weighted) numbers
+        # assign sector and ring number (integers) to each outer receptor and compute fractional sector (s)
+        # and ring_loc (log weighted) numbers
         self.outerblks[sector], self.outerblks["s"], self.outerblks[ring], self.outerblks["ring_loc"] = \
              zip(*self.outerblks.apply(lambda row: self.calc_ring_sector(polar_dist,row[distance],row[angle],op_radial), axis=1))
 
-        
 #        # export innerblks to an Excel file in the Working directory
 #        innerblks_path = "working/innerblk_receptors.xlsx"
 #        innerblks_con = pd.ExcelWriter(innerblks_path)
@@ -683,7 +469,7 @@ class FacilityPrep():
         #%%------ Elevations and hill height ---------
 
         # if the facility will use elevations, assign them to emission sources and polar receptors        
-        if self.model.facops[elev][0].upper() == "Y":
+        if self.model.facops[elev].iloc[0].upper() == "Y":
             polar_df[elev], polar_df[hill], polar_df['avgelev'] = zip(*polar_df.apply(lambda row: 
                         self.assign_polar_elev_step1(row,self.innerblks,self.outerblks,maxdist), axis=1))
             # If user did not supply any source elevations, compute them. Otherwise, empty
@@ -699,10 +485,8 @@ class FacilityPrep():
             emislocs[elev] = 0
             emislocs[hill] = 0
 
-        
         # Assign the polar grid data frame to the model
         self.model.polargrid = polar_df
-
 
 #        # export polar_df to an Excel file in the Working directory
 #        polardf_path = "working/" + facid + "_polar_receptors.xlsx"
@@ -777,11 +561,11 @@ class FacilityPrep():
         sector1 = polar_row[sector]
         ring1 = polar_row[ring]
 
-        #subset the inner and outer block dataframes to sector, ring
+        # subset the inner and outer block dataframes to sector, ring
         innblks_sub = innblks.loc[(innblks[sector] == sector1) & (innblks[ring] == ring1)]
         outblks_sub = outblks.loc[(outblks[sector] == sector1) & (outblks[ring] == ring1)]
 
-        #initialize variables
+        # initialize variables
         r_nearelev = -999
         r_maxelev = -999
         r_hill = -999
@@ -792,7 +576,7 @@ class FacilityPrep():
         d_test = 0
         d_nearelev = 99999
 
-        #look at inner block subset
+        # look at inner block subset
         for index, row in innblks_sub.iterrows():
             if row[elev] > r_maxelev:
                 r_maxelev = row[elev]
@@ -807,7 +591,7 @@ class FacilityPrep():
                 r_nearelev = row[elev]
 
 
-        #look at outer block subset
+        # look at outer block subset
         for index, row in outblks_sub.iterrows():
             if row[elev] > r_maxelev:
                 r_maxelev = row[elev]
@@ -822,7 +606,7 @@ class FacilityPrep():
                 r_nearelev = row[elev]
 
 
-        #compute average and population elevations
+        # compute average and population elevations
         if r_nblk > 0:
             r_avgelev = r_avgelev/r_nblk
         else:
@@ -833,9 +617,8 @@ class FacilityPrep():
         else:
             r_popelev = -999
 
-        #Note: the max elevation is returned as the elevation for this polar receptor
+        # Note: the max elevation is returned as the elevation for this polar receptor
         return normal_round(r_maxelev), normal_round(r_hill), normal_round(r_avgelev)
-
 
     #%% Assign elevation and hill height to polar receptors that still have missing elevations
     def assign_polar_elev_step2(self, polar_row, innblks, outblks, emislocs):
@@ -858,7 +641,7 @@ class FacilityPrep():
                 r_avgelev = r_nearelev
                 r_popelev = r_nearelev
 
-            #check inner blocks
+            # check inner blocks
             if innblks.empty == False:
                 inner_dist = np.sqrt((innblks[utme] - polar_row[utme])**2 + (innblks[utmn] - polar_row[utmn])**2)
                 mindist_index = inner_dist.values.argmin()
@@ -872,7 +655,7 @@ class FacilityPrep():
                     r_nearhill = innblks[hill].iloc[mindist_index]
                     r_hill = r_nearhill
             
-            #check outer blocks
+            # check outer blocks
             outer_dist = (outblks[utme] - polar_row[utme])**2 + (outblks[utmn] - polar_row[utmn])**2
             mindist_index = outer_dist.values.argmin()
             d_test = outer_dist.iloc[mindist_index]
@@ -893,7 +676,7 @@ class FacilityPrep():
             r_hill = polar_row[hill]
             r_avgelev = -999
 
-        #Note: the max elevation is returned as the elevation for this polar receptor
+        # Note: the max elevation is returned as the elevation for this polar receptor
         return normal_round(r_maxelev), normal_round(r_hill), normal_round(r_avgelev)
 
     #%% Compute the elevation to be used for all emission sources
@@ -924,7 +707,6 @@ class FacilityPrep():
     #%% Define polar receptor dataframe index
     def define_polar_idx(self, s, r):
         return "S" + str(s) + "R" + str(r)
-
 
     #%% Check for receptors overlapping emission sources
     def check_overlap(self, rec_utme, rec_utmn, sourcelocs_df, overlap_dist):
@@ -1049,7 +831,7 @@ class FacilityPrep():
 
         # Which location type is being used? If lat/lon, convert to UTM. Otherwise, just copy over
         # the relevant values.
-        ltype = altrecs.iloc[0][location_type]
+        ltype = altrecs[0][location_type]
         if ltype == 'L':
             altrecs[[utmn, utme]] = altrecs.apply(lambda row: UTM.ll2utm_alt(row[lat],row[lon],utmZone,hemi), 
                                     result_type="expand", axis=1)
@@ -1118,5 +900,3 @@ class FacilityPrep():
                 hill_est = row.hill
         
         return elev_est, hill_est
-
-    

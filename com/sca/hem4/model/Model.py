@@ -74,6 +74,8 @@ class Model():
         self.multibuoy = None
         self.ureceptr = None
         self.haplib = None
+        self.organs = None
+        self.metlib = None
         self.bldgdw = None
         self.partdep = None
         self.landuse = None

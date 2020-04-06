@@ -22,7 +22,6 @@ def check_phase(r):
     print('pdep:', r['pdep'])
     
     print ('pdepl:', r['pdepl'])
-    
 
     if r['dep'] != 'nan':
         dep = r['dep'].upper()
@@ -58,11 +57,8 @@ def check_phase(r):
     else:
         pdepl = ''
         
-
-        
     poss = ['DO', 'WO', 'WD']
-    
-    
+
     phaseResult = []
 
 

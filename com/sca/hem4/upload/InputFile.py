@@ -1,4 +1,5 @@
 import os
+import re
 from abc import ABC
 from abc import abstractmethod
 import pandas as pd
@@ -22,6 +23,12 @@ class InputFile(ABC):
     def createDataframe(self):
         return
 
+    def validate(self, df):
+        return df
+
+    def clean(self, df):
+        return df
+
     # Read values in from a source .xls(x) file. Note that we initially read everything in as a string,
     # and then convert columns which have been specified as numeric to a float64. That way, all empty
     # values in the resultant dataframe become NaN values. All values will either be strings or float64s.
@@ -32,14 +39,39 @@ class InputFile(ABC):
                 df = pd.read_excel(f, skiprows=self.skiprows, names=colnames, dtype=str, na_values=[''], keep_default_na=False)
             
             except Exception as e:
-                
-                Logger.logMessage(str(e))
-                
+
+                if isinstance(e, ValueError):
+
+                    msg = e.args[0]
+                    if msg.startswith("Length mismatch"):
+                        # i.e. 'Length mismatch: Expected axis has 5 elements, new values have 31 elements'
+                        p = re.compile("Expected axis has (.*) elements, new values have (.*) elements")
+                        result = p.search(msg)
+                        custom_msg = "Length Mismatch: Input file has " + result.group(1) + " columns, but should have " +\
+                            result.group(2) + " columns."
+                        Logger.logMessage(custom_msg)
+                    else:
+                        Logger.logMessage(str(e))
+                else:
+                    Logger.logMessage(str(e))
+
             else:
                 df = df.astype(str).applymap(self.convertEmptyToNaN)
+
+                # Verify no type errors
+                numeric_only = df.copy()
+                numeric_only[self.numericColumns] = numeric_only[self.numericColumns].applymap(InputFile.is_numeric)
+                if not numeric_only.equals(df):
+                    Logger.logMessage("Error: Some non-numeric values were found in numeric columns in this data set: " +
+                                      os.path.basename(self.path))
+                    return None
+
                 types = self.get_column_types()
                 df = df.astype(dtype=types)
-                return df
+
+                cleaned = self.clean(df)
+                validated = self.validate(cleaned)
+                return validated
 
     # Read values in from a source .csv file. Note that we initially read everything in as a string,
     # and then convert columns which have been specified as numeric to a float64. That way, all empty
@@ -60,9 +92,21 @@ class InputFile(ABC):
             else:
                 
                 df = df.astype(str).applymap(self.convertEmptyToNaN)
+
+                # Verify no type errors
+                numeric_only = df.copy()
+                numeric_only[self.numericColumns] = numeric_only[self.numericColumns].applymap(InputFile.is_numeric)
+                if not numeric_only.equals(df):
+                    Logger.logMessage("Error: Some non-numeric values were found in numeric columns in this data set: " +
+                                  os.path.basename(self.path))
+                    return None
+
                 types = self.get_column_types()
                 df = df.astype(dtype=types)
-                return df
+
+                cleaned = self.clean(df)
+                validated = self.validate(cleaned)
+                return validated
 
     # This method is being applied to every cell to guard against values which
     # have only whitespace.
@@ -109,3 +153,11 @@ class InputFile(ABC):
         else:
             
             return df
+
+    @staticmethod
+    def is_numeric(x):
+        try:
+            float(x)
+            return x
+        except:
+            return "nan"

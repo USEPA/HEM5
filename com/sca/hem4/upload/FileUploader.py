@@ -7,6 +7,7 @@ from com.sca.hem4.upload.DoseResponse import DoseResponse
 from com.sca.hem4.upload.EmissionsLocations import EmissionsLocations
 from com.sca.hem4.upload.FacilityList import FacilityList
 from com.sca.hem4.upload.HAPEmissions import HAPEmissions
+from com.sca.hem4.upload.MetLib import MetLib
 from com.sca.hem4.upload.TargetOrganEndpoints import TargetOrganEndpoints
 from com.sca.hem4.upload.UserReceptors import UserReceptors
 from com.sca.hem4.upload.AltReceptors import AltReceptors
@@ -26,49 +27,66 @@ class FileUploader():
         self.model = model
 
     def uploadLibrary(self, filetype):
+        uploaded = None
         if filetype == "haplib":
-            self.model.haplib = DoseResponse()
-            print("HAPLIB", self.model.haplib)
+            uploaded = DoseResponse()
+            self.model.haplib = uploaded
         elif filetype == "organs":
-            self.model.organs = TargetOrganEndpoints()
-            
+            uploaded = TargetOrganEndpoints()
+            self.model.organs = uploaded
+        elif filetype == "metlib":
+            uploaded = MetLib()
+            self.model.metlib = uploaded
         elif filetype == "gas params":
-            self.model.gasparams = GasParams()
+            uploaded = GasParams()
+            self.model.gasparams = uploaded
+
+        return False if uploaded.dataframe is None else True
 
     def upload(self, filetype, path):
-            if filetype == "faclist":
-                self.model.faclist = FacilityList(path)
-            elif filetype == "hapemis":
-                self.model.hapemis = HAPEmissions(path, self.model.haplib)
-            elif filetype == "emisloc":
-                self.model.emisloc = EmissionsLocations(path)
-            elif filetype == "alt receptors":
-                self.model.altreceptr = AltReceptors(path)
+        uploaded = None
+        if filetype == "faclist":
+            uploaded = FacilityList(path, self.model.metlib)
+            self.model.faclist = uploaded
+        elif filetype == "hapemis":
+            uploaded = HAPEmissions(path, self.model.haplib)
+            self.model.hapemis = uploaded
+        elif filetype == "emisloc":
+            uploaded = EmissionsLocations(path)
+            self.model.emisloc = uploaded
+        elif filetype == "alt receptors":
+            uploaded = AltReceptors(path)
+            self.model.altreceptr = uploaded
 
+        return False if uploaded.dataframe is None else True
 
     def uploadDependent(self, filetype, path, dependency, facilities=None):
+        uploaded = None
 
         if filetype == "polyvertex":
-            self.model.multipoly = Polyvertex(path, dependency)
-
+            uploaded = Polyvertex(path, dependency)
+            self.model.multipoly = uploaded
         elif filetype == "buoyant line":
-            self.model.multibuoy = BuoyantLine(path, dependency)
-
+            uploaded = BuoyantLine(path, dependency)
+            self.model.multibuoy = uploaded
         elif filetype == "user receptors":
-            self.model.ureceptr = UserReceptors(path, dependency, False)
-
+            uploaded = UserReceptors(path, dependency, False)
+            self.model.ureceptr = uploaded
         elif filetype ==  "building downwash":
-            self.model.bldgdw = Downwash(path, dependency)
-
+            uploaded = Downwash(path, dependency)
+            self.model.bldgdw = uploaded
         elif filetype == "particle depletion":
-            self.model.partdep = Particle(path, dependency, facilities)
-           
+            uploaded = Particle(path, dependency, facilities)
+            self.model.partdep = uploaded
         elif filetype == "land use":
-            self.model.landuse = LandUse(path, dependency)
-          
+            uploaded = LandUse(path, dependency)
+            self.model.landuse = uploaded
         elif filetype == "seasons":
-            self.model.seasons = Seasons(path, dependency)
-        
+            uploaded = Seasons(path, dependency)
+            self.model.seasons = uploaded
         elif filetype == "emissions variation":
-            self.model.emisvar = EmisVar(path, dependency)
-                
+            uploaded = EmisVar(path, dependency)
+            self.model.emisvar = uploaded
+
+        return False if uploaded.dataframe is None else True
+

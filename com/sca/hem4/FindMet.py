@@ -13,20 +13,13 @@ from geopy.distance import lonlat, distance
 from com.sca.hem4.log.Logger import Logger
 
 
-def find_met(ylat, xlon):
+def find_met(ylat, xlon, metlib_df):
     """
     Returns the meteorological station closest to the facility
     """
-    
-    with open("resources//metlib_aermod.xlsx", "rb") as metfile:
-        met_st = pd.read_excel(metfile
-                      , names=('surfcity','surffile','surfwban','surfyear','surflat',
-                         'surflon','uacity','uawban','ualat','ualon','elev','anemhgt','commkey',
-                         'comment','desc','upperfile'))
-            
     # create numpy arrays
-    lat = met_st['surflat'].values
-    lon = met_st['surflon'].values    
+    lat = metlib_df['surflat'].values
+    lon = metlib_df['surflon'].values
     
     dist = np.ones(len(lat))
     
@@ -38,29 +31,22 @@ def find_met(ylat, xlon):
     index = np.where(dist==dist.min())[0][0]
 
     distance2fac = dist[index]
-    surf_file = met_st['surffile'][index]
-    upper_file = met_st['upperfile'][index]
-    surfyear = met_st['surfyear'][index]
+    surf_file = metlib_df['surffile'][index]
+    upper_file = metlib_df['upperfile'][index]
+    surfyear = metlib_df['surfyear'][index]
     # Note: remove white space from surfcity and uacity, Aermod will not allow spaces in the city name
-    surfdata_str = str(met_st['surfwban'][index]) + " " + str(met_st['surfyear'][index]) + " " + str(met_st['surfcity'][index]).replace(" ","")
-    uairdata_str = str(met_st['uawban'][index]) + " " + str(met_st['surfyear'][index]) + " " + str(met_st['uacity'][index]).replace(" ","")
-    prof_base = str(met_st['elev'][index])
+    surfdata_str = str(metlib_df['surfwban'][index]) + " " + str(metlib_df['surfyear'][index]) + " " + str(metlib_df['surfcity'][index]).replace(" ","")
+    uairdata_str = str(metlib_df['uawban'][index]) + " " + str(metlib_df['surfyear'][index]) + " " + str(metlib_df['uacity'][index]).replace(" ","")
+    prof_base = str(metlib_df['elev'][index])
     
     return surf_file, upper_file, surfdata_str, uairdata_str, prof_base, distance2fac, surfyear
 
 
-def return_met(facid, faclat, faclon, surfname):
+def return_met(facid, faclat, faclon, surfname, metlib_df):
     """
     Returns the meteorological information for a specific surface station name
     """
-    
-    with open("resources//metlib_aermod.xlsx", "rb") as metfile:
-        met_st = pd.read_excel(metfile
-                      , names=('surfcity','surffile','surfwban','surfyear','surflat',
-                         'surflon','uacity','uawban','ualat','ualon','elev','anemhgt','commkey',
-                         'comment','desc','upperfile'))
-
-    metrow = met_st.loc[met_st['surffile'] == surfname]
+    metrow = metlib_df.loc[metlib_df['surffile'] == surfname]
     if metrow.empty == True:
         emessage = ("Meteorology station " + surfname + " was chosen for facility " + facid + "\n"
                     "That station is not in the meteorlogical library. The facility will be skipped")

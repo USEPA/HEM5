@@ -4,6 +4,7 @@
 Created on Fri Aug 31 20:13:09 2018
 @author: d
 """
+from com.sca.hem4.log import Logger
 from com.sca.hem4.model.Model import fac_id
 from com.sca.hem4.upload.DependentInputFile import DependentInputFile
 from tkinter import messagebox
@@ -11,13 +12,10 @@ from tkinter import messagebox
 class LandUse(DependentInputFile):
 
     def __init__(self, path, dependency):
+        self.faclist_df = dependency
         DependentInputFile.__init__(self, path, dependency)
-        self.dependency = dependency
 
     def createDataframe(self):
-
-
-        faclist_df = self.dependency
 
         # Specify dtypes for all fields
         self.numericColumns = ["D01", "D02","D03", "D04", "D05","D06", "D07","D08","D09","D10","D11","D12","D13","D14",
@@ -39,9 +37,39 @@ class LandUse(DependentInputFile):
                                         "D33", "D34", "D35",
                                         "D36"))
 
-        #check for unassigned landuse
-        check_landuse_assignment = set(landuse_df[fac_id])
+        self.dataframe = landuse_df
+
+    def clean(self, df):
+        cleaned = df
+        cleaned.replace(to_replace={fac_id:{"nan":""}}, inplace=True)
+        cleaned = cleaned.reset_index(drop = True)
+
+        return cleaned
+
+    def validate(self, df):
+        # ----------------------------------------------------------------------------------
+        # Strict: Invalid values in these columns will cause the upload to fail immediately.
+        # ----------------------------------------------------------------------------------
+        if len(df.loc[(df[fac_id] == '')]) > 0:
+            Logger.logMessage("One or more facility IDs are missing in the Land Use List.")
+            return None
+
+        for index, row in df.iterrows():
+
+            facility = row[fac_id]
+
+            for num in range(1, 37):
+                number = str(num)
+                number = "0"+number if num < 10 else number
+                field = "D" + number
+                if row[field] not in [1,2,3,4,5,6,7,8,9]:
+                    Logger.logMessage("Facility " + facility + ": Field " + field + " contains invalid value.")
+                    return None
+
+        # check for unassigned landuse
+        check_landuse_assignment = set(df[fac_id])
 
         ## figure out how to get fac ids that have landuse based on flag or index
+        # TODO
 
-        self.dataframe = landuse_df
+        return df
