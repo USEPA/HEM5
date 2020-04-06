@@ -1,10 +1,12 @@
+from com.sca.hem4.writer.csv.BlockSummaryChronicNonCensus import BlockSummaryChronicNonCensus
 from com.sca.hem4.writer.excel.ExcelWriter import ExcelWriter
 from com.sca.hem4.writer.csv.BlockSummaryChronic import *
 from com.sca.hem4.FacilityPrep import *
+from com.sca.hem4.writer.excel.summary.AltRecAwareSummary import AltRecAwareSummary
 
 risktype = 'risktype'
 risk = 'risk'
-class MaxRisk(ExcelWriter):
+class MaxRisk(ExcelWriter, AltRecAwareSummary):
 
     def __init__(self, targetDir, facilityIds, parameters=None):
         self.name = "Maximum Risk Summary"
@@ -24,7 +26,11 @@ class MaxRisk(ExcelWriter):
         for facilityId in self.facilityIds:
             targetDir = self.categoryFolder + "/" + facilityId
 
-            blockSummaryChronic = BlockSummaryChronic(targetDir=targetDir, facilityId=facilityId)
+            altrec = self.determineAltRec(targetDir, facilityId)
+
+            blockSummaryChronic = BlockSummaryChronicNonCensus(targetDir=targetDir, facilityId=facilityId) if altrec else\
+                BlockSummaryChronic(targetDir=targetDir, facilityId=facilityId)
+
             bsc_df = blockSummaryChronic.createDataframe()
             blocksummary_df = blocksummary_df.append(bsc_df)
 
@@ -119,7 +125,10 @@ class MaxRisk(ExcelWriter):
         for facilityId in self.facilityIds:
             targetDir = self.categoryFolder + "/" + facilityId
 
-            blockSummaryChronic = BlockSummaryChronic(targetDir=targetDir, facilityId=facilityId, createDataframe=True)
+            altrec = self.determineAltRec(targetDir, facilityId)
+
+            blockSummaryChronic = BlockSummaryChronicNonCensus(targetDir=targetDir, facilityId=facilityId, createDataframe=True)\
+                if altrec else BlockSummaryChronic(targetDir=targetDir, facilityId=facilityId, createDataframe=True)
             bsc_df = blockSummaryChronic.createDataframe()
             loc = bsc_df.loc[(bsc_df[fips] == fipsValue) & (bsc_df[block] == blockValue)]
             if loc.size > 0:

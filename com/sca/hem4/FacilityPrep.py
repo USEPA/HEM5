@@ -831,7 +831,7 @@ class FacilityPrep():
 
         # Which location type is being used? If lat/lon, convert to UTM. Otherwise, just copy over
         # the relevant values.
-        ltype = altrecs[0][location_type]
+        ltype = altrecs.iloc[0][location_type]
         if ltype == 'L':
             altrecs[[utmn, utme]] = altrecs.apply(lambda row: UTM.ll2utm_alt(row[lat],row[lon],utmZone,hemi), 
                                     result_type="expand", axis=1)

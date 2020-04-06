@@ -2,15 +2,23 @@ from com.sca.hem4.upload.UserReceptors import rec_type
 from com.sca.hem4.writer.csv.AllOuterReceptors import *
 from com.sca.hem4.FacilityPrep import *
 
-class BlockSummaryChronicNonCensus(CsvWriter):
+class BlockSummaryChronicNonCensus(CsvWriter, InputFile):
     """
     Provides the risk and each TOSHI for every census block modeled, as well as additional block information.
     """
 
-    def __init__(self, targetDir, facilityId, model, plot_df, outerAgg):
-        CsvWriter.__init__(self, model, plot_df)
+    def __init__(self, targetDir=None, facilityId=None, model=None, plot_df=None,
+                 filenameOverride=None, createDataframe=False, outerAgg=None):
+        # Initialization for CSV reading/writing. If no file name override, use the
+        # default construction.
+        self.targetDir = targetDir
+        filename = facilityId + "_block_summary_chronic.csv" if filenameOverride is None else filenameOverride
+        path = os.path.join(self.targetDir, filename)
 
-        self.filename = os.path.join(targetDir, facilityId + "_block_summary_chronic.csv")
+        CsvWriter.__init__(self, model, plot_df)
+        InputFile.__init__(self, path, createDataframe)
+
+        self.filename = path
 
         # Local cache for URE/RFC values
         self.riskCache = {}
@@ -25,6 +33,11 @@ class BlockSummaryChronicNonCensus(CsvWriter):
                 'Population', 'MIR', 'Respiratory HI', 'Liver HI', 'Neurological HI', 'Developmental HI',
                 'Reproductive HI', 'Kidney HI', 'Ocular HI', 'Endocrine HI', 'Hematological HI',
                 'Immunological HI', 'Skeletal HI', 'Spleen HI', 'Thyroid HI', 'Whole body HI', 'Receptor type']
+
+    def getColumns(self):
+        return [lat, lon, overlap, elev, rec_id, utme, utmn, hill, population,
+                mir, hi_resp, hi_live, hi_neur, hi_deve, hi_repr, hi_kidn, hi_ocul,
+                hi_endo, hi_hema, hi_immu, hi_skel, hi_sple, hi_thyr, hi_whol, rec_type]
 
     def generateOutputs(self):
         """
@@ -123,3 +136,12 @@ class BlockSummaryChronicNonCensus(CsvWriter):
             hazard_index = (0 if RFC == 0 else (conc/RFC/1000)*organs[i])
             risks.append(hazard_index)
         return Series(risks)
+
+    def createDataframe(self):
+        # Type setting for CSV reading
+        self.numericColumns = [lat, lon, elev, utme, utmn, population, hill, mir, hi_resp, hi_live, hi_neur, hi_deve,
+                               hi_repr, hi_kidn, hi_ocul, hi_endo, hi_hema, hi_immu, hi_skel, hi_sple, hi_thyr, hi_whol]
+        self.strColumns = [rec_id, overlap, rec_type]
+
+        df = self.readFromPathCsv(self.getColumns())
+        return df.fillna("")

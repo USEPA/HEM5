@@ -148,7 +148,8 @@ class Process_outputs():
             return
 
         #----------- create Block_Summary_Chronic data -----------------
-        block_summary_chronic = BlockSummaryChronicNonCensus(self.outdir, self.facid, self.model, self.plot_df, all_outer_receptors.outerAgg) if altrec else \
+        block_summary_chronic = BlockSummaryChronicNonCensus(targetDir=self.outdir, facilityId=self.facid,
+                 model=self.model, plot_df=self.plot_df, outerAgg=all_outer_receptors.outerAgg) if altrec else \
             BlockSummaryChronic(self.outdir, self.facid, self.model, self.plot_df, all_outer_receptors.outerAgg)
         generator = block_summary_chronic.generateOutputs()
         for batch in generator:
