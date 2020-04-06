@@ -133,21 +133,21 @@ class FacilityList(InputFile):
                     Logger.logMessage("Facility " + facility + ": Invalid value (urban_pop): Defaulting to 0.")
                     row[urban_pop] = 0
 
-            # maximum distance
-            if row[max_dist] > 50000:
-                Logger.logMessage("Facility " + facility + ": max distance value " + str(row[max_dist]) +
-                                  " out of range. Defaulting to 50000.")
-                row[max_dist] = 50000
-            elif row[max_dist] <= 0:
-                Logger.logMessage("Facility " + facility + ": max distance value " + str(row[max_dist]) +
-                                  " out of range. Defaulting to 50000.")
-                row[max_dist] = 50000
-
             # Modeled Distance of Receptors
-            if row[model_dist] <= 0:
+            if row[model_dist] > 50000 or row[model_dist] <= 0:
                 Logger.logMessage("Facility " + facility + ": model distance value " + str(row[model_dist]) +
                                   " out of range. Defaulting to 3000.")
                 row[model_dist] = 3000
+
+            # maximum distance and modeled distance are related...
+            if row[max_dist] > 50000 or row[max_dist] <= 0:
+                Logger.logMessage("Facility " + facility + ": max distance value " + str(row[max_dist]) +
+                                  " out of range. Defaulting to 50000.")
+                row[max_dist] = 50000
+            elif row[model_dist] > row[max_dist]:
+                Logger.logMessage("Facility " + facility + ": model distance value " + str(row[model_dist]) +
+                                  " is larger than maximum distance. Defaulting max_dist to 50000.")
+                row[max_dist] = 50000
 
             # Radials: default is 16, minimum number is 4
             if row[radial] == 0:

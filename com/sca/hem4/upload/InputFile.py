@@ -1,4 +1,5 @@
 import os
+import re
 from abc import ABC
 from abc import abstractmethod
 import pandas as pd
@@ -38,9 +39,22 @@ class InputFile(ABC):
                 df = pd.read_excel(f, skiprows=self.skiprows, names=colnames, dtype=str, na_values=[''], keep_default_na=False)
             
             except Exception as e:
-                
-                Logger.logMessage(str(e))
-                
+
+                if isinstance(e, ValueError):
+
+                    msg = e.args[0]
+                    if msg.startswith("Length mismatch"):
+                        # i.e. 'Length mismatch: Expected axis has 5 elements, new values have 31 elements'
+                        p = re.compile("Expected axis has (.*) elements, new values have (.*) elements")
+                        result = p.search(msg)
+                        custom_msg = "Length Mismatch: Input file has " + result.group(1) + " columns, but should have " +\
+                            result.group(2) + " columns."
+                        Logger.logMessage(custom_msg)
+                    else:
+                        Logger.logMessage(str(e))
+                else:
+                    Logger.logMessage(str(e))
+
             else:
                 df = df.astype(str).applymap(self.convertEmptyToNaN)
 

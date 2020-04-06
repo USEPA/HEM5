@@ -127,7 +127,7 @@ class HAPEmissions(InputFile):
 
                 logfile.close()
 
-        Logger.logMessage("Uploaded HAP emissions file for " + str(len(df)) + " facilities.\n")
+        Logger.logMessage("Uploaded HAP emissions file for " + str(len(df)) + " source-HAP combinations.\n")
         return df
 
     def createDataframe(self):
