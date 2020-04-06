@@ -89,9 +89,10 @@ class Process_outputs():
             Logger.logMessage("Terminating output processing...")
             return
         
+        
         #----------- create All_Polar_Receptor output file -----------------
         all_polar_receptors = AllPolarReceptors(self.outdir, self.facid, self.model, self.plot_df, self.acute_yn)
-        all_polar_receptors.write(generateOnly=self.generateOnly)
+        all_polar_receptors.write(generateOnly=False)
 
         self.model.all_polar_receptors_df = all_polar_receptors.dataframe
         Logger.logMessage("Completed AllPolarReceptors output")
@@ -108,7 +109,7 @@ class Process_outputs():
         #----------- create All_Inner_Receptor output file -----------------
         all_inner_receptors = AllInnerReceptorsNonCensus(self.outdir, self.facid, self.model, self.plot_df, self.acute_yn) if altrec \
                         else AllInnerReceptors(self.outdir, self.facid, self.model, self.plot_df, self.acute_yn)
-        all_inner_receptors.write(generateOnly=self.generateOnly)
+        all_inner_receptors.write(generateOnly=False)
         self.model.all_inner_receptors_df = all_inner_receptors.dataframe
         Logger.logMessage("Completed AllInnerReceptors output")
 
