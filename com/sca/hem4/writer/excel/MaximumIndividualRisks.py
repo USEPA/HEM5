@@ -44,7 +44,8 @@ class MaximumIndividualRisks(ExcelWriter, InputFile):
 
     def calcHI(self, hiname, hivar):
         mr_parameter = hiname
-        io_idx = self.model.risk_by_latlon[self.model.risk_by_latlon[rec_type] != "P"][hivar].idxmax()
+        io_idx = self.model.risk_by_latlon[(self.model.risk_by_latlon[rec_type] != "P") & 
+                                           (self.model.risk_by_latlon[population] > 0)][hivar].idxmax()
         mr_lat = float(self.model.risk_by_latlon[lat].loc[io_idx])
         mr_lon = float(self.model.risk_by_latlon[lon].loc[io_idx])
         if self.model.risk_by_latlon[overlap].loc[io_idx] == "N":
@@ -80,7 +81,8 @@ class MaximumIndividualRisks(ExcelWriter, InputFile):
                 mr_notes = "Interpolated"
         else:
             #overlapped
-            iop_idx = self.model.risk_by_latlon[self.model.risk_by_latlon[overlap] == "N"][hivar].idxmax()
+            iop_idx = self.model.risk_by_latlon[(self.model.risk_by_latlon[overlap] == "N") & 
+                            ('S' not in self.model.risk_by_latlon[block]) & ('M' not in self.model.risk_by_latlon[block])][hivar].idxmax()
             mr_lat = float(self.model.risk_by_latlon[lat].loc[iop_idx])
             mr_lon = float(self.model.risk_by_latlon[lon].loc[iop_idx])
             mr_value = self.model.risk_by_latlon[hivar].loc[iop_idx]
@@ -143,7 +145,7 @@ class MaximumIndividualRisks(ExcelWriter, InputFile):
         Find maximum risk/HI. First look at populated receptors then at polar receptors.
         Also set self.headers and self.data.
         """
-
+        
         #construct dataframe that indicates if specific HI is present at the facility
         labels = ["Parmname", "Parmvar", "Status"]
         pollist = self.model.runstream_hapemis[pollutant].unique().tolist()
@@ -249,13 +251,14 @@ class MaximumIndividualRisks(ExcelWriter, InputFile):
         """
         Find the receptor with the max cancer risk and record info about that receptor.
         Algorithm is:
-            1) Find max risk from populated receptors (inner or outer)
+            1) Find max risk from populated receptors (inner or outer, but no school or monitor)
             2) If this receptor is not overlapped, use it
-            3) If it is overlapped, find max from all receptors where overlap is N
+            3) If it is overlapped, find max from all receptors where overlap is N (no school or monitor)
             4) Get information about this receptor
         """
         mr_parameter = "Cancer risk"
-        io_idx = self.model.risk_by_latlon[self.model.risk_by_latlon[rec_type] != "P"][mir].idxmax()
+        io_idx = self.model.risk_by_latlon[(self.model.risk_by_latlon[rec_type] != "P") & 
+                                           (self.model.risk_by_latlon[population] > 0)][mir].idxmax()
         if self.model.risk_by_latlon[mir].loc[io_idx] > 0:
             #max risk is > 0, do calculations
             mr_lat = float(self.model.risk_by_latlon[lat].loc[io_idx])
@@ -291,7 +294,8 @@ class MaximumIndividualRisks(ExcelWriter, InputFile):
                     mr_notes = "Interpolated"
             else:
                 #overlapped
-                iop_idx = self.model.risk_by_latlon[self.model.risk_by_latlon[overlap] == "N"][mir].idxmax()
+                iop_idx = self.model.risk_by_latlon[(self.model.risk_by_latlon[overlap] == "N") & 
+                                ('S' not in self.model.risk_by_latlon[block]) & ('M' not in self.model.risk_by_latlon[block])][mir].idxmax()
                 mr_lat = float(self.model.risk_by_latlon[lat].loc[iop_idx])
                 mr_lon = float(self.model.risk_by_latlon[lon].loc[iop_idx])
                 mr_value = self.model.risk_by_latlon[mir].loc[iop_idx]
