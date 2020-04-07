@@ -97,12 +97,12 @@ class Runstream():
         #logic for phase setting in model options
                 
         if phase['phase'] == 'P':
-            optdp = phase['settings'].iloc[0]
+            optdp = phase['settings'][0]
             titletwo = "CO TITLETWO  Particle-phase emissions \n"
             
         
         elif phase['phase'] == 'V':
-            optdp = phase['settings'].iloc[0]
+            optdp = phase['settings'][0]
             titletwo = "CO TITLETWO  Vapor-phase emissions \n"
             
         else:
