@@ -1722,7 +1722,7 @@ class Hem4(tk.Frame):
 
         self.ready = False
         
-        #add temp_var to model ## add to checks 
+        # add temp_var to model ## add to checks
         if self.check_tempvar.get() == 1:
             self.model.temporal = True
             self.model.tempvar = int(self.tkvar.get())
@@ -1730,13 +1730,13 @@ class Hem4(tk.Frame):
         else:
             self.model.temporal = False
 
-        #Check inputs
+        # Check inputs
         check_inputs = InputChecker(self.model)
         
         try:
             required = check_inputs.check_required()
             
-        except Exception as e:
+        except BaseException as e:
                 
                 Logger.logMessage(str(e))
                 
@@ -1750,7 +1750,7 @@ class Hem4(tk.Frame):
                     
                     optional = check_inputs.check_dependent(required['dependencies'])
                     
-                except Exception as e:
+                except BaseException as e:
                     
                     Logger.logMessage(str(e))
                     
@@ -1876,7 +1876,7 @@ class Hem4(tk.Frame):
                     log = last - 2
                     self.tabControl.select(log)
                     
-                except Exception as e:
+                except BaseException as e:
                 
                     Logger.logMessage(str(e))
 

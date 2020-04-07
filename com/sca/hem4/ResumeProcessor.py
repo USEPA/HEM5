@@ -86,8 +86,7 @@ class resumeProcessor():
                 runner = FacilityRunner(facid, self.model, self.abort)
                 runner.setup()
 
-                
-            except Exception as ex:
+            except BaseException as ex:
 
                 self.exception = ex
                 fullStackInfo=''.join(traceback.format_exception(

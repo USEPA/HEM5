@@ -53,9 +53,8 @@ class Processor():
             if kmlWriter is not None:
                 kmlWriter.write_kml_emis_loc(self.model)
                 Logger.logMessage("KMZ for all sources completed")
-                
-            
-        except Exception as ex:
+
+        except BaseException as ex:
                 self.exception = ex
                 fullStackInfo=''.join(traceback.format_exception(
                     etype=type(ex), value=ex, tb=ex.__traceback__))
@@ -110,11 +109,9 @@ class Processor():
                 try:
                     runner = FacilityRunner(facid, self.model, self.abort)
                     runner.setup()
-    
-                    
-                except Exception as ex:
-                    
-                    
+
+                except BaseException as ex:
+
                     self.exception = ex
                     fullStackInfo=''.join(traceback.format_exception(
                         etype=type(ex), value=ex, tb=ex.__traceback__))

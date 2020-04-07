@@ -15,7 +15,7 @@ class UserReceptorsOnlyRun(SingleFacilityRun):
             file_path = os.path.join(folder, the_file)
             try:
                 if os.path.isdir(file_path): shutil.rmtree(file_path)
-            except Exception as e:
+            except BaseException as e:
                 print(e)
 
         # Create the test harness, process the files, etc.

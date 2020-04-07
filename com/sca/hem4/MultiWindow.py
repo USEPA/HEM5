@@ -409,7 +409,7 @@ class Page1(Page):
                 try:
                     args = reportNameArgs[reportName]
                     summaryMgr.createReport(self.fullpath, reportName, args)
-                except Exception as e:
+                except BaseException as e:
                     Logger.logMessage(str(e))
                 
                 report_complete = reportName +  " complete."
@@ -1096,8 +1096,7 @@ class MainView(tk.Frame):
                 runner = FacilityRunner(facid, self.model, self.abort)
                 runner.setup()
 
-                
-            except Exception as ex:
+            except BaseException as ex:
 
                 self.exception = ex
                 fullStackInfo=''.join(traceback.format_exception(

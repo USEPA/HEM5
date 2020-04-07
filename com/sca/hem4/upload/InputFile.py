@@ -38,7 +38,7 @@ class InputFile(ABC):
             try:
                 df = pd.read_excel(f, skiprows=self.skiprows, names=colnames, dtype=str, na_values=[''], keep_default_na=False)
             
-            except Exception as e:
+            except BaseException as e:
 
                 if isinstance(e, ValueError):
 
@@ -85,7 +85,7 @@ class InputFile(ABC):
                 
                 df = pd.read_csv(f, skiprows=self.skiprows, names=colnames, dtype=str, na_values=[''], keep_default_na=False)
             
-            except Exception as e:
+            except BaseException as e:
                 
                 Logger.logMessage(str(e))
                 
@@ -123,7 +123,7 @@ class InputFile(ABC):
             try:
                 df = pd.read_excel(f)
                 
-            except Exception as e:
+            except BaseException as e:
                 
                 Logger.logMessage(str(e))
                 
@@ -146,7 +146,7 @@ class InputFile(ABC):
             
             df = pd.to_numeric(slice,errors="coerce")
             
-        except Exception as e:
+        except BaseException as e:
                 
                 Logger.logMessage(str(e))
                 

@@ -57,7 +57,7 @@ class FacilityRunner():
         try:    
             self.prep_fac = self.prep()
             
-        except Exception as e:
+        except BaseException as e:
                 
                 Logger.logMessage(str(e))
 
@@ -82,7 +82,7 @@ class FacilityRunner():
 #            try:
 #                self.runstream = self.prep_fac.createRunstream(self.facilityId, phases)
 #                
-#            except Exception as e:
+#            except BaseException as e:
 #                
 #                Logger.logMessage(str(e))
 #                raise Exception("An error occurred while running a facility")
@@ -115,7 +115,7 @@ class FacilityRunner():
             try:
                 check = self.check_run(fac_folder, self.phase)
             
-            except Exception as e:
+            except BaseException as e:
                 
                 Logger.logMessage(str(e))
                 
@@ -173,7 +173,7 @@ class FacilityRunner():
                     
                     self.process_outputs(fac_folder, plot_df)
                     
-                except Exception as e:
+                except BaseException as e:
                 
                     Logger.logMessage(str(e))
                 
@@ -230,7 +230,7 @@ class FacilityRunner():
                 try:
                     check = self.check_run(fac_folder, r['phase'])
                     
-                except Exception as e:
+                except BaseException as e:
                 
                     Logger.logMessage(str(e))
                 
@@ -267,7 +267,7 @@ class FacilityRunner():
             
                 self.process_outputs(fac_folder, plot_df)
                 
-            except Exception as e:
+            except BaseException as e:
                 
                 Logger.logMessage(str(e))
                 
@@ -284,7 +284,7 @@ class FacilityRunner():
         
 #        print("building runstream")
         
-        except Exception as e:
+        except BaseException as e:
                 
             Logger.logMessage(str(e))
                 

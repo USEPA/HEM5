@@ -43,7 +43,7 @@ class InputsPackager():
                         os.unlink(file_path)
                     elif os.path.isdir(file_path):
                         shutil.rmtree(file_path)
-                except Exception as e:
+                except BaseException as e:
                     emessage = "Failed to delete " + file_path + ". Reason: " + e
                     raise Exception(emessage)
         

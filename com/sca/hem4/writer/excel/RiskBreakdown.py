@@ -289,7 +289,7 @@ class RiskBreakdown(ExcelWriter, InputFile):
             self.data = self.dataframe.values
             yield self.dataframe
 
-        except Exception as e:
+        except BaseException as e:
         
             exc_type, exc_obj, exc_tb = sys.exc_info()
             print(exc_type, exc_tb.tb_lineno)

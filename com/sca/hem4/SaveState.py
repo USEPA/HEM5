@@ -32,7 +32,7 @@ class SaveState():
                 
             os.makedirs(save_folder)
             
-        except Exception as ex:
+        except BaseException as ex:
 
             exception = ex
             fullStackInfo=''.join(traceback.format_exception(
@@ -43,8 +43,6 @@ class SaveState():
            
         else:
             print("created", self.save_folder)
-        
-        
 
     def save_model(self, facid):
         
