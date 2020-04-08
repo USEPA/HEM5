@@ -93,11 +93,11 @@ class FacilityRunner():
             depoYN = self.model.facops['dep'].iloc[0]
             
             if phases['phase'] == 'P':
-                depotype = self.model.facops.iloc['pdep'][0]
+                depotype = self.model.facops['pdep'].iloc[0]
                 self.phase = 'P'
                 
             elif phases['phase'] == 'V':
-                depotype = self.model.facops.iloc['vdep'][0]
+                depotype = self.model.facops['vdep'].iloc[0]
                 self.phase = 'V'
                 
             else:
