@@ -58,7 +58,7 @@ class resumeProcessor():
             fac_list.append(facid)
             num = 1
 
-#        Logger.logMessage("The facility ids being modeled: , False)
+        Logger.logMessage("The facility ids being modeled: " + ", ".join(fac_list))
         print("The facility ids being modeled: " + ", ".join(fac_list))
 
         success = False
