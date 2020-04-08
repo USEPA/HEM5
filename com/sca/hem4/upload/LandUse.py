@@ -72,4 +72,5 @@ class LandUse(DependentInputFile):
         ## figure out how to get fac ids that have landuse based on flag or index
         # TODO
 
+        Logger.logMessage("Uploaded land use data set.")
         return df

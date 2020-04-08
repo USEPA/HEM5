@@ -21,6 +21,6 @@ class AltReceptors(InputFile):
         altreceptor_df = self.readFromPathCsv(
                 (rec_id, rec_type, location_type, lon, lat, utmzone, elev, hill, population))
 
-        self.log.append("Uploaded Alternate Receptors")
+        Logger.logMessage("Uploaded Alternate Receptors")
 
         self.dataframe = altreceptor_df

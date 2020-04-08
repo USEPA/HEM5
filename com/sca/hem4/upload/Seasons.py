@@ -58,4 +58,6 @@ class Seasons(DependentInputFile):
 
         # figure out how to get fac ids that have particle based on flag or index
         # TODO
+
+        Logger.logMessage("Uploaded seasonal variation data set.")
         return df

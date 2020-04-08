@@ -231,9 +231,9 @@ class Processor():
             
             skipped_df.to_excel(skipped_path)
 
-
-        
-        
+        # move the log file to the run dir and re-initialize
+        Logger.archiveLog(self.model.rootoutput)
+        Logger.initializeLog()
 
         return success
 

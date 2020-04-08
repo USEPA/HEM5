@@ -44,11 +44,11 @@ class SaveState():
             Logger.logMessage(message)
            
         else:
-            Logger.logMessage("created", self.save_folder)
+            Logger.logMessage("created " + self.save_folder)
 
     def save_model(self, facid):
         
-        Logger.logMessage("removing fac id:", facid)
+        Logger.logMessage("removing fac id:" + facid)
         
 
         #get list of attributes and write them 

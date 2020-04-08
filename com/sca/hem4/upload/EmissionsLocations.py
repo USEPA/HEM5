@@ -172,5 +172,5 @@ class EmissionsLocations(InputFile):
 
             df.loc[index] = row
 
-        self.log.append("Uploaded emissions location file for " + str(len(df)) + " facilities.\n")
+        Logger.logMessage("Uploaded emissions location file for " + str(len(df)) + " facilities.\n")
         return df

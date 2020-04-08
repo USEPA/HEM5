@@ -1,5 +1,6 @@
 import os
 import pprint
+import shutil
 from datetime import datetime
 import pandas as pd
 
@@ -20,7 +21,19 @@ class Logger:
 
         fileDir = os.path.dirname(os.path.realpath('__file__'))
         filename = os.path.join(fileDir, 'output/hem4.log')
+
+        if os.path.isfile(filename):
+             os.remove(filename)
+
         Logger.logfile = open(filename, 'w')
+
+    @staticmethod
+    def archiveLog(runDir):
+        Logger.close(True)
+        fileDir = os.path.dirname(os.path.realpath('__file__'))
+        filename = os.path.join(fileDir, 'output/hem4.log')
+        if os.path.isfile(filename):
+            shutil.move(filename, runDir)
 
     @staticmethod
     def log(message, data, logToMessageQueue):
