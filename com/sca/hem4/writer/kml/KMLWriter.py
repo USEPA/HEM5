@@ -1492,23 +1492,24 @@ class KMLWriter():
                     newrow = row.copy()
                     if row["source_type"] == "A":
                         # Area sources
+                        radangle = np.radians(row["angle"])
                         new_rows.append(newrow.tolist())  # vertex 1
-                        newrow["utme"] = row["utme"] + row["lengthx"] * np.cos(row["angle"])
-                        newrow["utmn"] = row["utmn"] - row["lengthx"] * np.sin(row["angle"])
+                        newrow["utme"] = row["utme"] + row["lengthx"] * np.cos(radangle)
+                        newrow["utmn"] = row["utmn"] - row["lengthx"] * np.sin(radangle)
                         latitude, longitude = UTM.utm2ll(newrow["utmn"],newrow["utme"],facutmzonestr)
                         newrow["lat"] = latitude
                         newrow["lon"] = longitude
                         new_rows.append(newrow.tolist())  # vertex 2
-                        newrow["utme"] = row["utme"] + row["lengthx"] * np.cos(row["angle"]) \
-                                                        + row["lengthy"] * np.sin(row["angle"])
-                        newrow["utmn"] = row["utmn"] - row["lengthx"] * np.sin(row["angle"]) \
-                                                        + row["lengthy"] * np.cos(row["angle"])
+                        newrow["utme"] = row["utme"] + row["lengthx"] * np.cos(radangle) \
+                                                        + row["lengthy"] * np.sin(radangle)
+                        newrow["utmn"] = row["utmn"] - row["lengthx"] * np.sin(radangle) \
+                                                        + row["lengthy"] * np.cos(radangle)
                         latitude, longitude = UTM.utm2ll(newrow["utmn"],newrow["utme"],facutmzonestr)
                         newrow["lat"] = latitude
                         newrow["lon"] = longitude
                         new_rows.append(newrow.tolist())  # vertex 3
-                        newrow["utme"] = row["utme"] + row["lengthy"] * np.sin(row["angle"])
-                        newrow["utmn"] = row["utmn"] + row["lengthy"] * np.cos(row["angle"])
+                        newrow["utme"] = row["utme"] + row["lengthy"] * np.sin(radangle)
+                        newrow["utmn"] = row["utmn"] + row["lengthy"] * np.cos(radangle)
                         latitude, longitude = UTM.utm2ll(newrow["utmn"],newrow["utme"],facutmzonestr)
                         newrow["lat"] = latitude
                         newrow["lon"] = longitude

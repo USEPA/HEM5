@@ -44,7 +44,8 @@ class SaveState():
             Logger.logMessage(message)
            
         else:
-            Logger.logMessage("created " + self.save_folder)
+            message = "created " + self.save_folder
+            Logger.logMessage(message)
 
     def save_model(self, facid):
         
