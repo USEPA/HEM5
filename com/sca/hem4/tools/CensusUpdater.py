@@ -50,13 +50,17 @@ class CensusUpdater():
             self.previousValue = ""
                         
             blockid = row["blockid"]
-            operation = row["change"].strip()
+            operation = row["change"].strip().upper()
 
             # Get the two-letter state abbreviation and construct the census file name.
             state = self.getStateForCode(blockid[0:2])
             Logger.logMessage("Opening " + state + " for updates...")
             pathToFile = self.pathToCensusFiles + '\\Blks_' + state + '.json'
 
+            if operation == "DELETE":
+                Logger.logMessage("Deleting block " + row["blockid"])
+                
+                
             with open(pathToFile, "r") as read_file:
                 data = json.load(read_file)
 
@@ -67,7 +71,7 @@ class CensusUpdater():
                 # through unchanged.
                 replaced = [self.mutate(x, operation, row)
                     if x['IDMARPLOT']==blockid
-                    else x for x in data if x['IDMARPLOT']!=blockid or (operation == 'Move' or operation == 'Zero')]
+                    else x for x in data if x['IDMARPLOT']!=blockid or (operation == 'MOVE' or operation == 'ZERO')]
 
             # Open the file again and re-write it using the updated json.
             with open(pathToFile, "w") as write_file:
@@ -75,14 +79,14 @@ class CensusUpdater():
 
             # Update the changeset row
             row["lastModified"] = str(datetime.datetime.now())
-            if operation == 'Delete':
-                self.previousValue = row["blockid"]
+            if operation == 'DELETE':
+                row["previous"] = row["blockid"]
             else:
                 row["previous"] = "Block id not found" if self.previousValue == "" else self.previousValue
 
         # Write out the updated changeset
         changeset_df.fillna("")
-        changeset_df.to_excel(changesetFilepath)
+        changeset_df.to_excel(changesetFilepath, index=False)
 
         # Update the index
         self.updateIndex()
@@ -184,13 +188,13 @@ class CensusUpdater():
         return record
 
     def mutate(self, record, operation, row):
-        if operation == 'Move':
+        if operation == 'MOVE':
             Logger.logMessage("Moving block " + record["IDMARPLOT"] + " to [" + str(row['lat']) + "," + str(row['lon']) + "]")
             self.previousValue = "[" + str(record['LAT']) + "," + str(record['LON']) + "]"
             record['LAT'] = float(row['lat'])
             record['LON'] = float(row['lon'])
             record['MOVED'] = 'Y'
-        elif operation == 'Zero':
+        elif operation == 'ZERO':
             Logger.logMessage("Zeroing population for block " + record["IDMARPLOT"])
             self.previousValue = str(record['POPULATION'])
             record['POPULATION'] = 0
