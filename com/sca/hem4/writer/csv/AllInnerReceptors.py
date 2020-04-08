@@ -118,7 +118,7 @@ class AllInnerReceptors(CsvWriter, InputFile):
                     comment='*')
             else:
                 #TODO need to pass this to the log and skip to next facility
-                print("Error! Invalid rtype in AllInnerReceptors")                  
+                Logger.logMessage("Error! Invalid rtype in AllInnerReceptors")
 
 
         # Extract Chronic inner concs from Chronic plotfile and round the utm coordinates

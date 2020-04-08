@@ -292,7 +292,7 @@ class RiskBreakdown(ExcelWriter, InputFile):
         except BaseException as e:
         
             exc_type, exc_obj, exc_tb = sys.exc_info()
-            print(exc_type, exc_tb.tb_lineno)
+            Logger.logMessage(exc_type, exc_tb.tb_lineno)
             
 
     def calculateRisks(self, pollutant_name, conc, risktype):

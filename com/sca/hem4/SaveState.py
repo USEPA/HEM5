@@ -9,6 +9,8 @@ import traceback
 import os
 import shutil
 import pickle
+
+from com.sca.hem4.log import Logger
 from com.sca.hem4.model.Model import fac_id
 
 
@@ -39,14 +41,14 @@ class SaveState():
                 etype=type(ex), value=ex, tb=ex.__traceback__))
 
             message = "An error occurred while running a facility:\n" + fullStackInfo
-            print(message)
+            Logger.logMessage(message)
            
         else:
-            print("created", self.save_folder)
+            Logger.logMessage("created", self.save_folder)
 
     def save_model(self, facid):
         
-        print("removing fac id:", facid)
+        Logger.logMessage("removing fac id:", facid)
         
 
         #get list of attributes and write them 

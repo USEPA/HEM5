@@ -1087,8 +1087,7 @@ class MainView(tk.Frame):
             
             
             
-            print("Running facility " + str(num) + " of " +
-                              str(len(fac_list)))
+            print("Running facility " + str(num) + " of " + str(len(fac_list)))
             
             success = False
                         
