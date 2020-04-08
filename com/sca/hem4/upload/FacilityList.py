@@ -329,7 +329,7 @@ class FacilityList(InputFile):
                     row[period_start] = ""
                 else:
                     Logger.logMessage("Facility " + facility + ": Using period start = " + self.period_start_components)
-                    df['period_start'] = self.period_start_components
+                    row[period_start] = self.period_start_components
 
             spec_valid = True
             self.period_end_components = ""
@@ -352,7 +352,7 @@ class FacilityList(InputFile):
                     row[period_end] = ""
                 else:
                     Logger.logMessage("Facility " + facility + ": Using period end = " + self.period_end_components)
-                    df['period_end'] = self.period_end_components
+                    row[period_end] = self.period_end_components
 
                 if len(starts) != len(ends):
                     Logger.logMessage("Facility " + facility +

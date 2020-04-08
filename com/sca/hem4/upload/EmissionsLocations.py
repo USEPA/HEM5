@@ -172,5 +172,5 @@ class EmissionsLocations(InputFile):
 
             df.loc[index] = row
 
-        Logger.logMessage("Uploaded emissions location file for " + str(len(df)) + " facilities.\n")
+        Logger.logMessage("Uploaded emissions location file for " + str(len(df)) + " source-HAP combinations.\n")
         return df
