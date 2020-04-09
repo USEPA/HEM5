@@ -1294,6 +1294,5 @@ if __name__ == "__main__":
     main = MainView(root)
     main.pack(side="top", fill="both", expand=True)
     root.wm_minsize(1000,750)
-
-    main.after(20, MainView.center_main)
+    root.state('zoomed')
     root.mainloop()
