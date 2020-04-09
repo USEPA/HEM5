@@ -91,7 +91,9 @@ class Page1(Page):
     
     def __init__(self, nav, *args, **kwargs):
         Page.__init__(self, *args, **kwargs)
-        
+
+        self.hem = nav
+
         self.noteStyler = ttk.Style()
         self.noteStyler.configure("TNotebook", background="alice blue", borderwidth=0)
         self.noteStyler.configure("TNotebook.Tab", background="alice blue", borderwidth=0)
@@ -344,7 +346,7 @@ class Page1(Page):
             else:
                 startpos = int(self.pos_num.get()) - 1
             numchars = int(self.chars_num.get())
-            reportNameArgs['SourceTypeRiskHistogram'] = [startpos, numchars]          
+            reportNameArgs['SourceTypeRiskHistogram'] = [startpos, numchars, self.hem.hem.uploader.model.metlib]
 
         if self.var_p.get() == 1:
             reportNames.append('MultiPathway')

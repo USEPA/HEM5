@@ -28,7 +28,7 @@ class MaxRisk(ExcelWriter, AltRecAwareSummary):
 
             altrec = self.determineAltRec(targetDir, facilityId)
 
-            blockSummaryChronic = BlockSummaryChronicNonCensus(targetDir=targetDir, facilityId=facilityId) if altrec else\
+            blockSummaryChronic = BlockSummaryChronicNonCensus(targetDir=targetDir, facilityId=facilityId) if altrec == 'Y' else\
                 BlockSummaryChronic(targetDir=targetDir, facilityId=facilityId)
 
             bsc_df = blockSummaryChronic.createDataframe()
@@ -128,7 +128,7 @@ class MaxRisk(ExcelWriter, AltRecAwareSummary):
             altrec = self.determineAltRec(targetDir, facilityId)
 
             blockSummaryChronic = BlockSummaryChronicNonCensus(targetDir=targetDir, facilityId=facilityId, createDataframe=True)\
-                if altrec else BlockSummaryChronic(targetDir=targetDir, facilityId=facilityId, createDataframe=True)
+                if altrec == 'Y' else BlockSummaryChronic(targetDir=targetDir, facilityId=facilityId, createDataframe=True)
             bsc_df = blockSummaryChronic.createDataframe()
             loc = bsc_df.loc[(bsc_df[fips] == fipsValue) & (bsc_df[block] == blockValue)]
             if loc.size > 0:

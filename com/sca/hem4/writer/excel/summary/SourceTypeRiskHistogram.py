@@ -22,6 +22,7 @@ class SourceTypeRiskHistogram(ExcelWriter, AltRecAwareSummary):
         # Parameters specify which part of the source id contains the code
         self.codePosition = parameters[1][0]
         self.codeLength = parameters[1][1]
+        self.metlib = parameters[1][2]
         self.sourceTypes = None
         self.header = None
         self.haplib_df = DoseResponse().dataframe
@@ -37,7 +38,7 @@ class SourceTypeRiskHistogram(ExcelWriter, AltRecAwareSummary):
         
         # Read the facility list options input to know which facilities were run with acute
         faclistFile = os.path.join(self.categoryFolder, "inputs/faclist.xlsx")
-        faclist = FacilityList(faclistFile).dataframe
+        faclist = FacilityList(faclistFile, self.metlib).dataframe
         faclist.replace(to_replace={'acute':{"nan":"N"}}, inplace=True)
 
         # Create a list to hold the values for each bucket
