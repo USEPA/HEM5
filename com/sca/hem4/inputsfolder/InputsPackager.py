@@ -80,7 +80,7 @@ class InputsPackager():
 
         if self.model.partdep is not None:
             part_size_file = self.model.partdep.path
-            inputs_partsize_file = os.path.join(self.inputsFolder, "particle_sizes.xlsx")
+            inputs_partsize_file = os.path.join(self.inputsFolder, "particle_data.xlsx")
             shutil.copyfile(part_size_file, inputs_partsize_file)
 
         if self.model.bldgdw is not None:
@@ -95,12 +95,17 @@ class InputsPackager():
 
         if self.model.seasons is not None:
             season_file = self.model.seasons.path
-            inputs_season_file = os.path.join(self.inputsFolder, "seasons.xlsx")
+            inputs_season_file = os.path.join(self.inputsFolder, "month-to-seasons.xlsx")
             shutil.copyfile(season_file, inputs_season_file)
+
+        if self.model.emisvar is not None:
+            emisvar_file = self.model.emisvar.path
+            inputs_emisvar_file = os.path.join(self.inputsFolder, "emisvar.xlsx")
+            shutil.copyfile(emisvar_file, inputs_emisvar_file)
 
         if self.model.multipoly is not None:
             vertex_file = self.model.multipoly.path
-            inputs_vertex_file = os.path.join(self.inputsFolder, "polygon_vertices.xlsx")
+            inputs_vertex_file = os.path.join(self.inputsFolder, "polygon_vertex.xlsx")
             shutil.copyfile(vertex_file, inputs_vertex_file)
 
         if self.model.multibuoy is not None:
