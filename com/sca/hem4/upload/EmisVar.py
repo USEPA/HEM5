@@ -167,5 +167,5 @@ class EmisVar(DependentInputFile):
                                     "of 12.")
                 return None
 
-        Logger.logMessage("Uploaded emissions variations for " + " ".join(var_ids))
+        Logger.logMessage("Uploaded emissions variations for [" + ",".join(var_ids) + "]\n")
         return df

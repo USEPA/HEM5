@@ -121,5 +121,5 @@ class Particle(DependentInputFile):
                                     " in the Facilities List Options file.")
                 return None
             else:
-                Logger.logMessage("Uploaded particle data set.")
+                Logger.logMessage("Uploaded particle data for [" + ",".join(check_particle_assignment) + "]\n")
                 return df

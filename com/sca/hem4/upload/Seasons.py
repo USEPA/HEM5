@@ -60,11 +60,11 @@ class Seasons(DependentInputFile):
                     Logger.logMessage("Facility " + facility + ": Field " + field + " contains invalid value.")
                     return None
 
-        # check for unassigned seasons
-        check_seasons_assignment = set(df[fac_id])
-
         # figure out how to get fac ids that have particle based on flag or index
         # TODO
 
-        Logger.logMessage("Uploaded seasonal variation data set.")
+        # check for unassigned seasons
+        check_seasons_assignment = set(df[fac_id])
+
+        Logger.logMessage("Uploaded seasonal variation data for [" + ",".join(check_seasons_assignment) + "]\n")
         return df

@@ -73,11 +73,11 @@ class LandUse(DependentInputFile):
                     Logger.logMessage("Facility " + facility + ": Field " + field + " contains invalid value.")
                     return None
 
+        # figure out how to get fac ids that have landuse based on flag or index
+        # TODO
+
         # check for unassigned landuse
         check_landuse_assignment = set(df[fac_id])
 
-        ## figure out how to get fac ids that have landuse based on flag or index
-        # TODO
-
-        Logger.logMessage("Uploaded land use data set.")
+        Logger.logMessage("Uploaded land use data for [" + ",".join(check_landuse_assignment) + "]\n")
         return df

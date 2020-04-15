@@ -104,6 +104,6 @@ class BuoyantLine(DependentInputFile):
             return None
 
         else:
-            Logger.logMessage("Uploaded buoyant line parameters for " + " ".join(check_buoyant_assignment) + "\n")
+            Logger.logMessage("Uploaded buoyant line parameters for [" + ",".join(check_buoyant_assignment) + "]\n")
 
         return df

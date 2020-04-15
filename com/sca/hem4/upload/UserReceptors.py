@@ -118,5 +118,5 @@ class UserReceptors(DependentInputFile):
             return None
         else:
             check_receptor_assignment = [str(facility) for facility in check_receptor_assignment.unique()]
-            Logger.logMessage("Uploaded user receptors for " + " ".join(check_receptor_assignment) + "\n")
+            Logger.logMessage("Uploaded user receptors for [" + ",".join(check_receptor_assignment) + "]\n")
             return df

@@ -114,7 +114,7 @@ class Downwash(DependentInputFile):
             return None
 
         else:
-            Logger.logMessage("Uploaded building downwash parameters for " + " ".join(check_downwash_assignment))
+            Logger.logMessage("Uploaded building downwash parameters for [" + ",".join(check_downwash_assignment) + "]\n")
             return df
 
 
