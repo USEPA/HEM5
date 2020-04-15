@@ -41,6 +41,13 @@ class Seasons(DependentInputFile):
             Logger.logMessage("One or more facility IDs are missing in the Seasons List.")
             return None
 
+        duplicates = self.duplicates(df, [fac_id])
+        if len(duplicates) > 0:
+            Logger.logMessage("One or more records are duplicated in the Seasons List (key=fac_id):")
+            for d in duplicates:
+                Logger.logMessage(d)
+            return None
+
         for index, row in df.iterrows():
 
             facility = row[fac_id]

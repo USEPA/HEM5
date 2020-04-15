@@ -43,6 +43,13 @@ class HAPEmissions(InputFile):
             Logger.logMessage("One or more facility IDs are missing in the HAP Emissions List.")
             return None
 
+        duplicates = self.duplicates(df, [fac_id, source_id, pollutant])
+        if len(duplicates) > 0:
+            Logger.logMessage("One or more records are duplicated in the HAP Emissions List (key=fac_id, source_id, pollutant):")
+            for d in duplicates:
+                Logger.logMessage(d)
+            return None
+
         hapfids = set(df[fac_id])
         if self.fac_ids.intersection(hapfids) != self.fac_ids:
             Logger.logMessage("The HAP Emissions file is missing one or more" +

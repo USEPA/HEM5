@@ -65,6 +65,13 @@ class EmissionsLocations(InputFile):
             Logger.logMessage("One or more facility IDs are missing in the Emissions Locations List.")
             return None
 
+        duplicates = self.duplicates(df, [fac_id, source_id])
+        if len(duplicates) > 0:
+            Logger.logMessage("One or more records are duplicated in the Emissions Location List (key=fac_id, source_id):")
+            for d in duplicates:
+                Logger.logMessage(d)
+            return None
+
         if self.fac_ids is not None:
             elocfids = set(df[fac_id])
             if self.fac_ids.intersection(elocfids) != self.fac_ids:

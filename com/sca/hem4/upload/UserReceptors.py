@@ -51,6 +51,13 @@ class UserReceptors(DependentInputFile):
             Logger.logMessage("One or more locations are missing a coordinate system in the User Receptors List.")
             return None
 
+        duplicates = self.duplicates(df, [fac_id, lon, lat])
+        if len(duplicates) > 0:
+            Logger.logMessage("One or more records are duplicated in the User Receptors List (key=fac_id, lon, lat):")
+            for d in duplicates:
+                Logger.logMessage(d)
+            return None
+
         for index, row in df.iterrows():
 
             facility = row[fac_id]

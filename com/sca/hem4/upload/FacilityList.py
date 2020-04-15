@@ -113,6 +113,13 @@ class FacilityList(InputFile):
             Logger.logMessage("One or more met stations referenced in the Facility List are invalid.")
             return None
 
+        duplicates = self.duplicates(df, [fac_id])
+        if len(duplicates) > 0:
+            Logger.logMessage("One or more records are duplicated in the Facility List (key=fac_id):")
+            for d in duplicates:
+                Logger.logMessage(d)
+            return None
+
         # ----------------------------------------------------------------------------------
         # Defaulted: Invalid values in these columns will be replaced with a default.
         # ----------------------------------------------------------------------------------

@@ -70,6 +70,13 @@ class Downwash(DependentInputFile):
             Logger.logMessage("One or more source IDs are missing in the Downwash List.")
             return None
 
+        duplicates = self.duplicates(df, [fac_id, source_id, keyword])
+        if len(duplicates) > 0:
+            Logger.logMessage("One or more records are duplicated in the Downwash List (key=fac_id, source_id, keyword):")
+            for d in duplicates:
+                Logger.logMessage(d)
+            return None
+
         for index, row in df.iterrows():
 
             if row[section] != 'SO':
