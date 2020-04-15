@@ -22,7 +22,9 @@ partdiam = 'partdiam'
 
 class EmissionsLocations(InputFile):
 
-    def __init__(self, path):
+    def __init__(self, path, hapemis, fac_ids):
+        self.fac_ids = fac_ids
+        self.hapemis = hapemis
         InputFile.__init__(self, path)
 
     def createDataframe(self):
@@ -62,6 +64,31 @@ class EmissionsLocations(InputFile):
         if len(df.loc[(df[fac_id] == '')]) > 0:
             Logger.logMessage("One or more facility IDs are missing in the Emissions Locations List.")
             return None
+
+        if self.fac_ids is not None:
+            elocfids = set(df[fac_id])
+            if self.fac_ids.intersection(elocfids) != self.fac_ids:
+                Logger.logMessage("The Emissions Locations file is missing one or more" +
+                           " facilities please make sure to upload the correct" +
+                           " Emissions Location file.")
+                return None
+
+        # make sure source ids match in hap emissions and emissions location
+        # for facilities in faclist file
+        if self.fac_ids is not None and self.hapemis is not None:
+            hfac = set(self.hapemis.dataframe[fac_id])
+            efac = set(df[fac_id])
+
+            in_hap = list(self.fac_ids.intersection(hfac))
+            in_emis = list(self.fac_ids.intersection(efac))
+
+            hsource = set(self.hapemis.dataframe[self.hapemis.dataframe[fac_id].isin(in_hap)][source_id])
+            esource = set(df[df[fac_id].isin(in_emis)][source_id])
+
+            if hsource != esource:
+                Logger.logMessage("Source ids for Hap Emissions and Emissions Locations" +
+                                  " do not match, please upload corresponding files.")
+                return None
 
         if len(df.loc[(df[source_id] == '')]) > 0:
             Logger.logMessage("One or more source IDs are missing in the Emissions Locations List.")

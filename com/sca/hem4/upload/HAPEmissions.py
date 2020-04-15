@@ -12,9 +12,9 @@ gas = 'gas';
 
 class HAPEmissions(InputFile):
 
-    def __init__(self, path, haplib):
+    def __init__(self, path, haplib, fac_ids):
         self.haplib = haplib
-
+        self.fac_ids = fac_ids
         InputFile.__init__(self, path)
 
     def clean(self, df):
@@ -41,6 +41,13 @@ class HAPEmissions(InputFile):
         # ----------------------------------------------------------------------------------
         if len(df.loc[(df[fac_id] == '')]) > 0:
             Logger.logMessage("One or more facility IDs are missing in the HAP Emissions List.")
+            return None
+
+        hapfids = set(df[fac_id])
+        if self.fac_ids.intersection(hapfids) != self.fac_ids:
+            Logger.logMessage("The HAP Emissions file is missing one or more" +
+                       " facilities please make sure to upload the correct HAP" +
+                       " Emissions file.")
             return None
 
         if len(df.loc[(df[source_id] == '')]) > 0:
