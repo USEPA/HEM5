@@ -182,8 +182,7 @@ class InputChecker():
                     logMsg8 = ("Buoyant Line parameters are specified in the " + 
                                " Facilities List Options file, please upload " + 
                                " buoyant line sources for " )
-                    
-                    
+
                     result['result'] = logMsg8
                     result['reset'] = 'bouyant_line'
                     return result
@@ -203,12 +202,12 @@ class InputChecker():
                                     " were indicated in the Facilities list" +
                                     " options file")
             
-                        result['result'] =  logMsg8b
+                        result['result'] = logMsg8b
                         result['reset'] = 'bouyant_line'
                         return result
                     
                     else:
-                        #set ureceptr model option to TRUE
+                        # set ureceptr model option to TRUE
                         self.model.model_optns['ureceptr'] = True
 
             elif option is 'polyvertex':
@@ -231,11 +230,9 @@ class InputChecker():
                 
                 else:
                     
-                    #check facility ids against polyvertex ids
+                    # check facility ids against polyvertex ids
                     pids = set(self.model.multipoly.dataframe[fac_id])
                     fids = set(self.model.emisloc.dataframe[self.model.emisloc.dataframe[source_type] == 'I'][fac_id].values)
-                    #print('pids', pids)
-                    #print('fids', fids)
                     
                     if fids.intersection(pids) != fids:
                         
@@ -250,11 +247,10 @@ class InputChecker():
                         result['reset'] = 'poly_vertex'
                         return result
                     
-                    #check source ids
-                    #make sure source ids match in hap emissions and emissions location
-                    #for facilities in faclist file
-                    
-                    
+                    # check source ids
+                    # make sure source ids match in hap emissions and emissions location
+                    # for facilities in faclist file
+
                     efac = set(self.model.emisloc.dataframe[fac_id])
                     
                     in_pol = list(fids.intersection(pids)) 
@@ -286,8 +282,7 @@ class InputChecker():
                     result['result'] = logMsg14
                     result['reset'] = 'bldgdw'
                     return result
-                
-                
+
                 else:
             
                     dids = set(self.model.bldgdw.dataframe[fac_id])
@@ -307,14 +302,11 @@ class InputChecker():
                         result['reset'] = 'bldgdw'
                 
                         return result
-                    
-                    
-                    
-                    #check source ids
-                    #make sure source ids match in hap emissions and emissions location
-                    #for facilities in faclist file
-                    
-                   
+
+                    # check source ids
+                    # make sure source ids match in hap emissions and emissions location
+                    # for facilities in faclist file
+
                     efac = set(self.model.emisloc.dataframe[fac_id])
                     
                     in_dw = list(fids.intersection(dids)) 
@@ -332,8 +324,7 @@ class InputChecker():
                             return result
             
             elif option is 'particle':
-                
-                
+
                 try:
                     
                     self.model.partdep.dataframe
@@ -364,13 +355,11 @@ class InputChecker():
                         result['result'] =  logMsg10b
                         result['reset'] = 'particle'
                         return result
-                    
-                    
-                    #check source ids
-                    #make sure source ids match in hap emissions and emissions location
-                    #for facilities in faclist file
-                    
-                   
+
+                    # check source ids
+                    # make sure source ids match in hap emissions and emissions location
+                    # for facilities in faclist file
+
                     efac = set(self.model.emisloc.dataframe[fac_id])
                     
                     in_part = list(fids.intersection(partids)) 
@@ -454,9 +443,7 @@ class InputChecker():
                             return result
             
             elif option is 'both':
-                
-                
-                
+
                 vdepo = self.model.faclist.dataframe['vdep'].fillna("").tolist()[0]                       # Vapor Deposition
                 pdepo = self.model.faclist.dataframe['pdep'].fillna("").tolist()[0]                       # Particle Deposition
                 
@@ -520,14 +507,8 @@ class InputChecker():
                             else:
                                 #need to compare
                                 pass
-                            
-                                
-                    
-                    
-                    
-                    
-                
-                #WHAT about both conditions that have a NO on dep or depl?
+
+                # WHAT about both conditions that have a NO on dep or depl?
                 pass
 
         result['result'] = 'ready'
