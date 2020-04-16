@@ -49,10 +49,10 @@ class FileUploader():
             uploaded = FacilityList(path, self.model.metlib)
             self.model.faclist = uploaded
         elif filetype == "hapemis":
-            uploaded = HAPEmissions(path, self.model.haplib)
+            uploaded = HAPEmissions(path, self.model.haplib, set(self.model.fac_ids))
             self.model.hapemis = uploaded
         elif filetype == "emisloc":
-            uploaded = EmissionsLocations(path)
+            uploaded = EmissionsLocations(path, self.model.hapemis, set(self.model.fac_ids))
             self.model.emisloc = uploaded
         elif filetype == "alt receptors":
             uploaded = AltReceptors(path)

@@ -63,6 +63,13 @@ class Particle(DependentInputFile):
             Logger.logMessage("One or more source IDs are missing in the Particle List.")
             return None
 
+        duplicates = self.duplicates(df, [fac_id, source_id, part_diam])
+        if len(duplicates) > 0:
+            Logger.logMessage("One or more records are duplicated in the Particle List (key=fac_id, source_id, part_diam):")
+            for d in duplicates:
+                Logger.logMessage(d)
+            return None
+
         for index, row in df.iterrows():
 
             facility = row[fac_id]
@@ -114,5 +121,5 @@ class Particle(DependentInputFile):
                                     " in the Facilities List Options file.")
                 return None
             else:
-                Logger.logMessage("Uploaded particle data set.")
+                Logger.logMessage("Uploaded particle data for [" + ",".join(check_particle_assignment) + "]\n")
                 return df

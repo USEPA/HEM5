@@ -12,9 +12,9 @@ gas = 'gas';
 
 class HAPEmissions(InputFile):
 
-    def __init__(self, path, haplib):
+    def __init__(self, path, haplib, fac_ids):
         self.haplib = haplib
-
+        self.fac_ids = fac_ids
         InputFile.__init__(self, path)
 
     def clean(self, df):
@@ -41,6 +41,19 @@ class HAPEmissions(InputFile):
         # ----------------------------------------------------------------------------------
         if len(df.loc[(df[fac_id] == '')]) > 0:
             Logger.logMessage("One or more facility IDs are missing in the HAP Emissions List.")
+            return None
+
+        duplicates = self.duplicates(df, [fac_id, source_id, pollutant])
+        if len(duplicates) > 0:
+            Logger.logMessage("One or more records are duplicated in the HAP Emissions List (key=fac_id, source_id, pollutant):")
+            for d in duplicates:
+                Logger.logMessage(d)
+            return None
+
+        hapfids = set(df[fac_id])
+        if self.fac_ids.intersection(hapfids) != self.fac_ids:
+            Logger.logMessage("Based on your Facility List Options file, the HAP Emissions List is missing " +
+                              "one or more facilities. Please correct one or both files and upload again.")
             return None
 
         if len(df.loc[(df[source_id] == '')]) > 0:

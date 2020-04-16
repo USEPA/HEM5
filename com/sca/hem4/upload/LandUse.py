@@ -54,6 +54,13 @@ class LandUse(DependentInputFile):
             Logger.logMessage("One or more facility IDs are missing in the Land Use List.")
             return None
 
+        duplicates = self.duplicates(df, [fac_id])
+        if len(duplicates) > 0:
+            Logger.logMessage("One or more records are duplicated in the Land Use List (key=fac_id):")
+            for d in duplicates:
+                Logger.logMessage(d)
+            return None
+
         for index, row in df.iterrows():
 
             facility = row[fac_id]
@@ -66,11 +73,11 @@ class LandUse(DependentInputFile):
                     Logger.logMessage("Facility " + facility + ": Field " + field + " contains invalid value.")
                     return None
 
+        # figure out how to get fac ids that have landuse based on flag or index
+        # TODO
+
         # check for unassigned landuse
         check_landuse_assignment = set(df[fac_id])
 
-        ## figure out how to get fac ids that have landuse based on flag or index
-        # TODO
-
-        Logger.logMessage("Uploaded land use data set.")
+        Logger.logMessage("Uploaded land use data for [" + ",".join(check_landuse_assignment) + "]\n")
         return df

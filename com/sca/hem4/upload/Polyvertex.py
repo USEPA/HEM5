@@ -122,5 +122,5 @@ class Polyvertex(DependentInputFile):
                                 " file.")
             return None
         else:
-            Logger.logMessage("Uploaded polyvertex sources for " + " ".join(check_poly_assignment) + "\n")
+            Logger.logMessage("Uploaded polyvertex sources for [" + ",".join(check_poly_assignment) + "]\n")
             return df

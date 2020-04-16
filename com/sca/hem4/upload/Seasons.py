@@ -41,6 +41,13 @@ class Seasons(DependentInputFile):
             Logger.logMessage("One or more facility IDs are missing in the Seasons List.")
             return None
 
+        duplicates = self.duplicates(df, [fac_id])
+        if len(duplicates) > 0:
+            Logger.logMessage("One or more records are duplicated in the Seasons List (key=fac_id):")
+            for d in duplicates:
+                Logger.logMessage(d)
+            return None
+
         for index, row in df.iterrows():
 
             facility = row[fac_id]
@@ -53,11 +60,11 @@ class Seasons(DependentInputFile):
                     Logger.logMessage("Facility " + facility + ": Field " + field + " contains invalid value.")
                     return None
 
-        # check for unassigned seasons
-        check_seasons_assignment = set(df[fac_id])
-
         # figure out how to get fac ids that have particle based on flag or index
         # TODO
 
-        Logger.logMessage("Uploaded seasonal variation data set.")
+        # check for unassigned seasons
+        check_seasons_assignment = set(df[fac_id])
+
+        Logger.logMessage("Uploaded seasonal variation data for [" + ",".join(check_seasons_assignment) + "]\n")
         return df

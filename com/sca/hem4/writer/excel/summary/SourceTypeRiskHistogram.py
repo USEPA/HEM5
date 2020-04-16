@@ -201,7 +201,7 @@ class SourceTypeRiskHistogram(ExcelWriter, AltRecAwareSummary):
 
         # Open the emisloc dataframe and find all unique source type codes
         emislocFile = os.path.join(self.categoryFolder, "inputs/emisloc.xlsx")
-        emisloc = EmissionsLocations(emislocFile)
+        emisloc = EmissionsLocations(emislocFile, None, None)
 
         # Get a list of all source types
         sourceIds = emisloc.dataframe[source_id].unique()

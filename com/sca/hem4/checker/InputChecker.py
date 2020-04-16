@@ -32,111 +32,81 @@ class InputChecker():
         - a reset key for an incorrectly uploaded required input (if applicable) 
         
         check_dependent
-        
-        """ 
-        #pull in model
+        """
         self.model = model    
-    
-       
-        
 
     def check_required(self):
         
-        #store result in dictionary
+        # store result in dictionary
         result = {'result': None, 'dependencies': [], 'reset': None  } 
         
-        #check if dataframe exists        
+        # check if data frame exists
         try:
              self.model.faclist.dataframe
         
-        #raise attribute error if it doesn't
+        # raise attribute error if it doesn't
         except AttributeError:
             logMsg = ("Facilities list options file uploaded incorrectly," + 
                       " please try again")
             
-            result['result'] =  logMsg
+            result['result'] = logMsg
             result['reset'] = 'fac'
             return result
-        
         else:
-            #make sure dataframe isn't empty
+            # make sure dataframe isn't empty
             if self.model.faclist.dataframe.empty:
                 logMsg = ("There was an error uploading Facilities Options List" + 
                           " file, please try again")
                 
-                result['result'] =  logMsg
+                result['result'] = logMsg
                 return result
-        
-            
-            #extract idsand determine if there are dependent uploads .
+
+            # extract ids and determine if there are dependent uploads .
             else:
-                fids = set(self.model.faclist.dataframe[fac_id])
-        
-                
-                #find dependents and return which ones need to be checked
-                #user receptors
+                # find dependents and return which ones need to be checked
+                # user receptors
                 if 'Y' in self.model.faclist.dataframe[user_rcpt].tolist():
                     result['dependencies'].append(user_rcpt)
                     
-                #building downwash  
+                # building downwash
                 if 'Y' in self.model.faclist.dataframe[bldg_dw].tolist():
                     result['dependencies'].append('downwash')
-              
-                         
+
         try:
-             self.model.hapemis.dataframe
-             
+            self.model.hapemis.dataframe
         except AttributeError:
             logMsg2 = "HAP Emissions file uploaded incorrectly, please try again"
-            result['result'] =  logMsg2
+            result['result'] = logMsg2
             result['reset'] = 'hap'
             return result
-        
-        
         else:
-            
             if self.model.hapemis.dataframe.empty:
                 logMsg2 = ("There was an error uploading HAP Emissions file," +
                            " please try again")
                 
-                result['result'] =  logMsg2
+                result['result'] = logMsg2
                 return result
-        
-                
             else:
-                #get locations and source ids
+                # get locations and source ids
                 hfids = set(self.model.hapemis.dataframe[fac_id])
-                
-                
-   
+
         try:
              self.model.emisloc.dataframe
-             
         except AttributeError:
             logMsg3 = "Emissions Locations file uploaded incorrectly, please try again"
             
-            result['result'] =  logMsg3
+            result['result'] = logMsg3
             return result
-        
-        
         else:
-             if self.model.emisloc.dataframe.empty:
+            if self.model.emisloc.dataframe.empty:
                 logMsg3 = ("There was an error uploading Emissions Locations" + 
                            " file, please try again")
                 
-                result['result'] =  logMsg3
+                result['result'] = logMsg3
                 result['reset'] = 'emis'
                 return result
-        
-                
-             else:
-                #check facility id with emis loc ids
-                efids = set(self.model.emisloc.dataframe[fac_id])
-               
-               
-                
-                #check source types for optional inputs
-                
+            else:
+                # check source types for optional inputs
                 if 'I' in self.model.emisloc.dataframe[source_type].tolist():
                     result['dependencies'].append('polyvertex')
                     print('POLYVERTEX FOUND')
@@ -144,8 +114,7 @@ class InputChecker():
                 if 'B' in self.model.emisloc.dataframe[source_type].tolist():
                     result['dependencies'].append('bouyant')
                     
-                #check for deposition or depletion
-                
+                # check for deposition or depletion
                 if ['B'] in self.model.faclist.dataframe[phase].tolist():
                     result['dependencies'].append('both')
                     
@@ -154,57 +123,13 @@ class InputChecker():
                     
                 if ['P'] in self.model.faclist.dataframe[phase].tolist():
                     result['dependencies'].append('particle')
-           
-        
-        #make sure emis locs has facility ids
-        if fids.intersection(efids) != fids:
 
-            logMsg4 = ("The Emissions Locations file is missing one or more" + 
-                       " facilities please make sure to upload the correct" + 
-                       " Emissions Location file.")
-            
-            result['result'] =  logMsg4
-            return result
-        
-        
-        #make sure hapemis has facility ids      
-        if fids.intersection(hfids) != fids:     
-            logMsg5 = ("The HAP Emissions file is missing one or more" + 
-                       " facilities please make sure to upload the correct HAP" + 
-                       " Emissions file.")
-            
-            result['result'] =  logMsg5
-            return result
-        
-        #make sure source ids match in hap emissions and emissions location
-        #for facilities in faclist file
-        
-        hfac = set(self.model.hapemis.dataframe[fac_id])
-        efac = set(self.model.emisloc.dataframe[fac_id])
-        
-        in_hap = list(fids.intersection(hfac)) 
-        in_emis = list(fids.intersection(efac))
-        
-        hsource = set(self.model.hapemis.dataframe[self.model.hapemis.dataframe[fac_id].isin(in_hap)][source_id])
-        esource = set(self.model.emisloc.dataframe[self.model.emisloc.dataframe[fac_id].isin(in_emis)][source_id])
-
-        if hsource != esource:
-            logMsg6 = ("Source ids for Hap Emissions and Emissions Locations" + 
-                       " do not match, please upload corresponding files.")
-            result['result'] =  logMsg6
-            return result
-         
-
-
-        result['result'] =  'ready'
+        result['result'] = 'ready'
         return result
-        
 
-
-        
     def check_dependent(self, optional_list):
         
-        #store result in dictionary
+        # store result in dictionary
         result = {'result': None, 'reset': None  }
         
         for option in optional_list:
@@ -245,8 +170,7 @@ class InputChecker():
                         result['result'] =  logMsg7b
                         result['reset'] = 'user_rcpt'
                         return result
-                       
-                
+
             elif option is 'bouyant':
                 
                 try:
@@ -258,8 +182,7 @@ class InputChecker():
                     logMsg8 = ("Buoyant Line parameters are specified in the " + 
                                " Facilities List Options file, please upload " + 
                                " buoyant line sources for " )
-                    
-                    
+
                     result['result'] = logMsg8
                     result['reset'] = 'bouyant_line'
                     return result
@@ -279,19 +202,14 @@ class InputChecker():
                                     " were indicated in the Facilities list" +
                                     " options file")
             
-                        result['result'] =  logMsg8b
+                        result['result'] = logMsg8b
                         result['reset'] = 'bouyant_line'
                         return result
                     
                     else:
-                        #set ureceptr model option to TRUE
+                        # set ureceptr model option to TRUE
                         self.model.model_optns['ureceptr'] = True
-                        
-                       
-                    
-                    
-                        
-                
+
             elif option is 'polyvertex':
                 
                 try: 
@@ -312,11 +230,9 @@ class InputChecker():
                 
                 else:
                     
-                    #check facility ids against polyvertex ids
+                    # check facility ids against polyvertex ids
                     pids = set(self.model.multipoly.dataframe[fac_id])
                     fids = set(self.model.emisloc.dataframe[self.model.emisloc.dataframe[source_type] == 'I'][fac_id].values)
-                    #print('pids', pids)
-                    #print('fids', fids)
                     
                     if fids.intersection(pids) != fids:
                         
@@ -331,11 +247,10 @@ class InputChecker():
                         result['reset'] = 'poly_vertex'
                         return result
                     
-                    #check source ids
-                    #make sure source ids match in hap emissions and emissions location
-                    #for facilities in faclist file
-                    
-                    
+                    # check source ids
+                    # make sure source ids match in hap emissions and emissions location
+                    # for facilities in faclist file
+
                     efac = set(self.model.emisloc.dataframe[fac_id])
                     
                     in_pol = list(fids.intersection(pids)) 
@@ -351,7 +266,6 @@ class InputChecker():
                                        " do not match, please upload corresponding files.")
                             result['result'] =  logMsg9c
                             return result
-                                
             
             elif option is 'downwash':
             
@@ -368,8 +282,7 @@ class InputChecker():
                     result['result'] = logMsg14
                     result['reset'] = 'bldgdw'
                     return result
-                
-                
+
                 else:
             
                     dids = set(self.model.bldgdw.dataframe[fac_id])
@@ -389,14 +302,11 @@ class InputChecker():
                         result['reset'] = 'bldgdw'
                 
                         return result
-                    
-                    
-                    
-                    #check source ids
-                    #make sure source ids match in hap emissions and emissions location
-                    #for facilities in faclist file
-                    
-                   
+
+                    # check source ids
+                    # make sure source ids match in hap emissions and emissions location
+                    # for facilities in faclist file
+
                     efac = set(self.model.emisloc.dataframe[fac_id])
                     
                     in_dw = list(fids.intersection(dids)) 
@@ -414,8 +324,7 @@ class InputChecker():
                             return result
             
             elif option is 'particle':
-                
-                
+
                 try:
                     
                     self.model.partdep.dataframe
@@ -446,13 +355,11 @@ class InputChecker():
                         result['result'] =  logMsg10b
                         result['reset'] = 'particle'
                         return result
-                    
-                    
-                    #check source ids
-                    #make sure source ids match in hap emissions and emissions location
-                    #for facilities in faclist file
-                    
-                   
+
+                    # check source ids
+                    # make sure source ids match in hap emissions and emissions location
+                    # for facilities in faclist file
+
                     efac = set(self.model.emisloc.dataframe[fac_id])
                     
                     in_part = list(fids.intersection(partids)) 
@@ -468,8 +375,7 @@ class InputChecker():
                                        " do not match, please upload corresponding files.")
                             result['result'] =  logMsg10c
                             return result
-            
-            
+
             elif option is 'vapor':
                 
                 try:
@@ -537,9 +443,7 @@ class InputChecker():
                             return result
             
             elif option is 'both':
-                
-                
-                
+
                 vdepo = self.model.faclist.dataframe['vdep'].fillna("").tolist()[0]                       # Vapor Deposition
                 pdepo = self.model.faclist.dataframe['pdep'].fillna("").tolist()[0]                       # Particle Deposition
                 
@@ -603,20 +507,10 @@ class InputChecker():
                             else:
                                 #need to compare
                                 pass
-                            
-                                
-                    
-                    
-                    
-                    
-                
-                #WHAT about both conditions that have a NO on dep or depl?
+
+                # WHAT about both conditions that have a NO on dep or depl?
                 pass
-        
-        
-        
-        
-        
+
         result['result'] = 'ready'
         return result
-    
+
