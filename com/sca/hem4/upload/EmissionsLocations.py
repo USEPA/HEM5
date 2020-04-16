@@ -76,7 +76,7 @@ class EmissionsLocations(InputFile):
             elocfids = set(df[fac_id])
             if self.fac_ids.intersection(elocfids) != self.fac_ids:
                 Logger.logMessage("Based on your Facility List Options file, the Emissions Location List is missing " +
-                                  "one or mor facilities. Please correct one or both files and upload again.")
+                                  "one or more facilities. Please correct one or both files and upload again.")
                 return None
 
         if len(df.loc[(df[source_id] == '')]) > 0:
