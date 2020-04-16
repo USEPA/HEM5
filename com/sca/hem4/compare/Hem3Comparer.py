@@ -25,9 +25,9 @@ from com.sca.hem4.writer.excel.hem3.Hem3AcuteChemicalPopulated import Hem3AcuteC
 from com.sca.hem4.writer.excel.hem3.Hem3MaximumIndividualRisks import Hem3MaximumIndividualRisks
 from com.sca.hem4.writer.excel.hem3.Hem3RiskBreakdown import Hem3RiskBreakdown
 
-facid = "fac1-nc"
-hem3Dirname = r"C:\Temp\hem3files\fac1-nc"
-hem4Dirname = r"C:\Temp\hem4files\Fac1-NC"
+facid = "fac2-IL"
+hem3Dirname = r"C:\Temp\hem3files\hem3_output_qa_all_points\FAC2-IL"
+hem4Dirname = r"C:\Temp\hem4files\QA_Test_Run_2_AllPoints\Fac2-IL"
 acute = 'N'
 temporal = 'N'
 temporal_cols = 8
@@ -56,7 +56,7 @@ class Hem3Comparer():
         diffColumns = [conc]
         if self.acute == 'Y':
             diffColumns.append(aconc)
-        
+                
         #------------------------------------------#
         hem4allinner = AllInnerReceptors(targetDir=self.hem4Dir, facilityId=None, model=None, plot_df=None,
              acuteyn=self.acute, filenameOverride=hem4File)
@@ -77,6 +77,7 @@ class Hem3Comparer():
         if self.acute == 'Y':
             diffColumns.append(aconc)
         
+        
         #------------------------------------------#
         hem4allpolar = AllPolarReceptors(targetDir=self.hem4Dir, facilityId=None, model=None, plot_df=None,
              acuteyn=self.acute, filenameOverride=hem4File)
@@ -95,7 +96,7 @@ class Hem3Comparer():
             diffFile = "diff_temporal.csv"
             joinColumns = [fips, block, pollutant]
             diffColumns = ['C_01', 'C_02', 'C_03', 'C_04', 'C_05', 'C_06', 'C_07', 'C_08']
-        
+
             model = Model()
             model.tempvar = 12
             model.model_optns = {}
@@ -114,11 +115,11 @@ class Hem3Comparer():
             temporal_diff.writeHeader()
             diff_df = self.calculateNumericDiffs(hem3temporal, hem4temporal, joinColumns, diffColumns)
             temporal_diff.appendToFile(diff_df)
-        
+
         #---------- Maximum individual risks -----------#
         hem3File = facid + "_maximum_indiv_risks.xlsx"
         hem4File = facid + "_maximum_indiv_risks.xlsx"
-        
+
         diffFile = "diff_maximum_indiv_risks.xlsx"
         joinColumns = [parameter]
         diffColumns = [value]
@@ -132,7 +133,7 @@ class Hem3Comparer():
         risks_diff.writeHeader()
         diff_df = self.calculateNumericDiffs(hem3risks, hem4risks, joinColumns, diffColumns)
         risks_diff.appendToFile(diff_df)
-        
+
         #---------- Risk breakdown -----------#
         hem3File = facid + "_risk_breakdown.xlsx"
         hem4File = facid + "_risk_breakdown.xlsx"
@@ -149,7 +150,7 @@ class Hem3Comparer():
         risks_diff.writeHeader()
         diff_df = self.calculateNumericDiffs(hem3risks, hem4risks, joinColumns, diffColumns)
         risks_diff.appendToFile(diff_df)
-        
+
         #---------- Block Summary Chronic -----------#
         hem3File = facid + "_block_summary_chronic.csv"
         hem4File = facid + "_block_summary_chronic.csv"
@@ -167,7 +168,7 @@ class Hem3Comparer():
         summary_diff.writeHeader()
         diff_df = self.calculateNumericDiffs(hem3summary, hem4summary, joinColumns, diffColumns)
         summary_diff.appendToFile(diff_df)
-        
+
         #---------- Ring Summary Chronic -----------#
         hem3File = facid + "_ring_summary_chronic.csv"
         hem4File = facid + "_ring_summary_chronic.csv"
@@ -185,8 +186,8 @@ class Hem3Comparer():
         summary_diff.writeHeader()
         diff_df = self.calculateNumericDiffs(hem3summary, hem4summary, joinColumns, diffColumns)
         summary_diff.appendToFile(diff_df)
-        
-        if self.acute == 'Y':            
+
+        if self.acute == 'Y':
             #---------- Acute Chemical Max -----------#
             hem3File = facid + "_acute_chem_unpop.xlsx"
             hem4File = facid + "_acute_chem_max.xlsx"
@@ -203,7 +204,7 @@ class Hem3Comparer():
             max_diff.writeHeader()
             diff_df = self.calculateNumericDiffs(hem3max, hem4max, joinColumns, diffColumns)
             max_diff.appendToFile(diff_df)
-        
+    
             #---------- Acute Chemical Pop -----------#
             hem3File = facid + "_acute_chem_pop.xlsx"
             hem4File = facid + "_acute_chem_pop.xlsx"
@@ -220,7 +221,7 @@ class Hem3Comparer():
             pop_diff.writeHeader()
             diff_df = self.calculateNumericDiffs(hem3pop, hem4pop, joinColumns, diffColumns)
             pop_diff.appendToFile(diff_df)
-        
+    
             #---------- Acute Breakdown -----------#
             hem3File = facid + "_acute_bkdn.xlsx"
             hem4File = facid + "_acute_bkdn.xlsx"
@@ -246,7 +247,7 @@ class Hem3Comparer():
         diffColumns = [conc]
         if self.acute == 'Y':
             diffColumns.append(aconc)
-        
+
         #------------------------------------------#
         hem4allouter = AllOuterReceptors(targetDir=self.hem4Dir, facilityId=None, model=None, plot_df=None,
              acuteyn=self.acute, filenameOverride=hem4File)
@@ -264,7 +265,7 @@ class Hem3Comparer():
     def calculateNumericDiffs(self, hem3_entity, hem4_entity, joinColumns, diffColumns):
 
         # Percent Change = ((HEM4- HEM3)/HEM3) * 100
-        
+
         hem4_df = hem4_entity.createDataframe()
         hem3_df = hem3_entity.createDataframe()
 
@@ -307,4 +308,4 @@ class Hem3Comparer():
 
 comparer = Hem3Comparer(hem3Dirname, hem4Dirname, acute, temporal, temporal_cols)
 comparer.compare()
-print("Done")
+print("Dome!")
