@@ -224,12 +224,12 @@ class Processor():
             
             Logger.logMessage("HEM4 successfully modeled " + str(len(self.completed)) + " facilities. HEM4 skipped " + str(len(self.skipped))+ " facilities. Modeling not completed for: " + "/n ".join(self.skipped))
             
-            #output skipped facilities to csv
+            # output skipped facilities to csv
             skipped_path = self.model.rootoutput + 'Skipped_Facilities.xlsx'
             skipped_df = pd.DataFrame(self.skipped, columns=['Facility'])
             print(skipped_df)
             
-            skipped_df.to_excel(skipped_path)
+            skipped_df.to_excel(skipped_path, index=False)
 
         # move the log file to the run dir and re-initialize
         Logger.archiveLog(self.model.rootoutput)
