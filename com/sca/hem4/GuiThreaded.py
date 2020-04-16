@@ -1260,7 +1260,7 @@ class Hem4(tk.Frame):
 
         #user recptors label
         self.urepalt_label = tk.Label(self.alturep, font=TEXT_FONT, bg="alice blue",
-                                  text="Please select an alternate User Receptor"+
+                                  text="Please select an Alternate Receptor"+
                                       " CSV file:")
         self.urepalt_label.grid(row=1, sticky="W")
 
