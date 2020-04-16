@@ -1,1 +1,1 @@
-Browse you computer to find and select the CSV file containing alternate receptors to be modeled. See Users Guide for file requirements and guidelines.
+Browse your computer to find and select the CSV file containing alternate receptors to be modeled. See Users Guide for file requirements and guidelines.
