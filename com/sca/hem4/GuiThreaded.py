@@ -369,7 +369,7 @@ class Hem4(tk.Frame):
         global instruction_instance
         self.instruction_instance = tk.StringVar(placeholder1)
         self.instruction_instance.set(" ")
-        self.dynamic_inst = tk.Label(placeholder2, wraplength=600, font=TEXT_FONT, pady=5, bg=bg_color) 
+        self.dynamic_inst = tk.Label(placeholder2, wraplength=600, font=TEXT_FONT, pady=5, bg=bg_color)
         self.dynamic_inst.config(height=4)
         
         self.dynamic_inst["textvariable"] = self.instruction_instance 
