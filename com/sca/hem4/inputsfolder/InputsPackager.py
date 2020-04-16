@@ -70,7 +70,7 @@ class InputsPackager():
 
         if self.model.altRec_optns.get("altrec", None):
             alt_rcpt_file = self.model.altRec_optns.get("path", None)
-            inputs_altrec_file = os.path.join(self.inputsFolder, "alt_receptors.xlsx")
+            inputs_altrec_file = os.path.join(self.inputsFolder, "alt_receptors.csv")
             shutil.copyfile(alt_rcpt_file, inputs_altrec_file)
 
         if self.model.ureceptr is not None:
