@@ -52,9 +52,8 @@ class HAPEmissions(InputFile):
 
         hapfids = set(df[fac_id])
         if self.fac_ids.intersection(hapfids) != self.fac_ids:
-            Logger.logMessage("The HAP Emissions file is missing one or more" +
-                       " facilities please make sure to upload the correct HAP" +
-                       " Emissions file.")
+            Logger.logMessage("Based on your Facility List Options file, the HAP Emissions List is missing " +
+                              "one or more facilities. Please correct one or both files and upload again.")
             return None
 
         if len(df.loc[(df[source_id] == '')]) > 0:

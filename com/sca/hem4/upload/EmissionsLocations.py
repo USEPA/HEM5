@@ -75,9 +75,8 @@ class EmissionsLocations(InputFile):
         if self.fac_ids is not None:
             elocfids = set(df[fac_id])
             if self.fac_ids.intersection(elocfids) != self.fac_ids:
-                Logger.logMessage("The Emissions Locations file is missing one or more" +
-                           " facilities please make sure to upload the correct" +
-                           " Emissions Location file.")
+                Logger.logMessage("Based on your Facility List Options file, the Emissions Location List is missing " +
+                                  "one or mor facilities. Please correct one or both files and upload again.")
                 return None
 
         if len(df.loc[(df[source_id] == '')]) > 0:
@@ -97,8 +96,8 @@ class EmissionsLocations(InputFile):
             esource = set(df[df[fac_id].isin(in_emis)][source_id])
 
             if hsource != esource:
-                Logger.logMessage("Source ids for Hap Emissions and Emissions Locations" +
-                                  " do not match, please upload corresponding files.")
+                Logger.logMessage("Your Emissions Location and HAP Emissions file have mismatched source IDs. " +
+                                  "Please correct one or both files with matching sources and upload again.")
                 return None
 
         if len(df.loc[(df[location_type] != 'L') & (df[location_type] != 'U')]) > 0:
