@@ -80,6 +80,10 @@ class EmissionsLocations(InputFile):
                            " Emissions Location file.")
                 return None
 
+        if len(df.loc[(df[source_id] == '')]) > 0:
+            Logger.logMessage("One or more source IDs are missing in the Emissions Locations List.")
+            return None
+
         # make sure source ids match in hap emissions and emissions location
         # for facilities in faclist file
         if self.fac_ids is not None and self.hapemis is not None:
@@ -96,10 +100,6 @@ class EmissionsLocations(InputFile):
                 Logger.logMessage("Source ids for Hap Emissions and Emissions Locations" +
                                   " do not match, please upload corresponding files.")
                 return None
-
-        if len(df.loc[(df[source_id] == '')]) > 0:
-            Logger.logMessage("One or more source IDs are missing in the Emissions Locations List.")
-            return None
 
         if len(df.loc[(df[location_type] != 'L') & (df[location_type] != 'U')]) > 0:
             Logger.logMessage("One or more locations are missing a coordinate system in the Emissions Locations List.")
@@ -206,5 +206,5 @@ class EmissionsLocations(InputFile):
 
             df.loc[index] = row
 
-        Logger.logMessage("Uploaded emissions location file for " + str(len(df)) + " source-HAP combinations.\n")
+        Logger.logMessage("Uploaded emissions location file for " + str(len(df)) + " facility-source combinations.\n")
         return df
