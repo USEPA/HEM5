@@ -127,7 +127,10 @@ class Hem3AllOuterReceptors(CsvWriter, InputFile):
                 'Overlap']
 
     def getColumns(self):
-        return [lat, lon, conc, source_id, pollutant, emis_type, aconc, population, fips, block, elev, overlap]
+        if self.acute_yn == 'N':
+            return [lat, lon, conc, source_id, pollutant, emis_type, population, fips, block, elev, overlap]
+        else:
+            return [lat, lon, conc, source_id, pollutant, emis_type, aconc, population, fips, block, elev, overlap]
 
 
     def generateOutputs(self):
@@ -410,7 +413,7 @@ class Hem3AllOuterReceptors(CsvWriter, InputFile):
 
     def createDataframe(self):
         # Type setting for CSV reading
-        if self.acute_yn:
+        if self.acute_yn == 'Y':
             self.numericColumns = [lat, lon, conc, aconc, elev, population]
         else:
             self.numericColumns = [lat, lon, conc, elev, population]
