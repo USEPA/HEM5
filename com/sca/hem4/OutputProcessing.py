@@ -161,15 +161,22 @@ class Process_outputs():
             Logger.logMessage("Terminating output processing...")
             return
 
+        
         # Combine ring summary chronic and block summary chronic dfs into one and assign a receptor type
         ring_columns = [lat, lon, mir, hi_resp, hi_live, hi_neur, hi_deve, hi_repr, hi_kidn, hi_ocul, 
                       hi_endo, hi_hema, hi_immu, hi_skel, hi_sple, hi_thyr, hi_whol, overlap]
-        block_columns = ring_columns + [rec_type, block, population]
-        
+
         ring_risk = ring_summary_chronic_df[ring_columns].copy()
         ring_risk[rec_type] = 'P'
-        ring_risk[block] = ''
-        ring_risk[population] = 0
+
+        # Block and population are needed in non-altrec runs to ensure schools and monitors are not the MIR
+        if not altrec:
+            block_columns = ring_columns + [rec_type, block, population]
+            ring_risk[block] = ''
+            ring_risk[population] = 0
+        else:
+            block_columns = ring_columns + [rec_type]
+            
         
         block_risk = self.model.block_summary_chronic_df[block_columns]
         
