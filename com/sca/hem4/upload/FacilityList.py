@@ -329,6 +329,7 @@ class FacilityList(InputFile):
                     for c in starts:
                         self.period_start_components += c + " "
 
+                #if period_start_spec != "" and not spec_valid:
                 if period_start_spec != "" and not spec_valid:
                     Logger.logMessage("Facility " + facility + ": Invalid period start specified: " + period_start_spec)
                     Logger.logMessage("Facility " + facility + ": Using annual instead.")
@@ -336,6 +337,8 @@ class FacilityList(InputFile):
                     row[period_start] = ""
                 else:
                     Logger.logMessage("Facility " + facility + ": Using period start = " + self.period_start_components)
+                    if period_start_spec == '':
+                        Logger.logMessage("Aermod will use default in place of blank period start value.")
                     row[period_start] = self.period_start_components
 
             spec_valid = True
@@ -359,6 +362,8 @@ class FacilityList(InputFile):
                     row[period_end] = ""
                 else:
                     Logger.logMessage("Facility " + facility + ": Using period end = " + self.period_end_components)
+                    if period_end_spec == '':
+                        Logger.logMessage("Aermod will use default in place of blank period end value.")
                     row[period_end] = self.period_end_components
 
                 if len(starts) != len(ends):
