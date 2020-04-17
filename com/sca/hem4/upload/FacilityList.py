@@ -1,3 +1,5 @@
+import time
+from datetime import datetime
 from math import isnan
 
 from com.sca.hem4.log import Logger
@@ -313,7 +315,7 @@ class FacilityList(InputFile):
 
             # Annual and period start/end
             met_annual = row[annual]
-            spec_valid = True
+            start_spec_valid = True
             self.period_start_components = ""
             period_start_spec = row[period_start]
             if met_annual == "Y":
@@ -323,22 +325,27 @@ class FacilityList(InputFile):
                     Logger.logMessage("Facility " + facility + ": Using annual met option.")
             else:
                 starts = period_start_spec.split(',')
+                for s in starts:
+                    if not s.isdigit():
+                        start_spec_valid = False
+
                 if len(starts) < 3 or len(starts) > 4:
-                    spec_valid = False
+                    start_spec_valid = False
                 else:
                     for c in starts:
                         self.period_start_components += c + " "
 
-                if period_start_spec != "" and not spec_valid:
+                if period_start_spec != "" and not start_spec_valid:
                     Logger.logMessage("Facility " + facility + ": Invalid period start specified: " + period_start_spec)
-                    Logger.logMessage("Facility " + facility + ": Using annual instead.")
-                    row[annual] = 'Y'
+                    Logger.logMessage("Facility " + facility + ": Aermod will use default.")
                     row[period_start] = ""
                 else:
                     Logger.logMessage("Facility " + facility + ": Using period start = " + self.period_start_components)
+                    if period_start_spec == '':
+                        Logger.logMessage("Aermod will use default in place of blank period start value.")
                     row[period_start] = self.period_start_components
 
-            spec_valid = True
+            end_spec_valid = True
             self.period_end_components = ""
             period_end_spec = row[period_end]
             if met_annual == "Y":
@@ -346,31 +353,51 @@ class FacilityList(InputFile):
                     Logger.logMessage("Facility " + facility + ": Period end specified but ignored because annual = 'Y'")
             else:
                 ends = period_end_spec.split(',')
+                for e in ends:
+                    if not e.isdigit():
+                        end_spec_valid = False
+
                 if len(ends) < 3 or len(ends) > 4:
-                    spec_valid = False
+                    end_spec_valid = False
                 else:
                     for c in ends:
                         self.period_end_components += c + " "
 
-                if period_end_spec != "" and not spec_valid:
+                if period_end_spec != "" and not end_spec_valid:
                     Logger.logMessage("Facility " + facility + ": Invalid period end specified: " + period_end_spec)
-                    Logger.logMessage("Facility " + facility + ": Using annual instead.")
-                    row[annual] = 'Y'
+                    Logger.logMessage("Facility " + facility + ": Aermod will use default.")
                     row[period_end] = ""
                 else:
                     Logger.logMessage("Facility " + facility + ": Using period end = " + self.period_end_components)
+                    if period_end_spec == '':
+                        Logger.logMessage("Aermod will use default in place of blank period end value.")
                     row[period_end] = self.period_end_components
 
+            if start_spec_valid and end_spec_valid:
                 if len(starts) != len(ends):
                     Logger.logMessage("Facility " + facility +
                           ": Inconsistent period start and end specified (both must include hours, or neither): " +
                           period_start_spec + " : " + period_end_spec)
-                    Logger.logMessage("Facility " + facility + ": Using annual instead.")
-                    row[annual] = 'Y'
+                    Logger.logMessage("Facility " + facility + ": Aermod will use defaults.")
                     row[period_start] = ""
                     row[period_end] = ""
+
+                if period_start_spec != "" and period_end_spec != "":
+                    start_time = self.get_timestamp(starts)
+                    end_time = self.get_timestamp(ends)
+                    if start_time >= end_time:
+                        Logger.logMessage("Facility " + facility +
+                                          ": Inconsistent period start and end specified (start must be before end): " +
+                                          period_start_spec + " : " + period_end_spec)
+                        Logger.logMessage("Facility " + facility + ": Aermod will use defaults.")
+                        row[period_start] = ""
+                        row[period_end] = ""
 
             df.loc[index] = row
 
         Logger.logMessage("Uploaded facilities options list file for " + str(len(df)) + " facilities.\n")
         return df
+
+    def get_timestamp(self, components):
+        component_dt = datetime(year=int(components[0]), month=int(components[1]), day=int(components[2]))
+        return time.mktime(component_dt.timetuple())
