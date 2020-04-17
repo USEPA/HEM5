@@ -373,7 +373,7 @@ class FacilityList(InputFile):
                         Logger.logMessage("Aermod will use default in place of blank period end value.")
                     row[period_end] = self.period_end_components
 
-            if start_spec_valid and end_spec_valid:
+            if period_start_spec != "" and start_spec_valid and period_end_spec != "" and end_spec_valid:
                 if len(starts) != len(ends):
                     Logger.logMessage("Facility " + facility +
                           ": Inconsistent period start and end specified (both must include hours, or neither): " +
@@ -382,16 +382,15 @@ class FacilityList(InputFile):
                     row[period_start] = ""
                     row[period_end] = ""
 
-                if period_start_spec != "" and period_end_spec != "":
-                    start_time = self.get_timestamp(starts)
-                    end_time = self.get_timestamp(ends)
-                    if start_time >= end_time:
-                        Logger.logMessage("Facility " + facility +
-                                          ": Inconsistent period start and end specified (start must be before end): " +
-                                          period_start_spec + " : " + period_end_spec)
-                        Logger.logMessage("Facility " + facility + ": Aermod will use defaults.")
-                        row[period_start] = ""
-                        row[period_end] = ""
+                start_time = self.get_timestamp(starts)
+                end_time = self.get_timestamp(ends)
+                if start_time >= end_time:
+                    Logger.logMessage("Facility " + facility +
+                                      ": Inconsistent period start and end specified (start must be before end): " +
+                                      period_start_spec + " : " + period_end_spec)
+                    Logger.logMessage("Facility " + facility + ": Aermod will use defaults.")
+                    row[period_start] = ""
+                    row[period_end] = ""
 
             df.loc[index] = row
 
