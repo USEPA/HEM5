@@ -82,7 +82,7 @@ class EmissionsLocations(InputFile):
         if len(df.loc[(df[source_id] == '')]) > 0:
             Logger.logMessage("One or more source IDs are missing in the Emissions Locations List.")
             return None
-
+       
         # make sure source ids match in hap emissions and emissions location
         # for facilities in faclist file
         if self.fac_ids is not None and self.hapemis is not None:
@@ -92,10 +92,18 @@ class EmissionsLocations(InputFile):
             in_hap = list(self.fac_ids.intersection(hfac))
             in_emis = list(self.fac_ids.intersection(efac))
 
+            hsource = self.hapemis.dataframe[self.hapemis.dataframe[fac_id].isin(in_hap)][[fac_id,source_id]]
+            hsource['facsrc'] = hsource[fac_id] + hsource[source_id]
+            esource = df[df[fac_id].isin(in_emis)][[fac_id,source_id]]            
+            esource['facsrc'] = esource[fac_id] + esource[source_id]
+            
+            hfacsrc = set(hsource['facsrc'])
+            efacsrc = set(esource['facsrc'])
+            
             hsource = set(self.hapemis.dataframe[self.hapemis.dataframe[fac_id].isin(in_hap)][source_id])
             esource = set(df[df[fac_id].isin(in_emis)][source_id])
 
-            if hsource != esource:
+            if hfacsrc != efacsrc:
                 Logger.logMessage("Your Emissions Location and HAP Emissions file have mismatched source IDs. " +
                                   "Please correct one or both files with matching sources and upload again.")
                 return None

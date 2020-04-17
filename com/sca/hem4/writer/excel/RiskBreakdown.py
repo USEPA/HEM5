@@ -124,7 +124,7 @@ class RiskBreakdown(ExcelWriter, InputFile):
                     # for consistency and ease of use, change some column names
                     # concdata.rename(columns={source_id:"source_id", pollutant:"pollutant",
                     #                          emis_type:emis_type, conc:conc}, inplace=True)
-    
+                    
                     # merge hapemis to get emis_tpy field
                     bkdndata = pd.merge(concdata,self.model.runstream_hapemis[[source_id,pollutant,emis_tpy]],
                                         on=[source_id,pollutant], how="left")
@@ -214,6 +214,15 @@ class RiskBreakdown(ExcelWriter, InputFile):
                 else:
     
                     # Max off-site risk or HI value = 0. Get source/pollutant breakdown from hapemis.
+                    
+                    """
+                    Note: This section of code is assuming the hapemis DF for this facility has the same
+                          source id's as the facility emisloc DF. That is supposed to be enforced by the 
+                          validation method when the run group emission location input file is uploaded 
+                          by the GUI. The code here is simply pasting the hapemis rows into the
+                          breakdown DF.
+                    """
+                    
                     bkdndata = self.model.runstream_hapemis[[source_id,pollutant,emis_tpy]].copy()
                     bkdndata[value] = 0.0
                     bkdndata[value_rnd] = 0.0
