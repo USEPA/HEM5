@@ -412,7 +412,12 @@ class Page1(Page):
                 self.scr.configure(state='disabled')
 
             # Move log output to hem4.log in output folder and re-initialize
-            Logger.appendLog(self.fullpath)
+            try:
+                Logger.appendLog(self.fullpath)
+            except BaseException as e:
+                messagebox.showwarning("Log error", "Couldn't append to existing log file. " +
+                                       "Please check summary report tab for report creation details.")
+
             Logger.initializeLog()
 
             self.scr.configure(state='normal')
