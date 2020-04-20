@@ -1,8 +1,10 @@
 from com.sca.hem4.writer.excel.RiskBreakdown import *
+from com.sca.hem4.writer.excel.MaximumIndividualRisksNonCensus import MaximumIndividualRisksNonCensus
+from com.sca.hem4.writer.excel.summary.AltRecAwareSummary import AltRecAwareSummary
 
 risk_contrib = 'risk_contrib'
 
-class CancerDrivers(ExcelWriter):
+class CancerDrivers(ExcelWriter, AltRecAwareSummary):
 
     def __init__(self, targetDir, facilityIds, parameters=None):
         self.name = "Cancer Drivers Summary"
@@ -11,6 +13,8 @@ class CancerDrivers(ExcelWriter):
         self.facilityIds = facilityIds
 
         self.filename = os.path.join(targetDir, self.categoryName + "_cancer_drivers.xlsx")
+        firstFacility = facilityIds[0]
+        self.altrec = self.determineAltRec(targetDir=os.path.join(targetDir, firstFacility), facilityId=firstFacility)
 
     def getHeader(self):
         return ['Facility ID', 'MIR', 'Pollutant', 'Cancer Risk', 'Risk Contribution', 'Source ID']
@@ -32,7 +36,10 @@ class CancerDrivers(ExcelWriter):
             bkdn_df[fac_id] = facilityId
 
             # Load the max indiv risks file for this facility to get the MIR value
-            maxIndivRisks = MaximumIndividualRisks(targetDir=targetDir, facilityId=facilityId)
+            if self.altrec == 'N':
+                maxIndivRisks = MaximumIndividualRisks(targetDir=targetDir, facilityId=facilityId)
+            else:
+                maxIndivRisks = MaximumIndividualRisksNonCensus(targetDir=targetDir, facilityId=facilityId)
             risks_df = maxIndivRisks.createDataframe()
             risks_df = risks_df.loc[risks_df[parameter] == 'Cancer risk']
             bkdn_df[mir] = risks_df[value].iloc[0]

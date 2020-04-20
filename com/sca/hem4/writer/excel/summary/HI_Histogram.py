@@ -2,6 +2,8 @@ from math import log10, floor
 from com.sca.hem4.writer.csv.BlockSummaryChronic import *
 from com.sca.hem4.writer.excel.ExcelWriter import ExcelWriter
 from com.sca.hem4.FacilityPrep import *
+from com.sca.hem4.writer.excel.summary.AltRecAwareSummary import AltRecAwareSummary
+from com.sca.hem4.writer.csv.BlockSummaryChronicNonCensus import BlockSummaryChronicNonCensus
 
 risklevel = 'risklevel'
 resp_population = 'resp_population'
@@ -11,7 +13,7 @@ neuro_facilitycount = 'neuro_facilitycount'
 repr_population = 'repr_population'
 repr_facilitycount = 'repr_facilitycount'
 
-class HI_Histogram(ExcelWriter):
+class HI_Histogram(ExcelWriter, AltRecAwareSummary):
 
     def __init__(self, targetDir, facilityIds, parameters=None):
         self.name = "Non-cancer Histogram"
@@ -20,6 +22,8 @@ class HI_Histogram(ExcelWriter):
         self.facilityIds = facilityIds
 
         self.filename = os.path.join(targetDir, self.categoryName + "_hi_histogram.xlsx")
+        firstFacility = facilityIds[0]
+        self.altrec = self.determineAltRec(targetDir=os.path.join(targetDir, firstFacility), facilityId=firstFacility)
 
     def getHeader(self):
         return ['HI Level',	 'Respiratory Pop',	'Respiratory Facilities',
@@ -39,7 +43,9 @@ class HI_Histogram(ExcelWriter):
         for facilityId in self.facilityIds:
             targetDir = self.categoryFolder + "/" + facilityId
 
-            blockSummaryChronic = BlockSummaryChronic(targetDir=targetDir, facilityId=facilityId)
+            blockSummaryChronic = BlockSummaryChronicNonCensus(targetDir=targetDir, facilityId=facilityId) if self.altrec == 'Y' else\
+                BlockSummaryChronic(targetDir=targetDir, facilityId=facilityId)
+
             bsc_df = blockSummaryChronic.createDataframe()
 
             # Get max resp value that has a population > 0
@@ -86,14 +92,28 @@ class HI_Histogram(ExcelWriter):
 
         blocksummary_df.drop_duplicates().reset_index(drop=True)
 
-        aggs = {lat:'first', lon:'first', overlap:'first', elev:'first', utme:'first', rec_type:'first',
-                utmn:'first', hill:'first', fips:'first', block:'first', population:'first',
-                mir:'sum', hi_resp:'sum', hi_live:'sum', hi_neur:'sum', hi_deve:'sum',
-                hi_repr:'sum', hi_kidn:'sum', hi_ocul:'sum', hi_endo:'sum', hi_hema:'sum',
-                hi_immu:'sum', hi_skel:'sum', hi_sple:'sum', hi_thyr:'sum', hi_whol:'sum'}
-
-        # Aggregate concentration, grouped by FIPS/block
-        risk_summed = blocksummary_df.groupby([fips, block]).agg(aggs)[blockSummaryChronic.getColumns()]
+        if self.altrec == 'N':
+            
+            aggs = {lat:'first', lon:'first', overlap:'first', elev:'first', utme:'first', rec_type:'first',
+                    utmn:'first', hill:'first', fips:'first', block:'first', population:'first',
+                    mir:'sum', hi_resp:'sum', hi_live:'sum', hi_neur:'sum', hi_deve:'sum',
+                    hi_repr:'sum', hi_kidn:'sum', hi_ocul:'sum', hi_endo:'sum', hi_hema:'sum',
+                    hi_immu:'sum', hi_skel:'sum', hi_sple:'sum', hi_thyr:'sum', hi_whol:'sum'}
+    
+            # Aggregate concentration, grouped by FIPS/block
+            risk_summed = blocksummary_df.groupby([fips, block]).agg(aggs)[blockSummaryChronic.getColumns()]
+            
+        else:
+            
+            aggs = {lat:'first', lon:'first', overlap:'first', elev:'first', utme:'first', rec_type:'first',
+                    utmn:'first', hill:'first', rec_id: 'first', population:'first',
+                    mir:'sum', hi_resp:'sum', hi_live:'sum', hi_neur:'sum', hi_deve:'sum',
+                    hi_repr:'sum', hi_kidn:'sum', hi_ocul:'sum', hi_endo:'sum', hi_hema:'sum',
+                    hi_immu:'sum', hi_skel:'sum', hi_sple:'sum', hi_thyr:'sum', hi_whol:'sum'}
+    
+            # Aggregate concentration, grouped by FIPS/block
+            risk_summed = blocksummary_df.groupby([rec_id]).agg(aggs)[blockSummaryChronic.getColumns()]
+           
 
         for index, row in risk_summed.iterrows():
             roundedResp = self.round_to_sigfig(row[hi_resp])

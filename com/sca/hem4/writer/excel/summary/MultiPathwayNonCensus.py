@@ -24,7 +24,7 @@ class MultiPathwayNonCensus(ExcelWriter):
         self.categoryFolder = targetDir
         self.facilityIds = facilityIds
 
-        self.filename = os.path.join(self.categoryFolder, "multi_pathway.xlsx")
+        self.filename = os.path.join(targetDir, self.categoryName + "_multi_pathway.xlsx")
         self.haplib_df = DoseResponse().dataframe
 
         self.riskCache = {}
