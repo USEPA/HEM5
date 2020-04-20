@@ -6,9 +6,11 @@ from com.sca.hem4.writer.excel.ExcelWriter import ExcelWriter
 from com.sca.hem4.writer.excel.RiskBreakdown import *
 from com.sca.hem4.writer.csv.AllOuterReceptors import *
 from com.sca.hem4.writer.excel.summary.CancerDrivers import risk_contrib
+from com.sca.hem4.writer.excel.summary.AltRecAwareSummary import AltRecAwareSummary
+from com.sca.hem4.writer.excel.MaximumIndividualRisksNonCensus import MaximumIndividualRisksNonCensus
 
 
-class HazardIndexDrivers(ExcelWriter):
+class HazardIndexDrivers(ExcelWriter, AltRecAwareSummary):
 
     def __init__(self, targetDir, facilityIds, parameters=None):
         self.name = "Hazard Index Drivers Summary"
@@ -17,6 +19,8 @@ class HazardIndexDrivers(ExcelWriter):
         self.facilityIds = facilityIds
 
         self.filename = os.path.join(targetDir, self.categoryName + "_hazard_index_drivers.xlsx")
+        firstFacility = facilityIds[0]
+        self.altrec = self.determineAltRec(targetDir=os.path.join(targetDir, firstFacility), facilityId=firstFacility)
 
     def getHeader(self):
         return ['Facility ID', 'HI Type', 'HI Total', 'Source ID', 'Pollutant', 'Hazard Index', 'Percentage']
@@ -38,7 +42,10 @@ class HazardIndexDrivers(ExcelWriter):
             bkdn_df[fac_id] = facilityId
 
             # Load the max indiv risks file for this facility to get the total value
-            maxIndivRisks = MaximumIndividualRisks(targetDir=targetDir, facilityId=facilityId)
+            if self.altrec == 'N':
+                maxIndivRisks = MaximumIndividualRisks(targetDir=targetDir, facilityId=facilityId)
+            else:
+                maxIndivRisks = MaximumIndividualRisksNonCensus(targetDir=targetDir, facilityId=facilityId)
             risks_df = maxIndivRisks.createDataframe()
             risks_df = risks_df.loc[risks_df[parameter] != 'Cancer risk']
 
