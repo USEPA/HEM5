@@ -27,6 +27,8 @@ class Logger:
 
         Logger.logfile = open(filename, 'w')
 
+        Logger.logMessage("HEM4 logging initialized. See output subfolder for the log of your HEM4 run.")
+
     @staticmethod
     def archiveLog(runDir):
         Logger.close(True)
@@ -34,6 +36,21 @@ class Logger:
         filename = os.path.join(fileDir, 'output/hem4.log')
         if os.path.isfile(filename):
             shutil.move(filename, runDir)
+
+    @staticmethod
+    def appendLog(runDir):
+        Logger.close(True)
+
+        fileDir = os.path.dirname(os.path.realpath('__file__'))
+        current_filename = os.path.join(fileDir, 'output/hem4.log')
+        rundir_filename = os.path.join(fileDir, runDir + '/hem4.log')
+
+        logfile = open(current_filename, 'r')
+        runlogfile = open(rundir_filename, 'a')
+        runlogfile.write(logfile.read())
+
+        logfile.close()
+        runlogfile.close()
 
     @staticmethod
     def log(message, data, logToMessageQueue):

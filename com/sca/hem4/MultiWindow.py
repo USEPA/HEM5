@@ -276,13 +276,8 @@ class Page1(Page):
          #future.add_done_callback(self.reset_reports)           
         
     def createReports(self,  arguments=None):
-        
-        
-        
 
         ready= False
-        
-        #check to see if there is a directory location
                  
         try:
             
@@ -299,21 +294,18 @@ class Page1(Page):
                 Logger.logMessage("Cannot generate summaries because there is no Facility_Max_Risk_and_HI Excel file \
                                   in the folder you selected.")
                 ready = False 
-          
-            
+
         except:
             
-             messagebox.showinfo("No facilities selected",
-                "Please select a run folder.")
+             messagebox.showinfo("No facilities selected", "Please select a run folder.")
              
              ready = False
+
         # Figure out which facilities will be included in the report.
         # Facilities listed in the facility_max_risk_and_hi HEM4 output will be used
         # and the modeling group name is taken from the first part of the filename.
-        
-        
-                
-        #get reports and set arguments
+
+        # get reports and set arguments
         reportNames = []
         reportNameArgs = {}
         if self.var_m.get() == 1:
@@ -340,7 +332,7 @@ class Page1(Page):
                 
         if self.var_s.get() == 1:
             reportNames.append('SourceTypeRiskHistogram')
-            #pass position number and character number
+            # pass position number and character number
             if len(self.pos_num.get()) == 0 or self.pos_num.get() == '0':
                 startpos = 1
             else:
@@ -351,9 +343,8 @@ class Page1(Page):
         if self.var_p.get() == 1:
             reportNames.append('MultiPathway')
             reportNameArgs['MultiPathway'] = None
-       
 
-        #add run checks
+        # add run checks
         if (self.var_m.get() != 1 and 
             self.var_c.get() != 1 and
             self.var_h.get() != 1 and
@@ -412,14 +403,18 @@ class Page1(Page):
                     args = reportNameArgs[reportName]
                     summaryMgr.createReport(self.fullpath, reportName, args)
                 except BaseException as e:
-                    Logger.logMessage(str(e))
+                    Logger.logMessage("Error creating report: " + str(e))
                 
-                report_complete = reportName +  " complete."
+                report_complete = reportName + " complete."
                 self.scr.configure(state='normal')
                 self.scr.insert(tk.INSERT, report_complete)
                 self.scr.insert(tk.INSERT, "\n")
                 self.scr.configure(state='disabled')
-                
+
+            # Move log output to hem4.log in output folder and re-initialize
+            Logger.appendLog(self.fullpath)
+            Logger.initializeLog()
+
             self.scr.configure(state='normal')
             self.scr.insert(tk.INSERT, "Summary Reports Complete.")
             self.scr.insert(tk.INSERT, "\n")
