@@ -63,7 +63,8 @@ class AcuteImpactsVisualizer():
         # If the flag file has no cases of interest, don't do anything.
         # Otherwise, create a directory for the created acute files.
         if len(flag_list)==0:
-            Logger.logMessage("No cases of interest found for acute data.")
+            Logger.logMessage("Acute impacts visualization - " +
+                              "No acute impact was greater than or equal to 1.5. No HTML files were generated.")
             return
         else:
             if os.path.isdir(self.sourceDir + '/Acute Maps') == 0:
@@ -182,3 +183,5 @@ class AcuteImpactsVisualizer():
 
         mapName2 = '%s%s%s' %(self.sourceDir, '/Acute Maps/', "All Acute Maps.html")
         save(tabs, filename = mapName2, title="All Acute HQ Maps")
+
+        Logger.logMessage("Acute impacts visualization - HTML files successfully created.")
