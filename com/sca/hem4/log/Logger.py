@@ -27,7 +27,7 @@ class Logger:
 
         Logger.logfile = open(filename, 'w')
 
-        Logger.logMessage("HEM4 logging initialized. See output subfolder for the log of your HEM4 run.")
+        Logger.logMessage("HEM4 Logging Initialized. See output subfolder for the log of your HEM4 run.\n")
 
     @staticmethod
     def archiveLog(runDir):
