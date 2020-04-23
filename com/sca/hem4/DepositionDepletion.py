@@ -62,7 +62,7 @@ def check_phase(r):
     phaseResult = []
 
 
-    if dep == 'Y' and depl == '' and vdep == '' and vdepl == '' and pdep == '' and pdepl == '':
+    if dep == 'Y' and depl == 'N' and vdep == 'NO' and vdepl == 'NO' and pdep == 'NO' and pdepl == 'NO':
         # Special case where only breakout of particle and vapor is needed in the outputs, but no dep/depl
         phase = 'Z'
         phaseResult.append(phase)
@@ -315,68 +315,177 @@ def sort(facops):
 def single_phase(phase, depos, deple, vdepo, pdepo, vdepl, pdepl):
     
     opts = []
-    if "Y" in depos:
-
-        if pdepo == "WO" or vdepo == "WO":
+    
+    if phase == "P":
+        
+        if "Y" in depos:
+            
+            # deposition is Y
+            
             if deple == "N":
-                opts.append(" WDEP NOWETDPLT ")
+                
+                # depletion is N - this overrides whatever is put in pdepl
+                
+                if pdepo == "NO":
+                    opts.append("")
+                if pdepo == "DO":
+                    opts.append(" DDEP NODRYDPLT NOWETDPLT ")
+                if pdepo == "WO":
+                    opts.append(" WDEP NODRYDPLT NOWETDPLT ")
+                if pdepo == "WD":
+                    opts.append(" DDEP WDEP NODRYDPLT NOWETDPLT ")
+                    
             else:
-                opts.append(" WDEP ")
+                
+                # depletion is Y - consider pdepl
+        
+                if pdepo == "NO" and pdepl == "NO":
+                    opts.append(" NODRYDPLT NOWETDPLT ")
+                if pdepo == "NO" and pdepl == "DO":
+                    opts.append(" DRYDPLT NOWETDPLT ")
+                if pdepo == "NO" and pdepl == "WO":
+                    opts.append(" WETDPLT NODRYDPLT ")
+                if pdepo == "NO" and pdepl == "WD":
+                    opts.append(" DRYDPLT WETDPLT ")
+                
+                if pdepo == "DO" and pdepl == "NO":
+                    opts.append(" DDEP NODRYDPLT NOWETDPLT ")
+                if pdepo == "DO" and pdepl == "DO":
+                    opts.append(" DDEP DRYDPLT NOWETDPLT ")
+                if pdepo == "DO" and pdepl == "WO":
+                    opts.append(" DDEP WETDPLT NODRYDPLT ")
+                if pdepo == "DO" and pdepl == "WD":
+                    opts.append(" DDEP DRYDPLT WETDPLT ")
 
-        #        if phase == 'B':
-        #            if pdepo == "WO" and vdepo == "WO":
-        #                opts.append(" WDEP NOWETDPLT ")
+                if pdepo == "WO" and pdepl == "NO":
+                    opts.append(" WDEP NODRYDPLT NOWETDPLT ")
+                if pdepo == "WO" and pdepl == "DO":
+                    opts.append(" WDEP DRYDPLT NOWETDPLT ")
+                if pdepo == "WO" and pdepl == "WO":
+                    opts.append(" WDEP WETDPLT NODRYDPLT ")
+                if pdepo == "WO" and pdepl == "WD":
+                    opts.append(" WDEP DRYDPLT WETDPLT ")
 
-        if pdepo == "DO" or vdepo == "DO":
+                if pdepo == "WD" and pdepl == "NO":
+                    opts.append(" DDEP WDEP NODRYDPLT NOWETDPLT ")
+                if pdepo == "WD" and pdepl == "DO":
+                    opts.append(" DDEP WDEP DRYDPLT NOWETDPLT ")
+                if pdepo == "WD" and pdepl == "WO":
+                    opts.append(" DDEP WDEP WETDPLT NODRYDPLT ")
+                if pdepo == "WD" and pdepl == "WD":
+                    opts.append(" DDEP WDEP DRYDPLT WETDPLT ")
+
+
+        else:
+            
+            # deposition is N - this overrides whatever is put in pdepo
+            
             if deple == "N":
-                opts.append(" DDEP NODRYDPLT ")
+                
+                # depletion is N
+                
+                opts.append("")
+                    
             else:
-                opts.append(" DDEP ")
+                
+                # depletion is Y
+        
+                if pdepl == "NO":
+                    opts.append(" NODRYDPLT NOWETDPLT ")
+                if pdepl == "DO":
+                    opts.append(" DRYDPLT NOWETDPLT ")
+                if pdepl == "WO":
+                    opts.append(" WETDPLT NODRYDPLT ")
+                if pdepl == "WD":
+                    opts.append(" DRYDPLT WETDPLT ")
+                
 
-        #        if phase == 'B':
-        #            if pdepo == "DO" and vdepo == "DO":
-        #                opts.append(" DDEP NODRYDPLT ")
-
-        if pdepo == "WD" or vdepo == "WD":
+    else:
+        
+        # phase is V
+        
+        if "Y" in depos:
+            
+            # deposition is Y
+            
             if deple == "N":
-                opts.append(" WDEP DDEP NOWETDPLT NODRYDPLT ")
+                
+                # depletion is N - this overrides whatever is put in vdepl
+                
+                if vdepo == "NO":
+                    opts.append("None")
+                if vdepo == "DO":
+                    opts.append(" DDEP NODRYDPLT NOWETDPLT ")
+                if vdepo == "WO":
+                    opts.append(" WDEP NODRYDPLT NOWETDPLT ")
+                if vdepo == "WD":
+                    opts.append(" DDEP WDEP NODRYDPLT NOWETDPLT ")
+                    
             else:
-                opts.append(" WDEP DDEP ")
+                
+                # depletion is Y - consider vdepl
+        
+                if vdepo == "NO" and vdepl == "NO":
+                    opts.append(" NODRYDPLT NOWETDPLT ")
+                if vdepo == "NO" and vdepl == "DO":
+                    opts.append(" DRYDPLT NOWETDPLT ")
+                if vdepo == "NO" and vdepl == "WO":
+                    opts.append(" WETDPLT NODRYDPLT ")
+                if vdepo == "NO" and vdepl == "WD":
+                    opts.append(" DRYDPLT WETDPLT ")
+                
+                if vdepo == "DO" and vdepl == "NO":
+                    opts.append(" DDEP NODRYDPLT NOWETDPLT ")
+                if vdepo == "DO" and vdepl == "DO":
+                    opts.append(" DDEP DRYDPLT NOWETDPLT ")
+                if vdepo == "DO" and vdepl == "WO":
+                    opts.append(" DDEP WETDPLT NODRYDPLT ")
+                if vdepo == "DO" and vdepl == "WD":
+                    opts.append(" DDEP DRYDPLT WETDPLT ")
 
-        #        if phase == 'B':
-        #            if pdepo == "WD" and vdepo == "WD":
-        #                opts.append(" WDEP DDEP NOWETDPLT NODRYDPLT ")
-        if pdepo == 'NO' or vdepo == 'NO':
-            opts.append("")
-    #----------------------------------------------------------------------------------------
-    if "Y" in deple:
-        #            print(deple)
-        #            print(pdepl)
-        if pdepl == "WD" or vdepl == "WD":
-            if depos == "N":
-                opts.append(" WETDPLT DRYDPLT ")
+                if vdepo == "WO" and vdepl == "NO":
+                    opts.append(" WDEP NODRYDPLT NOWETDPLT ")
+                if vdepo == "WO" and vdepl == "DO":
+                    opts.append(" WDEP DRYDPLT NOWETDPLT ")
+                if vdepo == "WO" and vdepl == "WO":
+                    opts.append(" WDEP WETDPLT NODRYDPLT ")
+                if vdepo == "WO" and vdepl == "WD":
+                    opts.append(" WDEP DRYDPLT WETDPLT ")
 
+                if vdepo == "WD" and vdepl == "NO":
+                    opts.append(" DDEP WDEP NODRYDPLT NOWETDPLT ")
+                if vdepo == "WD" and vdepl == "DO":
+                    opts.append(" DDEP WDEP DRYDPLT NOWETDPLT ")
+                if vdepo == "WD" and vdepl == "WO":
+                    opts.append(" DDEP WDEP WETDPLT NODRYDPLT ")
+                if vdepo == "WD" and vdepl == "WD":
+                    opts.append(" DDEP WDEP DRYDPLT WETDPLT ")
+
+
+        else:
+            
+            # deposition is N - this overrides whatever is put in pdepo
+            
+            if deple == "N":
+                
+                # depletion is N
+                
+                opts.append("")
+                    
             else:
-                opts.append(" WDEP DDEP " )
+                
+                # depletion is Y
+        
+                if vdepl == "NO":
+                    opts.append(" NODRYDPLT NOWETDPLT ")
+                if vdepl == "DO":
+                    opts.append(" DRYDPLT NOWETDPLT ")
+                if vdepl == "WO":
+                    opts.append(" WETDPLT NODRYDPLT ")
+                if vdepl == "WD":
+                    opts.append(" DRYDPLT WETDPLT ")
 
-        if pdepl == "DO" or vdepl == "DO":
-            if depos == "N":
-                opts.append(" DRYDPLT ")
-            else:
-                opts.append(" DDEP ")
-
-        if pdepl == "WO" or vdepl == "WO":
-            if depos == "N":
-                opts.append(" WETDPLT ")
-
-            else:
-                opts.append(" WDEP ")
-
-        if pdepl == 'NO' or vdepl == 'NO':
-            opts.append("")
 
     print('Keyword', opts)
     return {'phase': phase, 'settings': opts}
 
-    ## split it into two lists, duplicate the row and call dep_sort on each?
-#dep_test = check_dep(facops)

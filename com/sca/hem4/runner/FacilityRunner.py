@@ -22,7 +22,7 @@ class FacilityRunner():
         
     
     def setup(self):
-                
+            
         #put phase in model_optns
         fac = self.model.faclist.dataframe.loc[self.model.faclist.dataframe[fac_id] == self.facilityId]
         
@@ -32,19 +32,7 @@ class FacilityRunner():
         else:
             self.model.model_optns['phase'] = fac['phase'].tolist()[0]
 
-        
-#        if self.model.group_name != None:
-#            
-#            Logger.logMessage("RUN GROUP: " + self.model.group_name)
-#            
-#            output = "output/"+self.model.group_name+"/"
-#            fac_folder =  output + self.facilityId + "/"
-#            
-#        else:
-#            
-#            self.model.group_name = "rungroup_" + str(datetime.now().strftime('%Y_%m_%d_%H_%M_%S'))
-#            Logger.logMessage("RUN GROUP: " + self.model.group_name)
-            
+                    
         #create fac folder
         fac_folder =  "output/" + self.model.group_name + "/" + self.facilityId + "/"
 
@@ -192,7 +180,6 @@ class FacilityRunner():
                 Logger.logMessage(r['phase'] + " run:")
                 
                 # create runstream for individual phase
-                
                 try:
                     self.runstream = self.prep_fac.createRunstream(self.facilityId, r)
                     
@@ -255,13 +242,7 @@ class FacilityRunner():
                     # Append temp_df to plot_df
                     plot_df = plot_df.append(temp_df, ignore_index=True)
                     
- 
-                    #TODO: Remove the below 4 lines for production version. For QA only.
-                    plotdf_path = "working/plot_df.xlsx"
-                    plotdf_con = pd.ExcelWriter(plotdf_path)
-                    plot_df.to_excel(plotdf_con,'Sheet1')
-                    plotdf_con.save()
-            
+             
             # Process outputs for this facility
             try:
             
@@ -343,26 +324,21 @@ class FacilityRunner():
              
             #determine which plotfile we are using based on phases
             if self.phase == 'P' or phasetype =='P':
-                
-                # listing directories
-                print ("The dir is: %s"%os.listdir('aermod'))
-                
+                                
                 #rename for particle
+                if os.path.exists('aermod/plotfile_p.plt'):
+                    os.remove('aermod/plotfile_p.plt')
                 os.rename('aermod/plotfile.plt','aermod/plotfile_p.plt')
                 plt_version = 'plotfile_p.plt'
-                  # listing directories
-                print ("The dir is: %s"%os.listdir('aermod'))
                  
             elif self.phase == 'V' or phasetype == 'V':
                 
-                  # listing directories
-                print ("The dir is: %s"%os.listdir('aermod'))
                 #rename for vapor
+                if os.path.exists('aermod/plotfile_v.plt'):
+                    os.remove('aermod/plotfile_v.plt')
                 os.rename('aermod/plotfile.plt','aermod/plotfile_v.plt')
                 plt_version = 'plotfile_v.plt'
                 
-                  # listing directories
-                print ("The dir is: %s"%os.listdir('aermod'))
             else:
                 plt_version = 'plotfile.plt'
 

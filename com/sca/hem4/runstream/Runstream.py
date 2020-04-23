@@ -127,7 +127,7 @@ class Runstream():
         co1 = "CO STARTING  \n"
         co2 = "CO TITLEONE  " + str(self.facid) + "\n"
         co3 = titletwo   
-        co4 = "CO MODELOPT  CONC  BETA " + optdp + optel + optfa + "\n"  
+        co4 = "CO MODELOPT  CONC  ALPHA  BETA " + optdp + optel + optfa + "\n"  
     
 
         self.inp_f.write(co1)
