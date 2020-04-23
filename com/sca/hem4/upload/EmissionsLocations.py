@@ -46,7 +46,7 @@ class EmissionsLocations(InputFile):
     def clean(self, df):
 
         cleaned = df.fillna({utmzone:'0N', source_type:'', lengthx:1, lengthy:1, angle:0,
-                                    horzdim:1, vertdim:1, areavolrelhgt:0, stkht:0,
+                                    horzdim:0, vertdim:0, areavolrelhgt:0, stkht:0,
                                     stkvel:0, stktemp:0, elev:0, x2:0, y2:0, method:1, massfrac:1, partdiam:1})
         cleaned.replace(to_replace={fac_id:{"nan":""}, source_id:{"nan":""}}, inplace=True)
         cleaned = cleaned.reset_index(drop = True)
@@ -154,6 +154,12 @@ class EmissionsLocations(InputFile):
                     Logger.logMessage("Facility " + facility + ": UTM zone value " + str(row[utmzone]) + " invalid " +
                                       "in the Emissions Locations List.")
                     return None
+                
+            if row[source_type] == 'V':
+                if row[horzdim] == 0 and row[vertdim] == 0:
+                    Logger.logMessage("Facility " + facility + " Source ID " + row[source_id] + ": must supply non-zero initial " +
+                                      "lateral and vertical dimensions for volume source in the Emissions Locations List.")
+                    return None
 
         # ----------------------------------------------------------------------------------
         # Defaulted: Invalid values in these columns will be replaced with a default.
@@ -174,14 +180,14 @@ class EmissionsLocations(InputFile):
                 Logger.logMessage("Facility " + facility + ": angle value " + str(row[angle]) +
                                   " out of range. Defaulting to 0.")
                 row[angle] = 0
-            if row[horzdim] <= 0:
+            if row[horzdim] < 0:
                 Logger.logMessage("Facility " + facility + ": Horizontal dim value " + str(row[horzdim]) +
-                                  " out of range. Defaulting to 1.")
-                row[horzdim] = 1
-            if row[vertdim] <= 0:
+                                  " out of range. Defaulting to 0.")
+                row[horzdim] = 0
+            if row[vertdim] < 0:
                 Logger.logMessage("Facility " + facility + ": Vertical dim value " + str(row[vertdim]) +
-                                  " out of range. Defaulting to 1.")
-                row[vertdim] = 1
+                                  " out of range. Defaulting to 0.")
+                row[vertdim] = 0
             if row[areavolrelhgt] < 0:
                 Logger.logMessage("Facility " + facility + ": Release height value " + str(row[areavolrelhgt]) +
                                   " out of range. Defaulting to 0.")
