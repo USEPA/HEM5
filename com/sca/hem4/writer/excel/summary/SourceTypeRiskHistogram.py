@@ -1,6 +1,5 @@
 import fnmatch
 from math import log10, floor
-from com.sca.hem4.upload.EmissionsLocations import EmissionsLocations
 from com.sca.hem4.upload.FacilityList import FacilityList
 from com.sca.hem4.writer.csv.AllInnerReceptorsNonCensus import AllInnerReceptorsNonCensus
 from com.sca.hem4.writer.csv.AllOuterReceptorsNonCensus import AllOuterReceptorsNonCensus
@@ -54,6 +53,8 @@ class SourceTypeRiskHistogram(ExcelWriter, AltRecAwareSummary):
         # Initialize overall block risk DF (sector level)
         sector_blkrisk = pd.DataFrame()
         
+        # Initialize set of source id's
+        allsrcids = set()
         
         for facilityId in self.facilityIds:
                         
@@ -66,6 +67,10 @@ class SourceTypeRiskHistogram(ExcelWriter, AltRecAwareSummary):
                 AllInnerReceptors(targetDir=targetDir, facilityId=facilityId, acuteyn=acute_yn)
             allinner_df = allinner.createDataframe()
 
+            # Unique list of source ids from this facility
+            uniqsrcs = set(allinner_df[source_id])
+            allsrcids.update(uniqsrcs)
+            
             # Merge ure column
             allinner2_df = pd.merge(allinner_df, self.haplib_df[['pollutant', 'ure']],
                                 how='left', on='pollutant')
@@ -192,20 +197,14 @@ class SourceTypeRiskHistogram(ExcelWriter, AltRecAwareSummary):
                 codelist[3] += pop
             codelist[4] += (risk * pop) / 70
 
-
         # Maximum MIR for the entire sector
         self.sector_mir = round(sectortot_summed['risk'].max() * 1000000, 3)
 
         # Prepend the header, sorting by maximums...
         header = ['', 'Maximum Overall']
-
-        # Open the emisloc dataframe and find all unique source type codes
-        emislocFile = os.path.join(self.categoryFolder, "inputs/emisloc.xlsx")
-        emisloc = EmissionsLocations(emislocFile, None, None)
-
+        
         # Get a list of all source types
-        sourceIds = emisloc.dataframe[source_id].unique()
-        sourceTypes = [id[self.codePosition:self.codePosition+self.codeLength] for id in sourceIds]
+        sourceTypes = [id[self.codePosition:self.codePosition+self.codeLength] for id in allsrcids]
         self.sourceTypes = list(set(sourceTypes))
 
         # Get maximum values only on the first pass...these will be used to sort the source types
