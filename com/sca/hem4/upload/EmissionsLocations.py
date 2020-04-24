@@ -22,9 +22,10 @@ partdiam = 'partdiam'
 
 class EmissionsLocations(InputFile):
 
-    def __init__(self, path, hapemis, fac_ids):
+    def __init__(self, path, hapemis, faclist, fac_ids):
         self.fac_ids = fac_ids
         self.hapemis = hapemis
+        self.faclist = faclist
         InputFile.__init__(self, path)
 
     def createDataframe(self):
@@ -61,6 +62,8 @@ class EmissionsLocations(InputFile):
         # ----------------------------------------------------------------------------------
         # Strict: Invalid values in these columns will cause the upload to fail immediately.
         # ----------------------------------------------------------------------------------
+        efac = set(df[fac_id])
+        
         if len(df.loc[(df[fac_id] == '')]) > 0:
             Logger.logMessage("One or more facility IDs are missing in the Emissions Locations List.")
             return None
@@ -73,8 +76,7 @@ class EmissionsLocations(InputFile):
             return None
 
         if self.fac_ids is not None:
-            elocfids = set(df[fac_id])
-            if self.fac_ids.intersection(elocfids) != self.fac_ids:
+            if self.fac_ids.intersection(efac) != self.fac_ids:
                 Logger.logMessage("Based on your Facility List Options file, the Emissions Location List is missing " +
                                   "one or more facilities. Please correct one or both files and upload again.")
                 return None
@@ -87,7 +89,6 @@ class EmissionsLocations(InputFile):
         # for facilities in faclist file
         if self.fac_ids is not None and self.hapemis is not None:
             hfac = set(self.hapemis.dataframe[fac_id])
-            efac = set(df[fac_id])
 
             in_hap = list(self.fac_ids.intersection(hfac))
             in_emis = list(self.fac_ids.intersection(efac))
@@ -119,11 +120,21 @@ class EmissionsLocations(InputFile):
             Logger.logMessage("One or more source types are missing a valid value in the Emissions Locations List.")
             return None
 
+        # Cannot model deposition or depletion of buoyant line sources
+        depfacs = set(self.faclist.dataframe[fac_id].loc[(self.faclist.dataframe['dep']=='Y') |
+                                                    (self.faclist.dataframe['depl']=='Y')])
+        buoyfacs = set(df[fac_id].loc[df[source_type]=='B'])
+        if len(depfacs.intersection(buoyfacs)) > 0:
+            Logger.logMessage("The Emission Location file has a buoyant line source that will be modeled with " +
+                              "deposition/depletion. This is not allowed in HEM4. Please remove the buoyant line " +
+                              "source or disable deposition/depletion")
+            return None
+        
         for index, row in df.iterrows():
 
             facility = row[fac_id]
             type = row[location_type]
-
+                
             maxlon = 180 if type == 'L' else 850000
             minlon = -180 if type == 'L' else 160000
             maxlat = 85 if type == 'L' else 10000000

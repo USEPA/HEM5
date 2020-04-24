@@ -52,7 +52,7 @@ class FileUploader():
             uploaded = HAPEmissions(path, self.model.haplib, set(self.model.fac_ids))
             self.model.hapemis = uploaded
         elif filetype == "emisloc":
-            uploaded = EmissionsLocations(path, self.model.hapemis, set(self.model.fac_ids))
+            uploaded = EmissionsLocations(path, self.model.hapemis, self.model.faclist, set(self.model.fac_ids))
             self.model.emisloc = uploaded
         elif filetype == "alt receptors":
             uploaded = AltReceptors(path)
