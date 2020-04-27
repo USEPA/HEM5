@@ -45,7 +45,8 @@ class MaximumIndividualRisks(ExcelWriter, InputFile):
     def calcHI(self, hiname, hivar):
         mr_parameter = hiname
         io_idx = self.model.risk_by_latlon[(self.model.risk_by_latlon[rec_type] != "P") & 
-                                           (self.model.risk_by_latlon[population] > 0)][hivar].idxmax()
+                                           ('S' not in self.model.risk_by_latlon['block']) &
+                                           ('M' not in self.model.risk_by_latlon['block'])][mir].idxmax()
         mr_lat = float(self.model.risk_by_latlon[lat].loc[io_idx])
         mr_lon = float(self.model.risk_by_latlon[lon].loc[io_idx])
         if self.model.risk_by_latlon[overlap].loc[io_idx] == "N":
@@ -258,7 +259,8 @@ class MaximumIndividualRisks(ExcelWriter, InputFile):
         """
         mr_parameter = "Cancer risk"
         io_idx = self.model.risk_by_latlon[(self.model.risk_by_latlon[rec_type] != "P") & 
-                                           (self.model.risk_by_latlon[population] > 0)][mir].idxmax()
+                                           ('S' not in self.model.risk_by_latlon['block']) &
+                                           ('M' not in self.model.risk_by_latlon['block'])][mir].idxmax()
         if self.model.risk_by_latlon[mir].loc[io_idx] > 0:
             #max risk is > 0, do calculations
             mr_lat = float(self.model.risk_by_latlon[lat].loc[io_idx])
@@ -278,7 +280,10 @@ class MaximumIndividualRisks(ExcelWriter, InputFile):
                     mr_block = self.model.innerblks_df[(self.model.innerblks_df[lon] == mr_lon) & (self.model.innerblks_df[lat] == mr_lat)][idmarplot].values[0][-10:]
                     mr_utme = self.model.innerblks_df[(self.model.innerblks_df[lon] == mr_lon) & (self.model.innerblks_df[lat] == mr_lat)][utme].values[0]
                     mr_utmn = self.model.innerblks_df[(self.model.innerblks_df[lon] == mr_lon) & (self.model.innerblks_df[lat] == mr_lat)][utmn].values[0]
-                    mr_rectype = "Census block"
+                    if 'U' in self.model.risk_by_latlon['block']:
+                        mr_rectype = "User receptor"
+                    else:
+                        mr_rectype = "Census block"
                     mr_notes = "Discrete"
                 else:
                     mr_pop = self.model.outerblks_df[(self.model.outerblks_df[lon] == mr_lon) & (self.model.outerblks_df[lat] == mr_lat)][population].values[0]
@@ -290,7 +295,10 @@ class MaximumIndividualRisks(ExcelWriter, InputFile):
                     mr_block = self.model.outerblks_df[(self.model.outerblks_df[lon] == mr_lon) & (self.model.outerblks_df[lat] == mr_lat)][idmarplot].values[0][-10:]
                     mr_utme = self.model.outerblks_df[(self.model.outerblks_df[lon] == mr_lon) & (self.model.outerblks_df[lat] == mr_lat)][utme].values[0]
                     mr_utmn = self.model.outerblks_df[(self.model.outerblks_df[lon] == mr_lon) & (self.model.outerblks_df[lat] == mr_lat)][utmn].values[0]
-                    mr_rectype = "Census block"
+                    if 'U' in self.model.risk_by_latlon['block']:
+                        mr_rectype = "User receptor"
+                    else:
+                        mr_rectype = "Census block"
                     mr_notes = "Interpolated"
             else:
                 #overlapped
@@ -323,7 +331,10 @@ class MaximumIndividualRisks(ExcelWriter, InputFile):
                     mr_block = self.model.outerblks_df[(self.model.outerblks_df[lon] == mr_lon) & (self.model.outerblks_df[lat] == mr_lat)][idmarplot].values[0][-10:]
                     mr_utme = self.model.outerblks_df[(self.model.outerblks_df[lon] == mr_lon) & (self.model.outerblks_df[lat] == mr_lat)][utme].values[0]
                     mr_utmn = self.model.outerblks_df[(self.model.outerblks_df[lon] == mr_lon) & (self.model.outerblks_df[lat] == mr_lat)][utmn].values[0]
-                    mr_rectype = "Census block"
+                    if 'U' in self.model.risk_by_latlon['block']:
+                        mr_rectype = "User receptor"
+                    else:
+                        mr_rectype = "Census block"
                     mr_notes = "Interpolated"
                 else:
                     mr_pop = self.model.innerblks_df[(self.model.innerblks_df[lon] == mr_lon) & (self.model.innerblks_df[lat] == mr_lat)][population].values[0]
@@ -335,7 +346,10 @@ class MaximumIndividualRisks(ExcelWriter, InputFile):
                     mr_block = self.model.innerblks_df[(self.model.innerblks_df[lon] == mr_lon) & (self.model.innerblks_df[lat] == mr_lat)][idmarplot].values[0][-10:]
                     mr_utme = self.model.innerblks_df[(self.model.innerblks_df[lon] == mr_lon) & (self.model.innerblks_df[lat] == mr_lat)][utme].values[0]
                     mr_utmn = self.model.innerblks_df[(self.model.innerblks_df[lon] == mr_lon) & (self.model.innerblks_df[lat] == mr_lat)][utmn].values[0]
-                    mr_rectype = "Census block"
+                    if 'U' in self.model.risk_by_latlon['block']:
+                        mr_rectype = "User receptor"
+                    else:
+                        mr_rectype = "Census block"
                     mr_notes = "Discrete"
         else:
             #max risk is 0, set all variables as empty

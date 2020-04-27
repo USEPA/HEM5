@@ -307,7 +307,7 @@ class KMLWriter():
         cen_folder.append(placemark)
         docWithHeader.append(cen_folder)
 
-        # Facility MIR folder
+        # Facility MIR folder (only display if MIR > 0)
         mir_info = model.max_indiv_risk_df[model.max_indiv_risk_df['parameter']=='Cancer risk'][[
                                             'parameter','value','distance','rec_type',
                                             'lat','lon']].reset_index(drop=True)
@@ -317,18 +317,19 @@ class KMLWriter():
         mirlat = mir_info.at[0,'lat']
         mirlon = mir_info.at[0,'lon']
 
-        mir_folder = kml.Folder(ns=self.ns, name="MIR")
-        mir_folder.isopen = 0
-        placemark = kml.Placemark(ns=self.ns, name="MIR",
-                                  description=CDATA("<div align='center'><B>MIR Receptor</B><br />" + \
-                                  "<B>Receptor type: "+mirtype+"</B><br />" + \
-                                  "<B>Distance from facility (m): "+str(mirdist)+"</B><br /><br />" + \
-                                  "MIR (in a million) = " +str(mirrnd)+"<br /></div>"),
-                                  styleUrl="#mir")
-        point = Point(mirlon, mirlat, 0.0)
-        placemark.geometry = Geometry(ns=self.ns, altitude_mode="relativeToGround", geometry=point)
-        mir_folder.append(placemark)
-        docWithHeader.append(mir_folder)
+        if mirrnd > 0:
+            mir_folder = kml.Folder(ns=self.ns, name="MIR")
+            mir_folder.isopen = 0
+            placemark = kml.Placemark(ns=self.ns, name="MIR",
+                                      description=CDATA("<div align='center'><B>MIR Receptor</B><br />" + \
+                                      "<B>Receptor type: "+mirtype+"</B><br />" + \
+                                      "<B>Distance from facility (m): "+str(mirdist)+"</B><br /><br />" + \
+                                      "MIR (in a million) = " +str(mirrnd)+"<br /></div>"),
+                                      styleUrl="#mir")
+            point = Point(mirlon, mirlat, 0.0)
+            placemark.geometry = Geometry(ns=self.ns, altitude_mode="relativeToGround", geometry=point)
+            mir_folder.append(placemark)
+            docWithHeader.append(mir_folder)
         
         
         #-------------- User receptor cancer risk -------------------------------------
@@ -869,7 +870,7 @@ class KMLWriter():
         cen_folder.append(placemark)
         docWithHeader.append(cen_folder)
 
-        # Facility MIR folder
+        # Facility MIR folder (only display if MIR > 0)
         mir_info = model.max_indiv_risk_df[model.max_indiv_risk_df['parameter']=='Cancer risk'][[
                                             'parameter','value','distance','rec_type',
                                             'lat','lon']].reset_index(drop=True)
@@ -879,18 +880,19 @@ class KMLWriter():
         mirlat = mir_info.at[0,'lat']
         mirlon = mir_info.at[0,'lon']
 
-        mir_folder = kml.Folder(ns=self.ns, name="MIR")
-        mir_folder.isopen = 0
-        placemark = kml.Placemark(ns=self.ns, name="MIR",
-                                  description=CDATA("<div align='center'><B>MIR Receptor</B><br />" + \
-                                  "<B>Receptor type: "+mirtype+"</B><br />" + \
-                                  "<B>Distance from facility (m): "+str(mirdist)+"</B><br /><br />" + \
-                                  "MIR (in a million) = " +str(mirrnd)+"<br /></div>"),
-                                  styleUrl="#mir")
-        point = Point(mirlon, mirlat, 0.0)
-        placemark.geometry = Geometry(ns=self.ns, altitude_mode="relativeToGround", geometry=point)
-        mir_folder.append(placemark)
-        docWithHeader.append(mir_folder)
+        if mirrnd > 0:
+            mir_folder = kml.Folder(ns=self.ns, name="MIR")
+            mir_folder.isopen = 0
+            placemark = kml.Placemark(ns=self.ns, name="MIR",
+                                      description=CDATA("<div align='center'><B>MIR Receptor</B><br />" + \
+                                      "<B>Receptor type: "+mirtype+"</B><br />" + \
+                                      "<B>Distance from facility (m): "+str(mirdist)+"</B><br /><br />" + \
+                                      "MIR (in a million) = " +str(mirrnd)+"<br /></div>"),
+                                      styleUrl="#mir")
+            point = Point(mirlon, mirlat, 0.0)
+            placemark.geometry = Geometry(ns=self.ns, altitude_mode="relativeToGround", geometry=point)
+            mir_folder.append(placemark)
+            docWithHeader.append(mir_folder)
         
         
         #-------------- User receptor cancer risk -------------------------------------        
