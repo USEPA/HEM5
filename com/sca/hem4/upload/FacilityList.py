@@ -138,9 +138,9 @@ class FacilityList(InputFile):
                 row[rural_urban] = ""
 
             if row[rural_urban] == 'U':
-                if row[urban_pop] < 0:
-                    Logger.logMessage("Facility " + facility + ": Invalid value (urban_pop): Defaulting to 0.")
-                    row[urban_pop] = 0
+                if row[urban_pop] <= 0:
+                    Logger.logMessage("Facility " + facility + ": Invalid value (urban_pop): Defaulting to 50,000.")
+                    row[urban_pop] = 50000
 
             # Modeled Distance of Receptors
             if row[model_dist] > 50000 or row[model_dist] <= 0:
