@@ -7,6 +7,7 @@ from com.sca.hem4.writer.excel.MaximumIndividualRisks import *
 from com.sca.hem4.model.Model import *
 from com.sca.hem4.support.UTM import *
 from com.sca.hem4.FacilityPrep import *
+import traceback
 
 site_type = 'site_type';
 conc_rnd = 'conc_rnd';
@@ -19,7 +20,7 @@ class RiskBreakdown(ExcelWriter, InputFile):
     the pollutant concentration, URE and RfC values.
     """
 
-    def __init__(self, targetDir=None, facilityId=None, model=None, plot_df=None, filenameOverride=None,
+    def __init__(self, targetDir=None, facilityId=None, model=None, plot_df=None, acuteyn=None, filenameOverride=None,
                  createDataframe=False):
         # Initialization for file reading/writing. If no file name override, use the
         # default construction.
@@ -31,6 +32,7 @@ class RiskBreakdown(ExcelWriter, InputFile):
 
         self.filename = path
         self.targetDir = targetDir
+        self.acute_yn = acuteyn
 
 
         # Local cache for URE/RFC values
@@ -107,7 +109,8 @@ class RiskBreakdown(ExcelWriter, InputFile):
                         # Search each outer receptor file for the lat/lon in row
                         foundit = False
                         for f in listOuter:
-                            allouter = AllOuterReceptors(targetDir=self.targetDir, filenameOverride=f)
+                            allouter = AllOuterReceptors(targetDir=self.targetDir, acuteyn=self.acute_yn, 
+                                                         filenameOverride=f)
                             outconcs = allouter.createDataframe()
     
                             concdata = outconcs[[lat,lon,source_id,pollutant,emis_type,conc]] \
@@ -300,8 +303,9 @@ class RiskBreakdown(ExcelWriter, InputFile):
 
         except BaseException as e:
         
-            exc_type, exc_obj, exc_tb = sys.exc_info()
-            Logger.logMessage(exc_type, exc_tb.tb_lineno)
+#            exc_type, exc_obj, exc_tb = sys.exc_info()
+            var = traceback.format_exc()
+            Logger.logMessage(var)
             
 
     def calculateRisks(self, pollutant_name, conc, risktype):

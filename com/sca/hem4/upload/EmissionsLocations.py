@@ -19,6 +19,7 @@ y2 = 'y2'
 method = 'method'
 massfrac = 'massfrac'
 partdiam = 'partdiam'
+fastall = 'fastall'
 
 class EmissionsLocations(InputFile):
 
@@ -125,9 +126,19 @@ class EmissionsLocations(InputFile):
                                                     (self.faclist.dataframe['depl']=='Y')])
         buoyfacs = set(df[fac_id].loc[df[source_type]=='B'])
         if len(depfacs.intersection(buoyfacs)) > 0:
-            Logger.logMessage("The Emission Location file has a buoyant line source that will be modeled with " +
-                              "deposition/depletion. This is not allowed in HEM4. Please remove the buoyant line " +
-                              "source or disable deposition/depletion")
+            Logger.logMessage("AERMOD cannot currently model deposition or depletion of emissions from " +
+                              "buoyant line sources, and the Emissions Location file includes a buoyant line " +
+                              "source for one or more facilities. Please disable deposition and depletion for " +
+                              "each of these facilities, or remove the buoyant line source(s).")
+            return None
+
+        # Cannot use the Aermod FASTALL option on a facility with a buoyant line source
+        fastfacs = set(self.faclist.dataframe[fac_id].loc[(self.faclist.dataframe[fastall]=='Y')])
+        buoyfacs = set(df[fac_id].loc[df[source_type]=='B'])
+        if len(fastfacs.intersection(buoyfacs)) > 0:
+            Logger.logMessage("AERMOD's FASTALL option cannot be used with buoyant line sources, and the " +
+                              "Emissions Location file includes a buoyant line source for one or more facilities. " +
+                              "Please disable FASTALL for each of these facilities, or remove the buoyant line source(s).")
             return None
         
         for index, row in df.iterrows():

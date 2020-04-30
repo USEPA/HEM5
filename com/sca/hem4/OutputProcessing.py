@@ -34,6 +34,7 @@ from com.sca.hem4.support.UTM import *
 from com.sca.hem4.model.Model import *
 from com.sca.hem4.writer.excel.FacilityCancerRiskExp import FacilityCancerRiskExp
 from com.sca.hem4.writer.excel.FacilityTOSHIExp import FacilityTOSHIExp
+import traceback
 
 
 class Process_outputs():
@@ -204,7 +205,7 @@ class Process_outputs():
             Logger.logMessage("Terminating output processing...")
             return
 
-        
+       
         #----------- create Maximum_Individual_Risk output file ---------------
         max_indiv_risk = MaximumIndividualRisksNonCensus(self.outdir, self.facid, self.model, self.plot_df) if altrec \
                 else MaximumIndividualRisks(self.outdir, self.facid, self.model, self.plot_df)
@@ -237,7 +238,7 @@ class Process_outputs():
         
         
         #----------- create Risk Breakdown output file ------------------------
-        risk_breakdown = RiskBreakdown(self.outdir, self.facid, self.model, self.plot_df)
+        risk_breakdown = RiskBreakdown(self.outdir, self.facid, self.model, self.plot_df, self.acute_yn)
         risk_breakdown.write()
         Logger.logMessage("Completed RiskBreakdown output")
 
@@ -313,13 +314,21 @@ class Process_outputs():
 
         #create facility kml
         kmlWriter = KMLWriter()
+
+        try:
                 
-        if not altrec:
-            kmlWriter.write_facility_kml(self.facid, self.model.computedValues['cenlat'], 
-                                     self.model.computedValues['cenlon'], self.outdir, self.model)
-        else:
-            kmlWriter.write_facility_kml_NonCensus(self.facid, self.model.computedValues['cenlat'], 
-                                     self.model.computedValues['cenlon'], self.outdir, self.model)
+            if not altrec:
+                kmlWriter.write_facility_kml(self.facid, self.model.computedValues['cenlat'], 
+                                             self.model.computedValues['cenlon'], self.outdir, self.model)
+            else:
+                kmlWriter.write_facility_kml_NonCensus(self.facid, self.model.computedValues['cenlat'], 
+                                         self.model.computedValues['cenlon'], self.outdir, self.model)
+
+        except BaseException as e:
+        
+#            exc_type, exc_obj, exc_tb = sys.exc_info()
+            var = traceback.format_exc()
+            Logger.logMessage(var)
 
         Logger.logMessage("Completed creating KMZ file for " + self.facid)
 

@@ -989,7 +989,10 @@ class Hem4(tk.Frame):
 
         fullpath = self.openFile(askopenfilename())
         if fullpath is not None: 
-            success = self.uploader.uploadDependent("building downwash", fullpath, self.model.faclist.dataframe)
+#            success = self.uploader.uploadDependent("building downwash", fullpath, 
+#                        self.model.faclist.dataframe)
+            success = self.uploader.uploadDependent("building downwash", fullpath, 
+                        self.model)
             if not success:
                 messagebox.showinfo('Error', "Invalid Building Downwash file. Check log for details.")
                 return
