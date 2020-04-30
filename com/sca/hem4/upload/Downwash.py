@@ -9,6 +9,7 @@ from com.sca.hem4.upload.DependentInputFile import DependentInputFile
 from tkinter import messagebox
 from com.sca.hem4.model.Model import *
 from com.sca.hem4.upload.FacilityList import bldg_dw
+import pandas as pd
 
 section = 'section';
 keyword = 'keyword';
@@ -16,7 +17,9 @@ keyword = 'keyword';
 class Downwash(DependentInputFile):
 
     def __init__(self, path, dependency):
-        self.faclist_df = dependency
+        self.model = dependency
+        self.faclist_df = self.model.faclist.dataframe
+        self.emisloc_df = self.model.emisloc.dataframe
         DependentInputFile.__init__(self, path, dependency)
 
     def createDataframe(self):
@@ -96,6 +99,7 @@ class Downwash(DependentInputFile):
                     Logger.logMessage("Invalid down wash value " + str(row[field]) + ".")
                     return None
 
+
         # check for unassigned downwash
         check_downwash_assignment = set(df[fac_id])
 
@@ -105,7 +109,7 @@ class Downwash(DependentInputFile):
         if check_downwash_assignment != d_fac:
             downwash_unassigned = (check_downwash_assignment - d_fac).tolist()
 
-            messagebox.showinfo("Unassigned building downwash", "Building" +
+            Logger.logMessage("Unassigned building downwash", "Building" +
                                 "downwash parameters for " +
                                 ", ".join(downwash_unassigned) + " have not" +
                                 " been assigned. Please edit the" +
@@ -113,11 +117,26 @@ class Downwash(DependentInputFile):
                                 " file.")
             return None
 
-        else:
-            Logger.logMessage("Uploaded building downwash parameters for [" + ",".join(check_downwash_assignment) + "]\n")
-            return df
+
+        # Downwash can only be used on point sources
+        all_dfids = set(df[fac_id])
+        dfids_2use = list(all_dfids.intersection(d_fac))
+        dsources_df = df[df[fac_id].isin(dfids_2use)][[fac_id,source_id]]
+        d_in_e = pd.merge(self.emisloc_df, dsources_df, how="inner", on=[fac_id, source_id])
+        d_in_e_srctypes = set(d_in_e['source_type'])
+        invalid_srctypes = ['V','B','A','N','I']
+        if any(t in d_in_e_srctypes for t in invalid_srctypes):
+            Logger.logMessage("AERMOD models building downwash from point sources only " +
+                              "(i.e., vertical P, horizontal H, or capped C point sources). " +
+                              "Your building dimensions file includes non-point sources. " +
+                              "Please edit your building dimensions file to remove all non-point sources.")
+            return None
 
 
+
+        Logger.logMessage("Uploaded building downwash parameters for [" + ",".join(check_downwash_assignment) + "]\n")
+        return df
+        
              
          
         

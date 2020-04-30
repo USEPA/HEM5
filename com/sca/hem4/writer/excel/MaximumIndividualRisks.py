@@ -45,8 +45,8 @@ class MaximumIndividualRisks(ExcelWriter, InputFile):
     def calcHI(self, hiname, hivar):
         mr_parameter = hiname
         io_idx = self.model.risk_by_latlon[(self.model.risk_by_latlon[rec_type] != "P") & 
-                                           ('S' not in self.model.risk_by_latlon['block']) &
-                                           ('M' not in self.model.risk_by_latlon['block'])][mir].idxmax()
+                                           (self.model.risk_by_latlon['block'].str.contains('S')==False) &
+                                           (self.model.risk_by_latlon['block'].str.contains('M')==False)][mir].idxmax()
         mr_lat = float(self.model.risk_by_latlon[lat].loc[io_idx])
         mr_lon = float(self.model.risk_by_latlon[lon].loc[io_idx])
         if self.model.risk_by_latlon[overlap].loc[io_idx] == "N":
@@ -259,8 +259,8 @@ class MaximumIndividualRisks(ExcelWriter, InputFile):
         """
         mr_parameter = "Cancer risk"
         io_idx = self.model.risk_by_latlon[(self.model.risk_by_latlon[rec_type] != "P") & 
-                                           ('S' not in self.model.risk_by_latlon['block']) &
-                                           ('M' not in self.model.risk_by_latlon['block'])][mir].idxmax()
+                                           (self.model.risk_by_latlon['block'].str.contains('S')==False) &
+                                           (self.model.risk_by_latlon['block'].str.contains('M')==False)][mir].idxmax()
         if self.model.risk_by_latlon[mir].loc[io_idx] > 0:
             #max risk is > 0, do calculations
             mr_lat = float(self.model.risk_by_latlon[lat].loc[io_idx])
