@@ -44,7 +44,7 @@ class MaximumIndividualRisksNonCensus(ExcelWriter, InputFile):
 
     def calcHI(self, hiname, hivar):
         mr_parameter = hiname
-        io_idx = self.model.risk_by_latlon[self.model.risk_by_latlon[rec_type] != "P"][hivar].idxmax()
+        io_idx = self.model.risk_by_latlon[self.model.risk_by_latlon[rec_type] == "P"][hivar].idxmax()
         mr_lat = float(self.model.risk_by_latlon[lat].loc[io_idx])
         mr_lon = float(self.model.risk_by_latlon[lon].loc[io_idx])
         if self.model.risk_by_latlon[overlap].loc[io_idx] == "N":
@@ -250,7 +250,7 @@ class MaximumIndividualRisksNonCensus(ExcelWriter, InputFile):
             4) Get information about this receptor
         """
         mr_parameter = "Cancer risk"
-        io_idx = self.model.risk_by_latlon[self.model.risk_by_latlon[rec_type] != "P"][mir].idxmax()
+        io_idx = self.model.risk_by_latlon[self.model.risk_by_latlon[rec_type] == "P"][mir].idxmax()
         if self.model.risk_by_latlon[mir].loc[io_idx] > 0:
             #max risk is > 0, do calculations
             mr_lat = float(self.model.risk_by_latlon[lat].loc[io_idx])

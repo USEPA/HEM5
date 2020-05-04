@@ -82,7 +82,7 @@ class Histogram(ExcelWriter, AltRecAwareSummary):
                     hi_repr:'sum', hi_kidn:'sum', hi_ocul:'sum', hi_endo:'sum', hi_hema:'sum',
                     hi_immu:'sum', hi_skel:'sum', hi_sple:'sum', hi_thyr:'sum', hi_whol:'sum'}
     
-            # Aggregate concentration, grouped by FIPS/block
+            # Aggregate concentration, grouped by rec_id
             risk_summed = blocksummary_df.groupby([rec_id]).agg(aggs)[blockSummaryChronic.getColumns()]
             
       
@@ -98,16 +98,21 @@ class Histogram(ExcelWriter, AltRecAwareSummary):
                 counts[3][0] = counts[3][0] + row[population]
             if rounded >= 1e-3:
                 counts[4][0] = counts[4][0] + row[population]
-
-        # for risklev in counts:
-        #     print(str(risklev[0]) + " : " + str(risklev[1]))
-
+        
+#        risks = [
+#            ['<1e-6', counts[0][0], counts[0][1]] if counts[0][1] > 0 else ['<1e-6', '', 0],
+#            ['>=1e-6', counts[1][0], counts[1][1]] if counts[1][1] > 0 else ['>=1e-6', '', 0],
+#            ['>=1e-5', counts[2][0], counts[2][1]] if counts[2][1] > 0 else ['>=1e-5', '', 0],
+#            ['>=1e-4', counts[3][0], counts[3][1]] if counts[3][1] > 0 else ['>=1e-4', '', 0],
+#            ['>=1e-3', counts[4][0], counts[4][1]] if counts[4][1] > 0 else ['>=1e-3', '', 0],
+#        ]
+                
         risks = [
-            ['<1e-6', counts[0][0], counts[0][1]] if counts[0][1] > 0 else ['<1e-6', '', 0],
-            ['>=1e-6', counts[1][0], counts[1][1]] if counts[1][1] > 0 else ['>=1e-6', '', 0],
-            ['>=1e-5', counts[2][0], counts[2][1]] if counts[2][1] > 0 else ['>=1e-5', '', 0],
-            ['>=1e-4', counts[3][0], counts[3][1]] if counts[3][1] > 0 else ['>=1e-4', '', 0],
-            ['>=1e-3', counts[4][0], counts[4][1]] if counts[4][1] > 0 else ['>=1e-3', '', 0],
+            ['<1e-6', counts[0][0], counts[0][1]],
+            ['>=1e-6', counts[1][0], counts[1][1]],
+            ['>=1e-5', counts[2][0], counts[2][1]],
+            ['>=1e-4', counts[3][0], counts[3][1]],
+            ['>=1e-3', counts[4][0], counts[4][1]],
         ]
         histogram_df = pd.DataFrame(risks, columns=[risklevel, population, facilitycount]).astype(
             dtype=int, errors='ignore')

@@ -228,6 +228,10 @@ class FacilityPrep():
             self.innerblks, self.outerblks = getblocks(cenx, ceny, cenlon, cenlat, facutmzonenum, hemi, maxdist, 
                                              modeldist, sourcelocs, op_overlap, self.model)
 
+        # Assign to the model
+        self.model.innerblks_df = self.innerblks
+        self.model.outerblks_df = self.outerblks
+        
 
         #%%---------- Optional User Receptors -----------------------------------------
 
@@ -307,6 +311,9 @@ class FacilityPrep():
                 else:
                     user_recs['fips'] = 'U0000'
                     user_recs['idmarplot'] = 'U0000U' + user_recs['rec_id']
+                
+                # Put into model
+                self.model.userrecs_df = user_recs
     
                 # Append user_recs to innerblks
                 self.innerblks = self.innerblks.append(user_recs, ignore_index=True)

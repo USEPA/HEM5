@@ -44,7 +44,8 @@ class MaximumIndividualRisks(ExcelWriter, InputFile):
 
     def calcHI(self, hiname, hivar):
         mr_parameter = hiname
-        io_idx = self.model.risk_by_latlon[(self.model.risk_by_latlon[rec_type] != "P") & 
+        io_idx = self.model.risk_by_latlon[((self.model.risk_by_latlon[rec_type] == "C") |
+                                           (self.model.risk_by_latlon[rec_type] == "P")) &
                                            (self.model.risk_by_latlon['block'].str.contains('S')==False) &
                                            (self.model.risk_by_latlon['block'].str.contains('M')==False)][mir].idxmax()
         mr_lat = float(self.model.risk_by_latlon[lat].loc[io_idx])
@@ -257,8 +258,10 @@ class MaximumIndividualRisks(ExcelWriter, InputFile):
             3) If it is overlapped, find max from all receptors where overlap is N (no school or monitor)
             4) Get information about this receptor
         """
+                
         mr_parameter = "Cancer risk"
-        io_idx = self.model.risk_by_latlon[(self.model.risk_by_latlon[rec_type] != "P") & 
+        io_idx = self.model.risk_by_latlon[((self.model.risk_by_latlon[rec_type] == "C") |
+                                           (self.model.risk_by_latlon[rec_type] == "P")) &
                                            (self.model.risk_by_latlon['block'].str.contains('S')==False) &
                                            (self.model.risk_by_latlon['block'].str.contains('M')==False)][mir].idxmax()
         if self.model.risk_by_latlon[mir].loc[io_idx] > 0:
@@ -270,7 +273,7 @@ class MaximumIndividualRisks(ExcelWriter, InputFile):
                 mr_value = self.model.risk_by_latlon[mir].loc[io_idx]
                 mr_value_sci = format(mr_value, ".1e")
                 mr_value_rnd = round(mr_value, -int(floor(log10(abs(mr_value))))) if mr_value > 0 else 0
-                if self.model.risk_by_latlon[rec_type].loc[io_idx] == "D":
+                if self.model.risk_by_latlon['blk_type'].loc[io_idx] == "D":
                     mr_pop = self.model.innerblks_df[(self.model.innerblks_df[lon] == mr_lon) & (self.model.innerblks_df[lat] == mr_lat)][population].values[0]
                     mr_dist = self.model.innerblks_df[(self.model.innerblks_df[lon] == mr_lon) & (self.model.innerblks_df[lat] == mr_lat)][distance].values[0]
                     mr_angle = self.model.innerblks_df[(self.model.innerblks_df[lon] == mr_lon) & (self.model.innerblks_df[lat] == mr_lat)][angle].values[0]
@@ -309,7 +312,7 @@ class MaximumIndividualRisks(ExcelWriter, InputFile):
                 mr_value = self.model.risk_by_latlon[mir].loc[iop_idx]
                 mr_value_sci = format(mr_value, ".1e")
                 mr_value_rnd = round(mr_value, -int(floor(log10(abs(mr_value)))))
-                if self.model.risk_by_latlon[rec_type].loc[io_idx] == "P":
+                if self.model.risk_by_latlon[rec_type].loc[io_idx] == "PG":
                     mr_pop = 0
                     mr_dist = self.model.all_polar_receptors_df[(self.model.all_polar_receptors_df[lon] == mr_lon) & (self.model.all_polar_receptors_df[lat] == mr_lat)][distance].values[0]
                     mr_angle = self.model.all_polar_receptors_df[(self.model.all_polar_receptors_df[lon] == mr_lon) & (self.model.all_polar_receptors_df[lat] == mr_lat)][angle].values[0]
@@ -321,7 +324,7 @@ class MaximumIndividualRisks(ExcelWriter, InputFile):
                     mr_utmn = self.model.all_polar_receptors_df[(self.model.all_polar_receptors_df[lon] == mr_lon) & (self.model.all_polar_receptors_df[lat] == mr_lat)][utmn].values[0]
                     mr_rectype = "Polar"
                     mr_notes = "Polar"
-                elif self.model.risk_by_latlon[rec_type].loc[iop_idx] == "I":
+                elif self.model.risk_by_latlon['blk_type'].loc[iop_idx] == "I":
                     mr_pop = self.model.outerblks_df[(self.model.outerblks_df[lon] == mr_lon) & (self.model.outerblks_df[lat] == mr_lat)][population].values[0]
                     mr_dist = self.model.outerblks_df[(self.model.outerblks_df[lon] == mr_lon) & (self.model.outerblks_df[lat] == mr_lat)][distance].values[0]
                     mr_angle = self.model.outerblks_df[(self.model.outerblks_df[lon] == mr_lon) & (self.model.outerblks_df[lat] == mr_lat)][angle].values[0]

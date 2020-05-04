@@ -8,6 +8,7 @@ from com.sca.hem4.writer.excel.ExcelWriter import ExcelWriter
 from com.sca.hem4.FacilityPrep import *
 from com.sca.hem4.writer.excel.summary.AltRecAwareSummary import AltRecAwareSummary
 from collections import OrderedDict
+import numpy as np
 
 
 class SourceTypeRiskHistogram(ExcelWriter, AltRecAwareSummary):
@@ -34,11 +35,15 @@ class SourceTypeRiskHistogram(ExcelWriter, AltRecAwareSummary):
 
     def generateOutputs(self):
         Logger.log("Creating " + self.name + " report...", None, False)
-        
+                
         # Read the facility list options input to know which facilities were run with acute
         faclistFile = os.path.join(self.categoryFolder, "inputs/faclist.xlsx")
-        faclist = FacilityList(faclistFile, self.metlib).dataframe
-        faclist.replace(to_replace={'acute':{"nan":"N"}}, inplace=True)
+        cols = [fac_id,met_station,rural_urban,urban_pop,max_dist,model_dist,radial,circles,overlap_dist, ring1,
+                fac_center,ring_distances, acute,
+                hours,multiplier,hivalu,dep,depl,pdep,pdepl,vdep,vdepl,elev,all_rcpts,
+                user_rcpt,bldg_dw,fastall,emis_var,annual,period_start,period_end]
+        faclist = pd.read_excel(faclistFile, skiprows=1, names=cols)
+        faclist.replace(to_replace={'acute':{np.nan:"N"}}, inplace=True)
 
         # Create a list to hold the values for each bucket
         maximum = []
@@ -291,7 +296,7 @@ class SourceTypeRiskHistogram(ExcelWriter, AltRecAwareSummary):
         self.appendHeaderAtLocation(headers=sector_mir_txt, startingrow=13, startingcol=0)
         self.appendHeaderAtLocation(headers=notes, startingrow=15, startingcol=0)
 
-    def round_to_sigfig(self, x, sig=1):
+    def round_to_sigfig(self, x, sig=2):
         if x == 0:
             return 0;
 

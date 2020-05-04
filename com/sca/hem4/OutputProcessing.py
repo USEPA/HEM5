@@ -148,7 +148,7 @@ class Process_outputs():
         if self.abort.is_set():
             Logger.logMessage("Terminating output processing...")
             return
-
+        
         #----------- create Block_Summary_Chronic data -----------------
         block_summary_chronic = BlockSummaryChronicNonCensus(targetDir=self.outdir, facilityId=self.facid,
                  model=self.model, plot_df=self.plot_df, outerAgg=all_outer_receptors.outerAgg) if altrec else \
@@ -162,21 +162,29 @@ class Process_outputs():
             Logger.logMessage("Terminating output processing...")
             return
 
+        # Assign rec_type to block summary chronic from the inner and outer census DFs.
+        allrectype = pd.concat([self.model.innerblks_df[[utme,utmn,rec_type]], 
+                             self.model.outerblks_df[[utme,utmn,rec_type]]], ignore_index=True)
+              
+        self.model.block_summary_chronic_df = pd.merge(self.model.block_summary_chronic_df, allrectype, how="left",
+                                                       on=[utme, utmn])   
+
         
         # Combine ring summary chronic and block summary chronic dfs into one and assign a receptor type
         ring_columns = [lat, lon, mir, hi_resp, hi_live, hi_neur, hi_deve, hi_repr, hi_kidn, hi_ocul, 
                       hi_endo, hi_hema, hi_immu, hi_skel, hi_sple, hi_thyr, hi_whol, overlap]
 
         ring_risk = ring_summary_chronic_df[ring_columns].copy()
-        ring_risk[rec_type] = 'P'
+        ring_risk[rec_type] = 'PG'
+        ring_risk['blk_type'] = 'PG'
 
         # Block and population are needed in non-altrec runs to ensure schools and monitors are not the MIR
         if not altrec:
-            block_columns = ring_columns + [rec_type, block, population]
+            block_columns = ring_columns + [rec_type, 'blk_type', block, population]
             ring_risk[block] = ''
             ring_risk[population] = 0
         else:
-            block_columns = ring_columns + [rec_type]
+            block_columns = ring_columns + [rec_type, 'blk_type']
             
         
         block_risk = self.model.block_summary_chronic_df[block_columns]
@@ -277,35 +285,35 @@ class Process_outputs():
         
         if self.acute_yn == 'Y':
             
-            apfile_path = os.path.join(self.outdir, "maxhour.plt")
-            apfile = open(apfile_path, "r")
-            aplot_df = pd.read_table(apfile, delim_whitespace=True, header=None, 
-                names=[utme,utmn,result,elev,hill,flag,avg_time,source_id,num_yrs,net_id],
-                usecols=[0,1,2,3,4,5,6,7,8,9], 
-                converters={utme:np.float64,utmn:np.float64,result:np.float64,elev:np.float64,hill:np.float64
-                       ,flag:np.float64,avg_time:np.str,source_id:np.str,rank:np.str,net_id:np.str
-                       ,concdate:np.str},
-                comment='*')
+#            apfile_path = os.path.join(self.outdir, "maxhour.plt")
+#            apfile = open(apfile_path, "r")
+#            aplot_df = pd.read_table(apfile, delim_whitespace=True, header=None, 
+#                names=[utme,utmn,result,elev,hill,flag,avg_time,source_id,num_yrs,net_id],
+#                usecols=[0,1,2,3,4,5,6,7,8,9], 
+#                converters={utme:np.float64,utmn:np.float64,result:np.float64,elev:np.float64,hill:np.float64
+#                       ,flag:np.float64,avg_time:np.str,source_id:np.str,rank:np.str,net_id:np.str
+#                       ,concdate:np.str},
+#                comment='*')
     
             if self.abort.is_set():
                 Logger.logMessage("Terminating output processing...")
                 return
 
             #----------- create Acute Chemical Populated output file ------------------------
-            acutechempop = AcuteChemicalPopulatedNonCensus(self.outdir, self.facid, self.model, aplot_df) if altrec \
-                 else AcuteChemicalPopulated(self.outdir, self.facid, self.model, aplot_df)
+            acutechempop = AcuteChemicalPopulatedNonCensus(self.outdir, self.facid, self.model, self.model.acuteplot_df) if altrec \
+                 else AcuteChemicalPopulated(self.outdir, self.facid, self.model, self.model.acuteplot_df)
             acutechempop.write()
             Logger.logMessage("Completed Acute Chemical Populated output")
 
             #----------- create Acute Chemical Max output file ------------------------
-            acutechemmax = AcuteChemicalMaxNonCensus(self.outdir, self.facid, self.model, aplot_df) if altrec \
-                 else AcuteChemicalMax(self.outdir, self.facid, self.model, aplot_df)
+            acutechemmax = AcuteChemicalMaxNonCensus(self.outdir, self.facid, self.model, self.model.acuteplot_df) if altrec \
+                 else AcuteChemicalMax(self.outdir, self.facid, self.model, self.model.acuteplot_df)
             acutechemmax.write()
             Logger.logMessage("Completed Acute Chemical Max output")
 
 
             #----------- create Acute Breakdown output file ------------------------
-            acutebkdn = AcuteBreakdown(self.outdir, self.facid, self.model, aplot_df, None, False,
+            acutebkdn = AcuteBreakdown(self.outdir, self.facid, self.model, self.model.acuteplot_df, None, False,
                                        acutechempop.dataframe, acutechemmax.dataframe)
             acutebkdn.write()
             Logger.logMessage("Completed Acute Breakdown output")

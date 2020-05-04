@@ -25,6 +25,7 @@ class FacilityRunner():
             
         #put phase in model_optns
         fac = self.model.faclist.dataframe.loc[self.model.faclist.dataframe[fac_id] == self.facilityId]
+        self.acute_yn = fac[acute].tolist()[0]
         
         if fac['phase'].iloc[0] == "":
             self.model.model_optns['phase'] = None
@@ -117,7 +118,12 @@ class FacilityRunner():
                     
                     # Now put the plotfile into a dataframe
                     plot_df = self.readplotf(ppfile, self.model.model_optns['runtype'])
-                    
+ 
+                    # If acute run, put the maxhour plot file into a dataframe
+                    if self.acute_yn == 'Y':
+                        apfile = open(fac_folder + 'maxhour_p.plt', "r")
+                        aplot_df = self.readmaxf(apfile, runtype)
+                   
                 elif phases['phase'] == 'V':
                     
                     
@@ -126,6 +132,11 @@ class FacilityRunner():
                     
                     # Now put the plotfile into a dataframe
                     plot_df = self.readplotf(vpfile, self.model.model_optns['runtype'])
+
+                    # If acute run, put the maxhour plot file into a dataframe
+                    if self.acute_yn == 'Y':
+                        apfile = open(fac_folder + 'maxhour_v.plt', "r")
+                        aplot_df = self.readmaxf(apfile, runtype)
 
                     
                 else:
@@ -137,6 +148,11 @@ class FacilityRunner():
                     
                     # Now put the plotfile into a dataframe
                     plot_df = self.readplotf(pfile, self.model.model_optns['runtype'])
+
+                    # If acute run, put the maxhour plot file into a dataframe
+                    if self.acute_yn == 'Y':
+                        apfile = open(fac_folder + 'maxhour.plt', "r")
+                        aplot_df = self.readmaxf(apfile, runtype)
                 
 
                 # Set the emis_type column in plot_df
@@ -154,6 +170,11 @@ class FacilityRunner():
                     
                 else:
                     plot_df['emis_type'] = phases['phase']
+
+
+                # Put the acute plot file into the Model class (if run)
+                if self.acute_yn == 'Y':
+                    self.model.acuteplot_df = aplot_df
  
                                
                 # Process outputs for single facility
@@ -174,7 +195,13 @@ class FacilityRunner():
                         
             runstreams = []
             plot_df = pd.DataFrame()
-                        
+            
+            if self.acute_yn == 'Y':
+                aplot_df = pd.DataFrame()
+            
+            # Initialize array to hold runtype of each phase run
+            bothruntype = []
+            
             for r in phases:
 
                 Logger.logMessage(r['phase'] + " run:")
@@ -204,7 +231,7 @@ class FacilityRunner():
                 else:
                     depotype = 'NO'
                 runtype = self.set_runtype(depoYN, depotype)
-                self.model.model_optns['runtype'] = runtype
+                bothruntype.append(runtype)
                
                 #store runstream objects for later use
                 runstreams.append(self.runstream)
@@ -230,19 +257,46 @@ class FacilityRunner():
                     elif self.phase == 'V':
                         pfile = open(fac_folder + 'plotfile_v.plt', "r")
                     else:
-                        pfile = open(fac_folder + 'plotfile.plt', "r")
-
+                        pfile = open(fac_folder + 'plotfile.plt', "r")                    
                     
                     # Put the plotfile into a dataframe
-                    temp_df = self.readplotf(pfile, self.model.model_optns['runtype'])
-                    
-                    # Set the emis_type column in temp_df
+                    temp_df = self.readplotf(pfile, runtype)
                     temp_df['emis_type'] = r['phase']
-                    
+
                     # Append temp_df to plot_df
                     plot_df = plot_df.append(temp_df, ignore_index=True)
+
                     
-             
+                    # If acute run, put the maxhour plot file into a dataframe
+                    if self.acute_yn == 'Y':
+                        if self.phase == 'P':
+                            apfile = open(fac_folder + 'maxhour_p.plt', "r")
+                        elif self.phase == 'V':
+                            apfile = open(fac_folder + 'maxhour_v.plt', "r")
+                        else:
+                            apfile = open(fac_folder + 'maxhour.plt', "r")
+                        tempmax_df = self.readmaxf(apfile, runtype)
+                        tempmax_df['emis_type'] = r['phase']
+                        aplot_df = aplot_df.append(tempmax_df, ignore_index=True)
+                    
+            
+            # Determine the runtype for a double run
+            if (1 in bothruntype) or ((2 in bothruntype) and (3 in bothruntype)):
+                alltype = 1
+            if (bothruntype == [2,2] or bothruntype == [2,0] or bothruntype == [0,2]):
+                alltype = 2
+            if (bothruntype == [3,3] or bothruntype == [3,0] or bothruntype == [0,3]):
+                alltype = 3
+            if bothruntype == [0,0]:
+                alltype = 0
+                
+            self.model.model_optns['runtype'] = alltype
+
+            # Put the acute plot file into the Model class (if run)
+            if self.acute_yn == 'Y':
+                self.model.acuteplot_df = aplot_df
+                
+                
             # Process outputs for this facility
             try:
             
@@ -322,28 +376,41 @@ class FacilityRunner():
 
         if success == True:
              
-            #determine which plotfile we are using based on phases
+            #determine which plotfile and maxhour we are using based on phases
             if self.phase == 'P' or phasetype =='P':
                                 
-                #rename for particle
+                #rename plotfile for particle
                 if os.path.exists('aermod/plotfile_p.plt'):
                     os.remove('aermod/plotfile_p.plt')
                 os.rename('aermod/plotfile.plt','aermod/plotfile_p.plt')
                 plt_version = 'plotfile_p.plt'
+
+                #rename maxhour for particle
+                if os.path.exists('aermod/maxhour_p.plt'):
+                    os.remove('aermod/maxhour_p.plt')
+                os.rename('aermod/maxhour.plt','aermod/maxhour_p.plt')
+                max_version = 'maxhour_p.plt'
                  
             elif self.phase == 'V' or phasetype == 'V':
                 
-                #rename for vapor
+                #rename plotfile for vapor
                 if os.path.exists('aermod/plotfile_v.plt'):
                     os.remove('aermod/plotfile_v.plt')
                 os.rename('aermod/plotfile.plt','aermod/plotfile_v.plt')
                 plt_version = 'plotfile_v.plt'
+
+                #rename maxhour for vapor
+                if os.path.exists('aermod/maxhour_v.plt'):
+                    os.remove('aermod/maxhour_v.plt')
+                os.rename('aermod/maxhour.plt','aermod/maxhour_v.plt')
+                max_version = 'maxhour_v.plt'
                 
             else:
                 plt_version = 'plotfile.plt'
+                max_version = 'maxhour.plt'
 
             # Move aermod.inp, aermod.out, and plotfile.plt to the fac output folder
-            # If phasetype is not empty, rename aermod.out, aermod.inp and plotfile.plt using phasetype
+            # If phasetype is not empty, rename aermod.out, aermod.inp, plotfile.plt, and maxhour.plt using phasetype
             # Replace if one is already in there othewrwise will throw error
             if os.path.isfile(fac_folder + 'aermod.out'):
                 os.remove(fac_folder + 'aermod.out')
@@ -353,6 +420,9 @@ class FacilityRunner():
 
             if os.path.isfile(fac_folder + plt_version):
                 os.remove(fac_folder + plt_version)
+
+            if os.path.isfile(fac_folder + max_version):
+                os.remove(fac_folder + max_version)
 
             # move aermod.out file
             shutil.move(output, fac_folder)
@@ -365,12 +435,18 @@ class FacilityRunner():
             pltfile = os.path.join("aermod", plt_version)
             shutil.move(pltfile, fac_folder)
             
-            # if an acute maxhour.plt plotfile was output by Aermod, move it too
-            maxfile = os.path.join("aermod", "maxhour.plt")
-            if os.path.isfile(maxfile):
-                if os.path.isfile(fac_folder + "maxhour.plt"):
-                    os.remove(fac_folder + "maxhour.plt")
-                shutil.move(maxfile, fac_folder)
+            # If acute was run, move the maxhour plot file
+            if self.acute_yn == 'Y':
+                apltfile = os.path.join("aermod", max_version)
+                shutil.move(apltfile, fac_folder)
+                
+            
+#            # if an acute maxhour.plt plotfile was output by Aermod, move it too
+#            maxfile = os.path.join("aermod", "maxhour.plt")
+#            if os.path.isfile(maxfile):
+#                if os.path.isfile(fac_folder + "maxhour.plt"):
+#                    os.remove(fac_folder + "maxhour.plt")
+#                shutil.move(maxfile, fac_folder)
 
             # if a temporal seasonhr.plt plotfile was output by Aermod, move it too
             seasonhrfile = os.path.join("aermod", "seasonhr.plt")
@@ -393,11 +469,6 @@ class FacilityRunner():
                 if os.path.isfile(newname):
                     os.remove(newname)
                 os.rename(oldname, newname)    
-
-                
-            
-            
-            
             
             return success
 
@@ -461,7 +532,53 @@ class FacilityRunner():
         plotf_df.utmn = plotf_df.utmn.round()
 
         return plotf_df
-    
+
+
+
+    def readmaxf(self, apfile, runtype):
+        
+        if runtype == 0:
+            # No deposition
+            aplot_df = pd.read_table(apfile, delim_whitespace=True, header=None, 
+                names=[utme,utmn,aresult,elev,hill,flag,avg_time,source_id,num_yrs,net_id],
+                usecols=[0,1,2,3,4,5,6,7,8,9], 
+                converters={utme:np.float64,utmn:np.float64,aresult:np.float64,elev:np.float64,hill:np.float64
+                       ,flag:np.float64,avg_time:np.str,source_id:np.str,rank:np.str,net_id:np.str
+                       ,concdate:np.str},
+                comment='*')             
+        elif runtype == 1:
+            # Wet and Dry deposition
+            aplot_df = pd.read_table(apfile, delim_whitespace=True, header=None, 
+                names=[utme,utmn,aresult,adry,awet,elev,hill,flag,avg_time,source_id,num_yrs,net_id],
+                usecols=[0,1,2,3,4,5,6,7,8,9,10,11], 
+                converters={utme:np.float64,utmn:np.float64,aresult:np.float64,adry:np.float64,
+                            awet:np.float64,elev:np.float64,hill:np.float64,flag:np.float64,
+                            avg_time:np.str,source_id:np.str,rank:np.str,net_id:np.str,concdate:np.str},
+                comment='*')                       
+        elif runtype == 2:
+            # Dry only deposition
+            aplot_df = pd.read_table(apfile, delim_whitespace=True, header=None, 
+                names=[utme,utmn,aresult,adry,elev,hill,flag,avg_time,source_id,num_yrs,net_id],
+                usecols=[0,1,2,3,4,5,6,7,8,9,10], 
+                converters={utme:np.float64,utmn:np.float64,aresult:np.float64,adry:np.float64,
+                            elev:np.float64,hill:np.float64,flag:np.float64,
+                            avg_time:np.str,source_id:np.str,rank:np.str,net_id:np.str,concdate:np.str},
+                comment='*')                       
+        elif runtype == 3:
+            # Wet only deposition
+            aplot_df = pd.read_table(apfile, delim_whitespace=True, header=None, 
+                names=[utme,utmn,aresult,awet,elev,hill,flag,avg_time,source_id,num_yrs,net_id],
+                usecols=[0,1,2,3,4,5,6,7,8,9,10], 
+                converters={utme:np.float64,utmn:np.float64,aresult:np.float64,awet:np.float64,
+                            elev:np.float64,hill:np.float64,flag:np.float64,
+                            avg_time:np.str,source_id:np.str,rank:np.str,net_id:np.str,concdate:np.str},
+                comment='*')
+ 
+        aplot_df.utme = aplot_df.utme.round()
+        aplot_df.utmn = aplot_df.utmn.round()
+
+        return aplot_df
+               
 
     def process_outputs(self, fac_folder, plot_df):
            

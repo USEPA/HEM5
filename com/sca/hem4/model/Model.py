@@ -102,11 +102,14 @@ class Model():
         self.all_inner_receptors_df = None
         self.all_outer_receptors_df = None
         self.block_summary_chronic_df = None
+        self.innerblks_df = None
+        self.outerblks_df = None
         self.risk_by_latlon = None
         self.max_indiv_risk_df = None
         self.facops = None
         self.sourceExclusion = []
         self.aermod = None
+        self.acuteplot_df = None
 
         # Initialize model options
         self.initializeAltRecOptions()
@@ -136,6 +139,8 @@ class Model():
         self.all_inner_receptors_df = None
         self.all_outer_receptors_df = None
         self.block_summary_chronic_df = None
+        self.innerblks_df = None
+        self.outerblks_df = None
         self.risk_by_latlon = None
         self.max_indiv_risk_df = None
         self.sourcelocs = None
@@ -149,6 +154,7 @@ class Model():
         self.seasonvar = None
         self.sourceExclusion = []
         self.aermod = None
+        self.acuteplot_df = None
 
         # Initialize model options
         self.initializeAltRecOptions()
