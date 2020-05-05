@@ -60,7 +60,7 @@ class SourceTypeRiskHistogram(ExcelWriter, AltRecAwareSummary):
         
         # Initialize set of source id's
         allsrcids = set()
-        
+                
         for facilityId in self.facilityIds:
                         
             targetDir = self.categoryFolder + "/" + facilityId
@@ -121,37 +121,35 @@ class SourceTypeRiskHistogram(ExcelWriter, AltRecAwareSummary):
                     AllOuterReceptors(targetDir=targetDir, acuteyn=acute_yn, filenameOverride=f)
                 allouter_df = allouter.createDataframe()
                 
-#                pollist = allouter_df['pollutant'].tolist()
-#                conclist = allouter_df['conc'].tolist()
-#                allouter_df['risk'] = self.calculateRisk(pollist, conclist)
-                
-                # Merge ure column
-                allouter2_df = pd.merge(allouter_df, self.haplib_df[['pollutant', 'ure']],
-                                    how='left', on='pollutant')
-                
-                allouter2_df['risk'] = allouter2_df[conc] * allouter2_df['ure']
-
-                # convert source ids to the code part only, and then group and sum
-                allouter2_df[source_id] = allouter2_df[source_id].apply(lambda x: x[self.codePosition:self.codePosition+self.codeLength])
+                if not allouter_df.empty:
+                    
+                    # Merge ure column
+                    allouter2_df = pd.merge(allouter_df, self.haplib_df[['pollutant', 'ure']],
+                                        how='left', on='pollutant')
+                    
+                    allouter2_df['risk'] = allouter2_df[conc] * allouter2_df['ure']
     
-                # Aggregate risk, grouped by FIPS/block (or receptor id if we're using alternates) and source
-                aggs = {lat:'first', lon:'first', population:'first', 'risk':'sum'}                
-                byCols = [rec_id, source_id] if altrec=='Y' else [fips, block, source_id]
-                outer_summed = allouter2_df.groupby(by=byCols, as_index=False).agg(aggs).reset_index(drop=True)
-
-                # Drop records that (are not user receptors AND have population = 0)
-                if altrec == 'N':
-                    outer_summed.drop(outer_summed[(outer_summed.population == 0) & ("U" not in outer_summed.block)].index,
-                                     inplace=True)
-                else:
-                    outer_summed.drop(outer_summed[(outer_summed.population == 0) & ("U" not in outer_summed.rec_id)].index,
-                                     inplace=True)
-
-                # Append to sector block risk DF
-                sector_blkrisk = sector_blkrisk.append(outer_summed)
-
-                # Aggregate risk by block and source
-                sector_summed = sector_blkrisk.groupby(by=byCols, as_index=False).agg(aggs).reset_index(drop=True)
+                    # convert source ids to the code part only, and then group and sum
+                    allouter2_df[source_id] = allouter2_df[source_id].apply(lambda x: x[self.codePosition:self.codePosition+self.codeLength])
+        
+                    # Aggregate risk, grouped by FIPS/block (or receptor id if we're using alternates) and source
+                    aggs = {lat:'first', lon:'first', population:'first', 'risk':'sum'}                
+                    byCols = [rec_id, source_id] if altrec=='Y' else [fips, block, source_id]
+                    outer_summed = allouter2_df.groupby(by=byCols, as_index=False).agg(aggs).reset_index(drop=True)
+    
+                    # Drop records that (are not user receptors AND have population = 0)
+                    if altrec == 'N':
+                        outer_summed.drop(outer_summed[(outer_summed.population == 0) & ("U" not in outer_summed.block)].index,
+                                         inplace=True)
+                    else:
+                        outer_summed.drop(outer_summed[(outer_summed.population == 0) & ("U" not in outer_summed.rec_id)].index,
+                                         inplace=True)
+    
+                    # Append to sector block risk DF
+                    sector_blkrisk = sector_blkrisk.append(outer_summed)
+    
+                    # Aggregate risk by block and source
+                    sector_summed = sector_blkrisk.groupby(by=byCols, as_index=False).agg(aggs).reset_index(drop=True)
                           
         # Aggregate sector source risk to just block (or rec_id)
         aggs = {lat:'first', lon:'first', population:'first', 'risk':'sum'}                

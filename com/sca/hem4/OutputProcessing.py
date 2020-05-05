@@ -124,7 +124,10 @@ class Process_outputs():
                         else AllOuterReceptors(self.outdir, self.facid, self.model, self.plot_df, self.acute_yn)
         all_outer_receptors.write(generateOnly=self.generateOnly)
         self.model.all_outer_receptors_df = all_outer_receptors.dataframe
-        Logger.logMessage("Completed AllOuterReceptors output")
+        if not self.model.outerblks_df.empty:
+            Logger.logMessage("Completed AllOuterReceptors output")
+        else:
+            Logger.logMessage("No outer receptors. Did not create AllOuterReceptors output.")
 
         if self.abort.is_set():
             Logger.logMessage("Terminating output processing...")
@@ -162,11 +165,14 @@ class Process_outputs():
             Logger.logMessage("Terminating output processing...")
             return
 
+        
         # Assign rec_type to block summary chronic from the inner and outer census DFs.
-        allrectype = pd.concat([self.model.innerblks_df[[utme,utmn,rec_type]], 
-                             self.model.outerblks_df[[utme,utmn,rec_type]]], ignore_index=True)
-              
-        self.model.block_summary_chronic_df = pd.merge(self.model.block_summary_chronic_df, allrectype, how="left",
+        if not self.model.outerblks_df.empty:
+            allrectype = pd.concat([self.model.innerblks_df[[utme,utmn,rec_type]], 
+                                 self.model.outerblks_df[[utme,utmn,rec_type]]], ignore_index=True)
+        else:
+            allrectype = self.model.innerblks_df[[utme,utmn,rec_type]]
+        blksummary_w_rectype = pd.merge(self.model.block_summary_chronic_df, allrectype, how="left",
                                                        on=[utme, utmn])   
 
         
@@ -187,7 +193,7 @@ class Process_outputs():
             block_columns = ring_columns + [rec_type, 'blk_type']
             
         
-        block_risk = self.model.block_summary_chronic_df[block_columns]
+        block_risk = blksummary_w_rectype[block_columns]
         
         self.model.risk_by_latlon = ring_risk.append(block_risk).reset_index(drop=True).infer_objects()
 
@@ -223,7 +229,7 @@ class Process_outputs():
 
 
         #----------- create Maximum_Offsite_Impacts output file ---------------
-        inner_recep_risk_df = self.model.block_summary_chronic_df[self.model.block_summary_chronic_df["rec_type"] == "D"]
+        inner_recep_risk_df = self.model.block_summary_chronic_df[self.model.block_summary_chronic_df["blk_type"] == "D"]
         max_offsite_impacts = MaximumOffsiteImpactsNonCensus(self.outdir, self.facid, self.model, self.plot_df,
                                                     ring_summary_chronic_df, inner_recep_risk_df) if altrec else \
             MaximumOffsiteImpacts(self.outdir, self.facid, self.model, self.plot_df, ring_summary_chronic_df, inner_recep_risk_df)
@@ -241,6 +247,7 @@ class Process_outputs():
         if len(blockrows) > 0:
             block_summary_chronic.data[blockrows, 10:25] = replacement
 
+        # Now wite the RingSummaryChronic and BlockSummaryChronic outputs
         ring_summary_chronic.write()
         block_summary_chronic.write()
         
@@ -284,17 +291,7 @@ class Process_outputs():
         # If acute was run for this facility, read the acute plotfile and create the acute outputs
         
         if self.acute_yn == 'Y':
-            
-#            apfile_path = os.path.join(self.outdir, "maxhour.plt")
-#            apfile = open(apfile_path, "r")
-#            aplot_df = pd.read_table(apfile, delim_whitespace=True, header=None, 
-#                names=[utme,utmn,result,elev,hill,flag,avg_time,source_id,num_yrs,net_id],
-#                usecols=[0,1,2,3,4,5,6,7,8,9], 
-#                converters={utme:np.float64,utmn:np.float64,result:np.float64,elev:np.float64,hill:np.float64
-#                       ,flag:np.float64,avg_time:np.str,source_id:np.str,rank:np.str,net_id:np.str
-#                       ,concdate:np.str},
-#                comment='*')
-    
+                
             if self.abort.is_set():
                 Logger.logMessage("Terminating output processing...")
                 return

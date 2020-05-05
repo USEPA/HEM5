@@ -42,7 +42,7 @@ class MaximumOffsiteImpactsNonCensus(ExcelWriter):
 
         # add population and recype columns into ring risk df
         ring_risk[population] = 0
-        ring_risk[rec_type] = "P"
+        ring_risk[rec_type] = "PG"
 
         # add distance and angle from the inner blocks df to the inner risk df
         innrisk = pd.merge(inner_risk, self.model.innerblks_df[[lat, lon, distance, angle]],

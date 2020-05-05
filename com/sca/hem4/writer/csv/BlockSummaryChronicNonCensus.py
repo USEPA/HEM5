@@ -35,7 +35,7 @@ class BlockSummaryChronicNonCensus(CsvWriter, InputFile):
         return ['Latitude', 'Longitude', 'Overlap', 'Elevation (m)', 'Receptor ID', 'X', 'Y', 'Hill',
                 'Population', 'MIR', 'Respiratory HI', 'Liver HI', 'Neurological HI', 'Developmental HI',
                 'Reproductive HI', 'Kidney HI', 'Ocular HI', 'Endocrine HI', 'Hematological HI',
-                'Immunological HI', 'Skeletal HI', 'Spleen HI', 'Thyroid HI', 'Whole body HI', 'Receptor type']
+                'Immunological HI', 'Skeletal HI', 'Spleen HI', 'Thyroid HI', 'Whole body HI', 'Inner/Outer Block']
 
     def getColumns(self):
         return [lat, lon, overlap, elev, rec_id, utme, utmn, hill, population,
@@ -77,10 +77,15 @@ class BlockSummaryChronicNonCensus(CsvWriter, InputFile):
 
         # add a receptor type column to note if discrete or interpolated. D => discrete, I => interpolated
         inneragg[blk_type] = "D"
-        self.outerAgg[blk_type] = "I"
+        if not self.outerAgg.empty:
+            self.outerAgg[blk_type] = "I"
 
         # append the inner and outer values and write
-        self.dataframe = inneragg.append(self.outerAgg, ignore_index = True).sort_values(by=[rec_id])
+        if not self.outerAgg.empty:
+            self.dataframe = inneragg.append(self.outerAgg, ignore_index = True).sort_values(by=[rec_id])
+        else:
+            self.dataframe = inneragg
+            
         self.data = self.dataframe.values
         yield self.dataframe
 

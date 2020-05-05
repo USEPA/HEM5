@@ -128,27 +128,35 @@ class MultiPathwayNonCensus(ExcelWriter):
                 if fnmatch.fnmatch(entry, pattern):
                     listOuter.append(entry)
 
+            anyOuters = "N"
             for f in listOuter:
                 allouter = AllOuterReceptorsNonCensus(targetDir=targetDir, acuteyn=acute_yn, filenameOverride=f)
                 allouter_df = allouter.createDataframe()
 
-                # Only keep records that have non-zero population or represent non-overlapped user receptors
-                allouter_df = allouter_df.loc[(allouter_df[population] > 0) & (allouter_df[overlap] == 'N')]
-
-                allouter_df = allouter_df.groupby(by=[rec_id, population, lat, lon, pollutant], as_index=False) \
-                    .sum().reset_index(drop=True)
-
-                allouter_df['risk'] = allouter_df.apply(lambda x: self.calculateRisk(x[pollutant], x[conc]), axis=1)
-
-                # keep all records but give default designation of 'POL' to pollutants which are not in crosswalk
-                alloutermerged_df = allouter_df.merge(pollutantCrosswalk_df, left_on=[pollutant], right_on=[pollutant_name], how="left")
-                alloutermerged_df[designation] = alloutermerged_df[designation].fillna('POL')
-
-                outer_summed = alloutermerged_df.groupby(by=[rec_id, population, lat, lon, designation], as_index=False) \
-                    .sum().reset_index(drop=True)
-                allouter_summed = allouter_summed.append(outer_summed)
-
-            riskblocks_df = inner_summed.append(allouter_summed)
+                if not allouter_df.empty:
+                    
+                    anyOuters = "Y"
+                    
+                    # Only keep records that have non-zero population or represent non-overlapped user receptors
+                    allouter_df = allouter_df.loc[(allouter_df[population] > 0) & (allouter_df[overlap] == 'N')]
+    
+                    allouter_df = allouter_df.groupby(by=[rec_id, population, lat, lon, pollutant], as_index=False) \
+                        .sum().reset_index(drop=True)
+    
+                    allouter_df['risk'] = allouter_df.apply(lambda x: self.calculateRisk(x[pollutant], x[conc]), axis=1)
+    
+                    # keep all records but give default designation of 'POL' to pollutants which are not in crosswalk
+                    alloutermerged_df = allouter_df.merge(pollutantCrosswalk_df, left_on=[pollutant], right_on=[pollutant_name], how="left")
+                    alloutermerged_df[designation] = alloutermerged_df[designation].fillna('POL')
+    
+                    outer_summed = alloutermerged_df.groupby(by=[rec_id, population, lat, lon, designation], as_index=False) \
+                        .sum().reset_index(drop=True)
+                    allouter_summed = allouter_summed.append(outer_summed)
+            
+            if anyOuters == "Y":
+                riskblocks_df = inner_summed.append(allouter_summed)
+            else:
+                riskblocks_df = inner_summed
 
             # Steps o-r
             asRisksPathway = self.getRisksPathway('As', riskblocks_df, facilityId, maxRiskAndHI_df, maxIndivRisks_df)

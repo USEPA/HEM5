@@ -37,7 +37,7 @@ class BlockSummaryChronic(CsvWriter, InputFile):
         return ['Latitude', 'Longitude', 'Overlap', 'Elevation (m)', 'FIPs', 'Block', 'X', 'Y', 'Hill',
                 'Population', 'MIR', 'Respiratory HI', 'Liver HI', 'Neurological HI', 'Developmental HI',
                 'Reproductive HI', 'Kidney HI', 'Ocular HI', 'Endocrine HI', 'Hematological HI',
-                'Immunological HI', 'Skeletal HI', 'Spleen HI', 'Thyroid HI', 'Whole body HI', 'Block type']
+                'Immunological HI', 'Skeletal HI', 'Spleen HI', 'Thyroid HI', 'Whole body HI', 'Inner/Outer Block']
 
     def getColumns(self):
         return [lat, lon, overlap, elev, fips, block, utme, utmn, hill, population,
@@ -82,11 +82,16 @@ class BlockSummaryChronic(CsvWriter, InputFile):
 
         # Add a column to indicate type of census block. D => discrete, I => interpolated
         inneragg[blk_type] = "D"
-        self.outerAgg[blk_type] = "I"
+        if not self.outerAgg.empty:
+            self.outerAgg[blk_type] = "I"
 
 
         # append the inner and outer values and write
-        self.dataframe = inneragg.append(self.outerAgg, ignore_index = True).sort_values(by=[fips, block])        
+        if not self.outerAgg.empty:
+            self.dataframe = inneragg.append(self.outerAgg, ignore_index = True).sort_values(by=[fips, block])
+        else:
+            self.dataframe = inneragg
+            
         self.data = self.dataframe.values
         yield self.dataframe
 

@@ -34,14 +34,14 @@ class MaximumOffsiteImpacts(ExcelWriter):
         """
 
         # dictionary of receptor types
-        rectype_dict = {"P":"Polar grid", "D":"Census block"}
+        rectype_dict = {"PG":"Polar grid", "D":"Census block"}
 
         ring_risk = self.ring_summary_chronic_df.copy()
         inner_risk = self.inner_recep_risk_df.copy()
 
         # add population and recype columns into ring risk df
         ring_risk[population] = 0
-        ring_risk[rec_type] = "P"
+        ring_risk[rec_type] = "PG"
 
         # add distance and angle from the inner blocks df to the inner risk df
         if self.model.innerblks_df.empty == False:

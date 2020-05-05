@@ -458,20 +458,10 @@ class FacilityPrep():
             
         # assign sector and ring number (integers) to each outer receptor and compute fractional sector (s)
         # and ring_loc (log weighted) numbers
-        self.outerblks[sector], self.outerblks["s"], self.outerblks[ring], self.outerblks["ring_loc"] = \
-             zip(*self.outerblks.apply(lambda row: self.calc_ring_sector(polar_dist,row[distance],row[angle],op_radial), axis=1))
+        if not self.outerblks.empty:
+            self.outerblks[sector], self.outerblks["s"], self.outerblks[ring], self.outerblks["ring_loc"] = \
+                 zip(*self.outerblks.apply(lambda row: self.calc_ring_sector(polar_dist,row[distance],row[angle],op_radial), axis=1))
 
-#        # export innerblks to an Excel file in the Working directory
-#        innerblks_path = "working/innerblk_receptors.xlsx"
-#        innerblks_con = pd.ExcelWriter(innerblks_path)
-#        self.innerblks.to_excel(innerblks_con,'Sheet1')
-#        innerblks_con.save()
-#
-#        # export outerblks to an Excel file in the Working directory
-#        outerblks_path = "working/outerblk_receptors.xlsx"
-#        outerblks_con = pd.ExcelWriter(outerblks_path)
-#        self.outerblks.to_excel(outerblks_con,'Sheet1')
-#        outerblks_con.save()
 
         #%%------ Elevations and hill height ---------
 
@@ -494,18 +484,6 @@ class FacilityPrep():
 
         # Assign the polar grid data frame to the model
         self.model.polargrid = polar_df
-
-#        # export polar_df to an Excel file in the Working directory
-#        polardf_path = "working/" + facid + "_polar_receptors.xlsx"
-#        polardf_con = pd.ExcelWriter(polardf_path)
-#        polar_df.to_excel(polardf_con,'Sheet1')
-#        polardf_con.save()
-#
-#        # export emislocs to an Excel file in the Working directory
-#        emislocs_path = "working/" + facid + "_emislocs.xlsx"
-#        emislocs_con = pd.ExcelWriter(emislocs_path)
-#        emislocs.to_excel(emislocs_con,'Sheet1')
-#        emislocs_con.save()
 
         
         #%% this is where runstream file will be compiled
@@ -570,7 +548,8 @@ class FacilityPrep():
 
         # subset the inner and outer block dataframes to sector, ring
         innblks_sub = innblks.loc[(innblks[sector] == sector1) & (innblks[ring] == ring1)]
-        outblks_sub = outblks.loc[(outblks[sector] == sector1) & (outblks[ring] == ring1)]
+        if not outblks.empty:
+            outblks_sub = outblks.loc[(outblks[sector] == sector1) & (outblks[ring] == ring1)]
 
         # initialize variables
         r_nearelev = -999
@@ -599,18 +578,19 @@ class FacilityPrep():
 
 
         # look at outer block subset
-        for index, row in outblks_sub.iterrows():
-            if row[elev] > r_maxelev:
-                r_maxelev = row[elev]
-                r_hill = row[hill]
-            r_avgelev = r_avgelev + row[elev]
-            r_popelev = r_popelev + row[elev] * row[population]
-            r_nblk = r_nblk + 1
-            r_pop = r_pop + row[population]
-            d_test = math.sqrt(row[distance]**2 + polar_row[distance]**2 - 2*row[distance]*polar_row[distance]*math.cos(math.radians(row[angle]-polar_row[angle])))
-            if d_test <= d_nearelev:
-                d_nearelev = d_test
-                r_nearelev = row[elev]
+        if not outblks.empty:
+            for index, row in outblks_sub.iterrows():
+                if row[elev] > r_maxelev:
+                    r_maxelev = row[elev]
+                    r_hill = row[hill]
+                r_avgelev = r_avgelev + row[elev]
+                r_popelev = r_popelev + row[elev] * row[population]
+                r_nblk = r_nblk + 1
+                r_pop = r_pop + row[population]
+                d_test = math.sqrt(row[distance]**2 + polar_row[distance]**2 - 2*row[distance]*polar_row[distance]*math.cos(math.radians(row[angle]-polar_row[angle])))
+                if d_test <= d_nearelev:
+                    d_nearelev = d_test
+                    r_nearelev = row[elev]
 
 
         # compute average and population elevations
@@ -663,17 +643,18 @@ class FacilityPrep():
                     r_hill = r_nearhill
             
             # check outer blocks
-            outer_dist = (outblks[utme] - polar_row[utme])**2 + (outblks[utmn] - polar_row[utmn])**2
-            mindist_index = outer_dist.values.argmin()
-            d_test = outer_dist.iloc[mindist_index]
-            if d_test <= d_nearelev:
-                d_nearelev = d_test
-                r_nearelev = outblks[elev].iloc[mindist_index]
-                r_maxelev = r_nearelev
-                r_avgelev = r_nearelev
-                r_popelev = r_nearelev
-                r_nearhill = outblks[hill].iloc[mindist_index]
-                r_hill = r_nearhill
+            if not outblks.empty:
+                outer_dist = (outblks[utme] - polar_row[utme])**2 + (outblks[utmn] - polar_row[utmn])**2
+                mindist_index = outer_dist.values.argmin()
+                d_test = outer_dist.iloc[mindist_index]
+                if d_test <= d_nearelev:
+                    d_nearelev = d_test
+                    r_nearelev = outblks[elev].iloc[mindist_index]
+                    r_maxelev = r_nearelev
+                    r_avgelev = r_nearelev
+                    r_popelev = r_nearelev
+                    r_nearhill = outblks[hill].iloc[mindist_index]
+                    r_hill = r_nearhill
 
             r_hill = max(r_hill, r_maxelev)
             
@@ -872,10 +853,12 @@ class FacilityPrep():
         innerblks[utmn] = innerblks[utmn].astype(np.float64)
         innerblks[utmz] = innerblks[utmz].astype(int)
         innerblks[population] = pd.to_numeric(innerblks[population], errors='coerce').astype(int)
-        outerblks[utme] = outerblks[utme].astype(np.float64)
-        outerblks[utmn] = outerblks[utmn].astype(np.float64)
-        outerblks[utmz] = outerblks[utmz].astype(int)
-        outerblks[population] = pd.to_numeric(outerblks[population], errors='coerce').astype(int)
+        
+        if not outerblks.empty:
+            outerblks[utme] = outerblks[utme].astype(np.float64)
+            outerblks[utmn] = outerblks[utmn].astype(np.float64)
+            outerblks[utmz] = outerblks[utmz].astype(int)
+            outerblks[population] = pd.to_numeric(outerblks[population], errors='coerce').astype(int)
 
         return innerblks, outerblks
 
@@ -899,11 +882,12 @@ class FacilityPrep():
                 hill_est = row.hill
         
         # Loop over outer blocks to see if any are closer
-        for index, row in outblks.iterrows():
-            temp_dist = np.sqrt((ur_utme - row.utme)**2 + (ur_utmn - row.utmn)**2)
-            if temp_dist < mindist:
-                mindist = temp_dist
-                elev_est = row.elev
-                hill_est = row.hill
+        if not outblks.empty:
+            for index, row in outblks.iterrows():
+                temp_dist = np.sqrt((ur_utme - row.utme)**2 + (ur_utmn - row.utmn)**2)
+                if temp_dist < mindist:
+                    mindist = temp_dist
+                    elev_est = row.elev
+                    hill_est = row.hill
         
         return elev_est, hill_est
