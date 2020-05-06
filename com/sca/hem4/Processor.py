@@ -211,7 +211,7 @@ class Processor():
         
         elif len(self.skipped) == 0:
             
-            self.model.save.remove_folder()
+#            self.model.save.remove_folder()
             
             Logger.logMessage("HEM4 Modeling Completed. Finished modeling all" +
                           " facilities. Check the log tab for error messages."+
@@ -220,7 +220,7 @@ class Processor():
 
         else:
 
-            self.model.save.remove_folder()
+#            self.model.save.remove_folder()
             
             Logger.logMessage("HEM4 successfully modeled " + str(len(self.completed)) + " facilities. HEM4 skipped " + str(len(self.skipped))+ " facilities. Modeling not completed for: " + "/n ".join(self.skipped))
             

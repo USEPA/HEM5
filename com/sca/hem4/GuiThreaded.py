@@ -1855,15 +1855,15 @@ class Hem4(tk.Frame):
                 os.makedirs(self.model.rootoutput)
                 
                 #set save folder
-                save_state = SaveState(self.model.group_name, self.model)
-                self.model.save = save_state
+#                save_state = SaveState(self.model.group_name, self.model)
+#                self.model.save = save_state
                 
                 #save model
-                model_loc = save_state.save_folder + "/model.pkl"
-                modelHandler = open(model_loc, 'wb') 
-                pickle.dump(self.model, modelHandler)
-                modelHandler.close()
-                print("saving model")
+#                model_loc = save_state.save_folder + "/model.pkl"
+#                modelHandler = open(model_loc, 'wb') 
+#                pickle.dump(self.model, modelHandler)
+#                modelHandler.close()
+#                print("saving model")
                 
                     
                 if hasattr(self, 'run_button'):

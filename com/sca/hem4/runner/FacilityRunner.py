@@ -353,7 +353,7 @@ class FacilityRunner():
                         
                 
     def check_run(self, fac_folder, phasetype):
-
+        
         ## Check for successful aermod run:
         output = os.path.join("aermod", "aermod.out")
         check = open(output, 'r')
@@ -386,9 +386,10 @@ class FacilityRunner():
                 plt_version = 'plotfile_p.plt'
 
                 #rename maxhour for particle
-                if os.path.exists('aermod/maxhour_p.plt'):
-                    os.remove('aermod/maxhour_p.plt')
-                os.rename('aermod/maxhour.plt','aermod/maxhour_p.plt')
+                if self.acute_yn == 'Y':
+                    if os.path.exists('aermod/maxhour_p.plt'):
+                        os.remove('aermod/maxhour_p.plt')
+                    os.rename('aermod/maxhour.plt','aermod/maxhour_p.plt')
                 max_version = 'maxhour_p.plt'
                  
             elif self.phase == 'V' or phasetype == 'V':
@@ -400,9 +401,10 @@ class FacilityRunner():
                 plt_version = 'plotfile_v.plt'
 
                 #rename maxhour for vapor
-                if os.path.exists('aermod/maxhour_v.plt'):
-                    os.remove('aermod/maxhour_v.plt')
-                os.rename('aermod/maxhour.plt','aermod/maxhour_v.plt')
+                if self.acute_yn == 'Y':
+                    if os.path.exists('aermod/maxhour_v.plt'):
+                        os.remove('aermod/maxhour_v.plt')
+                    os.rename('aermod/maxhour.plt','aermod/maxhour_v.plt')
                 max_version = 'maxhour_v.plt'
                 
             else:
@@ -593,7 +595,7 @@ class FacilityRunner():
             outputProcess.process()
                         
             #if successful save state
-            self.model.save.save_model(self.facilityId)
+#            self.model.save.save_model(self.facilityId)
             
             pace =  str(round((time.time()- self.start)/60, 2)) + ' minutes'
             Logger.logMessage("Finished calculations for " + self.facilityId + 

@@ -226,8 +226,7 @@ class Process_outputs():
         max_indiv_risk.write()
         self.model.max_indiv_risk_df = max_indiv_risk.dataframe
         Logger.logMessage("Completed MaximumIndividualRisks output")
-
-
+        
         #----------- create Maximum_Offsite_Impacts output file ---------------
         inner_recep_risk_df = self.model.block_summary_chronic_df[self.model.block_summary_chronic_df["blk_type"] == "D"]
         max_offsite_impacts = MaximumOffsiteImpactsNonCensus(self.outdir, self.facid, self.model, self.plot_df,
