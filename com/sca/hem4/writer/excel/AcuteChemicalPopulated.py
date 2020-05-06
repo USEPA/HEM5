@@ -88,32 +88,34 @@ class AcuteChemicalPopulated(ExcelWriter, InputFile):
         
         # 2) Next, search the outer receptor concs
         
-        outercolumns = [fips, block, lat, lon, source_id, emis_type, pollutant, conc, 
-                        aconc, elev, population, overlap]
-        
-        # Get a list of the all_outer_receptor files (could be more than one)
-        listOuter = []
-        listDirfiles = os.listdir(self.targetDir)
-        pattern = "*_all_outer_receptors*.csv"
-        for entry in listDirfiles:
-            if fnmatch.fnmatch(entry, pattern):
-                listOuter.append(entry)
-        
-        # Loop over each pollutant and outer receptor file and see if max acute conc
-        # is larger than the stored value
-        for f in listOuter:
-            allouter = AllOuterReceptors(targetDir=self.targetDir, filenameOverride=f)
-            outer_df = allouter.createDataframe()
-            # Sum to unique lat/lons
-            outsum = outer_df.groupby([pollutant, lat, lon]).agg(aggs)[newcolumns]
-
-            for p in pols:
-                max_idx = outsum[outsum[pollutant].str.lower() == p][aconc].idxmax()
-                if outsum[aconc].loc[max_idx] > maxconc_df[aconc].loc[p]:
-                    maxconc_df.loc[p, aconc] = outsum[aconc].loc[max_idx]
-                    maxconc_df.loc[p, lon] = outsum[lon].loc[max_idx]
-                    maxconc_df.loc[p, lat] = outsum[lat].loc[max_idx]
-                    maxconc_df.loc[p, notes] = 'Interpolated'
+        if not self.model.outerblks_df.empty:
+            
+            outercolumns = [fips, block, lat, lon, source_id, emis_type, pollutant, conc, 
+                            aconc, elev, population, overlap]
+            
+            # Get a list of the all_outer_receptor files (could be more than one)
+            listOuter = []
+            listDirfiles = os.listdir(self.targetDir)
+            pattern = "*_all_outer_receptors*.csv"
+            for entry in listDirfiles:
+                if fnmatch.fnmatch(entry, pattern):
+                    listOuter.append(entry)
+            
+            # Loop over each pollutant and outer receptor file and see if max acute conc
+            # is larger than the stored value
+            for f in listOuter:
+                allouter = AllOuterReceptors(targetDir=self.targetDir, filenameOverride=f)
+                outer_df = allouter.createDataframe()
+                # Sum to unique lat/lons
+                outsum = outer_df.groupby([pollutant, lat, lon]).agg(aggs)[newcolumns]
+    
+                for p in pols:
+                    max_idx = outsum[outsum[pollutant].str.lower() == p][aconc].idxmax()
+                    if outsum[aconc].loc[max_idx] > maxconc_df[aconc].loc[p]:
+                        maxconc_df.loc[p, aconc] = outsum[aconc].loc[max_idx]
+                        maxconc_df.loc[p, lon] = outsum[lon].loc[max_idx]
+                        maxconc_df.loc[p, lat] = outsum[lat].loc[max_idx]
+                        maxconc_df.loc[p, notes] = 'Interpolated'
         
         # 3) Build output dataframe
         acute_df = polinfo.join(maxconc_df, how='inner')

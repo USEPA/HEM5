@@ -2,6 +2,9 @@ from com.sca.hem4.upload.UserReceptors import rec_type
 from com.sca.hem4.writer.csv.AllOuterReceptors import *
 from com.sca.hem4.FacilityPrep import *
 
+blk_type = 'blk_type';
+
+
 class BlockSummaryChronicNonCensus(CsvWriter, InputFile):
     """
     Provides the risk and each TOSHI for every census block modeled, as well as additional block information.
@@ -32,12 +35,12 @@ class BlockSummaryChronicNonCensus(CsvWriter, InputFile):
         return ['Latitude', 'Longitude', 'Overlap', 'Elevation (m)', 'Receptor ID', 'X', 'Y', 'Hill',
                 'Population', 'MIR', 'Respiratory HI', 'Liver HI', 'Neurological HI', 'Developmental HI',
                 'Reproductive HI', 'Kidney HI', 'Ocular HI', 'Endocrine HI', 'Hematological HI',
-                'Immunological HI', 'Skeletal HI', 'Spleen HI', 'Thyroid HI', 'Whole body HI', 'Receptor type']
+                'Immunological HI', 'Skeletal HI', 'Spleen HI', 'Thyroid HI', 'Whole body HI', 'Inner/Outer Block']
 
     def getColumns(self):
         return [lat, lon, overlap, elev, rec_id, utme, utmn, hill, population,
                 mir, hi_resp, hi_live, hi_neur, hi_deve, hi_repr, hi_kidn, hi_ocul,
-                hi_endo, hi_hema, hi_immu, hi_skel, hi_sple, hi_thyr, hi_whol, rec_type]
+                hi_endo, hi_hema, hi_immu, hi_skel, hi_sple, hi_thyr, hi_whol, blk_type]
 
     def generateOutputs(self):
         """
@@ -73,11 +76,16 @@ class BlockSummaryChronicNonCensus(CsvWriter, InputFile):
         inneragg = innermerged.groupby([lat, lon]).agg(aggs)[newcolumns]
 
         # add a receptor type column to note if discrete or interpolated. D => discrete, I => interpolated
-        inneragg[rec_type] = "D"
-        self.outerAgg[rec_type] = "I"
+        inneragg[blk_type] = "D"
+        if not self.outerAgg.empty:
+            self.outerAgg[blk_type] = "I"
 
         # append the inner and outer values and write
-        self.dataframe = inneragg.append(self.outerAgg, ignore_index = True).sort_values(by=[rec_id])
+        if not self.outerAgg.empty:
+            self.dataframe = inneragg.append(self.outerAgg, ignore_index = True).sort_values(by=[rec_id])
+        else:
+            self.dataframe = inneragg
+            
         self.data = self.dataframe.values
         yield self.dataframe
 
@@ -141,7 +149,7 @@ class BlockSummaryChronicNonCensus(CsvWriter, InputFile):
         # Type setting for CSV reading
         self.numericColumns = [lat, lon, elev, utme, utmn, population, hill, mir, hi_resp, hi_live, hi_neur, hi_deve,
                                hi_repr, hi_kidn, hi_ocul, hi_endo, hi_hema, hi_immu, hi_skel, hi_sple, hi_thyr, hi_whol]
-        self.strColumns = [rec_id, overlap, rec_type]
+        self.strColumns = [rec_id, overlap, blk_type]
 
         df = self.readFromPathCsv(self.getColumns())
         return df.fillna("")

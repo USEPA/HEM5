@@ -174,17 +174,17 @@ class RiskBreakdown(ExcelWriter, InputFile):
     
                     # Find row with highest cancer or HI. This will occur at any discrete or polar receptor that does not overlap.
                     # The row[parameter] value indicates cancer or HI.
-                    io_idx = self.model.risk_by_latlon[(self.model.risk_by_latlon[rec_type] != "I") &
+                    io_idx = self.model.risk_by_latlon[(self.model.risk_by_latlon[blk_type] != "I") &
                                                        (self.model.risk_by_latlon[overlap] == "N")] \
                         [namemap[row[parameter]]].idxmax()
     
                     # lat/lon and receptor type of max
                     mr_lat = float(self.model.risk_by_latlon[lat].loc[io_idx])
                     mr_lon = float(self.model.risk_by_latlon[lon].loc[io_idx])
-                    mr_rectype = self.model.risk_by_latlon[rec_type].loc[io_idx]
+                    mr_rectype = self.model.risk_by_latlon[blk_type].loc[io_idx]
     
-                    # Get source and pollutant specific concs. Depends on receptor type.
-                    # D => discrete, P => polar
+                    # Get source and pollutant specific concs. Depends on block type.
+                    # D => discrete, PG => polar
                     if mr_rectype == "D":
                         concdata = self.model.all_inner_receptors_df[[lat,lon,source_id,pollutant,emis_type,conc]] \
                             [(self.model.all_inner_receptors_df[lat] == mr_lat) &

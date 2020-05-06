@@ -32,16 +32,16 @@ class MaximumOffsiteImpacts(ExcelWriter):
         Max offsite impacts occur at non-overlapped inner or polar receptors with the highest value. Outer
         receptors are not checked because they cannot be higher than any polar receptor.
         """
-
+        
         # dictionary of receptor types
-        rectype_dict = {"P":"Polar grid", "D":"Census block"}
+        rectype_dict = {"PG":"Polar grid", "D":"Census block"}
 
         ring_risk = self.ring_summary_chronic_df.copy()
         inner_risk = self.inner_recep_risk_df.copy()
 
         # add population and recype columns into ring risk df
         ring_risk[population] = 0
-        ring_risk[rec_type] = "P"
+        ring_risk[blk_type] = "PG"
 
         # add distance and angle from the inner blocks df to the inner risk df
         if self.model.innerblks_df.empty == False:
@@ -82,7 +82,7 @@ class MaximumOffsiteImpacts(ExcelWriter):
                 moi_utmn = float(allrisk[utmn].loc[io_idx])
                 moi_lat = float(allrisk[lat].loc[io_idx])
                 moi_lon = float(allrisk[lon].loc[io_idx])
-                moi_rectype = rectype_dict[allrisk[rec_type].loc[io_idx]]
+                moi_rectype = rectype_dict[allrisk[blk_type].loc[io_idx]]
             else:
                 moi_value_rnd = 0
                 moi_value_sci = 0

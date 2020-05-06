@@ -45,7 +45,7 @@ class MaxRisk(ExcelWriter, AltRecAwareSummary):
             blocksummary_df.drop(blocksummary_df[(blocksummary_df.population == 0) & ("U" not in blocksummary_df.block)].index,
                  inplace=True)
     
-            aggs = {lat:'first', lon:'first', overlap:'first', elev:'first', utme:'first', rec_type:'first',
+            aggs = {lat:'first', lon:'first', overlap:'first', elev:'first', utme:'first', blk_type:'first',
                     utmn:'first', hill:'first', fips:'first', block:'first', population:'first',
                     mir:'sum', hi_resp:'sum', hi_live:'sum', hi_neur:'sum', hi_deve:'sum',
                     hi_repr:'sum', hi_kidn:'sum', hi_ocul:'sum', hi_endo:'sum', hi_hema:'sum',
@@ -106,7 +106,7 @@ class MaxRisk(ExcelWriter, AltRecAwareSummary):
             
         else:
                         
-            aggs = {lat:'first', lon:'first', overlap:'first', elev:'first', utme:'first', rec_type:'first',
+            aggs = {lat:'first', lon:'first', overlap:'first', elev:'first', utme:'first', blk_type:'first',
                     utmn:'first', hill:'first', rec_id: 'first', population:'first',
                     mir:'sum', hi_resp:'sum', hi_live:'sum', hi_neur:'sum', hi_deve:'sum',
                     hi_repr:'sum', hi_kidn:'sum', hi_ocul:'sum', hi_endo:'sum', hi_hema:'sum',

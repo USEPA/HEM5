@@ -82,7 +82,7 @@ class Particle(DependentInputFile):
                 Logger.logMessage("Facility " + facility + ": mass fraction value " + str(row[mass_frac]) +
                                   " out of range.")
                 return None
-            if row[part_dens] < 0 or row[part_dens] > 1:
+            if row[part_dens] < 0:
                 Logger.logMessage("Facility " + facility + ": particle density value " + str(row[part_dens]) +
                                   " out of range.")
                 return None
@@ -103,7 +103,7 @@ class Particle(DependentInputFile):
         if len(incomplete) > 0:
             messagebox.showinfo("Mass Fraction Error",
                                 "The mass fractions for " + ", ".join(incomplete)+
-                                " do not sum to 1. Please correct them in your "+
+                                " do not sum to 100%. Please correct them in your "+
                                 "particle size file.")
             return None
         else:
