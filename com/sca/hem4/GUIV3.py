@@ -712,7 +712,7 @@ class Hem(Page):
         
         
         self.hap_file = tk.Label(self.s6, font=TEXT_FONT, bg=self.tab_color, 
-                             text="2. Please select a Hap Emissions file:")
+                             text="2. Please select a HAP Emissions file:")
         self.hap_file.grid(row=3, column=1, sticky='W')
         
                                     
@@ -1116,23 +1116,23 @@ class Hem(Page):
         self.ur = PIL.Image.open('images\icons8-import-48.png').resize((30,30))
         self.uricon = self.add_margin(self.ur, 5, 0, 5, 0)
         self.urileicon = ImageTk.PhotoImage(self.uricon)
-        self.urLabel = tk.Label(self.s9, image=self.urileicon, bg=self.tab_color)
+        self.urLabel = tk.Label(self.optional.s8, image=self.urileicon, bg=self.tab_color)
         self.urLabel.image = self.urileicon # keep a reference!
         self.urLabel.grid(row=1, column=0, padx=10)
         
         
-        self.ur_file = tk.Label(self.s9, font=TEXT_FONT, bg=self.tab_color, 
+        self.ur_file = tk.Label(self.optional.s8, font=TEXT_FONT, bg=self.tab_color, 
                              text="Please select a User Receptors file:")
         self.ur_file.grid(row=1, column=1, sticky='W')
         
                                     
-        self.ur_file.bind("<Enter>", lambda x: self.color_config( self.ur_file, self.urLabel, self.s9, self.highlightcolor, x))
-        self.ur_file.bind("<Leave>", lambda x: self.color_config( self.ur_file, self.urLabel, self.s9, self.tab_color, x))
-        self.ur_file.bind("<Button-1>", lambda x: self.uploadUserReceptors(self.s9, self.ur_file, x))
+        self.ur_file.bind("<Enter>", lambda x: self.color_config( self.ur_file, self.urLabel, self.optional.s8, self.highlightcolor, x))
+        self.ur_file.bind("<Leave>", lambda x: self.color_config( self.ur_file, self.urLabel, self.optional.s8, self.tab_color, x))
+        self.ur_file.bind("<Button-1>", lambda x: self.uploadUserReceptors(self.optional.s8, self.ur_file, x))
         
-        self.urLabel.bind("<Enter>", lambda x: self.color_config(self.urLabel, self.ur_file, self.s9, self.highlightcolor, x))
-        self.urLabel.bind("<Leave>", lambda x: self.color_config(self.urLabel, self.ur_file, self.s9, self.tab_color, x))
-        self.urLabel.bind("<Button-1>",  lambda x: self.uploadUserReceptors(self.s9, self.ur_file, x))
+        self.urLabel.bind("<Enter>", lambda x: self.color_config(self.urLabel, self.ur_file, self.optional.s8, self.highlightcolor, x))
+        self.urLabel.bind("<Leave>", lambda x: self.color_config(self.urLabel, self.ur_file, self.optional.s8, self.tab_color, x))
+        self.urLabel.bind("<Button-1>",  lambda x: self.uploadUserReceptors(self.optional.s8, self.ur_file, x))
 
         
         
@@ -1182,23 +1182,23 @@ class Hem(Page):
         self.emisvar = PIL.Image.open('images\icons8-import-48.png').resize((30,30))
         self.emisvaricon = self.add_margin(self.emisvar, 5, 0, 5, 0)
         self.emisvarileicon = ImageTk.PhotoImage(self.emisvaricon)
-        self.emisvarLabel = tk.Label(self.s9, image=self.emisvarileicon, bg=self.tab_color)
+        self.emisvarLabel = tk.Label(self.optional.s9, image=self.emisvarileicon, bg=self.tab_color)
         self.emisvarLabel.image = self.emisvarileicon # keep a reference!
         self.emisvarLabel.grid(row=1, column=0, padx=10)
         
         
-        self.emisvar_file = tk.Label(self.s9, font=TEXT_FONT, bg=self.tab_color, 
+        self.emisvar_file = tk.Label(self.optional.s9, font=TEXT_FONT, bg=self.tab_color, 
                              text="Please select aa alternate User Receptor CSV file:")
         self.emisvar_file.grid(row=1, column=1, sticky='W')
         
                                     
-        self.emisvar_file.bind("<Enter>", lambda x: self.color_config( self.emisvar_file, self.emisvarLabel, self.s9, self.highlightcolor, x))
-        self.emisvar_file.bind("<Leave>", lambda x: self.color_config( self.emisvar_file, self.emisvarLabel, self.s9, self.tab_color, x))
-        self.emisvar_file.bind("<Button-1>", lambda x: self.uploadVariation(self.s9, self.emisvar_file, x))
+        self.emisvar_file.bind("<Enter>", lambda x: self.color_config( self.emisvar_file, self.emisvarLabel, self.optional.s9, self.highlightcolor, x))
+        self.emisvar_file.bind("<Leave>", lambda x: self.color_config( self.emisvar_file, self.emisvarLabel, self.optional.s9, self.tab_color, x))
+        self.emisvar_file.bind("<Button-1>", lambda x: self.uploadVariation(self.optional.s9, self.emisvar_file, x))
         
-        self.emisvarLabel.bind("<Enter>", lambda x: self.color_config(self.emisvarLabel, self.emisvar_file, self.s9, self.highlightcolor, x))
-        self.emisvarLabel.bind("<Leave>", lambda x: self.color_config(self.emisvarLabel, self.emisvar_file, self.s9, self.tab_color, x))
-        self.emisvarLabel.bind("<Button-1>",  lambda x: self.uploadVariation(self.s9, self.emisvar_file, x))
+        self.emisvarLabel.bind("<Enter>", lambda x: self.color_config(self.emisvarLabel, self.emisvar_file, self.optional.s9, self.highlightcolor, x))
+        self.emisvarLabel.bind("<Leave>", lambda x: self.color_config(self.emisvarLabel, self.emisvar_file, self.optional.s9, self.tab_color, x))
+        self.emisvarLabel.bind("<Button-1>",  lambda x: self.uploadVariation(self.optional.s9, self.emisvar_file, x))
 
 
 
@@ -1251,7 +1251,7 @@ class Hem(Page):
         
         self.buoy_file = tk.Label(self.optional.s4, font=TEXT_FONT, bg=self.tab_color, 
                              text="Please select associated Buoyant Line"+
-                                 " Source Parameter file")
+                                 " Parameters file")
         self.buoy_file.grid(row=1, column=1, sticky='W')
         
                                     
@@ -1306,7 +1306,7 @@ class Hem(Page):
         
         
         self.bldgdw_file = tk.Label(self.optional.s6, font=TEXT_FONT, bg=self.tab_color, 
-                             text="Please select associated Building Downwash file")
+                             text="Please select associated Building Dimensions file")
         self.bldgdw_file.grid(row=1, column=1, sticky='W')
         
                                     
@@ -1390,7 +1390,7 @@ class Hem(Page):
         
         
         self.seasons_file = tk.Label(self.depdeplt.s6, font=TEXT_FONT, bg=self.tab_color, 
-                             text="Please select Seasonal Vegetation file")
+                             text="Please select Month-to-Season Vegetation file")
         self.seasons_file.grid(row=1, column=1, sticky='W')
         
                                     
@@ -1756,13 +1756,13 @@ class Hem(Page):
          #find the last next button and disable that one
 
         if 'user_rcpt' in self.model.dependencies:
-            for child in self.s9.winfo_children():
+            for child in self.optional.s8.winfo_children():
                 child.destroy()
                 
                 
         #emis var
         if 'emis_var' in self.model.dependencies:
-            for child in self.s8.winfo_children():
+            for child in self.optional.s9.winfo_children():
                 child.destroy()
             
         if 'buoyant' in self.model.dependencies:
@@ -1853,7 +1853,7 @@ class Hem(Page):
                  self.instruction_instance.set(" ")
                  
                  
-         elif "Please select associated Buoyant Line Source Parameter file" in [widget1['text'], widget2['text']]:
+         elif "Please select associated Buoyant Line Parameters file" in [widget1['text'], widget2['text']]:
              
              if self.optional.instruction_instance.get() == " ":
                  
@@ -1874,15 +1874,15 @@ class Hem(Page):
                  
          elif 'Please select a User Receptors file:' in [widget1['text'], widget2['text']]:
              
-             if self.instruction_instance.get() == " ":
+             if self.optional.instruction_instance.get() == " ":
                  
                  self.browse("instructions/urep_browse.txt")
                  
              else:
-                 self.instruction_instance.set(" ")
+                 self.optional.instruction_instance.set(" ")
                  
         
-         elif "Please select associated Building Downwash file" in [widget1['text'], widget2['text']]:
+         elif "Please select associated Building Dimensions file" in [widget1['text'], widget2['text']]:
              
              if self.optional.instruction_instance.get() == " ":
                  
@@ -1911,7 +1911,7 @@ class Hem(Page):
              else:
                  self.depdeplt.instruction_instance.set(" ")
                  
-         elif "Please select Seasonal Vegetation file" in [widget1['text'], widget2['text']]:
+         elif "Please select Month-to-Season Vegetation file" in [widget1['text'], widget2['text']]:
              
              if self.depdeplt.instruction_instance.get() == " ":
                  

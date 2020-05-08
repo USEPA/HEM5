@@ -166,6 +166,8 @@ class Optional(Page):
         self.s5 = tk.Frame(self.required_inputs, width=600, height=50, pady=5, padx=5, bg=self.tab_color)
         self.s6 = tk.Frame(self.required_inputs, width=600, height=50, pady=5, padx=5, bg=self.tab_color)
         self.s7 = tk.Frame(self.required_inputs, width=600, height=50, pady=5, padx=5, bg=self.tab_color)
+        self.s8 = tk.Frame(self.required_inputs, width=600, height=50, pady=5, padx=5, bg=self.tab_color)
+        self.s9 = tk.Frame(self.required_inputs, width=600, height=50, pady=5, padx=5, bg=self.tab_color)
 
 
 
@@ -174,9 +176,11 @@ class Optional(Page):
         self.s1.grid(row=0)
         self.s2.grid(row=1, column=0)
         self.s3.grid(row=2, column=0, columnspan=2, sticky="nsew")
-        self.s4.grid(row=3, column=0, columnspan=2, sticky="nsew")
-        self.s5.grid(row=4, column=0, columnspan=2, sticky="nsew")
-        self.s6.grid(row=5, column=0, columnspan=2, sticky="nsew")
+        self.s8.grid(row=3, column=0, columnspan=2, sticky="nsew")
+        self.s9.grid(row=4, column=0, columnspan=2, sticky="nsew")
+        self.s4.grid(row=5, column=0, columnspan=2, sticky="nsew")
+        self.s5.grid(row=6, column=0, columnspan=2, sticky="nsew")
+        self.s6.grid(row=7, column=0, columnspan=2, sticky="nsew")
         self.s7.grid(row=10, column=0, columnspan=2, sticky="nsew")
         
         
@@ -303,6 +307,7 @@ class DepDplt(Page):
         self.s4 = tk.Frame(self.required_inputs, width=600, height=50, pady=5, padx=5, bg=self.tab_color)
         self.s5 = tk.Frame(self.required_inputs, width=600, height=50, pady=5, padx=5, bg=self.tab_color)
         self.s6 = tk.Frame(self.required_inputs, width=600, height=50, pady=5, padx=5, bg=self.tab_color)
+        
 
 
 

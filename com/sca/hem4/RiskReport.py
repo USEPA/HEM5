@@ -68,14 +68,18 @@ class Summary(Page):
         
         self.checked = []
         self.checked_icons = []
-
-
+        
         meta_container = tk.Frame(self, bg=self.tab_color, bd=2)
-        #        self.buttonframe.pack(side="w", fill="y", expand=False)
         meta_container.pack(side="top", fill="both", expand=True)
+        
+        self.meta_two = tk.Frame(self, bg=self.tab_color)
+        self.meta_two.pack(side="bottom", fill="both")
+        self.meta_two.columnconfigure(2, weight=1)
         
         self.container = tk.Frame(meta_container, bg=self.tab_color, borderwidth=0)
         self.container.grid(row=0, column =0)
+        self.container.grid_rowconfigure(11, weight=1)
+
 #        self.buttonframe.pack(side="right", fill="y", expand=False)
         
 #        self.s=ttk.Style()
@@ -120,7 +124,9 @@ class Summary(Page):
         
         self.s11 = tk.Frame(self.container, width=600, height=50, pady=5, padx=5, bg=self.tab_color)
       
-
+        self.container.grid_rowconfigure(12, weight=1)
+        self.container.grid_columnconfigure(2, weight=1)
+        self.container.grid(sticky = "nsew")
 #          
         self.s1.grid(row=1, column=0, columnspan=4, sticky="nsew")
         self.s2.grid(row=2, column=0, columnspan=4, sticky="nsew")
@@ -155,14 +161,12 @@ class Summary(Page):
 
         self.s11.grid(row=10, column=0, columnspan=2, sticky="nsew")
         
-        self.container.grid_rowconfigure(12, weight=1)
-        self.container.grid_columnconfigure(1, weight=1)
-        self.container.grid(sticky = "nsew")
+        
         
 
         
         #title
-        title = tk.Label(self.s1, text="Create Risk Summary Report", font=TITLE_FONT, bg=self.tab_color, anchor="w")
+        title = tk.Label(self.s1, text="Create Risk Summary Reports", font=TITLE_FONT, bg=self.tab_color, anchor="w")
         title.grid(pady=10, padx=10)
         
         
@@ -406,20 +410,23 @@ class Summary(Page):
         ru = PIL.Image.open('images\icons8-create-48.png').resize((30,30))
         ricon = self.add_margin(ru, 5, 0, 5, 0)
         rileicon = ImageTk.PhotoImage(ricon)
-        rileLabel = tk.Label(self.r10, image=rileicon, bg=self.tab_color)
+        rileLabel = tk.Label(self.meta_two, image=rileicon, bg=self.tab_color)
         rileLabel.image = rileicon # keep a reference!
-        rileLabel.grid(row=1, column=0, padx=10, sticky='W')
+        rileLabel.grid(row=0, column=1, padx=5, pady=20, sticky='E')
         
         
-        run_button = tk.Label(self.r10, text="Run Reports", font=TEXT_FONT, bg=self.tab_color)
-        run_button.grid(row=1, column=1, padx=5, pady=10, sticky='W')
+        run_button = tk.Label(self.meta_two, text="Run Reports", font=TEXT_FONT, bg=self.tab_color)
+        run_button.grid(row=0, column=2, padx=5, pady=20, sticky='W')
         
-        run_button.bind("<Enter>", partial(self.color_config, run_button, rileLabel, self.r10, 'light grey'))
-        run_button.bind("<Leave>", partial(self.color_config, run_button, rileLabel, self.r10, self.tab_color))
+        
+        
+        
+        run_button.bind("<Enter>", partial(self.color_config, run_button, rileLabel, self.meta_two, 'light grey'))
+        run_button.bind("<Leave>", partial(self.color_config, run_button, rileLabel, self.meta_two, self.tab_color))
         run_button.bind("<Button-1>", self.run_reports)
         
-        rileLabel.bind("<Enter>", partial(self.color_config, rileLabel, run_button, self.r10, 'light grey'))
-        rileLabel.bind("<Leave>", partial(self.color_config, rileLabel, run_button, self.r10, self.tab_color))
+        rileLabel.bind("<Enter>", partial(self.color_config, rileLabel, run_button, self.meta_two, 'light grey'))
+        rileLabel.bind("<Leave>", partial(self.color_config, rileLabel, run_button, self.meta_two, self.tab_color))
         rileLabel.bind("<Button-1>", self.run_reports)
 ##%%
 #        
