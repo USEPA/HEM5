@@ -40,7 +40,7 @@ class SourceTypeRiskHistogram(ExcelWriter, AltRecAwareSummary):
         faclistFile = os.path.join(self.categoryFolder, "inputs/faclist.xlsx")
         cols = [fac_id,met_station,rural_urban,urban_pop,max_dist,model_dist,radial,circles,overlap_dist, ring1,
                 fac_center,ring_distances, acute,
-                hours,multiplier,hivalu,dep,depl,pdep,pdepl,vdep,vdepl,elev,all_rcpts,
+                hours,multiplier,hivalu,dep,depl,pdep,pdepl,vdep,vdepl,elev,
                 user_rcpt,bldg_dw,fastall,emis_var,annual,period_start,period_end]
         faclist = pd.read_excel(faclistFile, skiprows=1, names=cols, dtype=str)
         faclist[acute] = faclist[acute].replace('nan', 'N')

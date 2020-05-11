@@ -1,1 +1,1 @@
-Search your computer for the name of a spreadsheet (MS Excel file type) containing dimensions of any buildings in the area to be modeled.
+Browse your computer to find and select the Microsoft Excel file containing dimensions of any buildings for which you wish to model building downwash from a vertical point (P), capped point (C), or horizontal point (H) source.
