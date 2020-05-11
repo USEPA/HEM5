@@ -18,6 +18,9 @@ import numpy as np
 import pandas as pd
 #from pandastable import Table, filedialog, np
 
+import os
+import glob
+import importlib 
 
 import shutil
 import webbrowser
@@ -365,28 +368,33 @@ class Analyze(Page):
             "Y": np.int
         }
 
-        filename = tk.filedialog.askopenfilename(filetypes = [("Excel or csv files","*.xls; *xlsx; *.csv*")])
-        if filename.split(".")[-1].lower() in ["xlsx", "xls"]:
-            df = pd.read_excel(filename, dtype=datatypes)#Added dtypes here
-            ### Removing characters in column names that prevent pandastable calculations
-            df.columns = df.columns.str.replace(' ', '_').str.replace('(', '') \
-                .str.replace(')', '').str.replace('/','_').str.replace('%','pct') \
-                .str.replace('>', 'gt').str.replace('>=', 'gte')
-        else:
-            df = pd.read_csv(filename, dtype=datatypes)
-            ### Removing characters in column names that prevent pandastable calculations
-            df.columns = df.columns.str.replace(' ', '_').str.replace('(', '') \
-                .str.replace(')', '').str.replace('/','_').str.replace('%','pct') \
-                .str.replace('>', 'gt').str.replace('>=', 'gte')
 
-        curr_windo=tk.Toplevel()
-        curr_windo.title(filename)
-        curr_windo.geometry('900x600+40+20')
-        pt = Table(curr_windo, dataframe = df, showtoolbar=True, showstatusbar=True)
-        pt.autoResizeColumns()
-        pt.colheadercolor='#448BB9'
-        pt.floatprecision = 6
-        pt.show()
+        try:
+            filename = tk.filedialog.askopenfilename(filetypes = [("Excel or csv files","*.xls; *xlsx; *.csv*")])
+            if filename.split(".")[-1].lower() in ["xlsx", "xls"]:
+                df = pd.read_excel(filename, dtype=datatypes)#Added dtypes here
+                ### Removing characters in column names that prevent pandastable calculations
+                df.columns = df.columns.str.replace(' ', '_').str.replace('(', '') \
+                    .str.replace(')', '').str.replace('/','_').str.replace('%','pct') \
+                    .str.replace('>', 'gt').str.replace('>=', 'gte')
+            else:
+                df = pd.read_csv(filename, dtype=datatypes)
+                ### Removing characters in column names that prevent pandastable calculations
+                df.columns = df.columns.str.replace(' ', '_').str.replace('(', '') \
+                    .str.replace(')', '').str.replace('/','_').str.replace('%','pct') \
+                    .str.replace('>', 'gt').str.replace('>=', 'gte')
+    
+            curr_windo=tk.Toplevel()
+            curr_windo.title(filename)
+            curr_windo.geometry('900x600+40+20')
+            pt = Table(curr_windo, dataframe = df, showtoolbar=True, showstatusbar=True)
+            pt.autoResizeColumns()
+            pt.colheadercolor='#448BB9'
+            pt.floatprecision = 6
+            pt.show()
+        
+        except Exception as e:
+             print(e)
 
     def maps_button(self):
         filename = tk.filedialog.askopenfilename(filetypes = [("html or kml files","*.html; *.kml; *.kmz")])

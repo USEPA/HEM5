@@ -25,7 +25,18 @@ from threading import Event
 from concurrent.futures import ThreadPoolExecutor
 import threading
 
+import os
+import glob
+import importlib 
+
 from com.sca.hem4.log.Logger import Logger
+
+from com.sca.hem4.writer.excel.FacilityMaxRiskandHI import FacilityMaxRiskandHI
+from com.sca.hem4.runner.FacilityRunner import FacilityRunner
+from com.sca.hem4.writer.excel.FacilityCancerRiskExp import FacilityCancerRiskExp
+from com.sca.hem4.writer.excel.FacilityTOSHIExp import FacilityTOSHIExp
+from com.sca.hem4.writer.kml.KMLWriter import KMLWriter
+from com.sca.hem4.inputsfolder.InputsPackager import InputsPackager
 
 
 
@@ -513,12 +524,15 @@ class Summary(Page):
         ready= False
         print('ready')
         #check to see if there is a directory location
-                 
+        print(self.fullpath)
+        
         try:
             
             # Figure out which facilities will be included in the report
             skeleton = os.path.join(self.fullpath, '*facility_max_risk_and_hi.xl*')
+            print(skeleton)
             fname = glob.glob(skeleton)
+            print(fname)
             if fname:
                 head, tail = os.path.split(fname[0])
                 groupname = tail[:tail.find('facility_max_risk_and_hi')-1]
@@ -532,7 +546,8 @@ class Summary(Page):
                 ready = False 
           
             
-        except:
+        except Exception as e:
+             print(e)
              print("No facilities selected.",
                 "Please select a run folder.")
              messagebox.showinfo("No facilities selected",

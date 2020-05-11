@@ -18,6 +18,7 @@ from functools import partial
 from PIL import ImageTk
 #from PIL import Image
 import PIL.Image
+import os
 
 from PyQt5 import QtGui
 #from pandastable import Table, filedialog, np
