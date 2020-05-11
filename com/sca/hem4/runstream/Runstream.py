@@ -50,7 +50,7 @@ class Runstream():
         """
         Creates CO section of Aermod.inp file
         """
-              
+                      
     # Hours -------------------------------------------------------------------
                 
         self.hours_value = int(self.facoptn_df['hours'].iloc[0])
@@ -175,7 +175,7 @@ class Runstream():
         self.model.model_optns['urban'] = self.urban
                     
         # Landuse Options for Deposition
-        if ((phase['phase'] == 'V') and (('DDEP' in optdp) or ('DRYDPLT' in optdp)) and ('NODRYDPLT' not in optdp)):
+        if ((phase['phase'] == 'V') and (('DDEP' in optdp) or ('DRYDPLT' in optdp))):
                         
             landval = self.landuse_df[self.landuse_df.columns[1:]].values[0]
             coland = ("CO GDLANUSE " + " ".join(map(str, landval)) + '\n')

@@ -1543,7 +1543,7 @@ class Hem4(tk.Frame):
         
         #land use size label
         seasons_label = tk.Label(self.s12, font=TEXT_FONT, bg="alice blue", 
-                             text="Upload the file containing seasonal vegetation information:")
+                             text="Upload the file containing month-to-season vegetation information.")
         seasons_label.grid(row=0, sticky="W")
     
         #laand use file upload button
