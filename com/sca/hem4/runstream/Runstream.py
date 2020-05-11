@@ -958,16 +958,13 @@ class Runstream():
         
         #seasons, windspeed or month will have only one list
         if len(variation) == 1:
-        
-            length = len(variation[0])
+                    
+            var = variation[0].tolist()
+            var = ['' if math.isnan(x)==True else x for x in var]
+            sotempvar = str("SO EMISFACT " + str(srid) + " " + qflag +  " " +
+                         " ".join(map(str, var)) +"\n")
             
-            #if seasons, windspeed or month
-            if length == 4 or length == 6 or length == 12:
-                var = variation[0].tolist()
-                sotempvar = str("SO EMISFACT " + str(srid) + " " + qflag +  " " +
-                             " ".join(map(str, var)) +"\n")
-                
-                self.inp_f.write(sotempvar)
+            self.inp_f.write(sotempvar)
             
         #everything elese will have lists in multiples of 12   
         else:
