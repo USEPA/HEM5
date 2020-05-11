@@ -360,7 +360,7 @@ class Summary(Page):
         
         st_label.bind("<Enter>", partial(self.color_config, st_label, self.sLabel, self.r5, 'light grey'))
         st_label.bind("<Leave>", partial(self.color_config, st_label, self.sLabel, self.r5, self.tab_color))
-        st_label.bind("<Button-1>", partial(self.check_box, self.sLabel, "Source Type Risk Histogram")) 
+        st_label.bind("<Button-1>", partial(self.set_sourcetype, self.sLabel, "Source Type Risk Histogram")) 
 
 #%%        
         z_label = tk.Label(self.r6, font=TEXT_FONT, width=22, anchor='w', bg=self.tab_color, text="")
@@ -374,7 +374,6 @@ class Summary(Page):
         
         z_label.bind("<Enter>", partial(self.color_config, z_label, self.vLabel, self.r6, 'light grey'))
         z_label.bind("<Leave>", partial(self.color_config, z_label, self.vLabel, self.r6, self.tab_color))
-        z_label.bind("<Button-1>", partial(self.check_box, self.vLabel, "Source Type Risk Histogram")) 
         
         
         
@@ -390,7 +389,6 @@ class Summary(Page):
         
         w_label.bind("<Enter>", partial(self.color_config, w_label, self.uLabel, self.r7, 'light grey'))
         w_label.bind("<Leave>", partial(self.color_config, w_label, self.uLabel, self.r7, self.tab_color))
-        w_label.bind("<Button-1>", partial(self.check_box, self.uLabel, "Source Type Risk Histogram")) 
         
 
 
@@ -410,7 +408,6 @@ class Summary(Page):
         
         t_label.bind("<Enter>", partial(self.color_config, t_label, self.zLabel, self.r8, 'light grey'))
         t_label.bind("<Leave>", partial(self.color_config, t_label, self.zLabel, self.r8, self.tab_color))
-        t_label.bind("<Button-1>", partial(self.check_box, self.zLabel, "Source Type Risk Histogram")) 
         
                 
         #%%        
@@ -425,7 +422,6 @@ class Summary(Page):
         
         h_label.bind("<Enter>", partial(self.color_config, h_label, self.rLabel, self.r9, 'light grey'))
         h_label.bind("<Leave>", partial(self.color_config, h_label, self.rLabel, self.r9, self.tab_color))
-        h_label.bind("<Button-1>", partial(self.check_box, self.rLabel, "Source Type Risk Histogram")) 
         
         
             
@@ -497,30 +493,67 @@ class Summary(Page):
         icon['text'] = 'Output folder selected'
 
         
-    def set_sourcetype(self):
-
-        if self.var_s.get() == 1:
-        
-            self.pos = tk.Label(self.s12, font=SUB_FONT, bg=self.tab_color, text="Enter the position in the source ID where the\n source ID type begins.The default is 1.")
-            self.pos.grid(row=1, padx=10, sticky="W")
+    def set_sourcetype(self, icon, text, event):
             
-            self.pos_num = ttk.Entry(self.s12)
+        if text not in self.checked:
+            icon.configure(image=self.checkedIcon)
+            self.checked.append(text)
+            self.checked_icons.append(icon)
+            
+       
+  
+            self.pos = tk.Label(self.r6, font=TEXT_FONT, bg=self.tab_color, text="Enter the position in the source ID where the\n source ID type begins.The default is 1.")
+            self.pos.grid(row=1, column=4, padx=5, sticky="W")
+            
+            self.pos_num = ttk.Entry(self.r6)
             self.pos_num["width"] = 5
-            self.pos_num.grid(row=1, column=2, padx=10, sticky="W")
+            self.pos_num.grid(row=1, column=3, padx=5, sticky="W")
         
-            self.chars = tk.Label(self.s12, font=SUB_FONT, bg=self.tab_color, text="Enter the number of characters \nof the sourcetype ID")
-            self.chars.grid(row=2, padx=10, sticky="W")
+            self.chars = tk.Label(self.r7, font=TEXT_FONT, bg=self.tab_color, text="Enter the number of characters \nof the sourcetype ID")
+            self.chars.grid(row=1, column=4, padx=5, sticky="W")
             
-            self.chars_num = ttk.Entry(self.s12)
+            self.chars_num = ttk.Entry(self.r7)
             self.chars_num["width"] = 5
-            self.chars_num.grid(row=2, column=2, padx=10, sticky="W")
+            self.chars_num.grid(row=1, column=3, padx=5, sticky="W")
         
-        else:
-            if self.pos is not None:
-                self.pos.destroy()
-                self.pos_num.destroy()
-                self.chars.destroy()
-                self.chars_num.destroy()
+        elif text in self.checked:
+            
+            icon.configure(image=self.uncheckedIcon)
+            self.checked.remove(text)
+            self.checked_icons.remove(icon)
+            
+            
+            self.pos.destroy()
+            self.pos_num.destroy()
+            self.chars.destroy()
+            self.chars_num.destroy()
+            
+            z_label = tk.Label(self.r6, font=TEXT_FONT, width=22, anchor='w', bg=self.tab_color, text="")
+            z_label.grid(row=1, column=4, padx=5, sticky="W")
+            
+            #unchecked box      
+            self.vLabel = tk.Label(self.r6, text="", width=5, bg=self.tab_color)
+    #        self.vLabel.image = self.uncheckedIcon # keep a reference!
+            
+            self.vLabel.grid(row=1, column=3, padx=10, sticky='W') 
+            
+            z_label.bind("<Enter>", partial(self.color_config, z_label, self.vLabel, self.r6, 'light grey'))
+            z_label.bind("<Leave>", partial(self.color_config, z_label, self.vLabel, self.r6, self.tab_color))
+            
+            
+            
+            
+            w_label = tk.Label(self.r7, font=TEXT_FONT, width=32, anchor='w', bg=self.tab_color, text="")
+            w_label.grid(row=1, column=4, padx=5, sticky="W")
+            
+            #unchecked box      
+            self.uLabel = tk.Label(self.r7, text="", width=5, bg=self.tab_color)
+    #        self.uLabel.image = self.uncheckedIcon # keep a reference!
+            
+            self.uLabel.grid(row=1, column=3, padx=10, sticky='W') 
+            
+            w_label.bind("<Enter>", partial(self.color_config, w_label, self.uLabel, self.r7, 'light grey'))
+            w_label.bind("<Leave>", partial(self.color_config, w_label, self.uLabel, self.r7, self.tab_color))
                 
                 
                 
@@ -576,43 +609,49 @@ class Summary(Page):
         reportNames = []
         reportNameArgs = {}
         
-        for report in self.checked:
-            print(self.checked)
-            
-            if report == 'Max Risk':
-                reportNames.append('MaxRisk')
-                reportNameArgs['MaxRisk'] = None
-            if report == 'Cancer Drivers':
-                reportNames.append('CancerDrivers')
-                reportNameArgs['CancerDrivers'] = None
-            if report == 'Hazard Index Drivers':
-                reportNames.append('HazardIndexDrivers')
-                reportNameArgs['HazardIndexDrivers'] = None
-            if report == 'Risk Histogram':
-                reportNames.append('Histogram')
-                reportNameArgs['Histogram'] = None
-            if report == 'Hazard Index Histogram':
-                reportNames.append('HI_Histogram')
-                reportNameArgs['HI_Histogram'] = None
-            if report == 'Incidence Drivers':
-                reportNames.append('IncidenceDrivers')
-                reportNameArgs['IncidenceDrivers'] = None
-            if report == "Acute Impacts":
-                reportNames.append('AcuteImpacts')
-                reportNameArgs['AcuteImpacts'] = None                
-            if report == "Source Type Risk Histogram":
-                reportNames.append('SourceTypeRiskHistogram')
-                #pass position number and character number
-#                if len(self.pos_num.get()) == 0 or self.pos_num.get() == '0':
-#                    startpos = 1
-#                else:
-#                    startpos = int(self.pos_num.get()) - 1
-#                numchars = int(self.chars_num.get()) 
-#                reportNameArgs['SourceTypeRiskHistogram'] = [startpos, numchars]          
-            if report == "Multipathway":
-                reportNames.append('MultiPathway')
-                reportNameArgs['MultiPathway'] = None
-           
+        try:
+            for report in self.checked:
+                print(self.checked)
+                
+                
+                if report == 'Max Risk':
+                    reportNames.append('MaxRisk')
+                    reportNameArgs['MaxRisk'] = None
+                if report == 'Cancer Drivers':
+                    reportNames.append('CancerDrivers')
+                    reportNameArgs['CancerDrivers'] = None
+                if report == 'Hazard Index Drivers':
+                    reportNames.append('HazardIndexDrivers')
+                    reportNameArgs['HazardIndexDrivers'] = None
+                if report == 'Risk Histogram':
+                    reportNames.append('Histogram')
+                    reportNameArgs['Histogram'] = None
+                if report == 'Hazard Index Histogram':
+                    reportNames.append('HI_Histogram')
+                    reportNameArgs['HI_Histogram'] = None
+                if report == 'Incidence Drivers':
+                    reportNames.append('IncidenceDrivers')
+                    reportNameArgs['IncidenceDrivers'] = None
+                if report == "Acute Impacts":
+                    reportNames.append('AcuteImpacts')
+                    reportNameArgs['AcuteImpacts'] = None                
+                if report == "Source Type Risk Histogram":
+                    reportNames.append('SourceTypeRiskHistogram')
+                    #pass position number and character number
+                    if len(self.pos_num.get()) == 0 or self.pos_num.get() == '0':
+                        startpos = 1
+                    else:
+                        startpos = int(self.pos_num.get()) - 1
+                    numchars = int(self.chars_num.get()) 
+                    reportNameArgs['SourceTypeRiskHistogram'] = [startpos, numchars] 
+                    
+                if report == "Multipathway":
+                    reportNames.append('MultiPathway')
+                    reportNameArgs['MultiPathway'] = None
+                    
+        except Exception as e:
+             print(e)
+               
 
         #add run checks
         if len(self.checked) == 0:
@@ -676,8 +715,44 @@ class Summary(Page):
             self.nav.log.scr.configure(state='disabled')
             
             
+            if "Source Type Risk Histogram" in self.checked:
+                self.pos.destroy()
+                self.pos_num.destroy()
+                self.chars.destroy()
+                self.chars_num.destroy()
+                
+                z_label = tk.Label(self.r6, font=TEXT_FONT, width=22, anchor='w', bg=self.tab_color, text="")
+                z_label.grid(row=1, column=3, padx=5, sticky="W")
+                
+                #unchecked box      
+                self.vLabel = tk.Label(self.r6, text="", width=5, bg=self.tab_color)
+        #        self.vLabel.image = self.uncheckedIcon # keep a reference!
+                
+                self.vLabel.grid(row=1, column=4, padx=10, sticky='W') 
+                
+                z_label.bind("<Enter>", partial(self.color_config, z_label, self.vLabel, self.r6, 'light grey'))
+                z_label.bind("<Leave>", partial(self.color_config, z_label, self.vLabel, self.r6, self.tab_color))
+                
+                
+                
+                
+                w_label = tk.Label(self.r7, font=TEXT_FONT, width=32, anchor='w', bg=self.tab_color, text="")
+                w_label.grid(row=1, column=3, padx=5, sticky="W")
+                
+                #unchecked box      
+                self.uLabel = tk.Label(self.r7, text="", width=5, bg=self.tab_color)
+        #        self.uLabel.image = self.uncheckedIcon # keep a reference!
+                
+                self.uLabel.grid(row=1, column=4, padx=10, sticky='W') 
+                
+                w_label.bind("<Enter>", partial(self.color_config, w_label, self.uLabel, self.r7, 'light grey'))
+                w_label.bind("<Leave>", partial(self.color_config, w_label, self.uLabel, self.r7, self.tab_color))
+                
+
+            
             for icon in self.checked_icons:
                 icon.configure(image=self.uncheckedIcon)
+                
                 
             self.folder_select['text'] = "Select output folder"
                 
