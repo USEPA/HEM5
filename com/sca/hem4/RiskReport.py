@@ -38,6 +38,18 @@ from com.sca.hem4.writer.excel.FacilityTOSHIExp import FacilityTOSHIExp
 from com.sca.hem4.writer.kml.KMLWriter import KMLWriter
 from com.sca.hem4.inputsfolder.InputsPackager import InputsPackager
 
+maxRiskReportModule = importlib.import_module("com.sca.hem4.writer.excel.summary.MaxRisk")
+cancerDriversReportModule = importlib.import_module("com.sca.hem4.writer.excel.summary.CancerDrivers")
+hazardIndexDriversReportModule = importlib.import_module("com.sca.hem4.writer.excel.summary.HazardIndexDrivers")
+histogramModule = importlib.import_module("com.sca.hem4.writer.excel.summary.Histogram")
+hiHistogramModule = importlib.import_module("com.sca.hem4.writer.excel.summary.HI_Histogram")
+incidenceDriversReportModule = importlib.import_module("com.sca.hem4.writer.excel.summary.IncidenceDrivers")
+acuteImpactsReportModule = importlib.import_module("com.sca.hem4.writer.excel.summary.AcuteImpacts")
+sourceTypeRiskHistogramModule = importlib.import_module("com.sca.hem4.writer.excel.summary.SourceTypeRiskHistogram")
+multiPathwayModule = importlib.import_module("com.sca.hem4.writer.excel.summary.MultiPathway")
+
+from com.sca.hem4.summary.SummaryManager import SummaryManager
+
 
 
 TITLE_FONT= ("Daytona", 16)
@@ -228,7 +240,7 @@ class Summary(Page):
         
         group_label.bind("<Enter>", partial(self.color_config, group_label, self.iconLabel, self.l4, 'light grey'))
         group_label.bind("<Leave>", partial(self.color_config, group_label, self.iconLabel, self.l4, self.tab_color))
-        group_label.bind("<Button-1>", partial(self.check_box, self.iconLabel, "Max Risk Report"))
+        group_label.bind("<Button-1>", partial(self.check_box, self.iconLabel, "Max Risk"))
         
         
         
@@ -565,6 +577,7 @@ class Summary(Page):
         reportNameArgs = {}
         
         for report in self.checked:
+            print(self.checked)
             
             if report == 'Max Risk':
                 reportNames.append('MaxRisk')
