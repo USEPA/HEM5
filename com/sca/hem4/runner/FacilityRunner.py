@@ -172,9 +172,24 @@ class FacilityRunner():
                     plot_df['emis_type'] = phases['phase']
 
 
-                # Put the acute plot file into the Model class (if run)
-                if self.acute_yn == 'Y':
-                    self.model.acuteplot_df = aplot_df
+                # If acute run, set the emis_type column in aplot_df
+                if phases['phase'] == None:
+                    
+                    aplot_df['emis_type'] = 'C'
+                    
+                elif phases['phase'] == 'Z':
+                    
+                    # Special case where concs by particle and vapor are desired but no deposition/depletion
+                    aplot_df['emis_type'] = 'P'
+                    V_df = aplot_df.copy()
+                    V_df['emis_type'] = 'V'
+                    aplot_df = aplot_df.append(V_df, ignore_index=True)
+                    
+                else:
+                    aplot_df['emis_type'] = phases['phase']
+
+                # Put the acute plot file into the Model class
+                self.model.acuteplot_df = aplot_df
  
                                
                 # Process outputs for single facility
@@ -259,7 +274,7 @@ class FacilityRunner():
                     else:
                         pfile = open(fac_folder + 'plotfile.plt', "r")                    
                     
-                    # Put the plotfile into a dataframe
+                    # Put the plotfile into a dataframe and assign emis_type
                     temp_df = self.readplotf(pfile, runtype)
                     temp_df['emis_type'] = r['phase']
 
