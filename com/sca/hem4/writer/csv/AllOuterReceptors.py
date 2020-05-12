@@ -326,8 +326,8 @@ class AllOuterReceptors(CsvWriter, InputFile):
                 polaraplot_df = self.model.acuteplot_df.query("net_id == 'POLGRID1'").copy()
                 polaraplot_df.utme = polaraplot_df.utme.round()
                 polaraplot_df.utmn = polaraplot_df.utmn.round()
-                polarplot_df = pd.merge(polarcplot_df, polaraplot_df[[source_id, utme, utmn, aresult]], 
-                                        how='inner', on = [source_id, utme, utmn])
+                polarplot_df = pd.merge(polarcplot_df, polaraplot_df[['emis_type', source_id, utme, utmn, aresult]], 
+                                        how='inner', on = ['emis_type', source_id, utme, utmn])
     
                 # Assign sector and ring to polar concs from polarplot_df and set an index
                 # of source_id + sector + ring

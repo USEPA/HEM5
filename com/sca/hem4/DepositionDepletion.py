@@ -12,7 +12,7 @@ from com.sca.hem4.upload.EmissionsLocations import method
 
 
 def check_phase(r):
-    
+        
     print('facility', r['fac_id'])
                 
     print('vdep:', r['vdep'])
@@ -67,38 +67,38 @@ def check_phase(r):
         phase = 'Z'
         phaseResult.append(phase)
         
-        
-    if vdep in poss or vdepl in poss:
-        if pdep in poss:
-            phase = 'B'
-            phaseResult.append(phase)
+    if dep == 'Y' or depl == 'Y':
             
-        elif pdepl in poss:
-            phase = 'B'
-            phaseResult.append(phase)      
-    
-    if vdep in poss or vdepl in poss: 
-    
-        if pdep not in poss:
-            phase = 'V'
-            phaseResult.append(phase)
-            
-        elif pdepl not in poss:
-            phase = 'V'
-            phaseResult.append(phase)
+        if vdep in poss or vdepl in poss:
+            if pdep in poss:
+                phase = 'B'
+                phaseResult.append(phase)
+                
+            elif pdepl in poss:
+                phase = 'B'
+                phaseResult.append(phase)      
         
-    if pdep in poss or pdepl in poss:
-    
-        if vdep not in poss:
-            phase = 'P'
-            phaseResult.append(phase)
-            
-        elif vdepl not in poss:
-            phase = 'P'
-            phaseResult.append(phase)
-    
-
+        if vdep in poss or vdepl in poss: 
         
+            if pdep not in poss:
+                phase = 'V'
+                phaseResult.append(phase)
+                
+            elif pdepl not in poss:
+                phase = 'V'
+                phaseResult.append(phase)
+            
+        if pdep in poss or pdepl in poss:
+        
+            if vdep not in poss:
+                phase = 'P'
+                phaseResult.append(phase)
+                
+            elif vdepl not in poss:
+                phase = 'P'
+                phaseResult.append(phase)
+    
+       
     if len(phaseResult) > 1:
         phaseResult = 'B'
         
@@ -109,7 +109,7 @@ def check_phase(r):
         phaseResult = ''
         
      
-    print(phaseResult)
+    print('phaseResult:', phaseResult)
     return(phaseResult)
 
 def check_dep(faclist_df, emisloc_df):
