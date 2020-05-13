@@ -176,17 +176,20 @@ class Runstream():
 
                     
         # Landuse Options for Deposition
-        if ((phase['phase'] == 'V') and (('DDEP' in optdp) or ('DRYDPLT' in optdp))
-                    and ('NODRYDPLT' not in optdp)):
-                        
-            landval = self.landuse_df[self.landuse_df.columns[1:]].values[0]
-            coland = ("CO GDLANUSE " + " ".join(map(str, landval)) + '\n')
-            self.inp_f.write(coland)
-    
-            # Season Options for Deposition
-            seasval = self.seasons_df[self.seasons_df.columns[1:]].values[0]
-            coseas = ("CO GDSEASON " + " ".join(map(str,seasval)) + '\n')
-            self.inp_f.write(coseas)
+        if phase['phase'] == 'V':
+            landuseYN = 'N'
+            for word in optdp.split():
+                if word == 'DDEP' or word == 'DRYDPLT':
+                    landuseYN = 'Y'
+            if landuseYN == 'Y':                        
+                landval = self.landuse_df[self.landuse_df.columns[1:]].values[0]
+                coland = ("CO GDLANUSE " + " ".join(map(str, landval)) + '\n')
+                self.inp_f.write(coland)
+        
+                # Season Options for Deposition
+                seasval = self.seasons_df[self.seasons_df.columns[1:]].values[0]
+                coseas = ("CO GDSEASON " + " ".join(map(str,seasval)) + '\n')
+                self.inp_f.write(coseas)
 
         co5 = "CO AVERTIME  " + self.hours + "\n"
         co6 = "CO POLLUTID  UNITHAP \n"
