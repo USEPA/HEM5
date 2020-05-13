@@ -102,8 +102,8 @@ class Particle(DependentInputFile):
 
         if len(incomplete) > 0:
             messagebox.showinfo("Mass Fraction Error",
-                                "The mass fractions for " + ", ".join(incomplete)+
-                                " do not sum to 100%. Please correct them in your "+
+                                "The mass fraction for " + ", ".join(incomplete)+
+                                " does not sum to 100%. Please correct them in your "+
                                 "particle size file.")
             return None
         else:
