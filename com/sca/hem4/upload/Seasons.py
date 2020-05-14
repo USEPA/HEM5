@@ -12,7 +12,7 @@ from tkinter import messagebox
 class Seasons(DependentInputFile):
 
     def __init__(self, path, dependency):
-        self.faclist_df = dependency
+        self.gasDryFacs = dependency
         DependentInputFile.__init__(self, path, dependency)
 
     def createDataframe(self):
@@ -38,12 +38,19 @@ class Seasons(DependentInputFile):
         # Strict: Invalid values in these columns will cause the upload to fail immediately.
         # ----------------------------------------------------------------------------------
         if len(df.loc[(df[fac_id] == '')]) > 0:
-            Logger.logMessage("One or more facility IDs are missing in the Seasons List.")
+            Logger.logMessage("One or more facility IDs are missing in the Months-to-Seasons List.")
+            return None
+
+        seasonfids = set(df[fac_id])
+        faclistfids = set(self.gasDryFacs)
+        if faclistfids.intersection(seasonfids) != faclistfids:
+            Logger.logMessage("Based on your Facility List Options file, the Months-to-Seasons List is missing " +
+                              "one or more facilities. Please correct one or both files and upload again.")
             return None
 
         duplicates = self.duplicates(df, [fac_id])
         if len(duplicates) > 0:
-            Logger.logMessage("One or more records are duplicated in the Seasons List (key=fac_id):")
+            Logger.logMessage("One or more records are duplicated in the Months-to-Seasons List (key=fac_id):")
             for d in duplicates:
                 Logger.logMessage(d)
             return None

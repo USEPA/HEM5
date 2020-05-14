@@ -83,6 +83,7 @@ class Model():
         self.emisvar = None
         self.facids = None
         self.depdeplt = None
+        self.gasdryfacs = None
         self.polargrid = None
         self.sourcelocs = None
         self.group_name = None
@@ -133,6 +134,7 @@ class Model():
         self.emisvar = None
         self.facids = None
         self.depdeplt = None
+        self.gasdryfacs = None
         self.polargrid = None
         self.riskfacs_df = None
         self.all_polar_receptors_df = None
