@@ -62,20 +62,10 @@ class FacilityRunner():
             phases = {'phase': None, 'settings': None}
 
               
-        #Single run model options
+        # dSingle run model options
         if self.model.model_optns['phase'] != 'B':
 
             self.runstream = self.prep_fac.createRunstream(self.facilityId, phases)
-
-#            #create runstream
-#            try:
-#                self.runstream = self.prep_fac.createRunstream(self.facilityId, phases)
-#                
-#            except BaseException as e:
-#                
-#                Logger.logMessage(str(e))
-#                raise Exception("An error occurred while running a facility")
-                
 
             # Set the runtype variable which indicates how Aermod is run (with or without deposition)
             # and what columns will be in the Aermod plotfile
