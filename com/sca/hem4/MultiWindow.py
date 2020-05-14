@@ -246,14 +246,14 @@ class Page1(Page):
 
         if self.var_s.get() == 1:
         
-            self.pos = tk.Label(self.s12, font=SUB_FONT, bg="alice blue", text="Enter the position in the source ID where the\n source ID type begins.The default is 1.")
+            self.pos = tk.Label(self.s12, font=SUB_FONT, bg="alice blue", text="Enter the position in the source ID \n where the source type begins.")
             self.pos.grid(row=1, padx=10, sticky="W")
             
             self.pos_num = ttk.Entry(self.s12)
             self.pos_num["width"] = 5
             self.pos_num.grid(row=1, column=2, padx=10, sticky="W")
         
-            self.chars = tk.Label(self.s12, font=SUB_FONT, bg="alice blue", text="Enter the number of characters \nof the sourcetype ID")
+            self.chars = tk.Label(self.s12, font=SUB_FONT, bg="alice blue", text="Enter the number of characters \n in the source type.")
             self.chars.grid(row=2, padx=10, sticky="W")
             
             self.chars_num = ttk.Entry(self.s12)
@@ -590,9 +590,9 @@ class Page3(Page):
         title = tk.Label(self.s1, text="Output viewing and analysis", font=TITLE_FONT, bg="alice blue")
         title.pack(pady=10, side="top")
 
-        button_file = tk.Button(self.s2, text="Open a facility or source category output file",
+        button_file = tk.Button(self.s2, text="Open a facility-specific or summary output file",
                                 font=TEXT_FONT, relief='solid', borderwidth=2, command=self.browse_button)
-        button_maps = tk.Button(self.s3, text="Open a chronic or acute map",
+        button_maps = tk.Button(self.s3, text="Open an acute map",
                                 font=TEXT_FONT, relief='solid', borderwidth=2, command=self.maps_button)
 
         button_file.pack(side="left", padx=5, pady=10)

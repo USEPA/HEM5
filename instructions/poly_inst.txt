@@ -1,1 +1,1 @@
-Enter the name and location of the spreadsheet of polygon vertices for all polygon emission source(s). The polygon vertex file must be an MS Excel file.  Each Source ID in the file must match a Source ID found in the emissions location file and the emission source(s) must be listed as polygon source(s) (Type=I).
+Enter the name and location of the Microsoft Excel file containing the polygon vertices for each polygon emission source, listed as Type I in your Emissions Location file.

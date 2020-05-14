@@ -1,1 +1,1 @@
-Enter the name and location of the spreadsheet containing dimensions of all buildings for which building downwash is to be modeled. The spreadsheet must be an MS Excel file.
+Enter the name and location of the Microsoft Excel file containing dimensions of any buildings for which you wish to model building downwash from a vertical point (P), capped point (C), or horizontal point (H) source.

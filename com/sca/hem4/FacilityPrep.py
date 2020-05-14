@@ -228,6 +228,10 @@ class FacilityPrep():
             self.innerblks, self.outerblks = getblocks(cenx, ceny, cenlon, cenlat, facutmzonenum, hemi, maxdist, 
                                              modeldist, sourcelocs, op_overlap, self.model)
 
+        if self.innerblks.empty:
+            Logger.logMessage("No inner receptors were assigned. Aborting processing for this facility.")
+            raise RuntimeError("Empty innerblks")
+
         # Assign to the model
         self.model.innerblks_df = self.innerblks
         self.model.outerblks_df = self.outerblks
@@ -844,7 +848,6 @@ class FacilityPrep():
 
         # Split modelblks into inner and outer block receptors
         innerblks, outerblks = in_box(modelblks, sourcelocs, modeldist, maxdist, overlap_dist, self.model)
-
 
 #        Logger.log("OUTERBLOCKS", outerblks, False)
 

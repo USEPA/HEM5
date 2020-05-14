@@ -61,10 +61,10 @@ class AllInnerReceptorsNonCensus(CsvWriter, InputFile):
         # Aermod runtype (with or without deposition) determines what columns are in the aermod plotfile.
         # Set accordingly in a dictionary.
         self.rtype = self.model.model_optns['runtype']
-        self.plotcols = {0: [utme,utmn,source_id,result,aresult,'emis_type']}
-        self.plotcols[1] = [utme,utmn,source_id,result,ddp,wdp,aresult,'emis_type']
-        self.plotcols[2] = [utme,utmn,source_id,result,ddp,aresult,'emis_type']
-        self.plotcols[3] = [utme,utmn,source_id,result,wdp,aresult,'emis_type']
+        self.plotcols = {0: [utme,utmn,source_id,result,aresult,emis_type]}
+        self.plotcols[1] = [utme,utmn,source_id,result,ddp,wdp,aresult,emis_type]
+        self.plotcols[2] = [utme,utmn,source_id,result,ddp,aresult,emis_type]
+        self.plotcols[3] = [utme,utmn,source_id,result,wdp,aresult,emis_type]
 
 
 #        # If acute was run for this facility, read the acute plotfile
@@ -124,8 +124,8 @@ class AllInnerReceptorsNonCensus(CsvWriter, InputFile):
             inneraplot_df = self.model.acuteplot_df.query("net_id != 'POLGRID1'").copy()
             inneraplot_df.utme = inneraplot_df.utme.round()
             inneraplot_df.utmn = inneraplot_df.utmn.round()
-            innerplot_df = pd.merge(innercplot_df, inneraplot_df[[source_id, utme, utmn, aresult]], 
-                                    how='inner', on = [source_id, utme, utmn])
+            innerplot_df = pd.merge(innercplot_df, inneraplot_df[[emis_type, source_id, utme, utmn, aresult]], 
+                                    how='inner', on = [emis_type, source_id, utme, utmn])
         else:
             innerplot_df = innercplot_df.copy()
             innerplot_df[aresult] = 0

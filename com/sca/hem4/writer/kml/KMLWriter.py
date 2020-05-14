@@ -746,6 +746,9 @@ class KMLWriter():
         Create the source/risk KML file for a given facility that used Alternate Receptors
         """
 
+        # Debug
+        import pdb; pdb.set_trace() 
+        
         # Define the name of the output kml file
         fackml_fname = outdir + str(facid) + "_source_risk.kml"
         
@@ -762,7 +765,7 @@ class KMLWriter():
                                                         as_index=False)[['conc']].sum()
         polarmerge1  = polarsum.merge(model.haplib.dataframe, on='pollutant')[['distance', 'angle',
                                      'lat','lon','pollutant','conc','ure','rfc']]
-        polarmerge2  = polarmerge1.merge(model.organs.dataframe, on='pollutant')[['distance', 'angle',
+        polarmerge2  = polarmerge1.merge(model.organs.dataframe, on='pollutant', how='left')[['distance', 'angle',
                                      'lat','lon','pollutant','conc','ure','rfc','resp','liver',
                                      'neuro','dev','reprod','kidney','ocular','endoc','hemato','immune',
                                      'skeletal','spleen','thyroid','wholebod']]
@@ -782,7 +785,7 @@ class KMLWriter():
         if not innersum.empty:
             innermerge1  = innersum.merge(model.haplib.dataframe, on='pollutant')[['rec_id',
                                           'lat','lon','pollutant','conc','ure','rfc']]
-            innermerge2  = innermerge1.merge(model.organs.dataframe, on='pollutant')[['rec_id',
+            innermerge2  = innermerge1.merge(model.organs.dataframe, on='pollutant', how='left')[['rec_id',
                                          'lat','lon','pollutant','conc','ure','rfc','resp',
                                          'liver','neuro','dev','reprod','kidney','ocular',
                                          'endoc','hemato','immune','skeletal','spleen',

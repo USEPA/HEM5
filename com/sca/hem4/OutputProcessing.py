@@ -53,7 +53,7 @@ class Process_outputs():
         self.model.outerblks_df = prep.outerblks
         self.model.runstream_hapemis = runstream.hapemis
         self.facops = self.model.facops.loc[self.model.facops.fac_id == facid]
-        self.generateOnly = self.facops.iloc[0]["all_rcpts"] == 'N'
+        self.generateOnly = False
         self.abort = abort
 
         self.acute_yn = self.runstream.facoptn_df.iloc[0][acute]

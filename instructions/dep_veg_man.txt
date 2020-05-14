@@ -1,1 +1,1 @@
-Enter the name and location of the spreadsheet describing seasonal (monthly) vegetative cover around facilities for which you wish to model dry vapor deposition. The file must be an MS Excel file. Vapor deposition can only be modeled for facilities which have vapor emissions listed in the HAP emissions input file and those facilities must also be listed in the season file.
+Enter the name and location of the Microsoft Excel file describing the seasonal stage of monthly vegetation surrounding facilities, for which you wish to model dry vapor deposition or depletion.

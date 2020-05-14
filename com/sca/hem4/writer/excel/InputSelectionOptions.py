@@ -33,7 +33,7 @@ class InputSelectionOptions(ExcelWriter, InputFile):
              'Elevation (YN)', 'Acute Hours', 
              'Acute Multiplier', 'Building Downwash (YN)', 'User Receptors (YN)', 'Max Modeling Distance', 
              'Discrete Modeling Distance', 'Overlap Distance', 'Number of Polar Rings', 
-             'Number of Polar Radials', 'Acute (YN)', 'All Receptors (YN)', 'First Ring Distance', 
+             'Number of Polar Radials', 'Acute (YN)', 'First Ring Distance', 
              'Fastall (YN)', 'Facility Group Name', 'Facility List Options File', 
              'Emission Location File', 'HAP Emissions File', 'User Receptor File', 
              'Particle Size File', 'Building Downwash File', 'Buoyant Line File',
@@ -44,7 +44,7 @@ class InputSelectionOptions(ExcelWriter, InputFile):
         return ['facid', 'title2', 'phase', 'ruralurban', 'dep_yn', 'depl_yn', 'dep_type', 'depl_type',
                       'elev_yn', 'acute_hrs', 'acute_mult', 'bldgdw_yn', 'userrcpt_yn', 'max_dist',
                       'model_dist', 'overlap_dist', 'num_rings', 'num_radials', 'acute_yn',
-                      'allrecpts_yn', 'first_ring', 'fastall_yn', 'grpname', 'faclist_file',
+                      'first_ring', 'fastall_yn', 'grpname', 'faclist_file',
                       'emisloc_file', 'hapemis_file', 'usrrcpt_file', 'partsize_file', 'bldgdw_file',
                       'blp_file', 'landuse_file', 'seasons_file', 'vertex_file', 'alt_rec', 'alt_rec_nopop']
 
@@ -75,7 +75,6 @@ class InputSelectionOptions(ExcelWriter, InputFile):
         fastall = facoptions['fastall'].iloc[0]
         max_dist = facoptions['max_dist'].iloc[0]
         mod_dist = facoptions['model_dist'].iloc[0]
-        allrecpts_yn = facoptions['all_rcpts'].iloc[0]
         first_ring = self.model.computedValues['firstring']
         grpname = self.model.group_name  
         faclist_file = self.model.faclist.path
@@ -119,7 +118,7 @@ class InputSelectionOptions(ExcelWriter, InputFile):
 
         optionlist = [[title1, title2, phase, ruralurban, dep_yn, depl_yn, dep_type, depl_type,
                       elev, acute_hours, acute_multiplier, bldgdw_yn, userrcpt_yn, max_dist, mod_dist,
-                      overlap_dist, num_rings, num_radials, acute_yn, allrecpts_yn, first_ring, 
+                      overlap_dist, num_rings, num_radials, acute_yn, first_ring, 
                       fastall, grpname, faclist_file, emisloc_file, hapemis_file, 
                       user_rcpt_file, part_size_file, bldg_file, blp_file, landuse_file, 
                       season_file, vertex_file, altrec, altrec_nopop]]
@@ -135,7 +134,7 @@ class InputSelectionOptions(ExcelWriter, InputFile):
         self.numericColumns = ['acute_hrs', 'acute_mult', 'max_dist', 'model_dist', 'overlap_dist',
                                'num_rings', 'num_radials', 'first_ring']
         self.strColumns = ['facid', 'title2', 'phase', 'ruralurban', 'dep_yn', 'depl_yn', 'dep_type',
-                           'depl_type', 'elev_yn', 'bldgdw_yn', 'userrcpt_yn', 'acute_yn', 'allrecpts_yn',
+                           'depl_type', 'elev_yn', 'bldgdw_yn', 'userrcpt_yn', 'acute_yn',
                            'fastall_yn', 'grpname', 'faclist_file', 'emisloc_file', 'hapemis_file',
                            'usrrcpt_file', 'partsize_file', 'bldgdw_file', 'blp_file', 'landuse_file',
                            'seasons_file', 'vertex_file', 'alt_rec', 'alt_rec_nopop']

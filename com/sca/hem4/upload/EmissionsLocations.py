@@ -141,6 +141,7 @@ class EmissionsLocations(InputFile):
                               "Please disable FASTALL for each of these facilities, or remove the buoyant line source(s).")
             return None
         
+        # Check coordinates
         for index, row in df.iterrows():
 
             facility = row[fac_id]
@@ -183,6 +184,12 @@ class EmissionsLocations(InputFile):
                                       "lateral and vertical dimensions for volume source in the Emissions Locations List.")
                     return None
 
+            if row[lon] == row[x2] and row[lat] == row[y2]:
+                    Logger.logMessage("Facility/Source: " + facility + "/" + row[source_id]  + " has identical starting and ending coordinates " +
+                                      "in the Emissions Locations List.")
+                    return None
+
+                
         # ----------------------------------------------------------------------------------
         # Defaulted: Invalid values in these columns will be replaced with a default.
         # ----------------------------------------------------------------------------------

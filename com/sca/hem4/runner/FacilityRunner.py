@@ -62,20 +62,10 @@ class FacilityRunner():
             phases = {'phase': None, 'settings': None}
 
               
-        #Single run model options
+        # dSingle run model options
         if self.model.model_optns['phase'] != 'B':
 
             self.runstream = self.prep_fac.createRunstream(self.facilityId, phases)
-
-#            #create runstream
-#            try:
-#                self.runstream = self.prep_fac.createRunstream(self.facilityId, phases)
-#                
-#            except BaseException as e:
-#                
-#                Logger.logMessage(str(e))
-#                raise Exception("An error occurred while running a facility")
-                
 
             # Set the runtype variable which indicates how Aermod is run (with or without deposition)
             # and what columns will be in the Aermod plotfile
@@ -172,8 +162,25 @@ class FacilityRunner():
                     plot_df['emis_type'] = phases['phase']
 
 
-                # Put the acute plot file into the Model class (if run)
+                # If acute run, set the emis_type column in aplot_df
                 if self.acute_yn == 'Y':
+ 
+                    if phases['phase'] == None:
+                    
+                        aplot_df['emis_type'] = 'C'
+                        
+                    elif phases['phase'] == 'Z':
+                        
+                        # Special case where concs by particle and vapor are desired but no deposition/depletion
+                        aplot_df['emis_type'] = 'P'
+                        V_df = aplot_df.copy()
+                        V_df['emis_type'] = 'V'
+                        aplot_df = aplot_df.append(V_df, ignore_index=True)
+                        
+                    else:
+                        aplot_df['emis_type'] = phases['phase']
+    
+                    # Put the acute plot file into the Model class
                     self.model.acuteplot_df = aplot_df
  
                                
@@ -259,7 +266,7 @@ class FacilityRunner():
                     else:
                         pfile = open(fac_folder + 'plotfile.plt', "r")                    
                     
-                    # Put the plotfile into a dataframe
+                    # Put the plotfile into a dataframe and assign emis_type
                     temp_df = self.readplotf(pfile, runtype)
                     temp_df['emis_type'] = r['phase']
 

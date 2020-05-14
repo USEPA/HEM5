@@ -27,7 +27,6 @@ pdep = 'pdep'
 pdepl = 'pdepl'
 vdep = 'vdep'
 vdepl = 'vdepl'
-all_rcpts = 'all_rcpts'
 user_rcpt = 'user_rcpt'
 bldg_dw = 'bldg_dw'
 urban_pop = 'urban_pop'
@@ -54,13 +53,13 @@ class FacilityList(InputFile):
         self.numericColumns = [max_dist,model_dist,radial,circles,overlap_dist,hours,multiplier,
                                ring1,urban_pop,hivalu]
         self.strColumns = [fac_id,met_station,rural_urban,acute,elev,dep,depl,pdep,pdepl,
-                           vdep,vdepl,all_rcpts,user_rcpt,bldg_dw,fastall,fac_center,ring_distances,emis_var,
+                           vdep,vdepl,user_rcpt,bldg_dw,fastall,fac_center,ring_distances,emis_var,
                            annual,period_start,period_end]
 
         faclist_df = self.readFromPath(
             (fac_id,met_station,rural_urban,urban_pop,max_dist,model_dist,radial,circles,overlap_dist, ring1,
              fac_center,ring_distances, acute,
-             hours,multiplier,hivalu,dep,depl,pdep,pdepl,vdep,vdepl,elev,all_rcpts,
+             hours,multiplier,hivalu,dep,depl,pdep,pdepl,vdep,vdepl,elev,
              user_rcpt,bldg_dw,fastall,emis_var,annual,period_start,period_end)
         )
         self.dataframe = faclist_df
@@ -76,7 +75,7 @@ class FacilityList(InputFile):
         cleaned.replace(to_replace={rural_urban:{"nan":""}, elev:{"nan":"Y"}, met_station:{"nan":""},
                                       dep:{"nan":"N"}, depl:{"nan":"N"}, phase:{"nan":""}, pdep:{"nan":"NO"},
                                       pdepl:{"nan":"NO"}, vdep:{"nan":"NO"}, vdepl:{"nan":"NO"},
-                                      all_rcpts:{"nan":"Y"}, user_rcpt:{"nan":"N"}, bldg_dw:{"nan":"N"},
+                                      user_rcpt:{"nan":"N"}, bldg_dw:{"nan":"N"},
                                       fastall:{"nan":"N"}, acute:{"nan":"N"}, fac_center:{"nan":""},
                                       'ring_distances':{"nan":""}, emis_var:{"nan":"N"}, annual:{"nan":"Y"},
                                       period_start:{"nan":""}, period_end:{"nan":""}}, inplace=True)
@@ -90,7 +89,6 @@ class FacilityList(InputFile):
         cleaned[vdepl] = cleaned[vdepl].str.upper()
         cleaned[pdep] = cleaned[pdep].str.upper()
         cleaned[pdepl] = cleaned[pdepl].str.upper()
-        cleaned[all_rcpts] = cleaned[all_rcpts].str.upper()
         cleaned[user_rcpt] = cleaned[user_rcpt].str.upper()
         cleaned[bldg_dw] = cleaned[bldg_dw].str.upper()
         cleaned[fastall] = cleaned[fastall].str.upper()
@@ -292,14 +290,11 @@ class FacilityList(InputFile):
                 Logger.logMessage("Facility " + facility + ": Invalid value for pdepl. Defaulting to 'NO'.")
                 row[pdepl] = 'NO'
 
-            # elev, all_rcpts, user_rcpt, bldg_dw, fastall, emis_var
+            # elev, user_rcpt, bldg_dw, fastall, emis_var
             valid = ['Y', 'N']
             if row[elev] not in valid:
                 Logger.logMessage("Facility " + facility + ": Invalid value for elev. Defaulting to 'Y'.")
                 row[elev] = 'Y'
-            if row[all_rcpts] not in valid:
-                Logger.logMessage("Facility " + facility + ": Invalid value for all_rcpts. Defaulting to 'Y'.")
-                row[all_rcpts] = 'Y'
             if row[user_rcpt] not in valid:
                 Logger.logMessage("Facility " + facility + ": Invalid value for user_rcpt. Defaulting to 'N'.")
                 row[user_rcpt] = 'N'
