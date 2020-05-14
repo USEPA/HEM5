@@ -638,11 +638,16 @@ class Summary(Page):
                 if report == "Source Type Risk Histogram":
                     reportNames.append('SourceTypeRiskHistogram')
                     #pass position number and character number
-                    if len(self.pos_num.get()) == 0 or self.pos_num.get() == '0':
+                    if self.pos_num.get() == '' or self.pos_num.get() == '0':
                         startpos = 1
+                        print(startpos)
                     else:
                         startpos = int(self.pos_num.get()) - 1
+                        print(startpos)
+                    
                     numchars = int(self.chars_num.get()) 
+                    print(numchars)
+                        
                     reportNameArgs['SourceTypeRiskHistogram'] = [startpos, numchars] 
                     
                 if report == "Multipathway":
@@ -663,19 +668,19 @@ class Summary(Page):
         else:
             
             #check if source type has been selected
-#            if self.var_s.get() == 1:
-#                if numchars == '' or numchars ==' ' or numchars == None:
-#                    messagebox.showinfo('Missing sourcetype id characters',
-#                                        'Please enter the number of characters of the sourcetype ID.')
-#                
-#                    ready = False
-#  
-#                else:
-#                    
-#                    ready = True
-#                    
-#            else:
-            ready = True
+            if "Source Type Risk Histogram" in self.checked:
+                if numchars == '' or numchars ==' ' or numchars == None:
+                    messagebox.showinfo('Missing sourcetype id characters',
+                                        'Please enter the number of characters of the sourcetype ID.')
+                
+                    ready = False
+  
+                else:
+                    
+                    ready = True
+                    
+            else:
+                ready = True
                     
                     
         #if checks have been passed 
@@ -703,14 +708,20 @@ class Summary(Page):
                 args = reportNameArgs[reportName]
                 summaryMgr.createReport(self.fullpath, reportName, args)
                 
-                report_complete = reportName +  " complete."
-                self.nav.log.scr.configure(state='normal')
-                self.nav.log.scr.insert(tk.INSERT, report_complete)
-                self.nav.log.scr.insert(tk.INSERT, "\n")
-                self.nav.log.scr.configure(state='disabled')
+                if summaryMgr.status == True:
+                
+                    report_complete = reportName +  " complete."
+                    self.nav.log.scr.configure(state='normal')
+                    self.nav.log.scr.insert(tk.INSERT, report_complete)
+                    self.nav.log.scr.insert(tk.INSERT, "\n")
+                    self.nav.log.scr.configure(state='disabled')
+                    
+                else:
+                    
+                    break
                 
             self.nav.log.scr.configure(state='normal')
-            self.nav.log.scr.insert(tk.INSERT, "Summary Reports Complete.")
+            self.nav.log.scr.insert(tk.INSERT, "Summary Reports Finished.")
             self.nav.log.scr.insert(tk.INSERT, "\n")
             self.nav.log.scr.configure(state='disabled')
             
@@ -733,9 +744,7 @@ class Summary(Page):
                 z_label.bind("<Enter>", partial(self.color_config, z_label, self.vLabel, self.r6, 'light grey'))
                 z_label.bind("<Leave>", partial(self.color_config, z_label, self.vLabel, self.r6, self.tab_color))
                 
-                
-                
-                
+                                
                 w_label = tk.Label(self.r7, font=TEXT_FONT, width=32, anchor='w', bg=self.tab_color, text="")
                 w_label.grid(row=1, column=3, padx=5, sticky="W")
                 
