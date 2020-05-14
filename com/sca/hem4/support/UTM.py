@@ -248,10 +248,10 @@ class UTM:
             for i in range(0, len(unique_verts)-1):
                 
                 # corners
-                max_x = max(max_x, unique_verts[i][0])
-                max_y = max(max_y, unique_verts[i][1])
-                min_x = min(min_x, unique_verts[i][0])
-                min_y = min(min_y, unique_verts[i][1])
+                max_x = xmax1 = max(max_x, unique_verts[i][0])
+                max_y = ymax1 = max(max_y, unique_verts[i][1])
+                min_x = xmax2 = min(min_x, unique_verts[i][0])
+                min_y = ymax2 = min(min_y, unique_verts[i][1])
                 
                 # find farthest apart
                 j = i + 1

@@ -101,8 +101,7 @@ class Particle(DependentInputFile):
                     incomplete.append(str(fac) + ': ' + str(s))
 
         if len(incomplete) > 0:
-            messagebox.showinfo("Mass Fraction Error",
-                                "The mass fraction for " + ", ".join(incomplete)+
+            Logger.logMessage("The mass fraction for " + ", ".join(incomplete)+
                                 " does not sum to 100%. Please correct them in your "+
                                 "particle size file.")
             return None
@@ -111,14 +110,11 @@ class Particle(DependentInputFile):
             check_particle_assignment = set(df[fac_id])
 
             if check_particle_assignment != set(self.facilities):
-                particle_unassigned = (check_particle_assignment -
-                                       set(self.facilities))
-
-                messagebox.showinfo("Unassigned particle size parameters", "" +
-                                    " Line parameters for " +
-                                    ", ".join(particle_unassigned) + " have not been" +
-                                    " assigned. Please edit the 'FacilityID' column" +
-                                    " in the Facilities List Options file.")
+                particle_unassigned = (set(self.facilities) - check_particle_assignment)
+                
+                Logger.logMessage("Particle size data for facilities, " +
+                                  ", ".join(particle_unassigned) + " have not been assigned. " +
+                                  "Please edit the particle size file.")
                 return None
             else:
                 Logger.logMessage("Uploaded particle data for [" + ",".join(check_particle_assignment) + "]\n")
