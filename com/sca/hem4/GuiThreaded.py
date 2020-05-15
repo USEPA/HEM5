@@ -841,6 +841,9 @@ class Hem4(tk.Frame):
                     #pull out facilities using depdeplt
                     self.model.depdeplt = [x[0] for x in deposition_depletion]
                     print('DEPDEP:', self.model.depdeplt)
+                    
+                    #pull out facilities needing landuse and seasons files (gas dry dep/depl)
+                    self.model.gasdryfacs = [x[0] for x in deposition_depletion if 'land use' in x]
         
                     #pull out conditional inputs
                     conditional = set([y for x in deposition_depletion for y in x[1:]])
@@ -1034,7 +1037,7 @@ class Hem4(tk.Frame):
 
         fullpath = self.openFile(askopenfilename())
         if fullpath is not None: 
-            success = self.uploader.uploadDependent("land use", fullpath, self.model.faclist.dataframe)
+            success = self.uploader.uploadDependent("land use", fullpath, self.model.gasdryfacs)
             if not success:
                 messagebox.showinfo('Error', "Invalid Land Use file. Check log for details.")
                 return
@@ -1054,7 +1057,7 @@ class Hem4(tk.Frame):
 
         fullpath = self.openFile(askopenfilename())
         if fullpath is not None: 
-            success = self.uploader.uploadDependent("seasons", fullpath, self.model.faclist.dataframe)
+            success = self.uploader.uploadDependent("seasons", fullpath, self.model.gasdryfacs)
             if not success:
                 messagebox.showinfo('Error', "Invalid Seasons file. Check log for details.")
                 return

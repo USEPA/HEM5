@@ -12,7 +12,7 @@ from tkinter import messagebox
 class LandUse(DependentInputFile):
 
     def __init__(self, path, dependency):
-        self.faclist_df = dependency
+        self.gasDryFacs = dependency
         DependentInputFile.__init__(self, path, dependency)
 
     def createDataframe(self):
@@ -54,12 +54,12 @@ class LandUse(DependentInputFile):
             Logger.logMessage("One or more facility IDs are missing in the Land Use List.")
             return None
 
-#        landfids = set(df[fac_id])
-#        faclistfids = set(self.faclist_df[fac_id])
-#        if faclistfids.intersection(landfids) != faclistfids:
-#            Logger.logMessage("Based on your Facility List Options file, the Land Use List is missing " +
-#                              "one or more facilities. Please correct one or both files and upload again.")
-#            return None
+        landfids = set(df[fac_id])
+        faclistfids = set(self.gasDryFacs)
+        if faclistfids.intersection(landfids) != faclistfids:
+            Logger.logMessage("Based on your Facility List Options file, the Land Use List is missing " +
+                              "one or more facilities. Please correct one or both files and upload again.")
+            return None
 
         duplicates = self.duplicates(df, [fac_id])
         if len(duplicates) > 0:
