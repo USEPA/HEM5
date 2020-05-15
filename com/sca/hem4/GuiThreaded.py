@@ -349,6 +349,8 @@ class Hem4(tk.Frame):
         self.processor = Processor(self.model, Event())
         future = executor.submit(self.censusupdater.update, self.censusUpdatePath)
         future.add_done_callback(self.update_census_finish)
+        messagebox.showinfo("Census update running",
+                            "Please check the log to monitor the progress of the update.")
 
     def update_census_finish(self, future):
         self.callbackQueue.put(self.finish_census_update)

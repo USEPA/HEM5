@@ -39,59 +39,62 @@ class CensusUpdater():
 
 
     def update(self, changesetFilepath):
-        changeset_df = self.readFromPath(changesetFilepath)
+        try:
+            changeset_df = self.readFromPath(changesetFilepath)
 
-        # Add two columns for posterity
-        changeset_df['lastModified'] = None
-        changeset_df['previous'] = None
+            # Add two columns for posterity
+            changeset_df['lastModified'] = None
+            changeset_df['previous'] = None
 
-        for index, row in changeset_df.iterrows():
+            for index, row in changeset_df.iterrows():
 
-            self.previousValue = ""
-                        
-            blockid = row["blockid"]
-            operation = row["change"].strip().upper()
+                self.previousValue = ""
 
-            # Get the two-letter state abbreviation and construct the census file name.
-            state = self.getStateForCode(blockid[0:2])
-            Logger.logMessage("Opening " + state + " for updates...")
-            pathToFile = self.pathToCensusFiles + '\\Blks_' + state + '.json'
+                blockid = row["blockid"]
+                operation = row["change"].strip().upper()
 
-            if operation == "DELETE":
-                Logger.logMessage("Deleting block " + row["blockid"])
-                
-                
-            with open(pathToFile, "r") as read_file:
-                data = json.load(read_file)
+                # Get the two-letter state abbreviation and construct the census file name.
+                state = self.getStateForCode(blockid[0:2])
+                Logger.logMessage("Opening " + state + " for updates...")
+                pathToFile = self.pathToCensusFiles + '\\Blks_' + state + '.json'
 
-                # This is the crucial part! We are doing a list comprehension that is based on
-                # both a filter and a conditional. The filter is the last part - deletes won't
-                # make it into the resulting list at all. Moves and zeros will be handled by
-                # the mutate function. Any blockid that is not the one we care about will pass
-                # through unchanged.
-                replaced = [self.mutate(x, operation, row)
-                    if x['IDMARPLOT']==blockid
-                    else x for x in data if x['IDMARPLOT']!=blockid or (operation == 'MOVE' or operation == 'ZERO')]
+                if operation == "DELETE":
+                    Logger.logMessage("Deleting block " + row["blockid"])
 
-            # Open the file again and re-write it using the updated json.
-            with open(pathToFile, "w") as write_file:
-                json.dump(replaced, write_file, indent=4)
 
-            # Update the changeset row
-            row["lastModified"] = str(datetime.datetime.now())
-            if operation == 'DELETE':
-                row["previous"] = row["blockid"]
-            else:
-                row["previous"] = "Block id not found" if self.previousValue == "" else self.previousValue
+                with open(pathToFile, "r") as read_file:
+                    data = json.load(read_file)
 
-        # Write out the updated changeset
-        changeset_df.fillna("")
-        changeset_df.to_excel(changesetFilepath, index=False)
+                    # This is the crucial part! We are doing a list comprehension that is based on
+                    # both a filter and a conditional. The filter is the last part - deletes won't
+                    # make it into the resulting list at all. Moves and zeros will be handled by
+                    # the mutate function. Any blockid that is not the one we care about will pass
+                    # through unchanged.
+                    replaced = [self.mutate(x, operation, row)
+                        if x['IDMARPLOT']==blockid
+                        else x for x in data if x['IDMARPLOT']!=blockid or (operation == 'MOVE' or operation == 'ZERO')]
 
-        # Update the index
-        self.updateIndex()
+                # Open the file again and re-write it using the updated json.
+                with open(pathToFile, "w") as write_file:
+                    json.dump(replaced, write_file, indent=4)
 
-        Logger.logMessage("Census update complete!")
+                # Update the changeset row
+                row["lastModified"] = str(datetime.datetime.now())
+                if operation == 'DELETE':
+                    row["previous"] = row["blockid"]
+                else:
+                    row["previous"] = "Block id not found" if self.previousValue == "" else self.previousValue
+
+            # Write out the updated changeset
+            changeset_df.fillna("")
+            changeset_df.to_excel(changesetFilepath, index=False)
+
+            # Update the index
+            self.updateIndex()
+
+            Logger.logMessage("Census update complete!")
+        except BaseException as e:
+            Logger.logMessage("Error running census update: " + str(e))
 
     def updateIndex(self):
         # Update the census key file...build an index in-memory, and then use it

@@ -66,9 +66,9 @@ class SummaryManager(AltRecAwareSummary):
                 
         module = self.availableReports[reportName]
         if module is None:
-            Logger.logMessage("Oops. HEM4 couldn't find your report module.")
+            Logger.logMessage("HEM4 couldn't find the report module " + reportName + ".")
             return
-        
+
         reportClass = getattr(module, reportName)
         reportArgs = [self.grpname, arguments]
         instance = reportClass(categoryFolder, self.facilityIds, reportArgs)
