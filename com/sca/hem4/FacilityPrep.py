@@ -110,7 +110,7 @@ class FacilityPrep():
             polyver_df = None
 
         #%%---------- Optional Building Downwash -------------------------------------
-
+            
         if hasattr(self.model.bldgdw, "dataframe"):
 
             bldgdw_df = self.model.bldgdw.dataframe.loc[self.model.bldgdw.dataframe[fac_id] == facid].copy()

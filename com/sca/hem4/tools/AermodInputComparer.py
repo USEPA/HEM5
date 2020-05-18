@@ -6,7 +6,7 @@ class AermodInputComparer:
 
     def __init__(self):
 
-        self.pathToFiles = r"C:/Users/Chris Stolte/OneDrive - SC&A, Inc/Downloads/aermod-compare"
+        self.pathToFiles = r"C:/temp/aaadumb"
 
     def compare(self):
 
