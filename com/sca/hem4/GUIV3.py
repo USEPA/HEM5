@@ -93,9 +93,6 @@ TEXT_FONT = ("Daytona", 13)
 
 
 
-def hyperlink1():
-    webbrowser.open_new(r"https://www.epa.gov/fera/risk-assessment-and-"+
-                        "modeling-human-exposure-model-hem")
 
 
     
@@ -372,7 +369,7 @@ class MainView(tk.Frame):
         #%% USER GUIDE
     
         #user nav button
-        ugLabel= tk.Label(self, text="USER GUIDE", font=TAB_FONT, bg=self.main_color, height=2, anchor="w")
+        ugLabel= tk.Label(self, text="HEM4 USER GUIDE", font=TAB_FONT, bg=self.main_color, height=2, anchor="w")
         ugLabel.place(in_=container, relwidth=0.2, rely=0.54, relx=0.1)
 
 #        #add run icon with margin for highlight
@@ -387,13 +384,34 @@ class MainView(tk.Frame):
          #bind icon and label events
         ugLabel.bind("<Enter>", partial(self.color_config, ugLabel, bookLabel, self.highlightcolor))
         ugLabel.bind("<Leave>", partial(self.color_config, ugLabel, bookLabel, self.main_color))
-        ugLabel.bind("<Button-1>", self.hyperlink2) 
+        ugLabel.bind("<Button-1>", self.hyperlink1) 
         bookLabel.bind("<Enter>", partial(self.color_config, bookLabel, ugLabel, self.highlightcolor))
         bookLabel.bind("<Leave>", partial(self.color_config, bookLabel, ugLabel,self.main_color))
-        bookLabel.bind("<Button-1>", self.hyperlink2)
+        bookLabel.bind("<Button-1>", self.hyperlink1)
 #        
 
+        #%%
+        
+        #aermod user nav button
+        agLabel= tk.Label(self, text="AERMOD USER GUIDE", font=TAB_FONT, bg=self.main_color, height=2, anchor="w")
+        agLabel.place(in_=container, relwidth=0.2, rely=0.63, relx=0.1)
 
+#        #add run icon with margin for highlight
+        ag = PIL.Image.open('images\icons8-user-manual-48.png').resize((30,30))
+        agnew = self.add_margin(ag, 4, 0, 4, 0)
+        
+        agIcon = ImageTk.PhotoImage(agnew)
+        bookLabel2 = tk.Label(self, image=agIcon, bg=self.main_color)
+        bookLabel2.image = agIcon # keep a reference!
+        bookLabel2.place(in_=container, relwidth=0.1, rely=0.63)
+        
+         #bind icon and label events
+        agLabel.bind("<Enter>", partial(self.color_config, agLabel, bookLabel2, self.highlightcolor))
+        agLabel.bind("<Leave>", partial(self.color_config, agLabel, bookLabel2, self.main_color))
+        agLabel.bind("<Button-1>", self.hyperlink2) 
+        bookLabel2.bind("<Enter>", partial(self.color_config, bookLabel2, agLabel, self.highlightcolor))
+        bookLabel2.bind("<Leave>", partial(self.color_config, bookLabel2, agLabel,self.main_color))
+        bookLabel2.bind("<Button-1>", self.hyperlink2)
 
         
 # setting geometry of tk window 
@@ -436,9 +454,13 @@ class MainView(tk.Frame):
         result.paste(pil_img, (left, top))
         return result    
 
+    def hyperlink1(self, event):
+        webbrowser.open_new(r"https://www.epa.gov/fera/risk-assessment-and-"+
+                        "modeling-human-exposure-model-hem")
+    
     def hyperlink2(self, event):
-        webbrowser.open_new(r"https://www.epa.gov/fera/human-exposure-model-hem-3"+
-                        "-users-guides")
+        webbrowser.open_new(r"https://www3.epa.gov/ttn/scram/models/aermod/aermod_userguide.pdf")
+
 
 #%%
 class Start(Page):
@@ -2055,6 +2077,9 @@ def on_closing(hem):
             hem.quit_app()
             if hem.aborted == True:
                 root.destroy()
+                
+    else:
+        root.destroy()
 
 
 # infinite loop which is required to 
