@@ -863,7 +863,7 @@ class Hem(Page):
             # Update the UI
             [self.nav.log.scr.insert(tk.INSERT, msg) for msg in self.model.faclist.log]
 #            container.configure(bg='light green')
-            label['text'] = 'Facilities List Option File uploaded'
+            label['text'] = fullpath
             
             #trigger additional inputs fo user recptors, assuming we are not in "user receptors only" mode
             if 'Y' in self.model.faclist.dataframe['user_rcpt'].tolist():
@@ -878,9 +878,9 @@ class Hem(Page):
                     
             #trigger additional inputs for emisvar
             if 'Y' in self.model.faclist.dataframe['emis_var'].tolist():
-                #create user receptors
+                #create create emis var
                 self.add_variation()
-                self.model.dependencies.appen('emis_var')
+                self.model.dependencies.append('emis_var')
                 
             else:
                 if 'emis_var' in self.model.dependencies:
@@ -927,7 +927,7 @@ class Hem(Page):
                 # Update the UI
                 [self.nav.log.scr.insert(tk.INSERT, msg) for msg in self.model.hapemis.log]
 #                container.configure(bg='light green')
-                label['text'] = 'HAP Emissions File uploaded'
+                label['text'] = fullpath
  
                     
             
@@ -968,7 +968,7 @@ class Hem(Page):
                     # Update the UI
                     [self.nav.log.scr.insert(tk.INSERT, msg) for msg in self.model.emisloc.log]
 #                    container.configure(bg='light green')
-                    label['text'] = 'Emissions Location File uploaded'
+                    label['text'] = fullpath
  
     
                     #trigger additional inputs for buoyant line and polyvertex
@@ -1087,7 +1087,7 @@ class Hem(Page):
             # Update the UI
             [self.nav.log.scr.insert(tk.INSERT, msg) for msg in self.model.ureceptr.log]
 #            container.configure(bg='light green')
-            label['text'] = 'User Receptors File uploaded'
+            label['text'] = fullpath
  
     
     def set_altrec(self):
@@ -2052,8 +2052,9 @@ def on_closing(hem):
     
     if hem.running == True:
     
-        if messagebox.askokcancel("Quit", "Do you want to quit?"):
-            root.destroy()
+            hem.quit_app()
+            if hem.aborted == True:
+                root.destroy()
 
 
 # infinite loop which is required to 
@@ -2068,7 +2069,7 @@ if __name__ == "__main__":
 #    root.wm_attributes('-transparentcolor', root['bg'])
     main = MainView(root)
     main.pack(side="top", fill="both", expand=True)
-    root.protocol("WM_DELETE_WINDOW", on_closing(main.hem))
+    root.protocol("WM_DELETE_WINDOW", lambda: on_closing(main.hem))
     root.wm_minsize(1000,800)
 #    root.state('zoomed')
     root.mainloop() #if we want to open full screen

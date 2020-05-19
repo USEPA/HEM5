@@ -232,7 +232,7 @@ class Optional(Page):
             # Update the UI
             [self.nav.nav.log.scr.insert(tk.INSERT, msg) for msg in self.model.multipoly.log]
 #            container.configure(bg='light green')
-            label['text'] = 'Polygon Vertex File uploaded'
+            label['text'] = fullpath
  
 
     def uploadbuoyant(self, container, label, event):
@@ -254,7 +254,7 @@ class Optional(Page):
             # Update the UI
             [self.nav.nav.log.scr.insert(tk.INSERT, msg) for msg in self.model.multibuoy.log]
 #            container.configure(bg='light green')
-            label['text'] = 'Buoyant Line File uploaded'
+            label['text'] = fullpath
  
     
     def uploadBuildingDownwash(self, container, label, event):
@@ -275,7 +275,7 @@ class Optional(Page):
             # Update the UI
             [self.nav.nav.log.scr.insert(tk.INSERT, msg) for msg in self.model.bldgdw.log]
 #            container.configure(bg='light green')
-            label['text'] = 'Building Downwash File uploaded'
+            label['text'] = fullpath
  
             
             
@@ -360,7 +360,7 @@ class DepDplt(Page):
             # Update the UI
             [self.nav.nav.log.scr.insert(tk.INSERT, msg) for msg in self.model.partdep.log]
 #            container.configure(bg='light green')
-            label['text'] = 'Particle Size File uploaded'
+            label['text'] = fullpath
 
     def uploadLandUse(self, container, label, event):
         """
@@ -379,7 +379,7 @@ class DepDplt(Page):
             # Update the UI
             [self.nav.nav.log.scr.insert(tk.INSERT, msg) for msg in self.model.landuse.log]
 #            container.configure(bg='light green')
-            label['text'] = 'Land Use File uploaded'
+            label['text'] = fullpath
 
     def uploadSeasons(self, container, label, event):
         """ 
@@ -398,4 +398,4 @@ class DepDplt(Page):
             # Update the UI
             [self.nav.nav.log.scr.insert(tk.INSERT, msg) for msg in self.model.seasons.log]
 #            container.configure(bg='light green')
-            label['text'] = 'Seasonal Vegetation File uploaded'
+            label['text'] = fullpath
