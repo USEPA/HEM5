@@ -851,7 +851,7 @@ class Runstream():
         bldg_srid = bldgdim_df['source_id'][:]
         bldg_keyw = bldgdim_df['keyword'][:]
         
-        for i in range(len(bldg_srid)):
+        for i, r in bldg_srid.iteritems():
             if srid == bldg_srid[i]:
                 row = bldgdim_df.loc[i,]
                 values = row.tolist()

@@ -101,7 +101,7 @@ class AcuteImpacts(ExcelWriter, InputFile, AltRecAwareSummary):
             
         else:
             
-            Logger.logMessage("There was no acute data to generate the Acute Impacts summary")
+            Logger.logMessage("There was no acute data to generate the Acute Impacts summary.")
 
     def createDataframe(self):
         # Type setting for XLS reading

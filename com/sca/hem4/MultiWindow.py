@@ -379,8 +379,9 @@ class Page1(Page):
                     
         #if checks have been passed 
         if ready == True:
-        
-        
+
+            messagebox.showinfo("Summary reports running",
+                                "Your selected Risk Summary Programs are running. Check the Log for progress.")
             running_message = "Running report on facilities: " + ', '.join(faclist)
             
             self.scr.configure(state='normal')
@@ -392,7 +393,7 @@ class Page1(Page):
                     
             #loop through for each report selected
             for reportName in reportNames:
-                report_message = "Creating " + reportName + " report."
+                report_message = "Creating " + reportName + " report..."
                 
                 self.scr.configure(state='normal')
                 self.scr.insert(tk.INSERT, report_message)

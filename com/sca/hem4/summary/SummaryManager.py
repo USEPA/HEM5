@@ -57,6 +57,7 @@ class SummaryManager(AltRecAwareSummary):
         # to users, therefore we run the alt rec summary when needed and determine that here. Since we can
         # assume that all facilities run in the same category used alternate receptors (or not...)
         # we only need to check the first one to decide.
+
         
         #reset status
         self.status = False
@@ -95,7 +96,7 @@ class SummaryManager(AltRecAwareSummary):
              
         else:
             self.status = True
-             
+
 
     def visualizeAcuteImpacts(self, categoryFolder):
         visualizer = AcuteImpactsVisualizer(sourceDir=categoryFolder)
