@@ -695,11 +695,20 @@ class Hem(Page):
         self.group_list_man.grid(row=1, column=1, sticky='W', pady=20)
         
         
-        self.check_altrec = tk.BooleanVar()
-        self.altrec_sel = tk.Checkbutton(self.alturep, text="Use alternate receptors",
-                                           variable = self.check_altrec, bg="lightcyan3",
-                                           command = self.set_altrec, font=TEXT_FONT)
-        self.altrec_sel.grid(row=0, column=0, sticky='W')
+        self.check_altrec = tk.IntVar()
+        self.check_altrec.set(1)
+        
+        self.defaultrec_sel = tk.Radiobutton(self.alturep, text="Use U.S. Census receptors",
+                                           variable = self.check_altrec, bg=self.tab_color,
+                                           command = self.set_altrec, font=TEXT_FONT, value=1)
+        self.defaultrec_sel.grid(row=0, column=1, sticky='W')
+        
+        self.altrec_sel = tk.Radiobutton(self.alturep, text="Use alternate receptors",
+                                           variable = self.check_altrec, bg=self.tab_color,
+                                           command = self.set_altrec, font=TEXT_FONT, value=2)
+        self.altrec_sel.grid(row=0, column=2, sticky='W')
+        
+        
 
         #%%facilities label
     
@@ -1138,12 +1147,14 @@ class Hem(Page):
         
         self.model.altRec_optns['altrec'] = self.check_altrec.get()
 
-        if self.model.altRec_optns['altrec'] == 1:
+        if self.model.altRec_optns['altrec'] == 2:
             self.add_urepalt()
             self.model.dependencies.append('altrec')
         else:
             self.urepLabel.destroy()
             self.urep_file.destroy()
+            
+    
             
 
 
