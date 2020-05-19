@@ -1110,6 +1110,28 @@ class Hem(Page):
             [self.nav.log.scr.insert(tk.INSERT, msg) for msg in self.model.ureceptr.log]
 #            container.configure(bg='light green')
             label['text'] = fullpath
+            
+            
+    def uploadAltReceptors(self, container, label, event):
+        """
+        Function for uploading Alternate Receptors
+        """
+
+
+        fullpath = self.openFile(askopenfilename())
+        if fullpath is not None:
+                        
+            success = self.uploader.upload("alt receptors", fullpath)
+            if not success:
+                messagebox.showinfo('Error', "Invalid alternate receptors file. Check log for details.")
+                return
+
+            self.model.altRec_optns["path"] = fullpath
+
+            # Update the UI
+            self.urepalt_list.set(fullpath)
+            [self.scr.insert(tk.INSERT, msg) for msg in self.model.altreceptr.log]
+            label['text'] = fullpath
  
     
     def set_altrec(self):
@@ -1187,11 +1209,11 @@ class Hem(Page):
                                     
         self.urep_file.bind("<Enter>", lambda x: self.color_config( self.urep_file, self.urepLabel, self.s10, self.highlightcolor, x))
         self.urep_file.bind("<Leave>", lambda x: self.color_config( self.urep_file, self.urepLabel, self.s10, self.tab_color, x))
-        self.urep_file.bind("<Button-1>", lambda x: self.uploadUserReceptors(self.alturep, self.urep_file, x))
+        self.urep_file.bind("<Button-1>", lambda x: self.uploadAltReceptors(self.alturep, self.urep_file, x))
         
         self.urepLabel.bind("<Enter>", lambda x: self.color_config(self.urepLabel, self.urep_file, self.s10, self.highlightcolor, x))
         self.urepLabel.bind("<Leave>", lambda x: self.color_config(self.urepLabel, self.urep_file, self.s10, self.tab_color, x))
-        self.urepLabel.bind("<Button-1>",  lambda x: self.uploadUserReceptors(self.s10, self.urep_file, x))
+        self.urepLabel.bind("<Button-1>",  lambda x: self.uploadAltReceptors(self.s10, self.urep_file, x))
         
   
 
