@@ -2044,9 +2044,21 @@ class Log(Page):
          # Pack to make visible
 
 #%%
+         
+         
+#protocol for handlign closing tkinter when HEM4 is running
+
+def on_closing(hem):
+    
+    if hem.running == True:
+    
+        if messagebox.askokcancel("Quit", "Do you want to quit?"):
+            root.destroy()
+
+
 # infinite loop which is required to 
 # run tkinter program infinitely 
-# until an interrupt occurs 
+# until an interrupt occurs
 if __name__ == "__main__":
     root = tk.Tk()
     w, h = root.winfo_screenwidth(), root.winfo_screenheight()
@@ -2056,6 +2068,7 @@ if __name__ == "__main__":
 #    root.wm_attributes('-transparentcolor', root['bg'])
     main = MainView(root)
     main.pack(side="top", fill="both", expand=True)
+    root.protocol("WM_DELETE_WINDOW", on_closing(main.hem))
     root.wm_minsize(1000,800)
 #    root.state('zoomed')
     root.mainloop() #if we want to open full screen
