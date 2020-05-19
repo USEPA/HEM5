@@ -242,6 +242,10 @@ class Summary(Page):
         group_label.bind("<Leave>", partial(self.color_config, group_label, self.iconLabel, self.l4, self.tab_color))
         group_label.bind("<Button-1>", partial(self.check_box, self.iconLabel, "Max Risk"))
         
+        self.iconLabel.bind("<Enter>", partial(self.color_config, group_label, self.iconLabel, self.l4, 'light grey'))
+        self.iconLabel.bind("<Leave>", partial(self.color_config, group_label, self.iconLabel, self.l4, self.tab_color))
+        self.iconLabel.bind("<Button-1>", partial(self.check_box, self.iconLabel, "Max Risk"))
+        
         
         
         #%%
@@ -259,6 +263,10 @@ class Summary(Page):
         c_label.bind("<Leave>", partial(self.color_config, c_label, self.crLabel, self.l5, self.tab_color))
         c_label.bind("<Button-1>", partial(self.check_box, self.crLabel, "Cancer Drivers"))        
         
+        self.crLabel.bind("<Enter>", partial(self.color_config, c_label, self.crLabel, self.l5, 'light grey'))
+        self.crLabel.bind("<Leave>", partial(self.color_config, c_label, self.crLabel, self.l5, self.tab_color))
+        self.crLabel.bind("<Button-1>", partial(self.check_box, self.crLabel, "Cancer Drivers"))        
+        
 # %%        
         h_label = tk.Label(self.l6, font=TEXT_FONT, width=22, anchor='w', bg=self.tab_color, 
                              text="Hazard Index Drivers")
@@ -274,6 +282,9 @@ class Summary(Page):
         h_label.bind("<Leave>", partial(self.color_config, h_label, self.hiLabel, self.l6, self.tab_color))
         h_label.bind("<Button-1>", partial(self.check_box, self.hiLabel, "Hazard Index Driver")) 
 
+        self.hiLabel.bind("<Enter>", partial(self.color_config, h_label, self.hiLabel, self.l6, 'light grey'))
+        self.hiLabel.bind("<Leave>", partial(self.color_config, h_label, self.hiLabel, self.l6, self.tab_color))
+        self.hiLabel.bind("<Button-1>", partial(self.check_box, self.hiLabel, "Hazard Index Driver"))
 #%%        
         his_label = tk.Label(self.l7, font=TEXT_FONT, width=22, anchor='w', bg=self.tab_color, 
                              text="Risk Histogram")
@@ -288,6 +299,10 @@ class Summary(Page):
         his_label.bind("<Enter>", partial(self.color_config, his_label, self.gramLabel, self.l7, 'light grey'))
         his_label.bind("<Leave>", partial(self.color_config, his_label, self.gramLabel, self.l7, self.tab_color))
         his_label.bind("<Button-1>", partial(self.check_box, self.gramLabel, "Risk Histogram")) 
+        
+        self.gramLabel.bind("<Enter>", partial(self.color_config, his_label, self.gramLabel, self.l7, 'light grey'))
+        self.gramLabel.bind("<Leave>", partial(self.color_config, his_label, self.gramLabel, self.l7, self.tab_color))
+        self.gramLabel.bind("<Button-1>", partial(self.check_box, self.gramLabel, "Risk Histogram"))
 #%%        
         hz_label = tk.Label(self.l8, font=TEXT_FONT, width=22, anchor='w', bg=self.tab_color, 
                              text="Hazard Index Histogram")
@@ -301,7 +316,13 @@ class Summary(Page):
         
         hz_label.bind("<Enter>", partial(self.color_config, hz_label, self.zLabel, self.l8, 'light grey'))
         hz_label.bind("<Leave>", partial(self.color_config, hz_label, self.zLabel, self.l8, self.tab_color))
-        hz_label.bind("<Button-1>", partial(self.check_box, self.zLabel, "Hazard Index Histogram")) 
+        hz_label.bind("<Button-1>", partial(self.check_box, self.zLabel, "Hazard Index Histogram"))
+        
+        self.zLabel.bind("<Enter>", partial(self.color_config, hz_label, self.zLabel, self.l8, 'light grey'))
+        self.zLabel.bind("<Leave>", partial(self.color_config, hz_label, self.zLabel, self.l8, self.tab_color))
+        self.zLabel.bind("<Button-1>", partial(self.check_box, self.zLabel, "Hazard Index Histogram"))
+        
+        
 #%%        
         i_label = tk.Label(self.l9, font=TEXT_FONT, width=22, anchor='w', bg=self.tab_color, 
                              text="Incidence Drivers")
@@ -316,6 +337,10 @@ class Summary(Page):
         i_label.bind("<Enter>", partial(self.color_config, i_label, self.idLabel, self.l9, 'light grey'))
         i_label.bind("<Leave>", partial(self.color_config, i_label, self.idLabel, self.l9, self.tab_color))
         i_label.bind("<Button-1>", partial(self.check_box, self.idLabel, "Incidence Drivers")) 
+        
+        self.idLabel.bind("<Enter>", partial(self.color_config, i_label, self.idLabel, self.l9, 'light grey'))
+        self.idLabel.bind("<Leave>", partial(self.color_config, i_label, self.idLabel, self.l9, self.tab_color))
+        self.idLabel.bind("<Button-1>", partial(self.check_box, self.idLabel, "Incidence Drivers")) 
 #%%        
     
         
@@ -332,6 +357,10 @@ class Summary(Page):
         ai_label.bind("<Leave>", partial(self.color_config, ai_label, self.aLabel, self.l10, self.tab_color))
         ai_label.bind("<Button-1>", partial(self.check_box, self.aLabel, "Acute Impacts")) 
         
+        self.aLabel.bind("<Enter>", partial(self.color_config, ai_label, self.aLabel, self.l10, 'light grey'))
+        self.aLabel.bind("<Leave>", partial(self.color_config, ai_label, self.aLabel, self.l10, self.tab_color))
+        self.aLabel.bind("<Button-1>", partial(self.check_box, self.aLabel, "Acute Impacts")) 
+        
 #%%
        
         mp_label = tk.Label(self.r4, font=TEXT_FONT, width=22, anchor='w', bg=self.tab_color, text="Multipathway")
@@ -347,6 +376,9 @@ class Summary(Page):
         mp_label.bind("<Leave>", partial(self.color_config, mp_label, self.mLabel, self.r4, self.tab_color))
         mp_label.bind("<Button-1>", partial(self.check_box, self.mLabel, "Multipathway")) 
         
+        self.mLabel.bind("<Enter>", partial(self.color_config, mp_label, self.mLabel, self.r4, 'light grey'))
+        self.mLabel.bind("<Leave>", partial(self.color_config, mp_label, self.mLabel, self.r4, self.tab_color))
+        self.mLabel.bind("<Button-1>", partial(self.check_box, self.mLabel, "Multipathway"))
 
 #%%        
         st_label = tk.Label(self.r5, font=TEXT_FONT, width=22, anchor='w', bg=self.tab_color, text="Source Type Risk Histogram")
@@ -358,9 +390,9 @@ class Summary(Page):
         
         self.sLabel.grid(row=1, column=3, padx=10, sticky='W') 
         
-        st_label.bind("<Enter>", partial(self.color_config, st_label, self.sLabel, self.r5, 'light grey'))
-        st_label.bind("<Leave>", partial(self.color_config, st_label, self.sLabel, self.r5, self.tab_color))
-        st_label.bind("<Button-1>", partial(self.set_sourcetype, self.sLabel, "Source Type Risk Histogram")) 
+        self.sLabel.bind("<Enter>", partial(self.color_config, st_label, self.sLabel, self.r5, 'light grey'))
+        self.sLabel.bind("<Leave>", partial(self.color_config, st_label, self.sLabel, self.r5, self.tab_color))
+        self.sLabel.bind("<Button-1>", partial(self.set_sourcetype, self.sLabel, "Source Type Risk Histogram")) 
 
 #%%        
         z_label = tk.Label(self.r6, font=TEXT_FONT, width=22, anchor='w', bg=self.tab_color, text="")
