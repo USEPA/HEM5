@@ -89,8 +89,7 @@ class Process_outputs():
         if self.abort.is_set():
             Logger.logMessage("Terminating output processing...")
             return
-        
-        
+
         #----------- create All_Polar_Receptor output file -----------------
         all_polar_receptors = AllPolarReceptors(self.outdir, self.facid, self.model, self.plot_df, self.acute_yn)
         all_polar_receptors.write(generateOnly=False)
