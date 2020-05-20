@@ -466,7 +466,7 @@ class FacilityPrep():
             self.outerblks[sector], self.outerblks["s"], self.outerblks[ring], self.outerblks["ring_loc"] = \
                  zip(*self.outerblks.apply(lambda row: self.calc_ring_sector(polar_dist,row[distance],row[angle],op_radial), axis=1))
 
-
+        
         #%%------ Elevations and hill height ---------
 
         # if the facility will use elevations, assign them to emission sources and polar receptors        
@@ -674,8 +674,9 @@ class FacilityPrep():
     #%% Compute the elevation to be used for all emission sources
     def compute_emisloc_elev(self, polars, num_rings):
 
-        # The average of the average elevation for a ring will be used as the source elevation.
-
+        # The average of the average elevations for a ring will be used as the source elevation.
+        # Begin at ring 1 and work outward until a non-zero average is found.
+        
         D_selev = 0
         N_selev = 0
         ringnum = 1
