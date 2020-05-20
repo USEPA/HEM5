@@ -1,37 +1,16 @@
 from math import floor, log10
 
-from pandas.core.dtypes.common import is_string_dtype
-
 from com.sca.hem4.runner.FacilityRunner import FacilityRunner
-from com.sca.hem4.writer.csv.AllInnerReceptors import *
 from com.sca.hem4.writer.csv.AllOuterReceptors import *
-from com.sca.hem4.writer.csv.AllPolarReceptors import AllPolarReceptors, sector, ring
-from com.sca.hem4.writer.csv.BlockSummaryChronic import BlockSummaryChronic
-from com.sca.hem4.writer.csv.RingSummaryChronic import RingSummaryChronic
-from com.sca.hem4.writer.csv.Temporal import Temporal
-from com.sca.hem4.writer.csv.hem3.Hem3AllInnerReceptors import Hem3AllInnerReceptors
-from com.sca.hem4.writer.csv.hem3.Hem3AllOuterReceptors import Hem3AllOuterReceptors
-from com.sca.hem4.writer.csv.hem3.Hem3AllPolarReceptors import Hem3AllPolarReceptors
-from com.sca.hem4.writer.csv.hem3.Hem3BlockSummaryChronic import Hem3BlockSummaryChronic
-from com.sca.hem4.writer.csv.hem3.Hem3RingSummaryChronic import Hem3RingSummaryChronic
-from com.sca.hem4.writer.csv.hem3.Hem3Temporal import Hem3Temporal
-from com.sca.hem4.writer.excel.AcuteBreakdown import aconc_pop, aconc_all, AcuteBreakdown
-from com.sca.hem4.writer.excel.AcuteChemicalMax import AcuteChemicalMax
-from com.sca.hem4.writer.excel.AcuteChemicalPopulated import AcuteChemicalPopulated
+from com.sca.hem4.writer.csv.AllPolarReceptors import AllPolarReceptors
 from com.sca.hem4.writer.excel.ExcelWriter import ExcelWriter
-from com.sca.hem4.writer.excel.MaximumIndividualRisks import MaximumIndividualRisks, value, parameter
-from com.sca.hem4.writer.excel.RiskBreakdown import RiskBreakdown, site_type, mir
-from com.sca.hem4.writer.excel.hem3.Hem3AcuteBreakdown import Hem3AcuteBreakdown
-from com.sca.hem4.writer.excel.hem3.Hem3AcuteChemicalMax import Hem3AcuteChemicalMax
-from com.sca.hem4.writer.excel.hem3.Hem3AcuteChemicalPopulated import Hem3AcuteChemicalPopulated
-from com.sca.hem4.writer.excel.hem3.Hem3MaximumIndividualRisks import Hem3MaximumIndividualRisks
-from com.sca.hem4.writer.excel.hem3.Hem3RiskBreakdown import Hem3RiskBreakdown
 
 facilityID = "Fac2-IL"
 sourceID = "CT000001"
 pollutantName = "1,2,3,4,6,7,8-heptachlorodibenzo-p-dioxin"
-hapemis_path = r"C:/Users/Chris Stolte/IdeaProjects/HEM4/output/rungroup_2020_05_15_09_42_34/Inputs/hapemis.xlsx"
-output_dir = r"C:/Users/Chris Stolte/IdeaProjects/HEM4/output/rungroup_2020_05_15_09_42_34/Fac2-IL"
+rundir = r"C:/Users/Chris Stolte/IdeaProjects/HEM4/output/rungroup_2020_05_15_09_42_34"
+hapemis_path = rundir + "/Inputs/hapemis.xlsx"
+output_dir = rundir + "/" + facilityID
 acute = 'N'
 runtype = 0
 
