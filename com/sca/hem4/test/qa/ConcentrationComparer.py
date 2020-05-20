@@ -98,7 +98,7 @@ class ConcentrationComparer(ExcelWriter):
             computed = self.round_to_sigfig(plot_row[result], 8)
             retrieved = self.round_to_sigfig(row[conc], 8)
             diff = self.round_to_sigfig(100*((retrieved - computed) / retrieved), 3)
-            record = {fac_id:self.fac_id, source_id:self.source_id, pollutant:self.pollutant, rec_type:"inner",
+            record = {fac_id:self.fac_id, source_id:self.source_id, pollutant:self.pollutant, rec_type:"block",
                   lat:row[lat], lon:row[lon], utme:utm_e, utmn:utm_n, 'r_conc':retrieved, 'c_conc':computed,
                   'change':diff}
             rows.append(record)
