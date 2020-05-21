@@ -133,6 +133,7 @@ class Analyze(Page):
         
         button_maps = tk.Label(self.s4, text="Open a chronic or acute map",
                                 font=TEXT_FONT, bg=self.tab_color)
+        button_maps.grid(row=1, column=1)
         
         button_maps.bind("<Enter>", lambda x: self.color_config(button_maps, mapLabel, self.s4, self.highlightcolor, x))
         button_maps.bind("<Leave>", lambda x: self.color_config(button_maps, mapLabel, self.s4, self.tab_color, x))
@@ -145,7 +146,7 @@ class Analyze(Page):
         
 #        command=self.maps_button
 
-        button_maps.grid(row=1, column=1)
+#        button_maps.grid(row=1, column=1)
 
     
     
@@ -396,7 +397,7 @@ class Analyze(Page):
         except Exception as e:
              print(e)
 
-    def maps_button(self):
+    def maps_button(self, event):
         filename = tk.filedialog.askopenfilename(filetypes = [("html or kml files","*.html; *.kml; *.kmz")])
         webbrowser.open(filename)
 
