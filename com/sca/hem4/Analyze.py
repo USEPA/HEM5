@@ -16,7 +16,7 @@ from PyQt5 import QtGui
 
 import numpy as np
 import pandas as pd
-#from pandastable import Table, filedialog, np
+from pandastable import Table, filedialog, np
 
 import os
 import glob
@@ -136,7 +136,7 @@ class Analyze(Page):
         
         button_maps.bind("<Enter>", lambda x: self.color_config(button_maps, mapLabel, self.s4, self.highlightcolor, x))
         button_maps.bind("<Leave>", lambda x: self.color_config(button_maps, mapLabel, self.s4, self.tab_color, x))
-        button_maps.bind("<Button-1>", partial(self.browse_button))
+        button_maps.bind("<Button-1>", partial(self.maps_button))
         
         mapLabel.bind("<Enter>", lambda x: self.color_config(mapLabel, button_maps, self.s4, self.highlightcolor, x))
         mapLabel.bind("<Leave>", lambda x: self.color_config(mapLabel, button_maps, self.s4, self.tab_color, x))
