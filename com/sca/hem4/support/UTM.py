@@ -236,6 +236,7 @@ class UTM:
         sourceverts = list(zip(vertx_l, verty_l))
         unique_verts = list(set(sourceverts))
     
+        
         # Find the two vertices that are the farthest apart
         # Also find the corners of the modeling domain
     
@@ -244,14 +245,20 @@ class UTM:
         max_y = min_y = verty_a[0]
     
         if len(unique_verts) > 1: #more than one source coordinate
-
+            
+            # initialize
+            xmax1 = unique_verts[0][0]
+            ymax1 = unique_verts[0][1]
+            xmax2 = unique_verts[1][0]
+            ymax2 = unique_verts[1][1]
+            
             for i in range(0, len(unique_verts)-1):
                 
                 # corners
-                max_x = xmax1 = max(max_x, unique_verts[i][0])
-                max_y = ymax1 = max(max_y, unique_verts[i][1])
-                min_x = xmax2 = min(min_x, unique_verts[i][0])
-                min_y = ymax2 = min(min_y, unique_verts[i][1])
+                max_x = max(max_x, unique_verts[i][0])
+                max_y = max(max_y, unique_verts[i][1])
+                min_x = min(min_x, unique_verts[i][0])
+                min_y = min(min_y, unique_verts[i][1])
                 
                 # find farthest apart
                 j = i + 1

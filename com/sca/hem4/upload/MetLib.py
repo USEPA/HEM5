@@ -26,8 +26,8 @@ class MetLib(InputFile):
     def createDataframe(self):
 
         # Specify dtypes for all fields
-        self.numericColumns = [surfwban, surfyear, surflat, surflon, uawban, ualat, ualon, elev, anemhgt]
-        self.strColumns = [surfcity, surffile, uacity, commkey, comment, desc, upperfile]
+        self.numericColumns = [surfyear, surflat, surflon, ualat, ualon, elev, anemhgt]
+        self.strColumns = [surfwban, surfcity, surffile, uawban, uacity, commkey, comment, desc, upperfile]
 
         # HEADER----------------------
         self.dataframe = self.readFromPath(

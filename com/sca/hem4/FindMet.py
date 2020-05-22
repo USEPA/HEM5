@@ -26,17 +26,17 @@ def find_met(ylat, xlon, metlib_df):
     facility = (xlon, ylat)
     for i in np.arange(len(lon)):
         station = (lon[i], lat[i])
-        dist[i] = distance(lonlat(*facility), lonlat(*station)).meters
+        dist[i] = round(distance(lonlat(*facility), lonlat(*station)).kilometers, 4)
     
     index = np.where(dist==dist.min())[0][0]
 
     distance2fac = dist[index]
     surf_file = metlib_df['surffile'][index]
     upper_file = metlib_df['upperfile'][index]
-    surfyear = metlib_df['surfyear'][index]
+    surfyear = int(metlib_df['surfyear'][index])
     # Note: remove white space from surfcity and uacity, Aermod will not allow spaces in the city name
-    surfdata_str = str(metlib_df['surfwban'][index]) + " " + str(metlib_df['surfyear'][index]) + " " + str(metlib_df['surfcity'][index]).replace(" ","")
-    uairdata_str = str(metlib_df['uawban'][index]) + " " + str(metlib_df['surfyear'][index]) + " " + str(metlib_df['uacity'][index]).replace(" ","")
+    surfdata_str = str(metlib_df['surfwban'][index]) + " " + str(int(metlib_df['surfyear'][index])) + " " + str(metlib_df['surfcity'][index]).replace(" ","")
+    uairdata_str = str(metlib_df['uawban'][index]) + " " + str(int(metlib_df['surfyear'][index])) + " " + str(metlib_df['uacity'][index]).replace(" ","")
     prof_base = str(metlib_df['elev'][index])
     
     return surf_file, upper_file, surfdata_str, uairdata_str, prof_base, distance2fac, surfyear
