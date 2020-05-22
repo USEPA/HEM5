@@ -26,7 +26,7 @@ def find_met(ylat, xlon, metlib_df):
     facility = (xlon, ylat)
     for i in np.arange(len(lon)):
         station = (lon[i], lat[i])
-        dist[i] = distance(lonlat(*facility), lonlat(*station)).meters
+        dist[i] = round(distance(lonlat(*facility), lonlat(*station)).kilometers, 4)
     
     index = np.where(dist==dist.min())[0][0]
 
