@@ -5,13 +5,13 @@ from com.sca.hem4.writer.csv.AllOuterReceptors import *
 from com.sca.hem4.writer.csv.AllPolarReceptors import AllPolarReceptors
 from com.sca.hem4.writer.excel.ExcelWriter import ExcelWriter
 
-facilityID = "Fac1-NC"
-sourceID = "CT000001"
-pollutantName = "1,2,3,4,6,7,8-heptachlorodibenzo-p-dioxin"
-rundir = r"C:/Users/Chris Stolte/IdeaProjects/HEM4/output/AAA"
+facilityID = "Fac2-IL"
+sourceID = "FU000001"
+pollutantName = "mercury (elemental)"
+rundir = r"C:/Git_HEM4/HEM4/output/DepDepl"
 hapemis_path = rundir + "/Inputs/hapemis.xlsx"
 output_dir = rundir + "/" + facilityID
-acute = 'Y'
+acute = 'N'
 
 # Runtype: 1 == both, 2 == dry only, 3 == wet only...see FacilityRunner#set_runtype()
 runtype = 1
