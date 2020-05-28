@@ -745,9 +745,6 @@ class KMLWriter():
         """
         Create the source/risk KML file for a given facility that used Alternate Receptors
         """
-
-        # Debug
-        import pdb; pdb.set_trace() 
         
         # Define the name of the output kml file
         fackml_fname = outdir + str(facid) + "_source_risk.kml"
