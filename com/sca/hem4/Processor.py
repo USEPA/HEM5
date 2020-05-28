@@ -119,7 +119,8 @@ class Processor():
                     print(message)
                     Logger.logMessage(message)
                     
-                
+                    self.skipped.append(facid)
+                    
                     ## if the try is successful this is where we would update the 
                     # dataframes or cache the last processed facility so that when 
                     # restart we know which faciltiy we want to start on
@@ -222,7 +223,9 @@ class Processor():
 
 #            self.model.save.remove_folder()
             
-            Logger.logMessage("HEM4 successfully modeled " + str(len(self.completed)) + " facilities. HEM4 skipped " + str(len(self.skipped))+ " facilities. Modeling not completed for: " + "/n ".join(self.skipped))
+            Logger.logMessage("HEM4 successfully modeled " + str(len(self.completed)) + 
+                              " facilities. HEM4 skipped " + str(len(self.skipped))+ 
+                              " facilities. Modeling not completed for: " + "\n ".join(self.skipped))
             
             # output skipped facilities to csv
             skipped_path = self.model.rootoutput + 'Skipped_Facilities.xlsx'
