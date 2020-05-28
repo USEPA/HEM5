@@ -27,11 +27,10 @@ class MetLib(InputFile):
 
         # Specify dtypes for all fields
         self.numericColumns = [surfyear, surflat, surflon, ualat, ualon, elev, anemhgt]
-        self.strColumns = [surfwban, surfcity, surffile, uawban, uacity, commkey, comment, desc, upperfile]
+        self.strColumns = [surfwban, surfcity, surffile, uawban, uacity, upperfile]
 
         # HEADER----------------------
         self.dataframe = self.readFromPath(
-            (surfcity,surffile,surfwban,surfyear,surflat, surflon,uacity,uawban,ualat,ualon,elev,anemhgt,commkey,
-             comment,desc,upperfile))
+            (surfcity,surffile,surfwban,surfyear,surflat, surflon,uacity,uawban,ualat,ualon,elev,anemhgt,upperfile))
 
         self.dataframe.fillna(0, inplace=True)
