@@ -56,18 +56,18 @@ class Hem3Comparer():
         diffColumns = [conc]
         if self.acute == 'Y':
             diffColumns.append(aconc)
-                
+
         #------------------------------------------#
         hem4allinner = AllInnerReceptors(targetDir=self.hem4Dir, facilityId=None, model=None, plot_df=None,
-             acuteyn=self.acute, filenameOverride=hem4File)
+                                         acuteyn=self.acute, filenameOverride=hem4File)
         hem3allinner = Hem3AllInnerReceptors(targetDir=self.hem3Dir, facilityId=None, model=None, plot_df=None,
-             acuteyn=self.acute, filenameOverride=hem3File)
+                                             acuteyn=self.acute, filenameOverride=hem3File)
         allinner_diff = AllInnerReceptors(targetDir=self.diff_target, facilityId=None, model=None, plot_df=None,
-              acuteyn=self.acute, filenameOverride=diffFile)
+                                          acuteyn=self.acute, filenameOverride=diffFile)
         allinner_diff.writeHeader()
         diff_df = self.calculateNumericDiffs(hem3allinner, hem4allinner, joinColumns, diffColumns)
         allinner_diff.appendToFile(diff_df)
-        
+
         #---------- All polar receptors -----------#
         hem3File = facid + "_all_polar_receptors.csv"
         hem4File = facid + "_all_polar_receptors.csv"
@@ -76,15 +76,15 @@ class Hem3Comparer():
         diffColumns = [conc]
         if self.acute == 'Y':
             diffColumns.append(aconc)
-        
-        
+
+
         #------------------------------------------#
         hem4allpolar = AllPolarReceptors(targetDir=self.hem4Dir, facilityId=None, model=None, plot_df=None,
-             acuteyn=self.acute, filenameOverride=hem4File)
+                                         acuteyn=self.acute, filenameOverride=hem4File)
         hem3allpolar = Hem3AllPolarReceptors(targetDir=self.hem3Dir, facilityId=None, model=None, plot_df=None,
-             acuteyn=self.acute, filenameOverride=hem3File)
+                                             acuteyn=self.acute, filenameOverride=hem3File)
         allpolar_diff = AllPolarReceptors(targetDir=self.diff_target, facilityId=None, model=None, plot_df=None,
-            acuteyn=self.acute, filenameOverride=diffFile)
+                                          acuteyn=self.acute, filenameOverride=diffFile)
         allpolar_diff.writeHeader()
         diff_df = self.calculateNumericDiffs(hem3allpolar, hem4allpolar, joinColumns, diffColumns)
         allpolar_diff.appendToFile(diff_df)
@@ -104,14 +104,14 @@ class Hem3Comparer():
             model.seasonvar = True
             #------------------------------------------#
             hem4temporal = Temporal(targetDir=self.hem4Dir, facilityId=None,
-                model=model, plot_df=None,
-                                             filenameOverride=hem4File)
+                                    model=model, plot_df=None,
+                                    filenameOverride=hem4File)
             hem3temporal = Hem3Temporal(targetDir=self.hem3Dir, facilityId=None,
-                model=model, plot_df=None,
-                                             filenameOverride=hem3File)
+                                        model=model, plot_df=None,
+                                        filenameOverride=hem3File)
             temporal_diff = Temporal(targetDir=self.diff_target, facilityId=None,
-                 model=model, plot_df=None,
-                                              filenameOverride=diffFile)
+                                     model=model, plot_df=None,
+                                     filenameOverride=diffFile)
             temporal_diff.writeHeader()
             diff_df = self.calculateNumericDiffs(hem3temporal, hem4temporal, joinColumns, diffColumns)
             temporal_diff.appendToFile(diff_df)
@@ -142,11 +142,11 @@ class Hem3Comparer():
         diffColumns = [value]
         #------------------------------------------#
         hem4risks = RiskBreakdown(targetDir=self.hem4Dir, facilityId=None, model=None, plot_df=None,
-                                           filenameOverride=hem4File)
+                                  filenameOverride=hem4File)
         hem3risks = Hem3RiskBreakdown(targetDir=self.hem3Dir, facilityId=None, model=None, plot_df=None,
-                                               filenameOverride=hem3File)
+                                      filenameOverride=hem3File)
         risks_diff = RiskBreakdown(targetDir=self.diff_target, facilityId=None, model=None, plot_df=None,
-                                            filenameOverride=diffFile)
+                                   filenameOverride=diffFile)
         risks_diff.writeHeader()
         diff_df = self.calculateNumericDiffs(hem3risks, hem4risks, joinColumns, diffColumns)
         risks_diff.appendToFile(diff_df)
@@ -160,11 +160,11 @@ class Hem3Comparer():
                        hi_repr, hi_kidn, hi_ocul, hi_endo, hi_hema, hi_immu, hi_skel, hi_sple, hi_thyr, hi_whol]
         #------------------------------------------#
         hem4summary = BlockSummaryChronic(targetDir=self.hem4Dir, facilityId=None, model=None, plot_df=None,
-                                  filenameOverride=hem4File)
+                                          filenameOverride=hem4File)
         hem3summary = Hem3BlockSummaryChronic(targetDir=self.hem3Dir, facilityId=None, model=None, plot_df=None,
-                                      filenameOverride=hem3File)
+                                              filenameOverride=hem3File)
         summary_diff = BlockSummaryChronic(targetDir=self.diff_target, facilityId=None, model=None, plot_df=None,
-                                   filenameOverride=diffFile)
+                                           filenameOverride=diffFile)
         summary_diff.writeHeader()
         diff_df = self.calculateNumericDiffs(hem3summary, hem4summary, joinColumns, diffColumns)
         summary_diff.appendToFile(diff_df)
@@ -178,11 +178,11 @@ class Hem3Comparer():
                        hi_repr, hi_kidn, hi_ocul, hi_endo, hi_hema, hi_immu, hi_skel, hi_sple, hi_thyr, hi_whol]
         #------------------------------------------#
         hem4summary = RingSummaryChronic(targetDir=self.hem4Dir, facilityId=None, model=None, plot_df=None,
-                                          filenameOverride=hem4File)
+                                         filenameOverride=hem4File)
         hem3summary = Hem3RingSummaryChronic(targetDir=self.hem3Dir, facilityId=None, model=None, plot_df=None,
-                                              filenameOverride=hem3File)
+                                             filenameOverride=hem3File)
         summary_diff = RingSummaryChronic(targetDir=self.diff_target, facilityId=None, model=None, plot_df=None,
-                                           filenameOverride=diffFile)
+                                          filenameOverride=diffFile)
         summary_diff.writeHeader()
         diff_df = self.calculateNumericDiffs(hem3summary, hem4summary, joinColumns, diffColumns)
         summary_diff.appendToFile(diff_df)
@@ -196,15 +196,15 @@ class Hem3Comparer():
             diffColumns = [aconc]
             #------------------------------------------#
             hem4max = AcuteChemicalMax(targetDir=self.hem4Dir, facilityId=None, model=None, plot_df=None,
-                                             filenameOverride=hem4File)
+                                       filenameOverride=hem4File)
             hem3max = Hem3AcuteChemicalMax(targetDir=self.hem3Dir, facilityId=None, model=None, plot_df=None,
-                                                 filenameOverride=hem3File)
+                                           filenameOverride=hem3File)
             max_diff = AcuteChemicalMax(targetDir=self.diff_target, facilityId=None, model=None, plot_df=None,
-                                              filenameOverride=diffFile)
+                                        filenameOverride=diffFile)
             max_diff.writeHeader()
             diff_df = self.calculateNumericDiffs(hem3max, hem4max, joinColumns, diffColumns)
             max_diff.appendToFile(diff_df)
-    
+
             #---------- Acute Chemical Pop -----------#
             hem3File = facid + "_acute_chem_pop.xlsx"
             hem4File = facid + "_acute_chem_pop.xlsx"
@@ -213,15 +213,15 @@ class Hem3Comparer():
             diffColumns = [aconc]
             #------------------------------------------#
             hem4pop = AcuteChemicalPopulated(targetDir=self.hem4Dir, facilityId=None, model=None, plot_df=None,
-                                       filenameOverride=hem4File)
+                                             filenameOverride=hem4File)
             hem3pop = Hem3AcuteChemicalPopulated(targetDir=self.hem3Dir, facilityId=None, model=None, plot_df=None,
-                                           filenameOverride=hem3File)
+                                                 filenameOverride=hem3File)
             pop_diff = AcuteChemicalPopulated(targetDir=self.diff_target, facilityId=None, model=None, plot_df=None,
-                                        filenameOverride=diffFile)
+                                              filenameOverride=diffFile)
             pop_diff.writeHeader()
             diff_df = self.calculateNumericDiffs(hem3pop, hem4pop, joinColumns, diffColumns)
             pop_diff.appendToFile(diff_df)
-    
+
             #---------- Acute Breakdown -----------#
             hem3File = facid + "_acute_bkdn.xlsx"
             hem4File = facid + "_acute_bkdn.xlsx"
@@ -230,15 +230,15 @@ class Hem3Comparer():
             diffColumns = [aconc_pop, aconc_all]
             #------------------------------------------#
             hem4bkdn = AcuteBreakdown(targetDir=self.hem4Dir, facilityId=None, model=None, plot_df=None,
-                                             filenameOverride=hem4File)
+                                      filenameOverride=hem4File)
             hem3bkdn = Hem3AcuteBreakdown(targetDir=self.hem3Dir, facilityId=None, model=None, plot_df=None,
-                                                 filenameOverride=hem3File)
+                                          filenameOverride=hem3File)
             bkdn_diff = AcuteBreakdown(targetDir=self.diff_target, facilityId=None, model=None, plot_df=None,
-                                              filenameOverride=diffFile)
+                                       filenameOverride=diffFile)
             bkdn_diff.writeHeader()
             diff_df = self.calculateNumericDiffs(hem3bkdn, hem4bkdn, joinColumns, diffColumns)
             bkdn_diff.appendToFile(diff_df)
-        
+
         #---------- All outer receptors -----------#
         hem3File = facid + "_all_outer_receptors.csv"
         hem4File = facid + "_all_outer_receptors.csv"
@@ -250,11 +250,11 @@ class Hem3Comparer():
 
         #------------------------------------------#
         hem4allouter = AllOuterReceptors(targetDir=self.hem4Dir, facilityId=None, model=None, plot_df=None,
-             acuteyn=self.acute, filenameOverride=hem4File)
+                                         acuteyn=self.acute, filenameOverride=hem4File)
         hem3allouter = Hem3AllOuterReceptors(targetDir=self.hem3Dir, facilityId=None, model=None, plot_df=None,
-             acuteyn=self.acute, filenameOverride=hem3File)
+                                             acuteyn=self.acute, filenameOverride=hem3File)
         allouter_diff = AllOuterReceptors(targetDir=self.diff_target, facilityId=None, model=None, plot_df=None,
-              acuteyn=self.acute, filenameOverride=diffFile)
+                                          acuteyn=self.acute, filenameOverride=diffFile)
         allouter_diff.writeHeader()
         diff_df = self.calculateNumericDiffs(hem3allouter, hem4allouter, joinColumns, diffColumns)
         allouter_diff.appendToFile(diff_df)
@@ -273,7 +273,7 @@ class Hem3Comparer():
             if is_string_dtype(hem4_df[col]):
                 hem4_df[col] = hem4_df[col].str.lower()
                 hem3_df[col] = hem3_df[col].str.lower()
-                
+
         merged_df = hem4_df.merge(hem3_df, on=joinColumns, suffixes=('', '_y'))
         for numericCol in diffColumns:
 
@@ -308,4 +308,4 @@ class Hem3Comparer():
 
 comparer = Hem3Comparer(hem3Dirname, hem4Dirname, acute, temporal, temporal_cols)
 comparer.compare()
-print("Dome!")
+print("Done!")
