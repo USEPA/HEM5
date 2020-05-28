@@ -5,14 +5,18 @@ from com.sca.hem4.writer.csv.AllOuterReceptors import *
 from com.sca.hem4.writer.csv.AllPolarReceptors import AllPolarReceptors
 from com.sca.hem4.writer.excel.ExcelWriter import ExcelWriter
 
-facilityID = "Fac1-NC"
-sourceID = "CT000001"
-pollutantName = "1,2,3,4,6,7,8-heptachlorodibenzo-p-dioxin"
-rundir = r"C:/Users/Chris Stolte/IdeaProjects/HEM4/output/AAA"
+facilityID = "Fac2-IL"
+sourceID = "FU000001"
+pollutantName = "mercury (elemental)"
+rundir = r"C:/Git_HEM4/HEM4/output/DepDepl"
 hapemis_path = rundir + "/Inputs/hapemis.xlsx"
 output_dir = rundir + "/" + facilityID
-acute = 'Y'
+acute = 'N'
 runtype = 1
+
+# emistype: P, V, or C
+emistype = 'P'
+
 
 class ConcentrationComparer(ExcelWriter):
 
@@ -54,21 +58,34 @@ class ConcentrationComparer(ExcelWriter):
                                     (hapemis_df[pollutant] == self.pollutant)]
 
         # Aermod plotfile
+        if emistype == 'C':
+            plotfile_name = "plotfile"
+        if emistype == 'P':
+            plotfile_name = "plotfile_p"
+        if emistype == 'V':
+            plotfile_name = "plotfile_v"
+        plotfile_name += ".plt"
+        
         facilityRunner = FacilityRunner(self.fac_id, None, False)
-        ppfile = open(self.output_dir + '/plotfile.plt', "r")
+        ppfile = open(self.output_dir + "/" + plotfile_name, "r")
         plot_df = facilityRunner.readplotf(ppfile, runtype)
         plot_df = plot_df.loc[plot_df[source_id] == self.source_id]
 
-        # multiply by the hapemis value and the conversion factor
+        # multiply by the hapemis value and the conversion factor, and if needed the percent particle value
         plot_df[result] = plot_df[result].multiply(hapemis_df.iloc[0][emis_tpy])
         plot_df[result] = plot_df[result].multiply(2000*0.4536/3600/8760)
+        if emistype != 'C':
+            plot_df[result] = plot_df[result].multiply(hapemis_df.iloc[0][part_frac]) if emistype == 'P' else \
+                            plot_df[result].multiply(1 - hapemis_df.iloc[0][part_frac])
+            
 
         # Compare plot values to polar concentrations produced by HEM4
         plot_polar_df = plot_df.loc[plot_df[net_id] == 'POLGRID1']
         allpolar = AllPolarReceptors(targetDir=self.output_dir, facilityId=self.fac_id, model=None, plot_df=plot_df,
                                      acuteyn=acute)
         allpolar_df = allpolar.createDataframe()
-        allpolar_df = allpolar_df.loc[(allpolar_df[source_id] == self.source_id) & (allpolar_df[pollutant] == self.pollutant)]
+        allpolar_df = allpolar_df.loc[(allpolar_df[source_id] == self.source_id) & (allpolar_df[pollutant] == self.pollutant)
+                                      & (allpolar_df[emis_type] == emistype)]
         for index,row in allpolar_df.iterrows():
 
             utm_n, utm_e, zone, hemi, epsg = UTM.ll2utm(row[lat], row[lon])
@@ -88,7 +105,8 @@ class ConcentrationComparer(ExcelWriter):
         allinner = AllInnerReceptors(targetDir=self.output_dir, facilityId=self.fac_id, model=None, plot_df=plot_df,
                                          acuteyn=acute)
         allinner_df = allinner.createDataframe()
-        allinner_df = allinner_df.loc[(allinner_df[source_id] == self.source_id) & (allinner_df[pollutant] == self.pollutant)]
+        allinner_df = allinner_df.loc[(allinner_df[source_id] == self.source_id) & (allinner_df[pollutant] == self.pollutant)
+                                      & (allinner_df[emis_type] == emistype)]
         for index,row in allinner_df.iterrows():
 
             utm_n, utm_e, zone, hemi, epsg = UTM.ll2utm(row[lat], row[lon])
