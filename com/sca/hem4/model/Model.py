@@ -91,6 +91,7 @@ class Model():
         self.temporal = None
         self.tempvar = None
         self.seasonvar = None
+        self.dependencies = []
         
 
         # Facility-specific values that are computed during the run - these are ephemeral
@@ -157,6 +158,7 @@ class Model():
         self.sourceExclusion = []
         self.aermod = None
         self.acuteplot_df = None
+        self.dependencies = []
 
         # Initialize model options
         self.initializeAltRecOptions()

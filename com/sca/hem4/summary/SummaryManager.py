@@ -20,6 +20,7 @@ class SummaryManager(AltRecAwareSummary):
 
     def __init__(self, targetDir, groupName, facilitylist):
         
+        self.status = False
         self.categoryFolder = targetDir
         self.grpname = groupName
         self.facilityIds = facilitylist
@@ -56,31 +57,46 @@ class SummaryManager(AltRecAwareSummary):
         # to users, therefore we run the alt rec summary when needed and determine that here. Since we can
         # assume that all facilities run in the same category used alternate receptors (or not...)
         # we only need to check the first one to decide.
-        firstFacility = self.facilityIds[0]
-        targetDir = os.path.join(categoryFolder, firstFacility)
-        altrec = self.determineAltRec(targetDir, firstFacility)
-        if altrec == 'Y' and reportName == 'MultiPathway':
-            reportName = "MultiPathwayNonCensus"
 
-        Logger.logMessage("Starting report: " + reportName)
+        
+        #reset status
+        self.status = False
+        
+        try:
+            firstFacility = self.facilityIds[0]
+            targetDir = os.path.join(categoryFolder, firstFacility)
+            altrec = self.determineAltRec(targetDir, firstFacility)
+            if altrec == 'Y' and reportName == 'MultiPathway':
+                reportName = "MultiPathwayNonCensus"
+    
+            Logger.logMessage("Starting report: " + reportName)
+                    
+            module = self.availableReports[reportName]
+            if module is None:
+                Logger.logMessage("Oops. HEM4 couldn't find your report module.")
+                return
+            
+            reportClass = getattr(module, reportName)
+            reportArgs = [self.grpname, arguments]
+            instance = reportClass(categoryFolder, self.facilityIds, reportArgs)
+            instance.writeWithTimestamp()
+    
+            Logger.logMessage("Finished report: " + reportName)
+    
+            if reportName in self.afterReportRun:
+                Logger.logMessage("Running post-report action for " + reportName)
+                action = self.afterReportRun[reportName]
+                action(categoryFolder)
+                Logger.logMessage("Finished post-report action for " + reportName)
                 
-        module = self.availableReports[reportName]
-        if module is None:
-            Logger.logMessage("HEM4 couldn't find the report module " + reportName + ".")
-            return
+        except Exception as e:
+             Logger.logMessage("An error occured while creating report: " + reportName)
+             print(e)
+             self.status = False
+             
+        else:
+            self.status = True
 
-        reportClass = getattr(module, reportName)
-        reportArgs = [self.grpname, arguments]
-        instance = reportClass(categoryFolder, self.facilityIds, reportArgs)
-        instance.writeWithTimestamp()
-
-        Logger.logMessage("Finished report: " + reportName)
-
-        if reportName in self.afterReportRun:
-            Logger.logMessage("Running post-report action for " + reportName)
-            action = self.afterReportRun[reportName]
-            action(categoryFolder)
-            Logger.logMessage("Finished post-report action for " + reportName)
 
     def visualizeAcuteImpacts(self, categoryFolder):
         visualizer = AcuteImpactsVisualizer(sourceDir=categoryFolder)
