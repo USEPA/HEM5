@@ -22,7 +22,6 @@ class SourceTypeRiskHistogram(ExcelWriter, AltRecAwareSummary):
         # Parameters specify which part of the source id contains the code
         self.codePosition = parameters[1][0]
         self.codeLength = parameters[1][1]
-        self.metlib = parameters[1][2]
         self.sourceTypes = None
         self.header = None
         self.haplib_df = DoseResponse().dataframe

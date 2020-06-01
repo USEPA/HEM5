@@ -299,7 +299,7 @@ class MainView(tk.Frame):
 #        #Risk Summary nav button
         riskLabel= tk.Label(self, text="SUMMARIZE RISKS", font=TAB_FONT, bg=self.main_color, height=2, pady=2, anchor="w")
         riskLabel.place(in_=container, relwidth=0.2, rely=0.27, relx=0.1)
-        
+                
         #add run icon with margin for highlight
         si = PIL.Image.open('images\icons8-edit-graph-report-48.png').resize((30,30))
         summary_new = self.add_margin(si, 5, 0, 5, 0)
