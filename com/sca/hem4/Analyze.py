@@ -25,6 +25,11 @@ import importlib
 import shutil
 import webbrowser
 
+from concurrent.futures import ThreadPoolExecutor
+from com.sca.hem4.dash.HEM4dash import HEM4dash
+from threading import Timer
+import traceback
+
 
 TITLE_FONT= ("Daytona", 16)
 TAB_FONT =("Daytona", 11, 'bold')
@@ -142,7 +147,26 @@ class Analyze(Page):
         mapLabel.bind("<Enter>", lambda x: self.color_config(mapLabel, button_maps, self.s4, self.highlightcolor, x))
         mapLabel.bind("<Leave>", lambda x: self.color_config(mapLabel, button_maps, self.s4, self.tab_color, x))
         mapLabel.bind("<Button-1>", partial(self.maps_button))
+
+
+        di = PIL.Image.open('images\icons8-edit-graph-report-48.png').resize((30,30))
+        dicon = self.add_margin(di, 5, 0, 5, 0)
+        dashicon = ImageTk.PhotoImage(dicon)
+        dashLabel = tk.Label(self.s6, image=dashicon, bg=self.tab_color)
+        dashLabel.image = dashicon # keep a reference!
+        dashLabel.grid(row=1, column=0, padx=10)
+
+        button_dash = tk.Label(self.s6, text="View map/charts of results",
+                                font=TEXT_FONT, bg=self.tab_color)
+        button_dash.grid(row=1, column=1)
         
+        button_dash.bind("<Enter>", lambda x: self.color_config(button_dash, dashLabel, self.s6, self.highlightcolor, x))
+        button_dash.bind("<Leave>", lambda x: self.color_config(button_dash, dashLabel, self.s6, self.tab_color, x))
+        button_dash.bind("<Button-1>", partial(self.dash_button))
+        
+        dashLabel.bind("<Enter>", lambda x: self.color_config(mapLabel, button_maps, self.s6, self.highlightcolor, x))
+        dashLabel.bind("<Leave>", lambda x: self.color_config(mapLabel, button_maps, self.s6, self.tab_color, x))
+        dashLabel.bind("<Button-1>", partial(self.dash_button))        
         
 #        command=self.maps_button
 
@@ -158,7 +182,31 @@ class Analyze(Page):
         result.paste(pil_img, (left, top))
         return result    
  
+    
+    def dash_button(self, event):
+        executor = ThreadPoolExecutor(max_workers=1)
+        future = executor.submit(self.runDash)
 
+
+    def runDash(self,  arguments=None):
+        try:
+            dirname = tk.filedialog.askdirectory()
+            dashapp = HEM4dash(dirname)
+            appobj = dashapp.buildApp()           
+            Timer(1, self.open_browser).start()
+            appobj.run_server(debug= False, port=8030)
+        except BaseException as ex:
+            self.exception = ex
+            fullStackInfo=''.join(traceback.format_exception(
+                etype=type(ex), value=ex, tb=ex.__traceback__))
+            message = "An error occurred while trying to run the dash app:\n" + fullStackInfo
+            print(message)
+
+        
+    def open_browser(self):
+        webbrowser.open_new('http://localhost:8030/')
+        
+        
     def browse_button(self, event):
         datatypes = {
             "% of Total Incidence": np.str, "aconc": np.float64,

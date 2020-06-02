@@ -280,11 +280,11 @@ class Summary(Page):
         
         h_label.bind("<Enter>", partial(self.color_config, h_label, self.hiLabel, self.l6, 'light grey'))
         h_label.bind("<Leave>", partial(self.color_config, h_label, self.hiLabel, self.l6, self.tab_color))
-        h_label.bind("<Button-1>", partial(self.check_box, self.hiLabel, "Hazard Index Driver")) 
+        h_label.bind("<Button-1>", partial(self.check_box, self.hiLabel, "Hazard Index Drivers")) 
 
         self.hiLabel.bind("<Enter>", partial(self.color_config, h_label, self.hiLabel, self.l6, 'light grey'))
         self.hiLabel.bind("<Leave>", partial(self.color_config, h_label, self.hiLabel, self.l6, self.tab_color))
-        self.hiLabel.bind("<Button-1>", partial(self.check_box, self.hiLabel, "Hazard Index Driver"))
+        self.hiLabel.bind("<Button-1>", partial(self.check_box, self.hiLabel, "Hazard Index Drivers"))
 #%%        
         his_label = tk.Label(self.l7, font=TEXT_FONT, width=22, anchor='w', bg=self.tab_color, 
                              text="Risk Histogram")
