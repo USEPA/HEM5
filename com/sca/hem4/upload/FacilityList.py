@@ -108,8 +108,8 @@ class FacilityList(InputFile):
             return None
 
         files = df[met_station].values.tolist()
-        files = [file for file in files if file != '']
-        if not set(files).issubset(set(self.metlib.dataframe[surffile])):
+        files = [file.upper() for file in files if file != '']
+        if not set(files).issubset(set(self.metlib.dataframe[surffile].str.upper())):
             Logger.logMessage("One or more met stations referenced in the Facility List are invalid.")
             return None
 
