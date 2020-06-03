@@ -642,6 +642,7 @@ class Summary(Page):
         reportNameArgs = {}
         
         try:
+            
             for report in self.checked:
                 print(self.checked)
                 

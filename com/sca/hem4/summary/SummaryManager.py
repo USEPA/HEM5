@@ -63,12 +63,12 @@ class SummaryManager(AltRecAwareSummary):
         self.status = False
         
         try:
-            firstFacility = self.facilityIds[0]
-            targetDir = os.path.join(categoryFolder, firstFacility)
-            altrec = self.determineAltRec(targetDir, firstFacility)
+            
+            # First determine if alternate receptors were used
+            altrec = self.determineAltRec(categoryFolder)
             if altrec == 'Y' and reportName == 'MultiPathway':
                 reportName = "MultiPathwayNonCensus"
-    
+        
             Logger.logMessage("Starting report: " + reportName)
             
             module = self.availableReports[reportName]

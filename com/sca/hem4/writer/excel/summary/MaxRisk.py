@@ -15,8 +15,7 @@ class MaxRisk(ExcelWriter, AltRecAwareSummary):
         self.facilityIds = facilityIds
         self.filename = os.path.join(targetDir, self.categoryName + "_max_risk.xlsx")
 
-        firstFacility = facilityIds[0]
-        self.altrec = self.determineAltRec(targetDir=os.path.join(targetDir, firstFacility), facilityId=firstFacility)
+        self.altrec = self.determineAltRec(targetDir)
 
     def getHeader(self):
         if self.altrec == 'N':
@@ -26,16 +25,21 @@ class MaxRisk(ExcelWriter, AltRecAwareSummary):
 
     def generateOutputs(self):
         Logger.log("Creating " + self.name + " report...", None, False)
-        
+
+        #Debug
+        import pdb; pdb.set_trace() 
+                
         blocksummary_df = pd.DataFrame()
         for facilityId in self.facilityIds:
             targetDir = self.categoryFolder + "/" + facilityId
-
-            blockSummaryChronic = BlockSummaryChronicNonCensus(targetDir=targetDir, facilityId=facilityId) if self.altrec == 'Y' else\
-                BlockSummaryChronic(targetDir=targetDir, facilityId=facilityId)
-
-            bsc_df = blockSummaryChronic.createDataframe()
-            blocksummary_df = blocksummary_df.append(bsc_df)
+            dirlist = os.listdir(targetDir)
+            # Check for empty folder
+            if len(dirlist) > 0:
+                blockSummaryChronic = BlockSummaryChronicNonCensus(targetDir=targetDir, facilityId=facilityId) if self.altrec == 'Y' else\
+                    BlockSummaryChronic(targetDir=targetDir, facilityId=facilityId)
+    
+                bsc_df = blockSummaryChronic.createDataframe()
+                blocksummary_df = blocksummary_df.append(bsc_df)
 
         blocksummary_df.drop_duplicates().reset_index(drop=True)
 
@@ -193,10 +197,8 @@ class MaxRisk(ExcelWriter, AltRecAwareSummary):
         for facilityId in self.facilityIds:
             targetDir = self.categoryFolder + "/" + facilityId
 
-            altrec = self.determineAltRec(targetDir, facilityId)
-
             blockSummaryChronic = BlockSummaryChronicNonCensus(targetDir=targetDir, facilityId=facilityId, createDataframe=True)\
-                if altrec == 'Y' else BlockSummaryChronic(targetDir=targetDir, facilityId=facilityId, createDataframe=True)
+                if self.altrec == 'Y' else BlockSummaryChronic(targetDir=targetDir, facilityId=facilityId, createDataframe=True)
             bsc_df = blockSummaryChronic.createDataframe()
             loc = bsc_df.loc[(bsc_df[fips] == fipsValue) & (bsc_df[block] == blockValue)]
             if loc.size > 0:
