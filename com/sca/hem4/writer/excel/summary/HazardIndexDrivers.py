@@ -19,8 +19,7 @@ class HazardIndexDrivers(ExcelWriter, AltRecAwareSummary):
         self.facilityIds = facilityIds
 
         self.filename = os.path.join(targetDir, self.categoryName + "_hazard_index_drivers.xlsx")
-        firstFacility = facilityIds[0]
-        self.altrec = self.determineAltRec(targetDir=os.path.join(targetDir, firstFacility), facilityId=firstFacility)
+        self.altrec = self.determineAltRec(self.categoryFolder)
         
     def getHeader(self):
         return ['Facility ID', 'HI Type', 'HI Total', 'Source ID', 'Pollutant', 'Hazard Index', 'Percentage']

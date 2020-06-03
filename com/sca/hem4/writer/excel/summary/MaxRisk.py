@@ -25,9 +25,6 @@ class MaxRisk(ExcelWriter, AltRecAwareSummary):
 
     def generateOutputs(self):
         Logger.log("Creating " + self.name + " report...", None, False)
-
-        #Debug
-        import pdb; pdb.set_trace() 
                 
         blocksummary_df = pd.DataFrame()
         for facilityId in self.facilityIds:
@@ -182,12 +179,19 @@ class MaxRisk(ExcelWriter, AltRecAwareSummary):
 
         faclist = {}
         facilityHeaders = []
-        for index, row in self.dataframe.iterrows():
-            if row[risk] > 0:
-                header = 'Facilities impacting ' + row[risktype] + ' Block'
-                facilityHeaders.append(header)
-                faclist[header] = self.getImpactingFacilities(row[fips], row[block])
-
+        if self.altrec == 'N':
+            for index, row in self.dataframe.iterrows():
+                if row[risk] > 0:
+                    header = 'Facilities impacting ' + row[risktype] + ' Block'
+                    facilityHeaders.append(header)
+                    faclist[header] = self.getImpactingFacilities(row[fips], row[block])
+        else:
+            for index, row in self.dataframe.iterrows():
+                if row[risk] > 0:
+                    header = 'Facilities impacting ' + row[risktype] + ' Receptor ID'
+                    facilityHeaders.append(header)
+                    faclist[header] = self.getImpactingFacilitiesNonCensus(row[rec_id])
+            
         facilities_df = pd.DataFrame(data=faclist, columns=facilityHeaders)
         self.appendHeaderAtLocation(startingcol=1, headers=facilityHeaders)
         self.appendToFileAtLocation(dataframe=facilities_df, startingcol=1)
@@ -197,8 +201,7 @@ class MaxRisk(ExcelWriter, AltRecAwareSummary):
         for facilityId in self.facilityIds:
             targetDir = self.categoryFolder + "/" + facilityId
 
-            blockSummaryChronic = BlockSummaryChronicNonCensus(targetDir=targetDir, facilityId=facilityId, createDataframe=True)\
-                if self.altrec == 'Y' else BlockSummaryChronic(targetDir=targetDir, facilityId=facilityId, createDataframe=True)
+            blockSummaryChronic = BlockSummaryChronic(targetDir=targetDir, facilityId=facilityId, createDataframe=True)
             bsc_df = blockSummaryChronic.createDataframe()
             loc = bsc_df.loc[(bsc_df[fips] == fipsValue) & (bsc_df[block] == blockValue)]
             if loc.size > 0:
@@ -206,3 +209,16 @@ class MaxRisk(ExcelWriter, AltRecAwareSummary):
 
         return impacting
 
+
+    def getImpactingFacilitiesNonCensus(self, receptorId):
+        impacting = []
+        for facilityId in self.facilityIds:
+            targetDir = self.categoryFolder + "/" + facilityId
+
+            blockSummaryChronic = BlockSummaryChronicNonCensus(targetDir=targetDir, facilityId=facilityId, createDataframe=True)
+            bsc_df = blockSummaryChronic.createDataframe()
+            loc = bsc_df.loc[bsc_df[rec_id] == receptorId]
+            if loc.size > 0:
+                impacting.append(facilityId)
+
+        return impacting

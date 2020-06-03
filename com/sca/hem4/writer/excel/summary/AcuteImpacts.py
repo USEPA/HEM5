@@ -26,7 +26,7 @@ class AcuteImpacts(ExcelWriter, InputFile, AltRecAwareSummary):
 
         self.filename = path
         self.targetDir = targetDir
-        self.altrec = self.determineAltRec(targetDir=os.path.join(targetDir, firstFacility), facilityId=firstFacility)
+        self.altrec = self.determineAltRec(self.categoryFolder)
 
     def getHeader(self):
         if self.altrec == 'Y':

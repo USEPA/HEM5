@@ -1051,6 +1051,9 @@ class Hem(Page):
                     #pull out facilities using depdeplt
                     self.model.depdeplt = [x[0] for x in deposition_depletion]
                     print('DEPDEP:', self.model.depdeplt)
+
+                    #pull out facilities needing landuse and seasons files (gas dry dep/depl)
+                    self.model.gasdryfacs = [x[0] for x in deposition_depletion if 'land use' in x]
         
                     #pull out conditional inputs
                     conditional = set([y for x in deposition_depletion for y in x[1:]])

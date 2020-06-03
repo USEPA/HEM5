@@ -604,7 +604,7 @@ class Summary(Page):
         print(self.fullpath)
         
         try:
-            
+                        
             # Figure out which facilities will be included in the report
             skeleton = os.path.join(self.fullpath, '*facility_max_risk_and_hi.xl*')
             print(skeleton)
@@ -731,25 +731,24 @@ class Summary(Page):
                     
             #loop through for each report selected
             for reportName in reportNames:
-                report_message = "Creating " + reportName + " report."
-                
-                self.nav.log.scr.configure(state='normal')
-                self.nav.log.scr.insert(tk.INSERT, report_message)
-                self.nav.log.scr.insert(tk.INSERT, "\n")
-                self.nav.log.scr.configure(state='disabled')
+#                report_message = "Creating " + reportName + " report."                
+#                self.nav.log.scr.configure(state='normal')
+#                self.nav.log.scr.insert(tk.INSERT, report_message)
+#                self.nav.log.scr.insert(tk.INSERT, "\n")
+#                self.nav.log.scr.configure(state='disabled')
                 
                 args = reportNameArgs[reportName]
                 summaryMgr.createReport(self.fullpath, reportName, args)
                 
-                if summaryMgr.status == True:
+                if summaryMgr.status == False:
                 
-                    report_complete = reportName +  " complete."
-                    self.nav.log.scr.configure(state='normal')
-                    self.nav.log.scr.insert(tk.INSERT, report_complete)
-                    self.nav.log.scr.insert(tk.INSERT, "\n")
-                    self.nav.log.scr.configure(state='disabled')
+#                    report_complete = reportName +  " complete."
+#                    self.nav.log.scr.configure(state='normal')
+#                    self.nav.log.scr.insert(tk.INSERT, report_complete)
+#                    self.nav.log.scr.insert(tk.INSERT, "\n")
+#                    self.nav.log.scr.configure(state='disabled')
                     
-                else:
+#                else:
                     
                     break
                 
