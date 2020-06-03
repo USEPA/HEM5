@@ -1,15 +1,18 @@
-from com.sca.hem4.writer.excel.InputSelectionOptions import InputSelectionOptions
-
+import os
 
 class AltRecAwareSummary:
 
     def __init__(self):
         pass
 
-    def determineAltRec(self, targetDir, facilityId):
+    def determineAltRec(self, targetDir):
 
-        # Open InputSelectionOptions to determine if alternate receptors were used for this output
-        inputops = InputSelectionOptions(targetDir=targetDir, facilityId=facilityId)
-        inputops_df = inputops.createDataframe()
-        return inputops_df['alt_rec'].iloc[0]
+        # Check the Inputs folder for the existence of alt_receptors.csv
+        fpath = os.path.join(targetDir, "Inputs", "alt_receptors.csv")
+        if os.path.exists(fpath):
+            altrecUsed = 'Y'
+        else:
+            altrecUsed = 'N'
+            
+        return altrecUsed
 

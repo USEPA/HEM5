@@ -63,19 +63,19 @@ class SummaryManager(AltRecAwareSummary):
         self.status = False
         
         try:
-            firstFacility = self.facilityIds[0]
-            targetDir = os.path.join(categoryFolder, firstFacility)
-            altrec = self.determineAltRec(targetDir, firstFacility)
+            
+            # First determine if alternate receptors were used
+            altrec = self.determineAltRec(categoryFolder)
             if altrec == 'Y' and reportName == 'MultiPathway':
                 reportName = "MultiPathwayNonCensus"
-    
+        
             Logger.logMessage("Starting report: " + reportName)
             
             module = self.availableReports[reportName]
             if module is None:
                 Logger.logMessage("Oops. HEM4 couldn't find your report module.")
                 return
-            
+           
             reportClass = getattr(module, reportName)
             reportArgs = [self.grpname, arguments]
             instance = reportClass(categoryFolder, self.facilityIds, reportArgs)

@@ -37,7 +37,7 @@ class BlockSummaryChronic(CsvWriter, InputFile):
         return ['Latitude', 'Longitude', 'Overlap', 'Elevation (m)', 'FIPs', 'Block', 'X', 'Y', 'Hill',
                 'Population', 'MIR', 'Respiratory HI', 'Liver HI', 'Neurological HI', 'Developmental HI',
                 'Reproductive HI', 'Kidney HI', 'Ocular HI', 'Endocrine HI', 'Hematological HI',
-                'Immunological HI', 'Skeletal HI', 'Spleen HI', 'Thyroid HI', 'Whole body HI', 'Inner/Outer Block']
+                'Immunological HI', 'Skeletal HI', 'Spleen HI', 'Thyroid HI', 'Whole body HI', 'Discrete/Interpolated Block']
 
     def getColumns(self):
         return [lat, lon, overlap, elev, fips, block, utme, utmn, hill, population,

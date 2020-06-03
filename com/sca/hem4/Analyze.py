@@ -136,7 +136,7 @@ class Analyze(Page):
         mapLabel.image = mapicon # keep a reference!
         mapLabel.grid(row=1, column=0, padx=10)
         
-        button_maps = tk.Label(self.s4, text="Open an acute map",
+        button_maps = tk.Label(self.s4, text="Open a chronic or acute map",
                                 font=TEXT_FONT, bg=self.tab_color)
         button_maps.grid(row=1, column=1)
         
