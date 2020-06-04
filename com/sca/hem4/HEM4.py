@@ -374,7 +374,7 @@ class DepDplt(Page):
         fullpath = self.openFile(askopenfilename())
         if fullpath is not None: 
             self.uploader.uploadDependent("land use", fullpath, 
-                                          self.model.faclist.dataframe)
+                                          self.model.gasdryfacs)
 
             # Update the UI
             [self.nav.nav.log.scr.insert(tk.INSERT, msg) for msg in self.model.landuse.log]
@@ -393,7 +393,7 @@ class DepDplt(Page):
         fullpath = self.openFile(askopenfilename())
         if fullpath is not None: 
             self.uploader.uploadDependent("seasons", fullpath, 
-                                          self.model.faclist.dataframe)
+                                          self.model.gasdryfacs)
 
             # Update the UI
             [self.nav.nav.log.scr.insert(tk.INSERT, msg) for msg in self.model.seasons.log]

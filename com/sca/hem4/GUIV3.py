@@ -1413,7 +1413,7 @@ class Hem(Page):
         """
         Function for creating column for land use upload widgets
         """
-        
+             
         self.land = PIL.Image.open('images\icons8-import-48.png').resize((30,30))
         self.landicon = self.add_margin(self.land, 5, 0, 5, 0)
         self.landileicon = ImageTk.PhotoImage(self.land)
