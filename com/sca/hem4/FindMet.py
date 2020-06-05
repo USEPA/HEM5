@@ -46,7 +46,7 @@ def return_met(facid, faclat, faclon, surfname, metlib_df):
     """
     Returns the meteorological information for a specific surface station name
     """    
-    metrow = metlib_df.loc[metlib_df['surffile'] == surfname]
+    metrow = metlib_df.loc[metlib_df['surffile'].str.upper() == surfname.upper()]
     if metrow.empty == True:
         emessage = ("Meteorology station " + surfname + " was chosen for facility " + facid + "\n"
                     "That station is not in the meteorlogical library. The facility will be skipped")

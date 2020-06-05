@@ -813,7 +813,8 @@ class Hem(Page):
         if self.current_tab == self.nav: 
             
         
-            if 'buoyant' in self.model.dependencies or 'poly' in self.model.dependencies or 'bldg_dw' in self.model.dependencies:
+            if ('buoyant' in self.model.dependencies or 'poly' in self.model.dependencies or 
+                       'bldg_dw' in self.model.dependencies or 'user_rcpt' in self.model.dependencies):
                 #add back button
                 self.back = tk.Button(self.meta_two, text="Back", bg='lightgrey', relief='solid', borderwidth=2,
                                     command=self.back_tab, font=TEXT_FONT)
@@ -884,7 +885,7 @@ class Hem(Page):
         Function for uploading Facilities List option file. Also creates
         user receptor input space if indicated
         """
-
+                
         fullpath = self.openFile(askopenfilename())
         if fullpath is not None:
             self.uploader.upload("faclist", fullpath)
@@ -1187,11 +1188,11 @@ class Hem(Page):
                                     
         self.ur_file.bind("<Enter>", lambda x: self.color_config( self.ur_file, self.urLabel, self.optional.s8, self.highlightcolor, x))
         self.ur_file.bind("<Leave>", lambda x: self.color_config( self.ur_file, self.urLabel, self.optional.s8, self.tab_color, x))
-        self.ur_file.bind("<Button-1>", lambda x: self.uploadUserReceptors(self.optional.s8, self.ur_file, x))
+        self.ur_file.bind("<Button-1>", lambda x: self.optional.uploadUserReceptors(self.optional.s8, self.ur_file, x))
         
         self.urLabel.bind("<Enter>", lambda x: self.color_config(self.urLabel, self.ur_file, self.optional.s8, self.highlightcolor, x))
         self.urLabel.bind("<Leave>", lambda x: self.color_config(self.urLabel, self.ur_file, self.optional.s8, self.tab_color, x))
-        self.urLabel.bind("<Button-1>",  lambda x: self.uploadUserReceptors(self.optional.s8, self.ur_file, x))
+        self.urLabel.bind("<Button-1>",  lambda x: self.optional.uploadUserReceptors(self.optional.s8, self.ur_file, x))
 
         
         
