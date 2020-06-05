@@ -12,6 +12,7 @@ from tkinter import messagebox
 class LandUse(DependentInputFile):
 
     def __init__(self, path, dependency):
+        
         self.gasDryFacs = dependency
         DependentInputFile.__init__(self, path, dependency)
 

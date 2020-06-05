@@ -148,7 +148,8 @@ class Optional(Page):
         self.poly_up = None
         self.buoyant_up = None
         self.bldgdw_up = None
- 
+        self.ur = None
+    
         self.model = nav.model
         self.uploader = nav.uploader
 
@@ -276,6 +277,27 @@ class Optional(Page):
             [self.nav.nav.log.scr.insert(tk.INSERT, msg) for msg in self.model.bldgdw.log]
 #            container.configure(bg='light green')
             label['text'] = fullpath
+
+
+    def uploadUserReceptors(self, container, label, event):
+        """
+        Function for uploading user receptors
+        """
+        
+        if self.model.faclist.dataframe is None:
+            messagebox.showinfo("Facilities List Option File Missing",
+                "Please upload a Facilities List Options file before selecting"+
+                " a User Receptors file.")
+            return
+
+        fullpath = self.openFile(askopenfilename())
+        if fullpath is not None:
+            self.uploader.uploadDependent("user receptors", fullpath, self.model.faclist.dataframe)
+
+            self.model.model_optns['ureceptr'] = True
+            # Update the UI
+            [self.nav.nav.log.scr.insert(tk.INSERT, msg) for msg in self.model.ureceptr.log]
+            label['text'] = fullpath
  
             
             
@@ -374,7 +396,7 @@ class DepDplt(Page):
         fullpath = self.openFile(askopenfilename())
         if fullpath is not None: 
             self.uploader.uploadDependent("land use", fullpath, 
-                                          self.model.faclist.dataframe)
+                                          self.model.gasdryfacs)
 
             # Update the UI
             [self.nav.nav.log.scr.insert(tk.INSERT, msg) for msg in self.model.landuse.log]
@@ -393,7 +415,7 @@ class DepDplt(Page):
         fullpath = self.openFile(askopenfilename())
         if fullpath is not None: 
             self.uploader.uploadDependent("seasons", fullpath, 
-                                          self.model.faclist.dataframe)
+                                          self.model.gasdryfacs)
 
             # Update the UI
             [self.nav.nav.log.scr.insert(tk.INSERT, msg) for msg in self.model.seasons.log]

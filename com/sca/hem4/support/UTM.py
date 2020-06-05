@@ -180,7 +180,7 @@ class UTM:
         This method computes the center of a facility from the emission
         location UTM coordinates. The overall facility UTM zone and hemisphere are needed.
         """
-        
+                
         # Fill up lists of x and y coordinates of all source vertices    
         vertx_l = []
         verty_l = []

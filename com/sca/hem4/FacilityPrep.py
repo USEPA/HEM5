@@ -209,7 +209,7 @@ class FacilityPrep():
                 zone = components[3].strip()
                 cenlat, cenlon = UTM.utm2ll(ceny, cenx, zone)
 
-            Logger.logMessage("Using facility center [x, y, lat, lon] = [" + str(cenx) + ", " + str(ceny) + ", " +
+        Logger.logMessage("Using facility center [x, y, lat, lon] = [" + str(cenx) + ", " + str(ceny) + ", " +
                               str(cenlat) + ", " + str(cenlon) + "]")
         self.model.computedValues['cenlat'] = cenlat
         self.model.computedValues['cenlon'] = cenlon
