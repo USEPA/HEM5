@@ -3,6 +3,7 @@ import re
 from abc import ABC
 from abc import abstractmethod
 import pandas as pd
+from tkinter import messagebox
 
 from com.sca.hem4.log.Logger import Logger
 
@@ -29,16 +30,6 @@ class InputFile(ABC):
     def clean(self, df):
         return df
 
-    def duplicates(self, df, columns):
-        records = []
-
-        dupes = df.duplicated(subset=columns, keep=False)
-        indices = dupes[dupes].index.values
-        for i in indices:
-            records.append(str(df.iloc[i].values.flatten().tolist()))
-
-        return records
-
     # Read values in from a source .xls(x) file. Note that we initially read everything in as a string,
     # and then convert columns which have been specified as numeric to a float64. That way, all empty
     # values in the resultant dataframe become NaN values. All values will either be strings or float64s.
@@ -58,12 +49,12 @@ class InputFile(ABC):
                         p = re.compile("Expected axis has (.*) elements, new values have (.*) elements")
                         result = p.search(msg)
                         custom_msg = "Length Mismatch: Input file has " + result.group(1) + " columns, but should have " +\
-                            result.group(2) + " columns."
-                        Logger.logMessage(custom_msg)
+                            result.group(2) + " columns. Please make sure you have selected the correct file or file version."
+                        messagebox.showinfo("Error uploading input file", custom_msg)
                     else:
-                        Logger.logMessage(str(e))
+                        messagebox.showinfo("Error uploading input file ", str(e) + " Please make sure you have selected the correct file or file version.")
                 else:
-                    Logger.logMessage(str(e))
+                    messagebox.showinfo("Error uploading input file", str(e) + " Please make sure you have selected the correct file or file version.")
 
             else:
                 df = df.astype(str).applymap(self.convertEmptyToNaN)
@@ -72,7 +63,7 @@ class InputFile(ABC):
                 numeric_only = df.copy()
                 numeric_only[self.numericColumns] = numeric_only[self.numericColumns].applymap(InputFile.is_numeric)
                 if not numeric_only.equals(df):
-                    Logger.logMessage("Error: Some non-numeric values were found in numeric columns in this data set: " +
+                    messagebox.showinfo("Error: Some non-numeric values were found in numeric columns in this data set: " +
                                       os.path.basename(self.path))
                     return None
 
@@ -107,7 +98,7 @@ class InputFile(ABC):
                 numeric_only = df.copy()
                 numeric_only[self.numericColumns] = numeric_only[self.numericColumns].applymap(InputFile.is_numeric)
                 if not numeric_only.equals(df):
-                    Logger.logMessage("Error: Some non-numeric values were found in numeric columns in this data set: " +
+                    messagebox.showinfo("Error: Some non-numeric values were found in numeric columns in this data set: " +
                                   os.path.basename(self.path))
                     return None
 
