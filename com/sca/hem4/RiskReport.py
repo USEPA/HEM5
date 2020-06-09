@@ -1,14 +1,12 @@
 # -*- coding: utf-8 -*-
 """
 Created on Thu May  7 12:20:37 2020
-
 @author: David Lindsey
 """
 
 # -*- coding: utf-8 -*-
 """
 Created on Thu Apr  2 11:48:29 2020
-
 @author: David Lindsey
 """
 
@@ -83,6 +81,24 @@ class Page(tk.Frame):
     def show(self):
         self.lift()
         
+    def fix_config(self, widget1, widget2, previous):
+        
+         try: 
+            widget1.configure(bg=self.tab_color)
+            widget2.configure(bg=self.tab_color)
+            
+            if len(previous) > 0:
+                
+                for i in previous:
+                    i.configure(bg=self.main_color)
+                    
+         except:
+                pass
+        
+        
+
+         
+
 class Summary(Page):
     
     def __init__(self, nav, *args, **kwargs):
@@ -280,11 +296,11 @@ class Summary(Page):
         
         h_label.bind("<Enter>", partial(self.color_config, h_label, self.hiLabel, self.l6, 'light grey'))
         h_label.bind("<Leave>", partial(self.color_config, h_label, self.hiLabel, self.l6, self.tab_color))
-        h_label.bind("<Button-1>", partial(self.check_box, self.hiLabel, "Hazard Index Drivers")) 
+        h_label.bind("<Button-1>", partial(self.check_box, self.hiLabel, "Hazard Index Driver")) 
 
         self.hiLabel.bind("<Enter>", partial(self.color_config, h_label, self.hiLabel, self.l6, 'light grey'))
         self.hiLabel.bind("<Leave>", partial(self.color_config, h_label, self.hiLabel, self.l6, self.tab_color))
-        self.hiLabel.bind("<Button-1>", partial(self.check_box, self.hiLabel, "Hazard Index Drivers"))
+        self.hiLabel.bind("<Button-1>", partial(self.check_box, self.hiLabel, "Hazard Index Driver"))
 #%%        
         his_label = tk.Label(self.l7, font=TEXT_FONT, width=22, anchor='w', bg=self.tab_color, 
                              text="Risk Histogram")
@@ -594,6 +610,18 @@ class Summary(Page):
          executor = ThreadPoolExecutor(max_workers=1)
          future = executor.submit(self.createReports)
          #future.add_done_callback(self.reset_reports) 
+         self.fix_config(self.nav.liLabel, self.nav.logLabel, self.nav.current_button)
+         
+         
+         self.nav.si = PIL.Image.open('images\icons8-green-circle-48.png').resize((30,30))
+         
+         summary_new = self.nav.add_margin(self.nav.si, 5, 0, 5, 0)
+        
+         summaryIcon = ImageTk.PhotoImage(summary_new)
+         self.nav.summaryLabel = tk.Label(self, image=summaryIcon, bg=self.main_color)
+         self.nav.summaryLabel.image = summaryIcon # keep a reference!
+         self.nav.summaryLabel.place(in_=self.nav.container, relwidth=0.1, rely=0.27)
+         
          self.nav.log.lift()          
         
     def createReports(self,  arguments=None):
@@ -604,7 +632,7 @@ class Summary(Page):
         print(self.fullpath)
         
         try:
-                        
+            
             # Figure out which facilities will be included in the report
             skeleton = os.path.join(self.fullpath, '*facility_max_risk_and_hi.xl*')
             print(skeleton)
@@ -642,7 +670,6 @@ class Summary(Page):
         reportNameArgs = {}
         
         try:
-            
             for report in self.checked:
                 print(self.checked)
                 
@@ -731,24 +758,25 @@ class Summary(Page):
                     
             #loop through for each report selected
             for reportName in reportNames:
-#                report_message = "Creating " + reportName + " report."                
-#                self.nav.log.scr.configure(state='normal')
-#                self.nav.log.scr.insert(tk.INSERT, report_message)
-#                self.nav.log.scr.insert(tk.INSERT, "\n")
-#                self.nav.log.scr.configure(state='disabled')
+                report_message = "Creating " + reportName + " report."
+                
+                self.nav.log.scr.configure(state='normal')
+                self.nav.log.scr.insert(tk.INSERT, report_message)
+                self.nav.log.scr.insert(tk.INSERT, "\n")
+                self.nav.log.scr.configure(state='disabled')
                 
                 args = reportNameArgs[reportName]
                 summaryMgr.createReport(self.fullpath, reportName, args)
                 
-                if summaryMgr.status == False:
+                if summaryMgr.status == True:
                 
-#                    report_complete = reportName +  " complete."
-#                    self.nav.log.scr.configure(state='normal')
-#                    self.nav.log.scr.insert(tk.INSERT, report_complete)
-#                    self.nav.log.scr.insert(tk.INSERT, "\n")
-#                    self.nav.log.scr.configure(state='disabled')
+                    report_complete = reportName +  " complete."
+                    self.nav.log.scr.configure(state='normal')
+                    self.nav.log.scr.insert(tk.INSERT, report_complete)
+                    self.nav.log.scr.insert(tk.INSERT, "\n")
+                    self.nav.log.scr.configure(state='disabled')
                     
-#                else:
+                else:
                     
                     break
                 
@@ -756,7 +784,14 @@ class Summary(Page):
             self.nav.log.scr.insert(tk.INSERT, "Summary Reports Finished.")
             self.nav.log.scr.insert(tk.INSERT, "\n")
             self.nav.log.scr.configure(state='disabled')
+
+            self.nav.si = PIL.Image.open('images\icons8-edit-graph-report-48.png').resize((30,30))
+            summary_new = self.nav.add_margin(self.nav.si, 5, 0, 5, 0)
             
+            summaryIcon = ImageTk.PhotoImage(summary_new)
+            self.nav.summaryLabel = tk.Label(self, image=summaryIcon, bg=self.main_color)
+            self.nav.summaryLabel.image = summaryIcon # keep a reference!
+            self.nav.summaryLabel.place(in_=self.nav.container, relwidth=0.1, rely=0.27)            
             
             if "Source Type Risk Histogram" in self.checked:
                 self.pos.destroy()
