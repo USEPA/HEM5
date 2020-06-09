@@ -57,7 +57,7 @@ class LandUse(DependentInputFile):
             return None
 
         landfids = set(df[fac_id])
-        faclistfids = set(self.gasDryFacs[fac_id])
+        faclistfids = set(self.gasDryFacs)
         if faclistfids.intersection(landfids) != faclistfids:
             Logger.logMessage("Based on your Facility List Options file, the Land Use List is missing " +
                               "one or more facilities. Please correct one or both files and upload again.")
