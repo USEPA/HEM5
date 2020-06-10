@@ -610,19 +610,13 @@ class Summary(Page):
          executor = ThreadPoolExecutor(max_workers=1)
          future = executor.submit(self.createReports)
          #future.add_done_callback(self.reset_reports) 
-         self.fix_config(self.nav.liLabel, self.nav.logLabel, self.nav.current_button)
          
          
-         self.nav.si = PIL.Image.open('images\icons8-green-circle-48.png').resize((30,30))
+  #       self.nav.si = PIL.Image.open('images\icons8-green-circle-48.png').resize((30,30))
          
-         summary_new = self.nav.add_margin(self.nav.si, 5, 0, 5, 0)
-        
-         summaryIcon = ImageTk.PhotoImage(summary_new)
-         self.nav.summaryLabel = tk.Label(self, image=summaryIcon, bg=self.main_color)
-         self.nav.summaryLabel.image = summaryIcon # keep a reference!
-         self.nav.summaryLabel.place(in_=self.nav.container, relwidth=0.1, rely=0.27)
-         
-         self.nav.log.lift()          
+         self.lift_page(self.nav.liLabel, self.nav.logLabel, self.nav.log, self.nav.current_button)  
+         self.nav.summaryLabel.configure(image=self.nav.summaryRunIcon)
+
         
     def createReports(self,  arguments=None):
 
@@ -746,7 +740,8 @@ class Summary(Page):
         #if checks have been passed 
         if ready == True:
         
-        
+                      
+            
             running_message = "Running report on facilities: " + ', '.join(faclist)
             
             self.nav.log.scr.configure(state='normal')
@@ -785,13 +780,7 @@ class Summary(Page):
             self.nav.log.scr.insert(tk.INSERT, "\n")
             self.nav.log.scr.configure(state='disabled')
 
-            self.nav.si = PIL.Image.open('images\icons8-edit-graph-report-48.png').resize((30,30))
-            summary_new = self.nav.add_margin(self.nav.si, 5, 0, 5, 0)
-            
-            summaryIcon = ImageTk.PhotoImage(summary_new)
-            self.nav.summaryLabel = tk.Label(self, image=summaryIcon, bg=self.main_color)
-            self.nav.summaryLabel.image = summaryIcon # keep a reference!
-            self.nav.summaryLabel.place(in_=self.nav.container, relwidth=0.1, rely=0.27)            
+                  
             
             if "Source Type Risk Histogram" in self.checked:
                 self.pos.destroy()
@@ -831,9 +820,35 @@ class Summary(Page):
                 
                 
             self.folder_select['text'] = "Select output folder"
+            self.nav.summaryLabel.configure(image=self.nav.si)
+
+
                 
 
-#    
+#
+    def lift_page(self, widget1, widget2, page, previous):
+        """
+        Function lifts page and changes button color to active, 
+        changes previous button color
+        """
+        try: 
+            widget1.configure(bg=self.tab_color)
+            widget2.configure(bg=self.tab_color)
+            
+            if len(self.nav.current_button) > 0:
+                
+                for i in self.nav.current_button:
+                    i.configure(bg=self.main_color)
+            
+            print('Current Button before:', self.nav.current_button)         
+            print('page:', page)
+            page.lift()
+            self.nav.current_button = [widget1, widget2]
+            print('Current Button after:', self.nav.current_button)  
+        except Exception as e:
+            
+            print(e)
+
     
     def color_config(self, widget1, widget2, container, color, event):
         

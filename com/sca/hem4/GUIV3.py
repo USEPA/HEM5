@@ -263,11 +263,13 @@ class MainView(tk.Frame):
         #add run icon with margin for highlight
         #ri = PIL.Image.open('images\loading-png-gif-transparent.png').resize((30,30))
         self.ri = PIL.Image.open('images\icons8-virtual-machine-52.png').resize((30,30))
+        self.gi = PIL.Image.open('images\icons8-green-circle-48.png').resize((30,30))
+        
         run_new = self.add_margin(self.ri, 5, 0, 5, 0)
         
-        runIcon = ImageTk.PhotoImage(run_new)
-        self.iconLabel = tk.Label(self, image=runIcon, bg=self.main_color)
-        self.iconLabel.image = runIcon # keep a reference!
+        self.runIcon = ImageTk.PhotoImage(run_new)
+        self.iconLabel = tk.Label(self, image=self.runIcon, bg=self.main_color)
+        self.iconLabel.image = self.runIcon # keep a reference!
         self.iconLabel.place(in_=self.container, relwidth=0.1, rely=0.09)
         
         #bind icon and label events
@@ -315,11 +317,17 @@ class MainView(tk.Frame):
         
         #add run icon with margin for highlight
         self.si = PIL.Image.open('images\icons8-edit-graph-report-48.png').resize((30,30))
+        self.mi = PIL.Image.open('images\icons8-green-circle-48.png').resize((30,30))
+
         summary_new = self.add_margin(self.si, 5, 0, 5, 0)
+        summary_run = self.add_margin(self.mi, 5, 0, 5, 0)
         
-        summaryIcon = ImageTk.PhotoImage(summary_new)
-        self.summaryLabel = tk.Label(self, image=summaryIcon, bg=self.main_color)
-        self.summaryLabel.image = summaryIcon # keep a reference!
+        self.summaryIcon = ImageTk.PhotoImage(summary_new)
+        self.summaryRunIcon = ImageTk.PhotoImage(summary_new)
+        
+        
+        self.summaryLabel = tk.Label(self, image=self.summaryIcon, bg=self.main_color)
+        self.summaryLabel.image = self.summaryIcon # keep a reference!
         self.summaryLabel.place(in_=self.container, relwidth=0.1, rely=0.27)
         
          #bind icon and label events
@@ -1656,12 +1664,8 @@ class Hem(Page):
                     command=self.quit_app, font=TEXT_FONT, padx=20, pady=20)
         self.stop.grid(row=0, column=2, sticky='E')
         
-        self.nav.ri = PIL.Image.open('images\icons8-green-circle-48.png').resize((30,30))
-        run_new = self.nav.add_margin(self.ri, 5, 0, 5, 0)
-        
-        runIcon = ImageTk.PhotoImage(run_new)
-        self.nav.iconLabel = tk.Label(self.nav, image=runIcon, bg=self.main_color)
-        self.nav.iconLabel.place(in_=self.nav.container, relwidth=0.1, rely=0.09)
+
+        self.nav.iconLabel.configure(image=self.nav.gi)
 
         if hasattr(self, 'back'):
             self.back.destroy()
@@ -1878,6 +1882,7 @@ class Hem(Page):
             self.stop.destroy()
         
         self.lift()
+        self.current_tab = self.nav
         
         #next button
         self.next = tk.Button(self.meta_two, text="Next", bg='lightgrey', relief='solid', borderwidth=2,
@@ -1889,14 +1894,6 @@ class Hem(Page):
         
         self.model.reset()
         
-        self.nav.ri = PIL.Image.open('images\icons8-virtual-machine-52.png').resize((30,30))
-        run_new = self.nav.add_margin(self.ri, 5, 0, 5, 0)
-        
-        runIcon = ImageTk.PhotoImage(run_new)
-        self.nav.iconLabel = tk.Label(self.nav, image=runIcon, bg=self.main_color)
-        self.nav.iconLabel.place(in_=self.nav.container, relwidth=0.1, rely=0.09)
-
-   
   
 #%%
         
