@@ -233,7 +233,7 @@ class Optional(Page):
             # Update the UI
             [self.nav.nav.log.scr.insert(tk.INSERT, msg) for msg in self.model.multipoly.log]
 #            container.configure(bg='light green')
-            label['text'] = fullpath
+            label['text'] = fullpath.split("\\")[-1]
  
 
     def uploadbuoyant(self, container, label, event):
@@ -255,7 +255,7 @@ class Optional(Page):
             # Update the UI
             [self.nav.nav.log.scr.insert(tk.INSERT, msg) for msg in self.model.multibuoy.log]
 #            container.configure(bg='light green')
-            label['text'] = fullpath
+            label['text'] = fullpath.split("\\")[-1]
  
     
     def uploadBuildingDownwash(self, container, label, event):
@@ -276,7 +276,7 @@ class Optional(Page):
             # Update the UI
             [self.nav.nav.log.scr.insert(tk.INSERT, msg) for msg in self.model.bldgdw.log]
 #            container.configure(bg='light green')
-            label['text'] = fullpath
+            label['text'] = fullpath.split("\\")[-1]
 
 
     def uploadUserReceptors(self, container, label, event):
@@ -297,7 +297,7 @@ class Optional(Page):
             self.model.model_optns['ureceptr'] = True
             # Update the UI
             [self.nav.nav.log.scr.insert(tk.INSERT, msg) for msg in self.model.ureceptr.log]
-            label['text'] = fullpath
+            label['text'] = fullpath.split("\\")[-1]
  
             
             
@@ -382,7 +382,7 @@ class DepDplt(Page):
             # Update the UI
             [self.nav.nav.log.scr.insert(tk.INSERT, msg) for msg in self.model.partdep.log]
 #            container.configure(bg='light green')
-            label['text'] = fullpath
+            label['text'] = fullpath.split("\\")[-1]
 
     def uploadLandUse(self, container, label, event):
         """
@@ -401,7 +401,7 @@ class DepDplt(Page):
             # Update the UI
             [self.nav.nav.log.scr.insert(tk.INSERT, msg) for msg in self.model.landuse.log]
 #            container.configure(bg='light green')
-            label['text'] = fullpath
+            label['text'] = fullpath.split("\\")[-1]
 
     def uploadSeasons(self, container, label, event):
         """ 
@@ -420,4 +420,4 @@ class DepDplt(Page):
             # Update the UI
             [self.nav.nav.log.scr.insert(tk.INSERT, msg) for msg in self.model.seasons.log]
 #            container.configure(bg='light green')
-            label['text'] = fullpath
+            label['text'] = fullpath.split("\\")[-1]

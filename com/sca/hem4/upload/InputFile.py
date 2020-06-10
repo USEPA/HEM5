@@ -1,8 +1,12 @@
+# -*- coding: utf-8 -*-
+
 import os
 import re
 from abc import ABC
 from abc import abstractmethod
 import pandas as pd
+from tkinter import messagebox
+
 
 from com.sca.hem4.log.Logger import Logger
 
@@ -58,12 +62,12 @@ class InputFile(ABC):
                         p = re.compile("Expected axis has (.*) elements, new values have (.*) elements")
                         result = p.search(msg)
                         custom_msg = "Length Mismatch: Input file has " + result.group(1) + " columns, but should have " +\
-                            result.group(2) + " columns."
-                        Logger.logMessage(custom_msg)
+                            result.group(2) + " columns. Please make sure you have selected the correct file or file version."
+                        messagebox.showinfo("Error uploading input file", custom_msg)
                     else:
-                        Logger.logMessage(str(e))
+                        messagebox.showinfo("Error uploading input file ", str(e) + " Please make sure you have selected the correct file or file version.")
                 else:
-                    Logger.logMessage(str(e))
+                    messagebox.showinfo("Error uploading input file", str(e) + " Please make sure you have selected the correct file or file version.")
 
             else:
                 df = df.astype(str).applymap(self.convertEmptyToNaN)
@@ -72,7 +76,7 @@ class InputFile(ABC):
                 numeric_only = df.copy()
                 numeric_only[self.numericColumns] = numeric_only[self.numericColumns].applymap(InputFile.is_numeric)
                 if not numeric_only.equals(df):
-                    Logger.logMessage("Error: Some non-numeric values were found in numeric columns in this data set: " +
+                    messagebox.showinfo("Error: Some non-numeric values were found in numeric columns in this data set: " +
                                       os.path.basename(self.path))
                     return None
 
@@ -107,7 +111,7 @@ class InputFile(ABC):
                 numeric_only = df.copy()
                 numeric_only[self.numericColumns] = numeric_only[self.numericColumns].applymap(InputFile.is_numeric)
                 if not numeric_only.equals(df):
-                    Logger.logMessage("Error: Some non-numeric values were found in numeric columns in this data set: " +
+                    messagebox.showinfo("Error: Some non-numeric values were found in numeric columns in this data set: " +
                                   os.path.basename(self.path))
                     return None
 

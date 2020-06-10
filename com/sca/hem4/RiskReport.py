@@ -1,17 +1,3 @@
-# -*- coding: utf-8 -*-
-"""
-Created on Thu May  7 12:20:37 2020
-
-@author: David Lindsey
-"""
-
-# -*- coding: utf-8 -*-
-"""
-Created on Thu Apr  2 11:48:29 2020
-
-@author: David Lindsey
-"""
-
 import tkinter as tk 
 import tkinter.ttk as ttk
 from functools import partial
@@ -78,11 +64,30 @@ class Page(tk.Frame):
         self.main_color = "white"
         self.tab_color = "lightcyan3"
         self.highlight_color = "snow3"
+        self.running_tab = "palegreen3"
   
     
     def show(self):
         self.lift()
         
+    def fix_config(self, widget1, widget2, previous):
+        
+         try: 
+            widget1.configure(bg=self.tab_color)
+            widget2.configure(bg=self.tab_color)
+            
+            if len(previous) > 0:
+                
+                for i in previous:
+                    i.configure(bg=self.main_color)
+                    
+         except:
+                pass
+        
+        
+
+         
+
 class Summary(Page):
     
     def __init__(self, nav, *args, **kwargs):
@@ -280,11 +285,11 @@ class Summary(Page):
         
         h_label.bind("<Enter>", partial(self.color_config, h_label, self.hiLabel, self.l6, 'light grey'))
         h_label.bind("<Leave>", partial(self.color_config, h_label, self.hiLabel, self.l6, self.tab_color))
-        h_label.bind("<Button-1>", partial(self.check_box, self.hiLabel, "Hazard Index Drivers")) 
+        h_label.bind("<Button-1>", partial(self.check_box, self.hiLabel, "Hazard Index Driver")) 
 
         self.hiLabel.bind("<Enter>", partial(self.color_config, h_label, self.hiLabel, self.l6, 'light grey'))
         self.hiLabel.bind("<Leave>", partial(self.color_config, h_label, self.hiLabel, self.l6, self.tab_color))
-        self.hiLabel.bind("<Button-1>", partial(self.check_box, self.hiLabel, "Hazard Index Drivers"))
+        self.hiLabel.bind("<Button-1>", partial(self.check_box, self.hiLabel, "Hazard Index Driver"))
 #%%        
         his_label = tk.Label(self.l7, font=TEXT_FONT, width=22, anchor='w', bg=self.tab_color, 
                              text="Risk Histogram")
@@ -522,7 +527,7 @@ class Summary(Page):
         
         self.fullpath = tk.filedialog.askdirectory()
         print(self.fullpath)
-        icon['text'] = 'Output folder selected'
+        icon["text"] = self.fullpath.split("/")[-1]
 
         
     def set_sourcetype(self, icon, text, event):
@@ -590,11 +595,15 @@ class Summary(Page):
                 
                 
     def run_reports(self, event):
-
+        
+         self.nav.summaryLabel.configure(image=self.nav.greenIcon)
+        
          executor = ThreadPoolExecutor(max_workers=1)
          future = executor.submit(self.createReports)
          #future.add_done_callback(self.reset_reports) 
-         self.nav.log.lift()          
+         
+         self.lift_page(self.nav.liLabel, self.nav.logLabel, self.nav.log, self.nav.current_button)
+
         
     def createReports(self,  arguments=None):
 
@@ -604,7 +613,7 @@ class Summary(Page):
         print(self.fullpath)
         
         try:
-                        
+            
             # Figure out which facilities will be included in the report
             skeleton = os.path.join(self.fullpath, '*facility_max_risk_and_hi.xl*')
             print(skeleton)
@@ -642,7 +651,6 @@ class Summary(Page):
         reportNameArgs = {}
         
         try:
-            
             for report in self.checked:
                 print(self.checked)
                 
@@ -719,7 +727,9 @@ class Summary(Page):
         #if checks have been passed 
         if ready == True:
         
-        
+                      
+              
+         
             running_message = "Running report on facilities: " + ', '.join(faclist)
             
             self.nav.log.scr.configure(state='normal')
@@ -731,24 +741,25 @@ class Summary(Page):
                     
             #loop through for each report selected
             for reportName in reportNames:
-#                report_message = "Creating " + reportName + " report."                
-#                self.nav.log.scr.configure(state='normal')
-#                self.nav.log.scr.insert(tk.INSERT, report_message)
-#                self.nav.log.scr.insert(tk.INSERT, "\n")
-#                self.nav.log.scr.configure(state='disabled')
+                report_message = "Creating " + reportName + " report."
+                
+                self.nav.log.scr.configure(state='normal')
+                self.nav.log.scr.insert(tk.INSERT, report_message)
+                self.nav.log.scr.insert(tk.INSERT, "\n")
+                self.nav.log.scr.configure(state='disabled')
                 
                 args = reportNameArgs[reportName]
                 summaryMgr.createReport(self.fullpath, reportName, args)
                 
-                if summaryMgr.status == False:
+                if summaryMgr.status == True:
                 
-#                    report_complete = reportName +  " complete."
-#                    self.nav.log.scr.configure(state='normal')
-#                    self.nav.log.scr.insert(tk.INSERT, report_complete)
-#                    self.nav.log.scr.insert(tk.INSERT, "\n")
-#                    self.nav.log.scr.configure(state='disabled')
+                    report_complete = reportName +  " complete."
+                    self.nav.log.scr.configure(state='normal')
+                    self.nav.log.scr.insert(tk.INSERT, report_complete)
+                    self.nav.log.scr.insert(tk.INSERT, "\n")
+                    self.nav.log.scr.configure(state='disabled')
                     
-#                else:
+                else:
                     
                     break
                 
@@ -756,7 +767,8 @@ class Summary(Page):
             self.nav.log.scr.insert(tk.INSERT, "Summary Reports Finished.")
             self.nav.log.scr.insert(tk.INSERT, "\n")
             self.nav.log.scr.configure(state='disabled')
-            
+
+                  
             
             if "Source Type Risk Histogram" in self.checked:
                 self.pos.destroy()
@@ -796,9 +808,35 @@ class Summary(Page):
                 
                 
             self.folder_select['text'] = "Select output folder"
+            self.nav.summaryLabel.configure(image=self.nav.summaryIcon)
+
+
                 
 
-#    
+#
+    def lift_page(self, widget1, widget2, page, previous):
+        """
+        Function lifts page and changes button color to active, 
+        changes previous button color
+        """
+        try: 
+            widget1.configure(bg=self.tab_color)
+            widget2.configure(bg=self.tab_color)
+            
+            if len(self.nav.current_button) > 0:
+                
+                for i in self.nav.current_button:
+                    i.configure(bg=self.main_color)
+            
+            print('Current Button before:', self.nav.current_button)         
+            print('page:', page)
+            page.lift()
+            self.nav.current_button = [widget1, widget2]
+            print('Current Button after:', self.nav.current_button)  
+        except Exception as e:
+            
+            print(e)
+
     
     def color_config(self, widget1, widget2, container, color, event):
         

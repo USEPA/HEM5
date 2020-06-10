@@ -1,10 +1,4 @@
-# -*- coding: utf-8 -*-
 
-"""
-Created on Thu Apr  2 11:43:15 2020
-
-@author: David Lindsey
-"""
 import tkinter as tk 
 import tkinter.ttk as ttk
 from functools import partial
@@ -16,7 +10,7 @@ from PyQt5 import QtGui
 
 import numpy as np
 import pandas as pd
-from pandastable import Table, filedialog, np
+#from pandastable import Table, filedialog, np
 
 import os
 import glob
@@ -149,7 +143,7 @@ class Analyze(Page):
         mapLabel.bind("<Button-1>", partial(self.maps_button))
 
 
-        di = PIL.Image.open('images\icons8-edit-graph-report-48.png').resize((30,30))
+        di = PIL.Image.open('images\icons8-view-48.png').resize((30,30))
         dicon = self.add_margin(di, 5, 0, 5, 0)
         dashicon = ImageTk.PhotoImage(dicon)
         dashLabel = tk.Label(self.s6, image=dashicon, bg=self.tab_color)
