@@ -1151,10 +1151,10 @@ class Hem(Page):
         Function for uploading Alternate Receptors
         """
 
-
         fullpath = self.openFile(askopenfilename())
         if fullpath is not None:
-                        
+
+
             success = self.uploader.upload("alt receptors", fullpath)
             if not success:
                 messagebox.showinfo('Error', "Invalid alternate receptors file. Check log for details.")
@@ -1163,7 +1163,6 @@ class Hem(Page):
             self.model.altRec_optns["path"] = fullpath
 
             # Update the UI
-            self.urepalt_list.set(fullpath)
             [self.scr.insert(tk.INSERT, msg) for msg in self.model.altreceptr.log]
             label['text'] = fullpath
  
