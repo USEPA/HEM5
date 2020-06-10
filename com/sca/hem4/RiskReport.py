@@ -1,15 +1,3 @@
-# -*- coding: utf-8 -*-
-"""
-Created on Thu May  7 12:20:37 2020
-@author: David Lindsey
-"""
-
-# -*- coding: utf-8 -*-
-"""
-Created on Thu Apr  2 11:48:29 2020
-@author: David Lindsey
-"""
-
 import tkinter as tk 
 import tkinter.ttk as ttk
 from functools import partial
@@ -76,6 +64,7 @@ class Page(tk.Frame):
         self.main_color = "white"
         self.tab_color = "lightcyan3"
         self.highlight_color = "snow3"
+        self.running_tab = "palegreen3"
   
     
     def show(self):
@@ -538,7 +527,7 @@ class Summary(Page):
         
         self.fullpath = tk.filedialog.askdirectory()
         print(self.fullpath)
-        icon['text'] = 'Output folder selected'
+        icon["text"] = self.fullpath.split("/")[-1]
 
         
     def set_sourcetype(self, icon, text, event):
@@ -606,16 +595,14 @@ class Summary(Page):
                 
                 
     def run_reports(self, event):
-
+        
+         self.nav.summaryLabel.configure(image=self.nav.greenIcon)
+        
          executor = ThreadPoolExecutor(max_workers=1)
          future = executor.submit(self.createReports)
          #future.add_done_callback(self.reset_reports) 
          
-         
-  #       self.nav.si = PIL.Image.open('images\icons8-green-circle-48.png').resize((30,30))
-         
-         self.lift_page(self.nav.liLabel, self.nav.logLabel, self.nav.log, self.nav.current_button)  
-         self.nav.summaryLabel.configure(image=self.nav.summaryRunIcon)
+         self.lift_page(self.nav.liLabel, self.nav.logLabel, self.nav.log, self.nav.current_button)
 
         
     def createReports(self,  arguments=None):
@@ -741,7 +728,8 @@ class Summary(Page):
         if ready == True:
         
                       
-            
+              
+         
             running_message = "Running report on facilities: " + ', '.join(faclist)
             
             self.nav.log.scr.configure(state='normal')
@@ -820,7 +808,7 @@ class Summary(Page):
                 
                 
             self.folder_select['text'] = "Select output folder"
-            self.nav.summaryLabel.configure(image=self.nav.si)
+            self.nav.summaryLabel.configure(image=self.nav.summaryIcon)
 
 
                 

@@ -1072,28 +1072,28 @@ class Hem4(tk.Frame):
         Function for uploading emissions variation inputs
         """
         
-        if self.resume_run == True:
+#        if self.resume_run == True:
+#            
+#            try:
+#            
+#                self.model.emisvar = resume.emisvar
+#                
+#            except:
+#                
+#                self.model.emisvar = None
+#        
+#        else:
             
-            try:
-            
-                self.model.emisvar = resume.emisvar
-                
-            except:
-                
-                self.model.emisvar = None
-        
-        else:
-            
-            fullpath = self.openFile(askopenfilename())
-            if fullpath is not None:
-                success = self.uploader.uploadDependent("emissions variation", fullpath, self.model.emisloc.dataframe)
-                if not success:
-                    messagebox.showinfo('Error', "Invalid Emissions Variation file. Check log for details.")
-                    return
+        fullpath = self.openFile(askopenfilename())
+        if fullpath is not None:
+            success = self.uploader.uploadDependent("emissions variation", fullpath, self.model.emisloc.dataframe)
+            if not success:
+                messagebox.showinfo('Error', "Invalid Emissions Variation file. Check log for details.")
+                return
 
-                 # Update the UI
-                self.emisvar_list.set(fullpath)
-                [self.scr.insert(tk.INSERT, msg) for msg in self.model.emisvar.log]
+             # Update the UI
+            self.emisvar_list.set(fullpath)
+            [self.scr.insert(tk.INSERT, msg) for msg in self.model.emisvar.log]
 
     def create_optional(self, inputtype):
         """ function for creating optional tab"""

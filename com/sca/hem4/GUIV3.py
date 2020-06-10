@@ -266,8 +266,11 @@ class MainView(tk.Frame):
         self.gi = PIL.Image.open('images\icons8-green-circle-48.png').resize((30,30))
         
         run_new = self.add_margin(self.ri, 5, 0, 5, 0)
+        run_change = self.add_margin(self.gi, 5, 0, 5, 0)
         
         self.runIcon = ImageTk.PhotoImage(run_new)
+        self.greenIcon = ImageTk.PhotoImage(run_change)
+        
         self.iconLabel = tk.Label(self, image=self.runIcon, bg=self.main_color)
         self.iconLabel.image = self.runIcon # keep a reference!
         self.iconLabel.place(in_=self.container, relwidth=0.1, rely=0.09)
@@ -317,13 +320,10 @@ class MainView(tk.Frame):
         
         #add run icon with margin for highlight
         self.si = PIL.Image.open('images\icons8-edit-graph-report-48.png').resize((30,30))
-        self.mi = PIL.Image.open('images\icons8-green-circle-48.png').resize((30,30))
 
         summary_new = self.add_margin(self.si, 5, 0, 5, 0)
-        summary_run = self.add_margin(self.mi, 5, 0, 5, 0)
         
         self.summaryIcon = ImageTk.PhotoImage(summary_new)
-        self.summaryRunIcon = ImageTk.PhotoImage(summary_new)
         
         
         self.summaryLabel = tk.Label(self, image=self.summaryIcon, bg=self.main_color)
@@ -916,7 +916,7 @@ class Hem(Page):
             # Update the UI
             [self.nav.log.scr.insert(tk.INSERT, msg) for msg in self.model.faclist.log]
 #            container.configure(bg='light green')
-            label['text'] = fullpath
+            label['text'] = fullpath.split("\\")[-1]
             
             #trigger additional inputs fo user recptors, assuming we are not in "user receptors only" mode
             if 'Y' in self.model.faclist.dataframe['user_rcpt'].tolist():
@@ -980,7 +980,7 @@ class Hem(Page):
                 # Update the UI
                 [self.nav.log.scr.insert(tk.INSERT, msg) for msg in self.model.hapemis.log]
 #                container.configure(bg='light green')
-                label['text'] = fullpath
+                label['text'] = fullpath.split("\\")[-1]
  
                     
             
@@ -1021,7 +1021,7 @@ class Hem(Page):
                     # Update the UI
                     [self.nav.log.scr.insert(tk.INSERT, msg) for msg in self.model.emisloc.log]
 #                    container.configure(bg='light green')
-                    label['text'] = fullpath
+                    label['text'] = fullpath.split("\\")[-1]
  
     
                     #trigger additional inputs for buoyant line and polyvertex
@@ -1143,7 +1143,7 @@ class Hem(Page):
             # Update the UI
             [self.nav.log.scr.insert(tk.INSERT, msg) for msg in self.model.ureceptr.log]
 #            container.configure(bg='light green')
-            label['text'] = fullpath
+            label['text'] = fullpath.split("\\")[-1]
             
             
     def uploadAltReceptors(self, container, label, event):
@@ -1164,7 +1164,37 @@ class Hem(Page):
 
             # Update the UI
             [self.scr.insert(tk.INSERT, msg) for msg in self.model.altreceptr.log]
-            label['text'] = fullpath
+            label['text'] = fullpath.split("\\")[-1]
+            
+            
+    def uploadVariation(self, container, label, event):
+
+        """
+        Function for uploading emissions variation inputs
+        """
+        
+#        if self.resume_run == True:
+#            
+#            try:
+#            
+#                self.model.emisvar = resume.emisvar
+#                
+#            except:
+#                
+#                self.model.emisvar = None
+#        
+#        else:
+            
+        fullpath = self.openFile(askopenfilename())
+        if fullpath is not None:
+            success = self.uploader.uploadDependent("emissions variation", fullpath, self.model.emisloc.dataframe)
+            if not success:
+                messagebox.showinfo('Error', "Invalid Emissions Variation file. Check log for details.")
+                return
+
+             # Update the UI
+            [self.scr.insert(tk.INSERT, msg) for msg in self.model.emisvar.log]
+            label['text'] = fullpath.split("\\")[-1]
  
     
     def set_altrec(self):
@@ -1268,7 +1298,7 @@ class Hem(Page):
         
         
         self.emisvar_file = tk.Label(self.optional.s9, font=TEXT_FONT, bg=self.tab_color, 
-                             text="Please select aa alternate User Receptor CSV file:")
+                             text="Please select an Emissions Variation file:")
         self.emisvar_file.grid(row=1, column=1, sticky='W')
         
                                     
@@ -1609,8 +1639,13 @@ class Hem(Page):
                 self.nav.hem.lift()
                 self.fix_config(self.nav.liLabel, self.nav.logLabel, self.nav.current_button)
 
-                self.nav.log.lift()
+                self.lift_page(self.nav.liLabel, self.nav.logLabel, self.nav.log, self.nav.current_button)
+                
+                self.nav.iconLabel.configure(image=self.nav.greenIcon)
+                
+                
                 Logger.logMessage("\nHEM4 is starting...")
+                
                 
     
                 
@@ -1664,7 +1699,7 @@ class Hem(Page):
         self.stop.grid(row=0, column=2, sticky='E')
         
 
-        self.nav.iconLabel.configure(image=self.nav.gi)
+        
 
         if hasattr(self, 'back'):
             self.back.destroy()
@@ -1892,6 +1927,7 @@ class Hem(Page):
         self.instruction_instance.set(" ")
         
         self.model.reset()
+        self.nav.iconLabel.configure(image=self.nav.runIcon)
         
   
 #%%
@@ -2009,7 +2045,28 @@ class Hem(Page):
                  self.depdeplt.instruction_instance.set(" ")
          
          
-       # Instructions for HEM4    
+    def lift_page(self, widget1, widget2, page, previous):
+        """
+        Function lifts page and changes button color to active, 
+        changes previous button color
+        """
+        try: 
+            widget1.configure(bg=self.tab_color)
+            widget2.configure(bg=self.tab_color)
+            
+            if len(self.nav.current_button) > 0:
+                
+                for i in self.nav.current_button:
+                    i.configure(bg=self.main_color)
+            
+            print('Current Button before:', self.nav.current_button)         
+            print('page:', page)
+            page.lift()
+            self.nav.current_button = [widget1, widget2]
+            print('Current Button after:', self.nav.current_button)  
+        except Exception as e:
+            
+            print(e)
     
         
 class Options(Page):

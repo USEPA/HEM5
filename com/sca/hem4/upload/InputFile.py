@@ -1,9 +1,12 @@
+# -*- coding: utf-8 -*-
+
 import os
 import re
 from abc import ABC
 from abc import abstractmethod
 import pandas as pd
 from tkinter import messagebox
+
 
 from com.sca.hem4.log.Logger import Logger
 
@@ -29,6 +32,16 @@ class InputFile(ABC):
 
     def clean(self, df):
         return df
+
+    def duplicates(self, df, columns):
+        records = []
+
+        dupes = df.duplicated(subset=columns, keep=False)
+        indices = dupes[dupes].index.values
+        for i in indices:
+            records.append(str(df.iloc[i].values.flatten().tolist()))
+
+        return records
 
     # Read values in from a source .xls(x) file. Note that we initially read everything in as a string,
     # and then convert columns which have been specified as numeric to a float64. That way, all empty
