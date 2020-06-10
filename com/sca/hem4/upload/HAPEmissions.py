@@ -76,8 +76,8 @@ class HAPEmissions(InputFile):
                                   " out of range. Defaulting to 0.")
                 row[emis_tpy] = 0
 
-            if row[part_frac] < 0 or row[part_frac] > 100:
-                Logger.logMessage("Facility " + facility + ": particulate fraction value " + str(row[part_frac]) +
+            if row[part_frac] < 0 or row[part_frac] > 1:
+                Logger.logMessage("Facility " + facility + ": particulate fraction value " + str(row[part_frac]*100) +
                                   " out of range. Defaulting to 0.")
                 row[part_frac] = 0
 
