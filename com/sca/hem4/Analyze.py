@@ -10,7 +10,7 @@ from PyQt5 import QtGui
 
 import numpy as np
 import pandas as pd
-from pandastable import Table, filedialog, np
+#from pandastable import Table, filedialog, np
 
 import os
 import glob
@@ -54,6 +54,8 @@ class Page(tk.Frame):
     
     def show(self):
         self.lift()
+        
+      
 
 
 
@@ -71,6 +73,7 @@ class Analyze(Page):
         meta_container.pack(side="top", fill="both", expand=True)
         
         self.container = tk.Frame(meta_container, bg=self.tab_color, borderwidth=0)
+        self.container.grid_rowconfigure(12, weight=1)
         self.container.grid(row=0, column =0)
         
         
@@ -80,6 +83,13 @@ class Analyze(Page):
         self.s4 = tk.Frame(self.container, width=600, height=50, pady=5, padx=5, bg="lightcyan3")
         self.s5 = tk.Frame(self.container, width=600, height=50, pady=5, padx=5, bg="lightcyan3")
         self.s6 = tk.Frame(self.container, width=600, height=50, pady=5, padx=5, bg="lightcyan3")
+        self.s7 = tk.Frame(self.container, width=600, height=50, pady=5, padx=5, bg="lightcyan3")
+        self.s8 = tk.Frame(self.container, width=600, height=50, pady=5, padx=5, bg="lightcyan3")
+        self.s9 = tk.Frame(self.container, width=600, height=50, pady=5, padx=5, bg="lightcyan3")
+        self.s10 = tk.Frame(self.container, width=600, height=50, pady=5, padx=5, bg="lightcyan3")
+        self.s11 = tk.Frame(self.container, width=600, height=50, pady=5, padx=5, bg="lightcyan3")
+
+
         
 
         self.s1.grid(row=1, column=0, columnspan=2, sticky="nsew")
@@ -88,6 +98,12 @@ class Analyze(Page):
         self.s4.grid(row=4, column=0, columnspan=2, sticky="nsew")
         self.s5.grid(row=5, column=0, columnspan=2, sticky="nsew")
         self.s6.grid(row=6, column=0, columnspan=2, sticky="nsew")
+        self.s7.grid(row=7, column=0, columnspan=2, sticky="nsew")
+        self.s8.grid(row=8, column=0, columnspan=2, sticky="nsew")
+        self.s9.grid(row=9, column=0, columnspan=2, sticky="nsew")
+        self.s10.grid(row=10, column=0, columnspan=2, sticky="nsew")
+        self.s11.grid(row=11, column=0, columnspan=2, sticky="nsew")
+
         
         
         #title in first grid space
@@ -97,28 +113,29 @@ class Analyze(Page):
         title2 = tk.Label(self.s1, text="View and Analyze Outputs", font=TITLE_FONT, bg=self.tab_color)
         title2.grid(row=0, column=0, padx=20, pady=20)
         
+        self.add_instructions(self.s2, self.s2)
         
         
         
         fu = PIL.Image.open('images\icons8-import-48.png').resize((30,30))
         ficon = self.add_margin(fu, 5, 0, 5, 0)
         fileicon = ImageTk.PhotoImage(ficon)
-        fileLabel = tk.Label(self.s2, image=fileicon, bg=self.tab_color)
+        fileLabel = tk.Label(self.s4, image=fileicon, bg=self.tab_color)
         fileLabel.image = fileicon # keep a reference!
         fileLabel.grid(row=1, column=0, padx=10)
         
         
-        button_file = tk.Label(self.s2, text="Open a facility or source category output file",
+        button_file = tk.Label(self.s4, text="Open a facility or source category output file",
                                 font=TEXT_FONT, bg=self.tab_color)
         button_file.grid(row=1, column=1)
         
                                     
-        button_file.bind("<Enter>", lambda x: self.color_config( button_file, fileLabel, self.s2, self.highlightcolor, x))
-        button_file.bind("<Leave>", lambda x: self.color_config( button_file, fileLabel, self.s2, self.tab_color, x))
+        button_file.bind("<Enter>", lambda x: self.color_config( button_file, fileLabel, self.s4, self.highlightcolor, x))
+        button_file.bind("<Leave>", lambda x: self.color_config( button_file, fileLabel, self.s4, self.tab_color, x))
         button_file.bind("<Button-1>", partial(self.browse_button))
         
-        fileLabel.bind("<Enter>", lambda x: self.color_config(fileLabel, button_file, self.s2, self.highlightcolor, x))
-        fileLabel.bind("<Leave>", lambda x: self.color_config(fileLabel, button_file, self.s2, self.tab_color, x))
+        fileLabel.bind("<Enter>", lambda x: self.color_config(fileLabel, button_file, self.s4, self.highlightcolor, x))
+        fileLabel.bind("<Leave>", lambda x: self.color_config(fileLabel, button_file, self.s4, self.tab_color, x))
         fileLabel.bind("<Button-1>", partial(self.browse_button))
         
 #
@@ -126,47 +143,77 @@ class Analyze(Page):
         mi = PIL.Image.open('images\icons8-map-marker-48.png').resize((30,30))
         micon = self.add_margin(mi, 5, 0, 5, 0)
         mapicon = ImageTk.PhotoImage(micon)
-        mapLabel = tk.Label(self.s4, image=mapicon, bg=self.tab_color)
+        mapLabel = tk.Label(self.s6, image=mapicon, bg=self.tab_color)
         mapLabel.image = mapicon # keep a reference!
         mapLabel.grid(row=1, column=0, padx=10)
         
-        button_maps = tk.Label(self.s4, text="Open a chronic or acute map",
+        button_maps = tk.Label(self.s6, text="Open a chronic or acute map",
                                 font=TEXT_FONT, bg=self.tab_color)
         button_maps.grid(row=1, column=1)
         
-        button_maps.bind("<Enter>", lambda x: self.color_config(button_maps, mapLabel, self.s4, self.highlightcolor, x))
-        button_maps.bind("<Leave>", lambda x: self.color_config(button_maps, mapLabel, self.s4, self.tab_color, x))
+        button_maps.bind("<Enter>", lambda x: self.color_config(button_maps, mapLabel, self.s6, self.highlightcolor, x))
+        button_maps.bind("<Leave>", lambda x: self.color_config(button_maps, mapLabel, self.s6, self.tab_color, x))
         button_maps.bind("<Button-1>", partial(self.maps_button))
         
-        mapLabel.bind("<Enter>", lambda x: self.color_config(mapLabel, button_maps, self.s4, self.highlightcolor, x))
-        mapLabel.bind("<Leave>", lambda x: self.color_config(mapLabel, button_maps, self.s4, self.tab_color, x))
+        mapLabel.bind("<Enter>", lambda x: self.color_config(mapLabel, button_maps, self.s6, self.highlightcolor, x))
+        mapLabel.bind("<Leave>", lambda x: self.color_config(mapLabel, button_maps, self.s6, self.tab_color, x))
         mapLabel.bind("<Button-1>", partial(self.maps_button))
 
 
         di = PIL.Image.open('images\icons8-view-48.png').resize((30,30))
         dicon = self.add_margin(di, 5, 0, 5, 0)
         dashicon = ImageTk.PhotoImage(dicon)
-        dashLabel = tk.Label(self.s6, image=dashicon, bg=self.tab_color)
-        dashLabel.image = dashicon # keep a reference!
-        dashLabel.grid(row=1, column=0, padx=10)
+        self.dashLabel = tk.Label(self.s8, image=dashicon, bg=self.tab_color)
+        self.dashLabel.image = dashicon # keep a reference!
+        self.dashLabel.grid(row=1, column=0, padx=10)
 
-        button_dash = tk.Label(self.s6, text="View map/charts of results",
+        self.button_dash = tk.Label(self.s8, text="View map/charts of results",
                                 font=TEXT_FONT, bg=self.tab_color)
-        button_dash.grid(row=1, column=1)
+        self.button_dash.grid(row=1, column=1)
         
-        button_dash.bind("<Enter>", lambda x: self.color_config(button_dash, dashLabel, self.s6, self.highlightcolor, x))
-        button_dash.bind("<Leave>", lambda x: self.color_config(button_dash, dashLabel, self.s6, self.tab_color, x))
-        button_dash.bind("<Button-1>", partial(self.dash_button))
+        self.button_dash.bind("<Enter>", lambda x: self.color_config(self.button_dash, self.dashLabel, self.s8, self.highlightcolor, x))
+        self.button_dash.bind("<Leave>", lambda x: self.color_config(self.button_dash, self.dashLabel, self.s8, self.tab_color, x))
+        self.button_dash.bind("<Button-1>", partial(self.dash_button))
         
-        dashLabel.bind("<Enter>", lambda x: self.color_config(mapLabel, button_maps, self.s6, self.highlightcolor, x))
-        dashLabel.bind("<Leave>", lambda x: self.color_config(mapLabel, button_maps, self.s6, self.tab_color, x))
-        dashLabel.bind("<Button-1>", partial(self.dash_button))        
+        self.dashLabel.bind("<Enter>", lambda x: self.color_config(mapLabel, button_maps, self.s8, self.highlightcolor, x))
+        self.dashLabel.bind("<Leave>", lambda x: self.color_config(mapLabel, button_maps, self.s8, self.tab_color, x))
+        self.dashLabel.bind("<Button-1>", partial(self.dash_button))        
         
 #        command=self.maps_button
 
 #        button_maps.grid(row=1, column=1)
 
-    
+         #%% Event handlers for porting instructions
+    def add_instructions(self, placeholder1, placeholder2):
+        
+        #Dynamic instructions place holder
+        global instruction_instance
+        self.instruction_instance = tk.StringVar(placeholder1)
+        self.instruction_instance.set(" ")
+        self.dynamic_inst = tk.Label(placeholder2, wraplength=600, font=TEXT_FONT, padx=20, bg=self.tab_color) 
+        self.dynamic_inst.config(height=4)
+        
+        self.dynamic_inst["textvariable"] = self.instruction_instance 
+        self.dynamic_inst.grid(row=0, column=0)
+
+
+    #reset instructions space
+    def reset_instructions(self):
+        """
+        Function clears instructions from display box 
+        """
+        global instruction_instance
+        self.instruction_instance.set(" ")    
+        
+    #general function for browsing instructions
+    def browse_inst(self, location):
+        """
+        Function looks up text file with instructions for specified input
+        browse buttons
+        """
+        global instruction_instance
+        self.read_inst = open(location, 'r')
+        self.instruction_instance.set(self.read_inst.read())  
     
     def add_margin(self, pil_img, top, right, bottom, left):
         width, height = pil_img.size
@@ -455,3 +502,12 @@ class Analyze(Page):
          widget1.configure(bg=color)
          widget2.configure(bg=color)
          container.configure(bg=color)   
+         
+         #serve instructions
+         if self.dashLabel in [widget1, widget2]:
+             if self.instruction_instance.get() == " ":
+                 
+                 self.browse_inst("instructions/analyze_browse.txt")
+                 
+             else:
+                 self.instruction_instance.set(" ")

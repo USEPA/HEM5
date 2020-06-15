@@ -21,7 +21,7 @@ import PIL.Image
 import os
 
 from PyQt5 import QtGui
-from pandastable import Table, filedialog, np
+#from pandastable import Table, filedialog, np
 
 
 import shutil
