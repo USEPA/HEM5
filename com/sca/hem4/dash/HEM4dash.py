@@ -16,6 +16,8 @@ import numpy as np
 import plotly.express as px
 import plotly
 import os
+from tkinter import messagebox
+
 
 
 class HEM4dash():
@@ -26,7 +28,13 @@ class HEM4dash():
 
     def buildApp(self):
         
-        if self.dir is not None:
+        if self.dir == "" or self.dir == None:
+            messagebox.showinfo("Invalid directory", " Please select a directory containing the results of a model run and summary reports for cancer risk drivers, "+
+                                "max risks, max TOSHI drivers, pollutant incidence drivers, source type incidence drivers, and cancer histograms.")
+            return None
+            
+        else:
+            
             
             
             ## Rather than using the external css, could use local "assets" dir that has the css file

@@ -120,44 +120,44 @@ class Analyze(Page):
         fu = PIL.Image.open('images\icons8-import-48.png').resize((30,30))
         ficon = self.add_margin(fu, 5, 0, 5, 0)
         fileicon = ImageTk.PhotoImage(ficon)
-        fileLabel = tk.Label(self.s4, image=fileicon, bg=self.tab_color)
-        fileLabel.image = fileicon # keep a reference!
-        fileLabel.grid(row=1, column=0, padx=10)
+        self.fileLabel = tk.Label(self.s4, image=fileicon, bg=self.tab_color)
+        self.fileLabel.image = fileicon # keep a reference!
+        self.fileLabel.grid(row=1, column=0, padx=10)
         
         
-        button_file = tk.Label(self.s4, text="Open a facility or source category output file",
+        self.button_file = tk.Label(self.s4, text="Open a facility or source category output file",
                                 font=TEXT_FONT, bg=self.tab_color)
-        button_file.grid(row=1, column=1)
+        self.button_file.grid(row=1, column=1)
         
                                     
-        button_file.bind("<Enter>", lambda x: self.color_config( button_file, fileLabel, self.s4, self.highlightcolor, x))
-        button_file.bind("<Leave>", lambda x: self.color_config( button_file, fileLabel, self.s4, self.tab_color, x))
-        button_file.bind("<Button-1>", partial(self.browse_button))
+        self.button_file.bind("<Enter>", lambda x: self.color_config( self.button_file, self.fileLabel, self.s4, self.highlightcolor, x))
+        self.button_file.bind("<Leave>", lambda x: self.color_config( self.button_file, self.fileLabel, self.s4, self.tab_color, x))
+        self.button_file.bind("<Button-1>", partial(self.browse_button))
         
-        fileLabel.bind("<Enter>", lambda x: self.color_config(fileLabel, button_file, self.s4, self.highlightcolor, x))
-        fileLabel.bind("<Leave>", lambda x: self.color_config(fileLabel, button_file, self.s4, self.tab_color, x))
-        fileLabel.bind("<Button-1>", partial(self.browse_button))
+        self.fileLabel.bind("<Enter>", lambda x: self.color_config(self.fileLabel, self.button_file, self.s4, self.highlightcolor, x))
+        self.fileLabel.bind("<Leave>", lambda x: self.color_config(self.fileLabel, self.button_file, self.s4, self.tab_color, x))
+        self.fileLabel.bind("<Button-1>", partial(self.browse_button))
         
 #
         
         mi = PIL.Image.open('images\icons8-map-marker-48.png').resize((30,30))
         micon = self.add_margin(mi, 5, 0, 5, 0)
         mapicon = ImageTk.PhotoImage(micon)
-        mapLabel = tk.Label(self.s6, image=mapicon, bg=self.tab_color)
-        mapLabel.image = mapicon # keep a reference!
-        mapLabel.grid(row=1, column=0, padx=10)
+        self.mapLabel = tk.Label(self.s6, image=mapicon, bg=self.tab_color)
+        self.mapLabel.image = mapicon # keep a reference!
+        self.mapLabel.grid(row=1, column=0, padx=10)
         
-        button_maps = tk.Label(self.s6, text="Open a chronic or acute map",
+        self.button_maps = tk.Label(self.s6, text="Open a chronic or acute map",
                                 font=TEXT_FONT, bg=self.tab_color)
-        button_maps.grid(row=1, column=1)
+        self.button_maps.grid(row=1, column=1)
         
-        button_maps.bind("<Enter>", lambda x: self.color_config(button_maps, mapLabel, self.s6, self.highlightcolor, x))
-        button_maps.bind("<Leave>", lambda x: self.color_config(button_maps, mapLabel, self.s6, self.tab_color, x))
-        button_maps.bind("<Button-1>", partial(self.maps_button))
+        self.button_maps.bind("<Enter>", lambda x: self.color_config(self.button_maps, self.mapLabel, self.s6, self.highlightcolor, x))
+        self.button_maps.bind("<Leave>", lambda x: self.color_config(self.button_maps, self.mapLabel, self.s6, self.tab_color, x))
+        self.button_maps.bind("<Button-1>", partial(self.maps_button))
         
-        mapLabel.bind("<Enter>", lambda x: self.color_config(mapLabel, button_maps, self.s6, self.highlightcolor, x))
-        mapLabel.bind("<Leave>", lambda x: self.color_config(mapLabel, button_maps, self.s6, self.tab_color, x))
-        mapLabel.bind("<Button-1>", partial(self.maps_button))
+        self.mapLabel.bind("<Enter>", lambda x: self.color_config(self.mapLabel, self.button_maps, self.s6, self.highlightcolor, x))
+        self.mapLabel.bind("<Leave>", lambda x: self.color_config(self.mapLabel, self.button_maps, self.s6, self.tab_color, x))
+        self.mapLabel.bind("<Button-1>", partial(self.maps_button))
 
 
         di = PIL.Image.open('images\icons8-view-48.png').resize((30,30))
@@ -175,13 +175,13 @@ class Analyze(Page):
         self.button_dash.bind("<Leave>", lambda x: self.color_config(self.button_dash, self.dashLabel, self.s8, self.tab_color, x))
         self.button_dash.bind("<Button-1>", partial(self.dash_button))
         
-        self.dashLabel.bind("<Enter>", lambda x: self.color_config(mapLabel, button_maps, self.s8, self.highlightcolor, x))
-        self.dashLabel.bind("<Leave>", lambda x: self.color_config(mapLabel, button_maps, self.s8, self.tab_color, x))
+        self.dashLabel.bind("<Enter>", lambda x: self.color_config(self.button_dash, self.dashLabel, self.s8, self.highlightcolor, x))
+        self.dashLabel.bind("<Leave>", lambda x: self.color_config(self.button_dash, self.dashLabel, self.s8, self.tab_color, x))
         self.dashLabel.bind("<Button-1>", partial(self.dash_button))        
         
 #        command=self.maps_button
 
-#        button_maps.grid(row=1, column=1)
+#        self.button_maps.grid(row=1, column=1)
 
          #%% Event handlers for porting instructions
     def add_instructions(self, placeholder1, placeholder2):
@@ -227,15 +227,19 @@ class Analyze(Page):
     def dash_button(self, event):
         executor = ThreadPoolExecutor(max_workers=1)
         future = executor.submit(self.runDash)
+        self.instruction_instance.set(" ")   
 
 
     def runDash(self,  arguments=None):
         try:
             dirname = tk.filedialog.askdirectory()
             dashapp = HEM4dash(dirname)
-            appobj = dashapp.buildApp()           
-            Timer(1, self.open_browser).start()
-            appobj.run_server(debug= False, port=8030)
+            appobj = dashapp.buildApp()   
+            if appobj != None:
+                Timer(1, self.open_browser).start()
+                appobj.run_server(debug= False, port=8030)
+                
+                
         except BaseException as ex:
             self.exception = ex
             fullStackInfo=''.join(traceback.format_exception(
@@ -511,3 +515,20 @@ class Analyze(Page):
                  
              else:
                  self.instruction_instance.set(" ")
+                 
+         elif self.fileLabel in [widget1, widget2]:
+             if self.instruction_instance.get() == " ":
+                 pass
+               #  self.browse_inst(" ")
+                 
+             else:
+                 self.instruction_instance.set(" ")
+                 
+         elif self.mapLabel in [widget1, widget2]:
+             if self.instruction_instance.get() == " ":
+                 pass
+              #   self.browse_inst(" ")
+                 
+             else:
+                 self.instruction_instance.set(" ")
+        
