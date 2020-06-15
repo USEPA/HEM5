@@ -1580,9 +1580,7 @@ class Hem(Page):
                             
                             #now check phase in facilities list option file
                             facDep = self.model.faclist.dataframe[self.model.faclist.dataframe['fac_id'].isin(self.model.depdeplt)]
-                            
-                            
-                            
+                                                                                  
                             for i, r in facDep.iterrows():
                                 if r['phase'] in ['P', 'V', 'B']:
                                     
@@ -1596,7 +1594,7 @@ class Hem(Page):
                                     for source in sourcesList:
                                         print('Source', source)
                                         
-                                        if r['phase'] == 'P':
+                                        if r['phase'] == 'P' or r['phase'] == 'B':
                                             #get the sum of part frac
                                             polSum = sum(pols[pols['source_id'] == source]['part_frac'].tolist())
                                             print('P PolSum:', polSum)

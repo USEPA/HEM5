@@ -270,381 +270,386 @@ class Runstream():
     
         #loop through sources
         for index, row in self.emisloc_df.iterrows():
-                    
-            # Point Source ----------------------------------------------------
-    
-            if srct[index] == 'P':
-                soloc = ("SO LOCATION " + str(srid[index]) + " POINT " + 
-                         str(xco1[index]) + " " + str(yco1[index]) + " " +
-                         str(elev[index]) + "\n")
-                
-                soparam = ("SO SRCPARAM " + str(srid[index]) + " 1000 " + 
-                           str(stkh[index]) + " " + str(temp[index]) + " " +
-                           str(emiv[index]) + " " + str(diam[index]) + "\n")
-                
-                self.inp_f.write(soloc)
-                self.inp_f.write(soparam)
-                
-                if self.urban == True:
-                    urbanopt = "SO URBANSRC " + str(srid[index]) + "\n"
-                    self.inp_f.write(urbanopt)
 
-                if self.blddw == "Y":
-                    self.get_blddw(srid[index])
+            # Do not write excluded sources. These are sources that are 100% particle or 100% gaseous
+            # and the opposite phase is being modeled.
+            if srid[index] not in self.model.sourceExclusion:
                     
-                if phase['phase'] == 'P':
-                    self.get_particle(srid[index])
+                # Point Source ----------------------------------------------------
+        
+                if srct[index] == 'P':
+                    soloc = ("SO LOCATION " + str(srid[index]) + " POINT " + 
+                             str(xco1[index]) + " " + str(yco1[index]) + " " +
+                             str(elev[index]) + "\n")
                     
-                elif phase['phase'] == 'V':
-                    self.get_vapor(srid[index])
-                      
-                if (self.emisvar_df is not None and type(self.emisvar_df) != str
-                    and srid[index] in self.emisvar_df['source_id'].values ):
-                    self.get_variation(srid[index])
-                
-                #if linked file
-                elif (self.emisvar_df is not None and 
-                      type(self.emisvar_df) == str and srid[index] in var_sources ):
+                    soparam = ("SO SRCPARAM " + str(srid[index]) + " 1000 " + 
+                               str(stkh[index]) + " " + str(temp[index]) + " " +
+                               str(emiv[index]) + " " + str(diam[index]) + "\n")
                     
-                    solink = ("SO HOUREMIS " + self.emisvar_df + " " + 
-                              srid[index] + " \n")
-                    self.inp_f.write(solink)
+                    self.inp_f.write(soloc)
+                    self.inp_f.write(soparam)
+                    
+                    if self.urban == True:
+                        urbanopt = "SO URBANSRC " + str(srid[index]) + "\n"
+                        self.inp_f.write(urbanopt)
     
-                
-            # Horizontal Point Source ----------------------------------------
-    
-            elif srct[index] == 'H':
-                soloc = ("SO LOCATION " + str(srid[index]) + " POINTHOR " + 
-                         str(xco1[index]) + " " + str(yco1[index]) + " " + 
-                         str(elev[index]) + "\n")
-                
-                soparam = ("SO SRCPARAM " + str(srid[index]) + " 1000 " + 
-                           str(stkh[index]) + " " + str(temp[index]) + " " + 
-                           str(emiv[index]) + " " + str(diam[index]) + "\n")
-                
-                self.inp_f.write(soloc)
-                self.inp_f.write(soparam)
-                
-                if self.urban == True:
-                    urbanopt = "SO URBANSRC " + str(srid[index]) + "\n"
-                    self.inp_f.write(urbanopt)
-                
-                if self.blddw == "Y":
-                    self.get_blddw(srid[index])
-                    
-                if phase['phase'] == 'P':
-                    self.get_particle(srid[index])
-                    
-                elif phase['phase'] == 'V':
-                    self.get_vapor(srid[index])
-                    
-                if (self.emisvar_df is not None and type(self.emisvar_df) != str
-                    and srid[index] in self.emisvar_df['source_id'].values ):
-                    self.get_variation(srid[index])
-                
-                 #if linked file
-                elif (self.emisvar_df is not None and 
-                      type(self.emisvar_df) == str and srid[index] in var_sources ):
-                    
-                    solink = ("SO HOUREMIS " + self.emisvar_df + " " + 
-                              srid[index] + " \n")
-                    self.inp_f.write(solink)    
-                
-            # Capped Point Source ---------------------------------------------------
-            
-            elif srct[index] == 'C':
-                soloc = ("SO LOCATION " + str(srid[index]) + " POINTCAP " + 
-                         str(xco1[index]) + " " + str(yco1[index]) + " " + 
-                         str(elev[index]) + "\n")
-                
-                soparam = ("SO SRCPARAM " + str(srid[index]) + " 1000 " + 
-                           str(stkh[index]) + " " + str(temp[index]) + " " + 
-                           str(emiv[index]) + " " + str(diam[index]) + "\n")
-                
-                self.inp_f.write(soloc)
-                self.inp_f.write(soparam)
-                
-                if self.urban == True:
-                    urbanopt = "SO URBANSRC " + str(srid[index]) + "\n"
-                    self.inp_f.write(urbanopt)
-                
-                if self.blddw == "Y":
-                    self.get_blddw(srid[index])
-                    
-                if phase['phase'] == 'P':
-                    self.get_particle(srid[index])
-                    
-                elif phase['phase'] == 'V':
-                    self.get_vapor(srid[index])
-                    
-                if (self.emisvar_df is not None and type(self.emisvar_df) != str
-                    and srid[index] in self.emisvar_df['source_id'].values ):
-                    self.get_variation(srid[index])
-                
-                 #if linked file
-                elif (self.emisvar_df is not None and 
-                      type(self.emisvar_df) == str and srid[index] in var_sources ):
-                    
-                    solink = ("SO HOUREMIS " + self.emisvar_df + " " + 
-                              srid[index] + " \n")
-                    self.inp_f.write(solink)
-                
-             # Area Source ---------------------------------------------------
-    
-            elif srct[index] == 'A':
-                soloc = ("SO LOCATION " + str(srid[index]) + " AREA " + 
-                         str(xco1[index]) + " " + str(yco1[index]) + " " + 
-                         str(elev[index]) + "\n")
-                
-                soparam = ("SO SRCPARAM " + str(srid[index]) + " " + 
-                           str(1000/area[index]) + " " + str(relh[index]) + " " 
-                           + str(lenx[index]) + " " + str(leny[index]) + " " + 
-                           str(angl[index]) + " " + str(vert[index]) + "\n") 
-                
-                self.inp_f.write(soloc)
-                self.inp_f.write(soparam)
-                
-                if self.urban == True:
-                    urbanopt = "SO URBANSRC " + str(srid[index]) + "\n"
-                    self.inp_f.write(urbanopt)
-                
-                if self.blddw == "Y":
-                    self.get_blddw(srid[index])
-                    
-                if phase['phase'] == 'P':
-                    self.get_particle(srid[index])
-                    
-                elif phase['phase'] == 'V':
-                    self.get_vapor(srid[index])
-                    
-                if (self.emisvar_df is not None and type(self.emisvar_df) != str
-                    and srid[index] in self.emisvar_df['source_id'].values ):
-                    self.get_variation(srid[index])
-                
-                 #if linked file
-                elif (self.emisvar_df is not None and 
-                      type(self.emisvar_df) == str and srid[index] in var_sources ):
-                    
-                    solink = ("SO HOUREMIS " + self.emisvar_df + " " + 
-                              srid[index] + " \n")
-                    self.inp_f.write(solink)
-                    
-            # Volume Source --------------------------------------------------
-    
-            elif srct[index] == 'V':
-                soloc = ("SO LOCATION " + str(srid[index]) + " VOLUME " + 
-                         str(xco1[index]) + " " + str(yco1[index]) + " " + 
-                         str(elev[index]) + "\n")
-                
-                soparam = ("SO SRCPARAM " + str(srid[index]) + " 1000 " + 
-                           str(relh[index]) + " " + str(latr[index]) + " " + 
-                           str(vert[index]) + "\n")
-                
-                self.inp_f.write(soloc)
-                self.inp_f.write(soparam)
-                
-                if self.urban == True:
-                    urbanopt = "SO URBANSRC " + str(srid[index]) + "\n"
-                    self.inp_f.write(urbanopt)
-                
-                if self.blddw == "Y":
-                    self.get_blddw(srid[index])
-                    
-                if phase['phase'] == 'P':
-                    self.get_particle(srid[index])
-                    
-                elif phase['phase'] == 'V':
-                    self.get_vapor(srid[index])
-                
-                if ((self.emisvar_df is not None) and (type(self.emisvar_df) != str)
-                    and (srid[index] in self.emisvar_df['source_id'].values)):
-                    self.get_variation(srid[index])
-                
-                #if linked file
-                elif ((self.emisvar_df is not None) and 
-                      (type(self.emisvar_df) == str) and (srid[index] in var_sources)):
-                    
-                    solink = ("SO HOUREMIS " + self.emisvar_df + " " + 
-                              srid[index] + " \n")
-                    self.inp_f.write(solink)
+                    if self.blddw == "Y":
+                        self.get_blddw(srid[index])
+                        
+                    if phase['phase'] == 'P':
+                        self.get_particle(srid[index])
+                        
+                    elif phase['phase'] == 'V':
+                        self.get_vapor(srid[index])
                           
-            # Area Polygon (Irregular) Source --------------------------------
-    
-            elif srct[index] == 'I':
-                # subset polyver_df to one source_id
-                
-                poly_srid = list(self.polyver_df[self.polyver_df['source_id']==
-                                                 srid[index]]['source_id'][:])
-                
-                poly_utme = list(self.polyver_df[self.polyver_df['source_id']==
-                                                 srid[index]]['utme'][:])
-    
-                poly_utmn = list(self.polyver_df[self.polyver_df['source_id']==
-                                                 srid[index]]['utmn'][:])
-                                
-                poly_numv = list(self.polyver_df[self.polyver_df['source_id']==
-                                                 srid[index]]['numvert'][:])
-                
-                poly_area = list(self.polyver_df[self.polyver_df['source_id']==
-                                                 srid[index]]['area'][:])
+                    if (self.emisvar_df is not None and type(self.emisvar_df) != str
+                        and srid[index] in self.emisvar_df['source_id'].values ):
+                        self.get_variation(srid[index])
+                    
+                    #if linked file
+                    elif (self.emisvar_df is not None and 
+                          type(self.emisvar_df) == str and srid[index] in var_sources ):
                         
-                soloc = ("SO LOCATION " + str(srid[index]) + " AREAPOLY " + 
-                         str(xco1[index]) + " " + str(yco1[index]) + " " + \
-                         " " + str(elev[index]) + "\n")
+                        solink = ("SO HOUREMIS " + self.emisvar_df + " " + 
+                                  srid[index] + " \n")
+                        self.inp_f.write(solink)
+        
+                    
+                # Horizontal Point Source ----------------------------------------
+        
+                elif srct[index] == 'H':
+                    soloc = ("SO LOCATION " + str(srid[index]) + " POINTHOR " + 
+                             str(xco1[index]) + " " + str(yco1[index]) + " " + 
+                             str(elev[index]) + "\n")
+                    
+                    soparam = ("SO SRCPARAM " + str(srid[index]) + " 1000 " + 
+                               str(stkh[index]) + " " + str(temp[index]) + " " + 
+                               str(emiv[index]) + " " + str(diam[index]) + "\n")
+                    
+                    self.inp_f.write(soloc)
+                    self.inp_f.write(soparam)
+                    
+                    if self.urban == True:
+                        urbanopt = "SO URBANSRC " + str(srid[index]) + "\n"
+                        self.inp_f.write(urbanopt)
+                    
+                    if self.blddw == "Y":
+                        self.get_blddw(srid[index])
+                        
+                    if phase['phase'] == 'P':
+                        self.get_particle(srid[index])
+                        
+                    elif phase['phase'] == 'V':
+                        self.get_vapor(srid[index])
+                        
+                    if (self.emisvar_df is not None and type(self.emisvar_df) != str
+                        and srid[index] in self.emisvar_df['source_id'].values ):
+                        self.get_variation(srid[index])
+                    
+                     #if linked file
+                    elif (self.emisvar_df is not None and 
+                          type(self.emisvar_df) == str and srid[index] in var_sources ):
+                        
+                        solink = ("SO HOUREMIS " + self.emisvar_df + " " + 
+                                  srid[index] + " \n")
+                        self.inp_f.write(solink)    
+                    
+                # Capped Point Source ---------------------------------------------------
                 
-                soparam = ("SO SRCPARAM " + str(srid[index]) + " " + 
-                           str(1000/(poly_area[0])) + " " + str(relh[index]) + 
-                           " " + str(poly_numv[0]) + "\n")
-                
-                self.inp_f.write(soloc)
-                self.inp_f.write(soparam)
+                elif srct[index] == 'C':
+                    soloc = ("SO LOCATION " + str(srid[index]) + " POINTCAP " + 
+                             str(xco1[index]) + " " + str(yco1[index]) + " " + 
+                             str(elev[index]) + "\n")
+                    
+                    soparam = ("SO SRCPARAM " + str(srid[index]) + " 1000 " + 
+                               str(stkh[index]) + " " + str(temp[index]) + " " + 
+                               str(emiv[index]) + " " + str(diam[index]) + "\n")
+                    
+                    self.inp_f.write(soloc)
+                    self.inp_f.write(soparam)
+                    
+                    if self.urban == True:
+                        urbanopt = "SO URBANSRC " + str(srid[index]) + "\n"
+                        self.inp_f.write(urbanopt)
+                    
+                    if self.blddw == "Y":
+                        self.get_blddw(srid[index])
+                        
+                    if phase['phase'] == 'P':
+                        self.get_particle(srid[index])
+                        
+                    elif phase['phase'] == 'V':
+                        self.get_vapor(srid[index])
+                        
+                    if (self.emisvar_df is not None and type(self.emisvar_df) != str
+                        and srid[index] in self.emisvar_df['source_id'].values ):
+                        self.get_variation(srid[index])
+                    
+                     #if linked file
+                    elif (self.emisvar_df is not None and 
+                          type(self.emisvar_df) == str and srid[index] in var_sources ):
+                        
+                        solink = ("SO HOUREMIS " + self.emisvar_df + " " + 
+                                  srid[index] + " \n")
+                        self.inp_f.write(solink)
+                    
+                 # Area Source ---------------------------------------------------
+        
+                elif srct[index] == 'A':
+                    soloc = ("SO LOCATION " + str(srid[index]) + " AREA " + 
+                             str(xco1[index]) + " " + str(yco1[index]) + " " + 
+                             str(elev[index]) + "\n")
+                    
+                    soparam = ("SO SRCPARAM " + str(srid[index]) + " " + 
+                               str(1000/area[index]) + " " + str(relh[index]) + " " 
+                               + str(lenx[index]) + " " + str(leny[index]) + " " + 
+                               str(angl[index]) + " " + str(vert[index]) + "\n") 
+                    
+                    self.inp_f.write(soloc)
+                    self.inp_f.write(soparam)
+                    
+                    if self.urban == True:
+                        urbanopt = "SO URBANSRC " + str(srid[index]) + "\n"
+                        self.inp_f.write(urbanopt)
+                    
+                    if self.blddw == "Y":
+                        self.get_blddw(srid[index])
+                        
+                    if phase['phase'] == 'P':
+                        self.get_particle(srid[index])
+                        
+                    elif phase['phase'] == 'V':
+                        self.get_vapor(srid[index])
+                        
+                    if (self.emisvar_df is not None and type(self.emisvar_df) != str
+                        and srid[index] in self.emisvar_df['source_id'].values ):
+                        self.get_variation(srid[index])
+                    
+                     #if linked file
+                    elif (self.emisvar_df is not None and 
+                          type(self.emisvar_df) == str and srid[index] in var_sources ):
+                        
+                        solink = ("SO HOUREMIS " + self.emisvar_df + " " + 
+                                  srid[index] + " \n")
+                        self.inp_f.write(solink)
+                        
+                # Volume Source --------------------------------------------------
+        
+                elif srct[index] == 'V':
+                    soloc = ("SO LOCATION " + str(srid[index]) + " VOLUME " + 
+                             str(xco1[index]) + " " + str(yco1[index]) + " " + 
+                             str(elev[index]) + "\n")
+                    
+                    soparam = ("SO SRCPARAM " + str(srid[index]) + " 1000 " + 
+                               str(relh[index]) + " " + str(latr[index]) + " " + 
+                               str(vert[index]) + "\n")
+                    
+                    self.inp_f.write(soloc)
+                    self.inp_f.write(soparam)
+                    
+                    if self.urban == True:
+                        urbanopt = "SO URBANSRC " + str(srid[index]) + "\n"
+                        self.inp_f.write(urbanopt)
+                    
+                    if self.blddw == "Y":
+                        self.get_blddw(srid[index])
+                        
+                    if phase['phase'] == 'P':
+                        self.get_particle(srid[index])
+                        
+                    elif phase['phase'] == 'V':
+                        self.get_vapor(srid[index])
+                    
+                    if ((self.emisvar_df is not None) and (type(self.emisvar_df) != str)
+                        and (srid[index] in self.emisvar_df['source_id'].values)):
+                        self.get_variation(srid[index])
+                    
+                    #if linked file
+                    elif ((self.emisvar_df is not None) and 
+                          (type(self.emisvar_df) == str) and (srid[index] in var_sources)):
+                        
+                        solink = ("SO HOUREMIS " + self.emisvar_df + " " + 
+                                  srid[index] + " \n")
+                        self.inp_f.write(solink)
+                              
+                # Area Polygon (Irregular) Source --------------------------------
+        
+                elif srct[index] == 'I':
+                    # subset polyver_df to one source_id
+                    
+                    poly_srid = list(self.polyver_df[self.polyver_df['source_id']==
+                                                     srid[index]]['source_id'][:])
+                    
+                    poly_utme = list(self.polyver_df[self.polyver_df['source_id']==
+                                                     srid[index]]['utme'][:])
+        
+                    poly_utmn = list(self.polyver_df[self.polyver_df['source_id']==
+                                                     srid[index]]['utmn'][:])
                                     
-                vert_start = "SO AREAVERT " + str(poly_srid[0]) + " "
-                vert_coor = ""
-                for i in np.arange(len(poly_srid)):
-                    if (i+1) % 6 == 0 or i == len(poly_srid)-1:
-                        vert_coor = (vert_coor + str(poly_utme[i]) + " " + 
-                                     str(poly_utmn[i]) + " ")
+                    poly_numv = list(self.polyver_df[self.polyver_df['source_id']==
+                                                     srid[index]]['numvert'][:])
+                    
+                    poly_area = list(self.polyver_df[self.polyver_df['source_id']==
+                                                     srid[index]]['area'][:])
+                            
+                    soloc = ("SO LOCATION " + str(srid[index]) + " AREAPOLY " + 
+                             str(xco1[index]) + " " + str(yco1[index]) + " " + \
+                             " " + str(elev[index]) + "\n")
+                    
+                    soparam = ("SO SRCPARAM " + str(srid[index]) + " " + 
+                               str(1000/(poly_area[0])) + " " + str(relh[index]) + 
+                               " " + str(poly_numv[0]) + "\n")
+                    
+                    self.inp_f.write(soloc)
+                    self.inp_f.write(soparam)
+                                        
+                    vert_start = "SO AREAVERT " + str(poly_srid[0]) + " "
+                    vert_coor = ""
+                    for i in np.arange(len(poly_srid)):
+                        if (i+1) % 6 == 0 or i == len(poly_srid)-1:
+                            vert_coor = (vert_coor + str(poly_utme[i]) + " " + 
+                                         str(poly_utmn[i]) + " ")
+                            
+                            vert_line = vert_start + vert_coor + "\n"
+                            self.inp_f.write(vert_line)
+                            
+                            vert_coor = ""
+                        else:
+                            vert_coor = (vert_coor + str(poly_utme[i]) + " " + 
+                                         str(poly_utmn[i]) + " ")
+                            ##write something?
                         
-                        vert_line = vert_start + vert_coor + "\n"
-                        self.inp_f.write(vert_line)
+                    if self.urban == True:
+                        urbanopt = "SO URBANSRC " + str(srid[index]) + "\n"
+                        self.inp_f.write(urbanopt)
+                    
+                    if self.blddw == "Y":
+                        self.get_blddw(srid[index])
                         
-                        vert_coor = ""
-                    else:
-                        vert_coor = (vert_coor + str(poly_utme[i]) + " " + 
-                                     str(poly_utmn[i]) + " ")
-                        ##write something?
+                    if phase['phase'] == 'P':
+                        self.get_particle(srid[index])
+                        
+                    elif phase['phase'] == 'V':
+                        self.get_vapor(srid[index])
                     
-                if self.urban == True:
-                    urbanopt = "SO URBANSRC " + str(srid[index]) + "\n"
-                    self.inp_f.write(urbanopt)
-                
-                if self.blddw == "Y":
-                    self.get_blddw(srid[index])
-                    
-                if phase['phase'] == 'P':
-                    self.get_particle(srid[index])
-                    
-                elif phase['phase'] == 'V':
-                    self.get_vapor(srid[index])
-                
-                if ((self.emisvar_df is not None) and (type(self.emisvar_df) != str)
-                    and (srid[index] in self.emisvar_df['source_id'].values)):
-                    self.get_variation(srid[index])
-
-                 #if linked file
-                elif ((self.emisvar_df is not None) and 
-                      (type(self.emisvar_df) == str) and (srid[index] in var_sources)):
-                    
-                    solink = ("SO HOUREMIS " + self.emisvar_df + " " + 
-                              srid[index] + " \n")
-                    self.inp_f.write(solink)
-                    
-             # Line Source ----------------------------------------------------
+                    if ((self.emisvar_df is not None) and (type(self.emisvar_df) != str)
+                        and (srid[index] in self.emisvar_df['source_id'].values)):
+                        self.get_variation(srid[index])
     
-            elif srct[index] == 'N':
-                soloc = ("SO LOCATION " + str(srid[index]) + " LINE " + 
-                         str(xco1[index]) + " " + str(yco1[index]) + " " + 
-                         str(xco2[index]) + " " + str(yco2[index]) + 
-                         " " + str(elev[index]) + "\n")
-                
-                line_len = (math.sqrt((xco1[index] - xco2[index])**2 + 
-                                      (yco1[index] - yco2[index])**2))
-                
-                soparam = ("SO SRCPARAM " + str(srid[index]) + " " + 
-                           str( round(1000 / ( lenx[index] * line_len ), 10 ) ) + " " + 
-                           str(relh[index]) + " " + str(lenx[index]) + " " + 
-                           str(vert[index]) + "\n")
-                
-                self.inp_f.write(soloc)
-                self.inp_f.write(soparam)
-                
-                if self.urban == True:
-                    urbanopt = "SO URBANSRC " + str(srid[index]) + "\n"
-                    self.inp_f.write(urbanopt)
-                
-                if self.blddw == "Y":
-                    self.get_blddw(srid[index])
+                     #if linked file
+                    elif ((self.emisvar_df is not None) and 
+                          (type(self.emisvar_df) == str) and (srid[index] in var_sources)):
+                        
+                        solink = ("SO HOUREMIS " + self.emisvar_df + " " + 
+                                  srid[index] + " \n")
+                        self.inp_f.write(solink)
+                        
+                 # Line Source ----------------------------------------------------
+        
+                elif srct[index] == 'N':
+                    soloc = ("SO LOCATION " + str(srid[index]) + " LINE " + 
+                             str(xco1[index]) + " " + str(yco1[index]) + " " + 
+                             str(xco2[index]) + " " + str(yco2[index]) + 
+                             " " + str(elev[index]) + "\n")
                     
-                if phase['phase'] == 'P':
-                    self.get_particle(srid[index])
+                    line_len = (math.sqrt((xco1[index] - xco2[index])**2 + 
+                                          (yco1[index] - yco2[index])**2))
                     
-                elif phase['phase'] == 'V':
-                    self.get_vapor(srid[index])
+                    soparam = ("SO SRCPARAM " + str(srid[index]) + " " + 
+                               str( round(1000 / ( lenx[index] * line_len ), 10 ) ) + " " + 
+                               str(relh[index]) + " " + str(lenx[index]) + " " + 
+                               str(vert[index]) + "\n")
+                    
+                    self.inp_f.write(soloc)
+                    self.inp_f.write(soparam)
+                    
+                    if self.urban == True:
+                        urbanopt = "SO URBANSRC " + str(srid[index]) + "\n"
+                        self.inp_f.write(urbanopt)
+                    
+                    if self.blddw == "Y":
+                        self.get_blddw(srid[index])
+                        
+                    if phase['phase'] == 'P':
+                        self.get_particle(srid[index])
+                        
+                    elif phase['phase'] == 'V':
+                        self.get_vapor(srid[index])
+                    
+                    if ((self.emisvar_df is not None) and (type(self.emisvar_df) != str)
+                        and (srid[index] in self.emisvar_df['source_id'].values)):
+                        self.get_variation(srid[index])
+                        
+                    #if linked file
+                    elif ((self.emisvar_df is not None) and 
+                          (type(self.emisvar_df) == str) and (srid[index] in var_sources)):
+                        
+                        solink = ("SO HOUREMIS " + self.emisvar_df + " " + 
+                                  srid[index] + " \n")
+                        self.inp_f.write(solink)
+                        
+                    
+                # Buoyant Line Source ---------------------------------------------
                 
-                if ((self.emisvar_df is not None) and (type(self.emisvar_df) != str)
-                    and (srid[index] in self.emisvar_df['source_id'].values)):
-                    self.get_variation(srid[index])
+                elif srct[index] == 'B':
+                    soloc = ("SO LOCATION " + str(srid[index]) + " BUOYLINE " + 
+                             str(xco1[index]) + " " + str(yco1[index]) + " " + 
+                             str(xco2[index]) + " " + str(yco2[index]) + " " + 
+                             str(elev[index]) + "\n")
                     
-                #if linked file
-                elif ((self.emisvar_df is not None) and 
-                      (type(self.emisvar_df) == str) and (srid[index] in var_sources)):
+                    blemis = 1000 
+                    soparam = ("SO SRCPARAM " + str(srid[index]) + " " + 
+                               str(blemis) + " " + str(relh[index]) + "\n")
                     
-                    solink = ("SO HOUREMIS " + self.emisvar_df + " " + 
-                              srid[index] + " \n")
-                    self.inp_f.write(solink)
+                    if first_buoyant == 0:
+                        sobuopa = ("SO BLPINPUT " + str(self.buoyant_df['avgbld_len'].iloc[0]) + 
+                                   " " + str(self.buoyant_df['avgbld_hgt'].iloc[0]) + 
+                                   " " + str(self.buoyant_df['avgbld_wid'].iloc[0]) + 
+                                   " " + str(self.buoyant_df['avglin_wid'].iloc[0]) + 
+                                   " " + str(self.buoyant_df['avgbld_sep'].iloc[0]) + 
+                                   " " + str(self.buoyant_df['avgbuoy'].iloc[0]) + "\n")
+                        
+                        first_buoyant = 1
+                        self.inp_f.write(sobuopa)
                     
-                
-            # Buoyant Line Source ---------------------------------------------
-            
-            elif srct[index] == 'B':
-                soloc = ("SO LOCATION " + str(srid[index]) + " BUOYLINE " + 
-                         str(xco1[index]) + " " + str(yco1[index]) + " " + 
-                         str(xco2[index]) + " " + str(yco2[index]) + " " + 
-                         str(elev[index]) + "\n")
-                
-                blemis = 1000 
-                soparam = ("SO SRCPARAM " + str(srid[index]) + " " + 
-                           str(blemis) + " " + str(relh[index]) + "\n")
-                
-                if first_buoyant == 0:
-                    sobuopa = ("SO BLPINPUT " + str(self.buoyant_df['avgbld_len'].iloc[0]) + 
-                               " " + str(self.buoyant_df['avgbld_hgt'].iloc[0]) + 
-                               " " + str(self.buoyant_df['avgbld_wid'].iloc[0]) + 
-                               " " + str(self.buoyant_df['avglin_wid'].iloc[0]) + 
-                               " " + str(self.buoyant_df['avgbld_sep'].iloc[0]) + 
-                               " " + str(self.buoyant_df['avgbuoy'].iloc[0]) + "\n")
+                    self.inp_f.write(soloc)
+                    self.inp_f.write(soparam)
                     
-                    first_buoyant = 1
-                    self.inp_f.write(sobuopa)
-                
-                self.inp_f.write(soloc)
-                self.inp_f.write(soparam)
-                
-                if self.urban == True:
-                    urbanopt = "SO URBANSRC " + str(srid[index]) + "\n"
-                    self.inp_f.write(urbanopt)
-                
-                if self.blddw == "Y":
-                    self.get_blddw(srid[index])
+                    if self.urban == True:
+                        urbanopt = "SO URBANSRC " + str(srid[index]) + "\n"
+                        self.inp_f.write(urbanopt)
                     
-                if phase['phase'] == 'P':
-                    self.get_particle(srid[index])
-                    
-                elif phase['phase'] == 'V':
-                    self.get_vapor(srid[index])
-                    
-                if ((self.emisvar_df is not None) and (type(self.emisvar_df) != str)
-                    and (srid[index] in self.emisvar_df['source_id'].values)):
-                    self.get_variation(srid[index])
-               
-                #if linked file
-                elif ((self.emisvar_df is not None) and 
-                      (type(self.emisvar_df) == str) and (srid[index] in var_sources)):
-                    
-                    solink = ("SO HOUREMIS " + self.emisvar_df + " " + 
-                              srid[index] + " \n")
-                    self.inp_f.write(solink)
+                    if self.blddw == "Y":
+                        self.get_blddw(srid[index])
+                        
+                    if phase['phase'] == 'P':
+                        self.get_particle(srid[index])
+                        
+                    elif phase['phase'] == 'V':
+                        self.get_vapor(srid[index])
+                        
+                    if ((self.emisvar_df is not None) and (type(self.emisvar_df) != str)
+                        and (srid[index] in self.emisvar_df['source_id'].values)):
+                        self.get_variation(srid[index])
+                   
+                    #if linked file
+                    elif ((self.emisvar_df is not None) and 
+                          (type(self.emisvar_df) == str) and (srid[index] in var_sources)):
+                        
+                        solink = ("SO HOUREMIS " + self.emisvar_df + " " + 
+                                  srid[index] + " \n")
+                        self.inp_f.write(solink)
 
                 
              
              # SO Source groups ---------------------------------------------
             
         self.uniqsrcs = srid.unique()
-        for i in np.arange(len(self.uniqsrcs)):  
-            sogroup = ("SO SRCGROUP " + self.uniqsrcs[i] + " " + 
-                       self.uniqsrcs[i] + "-" + self.uniqsrcs[i] + "\n")
-            self.inp_f.write(sogroup)
+        for i in np.arange(len(self.uniqsrcs)): 
+            if self.uniqsrcs[i] not in self.model.sourceExclusion:
+                sogroup = ("SO SRCGROUP " + self.uniqsrcs[i] + " " + 
+                           self.uniqsrcs[i] + "-" + self.uniqsrcs[i] + "\n")
+                self.inp_f.write(sogroup)
         so3 = "SO FINISHED \n" + "\n"
         self.inp_f.write(so3)
                 
@@ -806,28 +811,28 @@ class Runstream():
 
         met_annual_keyword = " ANNUAL " if self.annual else " PERIOD "
         for j in np.arange(len(self.uniqsrcs)):  
-            ou = ("OU PLOTFILE" + met_annual_keyword + self.uniqsrcs[j] +
-                  " plotfile.plt 35 \n")
-            self.inp_f.write(ou)
+            if self.uniqsrcs[j] not in self.model.sourceExclusion:
+                ou = ("OU PLOTFILE" + met_annual_keyword + self.uniqsrcs[j] +
+                      " plotfile.plt 35 \n")
+                self.inp_f.write(ou)
 
         # Output seasonhr plot file if temporal output is requested
         if self.model.temporal == True:
             for k in np.arange(len(self.uniqsrcs)):
-    
-                ou = ("OU SEASONHR " + self.uniqsrcs[k] +
-    
-                      " seasonhr.plt 36 \n")
-    
-                self.inp_f.write(ou)
+                if self.uniqsrcs[k] not in self.model.sourceExclusion:
+                    ou = ("OU SEASONHR " + self.uniqsrcs[k] +
+                          " seasonhr.plt 36 \n")
+                    self.inp_f.write(ou)
 
         if acute == "Y":
             hivalstr = str(self.facoptn_df['hivalu'].iloc[0])
             recacu = "OU RECTABLE "  + str(acute_hrs) + " " + hivalstr + "\n"
             self.inp_f.write(recacu)
             for k in np.arange(len(self.uniqsrcs)):  
-                acuou = ("OU PLOTFILE " + str(acute_hrs) + " " + self.uniqsrcs[k] + 
-                      " " + hivalstr + " maxhour.plt 40 \n")
-                self.inp_f.write(acuou)
+                if self.uniqsrcs[k] not in self.model.sourceExclusion:
+                    acuou = ("OU PLOTFILE " + str(acute_hrs) + " " + self.uniqsrcs[k] + 
+                          " " + hivalstr + " maxhour.plt 40 \n")
+                    self.inp_f.write(acuou)
 
             #set in model options
             self.model.model_optns['acute'] = True
