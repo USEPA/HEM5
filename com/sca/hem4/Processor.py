@@ -24,7 +24,8 @@ threadLocal = threading.local()
 class Processor():
 
     abort = None
-    def __init__ (self, model, abort):
+    def __init__ (self, nav, model, abort):
+        self.nav = nav
         self.model = model
         self.abort = abort
         self.exception = None
@@ -237,6 +238,8 @@ class Processor():
         # move the log file to the run dir and re-initialize
         Logger.archiveLog(self.model.rootoutput)
         Logger.initializeLog()
+        
+        self.nav.reset_gui()
 
         return success
 
