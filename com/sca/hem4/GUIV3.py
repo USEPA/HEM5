@@ -21,7 +21,7 @@ import PIL.Image
 import os
 
 from PyQt5 import QtGui
-from pandastable import Table, filedialog, np
+#from pandastable import Table, filedialog, np
 
 
 import shutil
@@ -1268,7 +1268,7 @@ class Hem(Page):
         
         
         self.urep_file = tk.Label(self.s10, font=TEXT_FONT, bg=self.tab_color, 
-                             text="Please select an alternate User Receptor CSV file:")
+                             text="Please select an alternate receptor CSV file:")
         self.urep_file.grid(row=0, column=1, sticky='W')
         
                                     
@@ -1703,7 +1703,7 @@ class Hem(Page):
             self.back.destroy()
 
         
-        self.processor = Processor(self.model, Event())
+        self.processor = Processor(self, self.model, Event())
         print('about to send to future')
         future = executor.submit(self.processor.process)
         future.add_done_callback(self.processing_finish)
@@ -1721,6 +1721,7 @@ class Hem(Page):
         """
         
         self.callbackQueue.put(self.finish_run)
+        
 
     def finish_run(self):
         """
@@ -1731,7 +1732,7 @@ class Hem(Page):
         self.running = False
 
      
-        self.reset_gui()
+        
 
     def check_processing(self):
         """
@@ -1792,8 +1793,8 @@ class Hem(Page):
 
         else:
             # If we're not running, the only thing to do is reset the GUI...
-#            self.reset_gui()
-            Logger.logMessage("HEM4 stopped")
+           
+            Logger.logMessage("HEM4 stopped")             
 
 #    def display_app_quit(self):
 #        self.enable_widgets(self.main, False)
@@ -1894,7 +1895,7 @@ class Hem(Page):
                 child.destroy()
 
         if 'bldg_dw' in self.model.dependencies:
-            for child in self.optional.s4.winfo_children():
+            for child in self.optional.s6.winfo_children():
                 child.destroy()
             
         if 'particle size' in self.model.dependencies:
@@ -1927,6 +1928,7 @@ class Hem(Page):
         self.model.reset()
         self.nav.iconLabel.configure(image=self.nav.runIcon)
         
+        self.running = False
   
 #%%
         
@@ -1965,7 +1967,7 @@ class Hem(Page):
                  self.instruction_instance.set(" ")
                  
 
-         elif "Please select an alternate User Receptor CSV file:" in [widget1['text'], widget2['text']]:
+         elif "Please select an alternate receptor CSV file:" in [widget1['text'], widget2['text']]:
              
              if self.instruction_instance.get() == " ":
                  
