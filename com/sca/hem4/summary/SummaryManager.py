@@ -1,5 +1,6 @@
 import importlib
 import os, glob
+import traceback
 
 import com.sca.hem4.writer.excel.summary.MaxRisk as maxRiskReportModule
 import com.sca.hem4.writer.excel.summary.CancerDrivers as cancerDriversReportModule
@@ -90,7 +91,9 @@ class SummaryManager(AltRecAwareSummary):
                 Logger.logMessage("Finished post-report action for " + reportName)
                 
         except Exception as e:
+             var = traceback.format_exc()
              Logger.logMessage("An error occured while creating report: " + reportName)
+             Logger.logMessage(var)            
              print(e)
              self.status = False
              
