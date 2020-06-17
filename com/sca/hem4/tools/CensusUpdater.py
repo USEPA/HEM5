@@ -2,14 +2,12 @@ import datetime
 import json
 
 import pandas as pd
-
 from com.sca.hem4.log.Logger import Logger
-
 
 class CensusUpdater():
 
     def __init__(self):
-        
+
         self.previousValue = None
         self.pathToCensusFiles = 'census'
 
@@ -36,7 +34,6 @@ class CensusUpdater():
             # Open the file again and re-write it using the updated json.
             with open(pathToFile, "w") as write_file:
                 json.dump(replaced, write_file, indent=4)
-
 
     def update(self, changesetFilepath):
         try:
@@ -212,7 +209,3 @@ class CensusUpdater():
 
     def getStateForCode(self, code):
         return self.stateCodeMap[code]
-
-#updater = CensusUpdater()
-#updater.migrate()
-

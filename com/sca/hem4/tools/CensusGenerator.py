@@ -1,0 +1,184 @@
+import csv
+import datetime
+import json
+import math
+
+import pandas as pd
+from com.sca.hem4.log.Logger import Logger
+from decimal import *
+
+nationalCensusFilepath = "C:\\Users\\Chris Stolte\\Hem4 Data\\us_blocks_2010_06082020.csv"
+changesetFilepath = "C:\\Users\\Chris Stolte\\Hem4 Data\\census-changeset.xlsx"
+
+class CensusGenerator():
+
+    def __init__(self):
+
+        self.previousValue = None
+        self.previousValue = None
+        self.pathToCensusFiles = 'census'
+
+        self.stateCodeMap = {
+            '01':'AL','05':'AR','04':'AZ','06':'CA','08':'CO','09':'CT','11':'DC','10':'DE','12':'FL','13':'GA',
+            '19':'IA','16':'ID','17':'IL','18':'IN','20':'KS','21':'KY','22':'LA','25':'MA','24':'MD','23':'ME',
+            '26':'MI','27':'MN','29':'MO','28':'MS','30':'MT','37':'NC','38':'ND','31':'NE','33':'NH','34':'NJ',
+            '35':'NM','32':'NV','36':'NY','39':'OH','40':'OK','41':'OR','42':'PA','44':'RI','45':'SC','46':'SD',
+            '47':'TN','48':'TX','49':'UT','51':'VA','50':'VT','53':'WA','55':'WI','54':'WV','56':'WY','02':'AK',
+            '15':'HI','72':'PR','78':'VI'}
+
+    def generate(self, censusFilepath, changesetFilepath):
+        getcontext().prec = 15
+
+        try:
+            census_df = self.readCSVFromPath(censusFilepath)
+            changeset_df = self.readFromPath(changesetFilepath)
+
+            for index,row in changeset_df.iterrows():
+
+                blockid = row["blockid"]
+                operation = row["change"].strip().upper()
+
+                # find the row in the census data, if it exists
+                census_idx = census_df.index[census_df['blkid'] == blockid].values[0]
+                census_row = census_df.loc[census_df['blkid'] == blockid].iloc[0]
+
+                if census_row is None:
+                    print("Couldn't find block id = " + blockid + " in census data.")
+                    continue
+
+                if operation == "DELETE":
+                    print("Deleting block " + blockid)
+                    census_df = census_df[census_df['blkid'] != blockid]
+                    continue
+
+                # Mutate for 'MOVE' and 'ZERO' operations
+                replaced = self.mutate(census_row, operation, row)
+                census_df.loc[census_idx] = replaced
+
+                # Now write out the resulting df to a new file. Take note that we are
+                # setting up quoting and precision for various values to match the
+                # original master record file.
+                updatedFilepath = censusFilepath.replace(".csv", "-updated.csv")
+
+                census_df["population"] = pd.to_numeric(census_df["population"])
+                census_df["lat"] = pd.to_numeric(census_df["lat"])
+                census_df["lat"] = census_df["lat"].apply(lambda x: Decimal(str(x)).quantize(Decimal('.0000001'), rounding=ROUND_DOWN))
+
+                census_df["lon"] = pd.to_numeric(census_df["lon"])
+                census_df["lon"] = census_df["lon"].apply(lambda x: Decimal(str(x)).quantize(Decimal('.0000001'), rounding=ROUND_DOWN))
+
+                census_df["elev"] = pd.to_numeric(census_df["elev"])
+                census_df["elev"] = census_df["elev"].apply(lambda x: Decimal(str(x)).quantize(Decimal('.01'), rounding=ROUND_DOWN))
+
+                census_df["hill"] = pd.to_numeric(census_df["hill"])
+                census_df["urban_pop"] = pd.to_numeric(census_df["urban_pop"])
+                census_df.to_csv(updatedFilepath, header=True, mode="w", index=False, quoting=csv.QUOTE_NONNUMERIC, chunksize=1000)
+
+        except BaseException as e:
+            print("Error running CSV census update: " + str(e))
+
+    def updateIndex(self):
+        # Update the census key file...build an index in-memory, and then use it
+        # to create the file
+        Logger.logMessage("Updating census key...")
+
+        index = {}
+        for key, value in self.stateCodeMap.items():
+            pathToFile = self.pathToCensusFiles + '\\Blks_' + value + '.json'
+            Logger.logMessage(pathToFile)
+            with open(pathToFile, "r") as read_file:
+                stateBlocks = json.load(read_file)
+                minRec = 1
+                for block in stateBlocks:
+                    fips = block["FIPS"]
+
+                    if not fips in index:
+                        index[fips] = []
+                        index[fips+"STATE"] = 'Blks_' + value
+                        index[fips+"MIN_REC"] = minRec
+
+                    index[fips].append(block)
+
+                    minRec+= 1
+
+        indexRecords = []
+        pathToIndexFile = self.pathToCensusFiles + '\\Census_key.json'
+        with open(pathToIndexFile, "w") as index_file:
+            for key, value in index.items():
+                if "STATE" in key or "MIN_REC" in key:
+                    continue
+
+                state = index[key+"STATE"]
+                minRec = index[key+"MIN_REC"]
+                indexRecords.append(self.index(state, minRec, key, value))
+
+            indexRecords = sorted(indexRecords, key=lambda record: record['FIPS'])
+            json.dump(indexRecords, index_file, indent=4)
+
+
+    """
+    Produces a record like this, given a list of blocks with the same FIPS number:
+    {
+        "FIPS": "01001",
+        "MIN_REC": 1,
+        "NO": 1159,
+        "FILE_NAME": "Blks_AL",
+        "LAT_MIN": 32.3616781,
+        "LAT_MAX": 32.7075255,
+        "LON_MIN": -86.91804,
+        "LON_MAX": -86.4122427,
+        "ELEV_MAX": 208,
+        "YEAR": "1"
+    }
+    """
+    def index(self, filename, minRec, fips, blocks):
+        minLat = None
+        maxLat = None
+        minLon = None
+        maxLon = None
+        maxElev = None
+
+        for block in blocks:
+            if block["LAT"] is None or block["LON"] is None or block["ELEV"] is None:
+                continue
+
+            minLat = block["LAT"] if minLat is None else min(block["LAT"], minLat)
+            maxLat = block["LAT"] if maxLat is None else max(block["LAT"], maxLat)
+            minLon = block["LON"] if minLon is None else min(block["LON"], minLon)
+            maxLon = block["LON"] if maxLon is None else max(block["LON"], maxLon)
+            maxElev = block["ELEV"] if maxElev is None else max(block["ELEV"], maxElev)
+
+        return {"FIPS" : fips, "MIN_REC" : minRec, "NO" : len(blocks), "FILE_NAME" : filename,
+                "LAT_MIN" : minLat, "LAT_MAX" : maxLat, "LON_MIN" : minLon, "LON_MAX" : maxLon,
+                "ELEV_MAX" : int(round(maxElev)), "YEAR" : "1",}
+
+    def mutate(self, record, operation, row):
+        if operation == 'MOVE':
+            print("Moving block " + record["blkid"] + " to [" + str(row['lat']) + "," + str(row['lon']) + "]")
+            record['lat'] = float(row['lat'])
+            record['lon'] = float(row['lon'])
+            record['moved'] = '1'
+        elif operation == 'ZERO':
+            print("Zeroing population for block " + record["blkid"])
+            record['population'] = 0
+
+        return record
+
+    def readFromPath(self, filepath):
+        colnames = ["facid", "category", "blockid", "lat", "lon", "change"]
+        with open(filepath, "rb") as f:
+            df = pd.read_excel(f, skiprows=0, names=colnames, dtype=str, na_values=[''], keep_default_na=False)
+            return df
+
+    def readCSVFromPath(self, filepath):
+        colnames = ["fips", "blkid", "population", "lat", "lon", "elev", "hill", "moved", "urban_pop"]
+        with open(filepath, "rb") as f:
+            df = pd.read_csv(f, skiprows=1, names=colnames, dtype=str, na_values=[''], keep_default_na=False)
+            return df
+
+    def getStateForCode(self, code):
+        return self.stateCodeMap[code]
+
+generator = CensusGenerator()
+generator.generate(changesetFilepath=changesetFilepath, censusFilepath=nationalCensusFilepath)
+
