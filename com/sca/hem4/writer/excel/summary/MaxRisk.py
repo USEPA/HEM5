@@ -133,7 +133,7 @@ class MaxRisk(ExcelWriter, AltRecAwareSummary):
             hi_whol_row = risk_summed.loc[risk_summed[hi_whol].idxmax()]
     
             risks = [
-                ['mir', mir_row[4], mir_row[8], mir_row[8]] if mir_row[8] > 0
+                ['mir', mir_row[4], mir_row[8], mir_row[9]] if mir_row[9] > 0
                     else ['mir', '', 0, 0],
                 ['respiratory', hi_resp_row[4], hi_resp_row[8], hi_resp_row[10]] if hi_resp_row[10] > 0
                     else ['respiratory', '', 0, 0],
@@ -191,8 +191,9 @@ class MaxRisk(ExcelWriter, AltRecAwareSummary):
                     header = 'Facilities impacting ' + row[risktype] + ' Receptor ID'
                     facilityHeaders.append(header)
                     faclist[header] = self.getImpactingFacilitiesNonCensus(row[rec_id])
-            
-        facilities_df = pd.DataFrame(data=faclist, columns=facilityHeaders)
+                
+        faclistpad = self.pad_dict_list(faclist)
+        facilities_df = pd.DataFrame(data=faclistpad, columns=facilityHeaders)            
         self.appendHeaderAtLocation(startingcol=1, headers=facilityHeaders)
         self.appendToFileAtLocation(dataframe=facilities_df, startingcol=1)
 
@@ -220,5 +221,15 @@ class MaxRisk(ExcelWriter, AltRecAwareSummary):
             loc = bsc_df.loc[bsc_df[rec_id] == receptorId]
             if loc.size > 0:
                 impacting.append(facilityId)
-
+            
         return impacting
+
+    def pad_dict_list(self, dict_list):
+        lmax = 0
+        for lname in dict_list.keys():
+            lmax = max(lmax, len(dict_list[lname]))
+        for lname in dict_list.keys():
+            ll = len(dict_list[lname])
+            if  ll < lmax:
+                dict_list[lname] += ' ' * (lmax - ll)
+        return dict_list
