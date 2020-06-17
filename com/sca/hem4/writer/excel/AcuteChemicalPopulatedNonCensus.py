@@ -48,7 +48,7 @@ class AcuteChemicalPopulatedNonCensus(ExcelWriter):
         
         # dataframe of pollutants with their acute benchmarks
         polinfo_cols = [pollutant, aegl_1_1h, aegl_1_8h, aegl_2_1h, aegl_2_8h, erpg_1, erpg_2,
-                        mrl, rel, idlh_10, teel_0, teel_1]
+                        idlh_10, mrl, rel, teel_0, teel_1]
         polinfo = self.model.haplib.dataframe[polinfo_cols][
                   self.model.haplib.dataframe[pollutant].str.lower().isin([x.lower() for x in pols])]
         polinfo[pollutant] = polinfo.apply(lambda x: x[pollutant].lower(), axis=1)
@@ -158,7 +158,7 @@ class AcuteChemicalPopulatedNonCensus(ExcelWriter):
                                                (self.model.innerblks_df[lat] == row[lat]), rec_type].values[0]
         
         cols = [pollutant, aconc, aconc_sci, aegl_1_1h,aegl_1_8h,aegl_2_1h,aegl_2_8h,erpg_1,erpg_2,
-                 mrl,rel,idlh_10,teel_0,teel_1, population, distance, angle, elev, hill, rec_id,
+                 idlh_10,mrl,rel,teel_0,teel_1, population, distance, angle, elev, hill, rec_id,
                  utme, utmn, lat, lon, rec_type, notes]
         acute_df = acute_df[cols]
                 

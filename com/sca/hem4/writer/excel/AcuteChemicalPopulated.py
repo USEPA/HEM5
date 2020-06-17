@@ -45,7 +45,7 @@ class AcuteChemicalPopulated(ExcelWriter, InputFile):
 
     def getColumns(self):
         return [pollutant, aconc, aconc_sci, aegl_1_1h,aegl_1_8h,aegl_2_1h,aegl_2_8h,erpg_1,erpg_2,
-                mrl,rel,idlh_10,teel_0,teel_1, population, distance, angle, elev, hill, fips, block,
+                idlh_10,mrl,rel,teel_0,teel_1, population, distance, angle, elev, hill, fips, block,
                 utme, utmn, lat, lon, rec_type, notes]
 
     def generateOutputs(self):
@@ -59,7 +59,7 @@ class AcuteChemicalPopulated(ExcelWriter, InputFile):
         
         # dataframe of pollutants with their acute benchmarks
         polinfo_cols = [pollutant, aegl_1_1h, aegl_1_8h, aegl_2_1h, aegl_2_8h, erpg_1, erpg_2,
-                        mrl, rel, idlh_10, teel_0, teel_1]
+                        idlh_10, mrl, rel, teel_0, teel_1]
         polinfo = self.model.haplib.dataframe[polinfo_cols][
                   self.model.haplib.dataframe[pollutant].str.lower().isin([x.lower() for x in pols])]
         polinfo[pollutant] = polinfo.apply(lambda x: x[pollutant].lower(), axis=1)
@@ -206,7 +206,7 @@ class AcuteChemicalPopulated(ExcelWriter, InputFile):
 
     def createDataframe(self):
         # Type setting for XLS reading
-        self.numericColumns = [aconc, aconc_sci, aegl_1_1h,aegl_1_8h,aegl_2_1h,aegl_2_8h,erpg_1,erpg_2,mrl,rel,idlh_10,
+        self.numericColumns = [aconc, aconc_sci, aegl_1_1h,aegl_1_8h,aegl_2_1h,aegl_2_8h,erpg_1,erpg_2,idlh_10,mrl,rel,
                                teel_0,teel_1, population, distance, angle, elev, hill, utme, utmn, lat, lon]
         self.strColumns = [pollutant, fips, block, rec_type, notes]
 
