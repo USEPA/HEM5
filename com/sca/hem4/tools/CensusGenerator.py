@@ -8,6 +8,7 @@ import simplejson as json
 
 nationalCensusFilepath = "C:\\Users\\Chris Stolte\\Hem4 Data\\us_blocks_2010_06082020.csv"
 changesetFilepath = "C:\\Users\\Chris Stolte\\Hem4 Data\\census-additions.xlsx"
+additionsFilepath = "C:\\Your\\Path\\Goes\\Here\\file.xlsx"
 
 class CensusGenerator():
 
