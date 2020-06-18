@@ -20,6 +20,8 @@ class FacilityRunner():
         self.start = time.time()
         self.phase = None
         
+        self.phaseNames = {'P': 'Particle', 'V': 'Vapor'}
+        
     
     def setup(self):
             
@@ -211,7 +213,7 @@ class FacilityRunner():
             
             for r in phases:
 
-                Logger.logMessage(r['phase'] + " run:")
+                Logger.logMessage(self.phaseNames(r['phase']) + " run:")
                 
                 # create runstream for individual phase
                 try:
@@ -478,8 +480,32 @@ class FacilityRunner():
                 if os.path.isfile(newname):
                     os.remove(newname)
                 os.rename(oldname, newname)    
+        
+        else:
+            # Aermod failed. Move aermod.inp and aermod.out and rename if appropriate.
+
+            # move aermod.out file
+            shutil.move(output, fac_folder)
             
-            return success
+            # move aermod.inp file
+            inpfile = os.path.join("aermod", "aermod.inp")
+            shutil.move(inpfile, fac_folder)
+
+            if phasetype != None:
+                
+                oldname = os.path.join(fac_folder, 'aermod.out')
+                newname = os.path.join(fac_folder, 'aermod_' + phasetype + '.out')
+                if os.path.isfile(newname):
+                    os.remove(newname)
+                os.rename(oldname, newname)    
+
+                oldname = os.path.join(fac_folder, 'aermod.inp')
+                newname = os.path.join(fac_folder, 'aermod_' + phasetype + '.inp')
+                if os.path.isfile(newname):
+                    os.remove(newname)
+                os.rename(oldname, newname)    
+            
+        return success
 
 
     def set_runtype(self, depYN, deptype):

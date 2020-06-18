@@ -316,6 +316,8 @@ class FacilityList(InputFile):
             if met_annual == "Y":
                 if period_start_spec != "":
                     Logger.logMessage("Facility " + facility + ": Period start specified but ignored because annual = 'Y'")
+                    row[period_start] = ""
+                    start_spec_valid = False
                 else:
                     Logger.logMessage("Facility " + facility + ": Using annual met option.")
             else:
@@ -346,6 +348,8 @@ class FacilityList(InputFile):
             if met_annual == "Y":
                 if period_end_spec != "":
                     Logger.logMessage("Facility " + facility + ": Period end specified but ignored because annual = 'Y'")
+                    row[period_end] = ""
+                    end_spec_valid = False
             else:
                 ends = period_end_spec.split(',')
                 for e in ends:

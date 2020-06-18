@@ -1,5 +1,7 @@
+
 import importlib
 import os, glob
+import traceback
 
 import com.sca.hem4.writer.excel.summary.MaxRisk as maxRiskReportModule
 import com.sca.hem4.writer.excel.summary.CancerDrivers as cancerDriversReportModule
@@ -14,7 +16,6 @@ import com.sca.hem4.writer.excel.summary.MultiPathwayNonCensus as multiPathwayMo
 from com.sca.hem4.log import Logger
 from com.sca.hem4.visualize.AcuteImpactsVisualizer import AcuteImpactsVisualizer
 from com.sca.hem4.writer.excel.summary.AltRecAwareSummary import AltRecAwareSummary
-
 
 class SummaryManager(AltRecAwareSummary):
 
@@ -69,7 +70,7 @@ class SummaryManager(AltRecAwareSummary):
             if altrec == 'Y' and reportName == 'MultiPathway':
                 reportName = "MultiPathwayNonCensus"
         
-            Logger.logMessage("Starting report: " + reportName)
+#            Logger.logMessage("Starting report: " + reportName)
             
             module = self.availableReports[reportName]
             if module is None:
@@ -81,7 +82,7 @@ class SummaryManager(AltRecAwareSummary):
             instance = reportClass(categoryFolder, self.facilityIds, reportArgs)
             instance.writeWithTimestamp()
     
-            Logger.logMessage("Finished report: " + reportName)
+#            Logger.logMessage("Finished report: " + reportName)
     
             if reportName in self.afterReportRun:
                 Logger.logMessage("Running post-report action for " + reportName)
@@ -90,7 +91,9 @@ class SummaryManager(AltRecAwareSummary):
                 Logger.logMessage("Finished post-report action for " + reportName)
                 
         except Exception as e:
+             var = traceback.format_exc()
              Logger.logMessage("An error occured while creating report: " + reportName)
+             Logger.logMessage(var)            
              print(e)
              self.status = False
              
