@@ -7,7 +7,7 @@ from decimal import *
 import simplejson as json
 
 nationalCensusFilepath = "C:\\Users\\Chris Stolte\\Hem4 Data\\us_blocks_2010_06082020.csv"
-changesetFilepath = "C:\\Users\\Chris Stolte\\Hem4 Data\\census-changeset.xlsx"
+changesetFilepath = "C:\\Users\\Chris Stolte\\Hem4 Data\\census-additions.xlsx"
 
 class CensusGenerator():
 
@@ -25,59 +25,133 @@ class CensusGenerator():
             '47':'TN','48':'TX','49':'UT','51':'VA','50':'VT','53':'WA','55':'WI','54':'WV','56':'WY','02':'AK',
             '15':'HI','72':'PR','78':'VI'}
 
-    def generate(self, censusFilepath, changesetFilepath):
-        getcontext().prec = 15
+    def generateChanges(self, censusFilepath, changesetFilepath):
 
         try:
-            census_df = self.readCSVFromPath(censusFilepath)
-            changeset_df = self.readFromPath(changesetFilepath)
+            census_df = self.readCensusFromPath(censusFilepath)
+            changeset_df = self.readChangesFromPath(changesetFilepath)
 
             for index,row in changeset_df.iterrows():
                 pass
 
-                # blockid = row["blockid"]
-                # operation = row["change"].strip().upper()
-                #
-                # # find the row in the census data, if it exists
-                # census_idx = census_df.index[census_df['blkid'] == blockid].values[0]
-                # census_row = census_df.loc[census_df['blkid'] == blockid].iloc[0]
-                #
-                # if census_row is None:
-                #     print("Couldn't find block id = " + blockid + " in census data.")
-                #     continue
-                #
-                # if operation == "DELETE":
-                #     print("Deleting block " + blockid)
-                #     census_df = census_df[census_df['blkid'] != blockid]
-                #     continue
-                #
-                # # Mutate for 'MOVE' and 'ZERO' operations
-                # replaced = self.mutate(census_row, operation, row)
-                # census_df.loc[census_idx] = replaced
-                #
-                # # Now write out the resulting df to a new file. Take note that we are
-                # # setting up quoting and precision for various values to match the
-                # # original master record file.
-                # updatedFilepath = censusFilepath.replace(".csv", "-updated.csv")
-                #
-                # census_df["population"] = pd.to_numeric(census_df["population"])
-                # census_df["lat"] = pd.to_numeric(census_df["lat"])
-                # census_df["lat"] = census_df["lat"].apply(lambda x: Decimal(str(x)).quantize(Decimal('.0000001'), rounding=ROUND_DOWN))
-                #
-                # census_df["lon"] = pd.to_numeric(census_df["lon"])
-                # census_df["lon"] = census_df["lon"].apply(lambda x: Decimal(str(x)).quantize(Decimal('.0000001'), rounding=ROUND_DOWN))
-                #
-                # census_df["elev"] = pd.to_numeric(census_df["elev"])
-                # census_df["elev"] = census_df["elev"].apply(lambda x: Decimal(str(x)).quantize(Decimal('.01'), rounding=ROUND_DOWN))
-                #
-                # census_df["hill"] = pd.to_numeric(census_df["hill"])
-                # census_df["urban_pop"] = pd.to_numeric(census_df["urban_pop"])
-                # census_df.to_csv(updatedFilepath, header=True, mode="w", index=False, quoting=csv.QUOTE_NONNUMERIC, chunksize=1000)
+                blockid = row["blockid"]
+                operation = row["change"].strip().upper()
 
-            self.generateJSON(changesetFilepath, census_df)
+                # find the row in the census data, if it exists
+                census_idx = census_df.index[census_df['blkid'] == blockid].values[0]
+                census_row = census_df.loc[census_df['blkid'] == blockid].iloc[0]
+
+                if census_row is None:
+                    print("Couldn't find block id = " + blockid + " in census data.")
+                    continue
+
+                if operation == "DELETE":
+                    print("Deleting block " + blockid)
+                    census_df = census_df[census_df['blkid'] != blockid]
+                    continue
+
+                # Mutate for 'MOVE' and 'ZERO' operations
+                replaced = self.mutate(census_row, operation, row)
+                census_df.loc[census_idx] = replaced
+
+            self.writeCensusFile(censusFilepath, census_df)
 
         except BaseException as e:
             print("Error running census generate: " + str(e))
+
+    def generateAdditions(self, censusFilepath, additionsFilepath):
+        try:
+            census_df = self.readCensusFromPath(censusFilepath)
+            additions_df = self.readAdditionsFromPath(changesetFilepath)
+
+            # Append all additions to the census df and re-generate the JSON
+            census_df = census_df.append(additions_df)
+            census_df = census_df.sort_values(by=['fips', 'blkid'])
+            self.writeCensusFile(censusFilepath, census_df)
+
+        except BaseException as e:
+            print("Error running census generate: " + str(e))
+
+    def writeCensusFile(self, censusFilepath, census_df):
+        # Write out the census df to a new file. Take note that we are
+        # setting up quoting and precision for various values to match the
+        # original master record file.
+        getcontext().prec = 15
+
+        updatedFilepath = censusFilepath.replace(".csv", "-updated.csv")
+
+        census_df["population"] = pd.to_numeric(census_df["population"])
+        census_df["lat"] = pd.to_numeric(census_df["lat"])
+        census_df["lat"] = census_df["lat"].apply(lambda x: Decimal(str(x)).quantize(Decimal('.0000001'), rounding=ROUND_UP))
+
+        census_df["lon"] = pd.to_numeric(census_df["lon"])
+        census_df["lon"] = census_df["lon"].apply(lambda x: Decimal(str(x)).quantize(Decimal('.0000001'), rounding=ROUND_UP))
+
+        census_df["elev"] = pd.to_numeric(census_df["elev"])
+        census_df["elev"] = census_df["elev"].apply(lambda x: Decimal(str(x)).quantize(Decimal('.01'), rounding=ROUND_UP))
+
+        census_df["hill"] = pd.to_numeric(census_df["hill"])
+        census_df["urban_pop"] = pd.to_numeric(census_df["urban_pop"])
+        census_df.to_csv(updatedFilepath, header=True, mode="w", index=False, quoting=csv.QUOTE_NONNUMERIC, chunksize=1000)
+
+    def generateJSON(self, censusFilepath):
+
+        census_df = self.readCensusFromPath(censusFilepath)
+
+        # Create state-specific json files and an index. If a directory already exists, clean it out. Otherwise
+        # create it.
+        working_dir = os.path.dirname(censusFilepath)
+        json_dir = os.path.join(working_dir, "census")
+
+        if os.path.isdir(json_dir):
+            print("Cleaning out census directory...")
+            files = glob.glob(json_dir + '/*')
+            for f in files:
+                os.remove(f)
+        else:
+            print("Creating census directory...")
+            os.mkdir(json_dir)
+
+        # Iterate through the state code map, and for every record that has a FIPS starting with the 2-digit
+        # code, include in a JSON file for that state.
+        for key,value in self.stateCodeMap.items():
+            print("Generating JSON for " + value)
+            state_df = census_df.loc[census_df["fips"].str.startswith(key)]
+            state_df = state_df.sort_values(by=['fips', 'blkid'])
+
+            blocks = []
+            rec_num = 1
+            for index,row in state_df.iterrows():
+
+                record = {"REC_NO": rec_num,
+                          "FIPS": row['fips'],
+                          "IDMARPLOT": row['blkid'],
+                          "POPULATION": row['population'],
+                          "LAT": row['lat'],
+                          "LON": row['lon'],
+                          "ELEV": row['elev'],
+                          "HILL": row['hill'],
+                          "URBAN_POP": row['urban_pop']}
+                blocks.append(record)
+                rec_num += 1
+
+            filename = os.path.join(json_dir, "Blks_" + value + ".json")
+            with open(filename, "w") as json_file:
+                json.dump(blocks, json_file, indent=4, use_decimal=True)
+
+        self.updateIndex(json_dir)
+
+    def mutate(self, record, operation, row):
+        if operation == 'MOVE':
+            print("Moving block " + record["blkid"] + " to [" + str(row['lat']) + "," + str(row['lon']) + "]")
+            record['lat'] = float(row['lat'])
+            record['lon'] = float(row['lon'])
+            record['moved'] = '1'
+        elif operation == 'ZERO':
+            print("Zeroing population for block " + record["blkid"])
+            record['population'] = 0
+
+        return record
 
     """
     Produces a record like this, given a list of blocks with the same FIPS number:
@@ -152,26 +226,20 @@ class CensusGenerator():
             indexRecords = sorted(indexRecords, key=lambda record: record['FIPS'])
             json.dump(indexRecords, index_file, indent=4)
 
-    def mutate(self, record, operation, row):
-        if operation == 'MOVE':
-            print("Moving block " + record["blkid"] + " to [" + str(row['lat']) + "," + str(row['lon']) + "]")
-            record['lat'] = float(row['lat'])
-            record['lon'] = float(row['lon'])
-            record['moved'] = '1'
-        elif operation == 'ZERO':
-            print("Zeroing population for block " + record["blkid"])
-            record['population'] = 0
-
-        return record
-
-    def readFromPath(self, filepath):
+    def readChangesFromPath(self, filepath):
         colnames = ["facid", "category", "blockid", "lat", "lon", "change"]
         with open(filepath, "rb") as f:
             df = pd.read_excel(f, skiprows=0, names=colnames, dtype=str, na_values=[''], keep_default_na=False)
             return df
 
-    def readCSVFromPath(self, filepath):
-        colnames = ["fips", "blkid", "population", "lat", "lon", "elev", "hill", "moved", "urban_pop"]
+    def readAdditionsFromPath(self, filepath):
+        colnames = ["fips", "blkid", "population", "lat", "lon", "elev", "hill", "urban_pop"]
+        with open(filepath, "rb") as f:
+            df = pd.read_excel(f, skiprows=0, names=colnames, dtype=str, na_values=[''], keep_default_na=False)
+            return df
+
+    def readCensusFromPath(self, filepath):
+        colnames = ["fips", "blkid", "population", "lat", "lon", "elev", "hill", "urban_pop"]
         with open(filepath, "rb") as f:
             df = pd.read_csv(f, skiprows=1, names=colnames, dtype=str, na_values=[''], keep_default_na=False)
             return df
@@ -179,51 +247,7 @@ class CensusGenerator():
     def getStateForCode(self, code):
         return self.stateCodeMap[code]
 
-    def generateJSON(self, changesetFilepath, census_df):
-        # Create state-specific json files and an index. If a directory already exists, clean it out. Otherwise
-        # create it.
-        working_dir = os.path.dirname(changesetFilepath)
-        json_dir = os.path.join(working_dir, "census")
-
-        # if os.path.isdir(json_dir):
-        #     print("Cleaning out census directory...")
-        #     files = glob.glob(json_dir + '/*')
-        #     for f in files:
-        #         os.remove(f)
-        # else:
-        #     print("Creating census directory...")
-        #     os.mkdir(json_dir)
-        #
-        # # Iterate through the state code map, and for every record that has a FIPS starting with the 2-digit
-        # # code, include in a JSON file for that state.
-        # for key,value in self.stateCodeMap.items():
-        #     print("Generating JSON for " + value)
-        #     state_df = census_df.loc[census_df["fips"].str.startswith(key)]
-        #     state_df = state_df.sort_values(by=['fips', 'blkid'])
-        #
-        #     blocks = []
-        #     rec_num = 1
-        #     for index,row in state_df.iterrows():
-        #
-        #         record = {"REC_NO": rec_num,
-        #                   "FIPS": row['fips'],
-        #                   "IDMARPLOT": row['blkid'],
-        #                   "POPULATION": row['population'],
-        #                   "LAT": row['lat'],
-        #                   "LON": row['lon'],
-        #                   "ELEV": row['elev'],
-        #                   "HILL": row['hill'],
-        #                   "URBAN_POP": row['urban_pop']}
-        #         blocks.append(record)
-        #         rec_num += 1
-        #
-        #     filename = os.path.join(json_dir, "Blks_" + value + ".json")
-        #     with open(filename, "w") as json_file:
-        #         json.dump(blocks, json_file, indent=4, use_decimal=True)
-
-        self.updateIndex(json_dir)
-
 
 generator = CensusGenerator()
-generator.generate(changesetFilepath=changesetFilepath, censusFilepath=nationalCensusFilepath)
+generator.generateJSON(censusFilepath=nationalCensusFilepath)
 
