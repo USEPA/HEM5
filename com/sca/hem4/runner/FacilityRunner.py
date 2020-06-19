@@ -213,7 +213,7 @@ class FacilityRunner():
             
             for r in phases:
 
-                Logger.logMessage(self.phaseNames(r['phase']) + " run:")
+                Logger.logMessage(self.phaseNames[r['phase']] + " run:")
                 
                 # create runstream for individual phase
                 try:
