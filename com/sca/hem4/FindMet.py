@@ -55,7 +55,7 @@ def return_met(facid, faclat, faclon, surfname, metlib_df):
      
     facility = (faclon, faclat)    
     station = (metrow['surflon'].iloc[0], metrow['surflat'].iloc[0])
-    distance2fac = distance(lonlat(*facility), lonlat(*station)).meters
+    distance2fac = round(distance(lonlat(*facility), lonlat(*station)).kilometers, 4)
     surf_file = metrow['surffile'].iloc[0]
     upper_file = metrow['upperfile'].iloc[0]
     surfyear = metrow['surfyear'].iloc[0]
