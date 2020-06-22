@@ -753,6 +753,10 @@ class Hem(Page):
         self.fileLabel.bind("<Enter>", lambda x: self.color_config(self.fileLabel, self.button_file, self.s5, self.highlightcolor, x))
         self.fileLabel.bind("<Leave>", lambda x: self.color_config(self.fileLabel, self.button_file, self.s5, self.tab_color, x))
         self.fileLabel.bind("<Button-1>",  lambda x: self.uploadFacilitiesList(self.s5, self.button_file, x))
+        
+#        self.s5.bind("<Enter>", lambda x: self.container_config( self.button_file, self.fileLabel, self.s5, self.highlightcolor, x))
+#        self.s5.bind("<Leave>", lambda x: self.container_config( self.button_file, self.fileLabel, self.s5, self.tab_color, x))
+#        
        
                 
         #%%Hap emissions label
@@ -776,6 +780,10 @@ class Hem(Page):
         self.hapLabel.bind("<Enter>", lambda x: self.color_config(self.hapLabel, self.hap_file, self.s6, self.highlightcolor, x))
         self.hapLabel.bind("<Leave>", lambda x: self.color_config(self.hapLabel, self.hap_file, self.s6, self.tab_color, x))
         self.hapLabel.bind("<Button-1>",  lambda x: self.uploadHAPEmissions(self.s6, self.hap_file, x))
+        
+#        self.s6.bind("<Enter>", lambda x: self.color_config(self.hap_file, self.hapLabel, self.s6, self.highlightcolor, x))
+#        self.s6.bind("<Leave>", lambda x: self.color_config(self.hap_file, self.hapLabel, self.s6, self.highlightcolor, x))
+#        
 
         
         #%%Emissions location label
@@ -801,7 +809,9 @@ class Hem(Page):
         self.emisLabel.bind("<Leave>", lambda x: self.color_config(self.emisLabel, self.emis_file, self.s7, self.tab_color, x))
         self.emisLabel.bind("<Button-1>",  lambda x: self.uploadEmissionLocations(self.s7, self.emis_file, x))
 
-        
+#        self.s7.bind("<Enter>", lambda x: self.color_config(self.emis_file, self.emisLabel, self.s7, self.highlightcolor, x))
+#        self.s7.bind("<Leave>", lambda x: self.color_config(self.emis_file, self.emisLabel, self.s7, self.highlightcolor, x))
+#        
         
         
          
@@ -2156,14 +2166,14 @@ class Options(Page):
         self.callbackQueue.put(self.finish_census_update)
 
     def finish_census_update(self):
-        self.cu_list.set("")
+        self.folder_select['text'] = "Please select a census update file:"
 
     def uploadCensusUpdates(self, event):
         self.censusupdater = CensusUpdater()
         fullpath = self.openFile(askopenfilename())
         if fullpath is not None:
             self.censusUpdatePath = fullpath
-            self.cu_list.set(fullpath)
+            self.folder_select['text'] = fullpath.split("\\")[-1]
     #%% Run function with checks if somethign is missing raise the error here and 
 #   create an additional dialogue before trying to run the file
 
@@ -2177,12 +2187,14 @@ class Log(Page):
         self.nav = nav 
         
         container = tk.Frame(self, bg=self.tab_color, bd=2)
+        
         #        self.buttonframe.pack(side="w", fill="y", expand=False)
         container.pack(side="top", fill="both", expand=True) 
         
         # Adding a Textbox Entry widget
         #        scrolW  = 65; scrolH  =  25
         self.scr = scrolledtext.ScrolledText(container, wrap=tk.WORD, width=1000, height=1000, font=TEXT_FONT)
+        self.scr.configure(cursor='none')
         self.scr.pack(expand=1, fill="both")
 
          # Pack to make visible
