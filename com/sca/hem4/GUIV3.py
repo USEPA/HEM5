@@ -1590,7 +1590,11 @@ class Hem(Page):
                             
                             #now check phase in facilities list option file
                             facDep = self.model.faclist.dataframe[self.model.faclist.dataframe['fac_id'].isin(self.model.depdeplt)]
-                                                                                  
+                                                        
+                            # Initialize lists that will contain sources that should not be modeled as P or V
+                            particleExcludeList = []
+                            vaporExcludeList = []
+                            
                             for i, r in facDep.iterrows():
                                 if r['phase'] in ['P', 'V', 'B']:
                                     
@@ -1599,27 +1603,23 @@ class Hem(Page):
                                     
                                     #get sourcelist
                                     sourcesList = set(pols['source_id'].tolist())
-                                    #print(r['fac_id'], r['phase'], 'Sources:', sourcesList)
                                     
                                     for source in sourcesList:
-                                        print('Source', source)
                                         
                                         if r['phase'] == 'P' or r['phase'] == 'B':
                                             #get the sum of part frac
                                             polSum = sum(pols[pols['source_id'] == source]['part_frac'].tolist())
-                                            print('P PolSum:', polSum)
                                             
                                             #if they are zero then its not particulate at all 
                                             if polSum == 0:
                                                 
                                                 #add it to the list of source exclusions
-                                                self.model.sourceExclusion.append(source)
+                                                particleExcludeList.append(source)
                                             
                                         elif r['phase'] == 'V':
                                             
                                             #get
                                             so = pols[pols['source_id'] == source]['part_frac'].tolist()
-                                            print('V:', so)
                                             polSum = sum(so)
                                             allPart = len(so) * 100
                                             
@@ -1627,7 +1627,10 @@ class Hem(Page):
                                             if polSum == allPart:
                                                 
                                                 #add it to the list of source exclusions
-                                                self.model.sourceExclusion.append(source)
+                                                vaporExcludeList.append(source)
+                                                
+                                    self.model.sourceExclusion['P'+r['fac_id']] = particleExcludeList
+                                    self.model.sourceExclusion['V'+r['fac_id']] = vaporExcludeList
                                 
                                 else:
                                     self.ready = True

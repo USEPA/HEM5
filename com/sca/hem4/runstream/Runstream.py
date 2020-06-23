@@ -81,6 +81,11 @@ class Runstream():
         
         #check whether or not to overwrite phase based on exluding all sources
         
+        if phase['phase'] is None:
+            self.phaseType = 'C'
+        else:
+            self.phaseType = phase['phase']
+        
         #if vapor or particle run
         if phase['phase'] in ['V', 'P']:
             
@@ -273,7 +278,7 @@ class Runstream():
 
             # Do not write excluded sources. These are sources that are 100% particle or 100% gaseous
             # and the opposite phase is being modeled.
-            if srid[index] not in self.model.sourceExclusion:
+            if srid[index] not in self.model.sourceExclusion.get(self.phaseType+self.facid, ''):
                     
                 # Point Source ----------------------------------------------------
         
@@ -646,7 +651,7 @@ class Runstream():
             
         self.uniqsrcs = srid.unique()
         for i in np.arange(len(self.uniqsrcs)): 
-            if self.uniqsrcs[i] not in self.model.sourceExclusion:
+            if self.uniqsrcs[i] not in self.model.sourceExclusion.get(self.phaseType+self.facid, ''):
                 sogroup = ("SO SRCGROUP " + self.uniqsrcs[i] + " " + 
                            self.uniqsrcs[i] + "-" + self.uniqsrcs[i] + "\n")
                 self.inp_f.write(sogroup)
@@ -811,7 +816,7 @@ class Runstream():
 
         met_annual_keyword = " ANNUAL " if self.annual else " PERIOD "
         for j in np.arange(len(self.uniqsrcs)):  
-            if self.uniqsrcs[j] not in self.model.sourceExclusion:
+            if self.uniqsrcs[j] not in self.model.sourceExclusion.get(self.phaseType+self.facid, ''):
                 ou = ("OU PLOTFILE" + met_annual_keyword + self.uniqsrcs[j] +
                       " plotfile.plt 35 \n")
                 self.inp_f.write(ou)
@@ -819,7 +824,7 @@ class Runstream():
         # Output seasonhr plot file if temporal output is requested
         if self.model.temporal == True:
             for k in np.arange(len(self.uniqsrcs)):
-                if self.uniqsrcs[k] not in self.model.sourceExclusion:
+                if self.uniqsrcs[k] not in self.model.sourceExclusion.get(self.phaseType+self.facid, ''):
                     ou = ("OU SEASONHR " + self.uniqsrcs[k] +
                           " seasonhr.plt 36 \n")
                     self.inp_f.write(ou)
@@ -829,7 +834,7 @@ class Runstream():
             recacu = "OU RECTABLE "  + str(acute_hrs) + " " + hivalstr + "\n"
             self.inp_f.write(recacu)
             for k in np.arange(len(self.uniqsrcs)):  
-                if self.uniqsrcs[k] not in self.model.sourceExclusion:
+                if self.uniqsrcs[k] not in self.model.sourceExclusion.get(self.phaseType+self.facid, ''):
                     acuou = ("OU PLOTFILE " + str(acute_hrs) + " " + self.uniqsrcs[k] + 
                           " " + hivalstr + " maxhour.plt 40 \n")
                     self.inp_f.write(acuou)
@@ -886,7 +891,7 @@ class Runstream():
         """
             
        #get values for this source id
-        if srid not in self.model.sourceExclusion:
+        if srid not in self.model.sourceExclusion.get(self.phaseType+self.facid, ''):
             emisloc = self.emisloc_df.loc[self.emisloc_df.source_id == srid]
             method2 = emisloc[method].iloc[0] == 2
 
@@ -917,7 +922,7 @@ class Runstream():
         """
         Compiles and writes parameters for vapor deposition/depletion by source
         """
-        if srid not in self.model.sourceExclusion:
+        if srid not in self.model.sourceExclusion.get(self.phaseType+self.facid, ''):
             
             pollutants = (self.hapemis[(self.hapemis['source_id'] == srid)
                                         & (self.hapemis['part_frac'] < 1)]['pollutant'].str.lower())

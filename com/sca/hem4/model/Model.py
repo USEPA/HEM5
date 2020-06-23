@@ -109,7 +109,7 @@ class Model():
         self.risk_by_latlon = None
         self.max_indiv_risk_df = None
         self.facops = None
-        self.sourceExclusion = []
+        self.sourceExclusion = {}
         self.aermod = None
         self.acuteplot_df = None
 
@@ -155,7 +155,7 @@ class Model():
         self.temporal = None
         self.tempvar = None
         self.seasonvar = None
-        self.sourceExclusion = []
+        self.sourceExclusion = {}
         self.aermod = None
         self.acuteplot_df = None
         self.dependencies = []
