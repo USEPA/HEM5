@@ -63,7 +63,7 @@ class CensusGenerator():
     def generateAdditions(self, censusFilepath, additionsFilepath):
         try:
             census_df = self.readCensusFromPath(censusFilepath)
-            additions_df = self.readAdditionsFromPath(changesetFilepath)
+            additions_df = self.readAdditionsFromPath(additionsFilepath)
 
             # Append all additions to the census df and re-generate the JSON
             census_df = census_df.append(additions_df)
@@ -122,6 +122,20 @@ class CensusGenerator():
 
             blocks = []
             rec_num = 1
+
+            state_df["population"] = pd.to_numeric(census_df["population"])
+            state_df["lat"] = pd.to_numeric(census_df["lat"])
+            state_df["lat"] = census_df["lat"].apply(lambda x: Decimal(str(x)).quantize(Decimal('.0000001'), rounding=ROUND_UP))
+
+            state_df["lon"] = pd.to_numeric(census_df["lon"])
+            state_df["lon"] = census_df["lon"].apply(lambda x: Decimal(str(x)).quantize(Decimal('.0000001'), rounding=ROUND_UP))
+
+            state_df["elev"] = pd.to_numeric(census_df["elev"])
+            state_df["elev"] = census_df["elev"].apply(lambda x: Decimal(str(x)).quantize(Decimal('.01'), rounding=ROUND_UP))
+
+            state_df["hill"] = pd.to_numeric(census_df["hill"])
+            state_df["urban_pop"] = pd.to_numeric(census_df["urban_pop"])
+
             for index,row in state_df.iterrows():
 
                 record = {"REC_NO": rec_num,
