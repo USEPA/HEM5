@@ -111,13 +111,13 @@ class MaxConcentrationLocator():
                 row = inner_sliced.loc[inner_sliced[conc].idxmax()]
                 if row[conc] > winning_row[conc]:
                     winning_row = row
-                    winning_type = 'C'
+                    winning_type = 'U' if row[block].str.contains('U') else 'C'
 
                 outer_sliced = outer_summed.loc[outer_summed[pollutant] == p].reset_index()
                 row = outer_sliced.loc[outer_sliced[conc].idxmax()]
                 if row[conc] > winning_row[conc]:
                     winning_row = row
-                    winning_type = 'C'
+                    winning_type = 'U' if row[block].str.contains('U') else 'C'
 
                 winning_row[fac_id] = facilityId
                 winning_row['type'] = winning_type
