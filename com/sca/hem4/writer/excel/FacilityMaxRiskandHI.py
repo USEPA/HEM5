@@ -86,8 +86,11 @@ class FacilityMaxRiskandHI(ExcelWriter, InputFile):
 
             # Population that is overlapped
             inncnt = self.model.innerblks_df['population'].loc[self.model.innerblks_df['overlap'] == 'Y'].sum()
-            outcnt = self.model.outerblks_df['population'].loc[self.model.outerblks_df['overlap'] == 'Y'].sum()
-            ovlpcnt = inncnt + outcnt
+            if not self.model.outerblks_df.empty:
+                outcnt = self.model.outerblks_df['population'].loc[self.model.outerblks_df['overlap'] == 'Y'].sum()
+                ovlpcnt = inncnt + outcnt
+            else:
+                ovlpcnt = inncnt
             riskrow.append(ovlpcnt)
 
             riskrow.append(self.incidence.iloc[0]['inc'])

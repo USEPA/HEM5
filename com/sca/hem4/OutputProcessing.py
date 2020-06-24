@@ -121,9 +121,9 @@ class Process_outputs():
         #----------- create All_Outer_Receptor output file -----------------
         all_outer_receptors = AllOuterReceptorsNonCensus(self.outdir, self.facid, self.model, self.plot_df, self.acute_yn) if altrec \
                         else AllOuterReceptors(self.outdir, self.facid, self.model, self.plot_df, self.acute_yn)
-        all_outer_receptors.write(generateOnly=self.generateOnly)
-        self.model.all_outer_receptors_df = all_outer_receptors.dataframe
         if not self.model.outerblks_df.empty:
+            all_outer_receptors.write(generateOnly=self.generateOnly)
+            self.model.all_outer_receptors_df = all_outer_receptors.dataframe
             Logger.logMessage("Completed AllOuterReceptors output")
         else:
             Logger.logMessage("No outer receptors. Did not create AllOuterReceptors output.")

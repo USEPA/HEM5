@@ -77,11 +77,11 @@ class BlockSummaryChronicNonCensus(CsvWriter, InputFile):
 
         # add a receptor type column to note if discrete or interpolated. D => discrete, I => interpolated
         inneragg[blk_type] = "D"
-        if not self.outerAgg.empty:
+        if self.outerAgg is not None:
             self.outerAgg[blk_type] = "I"
 
         # append the inner and outer values and write
-        if not self.outerAgg.empty:
+        if self.outerAgg is not None:
             self.dataframe = inneragg.append(self.outerAgg, ignore_index = True).sort_values(by=[rec_id])
         else:
             self.dataframe = inneragg

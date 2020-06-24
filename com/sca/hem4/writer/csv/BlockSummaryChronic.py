@@ -82,12 +82,12 @@ class BlockSummaryChronic(CsvWriter, InputFile):
 
         # Add a column to indicate type of census block. D => discrete, I => interpolated
         inneragg[blk_type] = "D"
-        if not self.outerAgg.empty:
+        if self.outerAgg is not None:
             self.outerAgg[blk_type] = "I"
 
 
         # append the inner and outer values and write
-        if not self.outerAgg.empty:
+        if self.outerAgg is not None:
             self.dataframe = inneragg.append(self.outerAgg, ignore_index = True).sort_values(by=[fips, block])
         else:
             self.dataframe = inneragg
