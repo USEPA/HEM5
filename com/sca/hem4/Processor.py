@@ -19,6 +19,9 @@ import traceback
 from collections import defaultdict
 import uuid
 
+from tkinter import messagebox
+
+
 threadLocal = threading.local()
 
 class Processor():
@@ -206,10 +209,17 @@ class Processor():
 #                    self.model.save.remove_folder()
 #                except:
 #                    pass
+                
+                
+         # move the log file to the run dir and re-initialize
+        Logger.archiveLog(self.model.rootoutput)
+        Logger.initializeLog()
+        
         if self.abort.is_set():
             
             
-            Logger.logMessage('HEM4 RUN GROUP: ' + str(self.model.group_name) + ' canceled')    
+            Logger.logMessage('HEM4 RUN GROUP: ' + str(self.model.group_name) + ' canceled')
+            messagebox.showinfo('Run Canceled', 'HEM4 RUN GROUP: ' + str(self.model.group_name) + ' canceled')
         
         elif len(self.skipped) == 0:
             
@@ -219,14 +229,23 @@ class Processor():
                           " facilities. Check the log tab for error messages."+
                           " Modeling results are located in the Output"+
                           " subfolder of the HEM4 folder.")
+            
+            messagebox.showinfo('Modeling Completed', "HEM4 Modeling Completed. Finished modeling all" +
+                          " facilities. Check the log tab for error messages."+
+                          " Modeling results are located in the Output"+
+                          " subfolder of the HEM4 folder.")
 
         else:
 
 #            self.model.save.remove_folder()
             
-            Logger.logMessage("HEM4 successfully modeled " + str(len(self.completed)) + 
-                              " facilities. HEM4 skipped " + str(len(self.skipped))+ 
+            Logger.logMessage("HEM4 completed " + str(len(self.completed)) + 
+                              " facilities and skipped " + str(len(self.skipped))+ 
                               " facilities. Modeling not completed for: " + "\n ".join(self.skipped))
+            messagebox.showinfo('Modeling Completed', "HEM4 completed " + str(len(self.completed)) + 
+                              " facilities and skipped " + str(len(self.skipped))+ 
+                              " facilities. Modeling not completed for: " + "\n ".join(self.skipped))
+
             
             # output skipped facilities to csv
             skipped_path = self.model.rootoutput + 'Skipped_Facilities.xlsx'
@@ -235,11 +254,12 @@ class Processor():
             
             skipped_df.to_excel(skipped_path, index=False)
 
-        # move the log file to the run dir and re-initialize
-        Logger.archiveLog(self.model.rootoutput)
-        Logger.initializeLog()
+       
         
         self.nav.reset_gui()
+
+        
+        
 
         return success
 
