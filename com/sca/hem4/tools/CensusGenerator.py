@@ -8,7 +8,7 @@ import simplejson as json
 
 nationalCensusFilepath = "C:\\Users\\Chris Stolte\\Hem4 Data\\us_blocks_2010_06082020.csv"
 changesetFilepath = "C:\\Users\\Chris Stolte\\Hem4 Data\\census-additions.xlsx"
-additionsFilepath = "C:\\Your\\Path\\Goes\\Here\\file.xlsx"
+additionsFilepath = "C:\\Users\\Chris Stolte\\Hem4 Data\\census-additions.xlsx"
 
 class CensusGenerator():
 
@@ -64,6 +64,13 @@ class CensusGenerator():
         try:
             census_df = self.readCensusFromPath(censusFilepath)
             additions_df = self.readAdditionsFromPath(additionsFilepath)
+
+            # Make sure none of these blocks are already present...
+            intersection = pd.merge(census_df, additions_df, how='inner', on=['blkid'])
+            if not intersection.empty:
+                print("Aborting additions because some blocks are already present in census data:")
+                print(intersection['blkid'].values)
+                return
 
             # Append all additions to the census df and re-generate the JSON
             census_df = census_df.append(additions_df)
@@ -264,5 +271,5 @@ class CensusGenerator():
 
 
 generator = CensusGenerator()
-generator.generateJSON(censusFilepath=nationalCensusFilepath)
+generator.generateAdditions(censusFilepath=nationalCensusFilepath, additionsFilepath=additionsFilepath)
 
