@@ -1,68 +1,30 @@
-# -*- coding: utf-8 -*-
-"""
-Created on Thu May  7 12:14:47 2020
 
-@author: David Lindsey
-"""
-
-# -*- coding: utf-8 -*-
-"""
-Spyder Editor
-
-This is a temporary script file.
-"""
 # Importing tkinter module 
 import tkinter as tk 
 import tkinter.ttk as ttk
-from functools import partial
-from PIL import ImageTk
-#from PIL import Image
-import PIL.Image
-import os
-
-from PyQt5 import QtGui
-from pandastable import Table, filedialog, np
-
-
-import shutil
-import webbrowser
-import sys
-
-
-from threading import Event
 from tkinter import messagebox
 from tkinter import scrolledtext
-import numpy as np
-
-from datetime import datetime
-from com.sca.hem4.Processor import Processor
-from com.sca.hem4.log.Logger import Logger
-from com.sca.hem4.tools.CensusUpdater import CensusUpdater
-from com.sca.hem4.model.Model import Model
-from com.sca.hem4.upload.FileUploader import FileUploader
 from tkinter.filedialog import askopenfilename
-from com.sca.hem4.checker.InputChecker import InputChecker
-from com.sca.hem4.DepositionDepletion import check_dep, check_phase
-
-
-#from pandastable import Table, filedialog, np
-from tkinter.filedialog import askopenfilename
-#from com.sca.hem4.SaveState import SaveState
 from tkinter.simpledialog import Dialog, Toplevel
 
+
+from PIL import ImageTk
+import PIL.Image
+from PyQt5 import QtGui
 
 from com.sca.hem4.Analyze import Analyze
 from com.sca.hem4.RiskReport import Summary
 from com.sca.hem4.HEM4 import *
 
-
-from concurrent.futures import ThreadPoolExecutor
-import threading
-from tkinter import messagebox
-from tkinter import scrolledtext
-import pickle
-#
 from com.sca.hem4.runner.FacilityRunner import FacilityRunner
+from com.sca.hem4.Processor import Processor
+from com.sca.hem4.log.Logger import Logger
+from com.sca.hem4.model.Model import Model
+from com.sca.hem4.upload.FileUploader import FileUploader
+from com.sca.hem4.checker.InputChecker import InputChecker
+from com.sca.hem4.DepositionDepletion import check_dep, check_phase
+#from com.sca.hem4.SaveState import SaveState
+
 from com.sca.hem4.writer.excel.FacilityMaxRiskandHI import FacilityMaxRiskandHI
 from com.sca.hem4.writer.excel.FacilityCancerRiskExp import FacilityCancerRiskExp
 from com.sca.hem4.writer.excel.FacilityTOSHIExp import FacilityTOSHIExp
@@ -70,16 +32,34 @@ from com.sca.hem4.writer.kml.KMLWriter import KMLWriter
 from com.sca.hem4.inputsfolder.InputsPackager import InputsPackager
 
 
+from com.sca.hem4.tools.CensusUpdater import CensusUpdater
 
-import traceback
+
+import shutil
+import webbrowser
+import sys
+from functools import partial
+import os
 from collections import defaultdict
 import uuid
+import glob
+import importlib
+from datetime import datetime
+import pickle
 
+ 
+from concurrent.futures import ThreadPoolExecutor
+import threading
+from threading import Event
+import traceback
 import queue
 
-import os
-import glob
-import importlib 
+
+
+import numpy as np
+from pandastable import Table, filedialog, np
+
+
 
 #%%
 
@@ -1766,7 +1746,7 @@ class Hem(Page):
 
     def after_callback(self):
         """
-        Function listens on thread RUnning HEM4 for error and completion messages
+        Function listens on thread Running HEM4 for error and completion messages
         logged via queue method
         """
         try:
@@ -1927,7 +1907,6 @@ class Hem(Page):
         if hasattr(self, 'stop'):
             self.stop.destroy()
         
-        self.lift()
         self.current_tab = self.nav
         
         #next button
@@ -2199,6 +2178,11 @@ class Log(Page):
         self.scr = scrolledtext.ScrolledText(container, wrap=tk.WORD, width=1000, height=1000, font=TEXT_FONT)
         self.scr.configure(cursor='none')
         self.scr.pack(expand=1, fill="both")
+        self.scr.bind("<Button-1>", self.interfere)
+        
+    def interfere(self, event):
+        print("Block interruption")
+        
 
          # Pack to make visible
 
