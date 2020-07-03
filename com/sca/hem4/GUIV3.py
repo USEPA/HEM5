@@ -57,7 +57,7 @@ import queue
 
 
 import numpy as np
-from pandastable import Table, filedialog, np
+#from pandastable import Table, filedialog, np
 
 
 
@@ -2209,6 +2209,9 @@ def on_closing(hem):
 if __name__ == "__main__":
     root = tk.Tk()
     w, h = root.winfo_screenwidth(), root.winfo_screenheight()
+    root.tk.call('wm', 'iconphoto', root._w, tk.PhotoImage(file='images/HEM4.png'))
+    root.title("")
+
     #root.geometry("%dx%d" % (w/2, h/2))
 #   root.iconbitmap('images/HEM4.ico')
 #    root.configure(bg="lightcyan3")

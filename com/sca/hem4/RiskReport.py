@@ -1,6 +1,7 @@
 import tkinter as tk 
 import tkinter.ttk as ttk
 from functools import partial
+from tkinter import messagebox
 from PIL import ImageTk
 #from PIL import Image
 import PIL.Image
@@ -10,6 +11,8 @@ import webbrowser
 from threading import Event
 from concurrent.futures import ThreadPoolExecutor
 import threading
+from com.sca.hem4.log.Logger import Logger
+
 
 import os
 import glob
@@ -764,11 +767,10 @@ class Summary(Page):
                     break
                 
             self.nav.log.scr.configure(state='normal')
-            self.nav.log.scr.insert(tk.INSERT, "Summary Reports Finished.")
+            self.nav.log.scr.insert(tk.INSERT, "Risk Summary Reports Finished.")
             self.nav.log.scr.insert(tk.INSERT, "\n")
             self.nav.log.scr.configure(state='disabled')
-
-                  
+            messagebox.showinfo("Summary Reports Finished", "Risk summary reports for  " + ', '.join(faclist) + " run.")
             
             if "Source Type Risk Histogram" in self.checked:
                 self.pos.destroy()

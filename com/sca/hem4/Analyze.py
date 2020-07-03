@@ -10,7 +10,7 @@ from PyQt5 import QtGui
 
 import numpy as np
 import pandas as pd
-from pandastable import Table, filedialog, np
+#from pandastable import Table, filedialog, np
 
 import os
 import glob
@@ -125,8 +125,8 @@ class Analyze(Page):
         self.fileLabel.grid(row=1, column=0, padx=10)
         
         
-        self.button_file = tk.Label(self.s4, text="Open and analyze an output file with spreadsheet tools",
-                                font=TEXT_FONT, wraplength=300, bg=self.tab_color)
+        self.button_file = tk.Label(self.s4, text="Open a facility or source category output file",
+                                font=TEXT_FONT, bg=self.tab_color)
         self.button_file.grid(row=1, column=1)
         
                                     
@@ -147,8 +147,8 @@ class Analyze(Page):
         self.mapLabel.image = mapicon # keep a reference!
         self.mapLabel.grid(row=1, column=0, padx=10)
         
-        self.button_maps = tk.Label(self.s6, text="Open and view an Acute Map html file as results on a satellite street map",
-                                font=TEXT_FONT, wraplength=300, bg=self.tab_color)
+        self.button_maps = tk.Label(self.s6, text="Open a chronic or acute map",
+                                font=TEXT_FONT, bg=self.tab_color)
         self.button_maps.grid(row=1, column=1)
         
         self.button_maps.bind("<Enter>", lambda x: self.color_config(self.button_maps, self.mapLabel, self.s6, self.highlightcolor, x))
@@ -167,8 +167,8 @@ class Analyze(Page):
         self.dashLabel.image = dashicon # keep a reference!
         self.dashLabel.grid(row=1, column=0, padx=10)
 
-        self.button_dash = tk.Label(self.s8, text="Open, view and analyze modeling results using the Dash App visualization and statistical tools",
-                                font=TEXT_FONT, wraplength=300, bg=self.tab_color)
+        self.button_dash = tk.Label(self.s8, text="View map/charts of results",
+                                font=TEXT_FONT, bg=self.tab_color)
         self.button_dash.grid(row=1, column=1)
         
         self.button_dash.bind("<Enter>", lambda x: self.color_config(self.button_dash, self.dashLabel, self.s8, self.highlightcolor, x))
