@@ -1621,8 +1621,8 @@ class Hem(Page):
 
             #tell user to check the Progress/Log section
             override = messagebox.askokcancel("Confirm HEM4 Run", "Clicking 'OK'"+
-                                   " will start HEM4. Check the log tabs for" +
-                                   " updates on facility runs.")
+                                   " will start HEM4. Check the log tab for" +
+                                   " updates on your modeling run.")
 
             if override:
 #                global instruction_instance
@@ -2209,6 +2209,9 @@ def on_closing(hem):
 if __name__ == "__main__":
     root = tk.Tk()
     w, h = root.winfo_screenwidth(), root.winfo_screenheight()
+    root.tk.call('wm', 'iconphoto', root._w, tk.PhotoImage(file='images/HEM4.png'))
+    root.title("")
+
     #root.geometry("%dx%d" % (w/2, h/2))
 #   root.iconbitmap('images/HEM4.ico')
 #    root.configure(bg="lightcyan3")

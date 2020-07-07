@@ -1,15 +1,21 @@
 import tkinter as tk 
 import tkinter.ttk as ttk
 from functools import partial
+from tkinter import messagebox
 from PIL import ImageTk
 #from PIL import Image
 import PIL.Image
+from datetime import datetime
+import pprint
+
 
 import shutil
 import webbrowser
 from threading import Event
 from concurrent.futures import ThreadPoolExecutor
 import threading
+from com.sca.hem4.log.Logger import Logger
+
 
 import os
 import glob
@@ -612,6 +618,17 @@ class Summary(Page):
         #check to see if there is a directory location
         print(self.fullpath)
         
+        #set log file to append to in folder 
+        logpath = self.fullpath +"/hem4.log"
+        
+        #open log 
+        self.logfile = open(logpath, 'a')
+        now = str(datetime.now())
+
+        
+        
+
+        
         try:
                         
             # Figure out which facilities will be included in the report
@@ -619,6 +636,7 @@ class Summary(Page):
             print(skeleton)
             fname = glob.glob(skeleton)
             print(fname)
+            
             if fname:
                 head, tail = os.path.split(fname[0])
                 groupname = tail[:tail.find('facility_max_risk_and_hi')-1]
@@ -628,6 +646,9 @@ class Summary(Page):
             else:
                 
                 Logger.logMessage("Cannot generate summaries because there is no Facility_Max_Risk_and_HI Excel file \
+                                  in the folder you selected.")
+                
+                messagebox.showinfo("Error", "Cannot generate summaries because there is no Facility_Max_Risk_and_HI Excel file \
                                   in the folder you selected.")
                 ready = False 
           
@@ -727,10 +748,14 @@ class Summary(Page):
         #if checks have been passed 
         if ready == True:
         
-                      
-              
+
          
-            running_message = "Running report on facilities: " + ', '.join(faclist)
+            running_message = "\nRunning report(s) on facilities: " + ', '.join(faclist)
+            now = str(datetime.now())
+            
+            
+            #write to log
+            self.logfile.write(now + ":    " + running_message + "\n")
             
             self.nav.log.scr.configure(state='normal')
             self.nav.log.scr.insert(tk.INSERT, running_message)
@@ -748,6 +773,8 @@ class Summary(Page):
                 self.nav.log.scr.insert(tk.INSERT, "\n")
                 self.nav.log.scr.configure(state='disabled')
                 
+                self.logfile.write(now + ":    " + report_message + "\n")
+                
                 args = reportNameArgs[reportName]
                 summaryMgr.createReport(self.fullpath, reportName, args)
                 
@@ -759,16 +786,21 @@ class Summary(Page):
                     self.nav.log.scr.insert(tk.INSERT, "\n")
                     self.nav.log.scr.configure(state='disabled')
                     
+                    self.logfile.write(now + ":    " + report_complete + "\n")
+
+                    
                 else:
                     
                     break
                 
             self.nav.log.scr.configure(state='normal')
-            self.nav.log.scr.insert(tk.INSERT, "Summary Reports Finished.")
+            self.nav.log.scr.insert(tk.INSERT, "Risk Summary Reports Finished.")
             self.nav.log.scr.insert(tk.INSERT, "\n")
             self.nav.log.scr.configure(state='disabled')
+            self.logfile.write(now + ":    " + "Risk Summary Reports Finished." + "\n")
 
-                  
+            
+            messagebox.showinfo("Summary Reports Finished", "Risk summary reports for  " + ', '.join(faclist) + " run.")
             
             if "Source Type Risk Histogram" in self.checked:
                 self.pos.destroy()
@@ -809,6 +841,12 @@ class Summary(Page):
                 
             self.folder_select['text'] = "Select output folder"
             self.nav.summaryLabel.configure(image=self.nav.summaryIcon)
+            
+            self.logfile.close()
+            
+            
+            
+            
 
 
                 
