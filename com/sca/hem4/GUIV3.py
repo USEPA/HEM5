@@ -57,7 +57,7 @@ import queue
 
 
 import numpy as np
-#from pandastable import Table, filedialog, np
+from pandastable import Table, filedialog, np
 
 
 
@@ -1621,8 +1621,8 @@ class Hem(Page):
 
             #tell user to check the Progress/Log section
             override = messagebox.askokcancel("Confirm HEM4 Run", "Clicking 'OK'"+
-                                   " will start HEM4. Check the log tabs for" +
-                                   " updates on facility runs.")
+                                   " will start HEM4. Check the log tab for" +
+                                   " updates on your modeling run.")
 
             if override:
 #                global instruction_instance
