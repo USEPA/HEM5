@@ -239,7 +239,7 @@ class AllOuterReceptors(CsvWriter, InputFile):
                
                 #  Write no more than 10,000,000 rows to a given CSV output file
                 
-                if num_rows_output <= 10000000:
+                if num_rows_output <= self.batchSize:
                     
                     # One output file
                                     
@@ -268,8 +268,8 @@ class AllOuterReceptors(CsvWriter, InputFile):
                     
                     # compute the number of CSV files (batches) to output and number of rows from outerconcs to use in 
                     # each batch.
-                    num_batches = int(round(num_rows_output/10000000))
-                    num_outerconc_rows_per_batch = int(round(10000000 / num_rows_hapemis)) * num_srcids
+                    num_batches = int(round(num_rows_output/self.batchSize))
+                    num_outerconc_rows_per_batch = int(round(self.batchSize / num_rows_hapemis)) * num_srcids
                                     
                     for k in range(num_batches):
                         start = k * num_outerconc_rows_per_batch
@@ -430,7 +430,7 @@ class AllOuterReceptors(CsvWriter, InputFile):
            
                 # Write no more than 10,000,000 rows to a given CSV output file
                 
-                if num_rows_output <= 10000000:
+                if num_rows_output <= self.batchSize:
                     
                     # One output file
                     
@@ -465,8 +465,8 @@ class AllOuterReceptors(CsvWriter, InputFile):
      
                     # compute the number of CSV files (batches) to output and number of rows from outerconcs to use in 
                     # each batch.
-                    num_batches = int(round(num_rows_output/10000000))
-                    num_outerconc_rows_per_batch = int(round(10000000 / num_rows_hapemis)) * num_srcids
+                    num_batches = int(round(num_rows_output/self.batchSize))
+                    num_outerconc_rows_per_batch = int(round(self.batchSize / num_rows_hapemis)) * num_srcids
                                     
                     for k in range(num_batches):
                         start = k * num_outerconc_rows_per_batch
