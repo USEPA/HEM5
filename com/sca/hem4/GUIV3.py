@@ -270,7 +270,7 @@ class MainView(tk.Frame):
         #%%
         
         #Options nav button
-        self.optionsLabel= tk.Label(self, text="OPTIONS", font=TAB_FONT, bg=self.main_color, height=2, anchor="w")
+        self.optionsLabel= tk.Label(self, text="REVISE CENSUS DATA", font=TAB_FONT, bg=self.main_color, height=2, anchor="w")
         self.optionsLabel.place(in_=self.container, relwidth=0.2, rely=0.18, relx=0.1)
 
 #        #add run icon with margin for highlight
@@ -2082,7 +2082,7 @@ class Options(Page):
         self.s5.grid(row=4, column=0, columnspan=2, sticky="nsew")
 
 
-        title2 = tk.Label(self.s1, text="Update Census", font=TITLE_FONT, bg=self.tab_color)
+        title2 = tk.Label(self.s1, text="Revise Census", font=TITLE_FONT, bg=self.tab_color)
         title2.grid(row=1, column=0, padx=10, sticky='W', pady=10)
 
         
@@ -2116,7 +2116,7 @@ class Options(Page):
         rileLabel.grid(row=0, column=1, padx=10, sticky='E')
         
         
-        run_button = tk.Label(self.s4, text="Update", font=TEXT_FONT, bg=self.tab_color)
+        run_button = tk.Label(self.s4, text="Revise", font=TEXT_FONT, bg=self.tab_color)
         run_button.grid(row=0, column=2, padx=5, pady=10, sticky='E')
         
         run_button.bind("<Enter>", partial(self.color_config, run_button, rileLabel, self.s4, 'light grey'))
