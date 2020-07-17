@@ -199,7 +199,7 @@ class MainView(tk.Frame):
         self.current_button = []
         
         
-        home = self.master
+        self.home = master
         self.container = tk.Frame(self, width=750, height=600, bg=self.main_color)
         self.container.pack(fill="both", expand=True)
         
@@ -432,10 +432,10 @@ class MainView(tk.Frame):
          #bind icon and label events
         closeLabel.bind("<Enter>", partial(self.color_config, closeLabel, closeLabel2, self.highlightcolor))
         closeLabel.bind("<Leave>", partial(self.color_config, closeLabel, closeLabel2, self.main_color))
-        #closeLabel.bind("<Button-1>", self.hyperlink2) 
+        closeLabel.bind("<Button-1>", partial(self.on_closing, self.hem)) 
         closeLabel2.bind("<Enter>", partial(self.color_config, closeLabel2, closeLabel, self.highlightcolor))
         closeLabel2.bind("<Leave>", partial(self.color_config, closeLabel2, closeLabel,self.main_color))
-        #closeLabel2.bind("<Button-1>", self.hyperlink2)
+        closeLabel2.bind("<Button-1>", partial(self.on_closing, self.hem))
 
         
 # setting geometry of tk window 
@@ -484,6 +484,17 @@ class MainView(tk.Frame):
     
     def hyperlink2(self, event):
         webbrowser.open_new(r"https://www3.epa.gov/ttn/scram/models/aermod/aermod_userguide.pdf")
+        
+    def on_closing(self, hem, event):
+    
+        if hem.running == True:
+        
+                hem.quit_app()
+                if hem.aborted == True:
+                    self.home.destroy()
+                    
+        else:
+            self.home.destroy()
 
 
 #%%
@@ -559,7 +570,7 @@ class Start(Page):
 #        link_to_site.grid(row=0, padx=60, pady=50, sticky='E')
 #        link_to_site.bind('<Button-1>', hyperlink1)
 
-
+    
 
 #%%
         
@@ -2080,6 +2091,10 @@ class Hem(Page):
          widget2.configure(bg=color)
          container.configure(bg=color)
          self.instruction_instance.set(" ")
+         
+         
+   
+
          
          
          
