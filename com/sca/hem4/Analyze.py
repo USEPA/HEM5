@@ -10,7 +10,7 @@ from PyQt5 import QtGui
 
 import numpy as np
 import pandas as pd
-from pandastable import Table, filedialog, np
+#from pandastable import Table, filedialog, np
 
 import os
 import glob

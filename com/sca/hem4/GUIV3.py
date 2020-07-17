@@ -57,7 +57,7 @@ import queue
 
 
 import numpy as np
-from pandastable import Table, filedialog, np
+#from pandastable import Table, filedialog, np
 
 
 
@@ -413,6 +413,29 @@ class MainView(tk.Frame):
         bookLabel2.bind("<Enter>", partial(self.color_config, bookLabel2, agLabel, self.highlightcolor))
         bookLabel2.bind("<Leave>", partial(self.color_config, bookLabel2, agLabel,self.main_color))
         bookLabel2.bind("<Button-1>", self.hyperlink2)
+        
+        
+        #exit button
+        #aermod user nav button
+        closeLabel= tk.Label(self, text="Close", font=TAB_FONT, bg=self.main_color, height=2, anchor="w")
+        closeLabel.place(in_=self.container, relwidth=0.2, rely=0.81, relx=0.1)
+
+#        #add run icon with margin for highlight
+        clo = PIL.Image.open('images\icons8-close-window-48.png').resize((30,30))
+        clonew = self.add_margin(clo, 4, 0, 4, 0)
+        
+        closeIcon = ImageTk.PhotoImage(clonew)
+        closeLabel2 = tk.Label(self, image=closeIcon, bg=self.main_color)
+        closeLabel2.image = agIcon # keep a reference!
+        closeLabel2.place(in_=self.container, relwidth=0.1, rely=0.81)
+        
+         #bind icon and label events
+        closeLabel.bind("<Enter>", partial(self.color_config, closeLabel, closeLabel2, self.highlightcolor))
+        closeLabel.bind("<Leave>", partial(self.color_config, closeLabel, closeLabel2, self.main_color))
+        closeLabel.bind("<Button-1>", self.hyperlink2) 
+        closeLabel2.bind("<Enter>", partial(self.color_config, closeLabel2, closeLabel, self.highlightcolor))
+        closeLabel2.bind("<Leave>", partial(self.color_config, closeLabel2, closeLabel,self.main_color))
+        closeLabel2.bind("<Button-1>", self.hyperlink2)
 
         
 # setting geometry of tk window 
@@ -623,7 +646,9 @@ class Hem(Page):
         
         #tab placehodler for nav
         self.current_tab = self.nav
-
+        
+        #highlight place holder for HEM4 upload buttons
+        self.current_highlight = None
         
         ##Frames for main inputs
        # self.required_inputs = tk.Frame(self, width=600, bg=self.tab_color)
@@ -727,11 +752,11 @@ class Hem(Page):
         
                                     
         self.button_file.bind("<Enter>", lambda x: self.color_config( self.button_file, self.fileLabel, self.s5, self.highlightcolor, x))
-        self.button_file.bind("<Leave>", lambda x: self.color_config( self.button_file, self.fileLabel, self.s5, self.tab_color, x))
+        self.button_file.bind("<Leave>", lambda x: self.remove_config( self.button_file, self.fileLabel, self.s5, self.tab_color, x))
         self.button_file.bind("<Button-1>", lambda x: self.uploadFacilitiesList(self.s5, self.button_file, x))
         
         self.fileLabel.bind("<Enter>", lambda x: self.color_config(self.fileLabel, self.button_file, self.s5, self.highlightcolor, x))
-        self.fileLabel.bind("<Leave>", lambda x: self.color_config(self.fileLabel, self.button_file, self.s5, self.tab_color, x))
+        self.fileLabel.bind("<Leave>", lambda x: self.remove_config(self.fileLabel, self.button_file, self.s5, self.tab_color, x))
         self.fileLabel.bind("<Button-1>",  lambda x: self.uploadFacilitiesList(self.s5, self.button_file, x))
         
 #        self.s5.bind("<Enter>", lambda x: self.container_config( self.button_file, self.fileLabel, self.s5, self.highlightcolor, x))
@@ -754,15 +779,15 @@ class Hem(Page):
         
                                     
         self.hap_file.bind("<Enter>", lambda x: self.color_config( self.hap_file, self.hapLabel, self.s6, self.highlightcolor, x))
-        self.hap_file.bind("<Leave>", lambda x: self.color_config( self.hap_file, self.hapLabel, self.s6, self.tab_color, x))
+        self.hap_file.bind("<Leave>", lambda x: self.remove_config( self.hap_file, self.hapLabel, self.s6, self.tab_color, x))
         self.hap_file.bind("<Button-1>", lambda x: self.uploadHAPEmissions(self.s6, self.hap_file, x))
         
         self.hapLabel.bind("<Enter>", lambda x: self.color_config(self.hapLabel, self.hap_file, self.s6, self.highlightcolor, x))
-        self.hapLabel.bind("<Leave>", lambda x: self.color_config(self.hapLabel, self.hap_file, self.s6, self.tab_color, x))
+        self.hapLabel.bind("<Leave>", lambda x: self.remove_config(self.hapLabel, self.hap_file, self.s6, self.tab_color, x))
         self.hapLabel.bind("<Button-1>",  lambda x: self.uploadHAPEmissions(self.s6, self.hap_file, x))
         
 #        self.s6.bind("<Enter>", lambda x: self.color_config(self.hap_file, self.hapLabel, self.s6, self.highlightcolor, x))
-#        self.s6.bind("<Leave>", lambda x: self.color_config(self.hap_file, self.hapLabel, self.s6, self.highlightcolor, x))
+#        self.s6.bind("<Leave>", lambda x: self.remove_config(self.hap_file, self.hapLabel, self.s6, self.highlightcolor, x))
 #        
 
         
@@ -782,15 +807,15 @@ class Hem(Page):
         
                                     
         self.emis_file.bind("<Enter>", lambda x: self.color_config( self.emis_file, self.emisLabel, self.s7, self.highlightcolor, x))
-        self.emis_file.bind("<Leave>", lambda x: self.color_config( self.emis_file, self.emisLabel, self.s7, self.tab_color, x))
+        self.emis_file.bind("<Leave>", lambda x: self.remove_config( self.emis_file, self.emisLabel, self.s7, self.tab_color, x))
         self.emis_file.bind("<Button-1>", lambda x: self.uploadEmissionLocations(self.s7, self.emis_file, x))
         
         self.emisLabel.bind("<Enter>", lambda x: self.color_config(self.emisLabel, self.emis_file, self.s7, self.highlightcolor, x))
-        self.emisLabel.bind("<Leave>", lambda x: self.color_config(self.emisLabel, self.emis_file, self.s7, self.tab_color, x))
+        self.emisLabel.bind("<Leave>", lambda x: self.remove_config(self.emisLabel, self.emis_file, self.s7, self.tab_color, x))
         self.emisLabel.bind("<Button-1>",  lambda x: self.uploadEmissionLocations(self.s7, self.emis_file, x))
 
 #        self.s7.bind("<Enter>", lambda x: self.color_config(self.emis_file, self.emisLabel, self.s7, self.highlightcolor, x))
-#        self.s7.bind("<Leave>", lambda x: self.color_config(self.emis_file, self.emisLabel, self.s7, self.highlightcolor, x))
+#        self.s7.bind("<Leave>", lambda x: self.remove_config(self.emis_file, self.emisLabel, self.s7, self.highlightcolor, x))
 #        
         
         
@@ -946,7 +971,7 @@ class Hem(Page):
                         child.destroy()
                     
                 
-                
+        
         
 
     def uploadHAPEmissions(self, container, label, event):
@@ -1185,6 +1210,7 @@ class Hem(Page):
              # Update the UI
             [self.scr.insert(tk.INSERT, msg) for msg in self.model.emisvar.log]
             label['text'] = fullpath.split("\\")[-1]
+            self.current_highlight = None
  
     
     def set_altrec(self):
@@ -1227,11 +1253,11 @@ class Hem(Page):
         
                                     
         self.ur_file.bind("<Enter>", lambda x: self.color_config( self.ur_file, self.urLabel, self.optional.s8, self.highlightcolor, x))
-        self.ur_file.bind("<Leave>", lambda x: self.color_config( self.ur_file, self.urLabel, self.optional.s8, self.tab_color, x))
+        self.ur_file.bind("<Leave>", lambda x: self.remove_config( self.ur_file, self.urLabel, self.optional.s8, self.tab_color, x))
         self.ur_file.bind("<Button-1>", lambda x: self.optional.uploadUserReceptors(self.optional.s8, self.ur_file, x))
         
         self.urLabel.bind("<Enter>", lambda x: self.color_config(self.urLabel, self.ur_file, self.optional.s8, self.highlightcolor, x))
-        self.urLabel.bind("<Leave>", lambda x: self.color_config(self.urLabel, self.ur_file, self.optional.s8, self.tab_color, x))
+        self.urLabel.bind("<Leave>", lambda x: self.remove_config(self.urLabel, self.ur_file, self.optional.s8, self.tab_color, x))
         self.urLabel.bind("<Button-1>",  lambda x: self.optional.uploadUserReceptors(self.optional.s8, self.ur_file, x))
 
         
@@ -1263,11 +1289,11 @@ class Hem(Page):
         
                                     
         self.urep_file.bind("<Enter>", lambda x: self.color_config( self.urep_file, self.urepLabel, self.s10, self.highlightcolor, x))
-        self.urep_file.bind("<Leave>", lambda x: self.color_config( self.urep_file, self.urepLabel, self.s10, self.tab_color, x))
+        self.urep_file.bind("<Leave>", lambda x: self.remove_config( self.urep_file, self.urepLabel, self.s10, self.tab_color, x))
         self.urep_file.bind("<Button-1>", lambda x: self.uploadAltReceptors(self.alturep, self.urep_file, x))
         
         self.urepLabel.bind("<Enter>", lambda x: self.color_config(self.urepLabel, self.urep_file, self.s10, self.highlightcolor, x))
-        self.urepLabel.bind("<Leave>", lambda x: self.color_config(self.urepLabel, self.urep_file, self.s10, self.tab_color, x))
+        self.urepLabel.bind("<Leave>", lambda x: self.remove_config(self.urepLabel, self.urep_file, self.s10, self.tab_color, x))
         self.urepLabel.bind("<Button-1>",  lambda x: self.uploadAltReceptors(self.s10, self.urep_file, x))
         
   
@@ -1293,11 +1319,11 @@ class Hem(Page):
         
                                     
         self.emisvar_file.bind("<Enter>", lambda x: self.color_config( self.emisvar_file, self.emisvarLabel, self.optional.s9, self.highlightcolor, x))
-        self.emisvar_file.bind("<Leave>", lambda x: self.color_config( self.emisvar_file, self.emisvarLabel, self.optional.s9, self.tab_color, x))
+        self.emisvar_file.bind("<Leave>", lambda x: self.remove_config( self.emisvar_file, self.emisvarLabel, self.optional.s9, self.tab_color, x))
         self.emisvar_file.bind("<Button-1>", lambda x: self.uploadVariation(self.optional.s9, self.emisvar_file, x))
         
         self.emisvarLabel.bind("<Enter>", lambda x: self.color_config(self.emisvarLabel, self.emisvar_file, self.optional.s9, self.highlightcolor, x))
-        self.emisvarLabel.bind("<Leave>", lambda x: self.color_config(self.emisvarLabel, self.emisvar_file, self.optional.s9, self.tab_color, x))
+        self.emisvarLabel.bind("<Leave>", lambda x: self.remove_config(self.emisvarLabel, self.emisvar_file, self.optional.s9, self.tab_color, x))
         self.emisvarLabel.bind("<Button-1>",  lambda x: self.uploadVariation(self.optional.s9, self.emisvar_file, x))
 
 
@@ -1356,11 +1382,11 @@ class Hem(Page):
         
                                     
         self.buoy_file.bind("<Enter>", lambda x: self.color_config( self.buoy_file, self.buoyLabel, self.optional.s4, self.highlightcolor, x))
-        self.buoy_file.bind("<Leave>", lambda x: self.color_config( self.buoy_file, self.buoyLabel, self.optional.s4, self.tab_color, x))
+        self.buoy_file.bind("<Leave>", lambda x: self.remove_config( self.buoy_file, self.buoyLabel, self.optional.s4, self.tab_color, x))
         self.buoy_file.bind("<Button-1>", lambda x: self.optional.uploadbuoyant(self.optional.s4, self.buoy_file, x))
         
         self.buoyLabel.bind("<Enter>", lambda x: self.color_config(self.buoyLabel, self.buoy_file, self.optional.s4, self.highlightcolor, x))
-        self.buoyLabel.bind("<Leave>", lambda x: self.color_config(self.buoyLabel, self.buoy_file, self.optional.s4, self.tab_color, x))
+        self.buoyLabel.bind("<Leave>", lambda x: self.remove_config(self.buoyLabel, self.buoy_file, self.optional.s4, self.tab_color, x))
         self.buoyLabel.bind("<Button-1>",  lambda x: self.optional.uploadbuoyant(self.optional.s4, self.buoy_file, x))
 
         
@@ -1384,11 +1410,11 @@ class Hem(Page):
         
                                     
         self.poly_file.bind("<Enter>", lambda x: self.color_config( self.poly_file, self.polyLabel, self.optional.s5, self.highlightcolor, x))
-        self.poly_file.bind("<Leave>", lambda x: self.color_config( self.poly_file, self.polyLabel, self.optional.s5, self.tab_color, x))
+        self.poly_file.bind("<Leave>", lambda x: self.remove_config( self.poly_file, self.polyLabel, self.optional.s5, self.tab_color, x))
         self.poly_file.bind("<Button-1>", lambda x: self.optional.uploadPolyvertex(self.optional.s5, self.poly_file, x))
         
         self.polyLabel.bind("<Enter>", lambda x: self.color_config(self.polyLabel, self.poly_file, self.optional.s5, self.highlightcolor, x))
-        self.polyLabel.bind("<Leave>", lambda x: self.color_config(self.polyLabel, self.poly_file, self.optional.s5, self.tab_color, x))
+        self.polyLabel.bind("<Leave>", lambda x: self.remove_config(self.polyLabel, self.poly_file, self.optional.s5, self.tab_color, x))
         self.polyLabel.bind("<Button-1>",  lambda x: self.optional.uploadPolyvertex(self.optional.s5, self.poly_file, x))
 
 
@@ -1411,11 +1437,11 @@ class Hem(Page):
         
                                     
         self.bldgdw_file.bind("<Enter>", lambda x: self.color_config( self.bldgdw_file, self.bldgdwLabel, self.optional.s6, self.highlightcolor, x))
-        self.bldgdw_file.bind("<Leave>", lambda x: self.color_config( self.bldgdw_file, self.bldgdwLabel, self.optional.s6, self.tab_color, x))
+        self.bldgdw_file.bind("<Leave>", lambda x: self.remove_config( self.bldgdw_file, self.bldgdwLabel, self.optional.s6, self.tab_color, x))
         self.bldgdw_file.bind("<Button-1>", lambda x: self.optional.uploadBuildingDownwash(self.optional.s6, self.bldgdw_file, x))
         
         self.bldgdwLabel.bind("<Enter>", lambda x: self.color_config(self.bldgdwLabel, self.bldgdw_file, self.optional.s6, self.highlightcolor, x))
-        self.bldgdwLabel.bind("<Leave>", lambda x: self.color_config(self.bldgdwLabel, self.bldgdw_file, self.optional.s6, self.tab_color, x))
+        self.bldgdwLabel.bind("<Leave>", lambda x: self.remove_config(self.bldgdwLabel, self.bldgdw_file, self.optional.s6, self.tab_color, x))
         self.bldgdwLabel.bind("<Button-1>",  lambda x: self.optional.uploadBuildingDownwash(self.optional.s6, self.bldgdw_file, x))
 
         
@@ -1440,11 +1466,11 @@ class Hem(Page):
         
                                     
         self.particle_file.bind("<Enter>", lambda x: self.color_config( self.particle_file, self.particleLabel, self.depdeplt.s4, self.highlightcolor, x))
-        self.particle_file.bind("<Leave>", lambda x: self.color_config( self.particle_file, self.particleLabel, self.depdeplt.s4, self.tab_color, x))
+        self.particle_file.bind("<Leave>", lambda x: self.remove_config( self.particle_file, self.particleLabel, self.depdeplt.s4, self.tab_color, x))
         self.particle_file.bind("<Button-1>", lambda x: self.depdeplt.uploadParticle(self.model.depdeplt, self.depdeplt.s4, self.particle_file, x))
         
         self.particleLabel.bind("<Enter>", lambda x: self.color_config(self.particleLabel, self.particle_file, self.depdeplt.s4, self.highlightcolor, x))
-        self.particleLabel.bind("<Leave>", lambda x: self.color_config(self.particleLabel, self.particle_file, self.depdeplt.s4, self.tab_color, x))
+        self.particleLabel.bind("<Leave>", lambda x: self.remove_config(self.particleLabel, self.particle_file, self.depdeplt.s4, self.tab_color, x))
         self.particleLabel.bind("<Button-1>",  lambda x: self.depdeplt.uploadParticle(self.model.depdeplt, self.depdeplt.s4, self.particle_file, x))
 
          
@@ -1469,11 +1495,11 @@ class Hem(Page):
         
                                     
         self.land_file.bind("<Enter>", lambda x: self.color_config( self.land_file, self.landLabel, self.depdeplt.s5, self.highlightcolor, x))
-        self.land_file.bind("<Leave>", lambda x: self.color_config( self.land_file, self.landLabel, self.depdeplt.s5, self.tab_color, x))
+        self.land_file.bind("<Leave>", lambda x: self.remove_config( self.land_file, self.landLabel, self.depdeplt.s5, self.tab_color, x))
         self.land_file.bind("<Button-1>", lambda x: self.depdeplt.uploadLandUse(self.depdeplt.s5, self.land_file, x))
         
         self.landLabel.bind("<Enter>", lambda x: self.color_config(self.landLabel, self.land_file, self.depdeplt.s5, self.highlightcolor, x))
-        self.landLabel.bind("<Leave>", lambda x: self.color_config(self.landLabel, self.land_file, self.depdeplt.s5, self.tab_color, x))
+        self.landLabel.bind("<Leave>", lambda x: self.remove_config(self.landLabel, self.land_file, self.depdeplt.s5, self.tab_color, x))
         self.landLabel.bind("<Button-1>",  lambda x: self.depdeplt.uploadLandUse(self.depdeplt.s5, self.land_file, x))
 
 
@@ -1495,11 +1521,11 @@ class Hem(Page):
         
                                     
         self.seasons_file.bind("<Enter>", lambda x: self.color_config( self.seasons_file, self.seasonsLabel, self.depdeplt.s6, self.highlightcolor, x))
-        self.seasons_file.bind("<Leave>", lambda x: self.color_config( self.seasons_file, self.seasonsLabel, self.depdeplt.s6, self.tab_color, x))
+        self.seasons_file.bind("<Leave>", lambda x: self.remove_config( self.seasons_file, self.seasonsLabel, self.depdeplt.s6, self.tab_color, x))
         self.seasons_file.bind("<Button-1>", lambda x: self.depdeplt.uploadSeasons(self.depdeplt.s6, self.seasons_file, x))
         
         self.seasonsLabel.bind("<Enter>", lambda x: self.color_config(self.seasonsLabel, self.seasons_file, self.depdeplt.s6, self.highlightcolor, x))
-        self.seasonsLabel.bind("<Leave>", lambda x: self.color_config(self.seasonsLabel, self.seasons_file, self.depdeplt.s6, self.tab_color, x))
+        self.seasonsLabel.bind("<Leave>", lambda x: self.remove_config(self.seasonsLabel, self.seasons_file, self.depdeplt.s6, self.tab_color, x))
         self.seasonsLabel.bind("<Button-1>",  lambda x: self.depdeplt.uploadSeasons(self.depdeplt.s6, self.seasons_file, x))
 
 
@@ -1923,118 +1949,138 @@ class Hem(Page):
         self.running = False
   
 #%%
+    
         
     def color_config(self, widget1, widget2, container, color, event):
         
          widget1.configure(bg=color)
          widget2.configure(bg=color)
-         container.configure(bg=color)  
+         container.configure(bg=color)
          
-         #serve instructions
-         if self.hapLabel in [widget1, widget2]:
-             if self.instruction_instance.get() == " ":
+         if self.current_highlight == None:
+         
+             #serve instructions
+             if self.hapLabel in [widget1, widget2]:
+                 if self.instruction_instance.get() == " ":
+                     
+                     self.browse("instructions/hap_browse.txt")
+                     
+                 else:
+                     self.instruction_instance.set(" ")
+                    
+             elif self.emisLabel in [widget1, widget2]:
+                  
+                 if self.instruction_instance.get() == " ":
+                     
+                     self.browse("instructions/emis_browse.txt")
+                     
+                 else:
+                     self.instruction_instance.set(" ")
+                     
                  
-                 self.browse("instructions/hap_browse.txt")
+             elif self.fileLabel in [widget1, widget2]:
+                 
+                 if self.instruction_instance.get() == " ":
+                     
+                     self.browse("instructions/fac_browse.txt")
+                     
+                 else:
+                     self.instruction_instance.set(" ")
+                     
+    
+             elif "Please select an alternate receptor CSV file:" in [widget1['text'], widget2['text']]:
+                 
+                 if self.instruction_instance.get() == " ":
+                     
+                     self.browse("instructions/urepalt_browse.txt")
+                     
+                 else:
+                     self.instruction_instance.set(" ")
+                     
+                     
+             elif "Please select associated Buoyant Line Parameters file" in [widget1['text'], widget2['text']]:
+                 
+                 if self.optional.instruction_instance.get() == " ":
+                     
+                     self.optional.browse("instructions/buoyant_browse.txt")
+                     
+                 else:
+                     self.optional.instruction_instance.set(" ")
+                     
+                                      
+             elif "Please select associated Polygon Vertex file" in [widget1['text'], widget2['text']]:
+                 
+                 if self.optional.instruction_instance.get() == " ":
+                     
+                     self.optional.browse("instructions/poly_browse.txt")
+                     
+                 else:
+                     self.optional.instruction_instance.set(" ")
+                     
+             elif 'Please select a User Receptors file:' in [widget1['text'], widget2['text']]:
+                 
+                 if self.optional.instruction_instance.get() == " ":
+                     
+                     self.browse("instructions/urep_browse.txt")
+                     
+                 else:
+                     self.optional.instruction_instance.set(" ")
+                     
+            
+             elif "Please select associated Building Dimensions file" in [widget1['text'], widget2['text']]:
+                 
+                 if self.optional.instruction_instance.get() == " ":
+                     
+                     self.optional.browse("instructions/bd_browse.txt")
+                     
+                 else:
+                     self.optional.instruction_instance.set(" ")
+                 
+            
+             elif "Please select Particle Size File" in [widget1['text'], widget2['text']]:
+                 
+                 if self.depdeplt.instruction_instance.get() == " ":
+                     
+                     self.depdeplt.browse("instructions/dep_part_browse.txt")
+                     
+                 else:
+                     self.depdeplt.instruction_instance.set(" ")
+                     
+                     
+             elif "Please select Land Use file" in [widget1['text'], widget2['text']]:
+                 
+                 if self.depdeplt.instruction_instance.get() == " ":
+                     
+                     self.depdeplt.browse("instructions/dep_land_browse.txt")
+                     
+                 else:
+                     self.depdeplt.instruction_instance.set(" ")
+                     
+             elif "Please select Month-to-Season Vegetation file" in [widget1['text'], widget2['text']]:
+                 
+                 if self.depdeplt.instruction_instance.get() == " ":
+                     
+                     self.depdeplt.browse("instructions/dep_veg_browse.txt")
+                     
+                 else:
+                     self.depdeplt.instruction_instance.set(" ")
                  
              else:
-                 self.instruction_instance.set(" ")
-                
-         elif self.emisLabel in [widget1, widget2]:
-              
-             if self.instruction_instance.get() == " ":
-                 
-                 self.browse("instructions/emis_browse.txt")
-                 
-             else:
-                 self.instruction_instance.set(" ")
-                 
-             
-         elif self.fileLabel in [widget1, widget2]:
-             
-             if self.instruction_instance.get() == " ":
-                 
-                 self.browse("instructions/fac_browse.txt")
-                 
-             else:
-                 self.instruction_instance.set(" ")
-                 
+                self.current_highlight = None
+            
+            
+           
+#         print(self.current_highlight)
+         
+    
 
-         elif "Please select an alternate receptor CSV file:" in [widget1['text'], widget2['text']]:
-             
-             if self.instruction_instance.get() == " ":
-                 
-                 self.browse("instructions/urepalt_browse.txt")
-                 
-             else:
-                 self.instruction_instance.set(" ")
-                 
-                 
-         elif "Please select associated Buoyant Line Parameters file" in [widget1['text'], widget2['text']]:
-             
-             if self.optional.instruction_instance.get() == " ":
-                 
-                 self.optional.browse("instructions/buoyant_browse.txt")
-                 
-             else:
-                 self.optional.instruction_instance.set(" ")
-                 
-                                  
-         elif "Please select associated Polygon Vertex file" in [widget1['text'], widget2['text']]:
-             
-             if self.optional.instruction_instance.get() == " ":
-                 
-                 self.optional.browse("instructions/poly_browse.txt")
-                 
-             else:
-                 self.optional.instruction_instance.set(" ")
-                 
-         elif 'Please select a User Receptors file:' in [widget1['text'], widget2['text']]:
-             
-             if self.optional.instruction_instance.get() == " ":
-                 
-                 self.browse("instructions/urep_browse.txt")
-                 
-             else:
-                 self.optional.instruction_instance.set(" ")
-                 
+    def remove_config(self, widget1, widget2, container, color, event):
         
-         elif "Please select associated Building Dimensions file" in [widget1['text'], widget2['text']]:
-             
-             if self.optional.instruction_instance.get() == " ":
-                 
-                 self.optional.browse("instructions/bd_browse.txt")
-                 
-             else:
-                 self.optional.instruction_instance.set(" ")
-             
-        
-         elif "Please select Particle Size File" in [widget1['text'], widget2['text']]:
-             
-             if self.depdeplt.instruction_instance.get() == " ":
-                 
-                 self.depdeplt.browse("instructions/dep_part_browse.txt")
-                 
-             else:
-                 self.depdeplt.instruction_instance.set(" ")
-                 
-                 
-         elif "Please select Land Use file" in [widget1['text'], widget2['text']]:
-             
-             if self.depdeplt.instruction_instance.get() == " ":
-                 
-                 self.depdeplt.browse("instructions/dep_land_browse.txt")
-                 
-             else:
-                 self.depdeplt.instruction_instance.set(" ")
-                 
-         elif "Please select Month-to-Season Vegetation file" in [widget1['text'], widget2['text']]:
-             
-             if self.depdeplt.instruction_instance.get() == " ":
-                 
-                 self.depdeplt.browse("instructions/dep_veg_browse.txt")
-                 
-             else:
-                 self.depdeplt.instruction_instance.set(" ")
+         widget1.configure(bg=color)
+         widget2.configure(bg=color)
+         container.configure(bg=color)
+         self.instruction_instance.set(" ")
+         
          
          
     def lift_page(self, widget1, widget2, page, previous):
