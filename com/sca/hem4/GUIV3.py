@@ -414,7 +414,7 @@ class MainView(tk.Frame):
         bookLabel2.bind("<Leave>", partial(self.color_config, bookLabel2, agLabel,self.main_color))
         bookLabel2.bind("<Button-1>", self.hyperlink2)
         
-        
+        #%%        
         #exit button
         #aermod user nav button
         closeLabel= tk.Label(self, text="CLOSE", font=TAB_FONT, bg=self.main_color, height=2, anchor="w")
@@ -1722,10 +1722,39 @@ class Hem(Page):
         self.running = True
         self.disable_buttons()
         
-        self.stop = tk.Button(self.meta_two, text="ABORT HEM RUN", bg='lightgrey', relief='solid', borderwidth=2,
-                    command=self.quit_app, font=TEXT_FONT, padx=20, pady=20)
-        self.stop.grid(row=0, column=2, sticky='E')
         
+        
+        
+         #exit button
+        #aermod user nav button
+        abortLabel= tk.Label(self.nav, text="ABORT HEM RUN", font=TAB_FONT, bg=self.main_color, height=2, anchor="w")
+        abortLabel.place(in_=self.nav.container, relwidth=0.2, rely=0.54, relx=0.1)
+
+#        #add run icon with margin for highlight
+        abr = PIL.Image.open('images\icons8-close-window-48.png').resize((30,30))
+        abrnew = self.add_margin(abr, 4, 0, 4, 0)
+        
+        abrIcon = ImageTk.PhotoImage(abrnew)
+        abortLabel2 = tk.Label(self.nav, image=abrIcon, bg=self.main_color)
+        abortLabel2.image = abrIcon # keep a reference!
+        abortLabel2.place(in_=self.container, relwidth=0.1, rely=0.54)
+        
+         #bind icon and label events
+        abortLabel.bind("<Enter>", partial(self.color_config, abortLabel, abortLabel2, self.highlightcolor))
+        abortLabel.bind("<Leave>", partial(self.color_config, abortLabel, abortLabel2, self.main_color))
+#        abortLabel.bind("<Button-1>", partial(self.on_closing, self.hem)) 
+        abortLabel2.bind("<Enter>", partial(self.color_config, abortLabel2, abortLabel, self.highlightcolor))
+        abortLabel2.bind("<Leave>", partial(self.color_config, abortLabel2, abortLabel,self.main_color))
+#        abortLabel2.bind("<Button-1>", partial(self.on_closing, self.hem))
+
+       
+        
+        
+        
+#        self.stop = tk.Button(self.meta_two, text="ABORT HEM RUN", bg='lightgrey', relief='solid', borderwidth=2,
+#                    command=self.quit_app, font=TEXT_FONT, padx=20, pady=20)
+#        self.stop.grid(row=0, column=2, sticky='E')
+#        
 
         
 
