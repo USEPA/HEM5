@@ -371,7 +371,7 @@ class MainView(tk.Frame):
     
         #user nav button
         ugLabel= tk.Label(self, text="HEM4 USER GUIDE", font=TAB_FONT, bg=self.main_color, height=2, anchor="w")
-        ugLabel.place(in_=self.container, relwidth=0.2, rely=0.54, relx=0.1)
+        ugLabel.place(in_=self.container, relwidth=0.2, rely=0.72, relx=0.1)
 
 #        #add run icon with margin for highlight
         ug = PIL.Image.open('images\icons8-user-manual-48.png').resize((30,30))
@@ -380,7 +380,7 @@ class MainView(tk.Frame):
         ugIcon = ImageTk.PhotoImage(ugnew)
         bookLabel = tk.Label(self, image=ugIcon, bg=self.main_color)
         bookLabel.image = ugIcon # keep a reference!
-        bookLabel.place(in_=self.container, relwidth=0.1, rely=0.54)
+        bookLabel.place(in_=self.container, relwidth=0.1, rely=0.72)
         
          #bind icon and label events
         ugLabel.bind("<Enter>", partial(self.color_config, ugLabel, bookLabel, self.highlightcolor))
@@ -395,7 +395,7 @@ class MainView(tk.Frame):
         
         #aermod user nav button
         agLabel= tk.Label(self, text="AERMOD USER GUIDE", font=TAB_FONT, bg=self.main_color, height=2, anchor="w")
-        agLabel.place(in_=self.container, relwidth=0.2, rely=0.63, relx=0.1)
+        agLabel.place(in_=self.container, relwidth=0.2, rely=0.81, relx=0.1)
 
 #        #add run icon with margin for highlight
         ag = PIL.Image.open('images\icons8-user-manual-48.png').resize((30,30))
@@ -404,7 +404,7 @@ class MainView(tk.Frame):
         agIcon = ImageTk.PhotoImage(agnew)
         bookLabel2 = tk.Label(self, image=agIcon, bg=self.main_color)
         bookLabel2.image = agIcon # keep a reference!
-        bookLabel2.place(in_=self.container, relwidth=0.1, rely=0.63)
+        bookLabel2.place(in_=self.container, relwidth=0.1, rely=0.81)
         
          #bind icon and label events
         agLabel.bind("<Enter>", partial(self.color_config, agLabel, bookLabel2, self.highlightcolor))
@@ -417,8 +417,8 @@ class MainView(tk.Frame):
         
         #exit button
         #aermod user nav button
-        closeLabel= tk.Label(self, text="Close", font=TAB_FONT, bg=self.main_color, height=2, anchor="w")
-        closeLabel.place(in_=self.container, relwidth=0.2, rely=0.81, relx=0.1)
+        closeLabel= tk.Label(self, text="CLOSE", font=TAB_FONT, bg=self.main_color, height=2, anchor="w")
+        closeLabel.place(in_=self.container, relwidth=0.2, rely=0.90, relx=0.1)
 
 #        #add run icon with margin for highlight
         clo = PIL.Image.open('images\icons8-close-window-48.png').resize((30,30))
@@ -426,16 +426,16 @@ class MainView(tk.Frame):
         
         closeIcon = ImageTk.PhotoImage(clonew)
         closeLabel2 = tk.Label(self, image=closeIcon, bg=self.main_color)
-        closeLabel2.image = agIcon # keep a reference!
-        closeLabel2.place(in_=self.container, relwidth=0.1, rely=0.81)
+        closeLabel2.image = closeIcon # keep a reference!
+        closeLabel2.place(in_=self.container, relwidth=0.1, rely=0.90)
         
          #bind icon and label events
         closeLabel.bind("<Enter>", partial(self.color_config, closeLabel, closeLabel2, self.highlightcolor))
         closeLabel.bind("<Leave>", partial(self.color_config, closeLabel, closeLabel2, self.main_color))
-        closeLabel.bind("<Button-1>", self.hyperlink2) 
+        #closeLabel.bind("<Button-1>", self.hyperlink2) 
         closeLabel2.bind("<Enter>", partial(self.color_config, closeLabel2, closeLabel, self.highlightcolor))
         closeLabel2.bind("<Leave>", partial(self.color_config, closeLabel2, closeLabel,self.main_color))
-        closeLabel2.bind("<Button-1>", self.hyperlink2)
+        #closeLabel2.bind("<Button-1>", self.hyperlink2)
 
         
 # setting geometry of tk window 
