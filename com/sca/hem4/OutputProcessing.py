@@ -119,14 +119,21 @@ class Process_outputs():
 
         
         #----------- create All_Outer_Receptor output file -----------------
-        all_outer_receptors = AllOuterReceptorsNonCensus(self.outdir, self.facid, self.model, self.plot_df, self.acute_yn) if altrec \
-                        else AllOuterReceptors(self.outdir, self.facid, self.model, self.plot_df, self.acute_yn)
-        if not self.model.outerblks_df.empty:
-            all_outer_receptors.write(generateOnly=self.generateOnly)
-            self.model.all_outer_receptors_df = all_outer_receptors.dataframe
-            Logger.logMessage("Completed AllOuterReceptors output")
-        else:
-            Logger.logMessage("No outer receptors. Did not create AllOuterReceptors output.")
+        try:
+            
+            all_outer_receptors = AllOuterReceptorsNonCensus(self.outdir, self.facid, self.model, self.plot_df, self.acute_yn) if altrec \
+                            else AllOuterReceptors(self.outdir, self.facid, self.model, self.plot_df, self.acute_yn)
+            if not self.model.outerblks_df.empty:
+                all_outer_receptors.write(generateOnly=self.generateOnly)
+                self.model.all_outer_receptors_df = all_outer_receptors.dataframe
+                Logger.logMessage("Completed AllOuterReceptors output")
+            else:
+                Logger.logMessage("No outer receptors. Did not create AllOuterReceptors output.")
+                
+        except BaseException as e:
+        
+            var = traceback.format_exc()
+            Logger.logMessage(var)
 
         if self.abort.is_set():
             Logger.logMessage("Terminating output processing...")
@@ -244,6 +251,7 @@ class Process_outputs():
         blockrows = np.where(self.model.block_summary_chronic_df[overlap] == 'Y')[0]
         if len(blockrows) > 0:
             block_summary_chronic.data[blockrows, 10:25] = replacement
+
 
         # Now wite the RingSummaryChronic and BlockSummaryChronic outputs
         ring_summary_chronic.write()
