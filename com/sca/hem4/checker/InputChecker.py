@@ -48,7 +48,7 @@ class InputChecker():
         except AttributeError:
             logMsg = ("Facilities list options file uploaded incorrectly," + 
                       " please try again.")
-            messagebox.showinfo("Facilities list options file uploaded incorrectly," + 
+            messagebox.showinfo("Upload Error", "Facilities list options file uploaded incorrectly," + 
                       " please try again.")
             
             result['result'] = logMsg
@@ -59,7 +59,7 @@ class InputChecker():
             if self.model.faclist.dataframe.empty:
                 logMsg = ("There was an error uploading Facilities Options List" + 
                           " file, please try again.")
-                messagebox.showinfo("There was an error uploading Facilities Options List" + 
+                messagebox.showinfo("Upload Error", "There was an error uploading Facilities Options List" + 
                           " file, please try again.")
                 
                 result['result'] = logMsg
@@ -80,7 +80,7 @@ class InputChecker():
             self.model.hapemis.dataframe
         except AttributeError:
             logMsg2 = "HAP Emissions file uploaded incorrectly, please try again."
-            messagebox.showinfo("HAP Emissions file uploaded incorrectly, please try again.")
+            messagebox.showinfo("Upload Error", "HAP Emissions file uploaded incorrectly, please try again.")
             result['result'] = logMsg2
             result['reset'] = 'hap'
             
@@ -89,7 +89,7 @@ class InputChecker():
             if self.model.hapemis.dataframe.empty:
                 logMsg2 = ("There was an error uploading HAP Emissions file," +
                            " please try again.")
-                messagebox.showinfo("There was an error uploading HAP Emissions file," +
+                messagebox.showinfo("Upload Error", "There was an error uploading HAP Emissions file," +
                            " please try again.")
                 
                 result['result'] = logMsg2
@@ -102,7 +102,7 @@ class InputChecker():
              self.model.emisloc.dataframe
         except AttributeError:
             logMsg3 = "Emissions Locations file uploaded incorrectly, please try again."
-            messagebox.showinfo("Emissions Locations file uploaded incorrectly, please try again.")
+            messagebox.showinfo("Upload Error", "Emissions Locations file uploaded incorrectly, please try again.")
             
             result['result'] = logMsg3
             return result
@@ -110,7 +110,7 @@ class InputChecker():
             if self.model.emisloc.dataframe.empty:
                 logMsg3 = ("There was an error uploading Emissions Locations" + 
                            " file, please try again.")
-                messagebox.showinfo("There was an error uploading Emissions Locations" + 
+                messagebox.showinfo("Upload Error", "There was an error uploading Emissions Locations" + 
                            " file, please try again.")
                 
                 result['result'] = logMsg3
@@ -159,7 +159,7 @@ class InputChecker():
                     logMsg7 = ("User receptors are specified in the Facilities" +
                               " List Options file, please upload user recptors" + 
                               " for " + ", ".join(list(urlist)))
-                    messagebox.showinfo("User receptors are specified in the Facilities" +
+                    messagebox.showinfo("Missing User Receptors", "User receptors are specified in the Facilities" +
                               " List Options file, please upload user recptors" + 
                               " for "+ ", ".join(list(urlist)))
                     
@@ -180,7 +180,7 @@ class InputChecker():
                         logMsg7b = ("Facilities: " + ",".join(list(missing)) + 
                                     " are missing user receptors that were" +
                                     " indicated in the Facilities list options file")
-                        messagebox.showinfo("Facilities: " + ", ".join(list(missing)) + 
+                        messagebox.showinfo("Missing User Receptors", "Facilities: " + ", ".join(list(missing)) + 
                                     " are missing user receptors that were" +
                                     " indicated in the Facilities list options file")
             
@@ -199,7 +199,7 @@ class InputChecker():
                     logMsg8 = ("Buoyant Line parameters are specified in the " + 
                                " Facilities List Options file, please upload " + 
                                " buoyant line sources for " + ", ".join(list(buoylist)) )
-                    messagebox.showinfo("Buoyant Line parameters are specified in the " + 
+                    messagebox.showinfo("Missing Buoyant Line Parameters", "Buoyant Line parameters are specified in the " + 
                                " Facilities List Options file, please upload " + 
                                " buoyant line sources for " + ", ".join(list(buoylist)) )
 
@@ -221,7 +221,7 @@ class InputChecker():
                                     " are missing bouyant line sources that" +
                                     " were indicated in the Facilities list" +
                                     " options file.")
-                        messagebox.showinfo("Facilities: " + ",".join(list(missing)) + 
+                        messagebox.showinfo("MIssing Buoyant Line sources", "Facilities: " + ",".join(list(missing)) + 
                                     " are missing bouyant line sources that" +
                                     " were indicated in the Facilities list" +
                                     " options file.")
@@ -245,7 +245,7 @@ class InputChecker():
                     logMsg9 = ("Polyvertex parameters are specified in the " + 
                                " Facilities List Options file, please upload " + 
                                " polyvertex source file for " + ", ".join(list(polylist)))
-                    messagebox.showinfo("Polyvertex parameters are specified in the " + 
+                    messagebox.showinfo("Missing Polyvertex parameters", "Polyvertex parameters are specified in the " + 
                                " Facilities List Options file, please upload " + 
                                " polyvertex source file for " + ", ".join(list(polylist)))
                     
@@ -268,7 +268,7 @@ class InputChecker():
                                     " are missing polyvertex sources that" +
                                     " were indicated in the Facilities list" +
                                     " options file.")
-                        messagebox.showinfo("Facilities: " + ",".join(list(missing)) + 
+                        messagebox.showinfo("Missing Polyvertex sources", "Facilities: " + ",".join(list(missing)) + 
                                     " are missing polyvertex sources that" +
                                     " were indicated in the Facilities list" +
                                     " options file.")
@@ -294,7 +294,7 @@ class InputChecker():
                             
                             logMsg9c = ("Source ids for Emissions Locations and Polygon Vertex file"+ 
                                        " do not match, please upload corresponding files.")
-                            messagebox.showinfo("Source ids for Emissions Locations and Polygon Vertex file"+ 
+                            messagebox.showinfo("Source ids mismatch", "Source ids for Emissions Locations and Polygon Vertex file"+ 
                                        " do not match, please upload corresponding files.")
                             
                             result['result'] =  logMsg9c
@@ -311,7 +311,7 @@ class InputChecker():
                     logMsg14 = ("Building downwash parameters are specified in "+
                                   "the Facilities List Options file, please " +
                                   "upload a Building Downwash file "  + ", ".join(list(bldlist)))
-                    messagebox.showinfo("Building downwash parameters are specified in "+
+                    messagebox.showinfo("Missing building downwash file", "Building downwash parameters are specified in "+
                                   "the Facilities List Options file, please " +
                                   "upload a Building Downwash file "  + ", ".join(list(bldlist)))
                     
@@ -332,7 +332,10 @@ class InputChecker():
                                     " are missing building downash specifications" +
                                     " that were indicated in the Facilities list" +
                                     " Options file")
-                        messagebox.showinfo()
+                        messagebox.showinfo("Missing building downwash specifications", "Facilities: " + ",".join(list(missing)) + 
+                                    " are missing building downash specifications" +
+                                    " that were indicated in the Facilities list" +
+                                    " Options file")
                     
                      
                         result['result'] = logMsg14b
@@ -357,7 +360,8 @@ class InputChecker():
                             
                             logMsg14c = ("Source ids for Emissions Locations and Building Downwash file"+ 
                                        " do not match, please upload corresponding files.")
-                            messagebox.showinfo()
+                            messagebox.showinfo("Mismatch source ids", "Source ids for Emissions Locations and Building Downwash file"+ 
+                                       " do not match, please upload corresponding files.")
                             
                             result['result'] =  logMsg14c
                             return result
@@ -374,7 +378,7 @@ class InputChecker():
                                 " are specified in the Facilities List Options" +
                                 " file. Please upload a Particle Size file.")
                     
-                    messagebox.showinfo("Particle deposition or depletion parameters" +
+                    messagebox.showinfo("Missing particle size file", "Particle deposition or depletion parameters" +
                                 " are specified in the Facilities List Options" +
                                 " file. Please upload a Particle Size file.")
                     
@@ -394,7 +398,7 @@ class InputChecker():
                                     " are missing particle size specifications that" +
                                     " were indicated in the Facilities list" +
                                     " Options file.")
-                        messagebox.showinfo("Facilities: " + ",".join(list(missing)) + 
+                        messagebox.showinfo("Missing particle size file specifications", "Facilities: " + ",".join(list(missing)) + 
                                     " are missing particle size specifications that" +
                                     " were indicated in the Facilities list" +
                                     " Options file.")
@@ -421,7 +425,7 @@ class InputChecker():
                             logMsg10c = ("Source ids for Emissions Locations and Particle Size file"+ 
                                        " do not match, please upload corresponding files.")
                             
-                            messagebox.showinfo("Source ids for Emissions Locations and Particle Size file"+ 
+                            messagebox.showinfo("Mismatch source ids", "Source ids for Emissions Locations and Particle Size file"+ 
                                        " do not match, please upload corresponding files.")
                             
                             result['result'] =  logMsg10c
@@ -439,7 +443,7 @@ class InputChecker():
                                 " are specified in the Facilities List Options" +
                                 " file. Please upload a Land Use file." )
                     
-                    messagebox.showinfo("Vapor deposition or depletion parameters" +
+                    messagebox.showinfo("Missing Land Use file", "Vapor deposition or depletion parameters" +
                                 " are specified in the Facilities List Options" +
                                 " file. Please upload a Land Use file." )
                     
@@ -458,9 +462,9 @@ class InputChecker():
                                 " are specified in the Facilities List Options" +
                                 " file. Please upload a Land Use file." )
                         
-                        messagebox.showinfo("Vapor deposition or depletion parameters" +
+                        messagebox.showinfo("Missing Seasonal Vegetation file", "Vapor deposition or depletion parameters" +
                                 " are specified in the Facilities List Options" +
-                                " file. Please upload a Land Use file.")
+                                " file. Please upload a Seasonal Vegetation file.")
                     
                         result['result'] = logMsg12
                         result['reset'] = 'vapor'
@@ -482,7 +486,7 @@ class InputChecker():
                                         " were indicated in the Facilities list" +
                                         " Options file.")
                             
-                            messagebox.showinfo("Facilities: " + ",".join(list(missing)) + 
+                            messagebox.showinfo("Missing land use specifications", "Facilities: " + ",".join(list(missing)) + 
                                         " are missing land use specifications that" +
                                         " were indicated in the Facilities list" +
                                         " Options file.")
@@ -500,7 +504,7 @@ class InputChecker():
                                         "specifications that were indicated in the "+
                                         "Facilities List Options file.")
                             
-                            messagebox.showinfo("Facilities: " + ",".join(list(missing)) + 
+                            messagebox.showinfo("Missing seasonal vegetation specifications", "Facilities: " + ",".join(list(missing)) + 
                                         " are missing seasonal vegetation " +
                                         "specifications that were indicated in the "+
                                         "Facilities List Options file.")
@@ -535,7 +539,7 @@ class InputChecker():
                                     " are specified in the Facilities List Options" +
                                     " file. Please upload a Particle Size file." )
                         
-                        messagebox.showinfo("Particle deposition or depletion parameters" +
+                        messagebox.showinfo("Missing Particle Size file", "Particle deposition or depletion parameters" +
                                     " are specified in the Facilities List Options" +
                                     " file. Please upload a Particle Size file." )
                         
@@ -556,7 +560,7 @@ class InputChecker():
                                     " are specified in the Facilities List Options" +
                                     " file. Please upload a Land Use file." )
                             
-                            messagebox.showinfo("Vapor deposition or depletion parameters" +
+                            messagebox.showinfo("Missing Land Use file", "Vapor deposition or depletion parameters" +
                                     " are specified in the Facilities List Options" +
                                     " file. Please upload a Land Use file.")
                         
@@ -577,7 +581,7 @@ class InputChecker():
                                         " are specified in the Facilities List Options" +
                                         " file. Please upload a Land Use file." )
                                 
-                                messagebox.showinfo(("Vapor deposition or depletion parameters" +
+                                messagebox.showinfo("Missing Land Use file", "Vapor deposition or depletion parameters" +
                                         " are specified in the Facilities List Options" +
                                         " file. Please upload a Land Use file.")
                             
