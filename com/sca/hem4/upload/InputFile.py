@@ -102,6 +102,7 @@ class InputFile(ABC):
             except BaseException as e:
                 
                 Logger.logMessage(str(e))
+                messagebox.showinfo("Error", e)
                 
             else:
                 

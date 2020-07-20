@@ -57,7 +57,7 @@ import queue
 
 
 import numpy as np
-from pandastable import Table, filedialog, np
+#from pandastable import Table, filedialog, np
 
 
 
@@ -439,7 +439,7 @@ class MainView(tk.Frame):
         #%%        
         #exit button
         #aermod user nav button
-        closeLabel= tk.Label(self, text="CLOSE", font=TAB_FONT, bg=self.main_color, height=2, anchor="w")
+        closeLabel= tk.Label(self, text="EXIT", font=TAB_FONT, bg=self.main_color, height=2, anchor="w")
         closeLabel.place(in_=self.container, relwidth=0.2, rely=0.90, relx=0.1)
 
 #        #add run icon with margin for highlight
@@ -964,54 +964,57 @@ class Hem(Page):
                 
         fullpath = self.openFile(askopenfilename())
         if fullpath is not None:
+            
             self.uploader.upload("faclist", fullpath)
-
-            self.model.facids = self.model.faclist.dataframe['fac_id']
-
-            # Update the UI
-            [self.nav.log.scr.insert(tk.INSERT, msg) for msg in self.model.faclist.log]
-#            container.configure(bg='light green')
-            label['text'] = fullpath.split("\\")[-1]
             
-            #trigger additional inputs fo user recptors, assuming we are not in "user receptors only" mode
-            if 'Y' in self.model.faclist.dataframe['user_rcpt'].tolist():
-                #create user receptors
-                self.add_ur()
-                self.model.dependencies.append('user_rcpt')
+            if self.model.faclist.dataframe != None:
                 
-            else:
-                if 'user_rcpt' in self.model.dependencies:
-                    for child in self.s8.winfo_children():
-                        child.destroy()
+                self.model.facids = self.model.faclist.dataframe['fac_id']
+    
+                # Update the UI
+                [self.nav.log.scr.insert(tk.INSERT, msg) for msg in self.model.faclist.log]
+    #            container.configure(bg='light green')
+                label['text'] = fullpath.split("\\")[-1]
+                
+                #trigger additional inputs fo user recptors, assuming we are not in "user receptors only" mode
+                if 'Y' in self.model.faclist.dataframe['user_rcpt'].tolist():
+                    #create user receptors
+                    self.add_ur()
+                    self.model.dependencies.append('user_rcpt')
                     
-            #trigger additional inputs for emisvar
-            if 'Y' in self.model.faclist.dataframe['emis_var'].tolist():
-                #create create emis var
-                self.add_variation()
-                self.model.dependencies.append('emis_var')
-                
-            else:
-                if 'emis_var' in self.model.dependencies:
-                    for child in self.s7.winfo_children():
-                        child.destroy()
-                
-            
+                else:
+                    if 'user_rcpt' in self.model.dependencies:
+                        for child in self.s8.winfo_children():
+                            child.destroy()
+                        
+                #trigger additional inputs for emisvar
+                if 'Y' in self.model.faclist.dataframe['emis_var'].tolist():
+                    #create create emis var
+                    self.add_variation()
+                    self.model.dependencies.append('emis_var')
                     
-            #trigger additional inputs for building downwash
-            if 'Y' in self.model.faclist.dataframe['bldg_dw'].tolist():
-                
-                
-                #create building downwash input
-                self.add_bldgdw()
-                self.model.dependencies.append('bldg_dw')
-            
-            else:
-                if 'bldg_dw' in self.model.dependencies:
-                    for child in self.optional.s4.winfo_children():
-                        child.destroy()
+                else:
+                    if 'emis_var' in self.model.dependencies:
+                        for child in self.s7.winfo_children():
+                            child.destroy()
                     
                 
-        
+                        
+                #trigger additional inputs for building downwash
+                if 'Y' in self.model.faclist.dataframe['bldg_dw'].tolist():
+                    
+                    
+                    #create building downwash input
+                    self.add_bldgdw()
+                    self.model.dependencies.append('bldg_dw')
+                
+                else:
+                    if 'bldg_dw' in self.model.dependencies:
+                        for child in self.optional.s4.winfo_children():
+                            child.destroy()
+                        
+                    
+            
         
 
     def uploadHAPEmissions(self, container, label, event):
@@ -1031,12 +1034,14 @@ class Hem(Page):
             fullpath = self.openFile(askopenfilename())
             if fullpath is not None:
                 self.uploader.upload("hapemis", fullpath)
+                
+                if self.model.hapemis.dataframe != None:
         
-                # Update the UI
-                [self.nav.log.scr.insert(tk.INSERT, msg) for msg in self.model.hapemis.log]
-#                container.configure(bg='light green')
-                label['text'] = fullpath.split("\\")[-1]
- 
+                    # Update the UI
+                    [self.nav.log.scr.insert(tk.INSERT, msg) for msg in self.model.hapemis.log]
+    #                container.configure(bg='light green')
+                    label['text'] = fullpath.split("\\")[-1]
+     
                     
             
     
@@ -1072,108 +1077,110 @@ class Hem(Page):
                 fullpath = self.openFile(askopenfilename())
                 if fullpath is not None:
                     self.uploader.upload("emisloc", fullpath)
+                    
+                    if self.model.emisloc.dataframe != None:
         
-                    # Update the UI
-                    [self.nav.log.scr.insert(tk.INSERT, msg) for msg in self.model.emisloc.log]
-#                    container.configure(bg='light green')
-                    label['text'] = fullpath.split("\\")[-1]
- 
-    
-                    #trigger additional inputs for buoyant line and polyvertex
-                    if 'I' in self.model.emisloc.dataframe['source_type'].tolist():
-                        
-                        #enable optional input tab
-                        self.optionaltab = False
-                        
-                        #create polyvertex upload 
-                        self.add_poly()
-                        self.model.dependencies.append('poly')
-                        
-                    else:
-                        #reset gui if reuploading
-                        
-                        if 'poly' in self.model.dependencies:
-                            for child in self.optional.s5.winfo_children():
-                                child.destroy()
+                        # Update the UI
+                        [self.nav.log.scr.insert(tk.INSERT, msg) for msg in self.model.emisloc.log]
+    #                    container.configure(bg='light green')
+                        label['text'] = fullpath.split("\\")[-1]
+     
+        
+                        #trigger additional inputs for buoyant line and polyvertex
+                        if 'I' in self.model.emisloc.dataframe['source_type'].tolist():
                             
+                            #enable optional input tab
+                            self.optionaltab = False
                             
-                    if 'B' in self.model.emisloc.dataframe['source_type'].tolist():
-                        
-                        #enable optional input tab
-                        self.optionaltab = False
-                        
-                        #create buoyant line upload
-                        self.add_buoyant()
-                        self.model.dependencies.append('buoyant')
-                        
-                    else:
-                        #reset gui if reuploading    
-                         if 'buoyant' in self.model.dependencies:
-                            for child in self.optional.s4.winfo_children():
-                                child.destroy()
-        
-                    # Deposition and depletion check
-        
-                    # set phase column in faclist dataframe to None
-                    self.model.faclist.dataframe['phase'] = None
-        
-                    for i, r in self.model.faclist.dataframe.iterrows():
-        
-                        phase = check_phase(r)
-                        #                phaseList.append([r['fac_id'], phase])
-                        self.model.faclist.dataframe.at[i, 'phase'] = phase
-        
-                    deposition_depletion = check_dep(self.model.faclist.dataframe, self.model.emisloc.dataframe)
-        
-                    #pull out facilities using depdeplt
-                    self.model.depdeplt = [x[0] for x in deposition_depletion]
-                    print('DEPDEP:', self.model.depdeplt)
-
-                    #pull out facilities needing landuse and seasons files (gas dry dep/depl)
-                    self.model.gasdryfacs = [x[0] for x in deposition_depletion if 'land use' in x]
-        
-                    #pull out conditional inputs
-                    conditional = set([y for x in deposition_depletion for y in x[1:]])
-                    #print('conditional', conditional)
-        
-                    if conditional is not None:
-                        #enable deposition and depletion input tab
-                        self.deptab = True
-        
-        
-                        #if deposition or depletion present load gas params library
-                        self.uploader.uploadLibrary("gas params")
-                        for required in conditional:
-                            print("required", required)
-                            if required == 'particle size':
-                                self.add_particle()
-                                self.model.dependencies.append('particle size')
-        
-                            elif required == 'land use':
-                                self.add_land()
-                                self.model.dependencies.append('land use')
-        
-                            elif required == 'seasons':
-                                self.add_seasons()
-                                self.model.dependencies.append('seasons')
-                    else:
-                        # clear on new input without dep/deplt
-          
-                        # clear particle
-                        if 'particle size' in self.model.dependencies:
-                            for child in self.depdeplt.s4.winfo_children():
-                                child.destroy()                        #                        self.dep_part.destroy()
-                                        # clear land
-                        if 'land use' in self.model.dependencies:
-                            for child in self.depdeplt.s5.winfo_children():
-                                child.destroy()
-                        #                        self.dep_land.destroy()
+                            #create polyvertex upload 
+                            self.add_poly()
+                            self.model.dependencies.append('poly')
+                            
+                        else:
+                            #reset gui if reuploading
+                            
+                            if 'poly' in self.model.dependencies:
+                                for child in self.optional.s5.winfo_children():
+                                    child.destroy()
+                                
+                                
+                        if 'B' in self.model.emisloc.dataframe['source_type'].tolist():
+                            
+                            #enable optional input tab
+                            self.optionaltab = False
+                            
+                            #create buoyant line upload
+                            self.add_buoyant()
+                            self.model.dependencies.append('buoyant')
+                            
+                        else:
+                            #reset gui if reuploading    
+                             if 'buoyant' in self.model.dependencies:
+                                for child in self.optional.s4.winfo_children():
+                                    child.destroy()
+            
+                        # Deposition and depletion check
+            
+                        # set phase column in faclist dataframe to None
+                        self.model.faclist.dataframe['phase'] = None
+            
+                        for i, r in self.model.faclist.dataframe.iterrows():
+            
+                            phase = check_phase(r)
+                            #                phaseList.append([r['fac_id'], phase])
+                            self.model.faclist.dataframe.at[i, 'phase'] = phase
+            
+                        deposition_depletion = check_dep(self.model.faclist.dataframe, self.model.emisloc.dataframe)
+            
+                        #pull out facilities using depdeplt
+                        self.model.depdeplt = [x[0] for x in deposition_depletion]
+                        print('DEPDEP:', self.model.depdeplt)
     
-                        # clear vegetation
-                        if 'seasons' in self.model.dependencies:
-                            for child in self.depdeplt.s6.winfo_children():
-                                child.destroy()
-                        #                        self.dep_seasons.destroy()
+                        #pull out facilities needing landuse and seasons files (gas dry dep/depl)
+                        self.model.gasdryfacs = [x[0] for x in deposition_depletion if 'land use' in x]
+            
+                        #pull out conditional inputs
+                        conditional = set([y for x in deposition_depletion for y in x[1:]])
+                        #print('conditional', conditional)
+            
+                        if conditional is not None:
+                            #enable deposition and depletion input tab
+                            self.deptab = True
+            
+            
+                            #if deposition or depletion present load gas params library
+                            self.uploader.uploadLibrary("gas params")
+                            for required in conditional:
+                                print("required", required)
+                                if required == 'particle size':
+                                    self.add_particle()
+                                    self.model.dependencies.append('particle size')
+            
+                                elif required == 'land use':
+                                    self.add_land()
+                                    self.model.dependencies.append('land use')
+            
+                                elif required == 'seasons':
+                                    self.add_seasons()
+                                    self.model.dependencies.append('seasons')
+                        else:
+                            # clear on new input without dep/deplt
+              
+                            # clear particle
+                            if 'particle size' in self.model.dependencies:
+                                for child in self.depdeplt.s4.winfo_children():
+                                    child.destroy()                        #                        self.dep_part.destroy()
+                                            # clear land
+                            if 'land use' in self.model.dependencies:
+                                for child in self.depdeplt.s5.winfo_children():
+                                    child.destroy()
+                            #                        self.dep_land.destroy()
+        
+                            # clear vegetation
+                            if 'seasons' in self.model.dependencies:
+                                for child in self.depdeplt.s6.winfo_children():
+                                    child.destroy()
+                            #                        self.dep_seasons.destroy()
 
     
     def uploadUserReceptors(self, container, label, event):
@@ -1194,11 +1201,13 @@ class Hem(Page):
             self.uploader.uploadDependent("user receptors", fullpath, 
                                           self.model.faclist.dataframe)
             
-            self.model.model_optns['ureceptr'] = True
-            # Update the UI
-            [self.nav.log.scr.insert(tk.INSERT, msg) for msg in self.model.ureceptr.log]
-#            container.configure(bg='light green')
-            label['text'] = fullpath.split("\\")[-1]
+            if self.model.ureceptr.dataframe != None:
+            
+                self.model.model_optns['ureceptr'] = True
+                # Update the UI
+                [self.nav.log.scr.insert(tk.INSERT, msg) for msg in self.model.ureceptr.log]
+    #            container.configure(bg='light green')
+                label['text'] = fullpath.split("\\")[-1]
             
             
     def uploadAltReceptors(self, container, label, event):
