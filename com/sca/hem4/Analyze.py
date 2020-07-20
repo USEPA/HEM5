@@ -25,7 +25,9 @@ from threading import Timer
 import traceback
 
 
-TITLE_FONT= ("Daytona", 16)
+TITLE_FONT= ("Daytona", 16, 'bold')
+SECTION_FONT= ("Daytona", 12, 'bold')
+
 TAB_FONT =("Daytona", 11, 'bold')
 TEXT_FONT = ("Daytona", 14)
 #SUB_FONT = ("Verdana", 12)
@@ -105,13 +107,16 @@ class Analyze(Page):
         self.s11.grid(row=11, column=0, columnspan=2, sticky="nsew")
 
         
+        self.tt = PIL.Image.open('images\icons8-graph-48-white.png').resize((30,30))
+        self.tticon = self.add_margin(self.tt, 5, 0, 5, 0)
+        self.titleicon = ImageTk.PhotoImage(self.tticon)
+        self.titleLabel = tk.Label(self.s1, image=self.titleicon, bg=self.tab_color)
+        self.titleLabel.image = self.titleicon # keep a reference!
+        self.titleLabel.grid(row=1, column=0, padx=10, pady=10)
         
-        #title in first grid space
-#        title1 = tk.Label(self.s1, text="HEM4", font=TITLE_FONT, bg=self.tab_color)
-#        title1.pack(side="top", pady=20)
 
-        title2 = tk.Label(self.s1, text="View and Analyze Outputs", font=TITLE_FONT, bg=self.tab_color)
-        title2.grid(row=0, column=0, padx=20, pady=20)
+        title2 = tk.Label(self.s1, text="VIEW AND ANALYZE OUTPUTS", font=TITLE_FONT, fg="white", bg=self.tab_color)
+        title2.grid(row=1, column=1, padx=10, pady=10)
         
         self.add_instructions(self.s2, self.s2)
         
@@ -131,11 +136,11 @@ class Analyze(Page):
         
                                     
         self.button_file.bind("<Enter>", lambda x: self.color_config( self.button_file, self.fileLabel, self.s4, self.highlightcolor, x))
-        self.button_file.bind("<Leave>", lambda x: self.color_config( self.button_file, self.fileLabel, self.s4, self.tab_color, x))
+        self.button_file.bind("<Leave>", lambda x: self.remove_config( self.button_file, self.fileLabel, self.s4, self.tab_color, x))
         self.button_file.bind("<Button-1>", partial(self.browse_button))
         
         self.fileLabel.bind("<Enter>", lambda x: self.color_config(self.fileLabel, self.button_file, self.s4, self.highlightcolor, x))
-        self.fileLabel.bind("<Leave>", lambda x: self.color_config(self.fileLabel, self.button_file, self.s4, self.tab_color, x))
+        self.fileLabel.bind("<Leave>", lambda x: self.remove_config(self.fileLabel, self.button_file, self.s4, self.tab_color, x))
         self.fileLabel.bind("<Button-1>", partial(self.browse_button))
         
 #
@@ -152,11 +157,11 @@ class Analyze(Page):
         self.button_maps.grid(row=1, column=1)
         
         self.button_maps.bind("<Enter>", lambda x: self.color_config(self.button_maps, self.mapLabel, self.s6, self.highlightcolor, x))
-        self.button_maps.bind("<Leave>", lambda x: self.color_config(self.button_maps, self.mapLabel, self.s6, self.tab_color, x))
+        self.button_maps.bind("<Leave>", lambda x: self.remove_config(self.button_maps, self.mapLabel, self.s6, self.tab_color, x))
         self.button_maps.bind("<Button-1>", partial(self.maps_button))
         
         self.mapLabel.bind("<Enter>", lambda x: self.color_config(self.mapLabel, self.button_maps, self.s6, self.highlightcolor, x))
-        self.mapLabel.bind("<Leave>", lambda x: self.color_config(self.mapLabel, self.button_maps, self.s6, self.tab_color, x))
+        self.mapLabel.bind("<Leave>", lambda x: self.remove_config(self.mapLabel, self.button_maps, self.s6, self.tab_color, x))
         self.mapLabel.bind("<Button-1>", partial(self.maps_button))
 
 
@@ -172,11 +177,11 @@ class Analyze(Page):
         self.button_dash.grid(row=1, column=1)
         
         self.button_dash.bind("<Enter>", lambda x: self.color_config(self.button_dash, self.dashLabel, self.s8, self.highlightcolor, x))
-        self.button_dash.bind("<Leave>", lambda x: self.color_config(self.button_dash, self.dashLabel, self.s8, self.tab_color, x))
+        self.button_dash.bind("<Leave>", lambda x: self.remove_config(self.button_dash, self.dashLabel, self.s8, self.tab_color, x))
         self.button_dash.bind("<Button-1>", partial(self.dash_button))
         
         self.dashLabel.bind("<Enter>", lambda x: self.color_config(self.button_dash, self.dashLabel, self.s8, self.highlightcolor, x))
-        self.dashLabel.bind("<Leave>", lambda x: self.color_config(self.button_dash, self.dashLabel, self.s8, self.tab_color, x))
+        self.dashLabel.bind("<Leave>", lambda x: self.remove_config(self.button_dash, self.dashLabel, self.s8, self.tab_color, x))
         self.dashLabel.bind("<Button-1>", partial(self.dash_button))        
         
 #        command=self.maps_button
@@ -511,24 +516,67 @@ class Analyze(Page):
          if self.dashLabel in [widget1, widget2]:
              if self.instruction_instance.get() == " ":
                  
-                 self.browse_inst("instructions/analyze_browse.txt")
+                 self.browse_inst("instructions/source_cat_browse.txt")
                  
              else:
                  self.instruction_instance.set(" ")
                  
          elif self.fileLabel in [widget1, widget2]:
              if self.instruction_instance.get() == " ":
-                 pass
-               #  self.browse_inst(" ")
+                 self.browse_inst("instructions/kmz_browse.txt")
                  
              else:
                  self.instruction_instance.set(" ")
                  
          elif self.mapLabel in [widget1, widget2]:
              if self.instruction_instance.get() == " ":
-                 pass
-              #   self.browse_inst(" ")
+                 self.browse_inst("instructions/sum_browse.txt")
                  
              else:
                  self.instruction_instance.set(" ")
+                 
+                 
+    def remove_config(self, widget1, widget2, container, color, event):
+    
+         widget1.configure(bg=color)
+         widget2.configure(bg=color)
+         container.configure(bg=color)
+         self.instruction_instance.set(" ")
+         
+         
+    def container_config(self, container, widget1, widget2, color, event):
+         widget1.configure(bg=color)
+         widget2.configure(bg=color)
+         container.configure(bg=color)   
+         
+         #serve instructions
+         if self.dashLabel in [widget1, widget2]:
+             if self.instruction_instance.get() == " ":
+                 
+                 self.browse_inst("instructions/source_cat_browse.txt")
+                 
+             else:
+                 self.instruction_instance.set(" ")
+                 
+         elif self.fileLabel in [widget1, widget2]:
+             if self.instruction_instance.get() == " ":
+                 self.browse_inst("instructions/kmz_browse.txt")
+                 
+             else:
+                 self.instruction_instance.set(" ")
+                 
+         elif self.mapLabel in [widget1, widget2]:
+             if self.instruction_instance.get() == " ":
+                 self.browse_inst("instructions/sum_browse.txt")
+                 
+             else:
+                 self.instruction_instance.set(" ")
+         
+    def container_remove(self, container, widget1, widget2, color, event):
+        
+         widget1.configure(bg=color)
+         widget2.configure(bg=color)
+         container.configure(bg=color)
+         self.instruction_instance.set(" ")
+        
         

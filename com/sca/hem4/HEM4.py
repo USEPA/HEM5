@@ -17,6 +17,8 @@ import queue
 import sys
 import tkinter as tk
 import tkinter.ttk as ttk
+from PIL import ImageTk
+import PIL.Image
 import pickle
 import shutil
 
@@ -44,8 +46,8 @@ from collections import defaultdict
 import uuid
 
 
-TITLE_FONT= ("Verdana", 14)
-TEXT_FONT = ("Verdana", 10)
+TITLE_FONT= ("Daytona", 16, 'bold')
+TEXT_FONT = ("Verdana", 14)
 LOG_FONT = ("Verdana", 12)
 
 class Page(tk.Frame):
@@ -174,9 +176,9 @@ class Optional(Page):
 
 
         #grid layout for main inputs 
-        self.s1.grid(row=0)
+        self.s1.grid(row=0, column=0, columnspan=2, sticky="nsew")
         self.s2.grid(row=1, column=0)
-        self.s3.grid(row=2, column=0, columnspan=2, sticky="nsew")
+        self.s3.grid(row=2, column=0, columnspan=2, sticky="nsew", pady=10)
         self.s8.grid(row=3, column=0, columnspan=2, sticky="nsew")
         self.s9.grid(row=4, column=0, columnspan=2, sticky="nsew")
         self.s4.grid(row=5, column=0, columnspan=2, sticky="nsew")
@@ -191,6 +193,17 @@ class Optional(Page):
         self.required_inputs.grid_columnconfigure(2, weight=1)
         self.s2.grid_propagate(0)
         
+        self.tt = PIL.Image.open('images\icons8-add-column-48-white.png').resize((30,30))
+        self.tticon = self.add_margin(self.tt, 5, 0, 5, 0)
+        self.titleicon = ImageTk.PhotoImage(self.tticon)
+        self.titleLabel = tk.Label(self.s1, image=self.titleicon, bg=self.tab_color)
+        self.titleLabel.image = self.titleicon # keep a reference!
+        self.titleLabel.grid(row=1, column=0, padx=10, pady=10)
+        
+        
+        self.title = tk.Label(self.s1, font=TITLE_FONT, fg="white", bg=self.tab_color, 
+                             text="ADDITIONAL INPUTS")
+        self.title.grid(row=1, column=1, sticky="W", pady=10, padx=10)
 
 #%% Setting up  directions text space
         
@@ -334,9 +347,9 @@ class DepDplt(Page):
 
 
         #grid layout for main inputs 
-        self.s1.grid(row=0)
+        self.s1.grid(row=0, column=0, columnspan=2, sticky="nsew")
         self.s2.grid(row=1, column=0)
-        self.s3.grid(row=2, column=0, columnspan=2, sticky="nsew")
+        self.s3.grid(row=2, column=0, columnspan=2, sticky="nsew", pady=10)
         self.s4.grid(row=3, column=0, columnspan=2, sticky="nsew")
         self.s5.grid(row=4, column=0, columnspan=2, sticky="nsew")
         self.s6.grid(row=5, column=0, columnspan=2, sticky="nsew")
@@ -344,8 +357,19 @@ class DepDplt(Page):
         
         self.required_inputs.grid_rowconfigure(8, weight=4)
         self.required_inputs.grid_columnconfigure(2, weight=1)
+        
         self.s2.grid_propagate(0)
         
+        self.tt = PIL.Image.open('images\icons8-add-column-48-white.png').resize((30,30))
+        self.tticon = self.add_margin(self.tt, 5, 0, 5, 0)
+        self.titleicon = ImageTk.PhotoImage(self.tticon)
+        self.titleLabel = tk.Label(self.s1, image=self.titleicon, bg=self.tab_color)
+        self.titleLabel.image = self.titleicon # keep a reference!
+        self.titleLabel.grid(row=1, column=0, padx=10, pady=10)
+        
+        self.title = tk.Label(self.s1, font=TITLE_FONT, fg="white", bg=self.tab_color, 
+                             text="DEPOSITION & DEPLETION INPUTS")
+        self.title.grid(row=1, column=1, sticky="W", pady=10, padx=10)
 
 
 #%% Setting up  directions text space

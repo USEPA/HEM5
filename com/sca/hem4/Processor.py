@@ -220,6 +220,7 @@ class Processor():
             
             Logger.logMessage('HEM4 RUN GROUP: ' + str(self.model.group_name) + ' canceled')
             messagebox.showinfo('Run Canceled', 'HEM4 RUN GROUP: ' + str(self.model.group_name) + ' canceled')
+            self.nav.abortLabel.destroy()
         
         elif len(self.skipped) == 0:
             
