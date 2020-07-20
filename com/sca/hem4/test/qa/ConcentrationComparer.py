@@ -7,15 +7,16 @@ from com.sca.hem4.writer.excel.ExcelWriter import ExcelWriter
 
 facilityID = "Fac2-IL"
 sourceID = "FU000001"
-pollutantName = "mercury (elemental)"
+pollutantName = "Chrysene"
 rundir = r"C:/Git_HEM4/HEM4/output/DepDepl"
 hapemis_path = rundir + "/Inputs/hapemis.xlsx"
 output_dir = rundir + "/" + facilityID
 acute = 'N'
-runtype = 1
+# Runtype: 0 == no deposition, 1 == both, 2 == dry only, 3 == wet only...see FacilityRunner#set_runtype()
+runtype = 3
 
 # emistype: P, V, or C
-emistype = 'P'
+emistype = 'V'
 
 
 class ConcentrationComparer(ExcelWriter):
@@ -55,7 +56,7 @@ class ConcentrationComparer(ExcelWriter):
         hapemis = HAPEmissions(hapemis_path, haplib, {self.fac_id})
         hapemis_df = hapemis.dataframe
         hapemis_df = hapemis_df.loc[(hapemis_df[fac_id] == self.fac_id) & (hapemis_df[source_id] == self.source_id) &
-                                    (hapemis_df[pollutant] == self.pollutant)]
+                                    (hapemis_df[pollutant].str.lower() == self.pollutant.lower())]
 
         # Aermod plotfile
         if emistype == 'C':
@@ -84,7 +85,8 @@ class ConcentrationComparer(ExcelWriter):
         allpolar = AllPolarReceptors(targetDir=self.output_dir, facilityId=self.fac_id, model=None, plot_df=plot_df,
                                      acuteyn=acute)
         allpolar_df = allpolar.createDataframe()
-        allpolar_df = allpolar_df.loc[(allpolar_df[source_id] == self.source_id) & (allpolar_df[pollutant] == self.pollutant)
+        allpolar_df = allpolar_df.loc[(allpolar_df[source_id] == self.source_id) 
+                                      & (allpolar_df[pollutant].str.lower() == self.pollutant.lower())
                                       & (allpolar_df[emis_type] == emistype)]
         for index,row in allpolar_df.iterrows():
 
@@ -105,7 +107,8 @@ class ConcentrationComparer(ExcelWriter):
         allinner = AllInnerReceptors(targetDir=self.output_dir, facilityId=self.fac_id, model=None, plot_df=plot_df,
                                          acuteyn=acute)
         allinner_df = allinner.createDataframe()
-        allinner_df = allinner_df.loc[(allinner_df[source_id] == self.source_id) & (allinner_df[pollutant] == self.pollutant)
+        allinner_df = allinner_df.loc[(allinner_df[source_id] == self.source_id) 
+                                      & (allinner_df[pollutant].str.lower() == self.pollutant.lower())
                                       & (allinner_df[emis_type] == emistype)]
         for index,row in allinner_df.iterrows():
 
