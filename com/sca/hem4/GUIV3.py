@@ -23,7 +23,7 @@ from com.sca.hem4.model.Model import Model
 from com.sca.hem4.upload.FileUploader import FileUploader
 from com.sca.hem4.checker.InputChecker import InputChecker
 from com.sca.hem4.DepositionDepletion import check_dep, check_phase
-#from com.sca.hem4.SaveState import SaveState
+from com.sca.hem4.SaveState import SaveState
 
 from com.sca.hem4.writer.excel.FacilityMaxRiskandHI import FacilityMaxRiskandHI
 from com.sca.hem4.writer.excel.FacilityCancerRiskExp import FacilityCancerRiskExp
