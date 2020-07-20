@@ -1,0 +1,1 @@
+Select an entire output folder to open, view and analyze the modeling results using mapping and graphical visualization and statistical tools.

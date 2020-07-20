@@ -43,8 +43,9 @@ multiPathwayModule = importlib.import_module("com.sca.hem4.writer.excel.summary.
 from com.sca.hem4.summary.SummaryManager import SummaryManager
 
 
+TITLE_FONT= ("Daytona", 16, 'bold')
 
-TITLE_FONT= ("Daytona", 16)
+SECTION_FONT= ("Daytona", 12, 'bold')
 TAB_FONT =("Daytona", 11, 'bold')
 TEXT_FONT = ("Daytona", 12)
 #SUB_FONT = ("Verdana", 12)
@@ -197,11 +198,17 @@ class Summary(Page):
         
         
         
-
+        self.tt = PIL.Image.open('images\icons8-edit-graph-report-48-white.png').resize((30,30))
+        self.tticon = self.add_margin(self.tt, 5, 0, 5, 0)
+        self.titleicon = ImageTk.PhotoImage(self.tticon)
+        self.titleLabel = tk.Label(self.s1, image=self.titleicon, bg=self.tab_color)
+        self.titleLabel.image = self.titleicon # keep a reference!
+        self.titleLabel.grid(row=1, column=0, padx=10, pady=10)
+        
         
         #title
-        title = tk.Label(self.s1, text="Create Risk Summary Reports", font=TITLE_FONT, bg=self.tab_color, anchor="w")
-        title.grid(pady=10, padx=10)
+        title = tk.Label(self.s1, text="CREATE RISK SUMMARY REPORTS", font=TITLE_FONT, fg="white", bg=self.tab_color, anchor="w")
+        title.grid(row=1, column=1, pady=10, padx=10)
         
         
         

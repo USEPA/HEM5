@@ -65,17 +65,11 @@ import numpy as np
 
 #NAV_FONT = tkFont.Font(family='Verdana', )
 
-TITLE_FONT= ("Daytona", 16)
+TITLE_FONT= ("Daytona", 16, 'bold')
 TAB_FONT =("Daytona", 11, 'bold')
-TEXT_FONT = ("Daytona", 13)
+TEXT_FONT = ("Daytona", 14)
 #SUB_FONT = ("Verdana", 12)
 
-
-
-
-
-
-    
 
 
  
@@ -127,6 +121,9 @@ class Page(tk.Frame):
         global instruction_instance
         self.instruction_instance = tk.StringVar(placeholder1)
         self.instruction_instance.set(" ")
+        self.optional.instruction_instance.set(" ")
+        self.depdeplt.instruction_instance.set(" ")
+        
         self.dynamic_inst = tk.Label(placeholder2, wraplength=600, font=TEXT_FONT, padx=20, bg=self.tab_color) 
         self.dynamic_inst.config(height=4)
         
@@ -140,7 +137,9 @@ class Page(tk.Frame):
         Function clears instructions from display box 
         """
         global instruction_instance
-        self.instruction_instance.set(" ")    
+        self.instruction_instance.set(" ")   
+        self.optional.instruction_instance.set(" ")
+        self.depdeplt.instruction_instance.set(" ")
         
     #general function for browsing instructions
     def browse(self, location):
@@ -150,7 +149,10 @@ class Page(tk.Frame):
         """
         global instruction_instance
         self.read_inst = open(location, 'r')
-        self.instruction_instance.set(self.read_inst.read())  
+        self.instruction_instance.set(self.read_inst.read())
+        self.optional.instruction_instance.set(self.read_inst.read())
+        self.depdeplt.instruction_instance.set(self.read_inst.read())
+        
         
         
     def show(self):
@@ -244,12 +246,17 @@ class MainView(tk.Frame):
         #ri = PIL.Image.open('images\loading-png-gif-transparent.png').resize((30,30))
         self.ri = PIL.Image.open('images\icons8-virtual-machine-52.png').resize((30,30))
         self.gi = PIL.Image.open('images\icons8-green-circle-48.png').resize((30,30))
+        self.cani = PIL.Image.open('images\icons8-cancel-48.png').resize((30,30))
+
         
         run_new = self.add_margin(self.ri, 5, 0, 5, 0)
         run_change = self.add_margin(self.gi, 5, 0, 5, 0)
+        cancel_change = self.add_margin(self.cani, 5, 0, 5, 0)
         
         self.runIcon = ImageTk.PhotoImage(run_new)
         self.greenIcon = ImageTk.PhotoImage(run_change)
+        self.cancelIcon = ImageTk.PhotoImage(cancel_change)
+
         
         self.iconLabel = tk.Label(self, image=self.runIcon, bg=self.main_color)
         self.iconLabel.image = self.runIcon # keep a reference!
@@ -366,7 +373,22 @@ class MainView(tk.Frame):
         self.liLabel.bind("<Enter>", partial(self.color_config, self.liLabel, self.logLabel, self.highlightcolor))
         self.liLabel.bind("<Leave>", partial(self.color_config, self.liLabel, self.logLabel,self.main_color))
         self.liLabel.bind("<Button-1>", partial(self.lift_page, self.liLabel, self.logLabel, self.log, self.current_button))
+#
+        
+        #%%
+        
+        #abort icon
+        #add run icon with margin for highlight
+        
+#        abr = PIL.Image.open('images\icons8-close-window-48.png').resize((30,30))
+#        abrnew = self.add_margin(abr, 4, 0, 4, 0)
 #        
+#        abrIcon = ImageTk.PhotoImage(abrnew)
+#        abortLabel2 = tk.Label(self.nav, bg=self.main_color)
+#        abortLabel2.image = abrIcon # keep a reference!
+        
+        
+         
         #%% USER GUIDE
     
         #user nav button
@@ -691,7 +713,7 @@ class Hem(Page):
         self.s1.grid(row=1, column=0, columnspan=2, sticky="nsew")
         self.s2.grid(row=2, column=0, columnspan=2, sticky="nsew")
         self.alturep.grid(row=4, column=0, columnspan=2, sticky="nsew")
-        self.s3.grid(row=3, column=0, columnspan=2, sticky="nsew")
+        self.s3.grid(row=3, column=0, columnspan=2, sticky="nsew", pady=10)
         self.s4.grid(row=5, column=0, columnspan=2, sticky="nsew")
         self.s5.grid(row=6, column=0, columnspan=2, sticky="nsew")
         self.s6.grid(row=7, column=0, columnspan=2, sticky="nsew")
@@ -710,10 +732,17 @@ class Hem(Page):
         
         self.s2.grid_propagate(0)
         
+        self.tt = PIL.Image.open('images\icons8-virtual-machine-52-white.png').resize((30,30))
+        self.tticon = self.add_margin(self.tt, 5, 0, 5, 0)
+        self.titleicon = ImageTk.PhotoImage(self.tticon)
+        self.titleLabel = tk.Label(self.s1, image=self.titleicon, bg=self.tab_color)
+        self.titleLabel.image = self.titleicon # keep a reference!
+        self.titleLabel.grid(row=1, column=0, padx=10, pady=10)
         
-        self.title = tk.Label(self.s1, font=TITLE_FONT, bg=self.tab_color, 
+        
+        self.title = tk.Label(self.s1, font=TITLE_FONT, fg="white", bg=self.tab_color, 
                              text="HEM4")
-        self.title.grid(row=0, column=0, sticky="W", pady=10, padx=10)
+        self.title.grid(row=1, column=1, sticky="W", pady=10, padx=10)
         
 #%% Setting up  directions text space
         
@@ -813,7 +842,7 @@ class Hem(Page):
         
         
         self.emis_file = tk.Label(self.s7, font=TEXT_FONT, bg=self.tab_color, 
-                             text="3. Please select a Emissions Location file:")
+                             text="3. Please select an Emissions Location file:")
         self.emis_file.grid(row=2, column=1, sticky='W')
         
                                     
@@ -1727,25 +1756,18 @@ class Hem(Page):
         
          #exit button
         #aermod user nav button
-        abortLabel= tk.Label(self.nav, text="ABORT HEM RUN", font=TAB_FONT, bg=self.main_color, height=2, anchor="w")
-        abortLabel.place(in_=self.nav.container, relwidth=0.2, rely=0.54, relx=0.1)
+        self.abortLabel= tk.Label(self.nav, text="  ABORT HEM RUN", font=TAB_FONT, fg='red', bg=self.main_color, height=2, anchor="w")
+        self.abortLabel.place(in_=self.nav.container, relwidth=0.2, rely=0.54, relx=0.1)
 
-#        #add run icon with margin for highlight
-        abr = PIL.Image.open('images\icons8-close-window-48.png').resize((30,30))
-        abrnew = self.add_margin(abr, 4, 0, 4, 0)
-        
-        abrIcon = ImageTk.PhotoImage(abrnew)
-        abortLabel2 = tk.Label(self.nav, image=abrIcon, bg=self.main_color)
-        abortLabel2.image = abrIcon # keep a reference!
-        abortLabel2.place(in_=self.container, relwidth=0.1, rely=0.54)
-        
+
+#        
          #bind icon and label events
-        abortLabel.bind("<Enter>", partial(self.color_config, abortLabel, abortLabel2, self.highlightcolor))
-        abortLabel.bind("<Leave>", partial(self.color_config, abortLabel, abortLabel2, self.main_color))
-#        abortLabel.bind("<Button-1>", partial(self.on_closing, self.hem)) 
-        abortLabel2.bind("<Enter>", partial(self.color_config, abortLabel2, abortLabel, self.highlightcolor))
-        abortLabel2.bind("<Leave>", partial(self.color_config, abortLabel2, abortLabel,self.main_color))
-#        abortLabel2.bind("<Button-1>", partial(self.on_closing, self.hem))
+        self.abortLabel.bind("<Enter>", partial(self.otr_config, self.abortLabel,  self.highlightcolor))
+        self.abortLabel.bind("<Leave>", partial(self.otr_config, self.abortLabel, self.main_color))
+        self.abortLabel.bind("<Button-1>", lambda x:self.quit_app())
+#        self.nav.abortLabel2.bind("<Enter>", partial(self.color_config, self.nav.abortLabel2, abortLabel, self.highlightcolor))
+#        self.nav.abortLabel2.bind("<Leave>", partial(self.color_config, self.nav.abortLabel2, abortLabel,self.main_color))
+#        self.nav.abortLabel2.bind("<Button-1>", partial(self.quit_app))
 
        
         
@@ -1845,6 +1867,7 @@ class Hem(Page):
             if override:
                 # Abort the thread and wait for it to stop...once it has
                 # completed, it will signal this class to kill the GUI
+                self.nav.iconLabel.configure(image=self.nav.cancelIcon)
                 Logger.logMessage("Stopping HEM4...")
                 self.processor.abortProcessing()
                 self.aborted = True
@@ -1915,7 +1938,8 @@ class Hem(Page):
     def reset_gui(self):
         #reset all inputs if everything finished. actually destroy and recreate all inputs
 
-
+        
+        
         self.button_file['text'] = "1. Please select a Facilities List Options file:"
         self.button_file.unbind('<Button1>')
         self.fileLabel.unbind('<Button1>')
@@ -1982,14 +2006,22 @@ class Hem(Page):
         
         global instruction_instance
         self.instruction_instance.set(" ")
+        self.optional.instruction_instance.set(" ")
+        self.depdeplt.instruction_instance.set(" ")
+        
+        
         
         self.model.reset()
         self.nav.iconLabel.configure(image=self.nav.runIcon)
+        self.abortLabel.destroy()
         
         self.running = False
   
 #%%
-    
+    def otr_config(self, widget1, color, event):
+        
+         widget1.configure(bg=color)
+       
         
     def color_config(self, widget1, widget2, container, color, event):
         
@@ -2061,7 +2093,16 @@ class Hem(Page):
                  
                  if self.optional.instruction_instance.get() == " ":
                      
-                     self.browse("instructions/urep_browse.txt")
+                     self.optional.browse("instructions/urep_browse.txt")
+                     
+                 else:
+                     self.optional.instruction_instance.set(" ")
+                     
+             elif 'Please select an Emissions Variation file::' in [widget1['text'], widget2['text']]:
+                 
+                 if self.optional.instruction_instance.get() == " ":
+                     
+                     self.optional.browse("instructions/emvar_browse.txt")
                      
                  else:
                      self.optional.instruction_instance.set(" ")
@@ -2120,6 +2161,8 @@ class Hem(Page):
          widget2.configure(bg=color)
          container.configure(bg=color)
          self.instruction_instance.set(" ")
+         self.optional.instruction_instance.set(" ")
+         self.depdeplt.instruction_instance.set(" ")
          
          
    
@@ -2171,9 +2214,15 @@ class Options(Page):
         self.s4.grid(row=3, column=0, columnspan=2, sticky="nsew")
         self.s5.grid(row=4, column=0, columnspan=2, sticky="nsew")
 
+        self.tt = PIL.Image.open('images\icons8-settings-48-white.png').resize((30,30))
+        self.tticon = self.add_margin(self.tt, 5, 0, 5, 0)
+        self.titleicon = ImageTk.PhotoImage(self.tticon)
+        self.titleLabel = tk.Label(self.s1, image=self.titleicon, bg=self.tab_color)
+        self.titleLabel.image = self.titleicon # keep a reference!
+        self.titleLabel.grid(row=1, column=0, padx=10, pady=10)
 
-        title2 = tk.Label(self.s1, text="Revise Census", font=TITLE_FONT, bg=self.tab_color)
-        title2.grid(row=1, column=0, padx=10, sticky='W', pady=10)
+        title2 = tk.Label(self.s1, text="REVISE CENSUS", font=TITLE_FONT, fg="white", bg=self.tab_color)
+        title2.grid(row=1, column=1, padx=10, sticky='W', pady=10)
 
         
         fu = PIL.Image.open('images\icons8-folder-48.png').resize((30,30))

@@ -13,7 +13,7 @@ import shutil
 
 
 from PyQt5 import QtGui
-from pandastable import Table, filedialog, np
+#from pandastable import Table, filedialog, np
 from datetime import datetime
 from com.sca.hem4.log.Logger import Logger
 from com.sca.hem4.tools.CensusUpdater import CensusUpdater
@@ -1291,7 +1291,7 @@ class MainView(tk.Frame):
 
 if __name__ == "__main__":
     root = tk.Tk()
-    root.iconbitmap('images/HEM4.ico')
+#    root.iconbitmap('images/HEM4.ico')
     main = MainView(root)
     main.pack(side="top", fill="both", expand=True)
     root.wm_minsize(1000,750)
