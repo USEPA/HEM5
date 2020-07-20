@@ -758,11 +758,11 @@ class Summary(Page):
 
          
             running_message = "\nRunning report(s) on facilities: " + ', '.join(faclist)
-            now = str(datetime.now())
+            
             
             
             #write to log
-            self.logfile.write(now + ":    " + running_message + "\n")
+            self.logfile.write(str(datetime.now()) + ":    " + running_message + "\n")
             
             self.nav.log.scr.configure(state='normal')
             self.nav.log.scr.insert(tk.INSERT, running_message)
@@ -780,7 +780,7 @@ class Summary(Page):
                 self.nav.log.scr.insert(tk.INSERT, "\n")
                 self.nav.log.scr.configure(state='disabled')
                 
-                self.logfile.write(now + ":    " + report_message + "\n")
+                self.logfile.write(str(datetime.now()) + ":    " + report_message + "\n")
                 
                 args = reportNameArgs[reportName]
                 summaryMgr.createReport(self.fullpath, reportName, args)
@@ -793,7 +793,7 @@ class Summary(Page):
                     self.nav.log.scr.insert(tk.INSERT, "\n")
                     self.nav.log.scr.configure(state='disabled')
                     
-                    self.logfile.write(now + ":    " + report_complete + "\n")
+                    self.logfile.write(str(datetime.now()) + ":    " + report_complete + "\n")
 
                     
                 else:
@@ -804,7 +804,7 @@ class Summary(Page):
             self.nav.log.scr.insert(tk.INSERT, "Risk Summary Reports Finished.")
             self.nav.log.scr.insert(tk.INSERT, "\n")
             self.nav.log.scr.configure(state='disabled')
-            self.logfile.write(now + ":    " + "Risk Summary Reports Finished." + "\n")
+            self.logfile.write(str(datetime.now()) + ":    " + "Risk Summary Reports Finished." + "\n")
 
             
             messagebox.showinfo("Summary Reports Finished", "Risk summary reports for  " + ', '.join(faclist) + " run.")
