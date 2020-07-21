@@ -47,9 +47,7 @@ class InputChecker():
         # raise attribute error if it doesn't
         except AttributeError:
             logMsg = ("Facilities list options file uploaded incorrectly," + 
-                      " please try again.")
-            messagebox.showinfo("Upload Error", "Facilities list options file uploaded incorrectly," + 
-                      " please try again.")
+                      " please try again")
             
             result['result'] = logMsg
             result['reset'] = 'fac'
@@ -58,9 +56,7 @@ class InputChecker():
             # make sure dataframe isn't empty
             if self.model.faclist.dataframe.empty:
                 logMsg = ("There was an error uploading Facilities Options List" + 
-                          " file, please try again.")
-                messagebox.showinfo("Upload Error", "There was an error uploading Facilities Options List" + 
-                          " file, please try again.")
+                          " file, please try again")
                 
                 result['result'] = logMsg
                 return result
@@ -79,18 +75,14 @@ class InputChecker():
         try:
             self.model.hapemis.dataframe
         except AttributeError:
-            logMsg2 = "HAP Emissions file uploaded incorrectly, please try again."
-            messagebox.showinfo("Upload Error", "HAP Emissions file uploaded incorrectly, please try again.")
+            logMsg2 = "HAP Emissions file uploaded incorrectly, please try again"
             result['result'] = logMsg2
             result['reset'] = 'hap'
-            
             return result
         else:
             if self.model.hapemis.dataframe.empty:
                 logMsg2 = ("There was an error uploading HAP Emissions file," +
-                           " please try again.")
-                messagebox.showinfo("Upload Error", "There was an error uploading HAP Emissions file," +
-                           " please try again.")
+                           " please try again")
                 
                 result['result'] = logMsg2
                 return result
@@ -101,17 +93,14 @@ class InputChecker():
         try:
              self.model.emisloc.dataframe
         except AttributeError:
-            logMsg3 = "Emissions Locations file uploaded incorrectly, please try again."
-            messagebox.showinfo("Upload Error", "Emissions Locations file uploaded incorrectly, please try again.")
+            logMsg3 = "Emissions Locations file uploaded incorrectly, please try again"
             
             result['result'] = logMsg3
             return result
         else:
             if self.model.emisloc.dataframe.empty:
                 logMsg3 = ("There was an error uploading Emissions Locations" + 
-                           " file, please try again.")
-                messagebox.showinfo("Upload Error", "There was an error uploading Emissions Locations" + 
-                           " file, please try again.")
+                           " file, please try again")
                 
                 result['result'] = logMsg3
                 result['reset'] = 'emis'
@@ -145,7 +134,7 @@ class InputChecker():
         
         for option in optional_list:
             
-            if option == 'user_rcpt':
+            if option is 'user_rcpt':
                 
                 
                 
@@ -153,15 +142,12 @@ class InputChecker():
                     
                     print("checked user receptors")
                     
-                    urlist = set(self.model.ureceptr.dataframe[fac_id])
+                    self.model.ureceptr.dataframe
             
                 except AttributeError as e:
                     logMsg7 = ("User receptors are specified in the Facilities" +
                               " List Options file, please upload user recptors" + 
-                              " for " + ", ".join(list(urlist)))
-                    messagebox.showinfo("Missing User Receptors", "User receptors are specified in the Facilities" +
-                              " List Options file, please upload user recptors" + 
-                              " for "+ ", ".join(list(urlist)))
+                              " for " )
                     
                     result['result'] = logMsg7 + e
                     result['reset'] = 'user_rcpt'
@@ -180,28 +166,22 @@ class InputChecker():
                         logMsg7b = ("Facilities: " + ",".join(list(missing)) + 
                                     " are missing user receptors that were" +
                                     " indicated in the Facilities list options file")
-                        messagebox.showinfo("Missing User Receptors", "Facilities: " + ", ".join(list(missing)) + 
-                                    " are missing user receptors that were" +
-                                    " indicated in the Facilities list options file")
             
                         result['result'] =  logMsg7b
                         result['reset'] = 'user_rcpt'
                         return result
 
-            elif option == 'bouyant':
+            elif option is 'bouyant':
                 
                 try:
                     
                     print("checked buoyant")
-                    buoylist = set(self.model.multibuoy.dataframe[fac_id])
+                    self.model.multibuoy.dataframe
                 
                 except:
                     logMsg8 = ("Buoyant Line parameters are specified in the " + 
                                " Facilities List Options file, please upload " + 
-                               " buoyant line sources for " + ", ".join(list(buoylist)) )
-                    messagebox.showinfo("Missing Buoyant Line Parameters", "Buoyant Line parameters are specified in the " + 
-                               " Facilities List Options file, please upload " + 
-                               " buoyant line sources for " + ", ".join(list(buoylist)) )
+                               " buoyant line sources for " )
 
                     result['result'] = logMsg8
                     result['reset'] = 'bouyant_line'
@@ -220,11 +200,7 @@ class InputChecker():
                         logMsg8b = ("Facilities: " + ",".join(list(missing)) + 
                                     " are missing bouyant line sources that" +
                                     " were indicated in the Facilities list" +
-                                    " options file.")
-                        messagebox.showinfo("MIssing Buoyant Line sources", "Facilities: " + ",".join(list(missing)) + 
-                                    " are missing bouyant line sources that" +
-                                    " were indicated in the Facilities list" +
-                                    " options file.")
+                                    " options file")
             
                         result['result'] = logMsg8b
                         result['reset'] = 'bouyant_line'
@@ -234,20 +210,18 @@ class InputChecker():
                         # set ureceptr model option to TRUE
                         self.model.model_optns['ureceptr'] = True
 
-            elif option == 'polyvertex':
+            elif option is 'polyvertex':
                 
                 try: 
                     print("checked polyvertex")
-                    polylist = set(self.model.multipoly.dataframe[fac_id])
+                    self.model.multipoly.dataframe
                     
                 except:
                     
                     logMsg9 = ("Polyvertex parameters are specified in the " + 
                                " Facilities List Options file, please upload " + 
-                               " polyvertex source file for " + ", ".join(list(polylist)))
-                    messagebox.showinfo("Missing Polyvertex parameters", "Polyvertex parameters are specified in the " + 
-                               " Facilities List Options file, please upload " + 
-                               " polyvertex source file for " + ", ".join(list(polylist)))
+                               " polyvertex source file " )
+                    
                     
                     result['result'] = logMsg9
                     result['reset'] = 'polyvertex'
@@ -267,11 +241,7 @@ class InputChecker():
                         logMsg9b = ("Facilities: " + ",".join(list(missing)) + 
                                     " are missing polyvertex sources that" +
                                     " were indicated in the Facilities list" +
-                                    " options file.")
-                        messagebox.showinfo("Missing Polyvertex sources", "Facilities: " + ",".join(list(missing)) + 
-                                    " are missing polyvertex sources that" +
-                                    " were indicated in the Facilities list" +
-                                    " options file.")
+                                    " options file")
             
                         result['result'] =  logMsg9b
                         result['reset'] = 'poly_vertex'
@@ -294,26 +264,20 @@ class InputChecker():
                             
                             logMsg9c = ("Source ids for Emissions Locations and Polygon Vertex file"+ 
                                        " do not match, please upload corresponding files.")
-                            messagebox.showinfo("Source ids mismatch", "Source ids for Emissions Locations and Polygon Vertex file"+ 
-                                       " do not match, please upload corresponding files.")
-                            
                             result['result'] =  logMsg9c
                             return result
             
-            elif option == 'downwash':
+            elif option is 'downwash':
             
                 try:
                     print("checked downwash")
-                    bldlist = set(self.model.bldgdw.dataframe[fac_id])
+                    self.model.bldgdw.dataframe
                     
                 except:
                     
                     logMsg14 = ("Building downwash parameters are specified in "+
                                   "the Facilities List Options file, please " +
-                                  "upload a Building Downwash file "  + ", ".join(list(bldlist)))
-                    messagebox.showinfo("Missing building downwash file", "Building downwash parameters are specified in "+
-                                  "the Facilities List Options file, please " +
-                                  "upload a Building Downwash file "  + ", ".join(list(bldlist)))
+                                  "upload a Building Downwash file " )
                     
                     result['result'] = logMsg14
                     result['reset'] = 'bldgdw'
@@ -329,10 +293,6 @@ class InputChecker():
                         missing = fids - dids
                         
                         logMsg14b = ("Facilities: " + ",".join(list(missing)) + 
-                                    " are missing building downash specifications" +
-                                    " that were indicated in the Facilities list" +
-                                    " Options file")
-                        messagebox.showinfo("Missing building downwash specifications", "Facilities: " + ",".join(list(missing)) + 
                                     " are missing building downash specifications" +
                                     " that were indicated in the Facilities list" +
                                     " Options file")
@@ -360,27 +320,20 @@ class InputChecker():
                             
                             logMsg14c = ("Source ids for Emissions Locations and Building Downwash file"+ 
                                        " do not match, please upload corresponding files.")
-                            messagebox.showinfo("Mismatch source ids", "Source ids for Emissions Locations and Building Downwash file"+ 
-                                       " do not match, please upload corresponding files.")
-                            
                             result['result'] =  logMsg14c
                             return result
             
-            elif option == 'particle':
+            elif option is 'particle':
 
                 try:
                     
-                   self.model.partdep.dataframe
+                    self.model.partdep.dataframe
                     
                 except AttributeError:
                     
                     logMsg10 = ("Particle deposition or depletion parameters" +
                                 " are specified in the Facilities List Options" +
-                                " file. Please upload a Particle Size file.")
-                    
-                    messagebox.showinfo("Missing particle size file", "Particle deposition or depletion parameters" +
-                                " are specified in the Facilities List Options" +
-                                " file. Please upload a Particle Size file.")
+                                " file. Please upload a Particle Size File." )
                     
                     result['result'] = logMsg10
                     result['reset'] = 'particle'
@@ -397,11 +350,7 @@ class InputChecker():
                         logMsg10b = ("Facilities: " + ",".join(list(missing)) + 
                                     " are missing particle size specifications that" +
                                     " were indicated in the Facilities list" +
-                                    " Options file.")
-                        messagebox.showinfo("Missing particle size file specifications", "Facilities: " + ",".join(list(missing)) + 
-                                    " are missing particle size specifications that" +
-                                    " were indicated in the Facilities list" +
-                                    " Options file.")
+                                    " Options file")
             
                         result['result'] =  logMsg10b
                         result['reset'] = 'particle'
@@ -424,14 +373,10 @@ class InputChecker():
                             
                             logMsg10c = ("Source ids for Emissions Locations and Particle Size file"+ 
                                        " do not match, please upload corresponding files.")
-                            
-                            messagebox.showinfo("Mismatch source ids", "Source ids for Emissions Locations and Particle Size file"+ 
-                                       " do not match, please upload corresponding files.")
-                            
                             result['result'] =  logMsg10c
                             return result
 
-            elif option == 'vapor':
+            elif option is 'vapor':
                 
                 try:
                     
@@ -441,11 +386,7 @@ class InputChecker():
                     
                     logMsg11 = ("Vapor deposition or depletion parameters" +
                                 " are specified in the Facilities List Options" +
-                                " file. Please upload a Land Use file." )
-                    
-                    messagebox.showinfo("Missing Land Use file", "Vapor deposition or depletion parameters" +
-                                " are specified in the Facilities List Options" +
-                                " file. Please upload a Land Use file." )
+                                " file. Please upload a Land Use File." )
                     
                     result['result'] = logMsg11
                     result['reset'] = 'vapor'
@@ -460,11 +401,7 @@ class InputChecker():
                         
                         logMsg12 = ("Vapor deposition or depletion parameters" +
                                 " are specified in the Facilities List Options" +
-                                " file. Please upload a Land Use file." )
-                        
-                        messagebox.showinfo("Missing Seasonal Vegetation file", "Vapor deposition or depletion parameters" +
-                                " are specified in the Facilities List Options" +
-                                " file. Please upload a Seasonal Vegetation file.")
+                                " file. Please upload a Land Use File." )
                     
                         result['result'] = logMsg12
                         result['reset'] = 'vapor'
@@ -484,12 +421,7 @@ class InputChecker():
                             logMsg11b = ("Facilities: " + ",".join(list(missing)) + 
                                         " are missing land use specifications that" +
                                         " were indicated in the Facilities list" +
-                                        " Options file.")
-                            
-                            messagebox.showinfo("Missing land use specifications", "Facilities: " + ",".join(list(missing)) + 
-                                        " are missing land use specifications that" +
-                                        " were indicated in the Facilities list" +
-                                        " Options file.")
+                                        " Options file")
                 
                             result['result'] =  logMsg11b
                             result['reset'] = 'particle'
@@ -502,12 +434,7 @@ class InputChecker():
                             logMsg12b = ("Facilities: " + ",".join(list(missing)) + 
                                         " are missing seasonal vegetation " +
                                         "specifications that were indicated in the "+
-                                        "Facilities List Options file.")
-                            
-                            messagebox.showinfo("Missing seasonal vegetation specifications", "Facilities: " + ",".join(list(missing)) + 
-                                        " are missing seasonal vegetation " +
-                                        "specifications that were indicated in the "+
-                                        "Facilities List Options file.")
+                                        "Facilities List Options file")
                 
                             result['result'] =  logMsg12b
                             result['reset'] = 'particle'
@@ -515,7 +442,7 @@ class InputChecker():
                             
                             return result
             
-            elif option == 'both':
+            elif option is 'both':
 
                 vdepo = self.model.faclist.dataframe['vdep'].fillna("").tolist()[0]                       # Vapor Deposition
                 pdepo = self.model.faclist.dataframe['pdep'].fillna("").tolist()[0]                       # Particle Deposition
@@ -537,11 +464,7 @@ class InputChecker():
                     
                         logMsg15 = ("Particle deposition or depletion parameters" +
                                     " are specified in the Facilities List Options" +
-                                    " file. Please upload a Particle Size file." )
-                        
-                        messagebox.showinfo("Missing Particle Size file", "Particle deposition or depletion parameters" +
-                                    " are specified in the Facilities List Options" +
-                                    " file. Please upload a Particle Size file." )
+                                    " file. Please upload a Particle Size File." )
                         
                         result['result'] = logMsg15
                         result['reset'] = 'particle'
@@ -558,11 +481,7 @@ class InputChecker():
                         
                             logMsg16 = ("Vapor deposition or depletion parameters" +
                                     " are specified in the Facilities List Options" +
-                                    " file. Please upload a Land Use file." )
-                            
-                            messagebox.showinfo("Missing Land Use file", "Vapor deposition or depletion parameters" +
-                                    " are specified in the Facilities List Options" +
-                                    " file. Please upload a Land Use file.")
+                                    " file. Please upload a Land Use File." )
                         
                             result['result'] = logMsg16
                             result['reset'] = 'vapor'
@@ -579,11 +498,7 @@ class InputChecker():
                                 
                                 logMsg17 = ("Vapor deposition or depletion parameters" +
                                         " are specified in the Facilities List Options" +
-                                        " file. Please upload a Land Use file." )
-                                
-                                messagebox.showinfo("Missing Land Use file", "Vapor deposition or depletion parameters" +
-                                        " are specified in the Facilities List Options" +
-                                        " file. Please upload a Land Use file.")
+                                        " file. Please upload a Land Use File." )
                             
                                 result['result'] = logMsg17
                                 result['reset'] = 'vapor'
