@@ -57,7 +57,7 @@ import queue
 
 
 import numpy as np
-#from pandastable import Table, filedialog, np
+from pandastable import Table, filedialog, np
 
 
 
