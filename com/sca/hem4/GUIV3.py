@@ -57,7 +57,7 @@ import queue
 
 
 import numpy as np
-from pandastable import Table, filedialog, np
+#from pandastable import Table, filedialog, np
 
 
 
@@ -799,8 +799,8 @@ class Hem(Page):
         self.fileLabel.bind("<Leave>", lambda x: self.remove_config(self.fileLabel, self.button_file, self.s5, self.tab_color, x))
         self.fileLabel.bind("<Button-1>",  lambda x: self.uploadFacilitiesList(self.s5, self.button_file, x))
         
-#        self.s5.bind("<Enter>", lambda x: self.container_config( self.button_file, self.fileLabel, self.s5, self.highlightcolor, x))
-#        self.s5.bind("<Leave>", lambda x: self.container_config( self.button_file, self.fileLabel, self.s5, self.tab_color, x))
+        self.s5.bind("<Enter>", lambda x: self.color_config( self.button_file, self.fileLabel, self.s5, self.highlightcolor, x))
+        self.s5.bind("<Leave>", lambda x: self.remove_config( self.button_file, self.fileLabel, self.s5, self.tab_color, x))
 #        
        
                 
@@ -967,7 +967,7 @@ class Hem(Page):
             
             self.uploader.upload("faclist", fullpath)
             
-            if self.model.faclist.dataframe != None:
+            if self.model.faclist.dataframe.empty == False:
                 
                 self.model.facids = self.model.faclist.dataframe['fac_id']
     
@@ -1035,7 +1035,7 @@ class Hem(Page):
             if fullpath is not None:
                 self.uploader.upload("hapemis", fullpath)
                 
-                if self.model.hapemis.dataframe != None:
+                if self.model.hapemis.dataframe.empty == False:
         
                     # Update the UI
                     [self.nav.log.scr.insert(tk.INSERT, msg) for msg in self.model.hapemis.log]
@@ -1078,7 +1078,7 @@ class Hem(Page):
                 if fullpath is not None:
                     self.uploader.upload("emisloc", fullpath)
                     
-                    if self.model.emisloc.dataframe != None:
+                    if self.model.emisloc.dataframe.empty == False:
         
                         # Update the UI
                         [self.nav.log.scr.insert(tk.INSERT, msg) for msg in self.model.emisloc.log]
@@ -1201,7 +1201,7 @@ class Hem(Page):
             self.uploader.uploadDependent("user receptors", fullpath, 
                                           self.model.faclist.dataframe)
             
-            if self.model.ureceptr.dataframe != None:
+            if self.model.ureceptr.dataframe.empty == False:
             
                 self.model.model_optns['ureceptr'] = True
                 # Update the UI

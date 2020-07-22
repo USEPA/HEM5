@@ -242,7 +242,7 @@ class Optional(Page):
             self.uploader.uploadDependent("polyvertex", fullpath, 
                                                    self.model.emisloc.dataframe)
             
-            if self.model.multipoly.dataframe != None:
+            if self.model.multipoly.dataframe.empty == False:
 
                 # Update the UI
                 [self.nav.nav.log.scr.insert(tk.INSERT, msg) for msg in self.model.multipoly.log]
@@ -266,7 +266,7 @@ class Optional(Page):
             self.uploader.uploadDependent("buoyant line", fullpath, 
                                                    self.model.emisloc.dataframe)
             
-            if self.model.multibuoy.dataframe != None:
+            if self.model.multibuoy.dataframe.empty == False:
 
                 # Update the UI
                 [self.nav.nav.log.scr.insert(tk.INSERT, msg) for msg in self.model.multibuoy.log]
@@ -289,7 +289,7 @@ class Optional(Page):
             self.uploader.uploadDependent("building downwash", fullpath, 
                                           self.model)
             
-            if self.model.bldgdw.dataframe != None:
+            if self.model.bldgdw.dataframe.empty == False:
                 
                 # Update the UI
                 [self.nav.nav.log.scr.insert(tk.INSERT, msg) for msg in self.model.bldgdw.log]
@@ -312,7 +312,7 @@ class Optional(Page):
         if fullpath is not None:
             self.uploader.uploadDependent("user receptors", fullpath, self.model.faclist.dataframe)
             
-            if self.model.ureceptr.dataframe != None:
+            if self.model.ureceptr.dataframe.empty == False:
 
                 self.model.model_optns['ureceptr'] = True
                 # Update the UI
@@ -410,7 +410,7 @@ class DepDplt(Page):
             self.uploader.uploadDependent("particle depletion", fullpath, 
                                            self.model.faclist.dataframe, facilities)
             
-            if self.model.partdep.dataframe != None:
+            if self.model.partdep.dataframe.empty == False:
 
                 # Update the UI
                 [self.nav.nav.log.scr.insert(tk.INSERT, msg) for msg in self.model.partdep.log]
@@ -431,7 +431,7 @@ class DepDplt(Page):
             self.uploader.uploadDependent("land use", fullpath, 
                                           self.model.gasdryfacs)
             
-            if self.model.landuse.dataframe != None:
+            if self.model.landuse.dataframe.empty == False:
 
                 # Update the UI
                 [self.nav.nav.log.scr.insert(tk.INSERT, msg) for msg in self.model.landuse.log]
@@ -452,7 +452,7 @@ class DepDplt(Page):
             self.uploader.uploadDependent("seasons", fullpath, 
                                           self.model.gasdryfacs)
             
-            if self.model.seasons.dataframe != None:
+            if self.model.seasons.dataframe.empty == False:
 
                 # Update the UI
                 [self.nav.nav.log.scr.insert(tk.INSERT, msg) for msg in self.model.seasons.log]

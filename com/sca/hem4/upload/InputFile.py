@@ -64,10 +64,20 @@ class InputFile(ABC):
                         custom_msg = "Length Mismatch: Input file has " + result.group(1) + " columns, but should have " +\
                             result.group(2) + " columns. Please make sure you have selected the correct file or file version."
                         messagebox.showinfo("Error uploading input file", custom_msg)
+                        
+                        dataframe = pd.DataFrame()
+                        return dataframe
+                    
                     else:
                         messagebox.showinfo("Error uploading input file ", str(e) + " Please make sure you have selected the correct file or file version.")
+                        
+                        dataframe = pd.DataFrame()
+                        return dataframe
                 else:
                     messagebox.showinfo("Error uploading input file", str(e) + " Please make sure you have selected the correct file or file version.")
+                    
+                    dataframe = pd.DataFrame()
+                    return dataframe
 
             else:
                 df = df.astype(str).applymap(self.convertEmptyToNaN)
@@ -78,7 +88,8 @@ class InputFile(ABC):
                 if not numeric_only.equals(df):
                     messagebox.showinfo("Error: Some non-numeric values were found in numeric columns in this data set: " +
                                       os.path.basename(self.path))
-                    return None
+                    dataframe = pd.DataFrame()
+                    return dataframe
 
                 types = self.get_column_types()
                 df = df.astype(dtype=types)
