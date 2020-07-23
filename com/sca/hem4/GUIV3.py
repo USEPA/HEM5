@@ -826,9 +826,9 @@ class Hem(Page):
         self.hapLabel.bind("<Leave>", lambda x: self.remove_config(self.hapLabel, self.hap_file, self.s6, self.tab_color, x))
         self.hapLabel.bind("<Button-1>",  lambda x: self.uploadHAPEmissions(self.s6, self.hap_file, x))
         
-#        self.s6.bind("<Enter>", lambda x: self.color_config(self.hap_file, self.hapLabel, self.s6, self.highlightcolor, x))
-#        self.s6.bind("<Leave>", lambda x: self.remove_config(self.hap_file, self.hapLabel, self.s6, self.highlightcolor, x))
-#        
+        self.s6.bind("<Enter>", lambda x: self.color_config(self.hap_file, self.hapLabel, self.s6, self.highlightcolor, x))
+        self.s6.bind("<Leave>", lambda x: self.remove_config(self.hap_file, self.hapLabel, self.s6, self.highlightcolor, x))
+        
 
         
         #%%Emissions location label
@@ -854,8 +854,8 @@ class Hem(Page):
         self.emisLabel.bind("<Leave>", lambda x: self.remove_config(self.emisLabel, self.emis_file, self.s7, self.tab_color, x))
         self.emisLabel.bind("<Button-1>",  lambda x: self.uploadEmissionLocations(self.s7, self.emis_file, x))
 
-#        self.s7.bind("<Enter>", lambda x: self.color_config(self.emis_file, self.emisLabel, self.s7, self.highlightcolor, x))
-#        self.s7.bind("<Leave>", lambda x: self.remove_config(self.emis_file, self.emisLabel, self.s7, self.highlightcolor, x))
+        self.s7.bind("<Enter>", lambda x: self.color_config(self.emis_file, self.emisLabel, self.s7, self.highlightcolor, x))
+        self.s7.bind("<Leave>", lambda x: self.remove_config(self.emis_file, self.emisLabel, self.s7, self.highlightcolor, x))
 #        
         
         
@@ -1309,7 +1309,9 @@ class Hem(Page):
         self.urLabel.bind("<Leave>", lambda x: self.remove_config(self.urLabel, self.ur_file, self.optional.s8, self.tab_color, x))
         self.urLabel.bind("<Button-1>",  lambda x: self.optional.uploadUserReceptors(self.optional.s8, self.ur_file, x))
 
-        
+        self.optional.s8.bind("<Enter>", lambda x: self.color_config(self.urLabel, self.ur_file, self.optional.s8, self.highlightcolor, x))
+        self.optional.s8.bind("<Leave>", lambda x: self.remove_config(self.urLabel, self.ur_file, self.optional.s8, self.tab_color, x))
+       
         
         
         
@@ -1345,7 +1347,10 @@ class Hem(Page):
         self.urepLabel.bind("<Leave>", lambda x: self.remove_config(self.urepLabel, self.urep_file, self.s10, self.tab_color, x))
         self.urepLabel.bind("<Button-1>",  lambda x: self.uploadAltReceptors(self.s10, self.urep_file, x))
         
-  
+        self.s10.bind("<Enter>", lambda x: self.color_config( self.urep_file, self.urepLabel, self.s10, self.highlightcolor, x))
+        self.s10.bind("<Leave>", lambda x: self.remove_config( self.urep_file, self.urepLabel, self.s10, self.tab_color, x))
+       
+        
 
     def add_variation(self):
         """
@@ -1374,7 +1379,10 @@ class Hem(Page):
         self.emisvarLabel.bind("<Enter>", lambda x: self.color_config(self.emisvarLabel, self.emisvar_file, self.optional.s9, self.highlightcolor, x))
         self.emisvarLabel.bind("<Leave>", lambda x: self.remove_config(self.emisvarLabel, self.emisvar_file, self.optional.s9, self.tab_color, x))
         self.emisvarLabel.bind("<Button-1>",  lambda x: self.uploadVariation(self.optional.s9, self.emisvar_file, x))
-
+        
+        self.optional.s9.bind("<Enter>", lambda x: self.color_config(self.emisvarLabel, self.emisvar_file, self.optional.s9, self.highlightcolor, x))
+        self.optional.s9.bind("<Leave>", lambda x: self.remove_config(self.emisvarLabel, self.emisvar_file, self.optional.s9, self.tab_color, x))
+       
 
 
 #    def add_temporal(self):
@@ -1437,7 +1445,10 @@ class Hem(Page):
         self.buoyLabel.bind("<Enter>", lambda x: self.color_config(self.buoyLabel, self.buoy_file, self.optional.s4, self.highlightcolor, x))
         self.buoyLabel.bind("<Leave>", lambda x: self.remove_config(self.buoyLabel, self.buoy_file, self.optional.s4, self.tab_color, x))
         self.buoyLabel.bind("<Button-1>",  lambda x: self.optional.uploadbuoyant(self.optional.s4, self.buoy_file, x))
-
+        
+        self.optional.s4.bind("<Enter>", lambda x: self.color_config(self.buoyLabel, self.buoy_file, self.optional.s4, self.highlightcolor, x))
+        self.optional.s4.bind("<Leave>", lambda x: self.remove_config(self.buoyLabel, self.buoy_file, self.optional.s4, self.tab_color, x))
+        
         
 
     def add_poly(self):
@@ -1466,7 +1477,10 @@ class Hem(Page):
         self.polyLabel.bind("<Leave>", lambda x: self.remove_config(self.polyLabel, self.poly_file, self.optional.s5, self.tab_color, x))
         self.polyLabel.bind("<Button-1>",  lambda x: self.optional.uploadPolyvertex(self.optional.s5, self.poly_file, x))
 
-
+        self.optional.s5.bind("<Enter>", lambda x: self.color_config(self.polyLabel, self.poly_file, self.optional.s5, self.highlightcolor, x))
+        self.optional.s5.bind("<Leave>", lambda x: self.remove_config(self.polyLabel, self.poly_file, self.optional.s5, self.tab_color, x))
+        
+        
     def add_bldgdw(self):
         """ 
         Function for creating row and building downwash file upload widgets
@@ -1493,6 +1507,8 @@ class Hem(Page):
         self.bldgdwLabel.bind("<Leave>", lambda x: self.remove_config(self.bldgdwLabel, self.bldgdw_file, self.optional.s6, self.tab_color, x))
         self.bldgdwLabel.bind("<Button-1>",  lambda x: self.optional.uploadBuildingDownwash(self.optional.s6, self.bldgdw_file, x))
 
+        self.optional.s6.bind("<Enter>", lambda x: self.color_config( self.bldgdw_file, self.bldgdwLabel, self.optional.s6, self.highlightcolor, x))
+        self.optional.s6.bind("<Leave>", lambda x: self.remove_config( self.bldgdw_file, self.bldgdwLabel, self.optional.s6, self.tab_color, x))
         
 
     def add_particle(self):
@@ -1522,7 +1538,9 @@ class Hem(Page):
         self.particleLabel.bind("<Leave>", lambda x: self.remove_config(self.particleLabel, self.particle_file, self.depdeplt.s4, self.tab_color, x))
         self.particleLabel.bind("<Button-1>",  lambda x: self.depdeplt.uploadParticle(self.model.depdeplt, self.depdeplt.s4, self.particle_file, x))
 
-         
+        self.depdeplt.s4.bind("<Enter>", lambda x: self.color_config( self.particle_file, self.particleLabel, self.depdeplt.s4, self.highlightcolor, x))
+        self.depdeplt.s4.bind("<Leave>", lambda x: self.remove_config( self.particle_file, self.particleLabel, self.depdeplt.s4, self.tab_color, x))
+        
 
     def add_land(self):
         
@@ -1551,7 +1569,10 @@ class Hem(Page):
         self.landLabel.bind("<Leave>", lambda x: self.remove_config(self.landLabel, self.land_file, self.depdeplt.s5, self.tab_color, x))
         self.landLabel.bind("<Button-1>",  lambda x: self.depdeplt.uploadLandUse(self.depdeplt.s5, self.land_file, x))
 
-
+        self.depdeplt.s5.bind("<Enter>", lambda x: self.color_config( self.land_file, self.landLabel, self.depdeplt.s5, self.highlightcolor, x))
+        self.depdeplt.s5.bind("<Leave>", lambda x: self.remove_config( self.land_file, self.landLabel, self.depdeplt.s5, self.tab_color, x))
+        
+        
     def add_seasons(self):
         """
         Function for creating column for seasonal vegetation upload widgets
@@ -1576,6 +1597,10 @@ class Hem(Page):
         self.seasonsLabel.bind("<Enter>", lambda x: self.color_config(self.seasonsLabel, self.seasons_file, self.depdeplt.s6, self.highlightcolor, x))
         self.seasonsLabel.bind("<Leave>", lambda x: self.remove_config(self.seasonsLabel, self.seasons_file, self.depdeplt.s6, self.tab_color, x))
         self.seasonsLabel.bind("<Button-1>",  lambda x: self.depdeplt.uploadSeasons(self.depdeplt.s6, self.seasons_file, x))
+        
+        self.depdeplt.s6.bind("<Enter>", lambda x: self.color_config( self.seasons_file, self.seasonsLabel, self.depdeplt.s6, self.highlightcolor, x))
+        self.depdeplt.s6.bind("<Leave>", lambda x: self.remove_config( self.seasons_file, self.seasonsLabel, self.depdeplt.s6, self.tab_color, x))
+        
 
 
     def run(self):
@@ -1591,6 +1616,18 @@ class Hem(Page):
         """
 
         self.ready = False
+        
+        #make sure there is census and MetData
+        if len(os.listdir('/census') ) == 0 or os.path.isdir('/census') == False:
+            messagebox.showinfo('Census data missing', 'Census data is missing. Please check the census folder.')
+            
+            return None
+        
+        if len(os.listdir('/aermod/MetData') ) == 0 or os.path.isdir('/aermod/MetData') == False:
+            messagebox.showinfo('MetData missing', 'MetData is missing. Please check the census folder.')
+            
+            return None
+        
         
         #add temp_var to model ## add to checks 
 #        if self.check_tempvar.get() == 1:
