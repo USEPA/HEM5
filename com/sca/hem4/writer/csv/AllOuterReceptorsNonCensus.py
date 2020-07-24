@@ -322,75 +322,365 @@ class AllOuterReceptorsNonCensus(CsvWriter, InputFile):
     def analyze(self, data):
 
         # Skip if no data
+        # Skip if no data in this batch
         if data.size > 0:
+                       
+            # DF of outer receptor concs
+            outer_concs = pd.DataFrame(data, columns=self.columns)
+            
+            # Get utme, utmn, and hill columns
+            outer_concs1 = pd.merge(outer_concs, self.model.outerblks_df[[lat, lon, 'utme', 'utmn', 'hill']],
+                                    how='left', on=[lat, lon])
+            
+            # Merge ure and inverted rfc
+            outer_concs2 = pd.merge(outer_concs1, self.haplib_df[['pollutant', 'ure', 'invrfc']],
+                                    how='left', on='pollutant')
+            
+            # Merge target organ list
+            outer_concs3 = pd.merge(outer_concs2, self.organs_df[['pollutant', 'organ_list']],
+                                    how='left', on='pollutant')
+            outer_concs3.sort_values(by=[lat, lon], inplace=True)
+            
+            chk4null = outer_concs3[outer_concs3['organ_list'].isnull()]
+            if not chk4null.empty:
+                # Replace NaN with list of 0's
+                outer_concs3['organ_list'] = outer_concs3['organ_list'].apply(
+                        lambda x: x if isinstance(x, list) else [0,0,0,0,0,0,0,0,0,0,0,0,0,0])
 
-            # DF of Outer receptors in this box
-            box_receptors = pd.DataFrame(data, columns=self.columns)
+            
+            # List of all lat/lons from outer_concs3. Not unique because of pollutant/source/emis_type.
+            latlon_alllist = outer_concs3[[lat, lon]].values
+            # List of unique lat/lons
+            latlon_uniqlist = [list(item) for item in set(tuple(row) for row in latlon_alllist)]
+            
+            # Compute the number of unique groups of lat/lons
+            # Also compute the number rows there are for each unique group in outer_concs3 (accounts for pollutant/source/emis_type)
+            nouter = len(outer_concs3.index)
+            ngroups = len(latlon_uniqlist)
+            grouplen = int(nouter / ngroups)
 
-            # compute risk and HI by sourceid/pollutant for each Outer receptor in this box
-            risks_df = self.calculateRisks(box_receptors[pollutant], box_receptors[conc])
-            box_receptors_wrisk = pd.concat([box_receptors, risks_df], axis=1)
+            
+            # Sum cancer risk by lat/lon group
+            a_mir = self.calculateMir(outer_concs3['conc'].values, outer_concs3['ure'].values)
+            sumMir = []
+            for x in range(ngroups):
+                idxstart = x * grouplen
+                idxend = idxstart + grouplen
+                s = 0
+                for y in range(idxstart, idxend):
+                    s = s + a_mir[y]
+                sumMir.append(s)
+                
+            
+            # Calculate resp HI
+            organval = np.array(list(zip(*outer_concs3['organ_list']))[0])
+            if np.sum(organval) == 0:
+                sumResp = [0] * ngroups
+            else:
+                a_resp = self.calculateHI(outer_concs3['conc'].values, outer_concs3['invrfc'].values, 
+                                          organval)
+                sumResp = []
+                for x in range(ngroups):
+                    idxstart = x * grouplen
+                    idxend = idxstart + grouplen
+                    s = 0
+                    for y in range(idxstart, idxend):
+                        s = s + a_resp[y]
+                    sumResp.append(s)
 
-            # Merge box_receptors_wrisk with the outerblocks DF and select columns
+            # Calculate liver HI
+            organval = np.array(list(zip(*outer_concs3['organ_list']))[1])
+            if np.sum(organval) == 0:
+                sumLive = [0] * ngroups
+            else:
+                a_live = self.calculateHI(outer_concs3['conc'].values, outer_concs3['invrfc'].values, 
+                                          organval)
+                sumLive = []
+                for x in range(ngroups):
+                    idxstart = x * grouplen
+                    idxend = idxstart + grouplen
+                    s = 0
+                    for y in range(idxstart, idxend):
+                        s = s + a_live[y]
+                    sumLive.append(s)
+
+            # Calculate neuro HI
+            organval = np.array(list(zip(*outer_concs3['organ_list']))[2])
+            if np.sum(organval) == 0:
+                sumNeur = [0] * ngroups
+            else:
+                a_neur = self.calculateHI(outer_concs3['conc'].values, outer_concs3['invrfc'].values, 
+                                          organval)
+                sumNeur = []
+                for x in range(ngroups):
+                    idxstart = x * grouplen
+                    idxend = idxstart + grouplen
+                    s = 0
+                    for y in range(idxstart, idxend):
+                        s = s + a_neur[y]
+                    sumNeur.append(s)
+
+            # Calculate dev HI
+            organval = np.array(list(zip(*outer_concs3['organ_list']))[3])
+            if np.sum(organval) == 0:
+                sumDeve = [0] * ngroups
+            else:
+                a_deve = self.calculateHI(outer_concs3['conc'].values, outer_concs3['invrfc'].values, 
+                                          organval)
+                sumDeve = []
+                for x in range(ngroups):
+                    idxstart = x * grouplen
+                    idxend = idxstart + grouplen
+                    s = 0
+                    for y in range(idxstart, idxend):
+                        s = s + a_deve[y]
+                    sumDeve.append(s)
+
+            # Calculate reprod HI
+            organval = np.array(list(zip(*outer_concs3['organ_list']))[4])
+            if np.sum(organval) == 0:
+                sumRepr = [0] * ngroups
+            else:
+                a_repr = self.calculateHI(outer_concs3['conc'].values, outer_concs3['invrfc'].values, 
+                                          organval)
+                sumRepr = []
+                for x in range(ngroups):
+                    idxstart = x * grouplen
+                    idxend = idxstart + grouplen
+                    s = 0
+                    for y in range(idxstart, idxend):
+                        s = s + a_repr[y]
+                    sumRepr.append(s)
+
+            # Calculate kidney HI
+            organval = np.array(list(zip(*outer_concs3['organ_list']))[5])
+            if np.sum(organval) == 0:
+                sumKidn = [0] * ngroups
+            else:
+                a_kidn = self.calculateHI(outer_concs3['conc'].values, outer_concs3['invrfc'].values, 
+                                          organval)
+                sumKidn = []
+                for x in range(ngroups):
+                    idxstart = x * grouplen
+                    idxend = idxstart + grouplen
+                    s = 0
+                    for y in range(idxstart, idxend):
+                        s = s + a_kidn[y]
+                    sumKidn.append(s)
+
+            # Calculate ocular HI
+            organval = np.array(list(zip(*outer_concs3['organ_list']))[6])
+            if np.sum(organval) == 0:
+                sumOcul = [0] * ngroups
+            else:
+                a_ocul = self.calculateHI(outer_concs3['conc'].values, outer_concs3['invrfc'].values, 
+                                          organval)
+                sumOcul = []
+                for x in range(ngroups):
+                    idxstart = x * grouplen
+                    idxend = idxstart + grouplen
+                    s = 0
+                    for y in range(idxstart, idxend):
+                        s = s + a_ocul[y]
+                    sumOcul.append(s)
+
+            # Calculate endoc HI
+            organval = np.array(list(zip(*outer_concs3['organ_list']))[7])
+            if np.sum(organval) == 0:
+                sumEndo = [0] * ngroups
+            else:
+                a_endo = self.calculateHI(outer_concs3['conc'].values, outer_concs3['invrfc'].values, 
+                                          organval)
+                sumEndo = []
+                for x in range(ngroups):
+                    idxstart = x * grouplen
+                    idxend = idxstart + grouplen
+                    s = 0
+                    for y in range(idxstart, idxend):
+                        s = s + a_endo[y]
+                    sumEndo.append(s)
+
+            # Calculate hemato HI
+            organval = np.array(list(zip(*outer_concs3['organ_list']))[8])
+            if np.sum(organval) == 0:
+                sumHema = [0] * ngroups
+            else:
+                a_hema = self.calculateHI(outer_concs3['conc'].values, outer_concs3['invrfc'].values, 
+                                          organval)
+                sumHema = []
+                for x in range(ngroups):
+                    idxstart = x * grouplen
+                    idxend = idxstart + grouplen
+                    s = 0
+                    for y in range(idxstart, idxend):
+                        s = s + a_hema[y]
+                    sumHema.append(s)
+
+            # Calculate immune HI
+            organval = np.array(list(zip(*outer_concs3['organ_list']))[9])
+            if np.sum(organval) == 0:
+                sumImmu = [0] * ngroups
+            else:
+                a_immu = self.calculateHI(outer_concs3['conc'].values, outer_concs3['invrfc'].values, 
+                                          organval)
+                sumImmu = []
+                for x in range(ngroups):
+                    idxstart = x * grouplen
+                    idxend = idxstart + grouplen
+                    s = 0
+                    for y in range(idxstart, idxend):
+                        s = s + a_immu[y]
+                    sumImmu.append(s)
+
+            # Calculate skeletal HI
+            organval = np.array(list(zip(*outer_concs3['organ_list']))[10])
+            if np.sum(organval) == 0:
+                sumSkel = [0] * ngroups
+            else:
+                a_skel = self.calculateHI(outer_concs3['conc'].values, outer_concs3['invrfc'].values, 
+                                          organval)
+                sumSkel = []
+                for x in range(ngroups):
+                    idxstart = x * grouplen
+                    idxend = idxstart + grouplen
+                    s = 0
+                    for y in range(idxstart, idxend):
+                        s = s + a_skel[y]
+                    sumSkel.append(s)
+
+            # Calculate spleen HI
+            organval = np.array(list(zip(*outer_concs3['organ_list']))[11])
+            if np.sum(organval) == 0:
+                sumSple = [0] * ngroups
+            else:
+                a_sple = self.calculateHI(outer_concs3['conc'].values, outer_concs3['invrfc'].values, 
+                                          organval)
+                sumSple = []
+                for x in range(ngroups):
+                    idxstart = x * grouplen
+                    idxend = idxstart + grouplen
+                    s = 0
+                    for y in range(idxstart, idxend):
+                        s = s + a_sple[y]
+                    sumSple.append(s)
+
+            # Calculate thyroid HI
+            organval = np.array(list(zip(*outer_concs3['organ_list']))[12])
+            if np.sum(organval) == 0:
+                sumThyr = [0] * ngroups
+            else:
+                a_thyr = self.calculateHI(outer_concs3['conc'].values, outer_concs3['invrfc'].values, 
+                                          organval)
+                sumThyr = []
+                for x in range(ngroups):
+                    idxstart = x * grouplen
+                    idxend = idxstart + grouplen
+                    s = 0
+                    for y in range(idxstart, idxend):
+                        s = s + a_thyr[y]
+                    sumThyr.append(s)
+
+            # Calculate whole body HI
+            organval = np.array(list(zip(*outer_concs3['organ_list']))[13])
+            if np.sum(organval) == 0:
+                sumWhol = [0] * ngroups
+            else:
+                a_whol = self.calculateHI(outer_concs3['conc'].values, outer_concs3['invrfc'].values, 
+                                          organval)
+                sumWhol = []
+                for x in range(ngroups):
+                    idxstart = x * grouplen
+                    idxend = idxstart + grouplen
+                    s = 0
+                    for y in range(idxstart, idxend):
+                        s = s + a_whol[y]
+                    sumWhol.append(s)
+                        
+
+            #----------- Build Outer receptor DF risks by lat/lon for later use in BlockSummaryChronic ----------------
+            
+            tempagg0 = pd.DataFrame(latlon_uniqlist, columns=[lat, lon])
+            uniqcoors = outer_concs3[[lat, lon, overlap, elev, rec_id, utme, utmn, hill, population]].drop_duplicates()
+            
+            tempagg = pd.merge(tempagg0, uniqcoors, on=[lat,lon])
+            tempagg[mir] = sumMir
+            tempagg[hi_resp] = sumResp
+            tempagg[hi_live] = sumLive
+            tempagg[hi_neur] = sumNeur
+            tempagg[hi_deve] = sumDeve
+            tempagg[hi_repr] = sumRepr
+            tempagg[hi_kidn] = sumKidn
+            tempagg[hi_ocul] = sumOcul
+            tempagg[hi_endo] = sumEndo
+            tempagg[hi_hema] = sumHema
+            tempagg[hi_immu] = sumImmu
+            tempagg[hi_skel] = sumSkel
+            tempagg[hi_sple] = sumSple
+            tempagg[hi_thyr] = sumThyr
+            tempagg[hi_whol] = sumWhol
+                        
             blksumm_cols = [lat, lon, overlap, elev, rec_id, utme, utmn, hill, population,
                             mir, hi_resp, hi_live, hi_neur, hi_deve, hi_repr, hi_kidn, hi_ocul,
                             hi_endo, hi_hema, hi_immu, hi_skel, hi_sple, hi_thyr, hi_whol]
-            boxmerged = box_receptors_wrisk.merge(self.outerblocks, on=[lat, lon])[blksumm_cols]
+
 
             
-            #----------- Accumulate Outer receptor risks by lat/lon for later use in BlockSummaryChronic ----------------
-
-            blksumm_aggs = {lat:'first', lon:'first', overlap:'first', elev:'first', rec_id:'first',
-                            utme:'first', utmn:'first', hill:'first', population:'first',
-                            mir:'sum', hi_resp:'sum', hi_live:'sum', hi_neur:'sum', hi_deve:'sum',
-                            hi_repr:'sum', hi_kidn:'sum', hi_ocul:'sum', hi_endo:'sum', hi_hema:'sum',
-                            hi_immu:'sum', hi_skel:'sum', hi_sple:'sum', hi_thyr:'sum', hi_whol:'sum'}
-
-            outeragg = boxmerged.groupby([lat, lon]).agg(blksumm_aggs)[blksumm_cols]
-
             if self.outerAgg is None:
                 self.outerAgg = pd.DataFrame(columns=blksumm_cols)
-            self.outerAgg = self.outerAgg.append(outeragg)
+            self.outerAgg = self.outerAgg.append(tempagg, sort=False)
 
 
             #----------- Keep track of maximum risk and HI ---------------------------------------
 
-            # sum risk and HIs to lat/lon
-            aggs = {lat:'first', lon:'first',
-                    mir:'sum', hi_resp:'sum', hi_live:'sum', hi_neur:'sum', hi_deve:'sum',
-                    hi_repr:'sum', hi_kidn:'sum', hi_ocul:'sum', hi_endo:'sum', hi_hema:'sum',
-                    hi_immu:'sum', hi_skel:'sum', hi_sple:'sum', hi_thyr:'sum', hi_whol:'sum'}
-
-            sum_columns = [lat, lon, mir, hi_resp, hi_live, hi_neur, hi_deve, hi_repr, hi_kidn, hi_ocul,
-                           hi_endo, hi_hema, hi_immu, hi_skel, hi_sple, hi_thyr, hi_whol]
-            riskhi_by_latlon = box_receptors_wrisk.groupby([lat, lon]).agg(aggs)[sum_columns]
-
             # Find max mir and each max HI for Outer receptors in this box. Update the max_riskhi and
             # max_riskhi_bkdn dictionaries.
+                        
             for iparm in self.riskhi_parms:
-                idx = riskhi_by_latlon[iparm].idxmax()
-                if riskhi_by_latlon[iparm].loc[idx] > self.max_riskhi[iparm][2]:
+                idx = tempagg[iparm].idxmax()
+                if tempagg[iparm].loc[idx] > self.max_riskhi[iparm][2]:
                     # Update the  max_riskhi dictionary
-                    maxlat = riskhi_by_latlon[lat].loc[idx]
-                    maxlon = riskhi_by_latlon[lon].loc[idx]
-                    self.max_riskhi[iparm] = [maxlat, maxlon, riskhi_by_latlon[iparm].loc[idx]]
+                    maxlat = tempagg[lat].loc[idx]
+                    maxlon = tempagg[lon].loc[idx]
+                    self.max_riskhi[iparm] = [maxlat, maxlon, tempagg[iparm].loc[idx]]
                     # Update the max_riskhi_bkdn dictionary
-                    box_receptors_max = box_receptors_wrisk[(box_receptors_wrisk[lat]==maxlat) & (box_receptors_wrisk[lon]==maxlon)]
-                    for index, row in box_receptors_max.iterrows():
-                        self.max_riskhi_bkdn[(iparm, row[source_id], row[pollutant], row[emis_type])] = \
-                            [maxlat, maxlon, row[iparm]]
+                    parmvalue = tempagg[iparm].loc[idx]
+                    batch_receptors_max = outer_concs3[(outer_concs3[lat]==maxlat) & (outer_concs3[lon]==maxlon)]
+                    for index, row in batch_receptors_max.iterrows():
+                        self.max_riskhi_bkdn[(iparm, row[source_id], row[pollutant], row['emis_type'])] = \
+                            [maxlat, maxlon, parmvalue]
+
 
             #--------------- Keep track of incidence -----------------------------------------
+            
+            # Compute incidence for each Outer rececptor and then sum incidence by source_id/pollutant/emis_type
+            
+            outer_concs3.sort_values(by=[source_id, pollutant, 'emis_type'], inplace=True)
+            a_mirbysrc = self.calculateMir(outer_concs3['conc'].values, outer_concs3['ure'].values)
+            
+            groups = outer_concs3[[source_id, pollutant, 'emis_type']].values
+            unique_groups = [list(item) for item in set(tuple(row) for row in groups)]
+            # sort unique_groups by source_id, pollutant, and emis_type
+            unique_groups.sort(key=operator.itemgetter(0,1,2))
+            ngroups = len(unique_groups)
+            grouplen = int(nouter / ngroups)
 
-            # Compute incidence for each Outer rececptor and then sum incidence by source_id and pollutant
-            box_receptors_wrisk['inc'] = box_receptors_wrisk.apply(lambda row: (row[mir] * row[population])/70, axis=1)
-            boxInc = box_receptors_wrisk.groupby([source_id, pollutant, emis_type], as_index=False)[[inc]].sum()
+            a_inc = a_mirbysrc * outer_concs3[population].values /70
+            sumInc = []
+            for x in range(ngroups):
+                idxstart = x * grouplen
+                idxend = idxstart + grouplen
+                s = 0
+                for y in range(idxstart, idxend):
+                    s = s + a_inc[y]
+                sumInc.append(s)
+                
+            batchInc = pd.DataFrame(unique_groups, columns=[source_id, pollutant, 'emis_type'])
+            batchInc['inc'] = sumInc
 
             # Update the outerInc incidence dictionary
-            for incdx, incrow in boxInc.iterrows():
-                self.outerInc[(incrow[source_id], incrow[pollutant], incrow[emis_type])] = \
-                    self.outerInc[(incrow[source_id], incrow[pollutant], incrow[emis_type])] + incrow['inc']
-
+            for incdx, incrow in batchInc.iterrows():
+                self.outerInc[(incrow[source_id], incrow[pollutant], incrow['emis_type'])] = \
+                    self.outerInc[(incrow[source_id], incrow[pollutant], incrow['emis_type'])] + incrow['inc']
 
     def calculateRisks(self, pollutants, concs):
 
