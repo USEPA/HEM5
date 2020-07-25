@@ -57,7 +57,7 @@ import queue
 
 
 import numpy as np
-from pandastable import Table, filedialog, np
+#from pandastable import Table, filedialog, np
 
 
 
@@ -439,7 +439,7 @@ class MainView(tk.Frame):
         #%%        
         #exit button
         #aermod user nav button
-        closeLabel= tk.Label(self, text="CLOSE", font=TAB_FONT, bg=self.main_color, height=2, anchor="w")
+        closeLabel= tk.Label(self, text="EXIT", font=TAB_FONT, bg=self.main_color, height=2, anchor="w")
         closeLabel.place(in_=self.container, relwidth=0.2, rely=0.90, relx=0.1)
 
 #        #add run icon with margin for highlight
@@ -766,7 +766,7 @@ class Hem(Page):
         
         self.defaultrec_sel = tk.Radiobutton(self.alturep, text="Use U.S. Census receptors",
                                            variable = self.check_altrec, bg=self.tab_color,
-                                           command = self.set_altrec, font=TEXT_FONT, value=1)
+                                           command = self.remove_altrec, font=TEXT_FONT, value=1)
         self.defaultrec_sel.grid(row=0, column=1, sticky='W')
         
         self.altrec_sel = tk.Radiobutton(self.alturep, text="Use alternate receptors",
@@ -798,10 +798,10 @@ class Hem(Page):
         self.fileLabel.bind("<Enter>", lambda x: self.color_config(self.fileLabel, self.button_file, self.s5, self.highlightcolor, x))
         self.fileLabel.bind("<Leave>", lambda x: self.remove_config(self.fileLabel, self.button_file, self.s5, self.tab_color, x))
         self.fileLabel.bind("<Button-1>",  lambda x: self.uploadFacilitiesList(self.s5, self.button_file, x))
-        
-#        self.s5.bind("<Enter>", lambda x: self.container_config( self.button_file, self.fileLabel, self.s5, self.highlightcolor, x))
-#        self.s5.bind("<Leave>", lambda x: self.container_config( self.button_file, self.fileLabel, self.s5, self.tab_color, x))
 #        
+#        self.s5.bind("<Enter>", lambda x: self.color_config( self.button_file, self.fileLabel, self.s5, self.highlightcolor, x))
+#        self.s5.bind("<Leave>", lambda x: self.remove_config( self.button_file, self.fileLabel, self.s5, self.tab_color, x))
+##        
        
                 
         #%%Hap emissions label
@@ -856,7 +856,7 @@ class Hem(Page):
 
 #        self.s7.bind("<Enter>", lambda x: self.color_config(self.emis_file, self.emisLabel, self.s7, self.highlightcolor, x))
 #        self.s7.bind("<Leave>", lambda x: self.remove_config(self.emis_file, self.emisLabel, self.s7, self.highlightcolor, x))
-#        
+##        
         
         
          
@@ -964,54 +964,57 @@ class Hem(Page):
                 
         fullpath = self.openFile(askopenfilename())
         if fullpath is not None:
+            
             self.uploader.upload("faclist", fullpath)
-
-            self.model.facids = self.model.faclist.dataframe['fac_id']
-
-            # Update the UI
-            [self.nav.log.scr.insert(tk.INSERT, msg) for msg in self.model.faclist.log]
-#            container.configure(bg='light green')
-            label['text'] = fullpath.split("\\")[-1]
             
-            #trigger additional inputs fo user recptors, assuming we are not in "user receptors only" mode
-            if 'Y' in self.model.faclist.dataframe['user_rcpt'].tolist():
-                #create user receptors
-                self.add_ur()
-                self.model.dependencies.append('user_rcpt')
+            if self.model.faclist.dataframe.empty == False:
                 
-            else:
-                if 'user_rcpt' in self.model.dependencies:
-                    for child in self.s8.winfo_children():
-                        child.destroy()
+                self.model.facids = self.model.faclist.dataframe['fac_id']
+    
+                # Update the UI
+                [self.nav.log.scr.insert(tk.INSERT, msg) for msg in self.model.faclist.log]
+    #            container.configure(bg='light green')
+                label['text'] = fullpath.split("\\")[-1]
+                
+                #trigger additional inputs fo user recptors, assuming we are not in "user receptors only" mode
+                if 'Y' in self.model.faclist.dataframe['user_rcpt'].tolist():
+                    #create user receptors
+                    self.add_ur()
+                    self.model.dependencies.append('user_rcpt')
                     
-            #trigger additional inputs for emisvar
-            if 'Y' in self.model.faclist.dataframe['emis_var'].tolist():
-                #create create emis var
-                self.add_variation()
-                self.model.dependencies.append('emis_var')
-                
-            else:
-                if 'emis_var' in self.model.dependencies:
-                    for child in self.s7.winfo_children():
-                        child.destroy()
-                
-            
+                else:
+                    if 'user_rcpt' in self.model.dependencies:
+                        for child in self.s8.winfo_children():
+                            child.destroy()
+                        
+                #trigger additional inputs for emisvar
+                if 'Y' in self.model.faclist.dataframe['emis_var'].tolist():
+                    #create create emis var
+                    self.add_variation()
+                    self.model.dependencies.append('emis_var')
                     
-            #trigger additional inputs for building downwash
-            if 'Y' in self.model.faclist.dataframe['bldg_dw'].tolist():
-                
-                
-                #create building downwash input
-                self.add_bldgdw()
-                self.model.dependencies.append('bldg_dw')
-            
-            else:
-                if 'bldg_dw' in self.model.dependencies:
-                    for child in self.optional.s4.winfo_children():
-                        child.destroy()
+                else:
+                    if 'emis_var' in self.model.dependencies:
+                        for child in self.s7.winfo_children():
+                            child.destroy()
                     
                 
-        
+                        
+                #trigger additional inputs for building downwash
+                if 'Y' in self.model.faclist.dataframe['bldg_dw'].tolist():
+                    
+                    
+                    #create building downwash input
+                    self.add_bldgdw()
+                    self.model.dependencies.append('bldg_dw')
+                
+                else:
+                    if 'bldg_dw' in self.model.dependencies:
+                        for child in self.optional.s4.winfo_children():
+                            child.destroy()
+                        
+                    
+            
         
 
     def uploadHAPEmissions(self, container, label, event):
@@ -1031,12 +1034,14 @@ class Hem(Page):
             fullpath = self.openFile(askopenfilename())
             if fullpath is not None:
                 self.uploader.upload("hapemis", fullpath)
+                
+                if self.model.hapemis.dataframe.empty == False:
         
-                # Update the UI
-                [self.nav.log.scr.insert(tk.INSERT, msg) for msg in self.model.hapemis.log]
-#                container.configure(bg='light green')
-                label['text'] = fullpath.split("\\")[-1]
- 
+                    # Update the UI
+                    [self.nav.log.scr.insert(tk.INSERT, msg) for msg in self.model.hapemis.log]
+    #                container.configure(bg='light green')
+                    label['text'] = fullpath.split("\\")[-1]
+     
                     
             
     
@@ -1072,108 +1077,110 @@ class Hem(Page):
                 fullpath = self.openFile(askopenfilename())
                 if fullpath is not None:
                     self.uploader.upload("emisloc", fullpath)
+                    
+                    if self.model.emisloc.dataframe.empty == False:
         
-                    # Update the UI
-                    [self.nav.log.scr.insert(tk.INSERT, msg) for msg in self.model.emisloc.log]
-#                    container.configure(bg='light green')
-                    label['text'] = fullpath.split("\\")[-1]
- 
-    
-                    #trigger additional inputs for buoyant line and polyvertex
-                    if 'I' in self.model.emisloc.dataframe['source_type'].tolist():
-                        
-                        #enable optional input tab
-                        self.optionaltab = False
-                        
-                        #create polyvertex upload 
-                        self.add_poly()
-                        self.model.dependencies.append('poly')
-                        
-                    else:
-                        #reset gui if reuploading
-                        
-                        if 'poly' in self.model.dependencies:
-                            for child in self.optional.s5.winfo_children():
-                                child.destroy()
+                        # Update the UI
+                        [self.nav.log.scr.insert(tk.INSERT, msg) for msg in self.model.emisloc.log]
+    #                    container.configure(bg='light green')
+                        label['text'] = fullpath.split("\\")[-1]
+     
+        
+                        #trigger additional inputs for buoyant line and polyvertex
+                        if 'I' in self.model.emisloc.dataframe['source_type'].tolist():
                             
+                            #enable optional input tab
+                            self.optionaltab = False
                             
-                    if 'B' in self.model.emisloc.dataframe['source_type'].tolist():
-                        
-                        #enable optional input tab
-                        self.optionaltab = False
-                        
-                        #create buoyant line upload
-                        self.add_buoyant()
-                        self.model.dependencies.append('buoyant')
-                        
-                    else:
-                        #reset gui if reuploading    
-                         if 'buoyant' in self.model.dependencies:
-                            for child in self.optional.s4.winfo_children():
-                                child.destroy()
-        
-                    # Deposition and depletion check
-        
-                    # set phase column in faclist dataframe to None
-                    self.model.faclist.dataframe['phase'] = None
-        
-                    for i, r in self.model.faclist.dataframe.iterrows():
-        
-                        phase = check_phase(r)
-                        #                phaseList.append([r['fac_id'], phase])
-                        self.model.faclist.dataframe.at[i, 'phase'] = phase
-        
-                    deposition_depletion = check_dep(self.model.faclist.dataframe, self.model.emisloc.dataframe)
-        
-                    #pull out facilities using depdeplt
-                    self.model.depdeplt = [x[0] for x in deposition_depletion]
-                    print('DEPDEP:', self.model.depdeplt)
-
-                    #pull out facilities needing landuse and seasons files (gas dry dep/depl)
-                    self.model.gasdryfacs = [x[0] for x in deposition_depletion if 'land use' in x]
-        
-                    #pull out conditional inputs
-                    conditional = set([y for x in deposition_depletion for y in x[1:]])
-                    #print('conditional', conditional)
-        
-                    if conditional is not None:
-                        #enable deposition and depletion input tab
-                        self.deptab = True
-        
-        
-                        #if deposition or depletion present load gas params library
-                        self.uploader.uploadLibrary("gas params")
-                        for required in conditional:
-                            print("required", required)
-                            if required == 'particle size':
-                                self.add_particle()
-                                self.model.dependencies.append('particle size')
-        
-                            elif required == 'land use':
-                                self.add_land()
-                                self.model.dependencies.append('land use')
-        
-                            elif required == 'seasons':
-                                self.add_seasons()
-                                self.model.dependencies.append('seasons')
-                    else:
-                        # clear on new input without dep/deplt
-          
-                        # clear particle
-                        if 'particle size' in self.model.dependencies:
-                            for child in self.depdeplt.s4.winfo_children():
-                                child.destroy()                        #                        self.dep_part.destroy()
-                                        # clear land
-                        if 'land use' in self.model.dependencies:
-                            for child in self.depdeplt.s5.winfo_children():
-                                child.destroy()
-                        #                        self.dep_land.destroy()
+                            #create polyvertex upload 
+                            self.add_poly()
+                            self.model.dependencies.append('poly')
+                            
+                        else:
+                            #reset gui if reuploading
+                            
+                            if 'poly' in self.model.dependencies:
+                                for child in self.optional.s5.winfo_children():
+                                    child.destroy()
+                                
+                                
+                        if 'B' in self.model.emisloc.dataframe['source_type'].tolist():
+                            
+                            #enable optional input tab
+                            self.optionaltab = False
+                            
+                            #create buoyant line upload
+                            self.add_buoyant()
+                            self.model.dependencies.append('buoyant')
+                            
+                        else:
+                            #reset gui if reuploading    
+                             if 'buoyant' in self.model.dependencies:
+                                for child in self.optional.s4.winfo_children():
+                                    child.destroy()
+            
+                        # Deposition and depletion check
+            
+                        # set phase column in faclist dataframe to None
+                        self.model.faclist.dataframe['phase'] = None
+            
+                        for i, r in self.model.faclist.dataframe.iterrows():
+            
+                            phase = check_phase(r)
+                            #                phaseList.append([r['fac_id'], phase])
+                            self.model.faclist.dataframe.at[i, 'phase'] = phase
+            
+                        deposition_depletion = check_dep(self.model.faclist.dataframe, self.model.emisloc.dataframe)
+            
+                        #pull out facilities using depdeplt
+                        self.model.depdeplt = [x[0] for x in deposition_depletion]
+                        print('DEPDEP:', self.model.depdeplt)
     
-                        # clear vegetation
-                        if 'seasons' in self.model.dependencies:
-                            for child in self.depdeplt.s6.winfo_children():
-                                child.destroy()
-                        #                        self.dep_seasons.destroy()
+                        #pull out facilities needing landuse and seasons files (gas dry dep/depl)
+                        self.model.gasdryfacs = [x[0] for x in deposition_depletion if 'land use' in x]
+            
+                        #pull out conditional inputs
+                        conditional = set([y for x in deposition_depletion for y in x[1:]])
+                        #print('conditional', conditional)
+            
+                        if conditional is not None:
+                            #enable deposition and depletion input tab
+                            self.deptab = True
+            
+            
+                            #if deposition or depletion present load gas params library
+                            self.uploader.uploadLibrary("gas params")
+                            for required in conditional:
+                                print("required", required)
+                                if required == 'particle size':
+                                    self.add_particle()
+                                    self.model.dependencies.append('particle size')
+            
+                                elif required == 'land use':
+                                    self.add_land()
+                                    self.model.dependencies.append('land use')
+            
+                                elif required == 'seasons':
+                                    self.add_seasons()
+                                    self.model.dependencies.append('seasons')
+                        else:
+                            # clear on new input without dep/deplt
+              
+                            # clear particle
+                            if 'particle size' in self.model.dependencies:
+                                for child in self.depdeplt.s4.winfo_children():
+                                    child.destroy()                        #                        self.dep_part.destroy()
+                                            # clear land
+                            if 'land use' in self.model.dependencies:
+                                for child in self.depdeplt.s5.winfo_children():
+                                    child.destroy()
+                            #                        self.dep_land.destroy()
+        
+                            # clear vegetation
+                            if 'seasons' in self.model.dependencies:
+                                for child in self.depdeplt.s6.winfo_children():
+                                    child.destroy()
+                            #                        self.dep_seasons.destroy()
 
     
     def uploadUserReceptors(self, container, label, event):
@@ -1194,11 +1201,13 @@ class Hem(Page):
             self.uploader.uploadDependent("user receptors", fullpath, 
                                           self.model.faclist.dataframe)
             
-            self.model.model_optns['ureceptr'] = True
-            # Update the UI
-            [self.nav.log.scr.insert(tk.INSERT, msg) for msg in self.model.ureceptr.log]
-#            container.configure(bg='light green')
-            label['text'] = fullpath.split("\\")[-1]
+            if self.model.ureceptr.dataframe.empty == False:
+            
+                self.model.model_optns['ureceptr'] = True
+                # Update the UI
+                [self.nav.log.scr.insert(tk.INSERT, msg) for msg in self.model.ureceptr.log]
+    #            container.configure(bg='light green')
+                label['text'] = fullpath.split("\\")[-1]
             
             
     def uploadAltReceptors(self, container, label, event):
@@ -1255,14 +1264,24 @@ class Hem(Page):
     
     def set_altrec(self):
         
-        self.model.altRec_optns['altrec'] = self.check_altrec.get()
-
-        if self.model.altRec_optns['altrec'] == 2:
+        if self.check_altrec.get() == 2:
+        
             self.add_urepalt()
             self.model.dependencies.append('altrec')
-        else:
+            self.check_altrec.set(2)
+            self.model.altRec_optns['altrec'] = self.check_altrec.get()
+            
+    def remove_altrec(self):
+        
+        if self.check_altrec.get() == 1:
+        
+            self.check_altrec.set(1)
+            self.model.dependencies.remove('altrec')
             self.urepLabel.destroy()
             self.urep_file.destroy()
+            self.model.altRec_optns['altrec'] = self.check_altrec.get()
+        
+    
             
     
             
@@ -1300,7 +1319,9 @@ class Hem(Page):
         self.urLabel.bind("<Leave>", lambda x: self.remove_config(self.urLabel, self.ur_file, self.optional.s8, self.tab_color, x))
         self.urLabel.bind("<Button-1>",  lambda x: self.optional.uploadUserReceptors(self.optional.s8, self.ur_file, x))
 
-        
+#        self.optional.s8.bind("<Enter>", lambda x: self.color_config(self.urLabel, self.ur_file, self.optional.s8, self.highlightcolor, x))
+#        self.optional.s8.bind("<Leave>", lambda x: self.remove_config(self.urLabel, self.ur_file, self.optional.s8, self.tab_color, x))
+#       
         
         
         
@@ -1334,9 +1355,12 @@ class Hem(Page):
         
         self.urepLabel.bind("<Enter>", lambda x: self.color_config(self.urepLabel, self.urep_file, self.s10, self.highlightcolor, x))
         self.urepLabel.bind("<Leave>", lambda x: self.remove_config(self.urepLabel, self.urep_file, self.s10, self.tab_color, x))
-        self.urepLabel.bind("<Button-1>",  lambda x: self.uploadAltReceptors(self.s10, self.urep_file, x))
+        self.urepLabel.bind("<Button-1>",  lambda x: self.uploadAltReceptors(self.alturep, self.urep_file, x))
         
-  
+#        self.s10.bind("<Enter>", lambda x: self.color_config( self.urep_file, self.urepLabel, self.s10, self.highlightcolor, x))
+#        self.s10.bind("<Leave>", lambda x: self.remove_config( self.urep_file, self.urepLabel, self.s10, self.tab_color, x))
+#       
+        
 
     def add_variation(self):
         """
@@ -1365,7 +1389,10 @@ class Hem(Page):
         self.emisvarLabel.bind("<Enter>", lambda x: self.color_config(self.emisvarLabel, self.emisvar_file, self.optional.s9, self.highlightcolor, x))
         self.emisvarLabel.bind("<Leave>", lambda x: self.remove_config(self.emisvarLabel, self.emisvar_file, self.optional.s9, self.tab_color, x))
         self.emisvarLabel.bind("<Button-1>",  lambda x: self.uploadVariation(self.optional.s9, self.emisvar_file, x))
-
+        
+#        self.optional.s9.bind("<Enter>", lambda x: self.color_config(self.emisvarLabel, self.emisvar_file, self.optional.s9, self.highlightcolor, x))
+#        self.optional.s9.bind("<Leave>", lambda x: self.remove_config(self.emisvarLabel, self.emisvar_file, self.optional.s9, self.tab_color, x))
+#       
 
 
 #    def add_temporal(self):
@@ -1428,8 +1455,11 @@ class Hem(Page):
         self.buoyLabel.bind("<Enter>", lambda x: self.color_config(self.buoyLabel, self.buoy_file, self.optional.s4, self.highlightcolor, x))
         self.buoyLabel.bind("<Leave>", lambda x: self.remove_config(self.buoyLabel, self.buoy_file, self.optional.s4, self.tab_color, x))
         self.buoyLabel.bind("<Button-1>",  lambda x: self.optional.uploadbuoyant(self.optional.s4, self.buoy_file, x))
-
         
+#        self.optional.s4.bind("<Enter>", lambda x: self.color_config(self.buoyLabel, self.buoy_file, self.optional.s4, self.highlightcolor, x))
+#        self.optional.s4.bind("<Leave>", lambda x: self.remove_config(self.buoyLabel, self.buoy_file, self.optional.s4, self.tab_color, x))
+#        
+#        
 
     def add_poly(self):
         """
@@ -1457,7 +1487,10 @@ class Hem(Page):
         self.polyLabel.bind("<Leave>", lambda x: self.remove_config(self.polyLabel, self.poly_file, self.optional.s5, self.tab_color, x))
         self.polyLabel.bind("<Button-1>",  lambda x: self.optional.uploadPolyvertex(self.optional.s5, self.poly_file, x))
 
-
+#        self.optional.s5.bind("<Enter>", lambda x: self.color_config(self.polyLabel, self.poly_file, self.optional.s5, self.highlightcolor, x))
+#        self.optional.s5.bind("<Leave>", lambda x: self.remove_config(self.polyLabel, self.poly_file, self.optional.s5, self.tab_color, x))
+#        
+        
     def add_bldgdw(self):
         """ 
         Function for creating row and building downwash file upload widgets
@@ -1484,7 +1517,9 @@ class Hem(Page):
         self.bldgdwLabel.bind("<Leave>", lambda x: self.remove_config(self.bldgdwLabel, self.bldgdw_file, self.optional.s6, self.tab_color, x))
         self.bldgdwLabel.bind("<Button-1>",  lambda x: self.optional.uploadBuildingDownwash(self.optional.s6, self.bldgdw_file, x))
 
-        
+#        self.optional.s6.bind("<Enter>", lambda x: self.color_config( self.bldgdw_file, self.bldgdwLabel, self.optional.s6, self.highlightcolor, x))
+#        self.optional.s6.bind("<Leave>", lambda x: self.remove_config( self.bldgdw_file, self.bldgdwLabel, self.optional.s6, self.tab_color, x))
+#        
 
     def add_particle(self):
         """
@@ -1513,7 +1548,9 @@ class Hem(Page):
         self.particleLabel.bind("<Leave>", lambda x: self.remove_config(self.particleLabel, self.particle_file, self.depdeplt.s4, self.tab_color, x))
         self.particleLabel.bind("<Button-1>",  lambda x: self.depdeplt.uploadParticle(self.model.depdeplt, self.depdeplt.s4, self.particle_file, x))
 
-         
+#        self.depdeplt.s4.bind("<Enter>", lambda x: self.color_config( self.particle_file, self.particleLabel, self.depdeplt.s4, self.highlightcolor, x))
+#        self.depdeplt.s4.bind("<Leave>", lambda x: self.remove_config( self.particle_file, self.particleLabel, self.depdeplt.s4, self.tab_color, x))
+#        
 
     def add_land(self):
         
@@ -1542,7 +1579,10 @@ class Hem(Page):
         self.landLabel.bind("<Leave>", lambda x: self.remove_config(self.landLabel, self.land_file, self.depdeplt.s5, self.tab_color, x))
         self.landLabel.bind("<Button-1>",  lambda x: self.depdeplt.uploadLandUse(self.depdeplt.s5, self.land_file, x))
 
-
+#        self.depdeplt.s5.bind("<Enter>", lambda x: self.color_config( self.land_file, self.landLabel, self.depdeplt.s5, self.highlightcolor, x))
+#        self.depdeplt.s5.bind("<Leave>", lambda x: self.remove_config( self.land_file, self.landLabel, self.depdeplt.s5, self.tab_color, x))
+#        
+        
     def add_seasons(self):
         """
         Function for creating column for seasonal vegetation upload widgets
@@ -1567,6 +1607,10 @@ class Hem(Page):
         self.seasonsLabel.bind("<Enter>", lambda x: self.color_config(self.seasonsLabel, self.seasons_file, self.depdeplt.s6, self.highlightcolor, x))
         self.seasonsLabel.bind("<Leave>", lambda x: self.remove_config(self.seasonsLabel, self.seasons_file, self.depdeplt.s6, self.tab_color, x))
         self.seasonsLabel.bind("<Button-1>",  lambda x: self.depdeplt.uploadSeasons(self.depdeplt.s6, self.seasons_file, x))
+        
+#        self.depdeplt.s6.bind("<Enter>", lambda x: self.color_config( self.seasons_file, self.seasonsLabel, self.depdeplt.s6, self.highlightcolor, x))
+#        self.depdeplt.s6.bind("<Leave>", lambda x: self.remove_config( self.seasons_file, self.seasonsLabel, self.depdeplt.s6, self.tab_color, x))
+#        
 
 
     def run(self):
@@ -1582,6 +1626,18 @@ class Hem(Page):
         """
 
         self.ready = False
+        
+        #make sure there is census and MetData
+        if len(os.listdir('/census') ) == 0 or os.path.isdir('/census') == False:
+            messagebox.showinfo('Census data missing', 'Census data is missing. Please check the census folder.')
+            
+            return None
+        
+        if len(os.listdir('/aermod/MetData') ) == 0 or os.path.isdir('/aermod/MetData') == False:
+            messagebox.showinfo('MetData missing', 'MetData is missing. Please check the census folder.')
+            
+            return None
+        
         
         #add temp_var to model ## add to checks 
 #        if self.check_tempvar.get() == 1:
@@ -1954,8 +2010,7 @@ class Hem(Page):
         
         self.group_list.set('')
 
-        self.check_altrec.set(False)
-#        self.set_altrec()
+        self.check_altrec.set(1)
         
          #find the last next button and disable that one
 
@@ -2029,126 +2084,124 @@ class Hem(Page):
          widget2.configure(bg=color)
          container.configure(bg=color)
          
-         if self.current_highlight == None:
-         
-             #serve instructions
-             if self.hapLabel in [widget1, widget2]:
-                 if self.instruction_instance.get() == " ":
-                     
-                     self.browse("instructions/hap_browse.txt")
-                     
-                 else:
-                     self.instruction_instance.set(" ")
-                    
-             elif self.emisLabel in [widget1, widget2]:
-                  
-                 if self.instruction_instance.get() == " ":
-                     
-                     self.browse("instructions/emis_browse.txt")
-                     
-                 else:
-                     self.instruction_instance.set(" ")
-                     
+  
+     
+         #serve instructions
+         if self.hapLabel in [widget1, widget2]:
+             if self.instruction_instance.get() == " ":
                  
-             elif self.fileLabel in [widget1, widget2]:
-                 
-                 if self.instruction_instance.get() == " ":
-                     
-                     self.browse("instructions/fac_browse.txt")
-                     
-                 else:
-                     self.instruction_instance.set(" ")
-                     
-    
-             elif "Please select an alternate receptor CSV file:" in [widget1['text'], widget2['text']]:
-                 
-                 if self.instruction_instance.get() == " ":
-                     
-                     self.browse("instructions/urepalt_browse.txt")
-                     
-                 else:
-                     self.instruction_instance.set(" ")
-                     
-                     
-             elif "Please select associated Buoyant Line Parameters file" in [widget1['text'], widget2['text']]:
-                 
-                 if self.optional.instruction_instance.get() == " ":
-                     
-                     self.optional.browse("instructions/buoyant_browse.txt")
-                     
-                 else:
-                     self.optional.instruction_instance.set(" ")
-                     
-                                      
-             elif "Please select associated Polygon Vertex file" in [widget1['text'], widget2['text']]:
-                 
-                 if self.optional.instruction_instance.get() == " ":
-                     
-                     self.optional.browse("instructions/poly_browse.txt")
-                     
-                 else:
-                     self.optional.instruction_instance.set(" ")
-                     
-             elif 'Please select a User Receptors file:' in [widget1['text'], widget2['text']]:
-                 
-                 if self.optional.instruction_instance.get() == " ":
-                     
-                     self.optional.browse("instructions/urep_browse.txt")
-                     
-                 else:
-                     self.optional.instruction_instance.set(" ")
-                     
-             elif 'Please select an Emissions Variation file::' in [widget1['text'], widget2['text']]:
-                 
-                 if self.optional.instruction_instance.get() == " ":
-                     
-                     self.optional.browse("instructions/emvar_browse.txt")
-                     
-                 else:
-                     self.optional.instruction_instance.set(" ")
-                     
-            
-             elif "Please select associated Building Dimensions file" in [widget1['text'], widget2['text']]:
-                 
-                 if self.optional.instruction_instance.get() == " ":
-                     
-                     self.optional.browse("instructions/bd_browse.txt")
-                     
-                 else:
-                     self.optional.instruction_instance.set(" ")
-                 
-            
-             elif "Please select Particle Size File" in [widget1['text'], widget2['text']]:
-                 
-                 if self.depdeplt.instruction_instance.get() == " ":
-                     
-                     self.depdeplt.browse("instructions/dep_part_browse.txt")
-                     
-                 else:
-                     self.depdeplt.instruction_instance.set(" ")
-                     
-                     
-             elif "Please select Land Use file" in [widget1['text'], widget2['text']]:
-                 
-                 if self.depdeplt.instruction_instance.get() == " ":
-                     
-                     self.depdeplt.browse("instructions/dep_land_browse.txt")
-                     
-                 else:
-                     self.depdeplt.instruction_instance.set(" ")
-                     
-             elif "Please select Month-to-Season Vegetation file" in [widget1['text'], widget2['text']]:
-                 
-                 if self.depdeplt.instruction_instance.get() == " ":
-                     
-                     self.depdeplt.browse("instructions/dep_veg_browse.txt")
-                     
-                 else:
-                     self.depdeplt.instruction_instance.set(" ")
+                 self.browse("instructions/hap_browse.txt")
                  
              else:
-                self.current_highlight = None
-            
+                 self.instruction_instance.set(" ")
+                
+         elif self.emisLabel in [widget1, widget2]:
+              
+             if self.instruction_instance.get() == " ":
+                 
+                 self.browse("instructions/emis_browse.txt")
+                 
+             else:
+                 self.instruction_instance.set(" ")
+                 
+             
+         elif self.fileLabel in [widget1, widget2]:
+             
+             if self.instruction_instance.get() == " ":
+                 
+                 self.browse("instructions/fac_browse.txt")
+                 
+             else:
+                 self.instruction_instance.set(" ")
+                 
+
+         elif "Please select an alternate receptor CSV file:" in [widget1['text'], widget2['text']]:
+             
+             if self.instruction_instance.get() == " ":
+                 
+                 self.browse("instructions/urepalt_browse.txt")
+                 
+             else:
+                 self.instruction_instance.set(" ")
+                 
+                 
+         elif "Please select associated Buoyant Line Parameters file" in [widget1['text'], widget2['text']]:
+             
+             if self.optional.instruction_instance.get() == " ":
+                 
+                 self.optional.browse("instructions/buoyant_browse.txt")
+                 
+             else:
+                 self.optional.instruction_instance.set(" ")
+                 
+                                  
+         elif "Please select associated Polygon Vertex file" in [widget1['text'], widget2['text']]:
+             
+             if self.optional.instruction_instance.get() == " ":
+                 
+                 self.optional.browse("instructions/poly_browse.txt")
+                 
+             else:
+                 self.optional.instruction_instance.set(" ")
+                 
+         elif 'Please select a User Receptors file:' in [widget1['text'], widget2['text']]:
+             
+             if self.optional.instruction_instance.get() == " ":
+                 
+                 self.optional.browse("instructions/urep_browse.txt")
+                 
+             else:
+                 self.optional.instruction_instance.set(" ")
+                 
+         elif 'Please select an Emissions Variation file::' in [widget1['text'], widget2['text']]:
+             
+             if self.optional.instruction_instance.get() == " ":
+                 
+                 self.optional.browse("instructions/emvar_browse.txt")
+                 
+             else:
+                 self.optional.instruction_instance.set(" ")
+                 
+        
+         elif "Please select associated Building Dimensions file" in [widget1['text'], widget2['text']]:
+             
+             if self.optional.instruction_instance.get() == " ":
+                 
+                 self.optional.browse("instructions/bd_browse.txt")
+                 
+             else:
+                 self.optional.instruction_instance.set(" ")
+             
+        
+         elif "Please select Particle Size File" in [widget1['text'], widget2['text']]:
+             
+             if self.depdeplt.instruction_instance.get() == " ":
+                 
+                 self.depdeplt.browse("instructions/dep_part_browse.txt")
+                 
+             else:
+                 self.depdeplt.instruction_instance.set(" ")
+                 
+                 
+         elif "Please select Land Use file" in [widget1['text'], widget2['text']]:
+             
+             if self.depdeplt.instruction_instance.get() == " ":
+                 
+                 self.depdeplt.browse("instructions/dep_land_browse.txt")
+                 
+             else:
+                 self.depdeplt.instruction_instance.set(" ")
+                 
+         elif "Please select Month-to-Season Vegetation file" in [widget1['text'], widget2['text']]:
+             
+             if self.depdeplt.instruction_instance.get() == " ":
+                 
+                 self.depdeplt.browse("instructions/dep_veg_browse.txt")
+                 
+             else:
+                 self.depdeplt.instruction_instance.set(" ")
+                 
+         
             
            
 #         print(self.current_highlight)

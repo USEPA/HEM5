@@ -173,8 +173,6 @@ class Optional(Page):
         self.s9 = tk.Frame(self.required_inputs, width=600, height=50, pady=5, padx=5, bg=self.tab_color)
 
 
-
-
         #grid layout for main inputs 
         self.s1.grid(row=0, column=0, columnspan=2, sticky="nsew")
         self.s2.grid(row=1, column=0)
@@ -242,11 +240,15 @@ class Optional(Page):
             self.uploader.uploadDependent("polyvertex", fullpath, 
                                                    self.model.emisloc.dataframe)
 
+            
+            if self.model.multipoly.dataframe.empty == False:
 
-            # Update the UI
-            [self.nav.nav.log.scr.insert(tk.INSERT, msg) for msg in self.model.multipoly.log]
-#            container.configure(bg='light green')
-            label['text'] = fullpath.split("\\")[-1]
+
+
+                # Update the UI
+                [self.nav.nav.log.scr.insert(tk.INSERT, msg) for msg in self.model.multipoly.log]
+    #            container.configure(bg='light green')
+                label['text'] = fullpath.split("\\")[-1]
  
 
     def uploadbuoyant(self, container, label, event):
@@ -264,11 +266,14 @@ class Optional(Page):
         if fullpath is not None:
             self.uploader.uploadDependent("buoyant line", fullpath, 
                                                    self.model.emisloc.dataframe)
+            
+            if self.model.multibuoy.dataframe.empty == False:
 
-            # Update the UI
-            [self.nav.nav.log.scr.insert(tk.INSERT, msg) for msg in self.model.multibuoy.log]
-#            container.configure(bg='light green')
-            label['text'] = fullpath.split("\\")[-1]
+
+                # Update the UI
+                [self.nav.nav.log.scr.insert(tk.INSERT, msg) for msg in self.model.multibuoy.log]
+    #            container.configure(bg='light green')
+                label['text'] = fullpath.split("\\")[-1]
  
     
     def uploadBuildingDownwash(self, container, label, event):
@@ -286,10 +291,14 @@ class Optional(Page):
             self.uploader.uploadDependent("building downwash", fullpath, 
                                           self.model)
 
-            # Update the UI
-            [self.nav.nav.log.scr.insert(tk.INSERT, msg) for msg in self.model.bldgdw.log]
-#            container.configure(bg='light green')
-            label['text'] = fullpath.split("\\")[-1]
+            
+            if self.model.bldgdw.dataframe.empty == False:
+                
+                # Update the UI
+                [self.nav.nav.log.scr.insert(tk.INSERT, msg) for msg in self.model.bldgdw.log]
+    #            container.configure(bg='light green')
+                label['text'] = fullpath.split("\\")[-1]
+
 
 
     def uploadUserReceptors(self, container, label, event):
@@ -306,13 +315,16 @@ class Optional(Page):
         fullpath = self.openFile(askopenfilename())
         if fullpath is not None:
             self.uploader.uploadDependent("user receptors", fullpath, self.model.faclist.dataframe)
-
-            self.model.model_optns['ureceptr'] = True
-            # Update the UI
-            [self.nav.nav.log.scr.insert(tk.INSERT, msg) for msg in self.model.ureceptr.log]
-            label['text'] = fullpath.split("\\")[-1]
- 
             
+            if self.model.ureceptr.dataframe.empty == False:
+
+
+                    self.model.model_optns['ureceptr'] = True
+                    # Update the UI
+                    [self.nav.nav.log.scr.insert(tk.INSERT, msg) for msg in self.model.ureceptr.log]
+                    label['text'] = fullpath.split("\\")[-1]
+     
+                
             
 #%% Deposition
             
@@ -402,11 +414,13 @@ class DepDplt(Page):
         if fullpath is not None: 
             self.uploader.uploadDependent("particle depletion", fullpath, 
                                            self.model.faclist.dataframe, facilities)
+            
+            if self.model.partdep.dataframe.empty == False:
 
-            # Update the UI
-            [self.nav.nav.log.scr.insert(tk.INSERT, msg) for msg in self.model.partdep.log]
-#            container.configure(bg='light green')
-            label['text'] = fullpath.split("\\")[-1]
+                # Update the UI
+                [self.nav.nav.log.scr.insert(tk.INSERT, msg) for msg in self.model.partdep.log]
+    #            container.configure(bg='light green')
+                label['text'] = fullpath.split("\\")[-1]
 
     def uploadLandUse(self, container, label, event):
         """
@@ -421,11 +435,14 @@ class DepDplt(Page):
         if fullpath is not None: 
             self.uploader.uploadDependent("land use", fullpath, 
                                           self.model.gasdryfacs)
+            
+            if self.model.landuse.dataframe.empty == False:
 
-            # Update the UI
-            [self.nav.nav.log.scr.insert(tk.INSERT, msg) for msg in self.model.landuse.log]
-#            container.configure(bg='light green')
-            label['text'] = fullpath.split("\\")[-1]
+
+                # Update the UI
+                [self.nav.nav.log.scr.insert(tk.INSERT, msg) for msg in self.model.landuse.log]
+    #            container.configure(bg='light green')
+                label['text'] = fullpath.split("\\")[-1]
 
     def uploadSeasons(self, container, label, event):
         """ 
@@ -440,8 +457,11 @@ class DepDplt(Page):
         if fullpath is not None: 
             self.uploader.uploadDependent("seasons", fullpath, 
                                           self.model.gasdryfacs)
+            
+            if self.model.seasons.dataframe.empty == False:
 
-            # Update the UI
-            [self.nav.nav.log.scr.insert(tk.INSERT, msg) for msg in self.model.seasons.log]
-#            container.configure(bg='light green')
-            label['text'] = fullpath.split("\\")[-1]
+
+                # Update the UI
+                [self.nav.nav.log.scr.insert(tk.INSERT, msg) for msg in self.model.seasons.log]
+    #            container.configure(bg='light green')
+                label['text'] = fullpath.split("\\")[-1]
