@@ -1,4 +1,5 @@
 import re
+import operator
 
 from pandas import Series
 
@@ -44,42 +45,11 @@ class AllOuterReceptorsNonCensus(CsvWriter, InputFile):
         self.filename = path
         self.acute_yn = acuteyn
 
-        self.riskCache = {}
-        self.organCache = {}
 
         # No need to go further if we are instantiating this class to read in a CSV file...
         if self.model is None:
             return
 
-        # Fill local caches for URE/RFC and organ endpoint values
-        for index, row in self.model.haplib.dataframe.iterrows():
-
-            # Change rfcs of 0 to -1. This simplifies HI calculations. Don't have to worry about divide by 0.
-            if row[rfc] == 0:
-                rfcval = -1
-            else:
-                rfcval = row[rfc]
-
-            self.riskCache[row[pollutant].lower()] = {ure : row[ure], rfc : rfcval}
-
-            # In order to get a case-insensitive exact match (i.e. matches exactly except for casing)
-            # we are using a regex that is specified to be the entire value. Since pollutant names can
-            # contain parentheses, escape them before constructing the pattern.
-            pattern = '^' + re.escape(row[pollutant]) + '$'
-            organrow = self.model.organs.dataframe.loc[
-                self.model.organs.dataframe[pollutant].str.contains(pattern, case=False, regex=True)]
-
-            if organrow.size == 0:
-                listed = []
-            else:
-                listed = organrow.values.tolist()
-
-            # Note: sometimes there is a pollutant with no effect on any organ (RFC == 0). In this case it will
-            # not appear in the organs library, and therefore 'listed' will be empty. We will just assign a
-            # dummy list in this case...
-            dummylist = [row[pollutant], ' ', 0, 0, 0, 0 , 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
-            organs = listed[0] if len(listed) > 0 else dummylist
-            self.organCache[row[pollutant].lower()] = organs
 
         self.outerblocks = self.model.outerblks_df[[lat, lon, utme, utmn, hill]]
         self.outerAgg = None
@@ -114,6 +84,16 @@ class AllOuterReceptorsNonCensus(CsvWriter, InputFile):
         # Value is: incidence
         for jsrcpol in self.srcpols:
             self.outerInc[(jsrcpol[0], jsrcpol[1], jsrcpol[2])] = 0
+
+        # Compute a recipricol of the rfc for easier computation of HIs
+        self.haplib_df = self.model.haplib.dataframe
+        self.haplib_df['invrfc'] = self.haplib_df.apply(lambda x: 1/x['rfc'] if x['rfc']>0 else 0.0, axis=1)
+
+        # Local copy of target organs and combine target organ columns into one list column
+        self.organs_df = self.model.organs.dataframe
+        self.organs_df['organ_list'] = (self.organs_df[['resp','liver','neuro','dev','reprod','kidney',
+                        'ocular','endoc','hemato','immune','skeletal','spleen','thyroid','wholebod']]
+                        .values.tolist())
 
 
     def getHeader(self):
@@ -682,20 +662,14 @@ class AllOuterReceptorsNonCensus(CsvWriter, InputFile):
                 self.outerInc[(incrow[source_id], incrow[pollutant], incrow['emis_type'])] = \
                     self.outerInc[(incrow[source_id], incrow[pollutant], incrow['emis_type'])] + incrow['inc']
 
-    def calculateRisks(self, pollutants, concs):
 
-        risklist = []
-        riskcols = [mir, hi_resp, hi_live, hi_neur, hi_deve, hi_repr, hi_kidn, hi_ocul,
-                    hi_endo, hi_hema, hi_immu, hi_skel, hi_sple, hi_thyr, hi_whol]
-
-        mirlist = [n * self.riskCache[m.lower()][ure] for m, n in zip(pollutants, concs)]
-        hilist = [((k/self.riskCache[j.lower()][rfc]/1000) * np.array(self.organCache[j.lower()][2:])).tolist()
-                  for j, k in zip(pollutants, concs)]
-
-        riskdf = pd.DataFrame(np.column_stack([mirlist, hilist]), columns=riskcols)
-        # change any negative HIs to 0
-        riskdf[riskdf < 0] = 0
-        return riskdf
+    def calculateMir(self, conc, ure):
+        cancer_risk = conc * ure
+        return cancer_risk
+    
+    def calculateHI(self, conc, invrfc, organ):
+        aHI = conc * (invrfc/1000) * organ
+        return aHI
 
 
     def createDataframe(self):
