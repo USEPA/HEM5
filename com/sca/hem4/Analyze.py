@@ -130,7 +130,7 @@ class Analyze(Page):
         self.fileLabel.grid(row=1, column=0, padx=10)
         
         
-        self.button_file = tk.Label(self.s4, text="Open a facility or source category output file",
+        self.button_file = tk.Label(self.s4, text="Open a facility or summary output table",
                                 font=TEXT_FONT, bg=self.tab_color)
         self.button_file.grid(row=1, column=1)
         
@@ -152,7 +152,7 @@ class Analyze(Page):
         self.mapLabel.image = mapicon # keep a reference!
         self.mapLabel.grid(row=1, column=0, padx=10)
         
-        self.button_maps = tk.Label(self.s6, text="Open a chronic or acute map",
+        self.button_maps = tk.Label(self.s6, text="Open a chronic or acute risk map",
                                 font=TEXT_FONT, bg=self.tab_color)
         self.button_maps.grid(row=1, column=1)
         
@@ -172,7 +172,7 @@ class Analyze(Page):
         self.dashLabel.image = dashicon # keep a reference!
         self.dashLabel.grid(row=1, column=0, padx=10)
 
-        self.button_dash = tk.Label(self.s8, text="View map/charts of results",
+        self.button_dash = tk.Label(self.s8, text="View summary graphical outputs in web browser",
                                 font=TEXT_FONT, bg=self.tab_color)
         self.button_dash.grid(row=1, column=1)
         
@@ -513,7 +513,7 @@ class Analyze(Page):
          container.configure(bg=color)   
          
          #serve instructions
-         if self.dashLabel in [widget1, widget2]:
+         if self.fileLabel in [widget1, widget2]:
              if self.instruction_instance.get() == " ":
                  
                  self.browse_inst("instructions/source_cat_browse.txt")
@@ -521,14 +521,14 @@ class Analyze(Page):
              else:
                  self.instruction_instance.set(" ")
                  
-         elif self.fileLabel in [widget1, widget2]:
+         elif self.mapLabel in [widget1, widget2]:
              if self.instruction_instance.get() == " ":
                  self.browse_inst("instructions/kmz_browse.txt")
                  
              else:
                  self.instruction_instance.set(" ")
                  
-         elif self.mapLabel in [widget1, widget2]:
+         elif self.dashLabel in [widget1, widget2]:
              if self.instruction_instance.get() == " ":
                  self.browse_inst("instructions/sum_browse.txt")
                  
