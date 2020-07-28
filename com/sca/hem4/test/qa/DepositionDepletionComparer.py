@@ -5,21 +5,21 @@ from com.sca.hem4.writer.csv.AllOuterReceptors import *
 from com.sca.hem4.writer.csv.AllPolarReceptors import AllPolarReceptors
 from com.sca.hem4.writer.excel.ExcelWriter import ExcelWriter
 
-facilityID = "Fac1-NC"
-sourceID = "CT000001"
-pollutantName = "indeno[1,2,3-c,d]pyrene"
-rundir = r"C:/Git_HEM4/HEM4/output/DepDepl"
+facilityID = "01043110000366247"
+sourceID = "CEOT0001"
+pollutantName = "Ethyl benzene"
+rundir = r"C:/Git_HEM4/HEM4/output/DD_ReRun_6"
 hapemis_path = rundir + "/Inputs/hapemis.xlsx"
 output_dir = rundir + "/" + facilityID
-acute = 'N'
+acute = 'Y'
 
 # Runtype: 0 == no deposition, 1 == both, 2 == dry only, 3 == wet only...see FacilityRunner#set_runtype()
-runtype = 3
+runtype = 2
 
 # emistype: P == particle, V == gaseous
 emistype = 'V'
 # deptype: D == dry, W == wet
-deptype = 'W'
+deptype = 'D'
 
 class ConcentrationComparer(ExcelWriter):
 
@@ -58,7 +58,7 @@ class ConcentrationComparer(ExcelWriter):
         hapemis = HAPEmissions(hapemis_path, haplib, {self.fac_id})
         hapemis_df = hapemis.dataframe
         hapemis_df = hapemis_df.loc[(hapemis_df[fac_id] == self.fac_id) & (hapemis_df[source_id] == self.source_id) &
-                                    (hapemis_df[pollutant].str.lower() == self.pollutant).lower()]
+                                    (hapemis_df[pollutant].str.lower() == self.pollutant.lower())]
 
         # Aermod plotfile
         plotfile_name = "plotfile_p" if emistype == 'P' else "plotfile_v"
