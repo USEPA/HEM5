@@ -1628,12 +1628,12 @@ class Hem(Page):
         self.ready = False
         
         #make sure there is census and MetData
-        if len(os.listdir('/census') ) == 0 or os.path.isdir('/census') == False:
+        if len(os.listdir('census') ) == 0 or os.path.isdir('census') == False:
             messagebox.showinfo('Census data missing', 'Census data is missing. Please check the census folder.')
             
             return None
         
-        if len(os.listdir('/aermod/MetData') ) == 0 or os.path.isdir('/aermod/MetData') == False:
+        if len(os.listdir('aermod/MetData') ) == 0 or os.path.isdir('aermod/MetData') == False:
             messagebox.showinfo('MetData missing', 'MetData is missing. Please check the census folder.')
             
             return None
