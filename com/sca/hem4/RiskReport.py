@@ -264,6 +264,9 @@ class Summary(Page):
         self.iconLabel.bind("<Leave>", partial(self.color_config, group_label, self.iconLabel, self.l4, self.tab_color))
         self.iconLabel.bind("<Button-1>", partial(self.check_box, self.iconLabel, "Max Risk"))
         
+        self.l4.bind("<Enter>", partial(self.color_config, group_label, self.iconLabel, self.l4, 'light grey'))
+        self.l4.bind("<Leave>", partial(self.color_config, group_label, self.iconLabel, self.l4, self.tab_color))
+        self.l4.bind("<Button-1>", partial(self.check_box, self.iconLabel, "Max Risk"))
         
         
         #%%
@@ -283,7 +286,11 @@ class Summary(Page):
         
         self.crLabel.bind("<Enter>", partial(self.color_config, c_label, self.crLabel, self.l5, 'light grey'))
         self.crLabel.bind("<Leave>", partial(self.color_config, c_label, self.crLabel, self.l5, self.tab_color))
-        self.crLabel.bind("<Button-1>", partial(self.check_box, self.crLabel, "Cancer Drivers"))        
+        self.crLabel.bind("<Button-1>", partial(self.check_box, self.crLabel, "Cancer Drivers"))
+
+        self.l5.bind("<Enter>", partial(self.color_config, c_label, self.crLabel, self.l5, 'light grey'))
+        self.l5.bind("<Leave>", partial(self.color_config, c_label, self.crLabel, self.l5, self.tab_color))
+        self.l5.bind("<Button-1>", partial(self.check_box, self.crLabel, "Cancer Drivers"))        
         
 # %%        
         h_label = tk.Label(self.l6, font=TEXT_FONT, width=22, anchor='w', bg=self.tab_color, 
@@ -303,6 +310,10 @@ class Summary(Page):
         self.hiLabel.bind("<Enter>", partial(self.color_config, h_label, self.hiLabel, self.l6, 'light grey'))
         self.hiLabel.bind("<Leave>", partial(self.color_config, h_label, self.hiLabel, self.l6, self.tab_color))
         self.hiLabel.bind("<Button-1>", partial(self.check_box, self.hiLabel, "Hazard Index Drivers"))
+        
+        self.l6.bind("<Enter>", partial(self.color_config, h_label, self.hiLabel, self.l6, 'light grey'))
+        self.l6.bind("<Leave>", partial(self.color_config, h_label, self.hiLabel, self.l6, self.tab_color))
+        self.l6.bind("<Button-1>", partial(self.check_box, self.hiLabel, "Hazard Index Drivers"))
 #%%        
         his_label = tk.Label(self.l7, font=TEXT_FONT, width=22, anchor='w', bg=self.tab_color, 
                              text="Risk Histogram")
@@ -321,6 +332,10 @@ class Summary(Page):
         self.gramLabel.bind("<Enter>", partial(self.color_config, his_label, self.gramLabel, self.l7, 'light grey'))
         self.gramLabel.bind("<Leave>", partial(self.color_config, his_label, self.gramLabel, self.l7, self.tab_color))
         self.gramLabel.bind("<Button-1>", partial(self.check_box, self.gramLabel, "Risk Histogram"))
+        
+        self.l7.bind("<Enter>", partial(self.color_config, his_label, self.gramLabel, self.l7, 'light grey'))
+        self.l7.bind("<Leave>", partial(self.color_config, his_label, self.gramLabel, self.l7, self.tab_color))
+        self.l7.bind("<Button-1>", partial(self.check_box, self.gramLabel, "Risk Histogram"))
 #%%        
         hz_label = tk.Label(self.l8, font=TEXT_FONT, width=22, anchor='w', bg=self.tab_color, 
                              text="Hazard Index Histogram")
@@ -339,6 +354,10 @@ class Summary(Page):
         self.zLabel.bind("<Enter>", partial(self.color_config, hz_label, self.zLabel, self.l8, 'light grey'))
         self.zLabel.bind("<Leave>", partial(self.color_config, hz_label, self.zLabel, self.l8, self.tab_color))
         self.zLabel.bind("<Button-1>", partial(self.check_box, self.zLabel, "Hazard Index Histogram"))
+        
+        self.l8.bind("<Enter>", partial(self.color_config, hz_label, self.zLabel, self.l8, 'light grey'))
+        self.l8.bind("<Leave>", partial(self.color_config, hz_label, self.zLabel, self.l8, self.tab_color))
+        self.l8.bind("<Button-1>", partial(self.check_box, self.zLabel, "Hazard Index Histogram"))
         
         
 #%%        
@@ -359,6 +378,10 @@ class Summary(Page):
         self.idLabel.bind("<Enter>", partial(self.color_config, i_label, self.idLabel, self.l9, 'light grey'))
         self.idLabel.bind("<Leave>", partial(self.color_config, i_label, self.idLabel, self.l9, self.tab_color))
         self.idLabel.bind("<Button-1>", partial(self.check_box, self.idLabel, "Incidence Drivers")) 
+        
+        self.l9.bind("<Enter>", partial(self.color_config, i_label, self.idLabel, self.l9, 'light grey'))
+        self.l9.bind("<Leave>", partial(self.color_config, i_label, self.idLabel, self.l9, self.tab_color))
+        self.l9.bind("<Button-1>", partial(self.check_box, self.idLabel, "Incidence Drivers")) 
 #%%        
     
         
@@ -379,6 +402,10 @@ class Summary(Page):
         self.aLabel.bind("<Leave>", partial(self.color_config, ai_label, self.aLabel, self.l10, self.tab_color))
         self.aLabel.bind("<Button-1>", partial(self.check_box, self.aLabel, "Acute Impacts")) 
         
+        self.l10.bind("<Enter>", partial(self.color_config, ai_label, self.aLabel, self.l10, 'light grey'))
+        self.l10.bind("<Leave>", partial(self.color_config, ai_label, self.aLabel, self.l10, self.tab_color))
+        self.l10.bind("<Button-1>", partial(self.check_box, self.aLabel, "Acute Impacts")) 
+        
 #%%
        
         mp_label = tk.Label(self.r4, font=TEXT_FONT, width=22, anchor='w', bg=self.tab_color, text="Multipathway")
@@ -397,6 +424,10 @@ class Summary(Page):
         self.mLabel.bind("<Enter>", partial(self.color_config, mp_label, self.mLabel, self.r4, 'light grey'))
         self.mLabel.bind("<Leave>", partial(self.color_config, mp_label, self.mLabel, self.r4, self.tab_color))
         self.mLabel.bind("<Button-1>", partial(self.check_box, self.mLabel, "Multipathway"))
+        
+        self.r4.bind("<Enter>", partial(self.color_config, mp_label, self.mLabel, self.r4, 'light grey'))
+        self.r4.bind("<Leave>", partial(self.color_config, mp_label, self.mLabel, self.r4, self.tab_color))
+        self.r4.bind("<Button-1>", partial(self.check_box, self.mLabel, "Multipathway"))
 
 #%%        
         st_label = tk.Label(self.r5, font=TEXT_FONT, width=22, anchor='w', bg=self.tab_color, text="Source Type Risk Histogram")
@@ -410,7 +441,17 @@ class Summary(Page):
         
         self.sLabel.bind("<Enter>", partial(self.color_config, st_label, self.sLabel, self.r5, 'light grey'))
         self.sLabel.bind("<Leave>", partial(self.color_config, st_label, self.sLabel, self.r5, self.tab_color))
-        self.sLabel.bind("<Button-1>", partial(self.set_sourcetype, self.sLabel, "Source Type Risk Histogram")) 
+        self.sLabel.bind("<Button-1>", partial(self.set_sourcetype, self.sLabel, "Source Type Risk Histogram"))
+        
+        st_label.bind("<Enter>", partial(self.color_config, self.sLabel, st_label, self.r5, 'light grey'))
+        st_label.bind("<Leave>", partial(self.color_config, self.sLabel, st_label, self.r5, self.tab_color))
+        st_label.bind("<Button-1>", partial(self.set_sourcetype, self.sLabel, "Source Type Risk Histogram"))
+        
+        self.r5.bind("<Enter>", partial(self.color_config, st_label, self.sLabel, self.r5, 'light grey'))
+        self.r5.bind("<Leave>", partial(self.color_config, st_label, self.sLabel, self.r5, self.tab_color))
+        self.r5.bind("<Button-1>", partial(self.set_sourcetype, self.sLabel, "Source Type Risk Histogram"))
+        
+        
 
 #%%        
         z_label = tk.Label(self.r6, font=TEXT_FONT, width=22, anchor='w', bg=self.tab_color, text="")
@@ -422,8 +463,8 @@ class Summary(Page):
         
         self.vLabel.grid(row=1, column=3, padx=10, sticky='W') 
         
-        z_label.bind("<Enter>", partial(self.color_config, z_label, self.vLabel, self.r6, 'light grey'))
-        z_label.bind("<Leave>", partial(self.color_config, z_label, self.vLabel, self.r6, self.tab_color))
+        z_label.bind("<Enter>", partial(self.fake_config, z_label, self.vLabel, self.r6, 'light grey'))
+        z_label.bind("<Leave>", partial(self.fake_config, z_label, self.vLabel, self.r6, self.tab_color))
         
         
         
@@ -437,8 +478,8 @@ class Summary(Page):
         
         self.uLabel.grid(row=1, column=3, padx=10, sticky='W') 
         
-        w_label.bind("<Enter>", partial(self.color_config, w_label, self.uLabel, self.r7, 'light grey'))
-        w_label.bind("<Leave>", partial(self.color_config, w_label, self.uLabel, self.r7, self.tab_color))
+        w_label.bind("<Enter>", partial(self.fake_config, w_label, self.uLabel, self.r7, 'light grey'))
+        w_label.bind("<Leave>", partial(self.fake_config, w_label, self.uLabel, self.r7, self.tab_color))
         
 
 
@@ -456,8 +497,8 @@ class Summary(Page):
         
         self.zLabel.grid(row=1, column=3, padx=10, sticky='W') 
         
-        t_label.bind("<Enter>", partial(self.color_config, t_label, self.zLabel, self.r8, 'light grey'))
-        t_label.bind("<Leave>", partial(self.color_config, t_label, self.zLabel, self.r8, self.tab_color))
+        t_label.bind("<Enter>", partial(self.fake_config, t_label, self.zLabel, self.r8, 'light grey'))
+        t_label.bind("<Leave>", partial(self.fake_config, t_label, self.zLabel, self.r8, self.tab_color))
         
                 
         #%%        
@@ -470,8 +511,8 @@ class Summary(Page):
         
         self.rLabel.grid(row=1, column=3, padx=10, sticky='W') 
         
-        h_label.bind("<Enter>", partial(self.color_config, h_label, self.rLabel, self.r9, 'light grey'))
-        h_label.bind("<Leave>", partial(self.color_config, h_label, self.rLabel, self.r9, self.tab_color))
+        h_label.bind("<Enter>", partial(self.fake_config, h_label, self.rLabel, self.r9, 'light grey'))
+        h_label.bind("<Leave>", partial(self.fake_config, h_label, self.rLabel, self.r9, self.tab_color))
         
         
             
@@ -587,8 +628,8 @@ class Summary(Page):
             
             self.vLabel.grid(row=1, column=3, padx=10, sticky='W') 
             
-            z_label.bind("<Enter>", partial(self.color_config, z_label, self.vLabel, self.r6, 'light grey'))
-            z_label.bind("<Leave>", partial(self.color_config, z_label, self.vLabel, self.r6, self.tab_color))
+            z_label.bind("<Enter>", partial(self.fake_config, z_label, self.vLabel, self.r6, 'light grey'))
+            z_label.bind("<Leave>", partial(self.fake_config, z_label, self.vLabel, self.r6, self.tab_color))
             
             
             
@@ -602,8 +643,8 @@ class Summary(Page):
             
             self.uLabel.grid(row=1, column=3, padx=10, sticky='W') 
             
-            w_label.bind("<Enter>", partial(self.color_config, w_label, self.uLabel, self.r7, 'light grey'))
-            w_label.bind("<Leave>", partial(self.color_config, w_label, self.uLabel, self.r7, self.tab_color))
+            w_label.bind("<Enter>", partial(self.fake_config, w_label, self.uLabel, self.r7, 'light grey'))
+            w_label.bind("<Leave>", partial(self.fake_config, w_label, self.uLabel, self.r7, self.tab_color))
                 
                 
                 
@@ -824,8 +865,8 @@ class Summary(Page):
                 
                 self.vLabel.grid(row=1, column=4, padx=10, sticky='W') 
                 
-                z_label.bind("<Enter>", partial(self.color_config, z_label, self.vLabel, self.r6, 'light grey'))
-                z_label.bind("<Leave>", partial(self.color_config, z_label, self.vLabel, self.r6, self.tab_color))
+                z_label.bind("<Enter>", partial(self.fake_config, z_label, self.vLabel, self.r6, 'light grey'))
+                z_label.bind("<Leave>", partial(self.fake_config, z_label, self.vLabel, self.r6, self.tab_color))
                 
                                 
                 w_label = tk.Label(self.r7, font=TEXT_FONT, width=32, anchor='w', bg=self.tab_color, text="")
@@ -837,8 +878,8 @@ class Summary(Page):
                 
                 self.uLabel.grid(row=1, column=4, padx=10, sticky='W') 
                 
-                w_label.bind("<Enter>", partial(self.color_config, w_label, self.uLabel, self.r7, 'light grey'))
-                w_label.bind("<Leave>", partial(self.color_config, w_label, self.uLabel, self.r7, self.tab_color))
+                w_label.bind("<Enter>", partial(self.fake_config, w_label, self.uLabel, self.r7, 'light grey'))
+                w_label.bind("<Leave>", partial(self.fake_config, w_label, self.uLabel, self.r7, self.tab_color))
                 
 
             
@@ -856,7 +897,10 @@ class Summary(Page):
             
 
 
-                
+    def fake_config(self, widget1, widget2, container, color, event):
+        widget1
+
+                   
 
 #
     def lift_page(self, widget1, widget2, page, previous):
