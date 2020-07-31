@@ -57,7 +57,7 @@ import queue
 
 
 import numpy as np
-from pandastable import Table, filedialog, np
+#from pandastable import Table, filedialog, np
 
 
 
@@ -1444,7 +1444,7 @@ class Hem(Page):
         
         self.buoy_file = tk.Label(self.optional.s4, font=TEXT_FONT, bg=self.tab_color, 
                              text="Please select associated Buoyant Line"+
-                                 " Parameters file")
+                                 " Parameters file:")
         self.buoy_file.grid(row=1, column=1, sticky='W')
         
                                     
@@ -1475,7 +1475,7 @@ class Hem(Page):
         
         
         self.poly_file = tk.Label(self.optional.s5, font=TEXT_FONT, bg=self.tab_color, 
-                             text="Please select associated Polygon Vertex file")
+                             text="Please select associated Polygon Vertex file:")
         self.poly_file.grid(row=1, column=1, sticky='W')
         
                                     
@@ -1505,7 +1505,7 @@ class Hem(Page):
         
         
         self.bldgdw_file = tk.Label(self.optional.s6, font=TEXT_FONT, bg=self.tab_color, 
-                             text="Please select associated Building Dimensions file")
+                             text="Please select associated Building Dimensions file:")
         self.bldgdw_file.grid(row=1, column=1, sticky='W')
         
                                     
@@ -1536,7 +1536,7 @@ class Hem(Page):
         
         
         self.particle_file = tk.Label(self.depdeplt.s4, font=TEXT_FONT, bg=self.tab_color, 
-                             text="Please select Particle Size File")
+                             text="Please select Particle Size file:")
         self.particle_file.grid(row=1, column=1, sticky='W')
         
                                     
@@ -1567,7 +1567,7 @@ class Hem(Page):
         
         
         self.land_file = tk.Label(self.depdeplt.s5, font=TEXT_FONT, bg=self.tab_color, 
-                             text="Please select Land Use file")
+                             text="Please select Land Use file:")
         self.land_file.grid(row=1, column=1, sticky='W')
         
                                     
@@ -1596,7 +1596,7 @@ class Hem(Page):
         
         
         self.seasons_file = tk.Label(self.depdeplt.s6, font=TEXT_FONT, bg=self.tab_color, 
-                             text="Please select Month-to-Season Vegetation file")
+                             text="Please select Month-to-Season Vegetation file:")
         self.seasons_file.grid(row=1, column=1, sticky='W')
         
                                     
