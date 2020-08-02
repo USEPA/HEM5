@@ -57,7 +57,7 @@ import queue
 
 
 import numpy as np
-from pandastable import Table, filedialog, np
+#from pandastable import Table, filedialog, np
 
 
 
@@ -2125,7 +2125,7 @@ class Hem(Page):
                  self.instruction_instance.set(" ")
                  
                  
-         elif "Please select associated Buoyant Line Parameters file" in [widget1['text'], widget2['text']]:
+         elif "Please select associated Buoyant Line Parameters file:" in [widget1['text'], widget2['text']]:
              
              if self.optional.instruction_instance.get() == " ":
                  
@@ -2135,7 +2135,7 @@ class Hem(Page):
                  self.optional.instruction_instance.set(" ")
                  
                                   
-         elif "Please select associated Polygon Vertex file" in [widget1['text'], widget2['text']]:
+         elif "Please select associated Polygon Vertex file:" in [widget1['text'], widget2['text']]:
              
              if self.optional.instruction_instance.get() == " ":
                  
@@ -2163,7 +2163,7 @@ class Hem(Page):
                  self.optional.instruction_instance.set(" ")
                  
         
-         elif "Please select associated Building Dimensions file" in [widget1['text'], widget2['text']]:
+         elif "Please select associated Building Dimensions file:" in [widget1['text'], widget2['text']]:
              
              if self.optional.instruction_instance.get() == " ":
                  
@@ -2173,7 +2173,7 @@ class Hem(Page):
                  self.optional.instruction_instance.set(" ")
              
         
-         elif "Please select Particle Size File" in [widget1['text'], widget2['text']]:
+         elif "Please select Particle Size file:" in [widget1['text'], widget2['text']]:
              
              if self.depdeplt.instruction_instance.get() == " ":
                  
@@ -2183,7 +2183,7 @@ class Hem(Page):
                  self.depdeplt.instruction_instance.set(" ")
                  
                  
-         elif "Please select Land Use file" in [widget1['text'], widget2['text']]:
+         elif "Please select Land Use file:" in [widget1['text'], widget2['text']]:
              
              if self.depdeplt.instruction_instance.get() == " ":
                  
@@ -2192,7 +2192,7 @@ class Hem(Page):
              else:
                  self.depdeplt.instruction_instance.set(" ")
                  
-         elif "Please select Month-to-Season Vegetation file" in [widget1['text'], widget2['text']]:
+         elif "Please select Month-to-Season Vegetation file:" in [widget1['text'], widget2['text']]:
              
              if self.depdeplt.instruction_instance.get() == " ":
                  
