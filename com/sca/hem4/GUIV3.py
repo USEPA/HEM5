@@ -2153,7 +2153,7 @@ class Hem(Page):
              else:
                  self.optional.instruction_instance.set(" ")
                  
-         elif 'Please select an Emissions Variation file::' in [widget1['text'], widget2['text']]:
+         elif 'Please select an Emissions Variation file:' in [widget1['text'], widget2['text']]:
              
              if self.optional.instruction_instance.get() == " ":
                  
