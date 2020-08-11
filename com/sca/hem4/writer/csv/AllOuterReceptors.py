@@ -647,6 +647,8 @@ class AllOuterReceptors(CsvWriter, InputFile):
             latlon_alllist = outer_concs3[[lat, lon]].values
             # List of unique lat/lons
             latlon_uniqlist = [list(item) for item in set(tuple(row) for row in latlon_alllist)]
+            # Sort list of lists by lat/lon so it will link correctly with outer_concs3
+            latlon_uniqlist.sort(key=operator.itemgetter(0,1))
             
             # Compute the number of unique groups of lat/lons
             # Also compute the number rows there are for each unique group in outer_concs3 (accounts for pollutant/source/emis_type)

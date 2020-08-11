@@ -8,7 +8,7 @@ class Writer(ABC):
         self.headers = None
         self.data = None
         self.dataframe = None
-        self.batchSize = 100000
+        self.batchSize = 10000000
 
     def write(self, generateOnly=False):
 
