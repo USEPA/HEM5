@@ -64,7 +64,7 @@ class MaximumIndividualRisksNonCensus(ExcelWriter, InputFile):
                 mr_recid = self.model.innerblks_df[(self.model.innerblks_df[lon] == mr_lon) & (self.model.innerblks_df[lat] == mr_lat)][rec_id].values[0]
                 mr_utme = self.model.innerblks_df[(self.model.innerblks_df[lon] == mr_lon) & (self.model.innerblks_df[lat] == mr_lat)][utme].values[0]
                 mr_utmn = self.model.innerblks_df[(self.model.innerblks_df[lon] == mr_lon) & (self.model.innerblks_df[lat] == mr_lat)][utmn].values[0]
-                mr_rectype = "Census block"
+                mr_rectype = "Alternate receptor"
                 mr_notes = "Discrete"
             else:
                 mr_pop = self.model.outerblks_df[(self.model.outerblks_df[lon] == mr_lon) & (self.model.outerblks_df[lat] == mr_lat)][population].values[0]
@@ -75,7 +75,7 @@ class MaximumIndividualRisksNonCensus(ExcelWriter, InputFile):
                 mr_recid = self.model.outerblks_df[(self.model.outerblks_df[lon] == mr_lon) & (self.model.outerblks_df[lat] == mr_lat)][rec_id].values[0]
                 mr_utme = self.model.outerblks_df[(self.model.outerblks_df[lon] == mr_lon) & (self.model.outerblks_df[lat] == mr_lat)][utme].values[0]
                 mr_utmn = self.model.outerblks_df[(self.model.outerblks_df[lon] == mr_lon) & (self.model.outerblks_df[lat] == mr_lat)][utmn].values[0]
-                mr_rectype = "Census block"
+                mr_rectype = "Alternate receptor"
                 mr_notes = "Interpolated"
         else:
             #overlapped
@@ -107,7 +107,7 @@ class MaximumIndividualRisksNonCensus(ExcelWriter, InputFile):
                 mr_recid = self.model.outerblks_df[(self.model.outerblks_df[lon] == mr_lon) & (self.model.outerblks_df[lat] == mr_lat)][rec_id].values[0]
                 mr_utme = self.model.outerblks_df[(self.model.outerblks_df[lon] == mr_lon) & (self.model.outerblks_df[lat] == mr_lat)][utme].values[0]
                 mr_utmn = self.model.outerblks_df[(self.model.outerblks_df[lon] == mr_lon) & (self.model.outerblks_df[lat] == mr_lat)][utmn].values[0]
-                mr_rectype = "Census block"
+                mr_rectype = "Alternate receptor"
                 mr_notes = "Interpolated"
             else:
                 mr_pop = self.model.innerblks_df[(self.model.innerblks_df[lon] == mr_lon) & (self.model.innerblks_df[lat] == mr_lat)][population].values[0]
@@ -118,7 +118,7 @@ class MaximumIndividualRisksNonCensus(ExcelWriter, InputFile):
                 mr_recid = self.model.innerblks_df[(self.model.innerblks_df[lon] == mr_lon) & (self.model.innerblks_df[lat] == mr_lat)][rec_id].values[0]
                 mr_utme = self.model.innerblks_df[(self.model.innerblks_df[lon] == mr_lon) & (self.model.innerblks_df[lat] == mr_lat)][utme].values[0]
                 mr_utmn = self.model.innerblks_df[(self.model.innerblks_df[lon] == mr_lon) & (self.model.innerblks_df[lat] == mr_lat)][utmn].values[0]
-                mr_rectype = "Census block"
+                mr_rectype = "Alternate receptor"
                 mr_notes = "Discrete"
 
         return [mr_parameter, mr_value, mr_value_rnd, mr_value_sci, mr_pop, mr_dist, mr_angle, mr_elev,
@@ -270,7 +270,7 @@ class MaximumIndividualRisksNonCensus(ExcelWriter, InputFile):
                     mr_recid = self.model.innerblks_df[(self.model.innerblks_df[lon] == mr_lon) & (self.model.innerblks_df[lat] == mr_lat)][rec_id].values[0]
                     mr_utme = self.model.innerblks_df[(self.model.innerblks_df[lon] == mr_lon) & (self.model.innerblks_df[lat] == mr_lat)][utme].values[0]
                     mr_utmn = self.model.innerblks_df[(self.model.innerblks_df[lon] == mr_lon) & (self.model.innerblks_df[lat] == mr_lat)][utmn].values[0]
-                    mr_rectype = "Census block"
+                    mr_rectype = "Alternate receptor"
                     mr_notes = "Discrete"
                 else:
                     mr_pop = self.model.outerblks_df[(self.model.outerblks_df[lon] == mr_lon) & (self.model.outerblks_df[lat] == mr_lat)][population].values[0]
@@ -281,7 +281,7 @@ class MaximumIndividualRisksNonCensus(ExcelWriter, InputFile):
                     mr_recid = self.model.outerblks_df[(self.model.outerblks_df[lon] == mr_lon) & (self.model.outerblks_df[lat] == mr_lat)][rec_id].values[0]
                     mr_utme = self.model.outerblks_df[(self.model.outerblks_df[lon] == mr_lon) & (self.model.outerblks_df[lat] == mr_lat)][utme].values[0]
                     mr_utmn = self.model.outerblks_df[(self.model.outerblks_df[lon] == mr_lon) & (self.model.outerblks_df[lat] == mr_lat)][utmn].values[0]
-                    mr_rectype = "Census block"
+                    mr_rectype = "Alternate receptor"
                     mr_notes = "Interpolated"
             else:
                 #overlapped
@@ -311,7 +311,7 @@ class MaximumIndividualRisksNonCensus(ExcelWriter, InputFile):
                     mr_recid = self.model.outerblks_df[(self.model.outerblks_df[lon] == mr_lon) & (self.model.outerblks_df[lat] == mr_lat)][rec_id].values[0]
                     mr_utme = self.model.outerblks_df[(self.model.outerblks_df[lon] == mr_lon) & (self.model.outerblks_df[lat] == mr_lat)][utme].values[0]
                     mr_utmn = self.model.outerblks_df[(self.model.outerblks_df[lon] == mr_lon) & (self.model.outerblks_df[lat] == mr_lat)][utmn].values[0]
-                    mr_rectype = "Census block"
+                    mr_rectype = "Alternate receptor"
                     mr_notes = "Interpolated"
                 else:
                     mr_pop = self.model.innerblks_df[(self.model.innerblks_df[lon] == mr_lon) & (self.model.innerblks_df[lat] == mr_lat)][population].values[0]
@@ -322,7 +322,7 @@ class MaximumIndividualRisksNonCensus(ExcelWriter, InputFile):
                     mr_recid = self.model.innerblks_df[(self.model.innerblks_df[lon] == mr_lon) & (self.model.innerblks_df[lat] == mr_lat)][rec_id].values[0]
                     mr_utme = self.model.innerblks_df[(self.model.innerblks_df[lon] == mr_lon) & (self.model.innerblks_df[lat] == mr_lat)][utme].values[0]
                     mr_utmn = self.model.innerblks_df[(self.model.innerblks_df[lon] == mr_lon) & (self.model.innerblks_df[lat] == mr_lat)][utmn].values[0]
-                    mr_rectype = "Census block"
+                    mr_rectype = "Alternate receptor"
                     mr_notes = "Discrete"
         else:
             #max risk is 0, set all variables as empty
