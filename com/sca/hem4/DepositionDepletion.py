@@ -164,6 +164,7 @@ def check_dep(faclist_df, emisloc_df):
                 inputs.append(options)
                             
         elif p == 'V':
+            
             #add facid
             options = [fac_id]
 
@@ -176,23 +177,6 @@ def check_dep(faclist_df, emisloc_df):
                 if (('DO' in vapor_depl[i]) or ('WD' in vapor_depl[i])):
                     options.append('land use')
                     options.append('seasons')
-            
-#            if (deposition[i] == 'Y' and depletion[i] != 'Y'):
-#                
-#                if 'DO' or 'WD' in vapor_depo[i]:
-#                    options.append('land use')
-#                    options.append('seasons')
-#                    
-#            elif deposition[i] == 'Y' and depletion[i] == 'Y':
-#                if 'DO' in vapor_depo[i] and 'DO' in vapor_depl[i]:
-#                    options.append('land use')
-#                    options.append('seasons')
-#            
-#            
-#                elif 'WD' in vapor_depo[i] and 'WD' in vapor_depl[i]:
-#                    options.append('land use')
-#                    options.append('seasons')
-                    
             
             inputs.append(options)
       
