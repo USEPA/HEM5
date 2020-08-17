@@ -63,10 +63,12 @@ class EmisVar(DependentInputFile):
         # ----------------------------------------------------------------------------------
         if len(df.loc[(df[fac_id] == '')]) > 0:
             Logger.logMessage("One or more facility IDs are missing in the Emissions Variations List.")
+            messagebox.showinfo("Missing facility IDs", "One or more facility IDs are missing in the Emissions Variations List.")
             return None
 
         if len(df.loc[(df[source_id] == '')]) > 0:
             Logger.logMessage("One or more source IDs are missing in the Emissions Variations List.")
+            messagebox.showinfo("Missing source IDs", "One or more source IDs are missing in the Emissions Variations List.")
             return None
 
         for index, row in df.iterrows():
@@ -76,6 +78,7 @@ class EmisVar(DependentInputFile):
                      'HRDOW7', 'SHRDOW', 'SHRDOW7', 'MHRDOW', 'MHRDOW7']
             if row['variation'] not in valid:
                 Logger.logMessage("Facility " + facility + ": variation value invalid.")
+                messagebox.showinfo("Variation invalid", "Facility " + facility + ": variation value invalid.")
                 return None
 
         # facility/source ids from emission variation file

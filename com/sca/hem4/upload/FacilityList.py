@@ -105,17 +105,20 @@ class FacilityList(InputFile):
         # ----------------------------------------------------------------------------------
         if len(df.loc[(df[fac_id] == '')]) > 0:
             Logger.logMessage("One or more facility IDs are missing in the Facility List.")
+            messagebox.showinfo("Missing facility IDs", "One or more facility IDs are missing in the Facility List.")
             return None
 
         files = df[met_station].values.tolist()
         files = [file.upper() for file in files if file != '']
         if not set(files).issubset(set(self.metlib.dataframe[surffile].str.upper())):
             Logger.logMessage("One or more met stations referenced in the Facility List are invalid.")
+            messagebox.showinfo("Invalid met station", "One or more met stations referenced in the Facility List are invalid.")
             return None
 
         duplicates = self.duplicates(df, [fac_id])
         if len(duplicates) > 0:
             Logger.logMessage("One or more records are duplicated in the Facility List (key=fac_id):")
+            messagebox.showinfo("Duplicates", "One or more records are duplicated in the Facility List (key=fac_id)")
             for d in duplicates:
                 Logger.logMessage(d)
             return None
@@ -230,6 +233,7 @@ class FacilityList(InputFile):
                 ring_distance = int(float(distances[0]))
                 if row[model_dist] < ring_distance:
                     Logger.logMessage("Facility " + facility + ": Error: First ring is greater than modeling distance!")
+                    messagebox.showinfo("Modeling distance error", "Facility " + facility + ": Error: First ring is greater than modeling distance!")
                     spec_valid = False
                 prev = 0
                 for d in distances[1:]:

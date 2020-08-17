@@ -49,14 +49,17 @@ class Polyvertex(DependentInputFile):
         # ----------------------------------------------------------------------------------
         if len(df.loc[(df[fac_id] == '')]) > 0:
             Logger.logMessage("One or more facility IDs are missing in the Polyvertex List.")
+            messagebox.showinfo("Missing facility IDs", "One or more facility IDs are missing in the Polyvertex List.")
             return None
 
         if len(df.loc[(df[source_id] == '')]) > 0:
             Logger.logMessage("One or more source IDs are missing in the Polyvertex List.")
+            messagebox.showinfo("Missing source IDs", "One or more source IDs are missing in the Polyvertex List.")
             return None
 
         if len(df.loc[(df[location_type] != 'L') & (df[location_type] != 'U')]) > 0:
             Logger.logMessage("One or more locations have a missing/invalid coordinate system in the Polyvertex List.")
+            messagebox.showinfo("Invalid coordinates", "One or more locations have a missing/invalid coordinate system in the Polyvertex List.")
             return None
 
         for index, row in df.iterrows():
@@ -72,9 +75,13 @@ class Polyvertex(DependentInputFile):
             if row[lon] > maxlon or row[lon] < minlon:
                 Logger.logMessage("Facility " + facility + ": lon value " + str(row[lon]) + " out of range " +
                                   "in the Polyvertex List.")
+                messagebox.showinfo("Lon value out of range", "Facility " + facility + ": lon value " + str(row[lon]) + " out of range " +
+                                  "in the Polyvertex List.")
                 return None
             if row[lat] > maxlat or row[lat] < minlat:
                 Logger.logMessage("Facility " + facility + ": lat value " + str(row[lat]) + " out of range " +
+                                  "in the Polyvertex List.")
+                messagebox.showinfo("Lat value out of range", "Facility " + facility + ": lat value " + str(row[lat]) + " out of range " +
                                   "in the Polyvertex List.")
                 return None
 
@@ -88,20 +95,28 @@ class Polyvertex(DependentInputFile):
                 except ValueError as v:
                     Logger.logMessage("Facility " + facility + ": UTM zone value " + str(row[utmzone]) + " malformed " +
                                       "in the Polyvertex List.")
+                    messagebox.showinfo("UTM value malformed", "Facility " + facility + ": UTM zone value " + str(row[utmzone]) + " malformed " +
+                                      "in the Polyvertex List.")
                     return None
 
                 if zonenum < 1 or zonenum > 60:
                     Logger.logMessage("Facility " + facility + ": UTM zone value " + str(row[utmzone]) + " invalid " +
+                                      "in the Polyvertex List.")
+                    messagebox.showinfo("UTM invalid", "Facility " + facility + ": UTM zone value " + str(row[utmzone]) + " invalid " +
                                       "in the Polyvertex List.")
                     return None
 
             if row[numvert] <= 3 or row[numvert] > 20:
                 Logger.logMessage("Facility " + facility + ": Number of vertices " + str(row[numvert]) + " invalid " +
                                   "in the Polyvertex List.")
+                messagebox.showinfo("Invalid vertices", "Facility " + facility + ": Number of vertices " + str(row[numvert]) + " invalid " +
+                                  "in the Polyvertex List.")
                 return None
 
             if row[area] <= 0:
                 Logger.logMessage("Facility " + facility + ": Area value " + str(row[area]) + " invalid " +
+                                  "in the Polyvertex List.")
+                messagebox.showinfo("Invalid area value", "Facility " + facility + ": Area value " + str(row[area]) + " invalid " +
                                   "in the Polyvertex List.")
                 return None
 

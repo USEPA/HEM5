@@ -45,15 +45,19 @@ class UserReceptors(DependentInputFile):
         # ----------------------------------------------------------------------------------
         if len(df.loc[(df[fac_id] == '')]) > 0:
             Logger.logMessage("One or more facility IDs are missing in the User Receptors List.")
+            messagebox.showinfo("Missing facility IDs", "One or more facility IDs are missing in the Months-to-Seasons List.")
+            
             return None
 
         if len(df.loc[(df[location_type] != 'L') & (df[location_type] != 'U')]) > 0:
             Logger.logMessage("One or more locations are missing a coordinate system in the User Receptors List.")
+            messagebox.showinfo("Missing location", "One or more locations are missing a coordinate system in the User Receptors List.")
             return None
 
         duplicates = self.duplicates(df, [fac_id, lon, lat])
         if len(duplicates) > 0:
             Logger.logMessage("One or more records are duplicated in the User Receptors List (key=fac_id, lon, lat):")
+            messagebox.showinfo("Duplicate records", "One or more records are duplicated in the User Receptors List (key=fac_id, lon, lat).")
             for d in duplicates:
                 Logger.logMessage(d)
             return None
@@ -71,9 +75,13 @@ class UserReceptors(DependentInputFile):
             if row[lon] > maxlon or row[lon] < minlon:
                 Logger.logMessage("Facility " + facility + ": lon value " + str(row[lon]) + " out of range " +
                                   "in the User Receptors List.")
+                messagebox.showinfo("Lon value out of range", "Facility " + facility + ": lon value " + str(row[lon]) + " out of range " +
+                                  "in the User Receptors List.")
                 return None
             if row[lat] > maxlat or row[lat] < minlat:
                 Logger.logMessage("Facility " + facility + ": lat value " + str(row[lat]) + " out of range " +
+                                  "in the User Receptors List.")
+                messagebox.showinfo("Lat value out of range", "Facility " + facility + ": lat value " + str(row[lat]) + " out of range " +
                                   "in the User Receptors List.")
                 return None
 
@@ -87,16 +95,22 @@ class UserReceptors(DependentInputFile):
                 except ValueError as v:
                     Logger.logMessage("Facility " + facility + ": UTM zone value " + str(row[utmzone]) + " malformed " +
                                       "in the User Receptors List.")
+                    messagebox.showinfo("UTM zone malformed", "Facility " + facility + ": UTM zone value " + str(row[utmzone]) + " malformed " +
+                                      "in the User Receptors List.")
                     return None
 
                 if zonenum < 1 or zonenum > 60:
                     Logger.logMessage("Facility " + facility + ": UTM zone value " + str(row[utmzone]) + " invalid " +
+                                      "in the User Receptors List.")
+                    messagebox.showinfo("UTM invalid", "Facility " + facility + ": UTM zone value " + str(row[utmzone]) + " invalid " +
                                       "in the User Receptors List.")
                     return None
 
             valid = ['P', 'B', 'M']
             if row[rec_type] not in valid:
                 Logger.logMessage("Facility " + facility + ": Receptor type value " + str(row[rec_type]) + " invalid " +
+                                  "in the User Receptors List.")
+                messagebox.showinfo("Invalid receptor", "Facility " + facility + ": Receptor type value " + str(row[rec_type]) + " invalid " +
                                   "in the User Receptors List.")
                 return None
 

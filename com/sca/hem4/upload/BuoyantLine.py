@@ -49,11 +49,13 @@ class BuoyantLine(DependentInputFile):
         # ----------------------------------------------------------------------------------
         if len(df.loc[(df[fac_id] == '')]) > 0:
             Logger.logMessage("One or more facility IDs are missing in the Buoyant Line List.")
+            messagebox.showinfo("Missing facility IDs", "One or more facility IDs are missing in the Buoyant Line List.")
             return None
 
         duplicates = self.duplicates(df, [fac_id])
         if len(duplicates) > 0:
             Logger.logMessage("One or more records are duplicated in the Buoyant Line Parameters List (key=fac_id):")
+            messagebox.showinfo("Duplicate records", "One or more records are duplicated in the Buoyant Line Parameters List (key=fac_id):")
             for d in duplicates:
                 Logger.logMessage(d)
             return None
@@ -64,25 +66,37 @@ class BuoyantLine(DependentInputFile):
             if row[avgbld_len] <= 0:
                 Logger.logMessage("Facility " + facility + ": avg building length " + str(row[avgbld_len]) +
                                   " out of range.")
+                messagebox.showinfo("Out of Range", "Facility " + facility + ": avg building length " + str(row[avgbld_len]) +
+                                  " out of range.")
                 return None
             if row[avgbld_hgt] <= 0:
                 Logger.logMessage("Facility " + facility + ": avg building height " + str(row[avgbld_hgt]) +
+                                  " out of range.")
+                messagebox.showinfo("Out of Range", "Facility " + facility + ": avg building height " + str(row[avgbld_hgt]) +
                                   " out of range.")
                 return None
             if row[avgbld_wid] <= 0:
                 Logger.logMessage("Facility " + facility + ": avg building width " + str(row[avgbld_wid]) +
                                   " out of range.")
+                messagebox.showinfo("Out of Range", "Facility " + facility + ": avg building width " + str(row[avgbld_wid]) +
+                                  " out of range.")
                 return None
             if row[avglin_wid] <= 0:
                 Logger.logMessage("Facility " + facility + ": avg line width " + str(row[avglin_wid]) +
+                                  " out of range.")
+                messagebox.showinfo("Out of Range", "Facility " + facility + ": avg line width " + str(row[avglin_wid]) +
                                   " out of range.")
                 return None
             if row[avgbld_sep] <= 0:
                 Logger.logMessage("Facility " + facility + ": avg building separation " + str(row[avgbld_sep]) +
                                   " out of range.")
+                messagebox.showinfo("Out of Range", "Facility " + facility + ": avg building separation " + str(row[avgbld_sep]) +
+                                  " out of range.")
                 return None
             if row[avgbuoy] <= 0:
                 Logger.logMessage("Facility " + facility + ": avg buoyancy " + str(row[avgbuoy]) +
+                                  " out of range.")
+                messagebox.showinfo("Out of Range", "Facility " + facility + ": avg buoyancy " + str(row[avgbuoy]) +
                                   " out of range.")
                 return None
 

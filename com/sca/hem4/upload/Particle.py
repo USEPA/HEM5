@@ -55,15 +55,18 @@ class Particle(DependentInputFile):
         # ----------------------------------------------------------------------------------
         if len(df.loc[(df[fac_id] == '')]) > 0:
             Logger.logMessage("One or more facility IDs are missing in the Particle List.")
+            messagebox.showinfo("Missing facility IDs", "One or more facility IDs are missing in the Particle List.")
             return None
 
         if len(df.loc[(df[source_id] == '')]) > 0:
             Logger.logMessage("One or more source IDs are missing in the Particle List.")
+            messagebox.showinfo("Missing source IDs", "One or more source IDs are missing in the Particle List.")
             return None
 
         duplicates = self.duplicates(df, [fac_id, source_id, part_diam])
         if len(duplicates) > 0:
             Logger.logMessage("One or more records are duplicated in the Particle List (key=fac_id, source_id, part_diam):")
+            messagebox.showinfo("Duplicate records", "One or more records are duplicated in the Particle List (key=fac_id, source_id, part_diam)")
             for d in duplicates:
                 Logger.logMessage(d)
             return None
@@ -75,13 +78,19 @@ class Particle(DependentInputFile):
             if row[part_diam] <= 0:
                 Logger.logMessage("Facility " + facility + ": particle diameter value " + str(row[part_diam]) +
                                   " out of range.")
+                messagebox.showinfo("Value out of range", "Facility " + facility + ": particle diameter value " + str(row[part_diam]) +
+                                  " out of range.")
                 return None
             if row[mass_frac] < 0 or row[mass_frac] > 100:
                 Logger.logMessage("Facility " + facility + ": mass fraction value " + str(row[mass_frac]) +
                                   " out of range.")
+                messagebox,showinfo("Value out of range", "Facility " + facility + ": mass fraction value " + str(row[mass_frac]) +
+                                  " out of range.")
                 return None
             if row[part_dens] < 0:
                 Logger.logMessage("Facility " + facility + ": particle density value " + str(row[part_dens]) +
+                                  " out of range.")
+                messagebox.showinfo("Value out of range", "Facility " + facility + ": mass fraction value " + str(row[mass_frac]) +
                                   " out of range.")
                 return None
 
@@ -102,6 +111,9 @@ class Particle(DependentInputFile):
             Logger.logMessage("The mass fraction for " + ", ".join(incomplete)+
                                 " does not sum to 100%. Please correct them in your "+
                                 "particle size file.")
+            messagebox.showinfo("Mass fraction error", "The mass fraction for " + ", ".join(incomplete)+
+                                " does not sum to 100%. Please correct them in your "+
+                                "particle size file.")
             return None
         else:
             # check for unassigned particle
@@ -112,6 +124,9 @@ class Particle(DependentInputFile):
                 particle_unassigned = (set(self.particleFacilities) - check_particle_assignment)
                 
                 Logger.logMessage("Particle size data for facilities: " +
+                                  ", ".join(particle_unassigned) + " have not been assigned. " +
+                                  "Please edit the particle size file.")
+                messagebox.showinfo("Particle size data", "Particle size data for facilities, " +
                                   ", ".join(particle_unassigned) + " have not been assigned. " +
                                   "Please edit the particle size file.")
                 return None

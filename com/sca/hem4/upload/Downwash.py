@@ -67,15 +67,18 @@ class Downwash(DependentInputFile):
         # ----------------------------------------------------------------------------------
         if len(df.loc[(df[fac_id] == '')]) > 0:
             Logger.logMessage("One or more facility IDs are missing in the Downwash List.")
+            messagebox.showinfo("Missing Facility IDs", "One or more facility IDs are missing in the Downwash List.")
             return None
 
         if len(df.loc[(df[source_id] == '')]) > 0:
             Logger.logMessage("One or more source IDs are missing in the Downwash List.")
+            messagebox.showinfo("Missing source IDs", "One or more source IDs are missing in the Downwash List.")
             return None
 
         duplicates = self.duplicates(df, [fac_id, source_id, keyword])
         if len(duplicates) > 0:
             Logger.logMessage("One or more records are duplicated in the Downwash List (key=fac_id, source_id, keyword):")
+            messagebox.showinfo("Duplicate records", "One or more records are duplicated in the Downwash List (key=fac_id, source_id, keyword)")
             for d in duplicates:
                 Logger.logMessage(d)
             return None
@@ -84,11 +87,13 @@ class Downwash(DependentInputFile):
 
             if row[section] != 'SO':
                 Logger.logMessage("Invalid section " + str(row[section]) + ".")
+                messagebox.showinfo("Invalid section", "Invalid section " + str(row[section]) + ".")
                 return None
 
             valid = ['BUILDHGT', 'BUILDWID', 'BUILDLEN', 'XBADJ', 'YBADJ']
             if row[keyword] not in valid:
                 Logger.logMessage("Invalid keyword " + str(row[keyword]) + ".")
+                messagebox.showinfo("Invalid keyword", "Invalid keyword " + str(row[keyword]) + ".")
                 return None
 
             constrained = ['BUILDHGT', 'BUILDWID', 'BUILDLEN']
@@ -97,6 +102,7 @@ class Downwash(DependentInputFile):
 
                 if row[keyword] in constrained and row[field] <= 0:
                     Logger.logMessage("Invalid down wash value " + str(row[field]) + ".")
+                    messagebox.showinfo("INvalid values", "Invalid down wash value " + str(row[field]) + ".")
                     return None
 
 
@@ -110,6 +116,13 @@ class Downwash(DependentInputFile):
             downwash_unassigned = (check_downwash_assignment - d_fac).tolist()
 
             Logger.logMessage("Unassigned building downwash", "Building" +
+                                "downwash parameters for " +
+                                ", ".join(downwash_unassigned) + " have not" +
+                                " been assigned. Please edit the" +
+                                " 'bldgdw' column in the Facilities List Option" +
+                                " file.")
+            
+            messagebox.showinfo("Unassigned parameter", "Unassigned building downwash", "Building" +
                                 "downwash parameters for " +
                                 ", ".join(downwash_unassigned) + " have not" +
                                 " been assigned. Please edit the" +
@@ -130,6 +143,12 @@ class Downwash(DependentInputFile):
                               "(i.e., vertical P, horizontal H, or capped C point sources). " +
                               "Your building dimensions file includes non-point sources. " +
                               "Please edit your building dimensions file to remove all non-point sources.")
+            
+            messagebox.showinfo("Invalid sources", "AERMOD models building downwash from point sources only " +
+                              "(i.e., vertical P, horizontal H, or capped C point sources). " +
+                              "Your building dimensions file includes non-point sources. " +
+                              "Please edit your building dimensions file to remove all non-point sources.")
+            
             return None
 
 
