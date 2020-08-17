@@ -46,6 +46,8 @@ class Model():
         gasparams - gaseous dry depostion parameters
         group_name - name assigned to all facilities being modeled
         rootoutput - root output folder name
+        gasdryfacs - facilities needing landuse and season data
+        particlefacs - facilities needing particle size data
         
         extensions include:
             - .dataframe: contains csv converted to dataframe for input file
@@ -84,6 +86,7 @@ class Model():
         self.facids = None
         self.depdeplt = None
         self.gasdryfacs = None
+        self.particlefacs = None
         self.polargrid = None
         self.sourcelocs = None
         self.group_name = None
@@ -136,6 +139,7 @@ class Model():
         self.facids = None
         self.depdeplt = None
         self.gasdryfacs = None
+        self.particlefacs = None
         self.polargrid = None
         self.riskfacs_df = None
         self.all_polar_receptors_df = None

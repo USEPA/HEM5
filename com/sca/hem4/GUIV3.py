@@ -1138,6 +1138,9 @@ class Hem(Page):
     
                         #pull out facilities needing landuse and seasons files (gas dry dep/depl)
                         self.model.gasdryfacs = [x[0] for x in deposition_depletion if 'land use' in x]
+
+                        #pull out facilities needing particle size data (method one particle dry/wet dep/depl)
+                        self.model.particlefacs = [x[0] for x in deposition_depletion if 'particle size' in x]
             
                         #pull out conditional inputs
                         conditional = set([y for x in deposition_depletion for y in x[1:]])
@@ -1542,11 +1545,11 @@ class Hem(Page):
                                     
         self.particle_file.bind("<Enter>", lambda x: self.color_config( self.particle_file, self.particleLabel, self.depdeplt.s4, self.highlightcolor, x))
         self.particle_file.bind("<Leave>", lambda x: self.remove_config( self.particle_file, self.particleLabel, self.depdeplt.s4, self.tab_color, x))
-        self.particle_file.bind("<Button-1>", lambda x: self.depdeplt.uploadParticle(self.model.depdeplt, self.depdeplt.s4, self.particle_file, x))
+        self.particle_file.bind("<Button-1>", lambda x: self.depdeplt.uploadParticle(self.model.particlefacs, self.depdeplt.s4, self.particle_file, x))
         
         self.particleLabel.bind("<Enter>", lambda x: self.color_config(self.particleLabel, self.particle_file, self.depdeplt.s4, self.highlightcolor, x))
         self.particleLabel.bind("<Leave>", lambda x: self.remove_config(self.particleLabel, self.particle_file, self.depdeplt.s4, self.tab_color, x))
-        self.particleLabel.bind("<Button-1>",  lambda x: self.depdeplt.uploadParticle(self.model.depdeplt, self.depdeplt.s4, self.particle_file, x))
+        self.particleLabel.bind("<Button-1>",  lambda x: self.depdeplt.uploadParticle(self.model.particlefacs, self.depdeplt.s4, self.particle_file, x))
 
 #        self.depdeplt.s4.bind("<Enter>", lambda x: self.color_config( self.particle_file, self.particleLabel, self.depdeplt.s4, self.highlightcolor, x))
 #        self.depdeplt.s4.bind("<Leave>", lambda x: self.remove_config( self.particle_file, self.particleLabel, self.depdeplt.s4, self.tab_color, x))
@@ -2153,7 +2156,7 @@ class Hem(Page):
              else:
                  self.optional.instruction_instance.set(" ")
                  
-         elif 'Please select an Emissions Variation file::' in [widget1['text'], widget2['text']]:
+         elif 'Please select an Emissions Variation file:' in [widget1['text'], widget2['text']]:
              
              if self.optional.instruction_instance.get() == " ":
                  

@@ -18,8 +18,8 @@ class Particle(DependentInputFile):
 
     def __init__(self, path, dependency, facilities):
         self.faclist_df = dependency
-        self.dependency = dependency
-        self.facilities = facilities
+        # Facilities that need particle size data:
+        self.particleFacilities = set(facilities)
         DependentInputFile.__init__(self, path, dependency, facilities)
 
     def createDataframe(self):
@@ -33,8 +33,6 @@ class Particle(DependentInputFile):
         # Read the particle file
         particle_allfacs = self.readFromPath((fac_id, source_id, part_diam,mass_frac, part_dens))
         
-#        # Subset the particle data to the facilities being modeled
-#        particle_df = particle_allfacs.loc[particle_allfacs[fac_id].isin(facid_list)]
         self.dataframe = particle_allfacs
 
     def clean(self, df):
@@ -121,10 +119,11 @@ class Particle(DependentInputFile):
             # check for unassigned particle
             check_particle_assignment = set(df[fac_id])
 
-            if check_particle_assignment != set(self.facilities):
-                particle_unassigned = (set(self.facilities) - check_particle_assignment)
+            # Particle size file can have extra facilities
+            if self.particleFacilities.issubset(check_particle_assignment) == False:
+                particle_unassigned = (set(self.particleFacilities) - check_particle_assignment)
                 
-                Logger.logMessage("Particle size data for facilities, " +
+                Logger.logMessage("Particle size data for facilities: " +
                                   ", ".join(particle_unassigned) + " have not been assigned. " +
                                   "Please edit the particle size file.")
                 messagebox.showinfo("Particle size data", "Particle size data for facilities, " +
