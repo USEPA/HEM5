@@ -115,14 +115,6 @@ class EmissionsLocations(InputFile):
 
             if hfacsrc != efacsrc:
                 Logger.logMessage("Your Emissions Location and HAP Emissions file have mismatched source IDs. " +
-                      (df[source_type] != 'V') & (df[source_type] != 'N') &
-                      (df[source_type] != 'B') & (df[source_type] != 'I')]) > 0:
-            Logger.logMessage("One or more source types are missing a valid value in the Emissions Locations List.")
-            return None
-
-        # Cannot model deposition or depletion of buoyant line sources
-        depfacs = set(self.faclist.dataframe[fac_id].loc[(self.faclist.dataframe['dep']=='Y') |
-                                                    (self.faclist.dataframe['depl']=='Y')])
                                   "Please correct one or both files with matching sources and upload again.")
                 messagebox.showinfo("Mismatch source IDs", "Your Emissions Location and HAP Emissions file have mismatched source IDs. " +
                                   "Please correct one or both files with matching sources and upload again.")
@@ -133,8 +125,18 @@ class EmissionsLocations(InputFile):
             messagebox.showinfo("Missing coordinates", "One or more locations are missing a coordinate system in the Emissions Locations List.")
             return None
 
+
         if len(df.loc[(df[source_type] != 'P') & (df[source_type] != 'C') &
                       (df[source_type] != 'H') & (df[source_type] != 'A') &
+                      (df[source_type] != 'V') & (df[source_type] != 'N') &
+                      (df[source_type] != 'B') & (df[source_type] != 'I')]) > 0:
+            Logger.logMessage("One or more source types are missing a valid value in the Emissions Locations List.")
+            messagebox.showinfo("Missing valid value", "One or more source types are missing a valid value in the Emissions Locations List.")
+            return None
+
+        # Cannot model deposition or depletion of buoyant line sources
+        depfacs = set(self.faclist.dataframe[fac_id].loc[(self.faclist.dataframe['dep']=='Y') |
+                                                    (self.faclist.dataframe['depl']=='Y')])
         buoyfacs = set(df[fac_id].loc[df[source_type]=='B'])
         if len(depfacs.intersection(buoyfacs)) > 0:
             Logger.logMessage("AERMOD cannot currently model deposition or depletion of emissions from " +
@@ -142,7 +144,7 @@ class EmissionsLocations(InputFile):
                               "source for one or more facilities. Please disable deposition and depletion for " +
                               "each of these facilities, or remove the buoyant line source(s).")
             
-            messagebox.showinf("Incompatible source", "AERMOD cannot currently model deposition or depletion of emissions from " +
+            messagebox.showinfo("Incompatible source", "AERMOD cannot currently model deposition or depletion of emissions from " +
                               "buoyant line sources, and the Emissions Location file includes a buoyant line " +
                               "source for one or more facilities. Please disable deposition and depletion for " +
                               "each of these facilities, or remove the buoyant line source(s).")
@@ -211,7 +213,7 @@ class EmissionsLocations(InputFile):
                     Logger.logMessage("Facility " + facility + " Source ID " + row[source_id] + ": must supply non-zero initial " +
                                       "lateral and vertical dimensions for volume source in the Emissions Locations List.")
                     messaegbox.showinfo("Invalid source IDs", "Facility " + facility + " Source ID " + row[source_id] + ": must supply non-zero initial " +
-                                      "lateral and vertical dimensions for volume source in the Emissions Locations List.)
+                                      "lateral and vertical dimensions for volume source in the Emissions Locations List.")
                     return None
 
             if row[lon] == row[x2] and row[lat] == row[y2]:
