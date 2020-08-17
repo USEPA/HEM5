@@ -54,6 +54,7 @@ class LandUse(DependentInputFile):
         # ----------------------------------------------------------------------------------
         if len(df.loc[(df[fac_id] == '')]) > 0:
             Logger.logMessage("One or more facility IDs are missing in the Land Use List.")
+            messagebox.showinfo("Missing facility IDs", "One or more facility IDs are missing in the Land Use List.")
             return None
 
         landfids = set(df[fac_id])
@@ -61,11 +62,14 @@ class LandUse(DependentInputFile):
         if faclistfids.intersection(landfids) != faclistfids:
             Logger.logMessage("Based on your Facility List Options file, the Land Use List is missing " +
                               "one or more facilities. Please correct one or both files and upload again.")
+            messagebox,showinfo("Land use list missing", "Based on your Facility List Options file, the Land Use List is missing " +
+                              "one or more facilities. Please correct one or both files and upload again.")
             return None
 
         duplicates = self.duplicates(df, [fac_id])
         if len(duplicates) > 0:
             Logger.logMessage("One or more records are duplicated in the Land Use List (key=fac_id):")
+            messagebox.showinfo("Duplicate records", "One or more records are duplicated in the Land Use List (key=fac_id)")
             for d in duplicates:
                 Logger.logMessage(d)
             return None
@@ -80,6 +84,7 @@ class LandUse(DependentInputFile):
                 field = "D" + number
                 if row[field] not in [1,2,3,4,5,6,7,8,9]:
                     Logger.logMessage("Facility " + facility + ": Field " + field + " contains invalid value.")
+                    messagebox.showinfo("Invalid value", "Facility " + facility + ": Field " + field + " contains invalid value.")
                     return None
 
         # figure out how to get fac ids that have landuse based on flag or index

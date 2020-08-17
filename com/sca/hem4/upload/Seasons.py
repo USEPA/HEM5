@@ -39,6 +39,7 @@ class Seasons(DependentInputFile):
         # ----------------------------------------------------------------------------------
         if len(df.loc[(df[fac_id] == '')]) > 0:
             Logger.logMessage("One or more facility IDs are missing in the Months-to-Seasons List.")
+            messagebox.showinfo("Missing facility IDs", "One or more facility IDs are missing in the Months-to-Seasons List.")
             return None
 
         seasonfids = set(df[fac_id])
@@ -46,11 +47,14 @@ class Seasons(DependentInputFile):
         if faclistfids.intersection(seasonfids) != faclistfids:
             Logger.logMessage("Based on your Facility List Options file, the Months-to-Seasons List is missing " +
                               "one or more facilities. Please correct one or both files and upload again.")
+            messagebox.showinfo("Missing facilities", "Based on your Facility List Options file, the Months-to-Seasons List is missing " +
+                              "one or more facilities. Please correct one or both files and upload again.")
             return None
 
         duplicates = self.duplicates(df, [fac_id])
         if len(duplicates) > 0:
             Logger.logMessage("One or more records are duplicated in the Months-to-Seasons List (key=fac_id):")
+            messagebox.showinfo("Duplicate records", "One or more records are duplicated in the Months-to-Seasons List (key=fac_id).")
             for d in duplicates:
                 Logger.logMessage(d)
             return None
@@ -65,6 +69,7 @@ class Seasons(DependentInputFile):
                 field = "M" + number
                 if row[field] not in [1,2,3,4,5]:
                     Logger.logMessage("Facility " + facility + ": Field " + field + " contains invalid value.")
+                    messagebox.showinfo("Invalid values", "Facility " + facility + ": Field " + field + " contains invalid value.")
                     return None
 
         # figure out how to get fac ids that have particle based on flag or index

@@ -4,6 +4,9 @@ from tkinter import messagebox
 from com.sca.hem4.upload.EmissionsLocations import *
 from com.sca.hem4.upload.FacilityList import *
 
+from tkinter import messagebox
+
+
 rec_type = 'rec_type';
 rec_id = 'rec_id';
 
@@ -40,6 +43,7 @@ class AltReceptors(InputFile):
         # ----------------------------------------------------------------------------------
         if len(df.loc[(df[rec_id] == '')]) > 0:
             Logger.logMessage("One or more Receptor IDs are missing in the Alternate User Receptors List.")
+            messagebox.showinfo("Missing Receptor IDs", "One or more Receptor IDs are missing in the Alternate User Receptors List.")
             return None
 
         if len(df.loc[(df[location_type] != 'L') & (df[location_type] != 'U')]) > 0:
@@ -49,12 +53,14 @@ class AltReceptors(InputFile):
         duplicates = self.duplicates(df, [rec_id, lon, lat])
         if len(duplicates) > 0:
             Logger.logMessage("One or more records are duplicated in the Alternate User Receptors List (key=rec_id, lon, lat):")
+            messagebox.showinfo("Duplicates", "One or more records are duplicated in the Alternate User Receptors List (key=rec_id, lon, lat):")
             for d in duplicates:
                 Logger.logMessage(d)
             return None
 
         if len(df.loc[(df[population].isnull()) & (df[rec_type] == 'P')]) > 0:
             Logger.logMessage("Some 'P' receptors are missing population values in Alternate User Receptor List.")
+            messagebox.showinfo("Missing Population Values", "Some 'P' receptors are missing population values in Alternate User Receptor List.")
             return None
 
         for index, row in df.iterrows():
@@ -70,10 +76,15 @@ class AltReceptors(InputFile):
             if row[lon] > maxlon or row[lon] < minlon:
                 Logger.logMessage("Receptor " + receptor + ": lon value " + str(row[lon]) + " out of range " +
                                   "in the Alternate User Receptors List.")
+                messagebox.showinfo("Longitude out of Range", "Receptor " + receptor + ": lon value " + str(row[lon]) + " out of range " +
+                                  "in the Alternate User Receptors List.")
                 return None
             if row[lat] > maxlat or row[lat] < minlat:
                 Logger.logMessage("Receptor " + receptor + ": lat value " + str(row[lat]) + " out of range " +
                                   "in the Alternate User Receptors List.")
+                messagebox.showinfo("Latitude out of Range", "Receptor " + receptor + ": lat value " + str(row[lat]) + " out of range " +
+                                  "in the Alternate User Receptors List.")
+                
                 return None
 
             if loc_type == 'U':
@@ -86,17 +97,23 @@ class AltReceptors(InputFile):
                 except ValueError as v:
                     Logger.logMessage("Receptor " + receptor + ": UTM zone value " + str(row[utmzone]) + " malformed " +
                                       "in the Alternate User Receptors List.")
+                    messagebox.showinfo("UTM value malformed", "Receptor " + receptor + ": UTM zone value " + str(row[utmzone]) + " malformed " +
+                                      "in the Alternate User Receptors List.")
                     return None
 
                 if zonenum < 1 or zonenum > 60:
                     Logger.logMessage("Receptor " + receptor + ": UTM zone value " + str(row[utmzone]) + " invalid " +
                                       "in the Alternate User Receptors List.")
+                    messagebox.showinfo("UTM zone value invalid", "Receptor " + receptor + ": UTM zone value " + str(row[utmzone]) + " invalid " +
+                                      "in the Alternate User Receptors List.")
+                    
                     return None
 
             valid = ['P', 'B', 'M']
             if row[rec_type] not in valid:
                 Logger.logMessage("Receptor " + receptor + ": Receptor type value " + str(row[rec_type]) + " invalid " +
                                   "in the Alternate User Receptors List.")
+                messagebox.showinfo()
                 return None
 
             Logger.logMessage("Uploaded alternate user receptors.\n")

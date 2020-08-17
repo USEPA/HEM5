@@ -1,6 +1,8 @@
 from com.sca.hem4.upload.InputFile import InputFile
 from com.sca.hem4.model.Model import *
 from com.sca.hem4.support.UTM import *
+from tkinter import messagebox
+
 
 location_type = 'location_type'
 source_type = 'source_type'
@@ -67,11 +69,14 @@ class EmissionsLocations(InputFile):
         
         if len(df.loc[(df[fac_id] == '')]) > 0:
             Logger.logMessage("One or more facility IDs are missing in the Emissions Locations List.")
+            messagebox.showinfo("Missing facility IDs", "One or more facility IDs are missing in the Emissions Locations List.")
+            
             return None
 
         duplicates = self.duplicates(df, [fac_id, source_id])
         if len(duplicates) > 0:
             Logger.logMessage("One or more records are duplicated in the Emissions Location List (key=fac_id, source_id):")
+            messagebox.showinfo("Duplicate Records", "One or more records are duplicated in the Emissions Location List (key=fac_id, source_id)")
             for d in duplicates:
                 Logger.logMessage(d)
             return None
@@ -80,10 +85,13 @@ class EmissionsLocations(InputFile):
             if self.fac_ids.intersection(efac) != self.fac_ids:
                 Logger.logMessage("Based on your Facility List Options file, the Emissions Location List is missing " +
                                   "one or more facilities. Please correct one or both files and upload again.")
+                messagebox.showinf("Missing facilities",  "Based on your Facility List Options file, the Emissions Location List is missing " +
+                                  "one or more facilities. Please correct one or both files and upload again.")
                 return None
 
         if len(df.loc[(df[source_id] == '')]) > 0:
             Logger.logMessage("One or more source IDs are missing in the Emissions Locations List.")
+            messagebox.showinfo("Missing source IDs", "One or more source IDs are missing in the Emissions Locations List.")
             return None
        
         # make sure source ids match in hap emissions and emissions location
@@ -107,15 +115,6 @@ class EmissionsLocations(InputFile):
 
             if hfacsrc != efacsrc:
                 Logger.logMessage("Your Emissions Location and HAP Emissions file have mismatched source IDs. " +
-                                  "Please correct one or both files with matching sources and upload again.")
-                return None
-
-        if len(df.loc[(df[location_type] != 'L') & (df[location_type] != 'U')]) > 0:
-            Logger.logMessage("One or more locations are missing a coordinate system in the Emissions Locations List.")
-            return None
-
-        if len(df.loc[(df[source_type] != 'P') & (df[source_type] != 'C') &
-                      (df[source_type] != 'H') & (df[source_type] != 'A') &
                       (df[source_type] != 'V') & (df[source_type] != 'N') &
                       (df[source_type] != 'B') & (df[source_type] != 'I')]) > 0:
             Logger.logMessage("One or more source types are missing a valid value in the Emissions Locations List.")
@@ -124,9 +123,26 @@ class EmissionsLocations(InputFile):
         # Cannot model deposition or depletion of buoyant line sources
         depfacs = set(self.faclist.dataframe[fac_id].loc[(self.faclist.dataframe['dep']=='Y') |
                                                     (self.faclist.dataframe['depl']=='Y')])
+                                  "Please correct one or both files with matching sources and upload again.")
+                messagebox.showinfo("Mismatch source IDs", "Your Emissions Location and HAP Emissions file have mismatched source IDs. " +
+                                  "Please correct one or both files with matching sources and upload again.")
+                return None
+
+        if len(df.loc[(df[location_type] != 'L') & (df[location_type] != 'U')]) > 0:
+            Logger.logMessage("One or more locations are missing a coordinate system in the Emissions Locations List.")
+            messagebox.showinfo("Missing coordinates", "One or more locations are missing a coordinate system in the Emissions Locations List.")
+            return None
+
+        if len(df.loc[(df[source_type] != 'P') & (df[source_type] != 'C') &
+                      (df[source_type] != 'H') & (df[source_type] != 'A') &
         buoyfacs = set(df[fac_id].loc[df[source_type]=='B'])
         if len(depfacs.intersection(buoyfacs)) > 0:
             Logger.logMessage("AERMOD cannot currently model deposition or depletion of emissions from " +
+                              "buoyant line sources, and the Emissions Location file includes a buoyant line " +
+                              "source for one or more facilities. Please disable deposition and depletion for " +
+                              "each of these facilities, or remove the buoyant line source(s).")
+            
+            messagebox.showinf("Incompatible source", "AERMOD cannot currently model deposition or depletion of emissions from " +
                               "buoyant line sources, and the Emissions Location file includes a buoyant line " +
                               "source for one or more facilities. Please disable deposition and depletion for " +
                               "each of these facilities, or remove the buoyant line source(s).")
@@ -137,6 +153,9 @@ class EmissionsLocations(InputFile):
         buoyfacs = set(df[fac_id].loc[df[source_type]=='B'])
         if len(fastfacs.intersection(buoyfacs)) > 0:
             Logger.logMessage("AERMOD's FASTALL option cannot be used with buoyant line sources, and the " +
+                              "Emissions Location file includes a buoyant line source for one or more facilities. " +
+                              "Please disable FASTALL for each of these facilities, or remove the buoyant line source(s).")
+            messagebox.showinfo("Incompatible Sources", "AERMOD's FASTALL option cannot be used with buoyant line sources, and the " +
                               "Emissions Location file includes a buoyant line source for one or more facilities. " +
                               "Please disable FASTALL for each of these facilities, or remove the buoyant line source(s).")
             return None
@@ -155,9 +174,14 @@ class EmissionsLocations(InputFile):
             if row[lon] > maxlon or row[lon] < minlon:
                 Logger.logMessage("Facility " + facility + ": lon value " + str(row[lon]) + " out of range " +
                                   "in the Emissions Locations List.")
+                messagebox.showinfo("Lon value out of range", "Facility " + facility + ": lon value " + str(row[lon]) + " out of range " +
+                                  "in the Emissions Locations List.")
+                
                 return None
             if row[lat] > maxlat or row[lat] < minlat:
                 Logger.logMessage("Facility " + facility + ": lat value " + str(row[lat]) + " out of range " +
+                                  "in the Emissions Locations List.")
+                messagebox.showinfo("Lat value our of range", "Facility " + facility + ": lat value " + str(row[lat]) + " out of range " +
                                   "in the Emissions Locations List.")
                 return None
 
@@ -171,10 +195,14 @@ class EmissionsLocations(InputFile):
                 except ValueError as v:
                     Logger.logMessage("Facility " + facility + ": UTM zone value " + str(row[utmzone]) + " malformed " +
                                       "in the Emissions Locations List.")
+                    messaegbox.showinfo("UTM zone malformed", "Facility " + facility + ": UTM zone value " + str(row[utmzone]) + " malformed " +
+                                      "in the Emissions Locations List.")
                     return None
 
                 if zonenum < 1 or zonenum > 60:
                     Logger.logMessage("Facility " + facility + ": UTM zone value " + str(row[utmzone]) + " invalid " +
+                                      "in the Emissions Locations List.")
+                    messaegbox.showinfo("UTM zone invalid", "Facility " + facility + ": UTM zone value " + str(row[utmzone]) + " invalid " +
                                       "in the Emissions Locations List.")
                     return None
                 
@@ -182,10 +210,14 @@ class EmissionsLocations(InputFile):
                 if row[horzdim] == 0 and row[vertdim] == 0:
                     Logger.logMessage("Facility " + facility + " Source ID " + row[source_id] + ": must supply non-zero initial " +
                                       "lateral and vertical dimensions for volume source in the Emissions Locations List.")
+                    messaegbox.showinfo("Invalid source IDs", "Facility " + facility + " Source ID " + row[source_id] + ": must supply non-zero initial " +
+                                      "lateral and vertical dimensions for volume source in the Emissions Locations List.)
                     return None
 
             if row[lon] == row[x2] and row[lat] == row[y2]:
                     Logger.logMessage("Facility/Source: " + facility + "/" + row[source_id]  + " has identical starting and ending coordinates " +
+                                      "in the Emissions Locations List.")
+                    messaegbox.showinfo("Invalid source coordinates", "Facility/Source: " + facility + "/" + row[source_id]  + " has identical starting and ending coordinates " +
                                       "in the Emissions Locations List.")
                     return None
 

@@ -96,7 +96,11 @@ class InputFile(ABC):
 
                 cleaned = self.clean(df)
                 validated = self.validate(cleaned)
-                return validated
+                
+                if validated is None:
+                    return pd.DataFrame()
+                else:
+                    return validated
 
     # Read values in from a source .csv file. Note that we initially read everything in as a string,
     # and then convert columns which have been specified as numeric to a float64. That way, all empty
