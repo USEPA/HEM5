@@ -210,18 +210,22 @@ def in_box(modelblks, sourcelocs, modeldist, maxdist, overlap_dist, model):
             
             # Are any blocks within the modeldist of any polygon side?
             # Process each source_id
-            for grp,df in polyvertices.groupby(source_id):
-                # loop over each row of the source_id specific dataframe (df)
-                for i in range(0, df.shape[0]-1):
-                    v1 = np.array([df.iloc[i][utme], df.iloc[i][utmn]])
-                    v2 = np.array([df.iloc[i+1][utme], df.iloc[i+1][utmn]])
-                    outerblks["nearpoly"] = (outerblks.apply(lambda row: polygonbox(v1, v2, 
-                         np.array([row[utme],row[utmn]]), modeldist), axis=1))
-                    polyblks = outerblks.query('nearpoly == True')
-                    if len(polyblks) > 0:
-                        innerblks = innerblks.append(polyblks).reset_index(drop=True)
-                        innerblks = innerblks[~innerblks[rec_id].duplicated()]
-                        outerblks = outerblks[~outerblks[rec_id].isin(innerblks[rec_id])]
+            if not outerblks.empty:
+                for grp,df in polyvertices.groupby(source_id):
+                    # loop over each row of the source_id specific dataframe (df)
+                    for i in range(0, df.shape[0]-1):
+                        v1 = np.array([df.iloc[i][utme], df.iloc[i][utmn]])
+                        v2 = np.array([df.iloc[i+1][utme], df.iloc[i+1][utmn]])
+                        outerblks["nearpoly"] = (outerblks.apply(lambda row: polygonbox(v1, v2, 
+                             np.array([row[utme],row[utmn]]), modeldist), axis=1))
+                        polyblks = outerblks.query('nearpoly == True')
+                        if len(polyblks) > 0:
+                            innerblks = innerblks.append(polyblks).reset_index(drop=True)
+                            innerblks = innerblks[~innerblks[rec_id].duplicated()]
+                            outerblks = outerblks[~outerblks[rec_id].isin(innerblks[rec_id])]
+                    if outerblks.empty:
+                        # Break for loop if no more outer blocks
+                        break
 
         
     return innerblks, outerblks
