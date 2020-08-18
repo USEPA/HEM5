@@ -21,3 +21,5 @@ com/sca/hem4/HEM4_UserConc_2.py
 com/sca/hem4/*.spec
 *.pyc
 **/__pycache__/*.pyc
+.spyproject/
+envs/
