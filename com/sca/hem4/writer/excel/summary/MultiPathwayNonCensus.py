@@ -30,7 +30,7 @@ class MultiPathwayNonCensus(ExcelWriter):
         self.riskCache = {}
 
     def getHeader(self):
-        return ['Src Cat',	'Facility ID',	'Rural/Urban', 'Octant or MIR', 'Chem, Centroid, or Discrete',
+        return ['Run Group', 'Facility ID', 'Rural/Urban', 'Octant or MIR', 'Chem, Centroid, or Discrete',
                 'Receptor ID', 'Lat',	'Lon', 'Population', 'Total Inhalation Cancer Risk',
                 'Total Inhalation As Cancer Risk',	 'Total Inhalation PAH Cancer Risk',
                 'Total Inhalation D/F Cancer Risk'

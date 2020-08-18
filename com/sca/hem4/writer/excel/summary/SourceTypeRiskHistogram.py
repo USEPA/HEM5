@@ -279,7 +279,7 @@ class SourceTypeRiskHistogram(ExcelWriter, AltRecAwareSummary):
     def writeWithTimestamp(self):
         super(SourceTypeRiskHistogram, self).writeWithTimestamp()
 
-        sector_mir_txt = ["Sector MIR (in a million) = " + str(self.sector_mir)]
+        sector_mir_txt = ["Run Group MIR (in a million) = " + str(self.sector_mir)]
         
         notes = ["Note: The Maximum Overall column lists the population at various risk levels attributable to all\n" + \
         "source types/emission process groups combined, while the other columns list the population at various risk\n" + \

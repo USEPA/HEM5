@@ -30,10 +30,10 @@ class AcuteImpacts(ExcelWriter, InputFile, AltRecAwareSummary):
 
     def getHeader(self):
         if self.altrec == 'Y':
-            return ['Facility ID', 'Pollutant', 'CONC_MG',	'REL', 'AEGL_1_11H', 'ERPG_1', 'IDLH_10', 'AEGL_2_1H', 'ERPG_2',
+            return ['Facility ID', 'Pollutant', 'CONC_MG/M3',	'REL', 'AEGL_1_1H', 'ERPG_1', 'IDLH_10', 'AEGL_2_1H', 'ERPG_2',
                     'HQ_REL	', 'HQ_AEGL1', 'HQ_ERPG1', 'HQ_IDLH', 'HQ_AEGL2', 'HQ_ERPG2', 'Receptor ID', 'Distance', 'Angle']
         else:
-            return ['Facility ID', 'Pollutant', 'CONC_MG',	'REL', 'AEGL_1_11H', 'ERPG_1', 'IDLH_10', 'AEGL_2_1H', 'ERPG_2',
+            return ['Facility ID', 'Pollutant', 'CONC_MG',	'REL', 'AEGL_1_1H', 'ERPG_1', 'IDLH_10', 'AEGL_2_1H', 'ERPG_2',
                 'HQ_REL	', 'HQ_AEGL1', 'HQ_ERPG1', 'HQ_IDLH', 'HQ_AEGL2', 'HQ_ERPG2', 'FIPS', 'Block', 'Distance', 'Angle']
 
 

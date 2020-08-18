@@ -169,6 +169,7 @@ def in_box(modelblks, sourcelocs, modeldist, maxdist, overlap_dist, model):
     #....... Find blocks within modeldist of area sources ..........
 
     if not outerblks.empty:
+                
         areasources = sourcelocs.query("source_type in ('A')")
         for index, row in areasources.iterrows():
             box_x = row[utme]
@@ -177,13 +178,17 @@ def in_box(modelblks, sourcelocs, modeldist, maxdist, overlap_dist, model):
             len_y = row["lengthy"]
             angle_val = row["angle"]
             fringe = modeldist
-            outerblks["inbox"], outerblks[overlap] = zip(*outerblks.apply(lambda row: rotatedbox(row[utme],
-                     row[utmn], box_x, box_y, len_x, len_y, angle_val, fringe, overlap_dist), axis=1))
+            outerblks["inbox"], outerblks[overlap] = zip(*outerblks.apply(lambda row1: rotatedbox(row1[utme],
+                     row1[utmn], box_x, box_y, len_x, len_y, angle_val, fringe, overlap_dist), axis=1))
             indist = outerblks.query('inbox == True')
             if len(indist) > 0:
                 innerblks = innerblks.append(indist).reset_index(drop=True)
                 innerblks = innerblks[~innerblks[rec_id].duplicated()]
                 outerblks = outerblks[~outerblks[rec_id].isin(innerblks[rec_id])]
+            
+            if outerblks.empty:
+                # Break for loop if no more outer blocks
+                break
                   
 
     #....... If there are polygon sources, find blocks within modeldist of any polygon side ..........
