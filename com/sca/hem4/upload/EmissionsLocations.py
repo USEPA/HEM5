@@ -2,6 +2,7 @@ from com.sca.hem4.upload.InputFile import InputFile
 from com.sca.hem4.model.Model import *
 from com.sca.hem4.support.UTM import *
 from tkinter import messagebox
+import math
 
 
 location_type = 'location_type'
@@ -173,14 +174,15 @@ class EmissionsLocations(InputFile):
             maxlat = 85 if type == 'L' else 10000000
             minlat = -80 if type == 'L' else 0
 
-            if row[lon] > maxlon or row[lon] < minlon:
+            if row[lon] > maxlon or row[lon] < minlon or math.isnan(row[lon]):
                 Logger.logMessage("Facility " + facility + ": lon value " + str(row[lon]) + " out of range " +
                                   "in the Emissions Locations List.")
                 messagebox.showinfo("Lon value out of range", "Facility " + facility + ": lon value " + str(row[lon]) + " out of range " +
                                   "in the Emissions Locations List.")
                 
                 return None
-            if row[lat] > maxlat or row[lat] < minlat:
+            
+            if row[lat] > maxlat or row[lat] < minlat or math.isnan(row[lat]):
                 Logger.logMessage("Facility " + facility + ": lat value " + str(row[lat]) + " out of range " +
                                   "in the Emissions Locations List.")
                 messagebox.showinfo("Lat value our of range", "Facility " + facility + ": lat value " + str(row[lat]) + " out of range " +
