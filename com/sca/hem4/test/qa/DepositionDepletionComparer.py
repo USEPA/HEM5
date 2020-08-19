@@ -5,16 +5,16 @@ from com.sca.hem4.writer.csv.AllOuterReceptors import *
 from com.sca.hem4.writer.csv.AllPolarReceptors import AllPolarReceptors
 from com.sca.hem4.writer.excel.ExcelWriter import ExcelWriter
 
-facilityID = "01043110000366247"
-sourceID = "CEOT0001"
-pollutantName = "Ethyl benzene"
-rundir = r"C:/Git_HEM4/HEM4/output/DD_ReRun_6"
+facilityID = "Fac2-IL"
+sourceID = "CT000001"
+pollutantName = "1,2,3,6,7,8-Hexachlorodibenzo-p-dioxin"
+rundir = r"C:/Users/ccook/Documents/HEM4_git_repository/HEM4/output/GUIv3_ALtRecpIL_depdepl"
 hapemis_path = rundir + "/Inputs/hapemis.xlsx"
 output_dir = rundir + "/" + facilityID
 acute = 'Y'
 
 # Runtype: 0 == no deposition, 1 == both, 2 == dry only, 3 == wet only...see FacilityRunner#set_runtype()
-runtype = 2
+runtype = 1
 
 # emistype: P == particle, V == gaseous
 emistype = 'V'

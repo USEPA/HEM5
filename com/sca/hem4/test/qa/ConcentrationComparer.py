@@ -7,13 +7,13 @@ from com.sca.hem4.writer.excel.ExcelWriter import ExcelWriter
 
 facilityID = "Fac2-IL"
 sourceID = "FU000001"
-pollutantName = "Chrysene"
-rundir = r"C:/Git_HEM4/HEM4/output/DepDepl"
+pollutantName = "Benzo[b]fluoranthene"
+rundir = r"C:/Users/ccook/Documents/HEM4_git_repository/HEM4/output/GUIv3_DepDeplQA_DepTest5"
 hapemis_path = rundir + "/Inputs/hapemis.xlsx"
 output_dir = rundir + "/" + facilityID
-acute = 'N'
+acute = 'Y'
 # Runtype: 0 == no deposition, 1 == both, 2 == dry only, 3 == wet only...see FacilityRunner#set_runtype()
-runtype = 3
+runtype = 1
 
 # emistype: P, V, or C
 emistype = 'V'

@@ -86,7 +86,7 @@ class EmissionsLocations(InputFile):
             if self.fac_ids.intersection(efac) != self.fac_ids:
                 Logger.logMessage("Based on your Facility List Options file, the Emissions Location List is missing " +
                                   "one or more facilities. Please correct one or both files and upload again.")
-                messagebox.showinf("Missing facilities",  "Based on your Facility List Options file, the Emissions Location List is missing " +
+                messagebox.showinfo("Missing facilities",  "Based on your Facility List Options file, the Emissions Location List is missing " +
                                   "one or more facilities. Please correct one or both files and upload again.")
                 return None
 
@@ -199,14 +199,14 @@ class EmissionsLocations(InputFile):
                 except ValueError as v:
                     Logger.logMessage("Facility " + facility + ": UTM zone value " + str(row[utmzone]) + " malformed " +
                                       "in the Emissions Locations List.")
-                    messaegbox.showinfo("UTM zone malformed", "Facility " + facility + ": UTM zone value " + str(row[utmzone]) + " malformed " +
+                    messagebox.showinfo("UTM zone malformed", "Facility " + facility + ": UTM zone value " + str(row[utmzone]) + " malformed " +
                                       "in the Emissions Locations List.")
                     return None
 
                 if zonenum < 1 or zonenum > 60:
                     Logger.logMessage("Facility " + facility + ": UTM zone value " + str(row[utmzone]) + " invalid " +
                                       "in the Emissions Locations List.")
-                    messaegbox.showinfo("UTM zone invalid", "Facility " + facility + ": UTM zone value " + str(row[utmzone]) + " invalid " +
+                    messagebox.showinfo("UTM zone invalid", "Facility " + facility + ": UTM zone value " + str(row[utmzone]) + " invalid " +
                                       "in the Emissions Locations List.")
                     return None
                 
@@ -214,14 +214,14 @@ class EmissionsLocations(InputFile):
                 if row[horzdim] == 0 and row[vertdim] == 0:
                     Logger.logMessage("Facility " + facility + " Source ID " + row[source_id] + ": must supply non-zero initial " +
                                       "lateral and vertical dimensions for volume source in the Emissions Locations List.")
-                    messaegbox.showinfo("Invalid source IDs", "Facility " + facility + " Source ID " + row[source_id] + ": must supply non-zero initial " +
+                    messagebox.showinfo("Invalid source IDs", "Facility " + facility + " Source ID " + row[source_id] + ": must supply non-zero initial " +
                                       "lateral and vertical dimensions for volume source in the Emissions Locations List.")
                     return None
 
             if row[lon] == row[x2] and row[lat] == row[y2]:
                     Logger.logMessage("Facility/Source: " + facility + "/" + row[source_id]  + " has identical starting and ending coordinates " +
                                       "in the Emissions Locations List.")
-                    messaegbox.showinfo("Invalid source coordinates", "Facility/Source: " + facility + "/" + row[source_id]  + " has identical starting and ending coordinates " +
+                    messagebox.showinfo("Invalid source coordinates", "Facility/Source: " + facility + "/" + row[source_id]  + " has identical starting and ending coordinates " +
                                       "in the Emissions Locations List.")
                     return None
 
