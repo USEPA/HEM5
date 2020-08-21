@@ -45,7 +45,7 @@ class UserReceptors(DependentInputFile):
         # ----------------------------------------------------------------------------------
         if len(df.loc[(df[fac_id] == '')]) > 0:
             Logger.logMessage("One or more facility IDs are missing in the User Receptors List.")
-            messagebox.showinfo("Missing facility IDs", "One or more facility IDs are missing in the Months-to-Seasons List.")
+            messagebox.showinfo("Missing facility IDs", "One or more facility IDs are missing in the User Receptors List.")
             
             return None
 
@@ -72,13 +72,13 @@ class UserReceptors(DependentInputFile):
             maxlat = 85 if loc_type == 'L' else 10000000
             minlat = -80 if loc_type == 'L' else 0
 
-            if row[lon] > maxlon or row[lon] < minlon:
+            if row[lon] > maxlon or row[lon] < minlon or math.isnan(row[lon]):
                 Logger.logMessage("Facility " + facility + ": lon value " + str(row[lon]) + " out of range " +
                                   "in the User Receptors List.")
                 messagebox.showinfo("Lon value out of range", "Facility " + facility + ": lon value " + str(row[lon]) + " out of range " +
                                   "in the User Receptors List.")
                 return None
-            if row[lat] > maxlat or row[lat] < minlat:
+            if row[lat] > maxlat or row[lat] < minlat or math.isnan(row[lat]):
                 Logger.logMessage("Facility " + facility + ": lat value " + str(row[lat]) + " out of range " +
                                   "in the User Receptors List.")
                 messagebox.showinfo("Lat value out of range", "Facility " + facility + ": lat value " + str(row[lat]) + " out of range " +
