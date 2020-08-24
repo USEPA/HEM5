@@ -46,7 +46,7 @@ class UserReceptors(DependentInputFile):
         # ----------------------------------------------------------------------------------
         if len(df.loc[(df[fac_id] == '')]) > 0:
             Logger.logMessage("One or more facility IDs are missing in the User Receptors List.")
-            messagebox.showinfo("Missing facility IDs", "One or more facility IDs are missing in the Months-to-Seasons List.")
+            messagebox.showinfo("Missing facility IDs", "One or more facility IDs are missing in the User Receptors List.")
             
             return None
 
