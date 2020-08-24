@@ -10,6 +10,7 @@ from com.sca.hem4.upload.DependentInputFile import DependentInputFile
 from tkinter import messagebox
 
 from com.sca.hem4.upload.EmissionsLocations import *
+import math
 
 numvert = 'numvert';
 area = 'area';
@@ -72,13 +73,13 @@ class Polyvertex(DependentInputFile):
             maxlat = 85 if type == 'L' else 10000000
             minlat = -80 if type == 'L' else 0
 
-            if row[lon] > maxlon or row[lon] < minlon:
+            if row[lon] > maxlon or row[lon] < minlon or math.isnan(row[lon]):
                 Logger.logMessage("Facility " + facility + ": lon value " + str(row[lon]) + " out of range " +
                                   "in the Polyvertex List.")
                 messagebox.showinfo("Lon value out of range", "Facility " + facility + ": lon value " + str(row[lon]) + " out of range " +
                                   "in the Polyvertex List.")
                 return None
-            if row[lat] > maxlat or row[lat] < minlat:
+            if row[lat] > maxlat or row[lat] < minlat or math.isnan(row[lat]):
                 Logger.logMessage("Facility " + facility + ": lat value " + str(row[lat]) + " out of range " +
                                   "in the Polyvertex List.")
                 messagebox.showinfo("Lat value out of range", "Facility " + facility + ": lat value " + str(row[lat]) + " out of range " +
@@ -120,18 +121,29 @@ class Polyvertex(DependentInputFile):
                                   "in the Polyvertex List.")
                 return None
 
-        # check for unassigned polyvertex
-        check_poly_assignment = set(df[fac_id])
+        # ... check for unassigned polyvertex sources ...
+                
+        # unique list of fac/sources in the polygon vertex file
+        polyfilesrcs = df[[fac_id, source_id]]
+        polyfilesrcs['facsrc'] = polyfilesrcs[fac_id] + ", " + polyfilesrcs[source_id]
+        check_poly_assignment = set(polyfilesrcs['facsrc'])
 
-        # get polyvertex facility list for check
-        find_p = self.emisloc_df[self.emisloc_df[source_type] == "I"]
-        poly_fac = set(find_p[fac_id])
+        # get polyvertex fac/sources list from emisloc for the check
+        find_p = self.emisloc_df[self.emisloc_df[source_type] == "I"][[fac_id, source_id]]
+        find_p['facsrc'] = find_p[fac_id] + ", " + find_p[source_id]
+        poly_fac = set(find_p['facsrc'])
 
-        if check_poly_assignment != poly_fac:
-            poly_unassigned = (check_poly_assignment - poly_fac).tolist()
+        # poly_fac should be a subset of check_poly_assignment
+        if poly_fac.issubset(check_poly_assignment) == False:
+            poly_unassigned = list(check_poly_assignment - poly_fac)
+            Logger.logMessage("Polyvertex" +
+                                " sources for " + ", ".join(poly_unassigned) +
+                                " have not been assigned. Please edit the" +
+                                " 'source_type' column in the Emissions Locations" +
+                                " file.")
 
             messagebox.showinfo("Unassigned polyvertex sources", "Polyvertex" +
-                                "sources for " + ", ".join(poly_unassigned) +
+                                " sources for " + ", ".join(poly_unassigned) +
                                 " have not been assigned. Please edit the" +
                                 " 'source_type' column in the Emissions Locations" +
                                 " file.")

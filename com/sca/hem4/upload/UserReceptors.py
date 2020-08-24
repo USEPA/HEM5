@@ -3,6 +3,7 @@ from com.sca.hem4.upload.DependentInputFile import DependentInputFile
 from tkinter import messagebox
 from com.sca.hem4.upload.EmissionsLocations import *
 from com.sca.hem4.upload.FacilityList import *
+import math
 
 rec_type = 'rec_type';
 rec_id = 'rec_id';
@@ -72,13 +73,13 @@ class UserReceptors(DependentInputFile):
             maxlat = 85 if loc_type == 'L' else 10000000
             minlat = -80 if loc_type == 'L' else 0
 
-            if row[lon] > maxlon or row[lon] < minlon:
+            if row[lon] > maxlon or row[lon] < minlon or math.isnan(row[lon]):
                 Logger.logMessage("Facility " + facility + ": lon value " + str(row[lon]) + " out of range " +
                                   "in the User Receptors List.")
                 messagebox.showinfo("Lon value out of range", "Facility " + facility + ": lon value " + str(row[lon]) + " out of range " +
                                   "in the User Receptors List.")
                 return None
-            if row[lat] > maxlat or row[lat] < minlat:
+            if row[lat] > maxlat or row[lat] < minlat or math.isnan(row[lat]):
                 Logger.logMessage("Facility " + facility + ": lat value " + str(row[lat]) + " out of range " +
                                   "in the User Receptors List.")
                 messagebox.showinfo("Lat value out of range", "Facility " + facility + ": lat value " + str(row[lat]) + " out of range " +
@@ -115,22 +116,21 @@ class UserReceptors(DependentInputFile):
                 return None
 
         # check for unassigned user receptors
-        check_receptor_assignment = df[fac_id]
-
+        
+        check_receptor_assignment = set(self.faclist_df[fac_id].loc[self.faclist_df[user_rcpt]=='Y'])
+        user_rec_facs = set(df[fac_id])
+        
         receptor_unassigned = []
-        for receptor in check_receptor_assignment:
-            row = self.faclist_df.loc[self.faclist_df[fac_id] == receptor]
-            check = row[user_rcpt] == 'Y'
-
-            if check is False:
-                receptor_unassigned.append(str(receptor))
+        for fac in check_receptor_assignment:
+            if fac not in user_rec_facs:
+                receptor_unassigned.append(str(fac))
 
         if len(receptor_unassigned) > 0:
             facilities = set(receptor_unassigned)
-            messagebox.showinfo("Unassigned User Receptors", "Receptors for " + ", ".join(facilities) +
-                        " have not been assigned. Please edit the 'user_rcpt' column in the facility options file.")
+            messagebox.showinfo("Unassigned User Receptors", "User receptors for " + ", ".join(facilities) +
+                        " have not been assigned. Please edit the 'user_rcpt' column in the facility options file" +
+                        " or add receptors for these facilities into the User Receptor file.")
             return None
         else:
-            check_receptor_assignment = [str(facility) for facility in check_receptor_assignment.unique()]
             Logger.logMessage("Uploaded user receptors for [" + ",".join(check_receptor_assignment) + "]\n")
             return df
