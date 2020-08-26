@@ -196,7 +196,8 @@ class Process_outputs():
             ring_risk[block] = ''
             ring_risk[population] = 0
         else:
-            block_columns = ring_columns + [rec_type, 'blk_type']
+            block_columns = ring_columns + [rec_type, 'blk_type', rec_id]
+            ring_risk[rec_id] = ''
             
         
         block_risk = blksummary_w_rectype[block_columns]
