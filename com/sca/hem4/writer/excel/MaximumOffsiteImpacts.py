@@ -25,7 +25,7 @@ class MaximumOffsiteImpacts(ExcelWriter):
     def getHeader(self):
         return ['Parameter', 'Value', 'Value_rnd', 'Value_sci', 'Population', 'Distance (in meters)',
                 'Angle (from north)', 'Elevation (in meters)', 'Hill Height (in meters)', 'Fips', 'Block',
-                'Utm_east', 'Utm_north', 'Latitude', 'Longitude', 'Rec_type', 'Notes', 'Warning']
+                'Utm_east', 'Utm_north', 'Latitude', 'Longitude', 'Rec_type', 'Notes']
 
     def generateOutputs(self):
         """
@@ -33,8 +33,9 @@ class MaximumOffsiteImpacts(ExcelWriter):
         receptors are not checked because they cannot be higher than any polar receptor.
         """
         
-        # dictionary of receptor types
-        rectype_dict = {"PG":"Polar grid", "D":"Census block"}
+        # dictionary of receptor types and notes
+        rectype_dict = {"PG":"Polar grid", "D":"Census block", "I":"Census block"}
+        notes_dict = {"PG":"Polar", "D":"Discrete", "I":"Interpolated"}
 
         ring_risk = self.ring_summary_chronic_df.copy()
         inner_risk = self.inner_recep_risk_df.copy()
@@ -82,7 +83,12 @@ class MaximumOffsiteImpacts(ExcelWriter):
                 moi_utmn = float(allrisk[utmn].loc[io_idx])
                 moi_lat = float(allrisk[lat].loc[io_idx])
                 moi_lon = float(allrisk[lon].loc[io_idx])
-                moi_rectype = rectype_dict[allrisk[blk_type].loc[io_idx]]
+                if "U" not in moi_block:
+                    moi_rectype = rectype_dict[allrisk[blk_type].loc[io_idx]]
+                    moi_notes = notes_dict[allrisk[blk_type].loc[io_idx]]
+                else:
+                    moi_rectype = "User receptor"
+                    moi_notes = "Discrete"
             else:
                 moi_value_rnd = 0
                 moi_value_sci = 0
@@ -98,9 +104,10 @@ class MaximumOffsiteImpacts(ExcelWriter):
                 moi_lat = 0
                 moi_lon = 0
                 moi_rectype = ""
+                moi_notes = ""
             moi_row = [moi_parm, moi_value, moi_value_rnd, moi_value_sci, moi_pop, moi_dist, moi_angle,
                        moi_elev, moi_hill, moi_fips, moi_block, moi_utme, moi_utmn,
-                       moi_lat, moi_lon, moi_rectype]
+                       moi_lat, moi_lon, moi_rectype, moi_notes]
             moilist.append(moi_row)
 
 

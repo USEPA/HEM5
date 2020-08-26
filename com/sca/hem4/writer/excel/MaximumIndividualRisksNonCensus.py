@@ -64,7 +64,10 @@ class MaximumIndividualRisksNonCensus(ExcelWriter, InputFile):
                 mr_recid = self.model.innerblks_df[(self.model.innerblks_df[lon] == mr_lon) & (self.model.innerblks_df[lat] == mr_lat)][rec_id].values[0]
                 mr_utme = self.model.innerblks_df[(self.model.innerblks_df[lon] == mr_lon) & (self.model.innerblks_df[lat] == mr_lat)][utme].values[0]
                 mr_utmn = self.model.innerblks_df[(self.model.innerblks_df[lon] == mr_lon) & (self.model.innerblks_df[lat] == mr_lat)][utmn].values[0]
-                mr_rectype = "Alternate receptor"
+                if 'U' in self.model.risk_by_latlon[rec_id].loc[io_idx]:
+                    mr_rectype = "User receptor"
+                else:
+                    mr_rectype = "Alternate receptor"
                 mr_notes = "Discrete"
             else:
                 mr_pop = self.model.outerblks_df[(self.model.outerblks_df[lon] == mr_lon) & (self.model.outerblks_df[lat] == mr_lat)][population].values[0]
@@ -87,7 +90,7 @@ class MaximumIndividualRisksNonCensus(ExcelWriter, InputFile):
             # TODO keep 2 significant figures for rounded value
             #mr_value_rnd = round(mr_value, -int(floor(log10(mr_value))) + 1) if mr_value > 0 else 0
             mr_value_rnd = round(mr_value, -int(floor(log10(abs(mr_value))))) if mr_value > 0 else 0
-            if self.model.risk_by_latlon[blk_type].loc[io_idx] == "PG":
+            if self.model.risk_by_latlon[blk_type].loc[iop_idx] == "PG":
                 mr_pop = 0
                 mr_dist = self.model.all_polar_receptors_df[(self.model.all_polar_receptors_df[lon] == mr_lon) & (self.model.all_polar_receptors_df[lat] == mr_lat)][distance].values[0]
                 mr_angle = self.model.all_polar_receptors_df[(self.model.all_polar_receptors_df[lon] == mr_lon) & (self.model.all_polar_receptors_df[lat] == mr_lat)][angle].values[0]
@@ -118,7 +121,10 @@ class MaximumIndividualRisksNonCensus(ExcelWriter, InputFile):
                 mr_recid = self.model.innerblks_df[(self.model.innerblks_df[lon] == mr_lon) & (self.model.innerblks_df[lat] == mr_lat)][rec_id].values[0]
                 mr_utme = self.model.innerblks_df[(self.model.innerblks_df[lon] == mr_lon) & (self.model.innerblks_df[lat] == mr_lat)][utme].values[0]
                 mr_utmn = self.model.innerblks_df[(self.model.innerblks_df[lon] == mr_lon) & (self.model.innerblks_df[lat] == mr_lat)][utmn].values[0]
-                mr_rectype = "Alternate receptor"
+                if 'U' in self.model.risk_by_latlon[rec_id].loc[iop_idx]:
+                    mr_rectype = "User receptor"
+                else:
+                    mr_rectype = "Alternate receptor"
                 mr_notes = "Discrete"
 
         return [mr_parameter, mr_value, mr_value_rnd, mr_value_sci, mr_pop, mr_dist, mr_angle, mr_elev,
@@ -270,7 +276,10 @@ class MaximumIndividualRisksNonCensus(ExcelWriter, InputFile):
                     mr_recid = self.model.innerblks_df[(self.model.innerblks_df[lon] == mr_lon) & (self.model.innerblks_df[lat] == mr_lat)][rec_id].values[0]
                     mr_utme = self.model.innerblks_df[(self.model.innerblks_df[lon] == mr_lon) & (self.model.innerblks_df[lat] == mr_lat)][utme].values[0]
                     mr_utmn = self.model.innerblks_df[(self.model.innerblks_df[lon] == mr_lon) & (self.model.innerblks_df[lat] == mr_lat)][utmn].values[0]
-                    mr_rectype = "Alternate receptor"
+                    if 'U' in self.model.risk_by_latlon[rec_id].loc[io_idx]:
+                        mr_rectype = "User receptor"
+                    else:
+                        mr_rectype = "Alternate receptor"
                     mr_notes = "Discrete"
                 else:
                     mr_pop = self.model.outerblks_df[(self.model.outerblks_df[lon] == mr_lon) & (self.model.outerblks_df[lat] == mr_lat)][population].values[0]
@@ -291,7 +300,7 @@ class MaximumIndividualRisksNonCensus(ExcelWriter, InputFile):
                 mr_value = self.model.risk_by_latlon[mir].loc[iop_idx]
                 mr_value_sci = format(mr_value, ".1e")
                 mr_value_rnd = round(mr_value, -int(floor(log10(abs(mr_value)))))
-                if self.model.risk_by_latlon[blk_type].loc[io_idx] == "PG":
+                if self.model.risk_by_latlon[blk_type].loc[iop_idx] == "PG":
                     mr_pop = 0
                     mr_dist = self.model.all_polar_receptors_df[(self.model.all_polar_receptors_df[lon] == mr_lon) & (self.model.all_polar_receptors_df[lat] == mr_lat)][distance].values[0]
                     mr_angle = self.model.all_polar_receptors_df[(self.model.all_polar_receptors_df[lon] == mr_lon) & (self.model.all_polar_receptors_df[lat] == mr_lat)][angle].values[0]
@@ -322,7 +331,10 @@ class MaximumIndividualRisksNonCensus(ExcelWriter, InputFile):
                     mr_recid = self.model.innerblks_df[(self.model.innerblks_df[lon] == mr_lon) & (self.model.innerblks_df[lat] == mr_lat)][rec_id].values[0]
                     mr_utme = self.model.innerblks_df[(self.model.innerblks_df[lon] == mr_lon) & (self.model.innerblks_df[lat] == mr_lat)][utme].values[0]
                     mr_utmn = self.model.innerblks_df[(self.model.innerblks_df[lon] == mr_lon) & (self.model.innerblks_df[lat] == mr_lat)][utmn].values[0]
-                    mr_rectype = "Alternate receptor"
+                    if 'U' in self.model.risk_by_latlon[rec_id].loc[iop_idx]:
+                        mr_rectype = "User receptor"
+                    else:
+                        mr_rectype = "Alternate receptor"
                     mr_notes = "Discrete"
         else:
             #max risk is 0, set all variables as empty

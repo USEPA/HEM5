@@ -304,10 +304,8 @@ class FacilityPrep():
                 # determine if the user receptors overlap any emission sources
                 user_recs[overlap] = user_recs.apply(lambda row: self.check_overlap(row[utme],
                                                                                     row[utmn], sourcelocs, op_overlap), axis=1)
-    
-    
-                # Add or remove columns to make user_recs compatible with innerblks
-                #            user_recs.drop('fac_id', inplace=True, axis=1)
+        
+                # Add columns to make user_recs compatible with innerblks
                 user_recs['urban_pop'] = 0
                 user_recs['population'] = 0
                 if self.model.altRec_optns.get('altrec', None):
