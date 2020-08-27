@@ -13,7 +13,9 @@ from com.sca.hem4.model.Model import *
 class EmisVar(DependentInputFile):
 
     def __init__(self, path, dependency):
-        self.emisloc_df = dependency
+        self.model = dependency
+        self.faclist_df = self.model.faclist.dataframe
+        self.emisloc_df = self.model.emisloc.dataframe
         self.path = path
         DependentInputFile.__init__(self, path, dependency)
 
@@ -46,6 +48,14 @@ class EmisVar(DependentInputFile):
                 emisvar_df[col]=pd.to_numeric(emisvar_df[col], errors="coerce")
 
             self.dataframe = emisvar_df
+
+        cleaned = self.clean(self.dataframe)
+        validated = self.validate(cleaned)
+        
+        if validated is None:
+            return pd.DataFrame()
+        else:
+            return validated
 
     def clean(self, df):
         cleaned = df
@@ -81,14 +91,37 @@ class EmisVar(DependentInputFile):
                 messagebox.showinfo("Variation invalid", "Facility " + facility + ": variation value invalid.")
                 return None
 
+        #-----------------------------------------------------------------------------------------------------
+        # Confirm that all facilities needing emission variation according to the Facility List
+        # are in the emission variation file.
+        
+        # facilities in emission variation file
+        var_facs = set(df[fac_id])
+        
+        # facilities needing emission variation
+        faclist_facs = set(self.faclist_df[self.faclist_df['emis_var']=='Y'][fac_id])
+        
+        if faclist_facs.issubset(var_facs) == False:
+            missing = faclist_facs - var_facs
+            Logger.logMessage("One or more facilities in the Facility List file that need " +
+                              "emission variation are not in the emission variation file. These facilities are" +
+                              ": ".join(missing) + " Please edit the emission variation file or Facility List file.")
+            messagebox.showinfo("Missing facilities in Emission Variation", "One or more facilities in the Facility List file that need " +
+                              "emission variation are not in the emission variation file. These facilities are" +
+                              ": ".join(missing) + " Please edit the emission variation file or Facility List file.")
+            return None
+
+
+        #-----------------------------------------------------------------------------------------------------
+        # Make sure all facility/source ids from emission variation file are also in
+        # the emission location file
+
         # facility/source ids from emission variation file
         var_ids = set(df[[fac_id, source_id]].apply(lambda x: ''.join(x), axis=1).tolist())
 
         # facility/source ids from emission location file
         model_ids = set(self.emisloc_df[[fac_id, source_id]].apply(lambda x: ''.join(x), axis=1).tolist())
 
-        # Make sure all facility/source ids from emission variation file are also in
-        # the emission location file
         if len(set(var_ids).difference(set(model_ids))) > 0:
             missing = set(var_ids).difference(set(model_ids))
 
@@ -100,12 +133,13 @@ class EmisVar(DependentInputFile):
                                 " file.")
             return None
 
-        vtype = df['variation'].str.tolist()
+
+        vtype = df['variation'].tolist()
 
         if 'SEASON' in vtype:
 
             # check that seasonal variaton only has 4 values
-            seasons = df[df['variation'].str.lower() == 'SEASON']
+            seasons = df[df['variation'].str.upper() == 'SEASON']
             print(seasons)
             s_wrong = []
             for row in seasons.iterrows():
@@ -122,7 +156,7 @@ class EmisVar(DependentInputFile):
 
         # check wind speed is only 6 values
         if 'WSPEED' in vtype:
-            wspeed = df[df['variation'].str == 'WSPEED']
+            wspeed = df[df['variation'].str.upper() == 'WSPEED']
             w_wrong = []
             for row in wspeed.iterrows():
                 if len(row[1].values[3:]) != 6:
@@ -138,7 +172,7 @@ class EmisVar(DependentInputFile):
 
         # make sure the monthly emissions variation has 12 values
         if 'MONTH' in vtype:
-            month = df[df['variation'].str == 'MONTH']
+            month = df[df['variation'].str.upper() == 'MONTH']
             m_wrong = []
             for row in month.iterrows():
                 if len(row[1].values[3:]) != 12:
@@ -153,7 +187,7 @@ class EmisVar(DependentInputFile):
                 return None
 
         if 'HROFDY' in vtype or 'SEASHR' in vtype or 'SHRDOW' in vtype or 'SHRDOW7' in vtype:
-            other = df[~df['variation'].str.isin(['MONTH', 'WSPEED', 'SEASON'])]
+            other = df[~df['variation'].isin(['MONTH', 'WSPEED', 'SEASON'])]
             variation = other[other.columns[3:]].values
 
             o_wrong = 0

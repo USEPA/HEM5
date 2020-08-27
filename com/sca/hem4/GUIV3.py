@@ -1251,10 +1251,11 @@ class Hem(Page):
 #                self.model.emisvar = None
 #        
 #        else:
-            
+        
+        
         fullpath = self.openFile(askopenfilename())
         if fullpath is not None:
-            success = self.uploader.uploadDependent("emissions variation", fullpath, self.model.emisloc.dataframe)
+            success = self.uploader.uploadDependent("emissions variation", fullpath, self.model)
             if not success:
                 messagebox.showinfo('Error', "Invalid Emissions Variation file. Check log for details.")
                 return

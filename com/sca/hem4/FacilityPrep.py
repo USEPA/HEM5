@@ -413,8 +413,12 @@ class FacilityPrep():
         polar_utmn = [normal_round(ceny + polardist * math.cos(math.radians(pa))) for polardist in polar_dist for pa in polar_angl]
         polar_utmz = [facutmzonenum] * (len(polar_dist) * len(polar_angl))
 
+
         # sector and ring lists
-        polar_sect = [int(((a*op_radial/360) % op_radial)+1) for a in polar_angl2]
+        polar_sect = []
+        for a in range(0, len(polar_angl2)):
+            sectnum = int((a % op_radial) + 1)
+            polar_sect.append(sectnum)         
         polar_ring = []
         remring = polar_dist2[0]
         ringcount = 1
@@ -425,7 +429,7 @@ class FacilityPrep():
                 remring = polar_dist2[i]
                 ringcount = ringcount + 1
                 polar_ring.append(ringcount)
-
+        
         # construct the polar dataframe from the lists
         dfitems = [("id",polar_id), ("distance",polar_dist2), (angle,polar_angl2), (utme,polar_utme),
                    (utmn,polar_utmn), ("utmz",polar_utmz), 
@@ -447,7 +451,7 @@ class FacilityPrep():
 
         # set rec_type of polar receptors
         polar_df[rec_type] = 'PG'
-
+        
         #%%----- Add sector and ring to inner and outer receptors ----------
 
         # assign sector and ring number (integers) to each inner receptor and compute fractional sector (s)
