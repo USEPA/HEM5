@@ -104,11 +104,11 @@ class EmisVar(DependentInputFile):
         if faclist_facs.issubset(var_facs) == False:
             missing = faclist_facs - var_facs
             Logger.logMessage("One or more facilities in the Facility List file that need " +
-                              "emission variation are not in the emission variation file. These facilities are" +
-                              ": ".join(missing) + " Please edit the emission variation file or Facility List file.")
+                              "emission variation are not in the emission variation file. These facilities are: " +
+                              ", ".join(missing) + ". Please edit the emission variation file or Facility List file.")
             messagebox.showinfo("Missing facilities in Emission Variation", "One or more facilities in the Facility List file that need " +
-                              "emission variation are not in the emission variation file. These facilities are" +
-                              ": ".join(missing) + " Please edit the emission variation file or Facility List file.")
+                              "emission variation are not in the emission variation file. These facilities are: " +
+                              ", ".join(missing) + ". Please edit the emission variation file or Facility List file.")
             return None
 
 

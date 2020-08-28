@@ -6,18 +6,18 @@ from com.sca.hem4.writer.csv.AllPolarReceptors import AllPolarReceptors
 from com.sca.hem4.writer.excel.ExcelWriter import ExcelWriter
 
 facilityID = "Fac1-NC"
-sourceID = "HV000001"
-pollutantName = "Indeno[1,2,3-c,d]pyrene"
-rundir = r"C:/Users/ccook/Documents/HEM4_git_repository/HEM4/output/GUIv3_DepDeplQA_DeplTest4"
+sourceID = "RW000001"
+pollutantName = "Acetaldehyde"
+rundir = r"C:/Users/ccook/Documents/HEM4_git_repository/HEM4/output/GUIv3_DepDeplComparision_Test8"
 hapemis_path = rundir + "/Inputs/hapemis.xlsx"
 output_dir = rundir + "/" + facilityID
-acute = 'N'
+acute = 'Y'
 
 # Runtype: 0 == no deposition, 1 == both, 2 == dry only, 3 == wet only...see FacilityRunner#set_runtype()
-runtype = 0
+runtype = 1
 
 # emistype: P == particle, V == gaseous
-emistype = 'P'
+emistype = 'V'
 # deptype: D == dry, W == wet
 deptype = 'W'
 

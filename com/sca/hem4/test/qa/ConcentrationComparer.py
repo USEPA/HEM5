@@ -5,18 +5,18 @@ from com.sca.hem4.writer.csv.AllOuterReceptors import *
 from com.sca.hem4.writer.csv.AllPolarReceptors import AllPolarReceptors
 from com.sca.hem4.writer.excel.ExcelWriter import ExcelWriter
 
-facilityID = "Fac2-IL"
-sourceID = "FU000001"
-pollutantName = "Benzo[b]fluoranthene"
-rundir = r"C:/Users/ccook/Documents/HEM4_git_repository/HEM4/output/GUIv3_DepDeplQA_DepTest5"
+facilityID = "Fac1-NC"
+sourceID = "RW000001"
+pollutantName = "Indene"
+rundir = r"C:/Users/ccook/Documents/HEM4_git_repository/HEM4/output/GUIv3_ConcentrationCompared_Test4"
 hapemis_path = rundir + "/Inputs/hapemis.xlsx"
 output_dir = rundir + "/" + facilityID
 acute = 'Y'
 # Runtype: 0 == no deposition, 1 == both, 2 == dry only, 3 == wet only...see FacilityRunner#set_runtype()
-runtype = 1
+runtype = 0
 
 # emistype: P, V, or C
-emistype = 'V'
+emistype = 'C'
 
 
 class ConcentrationComparer(ExcelWriter):
