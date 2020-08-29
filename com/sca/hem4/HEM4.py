@@ -395,7 +395,7 @@ class DepDplt(Page):
         
     def back_tab(self):
         
-        if 'buoyant' in self.nav.model.dependencies or 'poly' in self.nav.model.dependencies or 'bldg_dw' in self.nav.model.dependencies:
+        if 'buoyant' in self.nav.model.dependencies or 'poly' in self.nav.model.dependencies or 'bldg_dw' in self.nav.model.dependencies or 'emisvar' in self.nav.model.dependencies:
             self.optional.lift()
             
         else:

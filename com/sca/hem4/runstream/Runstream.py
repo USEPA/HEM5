@@ -242,7 +242,7 @@ class Runstream():
     # Checks that may be done outside of this program
     
     #checks for emission variation and extracts source ids from linked txt file
-        if self.emisvar_df is not None and type(self.emisvar_df) == str:
+        if self.emisvar_df.empty == False and type(self.emisvar_df) == str:
             so_col = []
             with open(self.emisvar_df) as fobj:
                 for line in fobj:
@@ -307,12 +307,12 @@ class Runstream():
                     elif phase['phase'] == 'V':
                         self.get_vapor(srid[index])
                           
-                    if (self.emisvar_df is not None and type(self.emisvar_df) != str
+                    if (self.emisvar_df.empty == False and type(self.emisvar_df) != str
                         and srid[index] in self.emisvar_df['source_id'].values ):
                         self.get_variation(srid[index])
                     
                     #if linked file
-                    elif (self.emisvar_df is not None and 
+                    elif (self.emisvar_df.empty == False and 
                           type(self.emisvar_df) == str and srid[index] in var_sources ):
                         
                         solink = ("SO HOUREMIS " + self.emisvar_df + " " + 
@@ -347,12 +347,12 @@ class Runstream():
                     elif phase['phase'] == 'V':
                         self.get_vapor(srid[index])
                         
-                    if (self.emisvar_df is not None and type(self.emisvar_df) != str
+                    if (self.emisvar_df.empty == False and type(self.emisvar_df) != str
                         and srid[index] in self.emisvar_df['source_id'].values ):
                         self.get_variation(srid[index])
                     
                      #if linked file
-                    elif (self.emisvar_df is not None and 
+                    elif (self.emisvar_df.empty == False and 
                           type(self.emisvar_df) == str and srid[index] in var_sources ):
                         
                         solink = ("SO HOUREMIS " + self.emisvar_df + " " + 
@@ -386,12 +386,12 @@ class Runstream():
                     elif phase['phase'] == 'V':
                         self.get_vapor(srid[index])
                         
-                    if (self.emisvar_df is not None and type(self.emisvar_df) != str
+                    if (self.emisvar_df.empty == False and type(self.emisvar_df) != str
                         and srid[index] in self.emisvar_df['source_id'].values ):
                         self.get_variation(srid[index])
                     
                      #if linked file
-                    elif (self.emisvar_df is not None and 
+                    elif (self.emisvar_df.empty == False and 
                           type(self.emisvar_df) == str and srid[index] in var_sources ):
                         
                         solink = ("SO HOUREMIS " + self.emisvar_df + " " + 
@@ -426,12 +426,12 @@ class Runstream():
                     elif phase['phase'] == 'V':
                         self.get_vapor(srid[index])
                         
-                    if (self.emisvar_df is not None and type(self.emisvar_df) != str
+                    if (self.emisvar_df.empty == False and type(self.emisvar_df) != str
                         and srid[index] in self.emisvar_df['source_id'].values ):
                         self.get_variation(srid[index])
                     
                      #if linked file
-                    elif (self.emisvar_df is not None and 
+                    elif (self.emisvar_df.empty == False and 
                           type(self.emisvar_df) == str and srid[index] in var_sources ):
                         
                         solink = ("SO HOUREMIS " + self.emisvar_df + " " + 
@@ -465,12 +465,12 @@ class Runstream():
                     elif phase['phase'] == 'V':
                         self.get_vapor(srid[index])
                     
-                    if ((self.emisvar_df is not None) and (type(self.emisvar_df) != str)
+                    if ((self.emisvar_df.empty == False) and (type(self.emisvar_df) != str)
                         and (srid[index] in self.emisvar_df['source_id'].values)):
                         self.get_variation(srid[index])
                     
                     #if linked file
-                    elif ((self.emisvar_df is not None) and 
+                    elif ((self.emisvar_df.empty == False) and 
                           (type(self.emisvar_df) == str) and (srid[index] in var_sources)):
                         
                         solink = ("SO HOUREMIS " + self.emisvar_df + " " + 
@@ -537,12 +537,12 @@ class Runstream():
                     elif phase['phase'] == 'V':
                         self.get_vapor(srid[index])
                     
-                    if ((self.emisvar_df is not None) and (type(self.emisvar_df) != str)
+                    if ((self.emisvar_df.empty == False) and (type(self.emisvar_df) != str)
                         and (srid[index] in self.emisvar_df['source_id'].values)):
                         self.get_variation(srid[index])
     
                      #if linked file
-                    elif ((self.emisvar_df is not None) and 
+                    elif ((self.emisvar_df.empty == False) and 
                           (type(self.emisvar_df) == str) and (srid[index] in var_sources)):
                         
                         solink = ("SO HOUREMIS " + self.emisvar_df + " " + 
@@ -581,12 +581,12 @@ class Runstream():
                     elif phase['phase'] == 'V':
                         self.get_vapor(srid[index])
                     
-                    if ((self.emisvar_df is not None) and (type(self.emisvar_df) != str)
+                    if ((self.emisvar_df.empty == False) and (type(self.emisvar_df) != str)
                         and (srid[index] in self.emisvar_df['source_id'].values)):
                         self.get_variation(srid[index])
                         
                     #if linked file
-                    elif ((self.emisvar_df is not None) and 
+                    elif ((self.emisvar_df.empty == False) and 
                           (type(self.emisvar_df) == str) and (srid[index] in var_sources)):
                         
                         solink = ("SO HOUREMIS " + self.emisvar_df + " " + 
@@ -633,12 +633,12 @@ class Runstream():
                     elif phase['phase'] == 'V':
                         self.get_vapor(srid[index])
                         
-                    if ((self.emisvar_df is not None) and (type(self.emisvar_df) != str)
+                    if ((self.emisvar_df.empty == False) and (type(self.emisvar_df) != str)
                         and (srid[index] in self.emisvar_df['source_id'].values)):
                         self.get_variation(srid[index])
                    
                     #if linked file
-                    elif ((self.emisvar_df is not None) and 
+                    elif ((self.emisvar_df.empty == False) and 
                           (type(self.emisvar_df) == str) and (srid[index] in var_sources)):
                         
                         solink = ("SO HOUREMIS " + self.emisvar_df + " " + 
