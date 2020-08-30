@@ -397,6 +397,7 @@ class KMLWriter():
 
             #------------------------ User receptor TOSHI -----------------------------
             if not urec_df.empty:
+                                
                 urt_folder = kml.Folder(ns=self.ns, name="User receptor TOSHI")
                 urt_folder.isopen = 0
                 for block, group in urec_df.groupby(["block"]):
@@ -426,10 +427,10 @@ class KMLWriter():
                         urhap_sum = {}
                         for index, row in group.iterrows():
                             if row["pollutant"] not in urhap_sum:
-                                urhap_sum[row["pollutant"]] = row["risk"]
+                                urhap_sum[row["pollutant"]] = row[maxi]
                             else:
                                 pol = urhap_sum[row["pollutant"]]
-                                risksum = row["risk"] + pol
+                                risksum = row[maxi] + pol
                                 urhap_sum[row["pollutant"]] = risksum
     
                         #sort the dictionary by descending value
@@ -994,10 +995,10 @@ class KMLWriter():
                         urhap_sum = {}
                         for index, row in group.iterrows():
                             if row["pollutant"] not in urhap_sum:
-                                urhap_sum[row["pollutant"]] = row["risk"]
+                                urhap_sum[row["pollutant"]] = row[maxi]
                             else:
                                 pol = urhap_sum[row["pollutant"]]
-                                risksum = row["risk"] + pol
+                                risksum = row[maxi] + pol
                                 urhap_sum[row["pollutant"]] = risksum
     
                         #sort the dictionary by descending value
