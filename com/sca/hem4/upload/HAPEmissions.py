@@ -172,7 +172,7 @@ class HAPEmissions(InputFile):
                                                  "Organ File: " +
                                                  ', '.join(missing_TOpollutants) +
                                                  ".\n Would you like to amend "+
-                                                 "your HAP EMissions file?"+
+                                                 "your HAP Emissions file?"+
                                                  "(they will be removed "+
                                                  "otherwise). ")
 
@@ -184,7 +184,7 @@ class HAPEmissions(InputFile):
                 missing = missing_TOpollutants
                 remove = set(missing)
                 Logger.logMessage("Removing these pollutants, which were not found: " +
-                                  "[{0}]".format(", ".join(str(i) for i in missing_pollutants)))
+                                  "[{0}]".format(", ".join(str(i) for i in missing_TOpollutants)))
 
                 # remove them from data frame
                 # to separate log file the non-modeled HAP Emissions
