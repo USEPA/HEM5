@@ -21,7 +21,7 @@ class FacilityRunner():
         self.phase = None
         
         self.phaseNames = {'P': 'Particle', 'V': 'Vapor'}
-        
+                
     
     def setup(self):
             
@@ -163,7 +163,7 @@ class FacilityRunner():
                 else:
                     plot_df['emis_type'] = phases['phase']
 
-
+                
                 # If acute run, set the emis_type column in aplot_df
                 if self.acute_yn == 'Y':
  

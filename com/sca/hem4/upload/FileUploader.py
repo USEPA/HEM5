@@ -41,7 +41,7 @@ class FileUploader():
             uploaded = GasParams()
             self.model.gasparams = uploaded
 
-        return False if uploaded.dataframe is None else True
+        return False if uploaded.dataframe.empty is True else True
 
     def upload(self, filetype, path):
         uploaded = None
@@ -49,7 +49,7 @@ class FileUploader():
             uploaded = FacilityList(path, self.model.metlib)
             self.model.faclist = uploaded
         elif filetype == "hapemis":
-            uploaded = HAPEmissions(path, self.model.haplib, set(self.model.fac_ids))
+            uploaded = HAPEmissions(path, self.model.haplib, self.model.organs, set(self.model.fac_ids))
             self.model.hapemis = uploaded
         elif filetype == "emisloc":
             uploaded = EmissionsLocations(path, self.model.hapemis, self.model.faclist, set(self.model.fac_ids))
@@ -58,7 +58,7 @@ class FileUploader():
             uploaded = AltReceptors(path)
             self.model.altreceptr = uploaded
 
-        return False if uploaded.dataframe is None else True
+        return False if uploaded.dataframe.empty is True else True
 
     def uploadDependent(self, filetype, path, dependency, facilities=None):
         uploaded = None
@@ -88,5 +88,5 @@ class FileUploader():
             uploaded = EmisVar(path, dependency)
             self.model.emisvar = uploaded
 
-        return False if uploaded.dataframe is None else True
+        return False if uploaded.dataframe.empty is True else True
 

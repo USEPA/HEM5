@@ -12,8 +12,9 @@ gas = 'gas';
 
 class HAPEmissions(InputFile):
 
-    def __init__(self, path, haplib, fac_ids):
+    def __init__(self, path, haplib, targetorgan, fac_ids):
         self.haplib = haplib
+        self.targetorgan = targetorgan
         self.fac_ids = fac_ids
         InputFile.__init__(self, path)
 
@@ -23,6 +24,9 @@ class HAPEmissions(InputFile):
         cleaned.replace(to_replace={fac_id:{"nan":""}, source_id:{"nan":""}, pollutant:{"nan":""}}, inplace=True)
         cleaned = cleaned.reset_index(drop = True)
 
+        # Upper case source id to match with Aermod
+        cleaned[source_id] = cleaned[source_id].str.upper()
+        
         # lower case the pollutant names for better merging
         cleaned[pollutant] = cleaned[pollutant].str.lower()
 
@@ -110,7 +114,7 @@ class HAPEmissions(InputFile):
                                                  "Response Library: " +
                                                  ', '.join(missing_pollutants) +
                                                  ".\n Would you like to amend "+
-                                                 "your HAP EMissions file?"+
+                                                 "your HAP Emissions file?"+
                                                  "(they will be removed "+
                                                  "otherwise). ")
 
@@ -127,7 +131,7 @@ class HAPEmissions(InputFile):
                 # remove them from data frame
                 # to separate log file the non-modeled HAP Emissions
                 fileDir = os.path.dirname(os.path.realpath('__file__'))
-                filename = os.path.join(fileDir, "output\HAP_ignored.log")
+                filename = os.path.join(fileDir, "output\DR_HAP_ignored.log")
                 logfile = open(filename, 'w')
 
                 logfile.write(str(datetime.now()) + ":\n")
@@ -146,6 +150,65 @@ class HAPEmissions(InputFile):
                     logfile.write("Removed: " + str(ignored))
 
                 logfile.close()
+
+
+        # verify pollutants are present in target organ file
+        TO_list = list(self.targetorgan.dataframe[pollutant])
+        lowerTO = [x.lower() for x in TO_list]
+
+        missing_TOpollutants = []
+
+        for hap in user_haps:
+            if hap.lower() not in lowerTO:
+                missing_TOpollutants.append(hap)
+
+        self.log = []
+        # if there are any missing pollutants...
+        if len(missing_TOpollutants) > 0:
+            fix_pollutants = messagebox.askyesno("Missing Pollutants in Target "+
+                                                 "Organ File", "The "+
+                                                 "following pollutants were "+
+                                                 "not found in HEM4's Target "+
+                                                 "Organ File: " +
+                                                 ', '.join(missing_TOpollutants) +
+                                                 ".\n Would you like to amend "+
+                                                 "your HAP EMissions file?"+
+                                                 "(they will be removed "+
+                                                 "otherwise). ")
+
+            if fix_pollutants:
+                Logger.logMessage("Aborting upload of HAP emissions pending resolution of missing pollutants.")
+                messagebox.showinfo("Aborting upload", "Aborting upload of HAP emissions pending resolution of missing pollutants.")
+                return None
+            else:
+                missing = missing_TOpollutants
+                remove = set(missing)
+                Logger.logMessage("Removing these pollutants, which were not found: " +
+                                  "[{0}]".format(", ".join(str(i) for i in missing_pollutants)))
+
+                # remove them from data frame
+                # to separate log file the non-modeled HAP Emissions
+                fileDir = os.path.dirname(os.path.realpath('__file__'))
+                filename = os.path.join(fileDir, "output\TO_HAP_ignored.log")
+                logfile = open(filename, 'w')
+
+                logfile.write(str(datetime.now()) + ":\n")
+
+                for p in remove:
+
+                    df = df[df[pollutant] != str(p)]
+
+                    # record upload in log
+                    # add another essage to say the following pollutants were assigned a generic value...
+                    self.log.append("Removed " + p + " from hap emissions file\n")
+
+                    # get row so we can write facility and other info
+                    ignored = df[df[pollutant] == p]
+
+                    logfile.write("Removed: " + str(ignored))
+
+                logfile.close()
+
 
         Logger.logMessage("Uploaded HAP emissions file for " + str(len(df)) + " source-HAP combinations.\n")
         return df

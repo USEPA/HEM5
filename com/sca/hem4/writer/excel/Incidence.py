@@ -46,7 +46,7 @@ class Incidence(ExcelWriter, InputFile):
     def generateOutputs(self):
 
         allinner_df = self.model.all_inner_receptors_df.copy()
-
+        
         if allinner_df.empty == False:
             # compute incidence for each Inner rececptor row and then sum incidence by source_id and pollutant
             allinner_df[inc] = allinner_df.apply(lambda row: self.calculateRisk(row[pollutant],

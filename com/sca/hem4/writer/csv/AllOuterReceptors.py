@@ -626,14 +626,34 @@ class AllOuterReceptors(CsvWriter, InputFile):
             # Get utme, utmn, and hill columns
             outer_concs1 = pd.merge(outer_concs, self.model.outerblks_df[[lat, lon, 'utme', 'utmn', 'hill']],
                                     how='left', on=[lat, lon])
+
+            # Confirm the merge did not grow or shrink the number of rows
+            if len(outer_concs.index) != len(outer_concs1.index):
+                emessage = "Error! Incorrect merging of outer blocks with outer_concs in AllOuterReceptors."
+                Logger.logMessage(emessage)
+                raise Exception(emessage)
             
             # Merge ure and inverted rfc
             outer_concs2 = pd.merge(outer_concs1, self.haplib_df[['pollutant', 'ure', 'invrfc']],
                                     how='left', on='pollutant')
             
+            # Confirm the merge did not grow or shrink the number of rows
+            if len(outer_concs.index) != len(outer_concs2.index):
+                emessage = "Error! Incorrect merging of haplib with outer_concs1 in AllOuterReceptors."
+                Logger.logMessage(emessage)
+                raise Exception(emessage)
+                
             # Merge target organ list
             outer_concs3 = pd.merge(outer_concs2, self.organs_df[['pollutant', 'organ_list']],
                                     how='left', on='pollutant')
+
+            # Confirm the merge did not grow or shrink the number of rows
+            if len(outer_concs.index) != len(outer_concs3.index):
+                emessage = "Error! Incorrect merging of target organs with outer_concs2 in AllOuterReceptors."
+                Logger.logMessage(emessage)
+                raise Exception(emessage)
+
+            # Sort by lat/lon
             outer_concs3.sort_values(by=[lat, lon], inplace=True)
             
             chk4null = outer_concs3[outer_concs3['organ_list'].isnull()]
@@ -960,7 +980,7 @@ class AllOuterReceptors(CsvWriter, InputFile):
             unique_groups.sort(key=operator.itemgetter(0,1,2))
             ngroups = len(unique_groups)
             grouplen = int(nouter / ngroups)
-
+            
             a_inc = a_mirbysrc * outer_concs3[population].values /70
             sumInc = []
             for x in range(ngroups):
