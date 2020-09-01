@@ -40,6 +40,7 @@ class Polyvertex(DependentInputFile):
 
         # upper case of selected fields
         cleaned[location_type] = cleaned[location_type].str.upper()
+        cleaned[source_id] = cleaned[source_id].str.upper()
 
         return cleaned
 

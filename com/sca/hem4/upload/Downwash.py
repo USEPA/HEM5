@@ -57,6 +57,7 @@ class Downwash(DependentInputFile):
         # upper case of selected fields
         cleaned[section] = cleaned[section].str.upper()
         cleaned[keyword] = cleaned[keyword].str.upper()
+        cleaned[source_id] = cleaned[source_id].str.upper()
 
         return cleaned
 

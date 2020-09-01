@@ -91,7 +91,7 @@ class AllPolarReceptors(CsvWriter, InputFile):
         else:
             polarplot_df = polarcplot_df.copy()
             polarplot_df[aresult] = 0.0
-
+        
         # array of unique source_id's
         srcids = polarplot_df[source_id].unique().tolist()
 

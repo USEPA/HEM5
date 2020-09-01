@@ -64,6 +64,7 @@ class EmisVar(DependentInputFile):
 
         # upper case of selected fields
         cleaned['variation'] = cleaned['variation'].str.upper()
+        cleaned[source_id] = cleaned[source_id].str.upper()
 
         return cleaned
 

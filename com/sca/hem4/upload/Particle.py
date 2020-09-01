@@ -47,6 +47,9 @@ class Particle(DependentInputFile):
         cleaned[part_dens] = cleaned[part_dens].apply(lambda x: round(Decimal(x), 3))
         cleaned[mass_frac] = cleaned[mass_frac] / 100
 
+        # Upper case source id
+        cleaned[source_id] = cleaned[source_id].str.upper()
+
         return cleaned
 
     def validate(self, df):

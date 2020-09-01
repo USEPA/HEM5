@@ -615,6 +615,26 @@ class Hem(Page):
         self.uploader = FileUploader(self.model)
         
          # Upload the Dose response, Target Organ Endponts, and MetLib libraries
+        
+        if os.path.exists("resources/Dose_Response_Library.xlsx") == False:
+            messagebox.showinfo('Error', "The Dose Response file, Dose_Response_Library.xlsx, is not in "
+                                + "the resources folder. HEM4 will exit so that you can correct this.")
+            root.destroy()
+            sys.exit()
+
+        if os.path.exists("resources/Target_Organ_Endpoints.xlsx") == False:
+            messagebox.showinfo('Error', "The Target Organ Enpoint file, Target_Organ_Endpoints.xlsx, is not in "
+                                + "the resources folder. HEM4 will exit so that you can correct this.")
+            root.destroy()
+            sys.exit()
+
+        if os.path.exists("resources/metlib_aermod.xlsx") == False:
+            messagebox.showinfo('Error', "The Meteorological Library file, metlib_aermod.xlsx, is not in "
+                                + "the resources folder. HEM4 will exit so that you can correct this.")
+            root.destroy()
+            sys.exit()
+
+            
         success = self.uploader.uploadLibrary("haplib")
         if not success:
             messagebox.showinfo('Error', "Invalid Dose Response file. Check log for details.")
