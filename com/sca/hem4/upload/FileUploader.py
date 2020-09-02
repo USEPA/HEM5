@@ -58,7 +58,7 @@ class FileUploader():
             uploaded = AltReceptors(path)
             self.model.altreceptr = uploaded
 
-        return False if uploaded.dataframe.empty is True else True
+        return False if uploaded is None else True
 
     def uploadDependent(self, filetype, path, dependency, facilities=None):
         uploaded = None
@@ -88,5 +88,5 @@ class FileUploader():
             uploaded = EmisVar(path, dependency)
             self.model.emisvar = uploaded
 
-        return False if uploaded.dataframe.empty is True else True
+        return False if uploaded is None else True
 
