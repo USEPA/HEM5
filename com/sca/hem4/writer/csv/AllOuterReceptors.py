@@ -632,7 +632,7 @@ class AllOuterReceptors(CsvWriter, InputFile):
                 emessage = "Error! Incorrect merging of outer blocks with outer_concs in AllOuterReceptors."
                 Logger.logMessage(emessage)
                 raise Exception(emessage)
-            
+                        
             # Merge ure and inverted rfc
             outer_concs2 = pd.merge(outer_concs1, self.haplib_df[['pollutant', 'ure', 'invrfc']],
                                     how='left', on='pollutant')
@@ -653,14 +653,15 @@ class AllOuterReceptors(CsvWriter, InputFile):
                 Logger.logMessage(emessage)
                 raise Exception(emessage)
 
-            # Sort by lat/lon
-            outer_concs3.sort_values(by=[lat, lon], inplace=True)
             
             chk4null = outer_concs3[outer_concs3['organ_list'].isnull()]
             if not chk4null.empty:
                 # Replace NaN with list of 0's
                 outer_concs3['organ_list'] = outer_concs3['organ_list'].apply(
                         lambda x: x if isinstance(x, list) else [0,0,0,0,0,0,0,0,0,0,0,0,0,0])
+
+            # Sort by lat/lon
+            outer_concs3.sort_values(by=[lat, lon], inplace=True)
 
             
             # List of all lat/lons from outer_concs3. Not unique because of pollutant/source/emis_type.
