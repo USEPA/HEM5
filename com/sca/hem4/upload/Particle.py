@@ -87,13 +87,13 @@ class Particle(DependentInputFile):
             if row[mass_frac] < 0 or row[mass_frac] > 100:
                 Logger.logMessage("Facility " + facility + ": mass fraction value " + str(row[mass_frac]) +
                                   " out of range.")
-                messagebox,showinfo("Value out of range", "Facility " + facility + ": mass fraction value " + str(row[mass_frac]) +
+                messagebox.showinfo("Value out of range", "Facility " + facility + ": mass fraction value " + str(row[mass_frac]) +
                                   " out of range.")
                 return None
             if row[part_dens] < 0:
                 Logger.logMessage("Facility " + facility + ": particle density value " + str(row[part_dens]) +
                                   " out of range.")
-                messagebox.showinfo("Value out of range", "Facility " + facility + ": mass fraction value " + str(row[mass_frac]) +
+                messagebox.showinfo("Value out of range", "Facility " + facility + ": particle density value " + str(row[part_dens]) +
                                   " out of range.")
                 return None
 

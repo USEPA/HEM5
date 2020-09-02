@@ -62,7 +62,7 @@ class LandUse(DependentInputFile):
         if faclistfids.intersection(landfids) != faclistfids:
             Logger.logMessage("Based on your Facility List Options file, the Land Use List is missing " +
                               "one or more facilities. Please correct one or both files and upload again.")
-            messagebox,showinfo("Land use list missing", "Based on your Facility List Options file, the Land Use List is missing " +
+            messagebox.showinfo("Land use list missing", "Based on your Facility List Options file, the Land Use List is missing " +
                               "one or more facilities. Please correct one or both files and upload again.")
             return None
 
