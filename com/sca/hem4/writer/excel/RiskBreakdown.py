@@ -323,7 +323,7 @@ class RiskBreakdown(ExcelWriter, InputFile):
     def getRiskParms(self, pollutant_name):
         URE = 0.0
         RFC = 0.0
-
+            
         # In order to get a case-insensitive exact match (i.e. matches exactly except for casing)
         # we are using a regex that is specified to be the entire value. Since pollutant names can
         # contain parentheses, escape them before constructing the pattern.
@@ -363,7 +363,7 @@ class RiskBreakdown(ExcelWriter, InputFile):
             # Note: sometimes there is a pollutant with no effect on any organ (RFC == 0). In this case it will
             # not appear in the organs library, and therefore 'listed' will be empty. We will just assign a
             # dummy list in this case...
-            organs = listed[0] if len(listed) > 0 else list(range(16))
+            organs = listed[0] if len(listed) > 0 else [0]*16
             self.organCache[pollutant_name] = organs
 
         return URE, RFC, organs

@@ -113,22 +113,22 @@ class Downwash(DependentInputFile):
         find_d = self.faclist_df[self.faclist_df[bldg_dw] == "Y"]
         d_fac = set(find_d[fac_id])
 
-        if check_downwash_assignment != d_fac:
-            downwash_unassigned = (check_downwash_assignment - d_fac).tolist()
+        if d_fac.issubset(check_downwash_assignment) == False:
 
-            Logger.logMessage("Unassigned building downwash", "Building" +
-                                "downwash parameters for " +
-                                ", ".join(downwash_unassigned) + " have not" +
+            downwash_unassigned = d_fac - check_downwash_assignment
+
+            Logger.logMessage("Building downwash parameters for facilities, " +
+                                ", ".join(downwash_unassigned) + ", have not" +
                                 " been assigned. Please edit the" +
                                 " 'bldgdw' column in the Facilities List Option" +
-                                " file.")
+                                " file or add these facilities to the downwash file.")
             
-            messagebox.showinfo("Unassigned parameter", "Unassigned building downwash", "Building" +
-                                "downwash parameters for " +
-                                ", ".join(downwash_unassigned) + " have not" +
+            messagebox.showinfo("Unassigned building downwash", "Building" +
+                                "downwash parameters for facilities, " +
+                                ", ".join(downwash_unassigned) + ", have not" +
                                 " been assigned. Please edit the" +
                                 " 'bldgdw' column in the Facilities List Option" +
-                                " file.")
+                                " file or add these facilities to the downwash file.")
             return None
 
 
