@@ -32,7 +32,7 @@ class FileUploader():
             uploaded = DoseResponse()
             self.model.haplib = uploaded
         elif filetype == "organs":
-            uploaded = TargetOrganEndpoints()
+            uploaded = TargetOrganEndpoints(self.model.haplib)
             self.model.organs = uploaded
         elif filetype == "metlib":
             uploaded = MetLib()
