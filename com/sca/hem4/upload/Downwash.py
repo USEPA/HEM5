@@ -123,7 +123,7 @@ class Downwash(DependentInputFile):
                                 " 'bldgdw' column in the Facilities List Option" +
                                 " file or add these facilities to the downwash file.")
             
-            messagebox.showinfo("Unassigned building downwash", "Building" +
+            messagebox.showinfo("Unassigned building downwash", "Building " +
                                 "downwash parameters for facilities, " +
                                 ", ".join(downwash_unassigned) + ", have not" +
                                 " been assigned. Please edit the" +
