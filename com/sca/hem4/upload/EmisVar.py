@@ -52,10 +52,11 @@ class EmisVar(DependentInputFile):
         cleaned = self.clean(self.dataframe)
         validated = self.validate(cleaned)
         
+        
         if validated is None:
-            return pd.DataFrame()
-        else:
-            return validated
+                
+            self.dataframe = pd.DataFrame()
+
 
     def clean(self, df):
         cleaned = df
@@ -81,7 +82,9 @@ class EmisVar(DependentInputFile):
             Logger.logMessage("One or more source IDs are missing in the Emissions Variations List.")
             messagebox.showinfo("Missing source IDs", "One or more source IDs are missing in the Emissions Variations List.")
             return None
-
+        
+        
+        val_list = []
         for index, row in df.iterrows():
             facility = row[fac_id]
 
@@ -90,12 +93,13 @@ class EmisVar(DependentInputFile):
             if row['variation'] not in valid:
                 Logger.logMessage("Facility " + facility + ": variation value invalid.")
                 messagebox.showinfo("Variation invalid", "Facility " + facility + ": variation value invalid.")
+                
                 return None
-
         #-----------------------------------------------------------------------------------------------------
         # Confirm that all facilities needing emission variation according to the Facility List
         # are in the emission variation file.
         
+        print("still going?")
         # facilities in emission variation file
         var_facs = set(df[fac_id])
         

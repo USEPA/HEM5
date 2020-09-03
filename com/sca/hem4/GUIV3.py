@@ -208,13 +208,8 @@ class MainView(tk.Frame):
         #instantiate start page
         self.nav = Start(self)
         self.nav.place(in_=self.container, relx=0.3, relwidth=0.7, relheight=1)
-
-
-        #instantiate log tab
-        self.log = Log(self)
-        self.log.place(in_=self.container, relx=0.3, relwidth=0.7, relheight=1)
-        self.log.lower()
-
+        
+        
         #instantiate hem4 start page
         self.hem = Hem(self)
         self.hem.place(in_=self.container, relx=0.3, relwidth=0.7, relheight=1)
@@ -229,6 +224,13 @@ class MainView(tk.Frame):
         self.analyze = Analyze(self)
         self.analyze.place(in_=self.container, relx=0.3, relwidth=0.7, relheight=1)
         self.analyze.lower()
+        
+        
+        
+        #instantiate log tab
+        self.log = Log(self)
+        self.log.place(in_=self.container, relx=0.3, relwidth=0.7, relheight=1)
+        self.log.lower()
         
         
         self.options = Options(self)
@@ -608,41 +610,11 @@ class Hem(Page):
 
         # Create the model
         self.model = Model()
-
-        # Create threading helpers
-        self.messageQueue = queue.Queue()
-        self.callbackQueue = queue.Queue()
-        self.processor = None
-        self.lastException = None
-
-        Logger.messageQueue = self.messageQueue
-
-        self.after(25, self.after_callback)
-        self.after(500, self.check_processing)
-
+        
          # Create a file uploader
         self.uploader = FileUploader(self.model)
         
          # Upload the Dose response, Target Organ Endponts, and MetLib libraries
-        
-        if os.path.exists("resources/Dose_Response_Library.xlsx") == False:
-            messagebox.showinfo('Error', "The Dose Response file, Dose_Response_Library.xlsx, is not in "
-                                + "the resources folder. HEM4 will exit so that you can correct this.")
-            root.destroy()
-            sys.exit()
-
-        if os.path.exists("resources/Target_Organ_Endpoints.xlsx") == False:
-            messagebox.showinfo('Error', "The Target Organ Enpoint file, Target_Organ_Endpoints.xlsx, is not in "
-                                + "the resources folder. HEM4 will exit so that you can correct this.")
-            root.destroy()
-            sys.exit()
-
-        if os.path.exists("resources/metlib_aermod.xlsx") == False:
-            messagebox.showinfo('Error', "The Meteorological Library file, metlib_aermod.xlsx, is not in "
-                                + "the resources folder. HEM4 will exit so that you can correct this.")
-            root.destroy()
-            sys.exit()
-
         success = self.uploader.uploadLibrary("haplib")
         if not success:
             messagebox.showinfo('Error', "Invalid Dose Response file. Check log for details.")
@@ -654,7 +626,20 @@ class Hem(Page):
         success = self.uploader.uploadLibrary("metlib")
         if not success:
             messagebox.showinfo('Error', "Invalid Met Libary file. Check log for details.")
+        
+        # Create threading helpers
+        self.messageQueue = queue.Queue()
+        self.callbackQueue = queue.Queue() 
+        self.processor = None
+        self.lastException = None
+        
+        self.after(25, self.after_callback)
+        self.after(500, self.check_processing)
 
+        Logger.messageQueue = self.messageQueue
+        
+ 
+        
         # Create running helpers
         self.running = False
         self.aborted = False
@@ -872,20 +857,6 @@ class Hem(Page):
 #        self.s7.bind("<Enter>", lambda x: self.color_config(self.emis_file, self.emisLabel, self.s7, self.highlightcolor, x))
 #        self.s7.bind("<Leave>", lambda x: self.remove_config(self.emis_file, self.emisLabel, self.s7, self.highlightcolor, x))
 ##        
-        
-        
-         
-#        # Removed temporal output option. Hard code self.check_tempvar to 0.
-#        self.check_tempvar = tk.IntVar()
-#        self.check_tempvar.set(0)
-#        
-#        #add temporal output variations
-#        self.check_tempvar = tk.IntVar()
-#        self.tempvar_sel = tk.Checkbutton(self.s8, text="Show temporal variations in the outputs", 
-#                                          variable = self.check_tempvar, font=TEXT_FONT,
-#                                          bg="lightcyan3", command = self.add_temporal)
-#        self.tempvar_sel.grid(row=1, column=0, sticky='W', padx = 85)
-
     
         #next button
         self.next = tk.Button(self.meta_two, text="Next", bg='lightgrey', relief='solid', borderwidth=2,
@@ -905,7 +876,9 @@ class Hem(Page):
             
         
             if ('buoyant' in self.model.dependencies or 'poly' in self.model.dependencies or 
-                       'bldg_dw' in self.model.dependencies or 'user_rcpt' in self.model.dependencies):
+                       'bldg_dw' in self.model.dependencies or 'user_rcpt' in self.model.dependencies 
+                       or 'emis_var' in self.model.dependencies):
+                
                 #add back button
                 self.back = tk.Button(self.meta_two, text="Back", bg='lightgrey', relief='solid', borderwidth=2,
                                     command=self.back_tab, font=TEXT_FONT)
@@ -954,7 +927,7 @@ class Hem(Page):
             
         if self.current_tab == self.depdeplt:
             
-             if 'buoyant' in self.model.dependencies or 'poly' in self.model.dependencies or 'bldg_dw' in self.model.dependencies:
+             if 'buoyant' in self.model.dependencies or 'poly' in self.model.dependencies or 'bldg_dw' or 'emis_var' in self.model.dependencies:
                  self.current_tab = self.optional
                  self.optional.lift()
                  
@@ -999,7 +972,7 @@ class Hem(Page):
                     
                 else:
                     if 'user_rcpt' in self.model.dependencies:
-                        for child in self.s8.winfo_children():
+                        for child in self.optional.s8.winfo_children():
                             child.destroy()
                         
                 #trigger additional inputs for emisvar
@@ -1010,7 +983,7 @@ class Hem(Page):
                     
                 else:
                     if 'emis_var' in self.model.dependencies:
-                        for child in self.s7.winfo_children():
+                        for child in self.optional.s9.winfo_children():
                             child.destroy()
                     
                 
@@ -1237,17 +1210,15 @@ class Hem(Page):
         if fullpath is not None:
 
 
-            success = self.uploader.upload("alt receptors", fullpath)
-            if not success:
-                messagebox.showinfo('Error', "Invalid alternate receptors file. Check log for details.")
-                return
-
-            self.model.altRec_optns["path"] = fullpath
-
-            # Update the UI
-            [self.scr.insert(tk.INSERT, msg) for msg in self.model.altreceptr.log]
-            label['text'] = fullpath.split("\\")[-1]
+            self.uploader.upload("alt receptors", fullpath)
             
+            if self.model.altreceptr.dataframe.empty == False:
+                self.model.altRec_optns["path"] = fullpath
+    
+                # Update the UI
+                [self.scr.insert(tk.INSERT, msg) for msg in self.model.altreceptr.log]
+                label['text'] = fullpath.split("\\")[-1]
+                
             
     def uploadVariation(self, container, label, event):
 
@@ -1255,31 +1226,21 @@ class Hem(Page):
         Function for uploading emissions variation inputs
         """
         
-#        if self.resume_run == True:
-#            
-#            try:
-#            
-#                self.model.emisvar = resume.emisvar
-#                
-#            except:
-#                
-#                self.model.emisvar = None
-#        
-#        else:
         
         
         fullpath = self.openFile(askopenfilename())
         if fullpath is not None:
-            success = self.uploader.uploadDependent("emissions variation", fullpath, self.model)
-            if not success:
-                messagebox.showinfo('Error', "Invalid Emissions Variation file. Check log for details.")
-                return
-
-             # Update the UI
-            [self.scr.insert(tk.INSERT, msg) for msg in self.model.emisvar.log]
-            label['text'] = fullpath.split("\\")[-1]
-            self.current_highlight = None
- 
+        
+            self.uploader.uploadDependent("emissions variation", fullpath, self.model)
+            
+       
+            
+            if self.model.emisvar.dataframe.empty == False:
+    
+                # Update the UI
+                [self.scr.insert(tk.INSERT, msg) for msg in self.model.emisvar.log]
+                label['text'] = fullpath.split("\\")[-1]
+               
     
     def set_altrec(self):
         
@@ -1413,39 +1374,6 @@ class Hem(Page):
 #        self.optional.s9.bind("<Leave>", lambda x: self.remove_config(self.emisvarLabel, self.emisvar_file, self.optional.s9, self.tab_color, x))
 #       
 
-
-#    def add_temporal(self):
-#        
-#        
-#        if self.check_tempvar.get() == 1:
-#            #emissions variation label
-#                self.tempvar_label = tk.Label(self.s8, font=TEXT_FONT, bg=self.tab_color, 
-#                                     text="What diurnal (hourly) resolution would you like?")
-#                self.tempvar_label.grid(row=2, column=0, sticky="W", padx=60, pady=20)
-#             
-#                self.tkvar = tk.StringVar(self.s8)
-#                choices = {1, 2, 3, 4, 6, 8, 12, 24}
-#                self.tkvar.set(1) # set the default option
-#
-#                self.popupMenu = tk.OptionMenu(self.s8, self.tkvar, *choices)
-#                self.popupMenu.grid(row=2, column=0, sticky="W", padx=10, pady=10)
-#                
-#                #add emissions variation checkbox
-#                self.check_dr = tk.IntVar()
-#                self.dr_sel = tk.Checkbutton(self.s8, text="Include seasonal variations in diurnally\n resolved concentrations output", 
-#                                          variable = self.check_dr, font=TEXT_FONT,
-#                                          bg="lightcyan3")
-#                self.dr_sel.grid(row=3, column=0, sticky="W")
-
-        
-        
-        
-        #if checked and then unchecked
-#        elif self.check_tempvar.get() == 0:
-#            if hasattr(self, 'tempvar_label'):
-#                    self.popupMenu.destroy()
-#                    self.tempvar_label.destroy()
-#                    self.dr_sel.destroy()
 
     
     def add_buoyant(self):
@@ -1658,14 +1586,6 @@ class Hem(Page):
             return None
         
         
-        #add temp_var to model ## add to checks 
-#        if self.check_tempvar.get() == 1:
-#            self.model.temporal = True
-#            self.model.tempvar = int(self.tkvar.get())
-#            self.model.seasonvar = True if self.check_dr.get() == 1 else False
-#        else:
-#            self.model.temporal = False
-
         #Check inputs
         check_inputs = InputChecker(self.model)
         
@@ -1916,7 +1836,7 @@ class Hem(Page):
             message = self.messageQueue.get(block=False)
         except queue.Empty:
             # let's try again later
-            self.nav.log.after(25, self.after_callback)
+            self.after(25, self.after_callback)
             return
 
         print('after_callback got', message)
