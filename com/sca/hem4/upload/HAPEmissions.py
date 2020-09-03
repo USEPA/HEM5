@@ -23,6 +23,9 @@ class HAPEmissions(InputFile):
         cleaned.replace(to_replace={fac_id:{"nan":""}, source_id:{"nan":""}, pollutant:{"nan":""}}, inplace=True)
         cleaned = cleaned.reset_index(drop = True)
 
+        # Upper case source id to match with Aermod
+        cleaned[source_id] = cleaned[source_id].str.upper()
+        
         # lower case the pollutant names for better merging
         cleaned[pollutant] = cleaned[pollutant].str.lower()
 
@@ -110,7 +113,7 @@ class HAPEmissions(InputFile):
                                                  "Response Library: " +
                                                  ', '.join(missing_pollutants) +
                                                  ".\n Would you like to amend "+
-                                                 "your HAP EMissions file?"+
+                                                 "your HAP Emissions file?"+
                                                  "(they will be removed "+
                                                  "otherwise). ")
 
@@ -127,7 +130,7 @@ class HAPEmissions(InputFile):
                 # remove them from data frame
                 # to separate log file the non-modeled HAP Emissions
                 fileDir = os.path.dirname(os.path.realpath('__file__'))
-                filename = os.path.join(fileDir, "output\HAP_ignored.log")
+                filename = os.path.join(fileDir, "output\DR_HAP_ignored.log")
                 logfile = open(filename, 'w')
 
                 logfile.write(str(datetime.now()) + ":\n")
@@ -146,6 +149,7 @@ class HAPEmissions(InputFile):
                     logfile.write("Removed: " + str(ignored))
 
                 logfile.close()
+
 
         Logger.logMessage("Uploaded HAP emissions file for " + str(len(df)) + " source-HAP combinations.\n")
         return df

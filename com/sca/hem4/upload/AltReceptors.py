@@ -5,6 +5,7 @@ from com.sca.hem4.upload.EmissionsLocations import *
 from com.sca.hem4.upload.FacilityList import *
 
 from tkinter import messagebox
+import math
 
 
 rec_type = 'rec_type';
@@ -73,13 +74,14 @@ class AltReceptors(InputFile):
             maxlat = 85 if loc_type == 'L' else 10000000
             minlat = -80 if loc_type == 'L' else 0
 
-            if row[lon] > maxlon or row[lon] < minlon:
+            if row[lon] > maxlon or row[lon] < minlon or math.isnan(row[lon]):
                 Logger.logMessage("Receptor " + receptor + ": lon value " + str(row[lon]) + " out of range " +
                                   "in the Alternate User Receptors List.")
                 messagebox.showinfo("Longitude out of Range", "Receptor " + receptor + ": lon value " + str(row[lon]) + " out of range " +
                                   "in the Alternate User Receptors List.")
                 return None
-            if row[lat] > maxlat or row[lat] < minlat:
+            
+            if row[lat] > maxlat or row[lat] < minlat or math.isnan(row[lat]):
                 Logger.logMessage("Receptor " + receptor + ": lat value " + str(row[lat]) + " out of range " +
                                   "in the Alternate User Receptors List.")
                 messagebox.showinfo("Latitude out of Range", "Receptor " + receptor + ": lat value " + str(row[lat]) + " out of range " +
@@ -113,8 +115,9 @@ class AltReceptors(InputFile):
             if row[rec_type] not in valid:
                 Logger.logMessage("Receptor " + receptor + ": Receptor type value " + str(row[rec_type]) + " invalid " +
                                   "in the Alternate User Receptors List.")
-                messagebox.showinfo()
+                messagebox.showinfo("Receptor type invalid", "Receptor " + receptor + ": Receptor type value " + str(row[rec_type]) + " invalid " +
+                                  "in the Alternate User Receptors List.")
                 return None
 
-            Logger.logMessage("Uploaded alternate user receptors.\n")
-            return df
+        Logger.logMessage("Uploaded alternate user receptors.\n")
+        return df

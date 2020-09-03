@@ -1,5 +1,7 @@
 from com.sca.hem4.FacilityPrep import *
 from com.sca.hem4.writer.csv.AllInnerReceptors import *
+import traceback
+from com.sca.hem4.support.NormalRounding import *
 
 
 class AllPolarReceptors(CsvWriter, InputFile):
@@ -62,7 +64,7 @@ class AllPolarReceptors(CsvWriter, InputFile):
             longitude
             overlap (Y/N)
         """
-               
+            
         # Units conversion factor
         self.cf = 2000*0.4536/3600/8760
                 
@@ -75,23 +77,19 @@ class AllPolarReceptors(CsvWriter, InputFile):
         self.plotcols[3] = [utme,utmn,source_id,result,wdp,aresult,emis_type]
 
                     
-        #extract Chronic polar concs from the Chronic plotfile and round the utm coordinates
+        #extract Chronic polar concs from the Chronic plotfile
         polarcplot_df = self.plot_df.query("net_id == 'POLGRID1'").copy()
-        polarcplot_df.utme = polarcplot_df.utme.round()
-        polarcplot_df.utmn = polarcplot_df.utmn.round()
 
         # If acute was run for this facility, extract polar concs from Acute plotfile and join to
         # chronic polar concs, otherwise, add column of 0's for acute result
         if self.acute_yn == 'Y':
             polaraplot_df = self.model.acuteplot_df.query("net_id == 'POLGRID1'").copy()
-            polaraplot_df.utme = polaraplot_df.utme.round()
-            polaraplot_df.utmn = polaraplot_df.utmn.round()
             polarplot_df = pd.merge(polarcplot_df, polaraplot_df[[emis_type, source_id, utme, utmn, aresult]], 
                                     how='inner', on = [emis_type, source_id, utme, utmn])
         else:
             polarplot_df = polarcplot_df.copy()
             polarplot_df[aresult] = 0.0
-
+        
         # array of unique source_id's
         srcids = polarplot_df[source_id].unique().tolist()
 
@@ -157,6 +155,7 @@ class AllPolarReceptors(CsvWriter, InputFile):
                         
 
                     dlist.append(dict(zip(col_list, datalist)))
+                                        
                         
         all_polar_receptors_df = pd.DataFrame(dlist, columns=col_list)
         values = {wetdep:'', drydep:''}

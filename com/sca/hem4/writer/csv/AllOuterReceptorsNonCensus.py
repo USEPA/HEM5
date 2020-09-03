@@ -600,21 +600,42 @@ class AllOuterReceptorsNonCensus(CsvWriter, InputFile):
             # Get utme, utmn, and hill columns
             outer_concs1 = pd.merge(outer_concs, self.model.outerblks_df[[lat, lon, 'utme', 'utmn', 'hill']],
                                     how='left', on=[lat, lon])
+
+            # Confirm the merge did not grow or shrink the number of rows
+            if len(outer_concs.index) != len(outer_concs1.index):
+                emessage = "Error! Incorrect merging of outer blocks with outer_concs in AllOuterReceptors."
+                Logger.logMessage(emessage)
+                raise Exception(emessage)
             
             # Merge ure and inverted rfc
             outer_concs2 = pd.merge(outer_concs1, self.haplib_df[['pollutant', 'ure', 'invrfc']],
                                     how='left', on='pollutant')
+
+            # Confirm the merge did not grow or shrink the number of rows
+            if len(outer_concs.index) != len(outer_concs2.index):
+                emessage = "Error! Incorrect merging of haplib with outer_concs1 in AllOuterReceptors."
+                Logger.logMessage(emessage)
+                raise Exception(emessage)
             
             # Merge target organ list
             outer_concs3 = pd.merge(outer_concs2, self.organs_df[['pollutant', 'organ_list']],
                                     how='left', on='pollutant')
             outer_concs3.sort_values(by=[lat, lon], inplace=True)
+
+            # Confirm the merge did not grow or shrink the number of rows
+            if len(outer_concs.index) != len(outer_concs3.index):
+                emessage = "Error! Incorrect merging of target organs with outer_concs2 in AllOuterReceptors."
+                Logger.logMessage(emessage)
+                raise Exception(emessage)
             
             chk4null = outer_concs3[outer_concs3['organ_list'].isnull()]
             if not chk4null.empty:
                 # Replace NaN with list of 0's
                 outer_concs3['organ_list'] = outer_concs3['organ_list'].apply(
                         lambda x: x if isinstance(x, list) else [0,0,0,0,0,0,0,0,0,0,0,0,0,0])
+
+            # Sort by lat/lon
+            outer_concs3.sort_values(by=[lat, lon], inplace=True)
 
             
             # List of all lat/lons from outer_concs3. Not unique because of pollutant/source/emis_type.

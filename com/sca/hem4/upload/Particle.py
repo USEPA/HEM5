@@ -47,6 +47,9 @@ class Particle(DependentInputFile):
         cleaned[part_dens] = cleaned[part_dens].apply(lambda x: round(Decimal(x), 3))
         cleaned[mass_frac] = cleaned[mass_frac] / 100
 
+        # Upper case source id
+        cleaned[source_id] = cleaned[source_id].str.upper()
+
         return cleaned
 
     def validate(self, df):
@@ -84,13 +87,13 @@ class Particle(DependentInputFile):
             if row[mass_frac] < 0 or row[mass_frac] > 100:
                 Logger.logMessage("Facility " + facility + ": mass fraction value " + str(row[mass_frac]) +
                                   " out of range.")
-                messagebox,showinfo("Value out of range", "Facility " + facility + ": mass fraction value " + str(row[mass_frac]) +
+                messagebox.showinfo("Value out of range", "Facility " + facility + ": mass fraction value " + str(row[mass_frac]) +
                                   " out of range.")
                 return None
             if row[part_dens] < 0:
                 Logger.logMessage("Facility " + facility + ": particle density value " + str(row[part_dens]) +
                                   " out of range.")
-                messagebox.showinfo("Value out of range", "Facility " + facility + ": mass fraction value " + str(row[mass_frac]) +
+                messagebox.showinfo("Value out of range", "Facility " + facility + ": particle density value " + str(row[part_dens]) +
                                   " out of range.")
                 return None
 

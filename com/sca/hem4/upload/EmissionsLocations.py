@@ -59,6 +59,7 @@ class EmissionsLocations(InputFile):
         # upper case of selected fields
         cleaned[source_type] = cleaned[source_type].str.upper()
         cleaned[location_type] = cleaned[location_type].str.upper()
+        cleaned[source_id] = cleaned[source_id].str.upper()
 
         return cleaned
 

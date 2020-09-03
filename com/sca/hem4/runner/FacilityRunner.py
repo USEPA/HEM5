@@ -9,6 +9,7 @@ from com.sca.hem4.log.Logger import Logger
 from com.sca.hem4.DepositionDepletion import sort
 from com.sca.hem4.model.Model import *
 from datetime import datetime
+from com.sca.hem4.support.NormalRounding import *
 
 
 class FacilityRunner():
@@ -21,7 +22,7 @@ class FacilityRunner():
         self.phase = None
         
         self.phaseNames = {'P': 'Particle', 'V': 'Vapor'}
-        
+                
     
     def setup(self):
             
@@ -163,7 +164,7 @@ class FacilityRunner():
                 else:
                     plot_df['emis_type'] = phases['phase']
 
-
+                
                 # If acute run, set the emis_type column in aplot_df
                 if self.acute_yn == 'Y':
  
@@ -563,8 +564,9 @@ class FacilityRunner():
                        ,flag:np.float64,avg_time:np.str,source_id:np.str,num_yrs:np.int64,net_id:np.str},
                 comment='*')
 
-        plotf_df.utme = plotf_df.utme.round()
-        plotf_df.utmn = plotf_df.utmn.round()
+        # Round utm coordinates to integers
+        plotf_df.utme = plotf_df.apply(lambda row: normal_round(row[utme]), axis=1)
+        plotf_df.utmn = plotf_df.apply(lambda row: normal_round(row[utmn]), axis=1)
 
         return plotf_df
 
@@ -609,8 +611,9 @@ class FacilityRunner():
                             avg_time:np.str,source_id:np.str,rank:np.str,net_id:np.str,concdate:np.str},
                 comment='*')
  
-        aplot_df.utme = aplot_df.utme.round()
-        aplot_df.utmn = aplot_df.utmn.round()
+        # Round utm coordinates to integers
+        aplot_df.utme = aplot_df.apply(lambda row: normal_round(row[utme]), axis=1)
+        aplot_df.utmn = aplot_df.apply(lambda row: normal_round(row[utmn]), axis=1)
 
         return aplot_df
                

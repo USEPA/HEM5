@@ -32,7 +32,7 @@ class FileUploader():
             uploaded = DoseResponse()
             self.model.haplib = uploaded
         elif filetype == "organs":
-            uploaded = TargetOrganEndpoints()
+            uploaded = TargetOrganEndpoints(self.model.haplib)
             self.model.organs = uploaded
         elif filetype == "metlib":
             uploaded = MetLib()
@@ -41,7 +41,7 @@ class FileUploader():
             uploaded = GasParams()
             self.model.gasparams = uploaded
 
-        return False if uploaded.dataframe is None else True
+        return False if uploaded.dataframe.empty is True else True
 
     def upload(self, filetype, path):
         uploaded = None
@@ -58,7 +58,7 @@ class FileUploader():
             uploaded = AltReceptors(path)
             self.model.altreceptr = uploaded
 
-        return False if uploaded.dataframe is None else True
+        return False if uploaded.dataframe.empty is True else True
 
     def uploadDependent(self, filetype, path, dependency, facilities=None):
         uploaded = None
@@ -88,5 +88,5 @@ class FileUploader():
             uploaded = EmisVar(path, dependency)
             self.model.emisvar = uploaded
 
-        return False if uploaded.dataframe is None else True
+        return False if uploaded.dataframe.empty is True else True
 

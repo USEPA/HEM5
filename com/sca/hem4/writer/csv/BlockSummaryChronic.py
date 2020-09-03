@@ -137,7 +137,7 @@ class BlockSummaryChronic(CsvWriter, InputFile):
             # Note: sometimes there is a pollutant with no effect on any organ (RFC == 0). In this case it will
             # not appear in the organs library, and therefore 'listed' will be empty. We will just assign a
             # dummy list in this case...
-            organs = listed[0] if len(listed) > 0 else list(range(16))
+            organs = listed[0] if len(listed) > 0 else [0]*16
             self.organCache[pollutant_name] = organs
 
         risks = []
