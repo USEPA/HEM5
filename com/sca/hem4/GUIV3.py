@@ -57,7 +57,7 @@ import queue
 
 
 import numpy as np
-#from pandastable import Table, filedialog, np
+from pandastable import Table, filedialog, np
 
 
 
@@ -208,13 +208,8 @@ class MainView(tk.Frame):
         #instantiate start page
         self.nav = Start(self)
         self.nav.place(in_=self.container, relx=0.3, relwidth=0.7, relheight=1)
-
-
-        #instantiate log tab
-        self.log = Log(self)
-        self.log.place(in_=self.container, relx=0.3, relwidth=0.7, relheight=1)
-        self.log.lower()
-
+        
+        
         #instantiate hem4 start page
         self.hem = Hem(self)
         self.hem.place(in_=self.container, relx=0.3, relwidth=0.7, relheight=1)
@@ -229,6 +224,13 @@ class MainView(tk.Frame):
         self.analyze = Analyze(self)
         self.analyze.place(in_=self.container, relx=0.3, relwidth=0.7, relheight=1)
         self.analyze.lower()
+        
+        
+        
+        #instantiate log tab
+        self.log = Log(self)
+        self.log.place(in_=self.container, relx=0.3, relwidth=0.7, relheight=1)
+        self.log.lower()
         
         
         self.options = Options(self)
@@ -608,41 +610,11 @@ class Hem(Page):
 
         # Create the model
         self.model = Model()
-
-        # Create threading helpers
-        self.messageQueue = queue.Queue()
-        self.callbackQueue = queue.Queue()
-        self.processor = None
-        self.lastException = None
-
-        Logger.messageQueue = self.messageQueue
-
-        self.after(25, self.after_callback)
-        self.after(500, self.check_processing)
-
+        
          # Create a file uploader
         self.uploader = FileUploader(self.model)
         
          # Upload the Dose response, Target Organ Endponts, and MetLib libraries
-        
-        if os.path.exists("resources/Dose_Response_Library.xlsx") == False:
-            messagebox.showinfo('Error', "The Dose Response file, Dose_Response_Library.xlsx, is not in "
-                                + "the resources folder. HEM4 will exit so that you can correct this.")
-            root.destroy()
-            sys.exit()
-
-        if os.path.exists("resources/Target_Organ_Endpoints.xlsx") == False:
-            messagebox.showinfo('Error', "The Target Organ Enpoint file, Target_Organ_Endpoints.xlsx, is not in "
-                                + "the resources folder. HEM4 will exit so that you can correct this.")
-            root.destroy()
-            sys.exit()
-
-        if os.path.exists("resources/metlib_aermod.xlsx") == False:
-            messagebox.showinfo('Error', "The Meteorological Library file, metlib_aermod.xlsx, is not in "
-                                + "the resources folder. HEM4 will exit so that you can correct this.")
-            root.destroy()
-            sys.exit()
-
         success = self.uploader.uploadLibrary("haplib")
         if not success:
             messagebox.showinfo('Error', "Invalid Dose Response file. Check log for details.")
@@ -654,7 +626,20 @@ class Hem(Page):
         success = self.uploader.uploadLibrary("metlib")
         if not success:
             messagebox.showinfo('Error', "Invalid Met Libary file. Check log for details.")
+        
+        # Create threading helpers
+        self.messageQueue = queue.Queue()
+        self.callbackQueue = queue.Queue() 
+        self.processor = None
+        self.lastException = None
+        
+        self.after(25, self.after_callback)
+        self.after(500, self.check_processing)
 
+        Logger.messageQueue = self.messageQueue
+        
+ 
+        
         # Create running helpers
         self.running = False
         self.aborted = False
@@ -1248,13 +1233,14 @@ class Hem(Page):
         
             self.uploader.uploadDependent("emissions variation", fullpath, self.model)
             
+       
+            
             if self.model.emisvar.dataframe.empty == False:
     
                 # Update the UI
                 [self.scr.insert(tk.INSERT, msg) for msg in self.model.emisvar.log]
                 label['text'] = fullpath.split("\\")[-1]
-                self.current_highlight = None
- 
+               
     
     def set_altrec(self):
         
@@ -1850,7 +1836,7 @@ class Hem(Page):
             message = self.messageQueue.get(block=False)
         except queue.Empty:
             # let's try again later
-            self.nav.log.after(25, self.after_callback)
+            self.after(25, self.after_callback)
             return
 
         print('after_callback got', message)
