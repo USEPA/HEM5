@@ -53,9 +53,8 @@ class EmisVar(DependentInputFile):
         validated = self.validate(cleaned)
         
         if validated is None:
-            empty = pd.DataFrame()
-            print(empty.empty)
-            return empty
+            print(pd.DataFrame.empty)
+            return pd.DataFrame()
         else:
             return validated
 
