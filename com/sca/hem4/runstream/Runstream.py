@@ -25,28 +25,7 @@ class Runstream():
                  partdia_df = None, landuse_df = None, seasons_df = None,
                  emisvar_df = None, model = None):
         
-        if buoyant_df.empty == True:
-            buoyant_df = None
-            
-        if polyver_df.empty == True:
-            polyver_df = None
-            
-        if bldgdw_df.empty == True:
-            bldgdw_df = None
-            
-        if partdia_df.empty == True:
-            partdia_df = None
-            
-        if landuse_df.empty == True:
-            landuse_df = None
-            
-        if seasons_df.empty == True:
-            seasons_df = None
-            
-        if emisvar_df.empty == True:
-            emisvar_df = None
-            
-    
+     
         
         self.facoptn_df = facops_df
         self.emisloc_df = emislocs_df
