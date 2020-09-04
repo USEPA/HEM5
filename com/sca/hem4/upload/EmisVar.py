@@ -65,6 +65,7 @@ class EmisVar(DependentInputFile):
 
         # upper case of selected fields
         cleaned['variation'] = cleaned['variation'].str.upper()
+        cleaned['variation'] = cleaned['variation'].str.strip()
         cleaned[source_id] = cleaned[source_id].str.upper()
 
         return cleaned
@@ -82,8 +83,7 @@ class EmisVar(DependentInputFile):
             Logger.logMessage("One or more source IDs are missing in the Emissions Variations List.")
             messagebox.showinfo("Missing source IDs", "One or more source IDs are missing in the Emissions Variations List.")
             return None
-        
-        
+                
         val_list = []
         for index, row in df.iterrows():
             facility = row[fac_id]
