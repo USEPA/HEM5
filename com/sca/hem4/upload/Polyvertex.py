@@ -10,6 +10,7 @@ from com.sca.hem4.upload.DependentInputFile import DependentInputFile
 from tkinter import messagebox
 
 from com.sca.hem4.upload.EmissionsLocations import *
+from com.sca.hem4.support.NormalRounding import *
 import math
 
 numvert = 'numvert';
@@ -41,6 +42,12 @@ class Polyvertex(DependentInputFile):
         # upper case of selected fields
         cleaned[location_type] = cleaned[location_type].str.upper()
         cleaned[source_id] = cleaned[source_id].str.upper()
+                
+        # Make sure UTM vertex coordinates are integers
+        for index, row in cleaned.iterrows():
+            if row[location_type] == 'U':
+                cleaned.loc[index, lon] = normal_round(row[lon])
+                cleaned.loc[index, lat] = normal_round(row[lat])
 
         return cleaned
 
