@@ -108,7 +108,7 @@ class MaximumIndividualRisks(ExcelWriter, InputFile):
                 mr_utme = self.model.all_polar_receptors_df[(self.model.all_polar_receptors_df[lon] == mr_lon) & (self.model.all_polar_receptors_df[lat] == mr_lat)][utme].values[0]
                 mr_utmn = self.model.all_polar_receptors_df[(self.model.all_polar_receptors_df[lon] == mr_lon) & (self.model.all_polar_receptors_df[lat] == mr_lat)][utmn].values[0]
                 mr_rectype = "Polar"
-                mr_notes = "Polar"
+                mr_notes = "Overlapped source. Using polar receptor."
             elif self.model.risk_by_latlon[blk_type].loc[iop_idx] == "I":
                 mr_pop = self.model.outerblks_df[(self.model.outerblks_df[lon] == mr_lon) & (self.model.outerblks_df[lat] == mr_lat)][population].values[0]
                 mr_dist = self.model.outerblks_df[(self.model.outerblks_df[lon] == mr_lon) & (self.model.outerblks_df[lat] == mr_lat)][distance].values[0]
@@ -120,7 +120,7 @@ class MaximumIndividualRisks(ExcelWriter, InputFile):
                 mr_utme = self.model.outerblks_df[(self.model.outerblks_df[lon] == mr_lon) & (self.model.outerblks_df[lat] == mr_lat)][utme].values[0]
                 mr_utmn = self.model.outerblks_df[(self.model.outerblks_df[lon] == mr_lon) & (self.model.outerblks_df[lat] == mr_lat)][utmn].values[0]
                 mr_rectype = "Census block"
-                mr_notes = "Interpolated"
+                mr_notes = "Overlapped source. Using interpolated receptor."
             else:
                 mr_pop = self.model.innerblks_df[(self.model.innerblks_df[lon] == mr_lon) & (self.model.innerblks_df[lat] == mr_lat)][population].values[0]
                 mr_dist = self.model.innerblks_df[(self.model.innerblks_df[lon] == mr_lon) & (self.model.innerblks_df[lat] == mr_lat)][distance].values[0]
@@ -135,7 +135,7 @@ class MaximumIndividualRisks(ExcelWriter, InputFile):
                     mr_rectype = "User receptor"
                 else:
                     mr_rectype = "Census block"
-                mr_notes = "Discrete"
+                mr_notes = "Overlapped source. Using discrete census or user receptor."
 
         return [mr_parameter, mr_value, mr_value_rnd, mr_value_sci, mr_pop, mr_dist, mr_angle, mr_elev,
                 mr_hill, mr_fips, mr_block, mr_utme, mr_utmn, mr_lat, mr_lon, mr_rectype, mr_notes]
@@ -331,7 +331,7 @@ class MaximumIndividualRisks(ExcelWriter, InputFile):
                     mr_utme = self.model.all_polar_receptors_df[(self.model.all_polar_receptors_df[lon] == mr_lon) & (self.model.all_polar_receptors_df[lat] == mr_lat)][utme].values[0]
                     mr_utmn = self.model.all_polar_receptors_df[(self.model.all_polar_receptors_df[lon] == mr_lon) & (self.model.all_polar_receptors_df[lat] == mr_lat)][utmn].values[0]
                     mr_rectype = "Polar"
-                    mr_notes = "Polar"
+                    mr_notes = "Overlapped source. Using polar receptor."
                 elif self.model.risk_by_latlon['blk_type'].loc[iop_idx] == "I":
                     mr_pop = self.model.outerblks_df[(self.model.outerblks_df[lon] == mr_lon) & (self.model.outerblks_df[lat] == mr_lat)][population].values[0]
                     mr_dist = self.model.outerblks_df[(self.model.outerblks_df[lon] == mr_lon) & (self.model.outerblks_df[lat] == mr_lat)][distance].values[0]
@@ -346,7 +346,7 @@ class MaximumIndividualRisks(ExcelWriter, InputFile):
                         mr_rectype = "User receptor"
                     else:
                         mr_rectype = "Census block"
-                    mr_notes = "Interpolated"
+                    mr_notes = "Overlapped source. Using interpolated receptor."
                 else:
                     mr_pop = self.model.innerblks_df[(self.model.innerblks_df[lon] == mr_lon) & (self.model.innerblks_df[lat] == mr_lat)][population].values[0]
                     mr_dist = self.model.innerblks_df[(self.model.innerblks_df[lon] == mr_lon) & (self.model.innerblks_df[lat] == mr_lat)][distance].values[0]
@@ -361,7 +361,7 @@ class MaximumIndividualRisks(ExcelWriter, InputFile):
                         mr_rectype = "User receptor"
                     else:
                         mr_rectype = "Census block"
-                    mr_notes = "Discrete"
+                    mr_notes = "Overlapped source. Using discrete census or user receptor."
         else:
             #max risk is 0, set all variables as empty
             mr_lat = 0
