@@ -4,6 +4,7 @@ from tkinter import messagebox
 from com.sca.hem4.upload.EmissionsLocations import *
 from com.sca.hem4.upload.FacilityList import *
 import math
+import pandas as pd
 
 rec_type = 'rec_type';
 rec_id = 'rec_id';
@@ -62,7 +63,7 @@ class UserReceptors(DependentInputFile):
             for d in duplicates:
                 Logger.logMessage(d)
             return None
-
+        
         for index, row in df.iterrows():
 
             facility = row[fac_id]
@@ -115,6 +116,12 @@ class UserReceptors(DependentInputFile):
                                   "in the User Receptors List.")
                 return None
 
+            if row[rec_id] == 'nan':
+                Logger.logMessage("Facility " + facility + ": Receptor ID is blank in the User Receptors List.")
+                messagebox.showinfo("Blank Receptor ID", "Facility " + facility + ": Receptor ID is blank in the User Receptors List.")
+                return None
+                
+                
         # check for unassigned user receptors
         
         check_receptor_assignment = set(self.faclist_df[fac_id].loc[self.faclist_df[user_rcpt]=='Y'])

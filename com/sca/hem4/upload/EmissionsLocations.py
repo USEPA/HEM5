@@ -226,6 +226,21 @@ class EmissionsLocations(InputFile):
                                       "in the Emissions Locations List.")
                     return None
 
+            if row[source_type] in ['B', 'N']:
+                if row[x2] > maxlon or row[x2] < minlon or row[x2] == 0:
+                    Logger.logMessage("Facility " + facility + ": ending lon value " + str(row[x2]) + " out of range " +
+                                      "in the Emissions Locations List.")
+                    messagebox.showinfo("Ending lon value out of range", "Facility " + facility + ": ending lon value " + str(row[x2]) + " out of range " +
+                                      "in the Emissions Locations List.")
+                    return None
+
+                if row[y2] > maxlat or row[y2] < minlat or row[y2] == 0:
+                    Logger.logMessage("Facility " + facility + ": ending lat value " + str(row[y2]) + " out of range " +
+                                      "in the Emissions Locations List.")
+                    messagebox.showinfo("Ending lat value our of range", "Facility " + facility + ": lat value " + str(row[y2]) + " out of range " +
+                                      "in the Emissions Locations List.")
+                    return None
+
                 
         # ----------------------------------------------------------------------------------
         # Defaulted: Invalid values in these columns will be replaced with a default.
