@@ -142,28 +142,37 @@ def in_box(modelblks, sourcelocs, modeldist, maxdist, overlap_dist, model):
     ## This function determines if a block within modelblks is within a fringe of any source ##
     
     outerblks = modelblks.copy()
+    # Initialize overlap
+    outerblks['overlap'] = 'N'
+
+    # Create empty inner blocks data frame
     colnames = list(modelblks.columns)
     innerblks = pd.DataFrame([], columns=colnames)
     
     #...... Find blocks within modeldist of point sources.........
-    
+        
     ptsources = sourcelocs.query("source_type in ('P','C','H','V','N','B')")
     for index, row in ptsources.iterrows():
         src_x = row[utme]
         src_y = row[utmn]
         indist = outerblks.query('sqrt((@src_x - utme)**2 + (@src_y - utmn)**2) <= @modeldist')
-        
+
+        # Determine overlap
+        indist['overlap'] = np.where(np.sqrt(np.double((indist[utme]-src_x)**2 +
+                                       (indist[utmn]-src_y)**2)) <= overlap_dist, "Y", "N")
+      
         if len(indist) > 0:
+            # Append to innerblks and shrink outerblks
             innerblks = innerblks.append(indist).reset_index(drop=True)
             innerblks = innerblks[~innerblks[rec_id].duplicated()]
             outerblks = outerblks[~outerblks[rec_id].isin(innerblks[rec_id])].copy()
 
-            #Do any of these inner or outer blocks overlap this source?
-            innerblks['overlap'] = np.where(np.sqrt(np.double((innerblks[utme]-src_x)**2 +
-                                           (innerblks[utmn]-src_y)**2)) <= overlap_dist, "Y", "N")
-            if not outerblks.empty:
-                outerblks['overlap'] = np.where(np.sqrt(np.double((outerblks[utme]-src_x)**2 +
-                                               (outerblks[utmn]-src_y)**2)) <= overlap_dist, "Y", "N")
+#            #Do any of these inner or outer blocks overlap this source?
+#            innerblks.loc[innerblks['overlap'] != 'Y', 'overlap'] = np.where(np.sqrt(np.double((innerblks[utme]-src_x)**2 +
+#                                           (innerblks[utmn]-src_y)**2)) <= overlap_dist, "Y", "N")
+#            if not outerblks.empty:
+#                outerblks.loc[outerblks['overlap'] != 'Y', 'overlap'] = np.where(np.sqrt(np.double((outerblks[utme]-src_x)**2 +
+#                                               (outerblks[utmn]-src_y)**2)) <= overlap_dist, "Y", "N")
 
 
     #....... Find blocks within modeldist of area sources ..........
@@ -178,10 +187,11 @@ def in_box(modelblks, sourcelocs, modeldist, maxdist, overlap_dist, model):
             len_y = row["lengthy"]
             angle_val = row["angle"]
             fringe = modeldist
-            outerblks["inbox"], outerblks[overlap] = zip(*outerblks.apply(lambda row1: rotatedbox(row1[utme],
+            outerblks["inbox"], outerblks['overlap'] = zip(*outerblks.apply(lambda row1: rotatedbox(row1[utme],
                      row1[utmn], box_x, box_y, len_x, len_y, angle_val, fringe, overlap_dist), axis=1))
             indist = outerblks.query('inbox == True')
             if len(indist) > 0:
+                # Append to innerblks and shrink outerblks
                 innerblks = innerblks.append(indist).reset_index(drop=True)
                 innerblks = innerblks[~innerblks[rec_id].duplicated()]
                 outerblks = outerblks[~outerblks[rec_id].isin(innerblks[rec_id])]
@@ -192,7 +202,7 @@ def in_box(modelblks, sourcelocs, modeldist, maxdist, overlap_dist, model):
                   
 
     #....... If there are polygon sources, find blocks within modeldist of any polygon side ..........
-
+    
     if not outerblks.empty:
         polyvertices = sourcelocs.query("source_type in ('I')")
         if len(polyvertices) > 1:
@@ -247,8 +257,7 @@ def cntyinzone(lat_min, lon_min, lat_max, lon_max, cenlat, cenlon, maxdist_deg):
 
 #%%
 def getblocks(cenx, ceny, cenlon, cenlat, utmzone, hemi, maxdist, modeldist, sourcelocs, overlap_dist, model):
-    
-
+        
     # convert max outer ring distance from meters to degrees latitude
     maxdist_deg = maxdist*39.36/36/2000/60
 

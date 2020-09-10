@@ -55,8 +55,8 @@ class AcuteChemicalPopulatedNonCensus(ExcelWriter):
         polinfo.set_index([pollutant], inplace=True, drop=False)
         
         # Define aggregation columns and new column names
-        aggs = {pollutant:'first', lat:'first', lon:'first', population:'first', aconc:'sum'}
-        newcolumns = [pollutant, lat, lon, population, aconc]
+        aggs = {pollutant:'first', lat:'first', lon:'first', population:'first', overlap:'first', aconc:'sum'}
+        newcolumns = [pollutant, lat, lon, population, overlap, aconc]
         
         # 1) First search the discrete (inner) receptors for the max acute conc per pollutant
         #    Note: population at receptor must be > 0 to be considered
@@ -70,10 +70,20 @@ class AcuteChemicalPopulatedNonCensus(ExcelWriter):
             for x in pols:
                 max_idx = innsum[((innsum[pollutant].str.lower() == x)
                                    & (innsum[population] > 0))][aconc].idxmax()
-                maxconc_df.loc[x, aconc] = innsum[aconc].loc[max_idx]
-                maxconc_df.loc[x, lon] = innsum[lon].loc[max_idx]
-                maxconc_df.loc[x, lat] = innsum[lat].loc[max_idx]
-                maxconc_df.loc[x, notes] = 'Discrete'
+                # Overlap?
+                if innsum[overlap].loc[max_idx] == 'N':
+                    maxconc_df.loc[x, aconc] = innsum[aconc].loc[max_idx]
+                    maxconc_df.loc[x, lon] = innsum[lon].loc[max_idx]
+                    maxconc_df.loc[x, lat] = innsum[lat].loc[max_idx]
+                    maxconc_df.loc[x, notes] = 'Discrete'
+                else:
+                    max_idx = innsum[((innsum[pollutant].str.lower() == x)
+                                   & (innsum[population] > 0)
+                                   & (innsum[overlap] == 'N'))][aconc].idxmax()
+                    maxconc_df.loc[x, aconc] = innsum[aconc].loc[max_idx]
+                    maxconc_df.loc[x, lon] = innsum[lon].loc[max_idx]
+                    maxconc_df.loc[x, lat] = innsum[lat].loc[max_idx]
+                    maxconc_df.loc[x, notes] = 'Overlapped source. Next highest discrete.'
         
         # 2) Next, search the outer receptor concs
 
@@ -100,6 +110,17 @@ class AcuteChemicalPopulatedNonCensus(ExcelWriter):
     
                 for p in pols:
                     max_idx = outsum[outsum[pollutant].str.lower() == p][aconc].idxmax()
+                    # Overlap?
+                    if outsum[overlap].loc[max_idx] == 'Y':
+                        # Look for next highest with no overlap
+                        max_idx = outsum[((outsum[pollutant].str.lower() == p)
+                                        & (outsum[population] > 0)
+                                        & (outsum[overlap] == 'N'))][aconc].idxmax()
+                        noteTxt = 'Overlapped source. Next highest interpolated.'
+                    else:
+                        noteTxt = 'Interpolated'
+
+                    # Compare to stored value
                     if outsum[aconc].loc[max_idx] > maxconc_df[aconc].loc[p]:
                         maxconc_df.loc[p, aconc] = outsum[aconc].loc[max_idx]
                         maxconc_df.loc[p, lon] = outsum[lon].loc[max_idx]
