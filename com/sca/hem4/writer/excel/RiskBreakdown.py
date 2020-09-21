@@ -87,11 +87,11 @@ class RiskBreakdown(ExcelWriter, InputFile):
                 if row[value] > 0:
     
                     # Get source and pollutant specific concs. Depends on receptor type.
-                    if row[notes] == "Discrete":
+                    if "discrete" in row[notes].lower():
                         concdata = self.model.all_inner_receptors_df[[lat,lon,source_id,pollutant,emis_type,conc]] \
                             [(self.model.all_inner_receptors_df[lat]==row[lat]) &
                              (self.model.all_inner_receptors_df[lon]==row[lon])]
-                    elif row[notes] == "Polar":
+                    elif "polar" in row[notes].lower():
                         concdata = self.model.all_polar_receptors_df[[lat,lon,source_id,pollutant,emis_type,conc]] \
                             [(self.model.all_polar_receptors_df[lat]==row[lat]) &
                              (self.model.all_polar_receptors_df[lon]==row[lon])]

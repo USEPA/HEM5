@@ -99,14 +99,14 @@ class MaximumIndividualRisks(ExcelWriter, InputFile):
             mr_value_rnd = round(mr_value, -int(floor(log10(abs(mr_value))))) if mr_value > 0 else 0
             if self.model.risk_by_latlon[blk_type].loc[iop_idx] == "PG":
                 mr_pop = 0
-                mr_dist = self.model.all_polar_receptors_df[(self.model.all_polar_receptors_df[lon] == mr_lon) & (self.model.all_polar_receptors_df[lat] == mr_lat)][distance].values[0]
-                mr_angle = self.model.all_polar_receptors_df[(self.model.all_polar_receptors_df[lon] == mr_lon) & (self.model.all_polar_receptors_df[lat] == mr_lat)][angle].values[0]
-                mr_elev = self.model.all_polar_receptors_df[(self.model.all_polar_receptors_df[lon] == mr_lon) & (self.model.all_polar_receptors_df[lat] == mr_lat)][elev].values[0]
-                mr_hill = self.model.all_polar_receptors_df[(self.model.all_polar_receptors_df[lon] == mr_lon) & (self.model.all_polar_receptors_df[lat] == mr_lat)][hill].values[0]
+                mr_dist = self.model.polargrid[(self.model.polargrid[lon] == mr_lon) & (self.model.polargrid[lat] == mr_lat)][distance].values[0]
+                mr_angle = self.model.polargrid[(self.model.polargrid[lon] == mr_lon) & (self.model.polargrid[lat] == mr_lat)][angle].values[0]
+                mr_elev = self.model.polargrid[(self.model.polargrid[lon] == mr_lon) & (self.model.polargrid[lat] == mr_lat)][elev].values[0]
+                mr_hill = self.model.polargrid[(self.model.polargrid[lon] == mr_lon) & (self.model.polargrid[lat] == mr_lat)][hill].values[0]
                 mr_fips = ""
                 mr_block = ""
-                mr_utme = self.model.all_polar_receptors_df[(self.model.all_polar_receptors_df[lon] == mr_lon) & (self.model.all_polar_receptors_df[lat] == mr_lat)][utme].values[0]
-                mr_utmn = self.model.all_polar_receptors_df[(self.model.all_polar_receptors_df[lon] == mr_lon) & (self.model.all_polar_receptors_df[lat] == mr_lat)][utmn].values[0]
+                mr_utme = self.model.polargrid[(self.model.polargrid[lon] == mr_lon) & (self.model.polargrid[lat] == mr_lat)][utme].values[0]
+                mr_utmn = self.model.polargrid[(self.model.polargrid[lon] == mr_lon) & (self.model.polargrid[lat] == mr_lat)][utmn].values[0]
                 mr_rectype = "Polar"
                 mr_notes = "Overlapped source. Using polar receptor."
             elif self.model.risk_by_latlon[blk_type].loc[iop_idx] == "I":
@@ -311,7 +311,7 @@ class MaximumIndividualRisks(ExcelWriter, InputFile):
                     else:
                         mr_rectype = "Census block"
                     mr_notes = "Interpolated"
-            else:
+            else:                
                 #overlapped
                 iop_idx = self.model.risk_by_latlon[(self.model.risk_by_latlon[overlap] == "N") & 
                                 ('S' not in self.model.risk_by_latlon[block]) & ('M' not in self.model.risk_by_latlon[block])][mir].idxmax()
@@ -320,16 +320,17 @@ class MaximumIndividualRisks(ExcelWriter, InputFile):
                 mr_value = self.model.risk_by_latlon[mir].loc[iop_idx]
                 mr_value_sci = format(mr_value, ".1e")
                 mr_value_rnd = round(mr_value, -int(floor(log10(abs(mr_value)))))
-                if self.model.risk_by_latlon[blk_type].loc[io_idx] == "PG":
+
+                if self.model.risk_by_latlon[blk_type].loc[iop_idx] == "PG":
                     mr_pop = 0
-                    mr_dist = self.model.all_polar_receptors_df[(self.model.all_polar_receptors_df[lon] == mr_lon) & (self.model.all_polar_receptors_df[lat] == mr_lat)][distance].values[0]
-                    mr_angle = self.model.all_polar_receptors_df[(self.model.all_polar_receptors_df[lon] == mr_lon) & (self.model.all_polar_receptors_df[lat] == mr_lat)][angle].values[0]
-                    mr_elev = self.model.all_polar_receptors_df[(self.model.all_polar_receptors_df[lon] == mr_lon) & (self.model.all_polar_receptors_df[lat] == mr_lat)][elev].values[0]
-                    mr_hill = self.model.all_polar_receptors_df[(self.model.all_polar_receptors_df[lon] == mr_lon) & (self.model.all_polar_receptors_df[lat] == mr_lat)][hill].values[0]
+                    mr_dist = self.model.polargrid[(self.model.polargrid[lon] == mr_lon) & (self.model.polargrid[lat] == mr_lat)][distance].values[0]
+                    mr_angle = self.model.polargrid[(self.model.polargrid[lon] == mr_lon) & (self.model.polargrid[lat] == mr_lat)][angle].values[0]
+                    mr_elev = self.model.polargrid[(self.model.polargrid[lon] == mr_lon) & (self.model.polargrid[lat] == mr_lat)][elev].values[0]
+                    mr_hill = self.model.polargrid[(self.model.polargrid[lon] == mr_lon) & (self.model.polargrid[lat] == mr_lat)][hill].values[0]
                     mr_fips = ""
                     mr_block = ""
-                    mr_utme = self.model.all_polar_receptors_df[(self.model.all_polar_receptors_df[lon] == mr_lon) & (self.model.all_polar_receptors_df[lat] == mr_lat)][utme].values[0]
-                    mr_utmn = self.model.all_polar_receptors_df[(self.model.all_polar_receptors_df[lon] == mr_lon) & (self.model.all_polar_receptors_df[lat] == mr_lat)][utmn].values[0]
+                    mr_utme = self.model.polargrid[(self.model.polargrid[lon] == mr_lon) & (self.model.polargrid[lat] == mr_lat)][utme].values[0]
+                    mr_utmn = self.model.polargrid[(self.model.polargrid[lon] == mr_lon) & (self.model.polargrid[lat] == mr_lat)][utmn].values[0]
                     mr_rectype = "Polar"
                     mr_notes = "Overlapped source. Using polar receptor."
                 elif self.model.risk_by_latlon['blk_type'].loc[iop_idx] == "I":
