@@ -249,17 +249,18 @@ class EmissionsLocations(InputFile):
 
             facility = row[fac_id]
 
-            if source_type == 'N':
+            if row[source_type] == 'N':
                 # Line source
                 if row[lengthx] < 1:
                     Logger.logMessage("Facility " + facility + ": Length X value " + str(row[lengthx]) +
                                       " out of range. Defaulting to 1.")
+                    row[lengthx] = 1
             else:
                 # Not a line source
                 if row[lengthx] <= 0:
                     Logger.logMessage("Facility " + facility + ": Length X value " + str(row[lengthx]) +
                                   " out of range. Defaulting to 1.")
-                row[lengthx] = 1
+                    row[lengthx] = 1
                 
             if row[lengthy] <= 0:
                 Logger.logMessage("Facility " + facility + ": Length Y value " + str(row[lengthy]) +
