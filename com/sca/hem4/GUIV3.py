@@ -766,7 +766,7 @@ class Hem(Page):
         
         self.defaultrec_sel = tk.Radiobutton(self.alturep, text="Use U.S. Census receptors",
                                            variable = self.check_altrec, bg=self.tab_color,
-                                           command = self.remove_altrec, font=TEXT_FONT, value=1)
+                                           command = self.set_altrec, font=TEXT_FONT, value=1)
         self.defaultrec_sel.grid(row=0, column=1, sticky='W')
         
         self.altrec_sel = tk.Radiobutton(self.alturep, text="Use alternate receptors",
@@ -1247,19 +1247,17 @@ class Hem(Page):
         if self.check_altrec.get() == 2:
         
             self.add_urepalt()
-            self.model.dependencies.append('altrec')
+            if 'altrec' not in self.model.dependencies:
+                self.model.dependencies.append('altrec')
             self.check_altrec.set(2)
-            self.model.altRec_optns['altrec'] = self.check_altrec.get()
             
-    def remove_altrec(self):
+        elif self.check_altrec.get() == 1:
         
-        if self.check_altrec.get() == 1:
-        
-            self.check_altrec.set(1)
-            self.model.dependencies.remove('altrec')
+           # self.check_altrec.set(1)
+            if 'altrec' in self.model.dependencies:
+                self.model.dependencies.remove('altrec')
             self.urepLabel.destroy()
             self.urep_file.destroy()
-            self.model.altRec_optns['altrec'] = self.check_altrec.get()
         
     
             
