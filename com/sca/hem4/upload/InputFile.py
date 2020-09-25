@@ -128,14 +128,21 @@ class InputFile(ABC):
                 if not numeric_only.equals(df):
                     messagebox.showinfo("Error: Some non-numeric values were found in numeric columns in this data set: " +
                                   os.path.basename(self.path))
-                    return None
+                    
+                    dataframe = pd.Dataframe()
+                    return dataframe
 
                 types = self.get_column_types()
                 df = df.astype(dtype=types)
 
                 cleaned = self.clean(df)
                 validated = self.validate(cleaned)
-                return validated
+                
+                if validated is None:
+                    return pd.DataFrame()
+                
+                else:
+                    return validated
 
     # This method is being applied to every cell to guard against values which
     # have only whitespace.

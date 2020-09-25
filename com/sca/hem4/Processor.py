@@ -40,9 +40,13 @@ class Processor():
     def process(self):
 
 
-        # create Inputs folder
-        inputspkgr = InputsPackager(self.model.rootoutput, self.model)
-        inputspkgr.createInputs()
+        try:
+            # create Inputs folder
+            inputspkgr = InputsPackager(self.model.rootoutput, self.model)
+            inputspkgr.createInputs()
+          
+        except BaseException as ex:
+            print(ex)
 
        
         Logger.logMessage("RUN GROUP: " + self.model.group_name)

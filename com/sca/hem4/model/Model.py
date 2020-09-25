@@ -164,6 +164,7 @@ class Model():
         self.acuteplot_df = None
         self.dependencies = []
 
+
         # Initialize model options
         self.initializeAltRecOptions()
 
