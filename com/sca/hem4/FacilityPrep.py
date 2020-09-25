@@ -217,7 +217,7 @@ class FacilityPrep():
         # retrieve blocks
         maxdist = self.model.facops[max_dist].iloc[0]
         modeldist = self.model.facops[model_dist].iloc[0]
-
+        
         if self.model.altRec_optns.get('altrec', None):
 
             self.innerblks, self.outerblks = self.getBlocksFromUrep(facid, cenx, ceny, cenlon, cenlat, facutmzonenum,

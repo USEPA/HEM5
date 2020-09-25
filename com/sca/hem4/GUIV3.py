@@ -1205,7 +1205,7 @@ class Hem(Page):
         """
         Function for uploading Alternate Receptors
         """
-
+        
         fullpath = self.openFile(askopenfilename())
         if fullpath is not None:
 
@@ -1214,6 +1214,7 @@ class Hem(Page):
             
             if self.model.altreceptr.dataframe.empty == False:
                 self.model.altRec_optns["path"] = fullpath
+                self.model.altRec_optns["altrec"] = True
     
                 # Update the UI
                 [self.scr.insert(tk.INSERT, msg) for msg in self.model.altreceptr.log]
