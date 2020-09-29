@@ -2264,7 +2264,7 @@ class Options(Page):
         
     
     
-    def update_census(self):
+    def update_census(self, event):
         """
         Function creates thread for running HEM4 concurrently with tkinter GUI
         """
