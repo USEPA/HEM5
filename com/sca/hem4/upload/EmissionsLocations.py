@@ -51,7 +51,7 @@ class EmissionsLocations(InputFile):
     def clean(self, df):
 
         cleaned = df.fillna({utmzone:'0N', source_type:'', lengthx:1, lengthy:1, angle:0,
-                                    horzdim:0, vertdim:0, areavolrelhgt:0, stkht:0,
+                                    horzdim:0, vertdim:0, areavolrelhgt:0, stkht:0, stkdia:0,
                                     stkvel:0, stktemp:0, elev:0, x2:0, y2:0, method:1, massfrac:1, partdiam:1})
         cleaned.replace(to_replace={fac_id:{"nan":""}, source_id:{"nan":""}}, inplace=True)
         cleaned = cleaned.reset_index(drop = True)
@@ -286,7 +286,7 @@ class EmissionsLocations(InputFile):
                 Logger.logMessage("Facility " + facility + ": Stack height value " + str(row[stkht]) +
                                   " out of range. Defaulting to 0.")
                 row[stkht] = 0
-            if row[stkdia] <= 0:
+            if (row[source_type] in ['P', 'C', 'H']) and (row[stkdia] <= 0):
                 Logger.logMessage("Facility " + facility + ": Stack diameter value " + str(row[stkdia]) +
                                   " out of range.")
                 return None

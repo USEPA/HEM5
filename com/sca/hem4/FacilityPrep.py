@@ -229,8 +229,8 @@ class FacilityPrep():
                                              modeldist, sourcelocs, op_overlap, self.model)
 
         if self.innerblks.empty:
-            Logger.logMessage("No inner receptors were assigned. Aborting processing for this facility.")
-            raise RuntimeError("Empty innerblks")
+            Logger.logMessage("No discrete receptors within the max distance. Aborting processing for this facility.")
+            raise ValueError("No discrete receptors")
 
         # Assign to the model
         self.model.innerblks_df = self.innerblks
@@ -846,9 +846,16 @@ class FacilityPrep():
         altrecs['angle'] = altrecs.apply(lambda row: bearing(row[utme],row[utmn],cenx,ceny), axis=1)
         altrecs['urban_pop'] = 0
 
-        #subset the altrecs dataframe to blocks that are within the modeling distance of the facility
+        #subset the altrecs dataframe to blocks that are within the max distance of the facility
         modelblks = altrecs.query('distance <= @maxdist')
 
+        # If no blocks within max distance, then this facility cannot be modeled; skip it.
+        if modelblks.empty == True:
+            Logger.logMessage("There are no discrete receptors within the max distance of this facility. " +
+                              "Aborting processing of this facility.")
+            raise RuntimeError("No discrete receptors")
+            
+        
         # Split modelblks into inner and outer block receptors
         innerblks, outerblks = in_box(modelblks, sourcelocs, modeldist, maxdist, overlap_dist, self.model)
 

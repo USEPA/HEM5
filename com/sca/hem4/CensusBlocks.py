@@ -2,6 +2,7 @@ import math
 
 from com.sca.hem4.support.UTM import *
 from com.sca.hem4.model.Model import *
+from com.sca.hem4.log.Logger import Logger
 
 rec_id = 'rec_id';
 fips = 'fips';
@@ -294,11 +295,15 @@ def getblocks(cenx, ceny, cenlon, cenlat, utmzone, hemi, maxdist, modeldist, sou
         state_pd = read_json_file(state, dtype_dict)
         state_pd.columns = [x.lower() for x in state_pd.columns]
         state_pd.rename(inplace=True, index=str, columns={'rec_no' : 'rec_id'})
-#        state_pd = pd.DataFrame.from_dict(state_data['data'], orient='columns')
-        
-        
         check = state_pd[state_pd[fips].isin(locations)]
         frames.append(check)
+
+    # If no blocks within max distance, then this facility cannot be modeled; skip it.
+    if len(frames) == 0:
+        Logger.logMessage("There are no discrete receptors within the max distance of this facility. " +
+                          "Aborting processing of this facility.")
+        raise ValueError("No discrete receptors selected within max distance")
+            
 
     #combine all frames df's
     censusblks = pd.concat(frames)
