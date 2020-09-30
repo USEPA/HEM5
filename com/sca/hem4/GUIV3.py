@@ -2264,13 +2264,12 @@ class Options(Page):
         
     
     
-    def update_census(self):
+    def update_census(self, event):
         """
         Function creates thread for running HEM4 concurrently with tkinter GUI
         """
         executor = ThreadPoolExecutor(max_workers=1)
 
-        self.processor = Processor(self.hem.model, Event())
         future = executor.submit(self.censusupdater.update, self.censusUpdatePath)
         future.add_done_callback(self.update_census_finish)
 
