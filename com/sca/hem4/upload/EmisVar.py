@@ -122,10 +122,10 @@ class EmisVar(DependentInputFile):
         # the emission location file
 
         # facility/source ids from emission variation file
-        var_ids = set(df[[fac_id, source_id]].apply(lambda x: ''.join(x), axis=1).tolist())
+        var_ids = set(df[[fac_id, source_id]].apply(lambda x: ','.join(x), axis=1).tolist())
 
         # facility/source ids from emission location file
-        model_ids = set(self.emisloc_df[[fac_id, source_id]].apply(lambda x: ''.join(x), axis=1).tolist())
+        model_ids = set(self.emisloc_df[[fac_id, source_id]].apply(lambda x: ','.join(x), axis=1).tolist())
 
         if len(set(var_ids).difference(set(model_ids))) > 0:
             missing = set(var_ids).difference(set(model_ids))

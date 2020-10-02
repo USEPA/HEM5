@@ -413,7 +413,7 @@ class DepDplt(Page):
         fullpath = self.openFile(askopenfilename())
         if fullpath is not None: 
             self.uploader.uploadDependent("particle depletion", fullpath, 
-                                           self.model.faclist.dataframe, facilities)
+                                           self.model.hapemis.dataframe, facilities)
             
             if self.model.partdep.dataframe.empty == False:
 

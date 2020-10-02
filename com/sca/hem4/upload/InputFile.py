@@ -86,7 +86,7 @@ class InputFile(ABC):
                 numeric_only = df.copy()
                 numeric_only[self.numericColumns] = numeric_only[self.numericColumns].applymap(InputFile.is_numeric)
                 if not numeric_only.equals(df):
-                    messagebox.showinfo("Error: Some non-numeric values were found in numeric columns in this data set: " +
+                    messagebox.showinfo("Error uploading input file", "Some non-numeric values were found in numeric columns in this data set: " +
                                       os.path.basename(self.path))
                     dataframe = pd.DataFrame()
                     return dataframe
@@ -126,7 +126,7 @@ class InputFile(ABC):
                 numeric_only = df.copy()
                 numeric_only[self.numericColumns] = numeric_only[self.numericColumns].applymap(InputFile.is_numeric)
                 if not numeric_only.equals(df):
-                    messagebox.showinfo("Error: Some non-numeric values were found in numeric columns in this data set: " +
+                    messagebox.showinfo("Error uploading input file", "Some non-numeric values were found in numeric columns in this data set: " +
                                   os.path.basename(self.path))
                     
                     dataframe = pd.Dataframe()

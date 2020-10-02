@@ -52,6 +52,7 @@ class Downwash(DependentInputFile):
     def clean(self, df):
 
         df.replace(to_replace={fac_id:{"nan":""}, source_id:{"nan":""}}, inplace=True)
+        df[self.numericColumns] = df[self.numericColumns].fillna(0)
         cleaned = df.reset_index(drop = True)
 
         # upper case of selected fields
@@ -153,6 +154,16 @@ class Downwash(DependentInputFile):
             return None
 
 
+        # Also check that if downwash was called for, then the downwash file contains point source sourceids found in the emisloc file
+        if d_in_e.empty:
+            Logger.logMessage("Building downwash is called for, but the downwash file does not contain any point source type " +
+                              "source id's. Please add appropriate source id's to the downwash file or turn off downwash.")
+            
+            messagebox.showinfo("No downwash sources", "Building downwash is called for, but the downwash file does not contain any point source type " +
+                              "source id's. Please add appropriate source id's to the downwash file or turn off downwash.")
+            
+            return None
+        
 
         Logger.logMessage("Uploaded building downwash parameters for [" + ",".join(check_downwash_assignment) + "]\n")
         return df
