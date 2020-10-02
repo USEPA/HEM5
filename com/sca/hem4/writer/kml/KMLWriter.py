@@ -1474,11 +1474,6 @@ class KMLWriter():
             facutmzonestr = str(facutmzonenum) + hemi
 
 
-#            # Create utmn and utme columns. Fill with any provided utm coordinates otherwise fill with 0.
-#            emislocs[["utmn", "utme"]] = emislocs.apply(lambda row: self.copyUTMColumns(row["lat"],row["lon"])
-#                                     if row['location_type']=='U' else [0, 0],
-#                                     result_type="expand", axis=1)
-
             # Compute lat/lon of any user supplied UTM coordinates
             emislocs[["lat", "lon"]] = emislocs.apply(lambda row: UTM.utm2ll(row["lat"],row["lon"],row["utmzone"]) 
                                if row['location_type']=='U' else [row["lat"],row["lon"]], result_type="expand", axis=1)
@@ -1612,10 +1607,6 @@ class KMLWriter():
         # Determine the common utm zone to use for this facility and the hemisphere
         facutmzonenum, hemi = UTM.zone2use(emislocs)
 
-#        # Create utmn and utme columns. Fill with any provided utm coordinates otherwise fill with 0.
-#        emislocs[["utmn", "utme"]] = emislocs.apply(lambda row: self.copyUTMColumns(row["lat"],row["lon"])
-#                                 if row['location_type']=='U' else [0, 0],
-#                                 result_type="expand", axis=1)
 
         # Compute lat/lon of any user supplied UTM coordinates
         emislocs[["lat", "lon"]] = emislocs.apply(lambda row: UTM.utm2ll(row["lat"],row["lon"],row["utmzone"]) 

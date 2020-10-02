@@ -135,7 +135,7 @@ class Polyvertex(DependentInputFile):
         polyfilesrcs = df[[fac_id, source_id]]
         polyfilesrcs['facsrc'] = polyfilesrcs[fac_id] + ", " + polyfilesrcs[source_id]
         check_poly_assignment = set(polyfilesrcs['facsrc'])
-
+        
         # get polyvertex fac/sources list from emisloc for the check
         find_p = self.emisloc_df[self.emisloc_df[source_type] == "I"][[fac_id, source_id]]
         find_p['facsrc'] = find_p[fac_id] + ", " + find_p[source_id]

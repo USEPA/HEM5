@@ -386,7 +386,7 @@ class Summary(Page):
     
         
         ai_label = tk.Label(self.l10, font=TEXT_FONT, width=22, anchor='w', bg=self.tab_color, text="Acute Impacts")
-        ai_label.grid(row=1, column=4, padx=10, sticky="W")
+        ai_label.grid(row=1, column=4, padx=5, sticky="W")
 
         #unchecked box      
         self.aLabel = tk.Label(self.l10, image=self.uncheckedIcon, bg=self.tab_color)

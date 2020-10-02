@@ -17,14 +17,12 @@ part_dens = 'part_dens';
 class Particle(DependentInputFile):
 
     def __init__(self, path, dependency, facilities):
-        self.faclist_df = dependency
+        self.hapemis_df = dependency
         # Facilities that need particle size data:
         self.particleFacilities = set(facilities)
         DependentInputFile.__init__(self, path, dependency, facilities)
 
     def createDataframe(self):
-
-        facid_list = self.faclist_df[fac_id].tolist()
         
         # Specify dtypes for all fields
         self.numericColumns = [part_diam,mass_frac,part_dens]
@@ -74,6 +72,17 @@ class Particle(DependentInputFile):
                 Logger.logMessage(d)
             return None
 
+        # Verify that all particle source id's from hapemis are present in the particle file
+        hapemis_srcs = self.hapemis_df[self.hapemis_df[fac_id].isin(self.particleFacilities)][[fac_id, source_id]].drop_duplicates()
+        part_srcs = df[[fac_id, source_id]].drop_duplicates()
+        if len(hapemis_srcs.merge(part_srcs)) != len(hapemis_srcs):
+            Logger.logMessage("There are some source id's that need particle data that are not in the particle file. " +
+                              "Please correct the particle file")
+            messagebox.showinfo("Missing source id's", "There are some source id's that need particle data that are not in the particle file. " +
+                              "Please correct the particle file")
+            return None
+        
+        
         for index, row in df.iterrows():
 
             facility = row[fac_id]

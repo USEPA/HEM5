@@ -37,13 +37,14 @@ class BuoyantLine(DependentInputFile):
         self.dataframe = multibuoy_df
 
     def clean(self, df):
-        df.replace(to_replace={fac_id:{"nan":""}}, inplace=True)
-        cleaned = df.reset_index(drop = True)
+        cleaned = df.fillna({avgbld_len:0, avgbld_hgt:0, avgbld_wid:0, avglin_wid:0, avgbld_sep:0, avgbuoy:0})        
+        cleaned.replace(to_replace={fac_id:{"nan":""}}, inplace=True)
+        cleaned = cleaned.reset_index(drop = True)
 
         return cleaned
 
     def validate(self, df):
-
+        
         # ----------------------------------------------------------------------------------
         # Strict: Invalid values in these columns will cause the upload to fail immediately.
         # ----------------------------------------------------------------------------------
