@@ -34,8 +34,8 @@ class KMLWriter():
     def write_kml_emis_loc(self, model):
         """
         Create KMZ of all sources from all facilities. 
-        """
- 
+        """            
+        
         # Define the name of the output kml file
         allkml_fname = model.rootoutput + "AllFacility_source_locations.kml"
        
@@ -68,26 +68,43 @@ class KMLWriter():
             # Subset srcmap to this facility
             sub_map = srcmap.loc[srcmap.fac_id==facid]
 
-            # Determine an approximate average of this facility's source locations (lat/lons)
-            # This will represent the center of the facility
-            faclatlons = sub_map[['lat', 'lon']].values.tolist()
-            latlon_array = np.array(faclatlons)
-            lats = latlon_array[:,0:1]
-            lons = latlon_array[:,1:2]
-            if (len(np.unique(lats)) > 1) or (len(np.unique(lons)) > 1): #more than one source location
-                maxdist = 0.0
-                for pair in combinations(faclatlons, 2):
-                    firstpair = tuple(pair[0])
-                    secondpair = tuple(pair[1])
-                    d = self.distance(firstpair, secondpair)
-                    if d > maxdist:
-                        maxdist = d
-                        maxpair = pair
-                avglat, avglon = self.midpoint(maxpair[0], maxpair[1])
-                                
+            # Determine the center of the facility. If provided by the user, use it. Otherwise compute an
+            # average from the emission source locations (lat/lons)
+            fcenter = model.faclist.dataframe[model.faclist.dataframe['fac_id']==facid]['fac_center'].iloc[0]
+            if fcenter != "":
+                
+                # User supplied
+                components = fcenter.split(',')
+                if components[0] == "L":
+                    avglat = float(components[1])
+                    avglon = float(components[2])
+                else:
+                    ceny = int(float(components[1]))
+                    cenx = int(float(components[2]))   
+                    zone = components[3].strip()
+                    avglat, avglon = UTM.utm2ll(ceny, cenx, zone)
+
             else:
-                avglat = latlon_array[0,0]
-                avglon = latlon_array[0,1]
+
+                # Not supplied, compute average                
+                faclatlons = sub_map[['lat', 'lon']].values.tolist()
+                latlon_array = np.array(faclatlons)
+                lats = latlon_array[:,0:1]
+                lons = latlon_array[:,1:2]
+                if (len(np.unique(lats)) > 1) or (len(np.unique(lons)) > 1): #more than one source location
+                    maxdist = 0.0
+                    for pair in combinations(faclatlons, 2):
+                        firstpair = tuple(pair[0])
+                        secondpair = tuple(pair[1])
+                        d = self.distance(firstpair, secondpair)
+                        if d > maxdist:
+                            maxdist = d
+                            maxpair = pair
+                    avglat, avglon = self.midpoint(maxpair[0], maxpair[1])
+                                    
+                else:
+                    avglat = latlon_array[0,0]
+                    avglon = latlon_array[0,1]
             
             # Setup an Emission Sources folder for this facility
             name_str = "Facility " + facid + " Emission sources"
