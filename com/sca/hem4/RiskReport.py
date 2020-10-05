@@ -747,15 +747,20 @@ class Summary(Page):
                     reportNameArgs['AcuteImpacts'] = None                
                 if report == "Source Type Risk Histogram":
                     reportNames.append('SourceTypeRiskHistogram')
-                    #pass position number and character number
+                    # Pass starting position and number of characters
+                    # Translate user supplied starting position to array index value (0-based indexing)
                     if self.pos_num.get() == '' or self.pos_num.get() == '0':
-                        startpos = 1
+                        startpos = 0
                         print(startpos)
                     else:
                         startpos = int(self.pos_num.get()) - 1
                         print(startpos)
                     
-                    numchars = int(self.chars_num.get()) 
+                    # Convert non-numeric to 0 (handles blank case)
+                    if self.chars_num.get().isnumeric():
+                        numchars = int(self.chars_num.get())
+                    else:
+                        numchars = 0
                     print(numchars)
                         
                     reportNameArgs['SourceTypeRiskHistogram'] = [startpos, numchars] 
@@ -779,15 +784,20 @@ class Summary(Page):
             
             #check if source type has been selected
             if "Source Type Risk Histogram" in self.checked:
-                if numchars == '' or numchars ==' ' or numchars == None:
-                    messagebox.showinfo('Missing sourcetype id characters',
-                                        'Please enter the number of characters of the sourcetype ID.')
-                
+                if startpos < 0:
+                    messagebox.showinfo('Invalid starting position',
+                                        'Starting position of the sourcetype ID must be > 0.')
                     ready = False
-  
                 else:
+                    if numchars <= 0:
+                        messagebox.showinfo('Invalid number of sourcetype ID characters',
+                                            'Please enter a valid number of characters of the sourcetype ID.')
                     
-                    ready = True
+                        ready = False
+      
+                    else:
+                        
+                        ready = True
                     
             else:
                 ready = True
