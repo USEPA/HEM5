@@ -142,13 +142,13 @@ class EmisVar(DependentInputFile):
         vtype = df['variation'].tolist()
 
         if 'SEASON' in vtype:
-
+            
             # check that seasonal variaton only has 4 values
             seasons = df[df['variation'].str.upper() == 'SEASON']
             print(seasons)
             s_wrong = []
             for row in seasons.iterrows():
-                if len(row[1].values[3:]) != 4:
+                if len(row[1].dropna().values[3:]) != 4:
                     s_wrong.append(seasons[source_id].values[0])
 
             if len(s_wrong) > 0:
@@ -164,7 +164,7 @@ class EmisVar(DependentInputFile):
             wspeed = df[df['variation'].str.upper() == 'WSPEED']
             w_wrong = []
             for row in wspeed.iterrows():
-                if len(row[1].values[3:]) != 6:
+                if len(row[1].dropna().values[3:]) != 6:
                     w_wrong.append(wspeed[source_id].values[0])
 
             if len(w_wrong) > 0:
@@ -180,7 +180,7 @@ class EmisVar(DependentInputFile):
             month = df[df['variation'].str.upper() == 'MONTH']
             m_wrong = []
             for row in month.iterrows():
-                if len(row[1].values[3:]) != 12:
+                if len(row[1].dropna().values[3:]) != 12:
                     m_wrong.append(month[source_id].values[0])
 
             if len(m_wrong) > 0:
