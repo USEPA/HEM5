@@ -158,6 +158,14 @@ class Page(tk.Frame):
     def show(self):
         self.lift()
         
+    def disabled_message(self, event):
+        """ Pop up for user when trying to run census updatae and hem4 modelling 
+            concurrently
+            
+        """
+        
+        messagebox.showinfo("Application Running","This feature is disabled while the application is running.")
+        
         
         
     #%% File upload helpers
@@ -1745,6 +1753,9 @@ class Hem(Page):
         self.running = True
         self.disable_buttons()
         
+        #disable options tab
+        self.nav.optionsLabel.bind("<Button-1>", partial(self.disabled_message))
+        self.nav.gearLabel.bind("<Button-1>", partial(self.disabled_message))
         
         
         
@@ -2002,11 +2013,14 @@ class Hem(Page):
         self.optional.instruction_instance.set(" ")
         self.depdeplt.instruction_instance.set(" ")
         
-        
+        #reenable options tab
+        self.nav.optionsLabel.bind("<Button-1>", partial(self.nav.lift_page, self.nav.optionsLabel, self.nav.gearLabel, self.nav.options, self.nav.current_button))
+        self.nav.gearLabel.bind("<Button-1>", partial(self.nav.lift_page, self.nav.gearLabel, self.nav.optionsLabel, self.nav.options, self.nav.current_button))
         
         self.model.reset()
         self.nav.iconLabel.configure(image=self.nav.runIcon)
         self.abortLabel.destroy()
+        
         
         self.running = False
   
@@ -2188,7 +2202,9 @@ class Hem(Page):
 class Options(Page):
     def __init__(self, nav, *args, **kwargs):
         Page.__init__(self, *args, **kwargs)
-
+        
+        self.home = nav 
+        
         container = tk.Frame(self, bg=self.tab_color, bd=2)
         #        self.buttonframe.pack(side="w", fill="y", expand=False)
         container.pack(side="top", fill="both", expand=True) 
@@ -2268,16 +2284,28 @@ class Options(Page):
         """
         Function creates thread for running HEM4 concurrently with tkinter GUI
         """
+        
+        #disable hem4 tab
+        self.home.newrunLabel.bind("<Button-1>", partial(self.disabled_message))
+        self.home.iconLabel.bind("<Button-1>", partial(self.disabled_message))
+        
+        
         executor = ThreadPoolExecutor(max_workers=1)
 
         future = executor.submit(self.censusupdater.update, self.censusUpdatePath)
         future.add_done_callback(self.update_census_finish)
+        
+        
 
     def update_census_finish(self, future):
         self.callbackQueue.put(self.finish_census_update)
 
     def finish_census_update(self):
         self.folder_select['text'] = "Please select a census update file:"
+        
+        #reenable hem4 tab
+        self.home.newrunLabel.bind("<Button-1>", partial(self.home.lift_page, self.home.newrunLabel, self.home.iconLabel, self.home.hem, self.home.current_button))
+        self.home.iconLabel.bind("<Button-1>", partial(self.home.lift_page, self.home.iconLabel, self.home.newrunLabel, self.home.hem, self.home.current_button))
 
     def uploadCensusUpdates(self, event):
         self.censusupdater = CensusUpdater()
