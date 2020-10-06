@@ -26,14 +26,14 @@ class CsvWriter(Writer):
 
         if self.filename.find('all_outer_receptors') == -1:
             data = dataframe.values
-            with open(self.filename, 'a', encoding='UTF-8', newline='') as csvarchive:
+            with open(self.filename, 'a', encoding='UTF-8-sig', newline='') as csvarchive:
                 writer = csv.writer(csvarchive, quoting=csv.QUOTE_NONNUMERIC)
                 self.writeFormatted(writer, data)
         else:
             self.writeBigCsv(dataframe)
 
     def writeHeader(self, headers=None):
-        with open(self.filename, 'w', encoding='UTF-8', newline='') as csvarchive:
+        with open(self.filename, 'w', encoding='UTF-8-sig', newline='') as csvarchive:
             writer = csv.writer(csvarchive, quoting=csv.QUOTE_NONNUMERIC)
 
             if headers is None:

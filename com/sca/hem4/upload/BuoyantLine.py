@@ -88,7 +88,7 @@ class BuoyantLine(DependentInputFile):
                 messagebox.showinfo("Out of Range", "Facility " + facility + ": avg line width " + str(row[avglin_wid]) +
                                   " out of range.")
                 return None
-            if row[avgbld_sep] <= 0:
+            if row[avgbld_sep] < 0:
                 Logger.logMessage("Facility " + facility + ": avg building separation " + str(row[avgbld_sep]) +
                                   " out of range.")
                 messagebox.showinfo("Out of Range", "Facility " + facility + ": avg building separation " + str(row[avgbld_sep]) +
