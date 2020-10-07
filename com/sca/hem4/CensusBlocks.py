@@ -332,7 +332,7 @@ def getblocks(cenx, ceny, cenlon, cenlat, utmzone, hemi, maxdist, modeldist, sou
     
     # Split modelblks into inner and outer block receptors
     innerblks, outerblks = in_box(modelblks, sourcelocs, modeldist, maxdist, overlap_dist, model)
-
+        
     # For inner blocks, convert utme, utmn, utmz, and population to appropriate numeric types
     innerblks[utme] = innerblks[utme].astype(np.float64)
     innerblks[utmn] = innerblks[utmn].astype(np.float64)
