@@ -313,7 +313,7 @@ class FacilityPrep():
                 else:
                     user_recs['fips'] = 'U0000'
                     user_recs['idmarplot'] = 'U0000U' + user_recs['rec_id']
-                 
+                  
                 # Check for any user receptors that are already in the census data
                 dups = pd.merge(self.innerblks, user_recs, how='inner', on=[utme, utmn])
                 if dups.empty == False:
