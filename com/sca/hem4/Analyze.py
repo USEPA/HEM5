@@ -13,6 +13,7 @@ import pandas as pd
 from pandastable import Table, filedialog, np
 
 import os
+import sys
 import glob
 import importlib 
 
@@ -23,6 +24,9 @@ from concurrent.futures import ThreadPoolExecutor
 from com.sca.hem4.dash.HEM4dash import HEM4dash
 from threading import Timer
 import traceback
+import time
+from flask import request
+from com.sca.hem4.log.Logger import Logger
 
 
 TITLE_FONT= ("Daytona", 16, 'bold')
@@ -230,27 +234,39 @@ class Analyze(Page):
  
     
     def dash_button(self, event):
+
+        # Start a new thread for dash
         executor = ThreadPoolExecutor(max_workers=1)
         future = executor.submit(self.runDash)
-        self.instruction_instance.set(" ")   
+        self.instruction_instance.set(" ")
+        
 
 
     def runDash(self,  arguments=None):
-        try:
+        try:           
+            # Redirect stdout
+            orig_stdout = sys.stdout
+            fileDir = os.path.dirname(os.path.realpath('__file__'))
+            stdout_file = os.path.join(fileDir, 'output/hem4.log')
+            sys.stdout = open(stdout_file, 'w')
+
+            # Run the dash app
             dirname = tk.filedialog.askdirectory()
             dashapp = HEM4dash(dirname)
             appobj = dashapp.buildApp()   
             if appobj != None:
                 Timer(1, self.open_browser).start()
-                appobj.run_server(debug= False, port=8030)
-                
-                
+                appobj.run_server(debug= False, port=8030)               
+
+            # Reset stdout to original state
+            sys.stdout = orig_stdout
+                 
         except BaseException as ex:
             self.exception = ex
             fullStackInfo=''.join(traceback.format_exception(
                 etype=type(ex), value=ex, tb=ex.__traceback__))
-            message = "An error occurred while trying to run the dash app:\n" + fullStackInfo
-            print(message)
+            message = "An error occurred while trying to run the Dash app:\n" + fullStackInfo
+            Logger.logMessage(message)
 
         
     def open_browser(self):

@@ -64,14 +64,6 @@ class UserReceptors(DependentInputFile):
                 Logger.logMessage(d)
             return None
 
-        duplatlon = self.duplicates(df, [lon, lat])
-        if len(duplatlon) > 0:
-            Logger.logMessage("One or more records in the User Receptors List have duplicate lat/lons (key=lon, lat):")
-            messagebox.showinfo("Duplicate lat/lon", "One or more records in the User Receptors List have duplicate lat/lons (key=lon, lat).")
-            for d in duplatlon:
-                Logger.logMessage(d)
-            return None
-
         
         for index, row in df.iterrows():
 
