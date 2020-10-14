@@ -65,6 +65,7 @@ class FacilityPrep():
         emislocs[['utmn_y2', 'utme_x2']] = emislocs.apply(lambda row: UTM.ll2utm_alt(row["lat_y2"],row["lon_x2"],facutmzonenum,hemi)
                           , result_type="expand", axis=1)
 
+        
         #%%---------- HAP Emissions --------------------------------------
         hapemis = self.model.hapemis.dataframe.loc[self.model.hapemis.dataframe[fac_id] == facid]
 

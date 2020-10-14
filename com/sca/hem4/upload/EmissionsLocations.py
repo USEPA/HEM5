@@ -218,12 +218,13 @@ class EmissionsLocations(InputFile):
                     messagebox.showinfo("Invalid source IDs", "Facility " + facility + " Source ID " + row[source_id] + ": must supply non-zero initial " +
                                       "lateral and vertical dimensions for volume source in the Emissions Locations List.")
                     return None
-
-            if row[lon] == row[x2] and row[lat] == row[y2]:
+            
+            # Compare starting and ending coordinates to the 5th decimal place (approximately 1 meter)
+            if round(row[lon], 5) == round(row[x2], 5) and round(row[lat], 5) == round(row[y2], 5):
                     Logger.logMessage("Facility/Source: " + facility + "/" + row[source_id]  + " has identical starting and ending coordinates " +
-                                      "in the Emissions Locations List.")
+                                      "(within 5 decimal places) in the Emissions Locations List. Please change.")
                     messagebox.showinfo("Invalid source coordinates", "Facility/Source: " + facility + "/" + row[source_id]  + " has identical starting and ending coordinates " +
-                                      "in the Emissions Locations List.")
+                                      "(within 5 decimal places) in the Emissions Locations List. Please change.")
                     return None
 
             if row[source_type] in ['B', 'N']:
