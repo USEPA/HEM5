@@ -607,7 +607,6 @@ class HEM4dash():
                     [Input(component_id='input1', component_property='value')]
                 )
                 def check_status(value):
-                    print("Called check_status")
                     self.shutdown()
                     return 'Shutting down server'
 
@@ -623,7 +622,7 @@ class HEM4dash():
         func = request.environ.get('werkzeug.server.shutdown')
         if func is None:
             raise RuntimeError('Not running with the Werkzeug Server')
+        time.sleep(20)
         func()
-        print("HEM4dash shutdown the server!")
  
  
