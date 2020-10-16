@@ -1586,15 +1586,21 @@ class Hem(Page):
         self.ready = False
         
         #make sure there is census and MetData
-        if len(os.listdir('census') ) == 0 or os.path.isdir('census') == False:
-            messagebox.showinfo('Census data missing', 'Census data is missing. Please check the census folder.')
-            
+        if os.path.isdir('census') == False:
+            messagebox.showinfo('No census folder', 'The census folder does not exist. Please create a census folder and populate with census data.')
             return None
+        else:
+            if len(os.listdir('census') ) == 0:
+                messagebox.showinfo('Census data missing', 'Census data is missing. Please check the census folder.')
+                return None
         
-        if len(os.listdir('aermod/MetData') ) == 0 or os.path.isdir('aermod/MetData') == False:
-            messagebox.showinfo('MetData missing', 'MetData is missing. Please check the census folder.')
-            
+        if os.path.isdir('aermod/MetData') == False:
+            messagebox.showinfo('No MetData folder', 'The MetData folder does not exist. Please create a MetData folder and populate with meteorology data.')
             return None
+        else:
+            if len(os.listdir('aermod/MetData') ) == 0:
+                messagebox.showinfo('MetData missing', 'Meteorology data is missing. Please check the MetData folder.')
+                return None
         
         
         #Check inputs

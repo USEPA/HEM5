@@ -65,6 +65,7 @@ class FacilityPrep():
         emislocs[['utmn_y2', 'utme_x2']] = emislocs.apply(lambda row: UTM.ll2utm_alt(row["lat_y2"],row["lon_x2"],facutmzonenum,hemi)
                           , result_type="expand", axis=1)
 
+        
         #%%---------- HAP Emissions --------------------------------------
         hapemis = self.model.hapemis.dataframe.loc[self.model.hapemis.dataframe[fac_id] == facid]
 
@@ -313,6 +314,16 @@ class FacilityPrep():
                 else:
                     user_recs['fips'] = 'U0000'
                     user_recs['idmarplot'] = 'U0000U' + user_recs['rec_id']
+                  
+                # Check for any user receptors that are already in the census data
+                dups = pd.merge(self.innerblks, user_recs, how='inner', on=[utme, utmn])
+                if dups.empty == False:
+                    # Some user receptors are already in the census. Remove these from the user receptor list.
+                    user_recs = user_recs[~user_recs.set_index([utme, utmn]).index.isin(dups.set_index([utme, utmn]).index)].copy()
+                
+                    msg = 'The following user receptors have coordinates that are already in the Census data. They ' + \
+                            ' will be removed from the user receptor list. ' + str(dups['rec_id_y'].tolist())
+                    Logger.logMessage(msg)
                 
                 # Put into model
                 self.model.userrecs_df = user_recs

@@ -63,6 +63,7 @@ class UserReceptors(DependentInputFile):
             for d in duplicates:
                 Logger.logMessage(d)
             return None
+
         
         for index, row in df.iterrows():
 
@@ -122,8 +123,7 @@ class UserReceptors(DependentInputFile):
                 return None
                 
                 
-        # check for unassigned user receptors
-        
+        # check for unassigned user receptors        
         check_receptor_assignment = set(self.faclist_df[fac_id].loc[self.faclist_df[user_rcpt]=='Y'])
         user_rec_facs = set(df[fac_id])
         
