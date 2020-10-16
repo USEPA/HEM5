@@ -57,7 +57,7 @@ import queue
 
 
 import numpy as np
-#from pandastable import Table, filedialog, np
+from pandastable import Table, filedialog, np
 
 
 
@@ -1255,9 +1255,13 @@ class Hem(Page):
         
         if self.check_altrec.get() == 2:
         
-            self.add_urepalt()
+            
+            
+            
             if 'altrec' not in self.model.dependencies:
                 self.model.dependencies.append('altrec')
+                self.add_urepalt()
+                
             self.check_altrec.set(2)
             
         elif self.check_altrec.get() == 1:
