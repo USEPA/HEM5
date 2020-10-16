@@ -71,9 +71,10 @@ class Particle(DependentInputFile):
             for d in duplicates:
                 Logger.logMessage(d)
             return None
-
+        
         # Verify that all particle source id's from hapemis are present in the particle file
-        hapemis_srcs = self.hapemis_df[self.hapemis_df[fac_id].isin(self.particleFacilities)][[fac_id, source_id]].drop_duplicates()
+        hapemis_srcs = (self.hapemis_df[self.hapemis_df[fac_id].isin(self.particleFacilities) & 
+                        self.hapemis_df['part_frac']>0][[fac_id, source_id]].drop_duplicates())
         part_srcs = df[[fac_id, source_id]].drop_duplicates()
         if len(hapemis_srcs.merge(part_srcs)) != len(hapemis_srcs):
             Logger.logMessage("There are some source id's that need particle data that are not in the particle file. " +
