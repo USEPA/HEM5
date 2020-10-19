@@ -44,6 +44,14 @@ class FacilityPrep():
         #%%---------- Emissions Locations --------------------------------------
         emislocs = self.model.emisloc.dataframe.loc[self.model.emisloc.dataframe[fac_id] == facid]
 
+        
+        # If there is a bouyant line source with other sources, then it has to come last because of an Aermod v19191 bug.
+        blRows = emislocs[emislocs[source_type]=='B']
+        srcTypes = set(emislocs[source_type])
+        if not blRows.empty and len(srcTypes) > 1:
+            emislocs.drop(emislocs[emislocs[source_type]=='B'].index, inplace = True)
+            emislocs = emislocs.append(blRows, ignore_index=True)
+
         # Determine the utm zone to use for this facility. Also get the hemisphere (N or S).
         facutmzonenum, hemi = UTM.zone2use(emislocs)
         facutmzonestr = str(facutmzonenum) + hemi
