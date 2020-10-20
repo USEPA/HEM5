@@ -1254,10 +1254,11 @@ class Hem(Page):
     def set_altrec(self):
         
         if self.check_altrec.get() == 2:
-        
-            self.add_urepalt()
+            
             if 'altrec' not in self.model.dependencies:
                 self.model.dependencies.append('altrec')
+                self.add_urepalt()
+                
             self.check_altrec.set(2)
             
         elif self.check_altrec.get() == 1:
@@ -1955,7 +1956,7 @@ class Hem(Page):
         self.button_file.unbind('<Button1>')
         self.fileLabel.unbind('<Button1>')
         
-        self.hap_file['text'] = "2. Please select a Hap Emissions file:"
+        self.hap_file['text'] = "2. Please select a HAP Emissions file:"
         self.hap_file.unbind('<Button1>')
         self.hapLabel.unbind('<Button1>')
         
@@ -1964,8 +1965,13 @@ class Hem(Page):
         self.emisLabel.unbind('<Button1>')
         
         self.group_list.set('')
-
-        self.check_altrec.set(1)
+        
+        #reset alt reeceptors
+        if 'altrec' in self.model.dependencies:
+            self.model.dependencies.remove('altrec')
+            self.urepLabel.destroy()
+            self.urep_file.destroy()
+            self.check_altrec.set(1)
         
          #find the last next button and disable that one
 
