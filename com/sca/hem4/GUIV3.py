@@ -1880,6 +1880,8 @@ class Hem(Page):
                 self.nav.iconLabel.configure(image=self.nav.cancelIcon)
                 Logger.logMessage("Stopping HEM4...")
                 self.processor.abortProcessing()
+                self.abortLabel.unbind('<Button-1>')
+                self.abortLabel['text'] = "ABORTING..."
                 self.aborted = True
 #                self.display_app_quit()
 
