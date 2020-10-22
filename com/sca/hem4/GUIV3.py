@@ -216,8 +216,12 @@ class MainView(tk.Frame):
         #instantiate start page
         self.nav = Start(self)
         self.nav.place(in_=self.container, relx=0.3, relwidth=0.7, relheight=1)
-        
-        
+
+        #instantiate log tab
+        self.log = Log(self)
+        self.log.place(in_=self.container, relx=0.3, relwidth=0.7, relheight=1)
+        self.log.lower()
+
         #instantiate hem4 start page
         self.hem = Hem(self)
         self.hem.place(in_=self.container, relx=0.3, relwidth=0.7, relheight=1)
@@ -232,13 +236,6 @@ class MainView(tk.Frame):
         self.analyze = Analyze(self)
         self.analyze.place(in_=self.container, relx=0.3, relwidth=0.7, relheight=1)
         self.analyze.lower()
-        
-        
-        
-        #instantiate log tab
-        self.log = Log(self)
-        self.log.place(in_=self.container, relx=0.3, relwidth=0.7, relheight=1)
-        self.log.lower()
         
         
         self.options = Options(self)
@@ -618,7 +615,18 @@ class Hem(Page):
 
         # Create the model
         self.model = Model()
-        
+
+        # Create threading helpers
+        self.messageQueue = queue.Queue()
+        self.callbackQueue = queue.Queue()
+        self.processor = None
+        self.lastException = None
+
+        self.after(25, self.after_callback)
+        self.after(500, self.check_processing)
+
+        Logger.messageQueue = self.messageQueue
+
          # Create a file uploader
         self.uploader = FileUploader(self.model)
         
@@ -635,16 +643,7 @@ class Hem(Page):
         if not success:
             messagebox.showinfo('Error', "Invalid Met Libary file. Check log for details.")
         
-        # Create threading helpers
-        self.messageQueue = queue.Queue()
-        self.callbackQueue = queue.Queue() 
-        self.processor = None
-        self.lastException = None
-        
-        self.after(25, self.after_callback)
-        self.after(500, self.check_processing)
 
-        Logger.messageQueue = self.messageQueue
         
  
         
@@ -1823,9 +1822,8 @@ class Hem(Page):
         :return: None
         """
         self.running = False
-
-     
-        
+        if self.aborted:
+            self.reset_gui()
 
     def check_processing(self):
         """

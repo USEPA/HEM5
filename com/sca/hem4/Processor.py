@@ -102,7 +102,7 @@ class Processor():
                     Logger.logMessage("Aborting processing...")
                     print("abort")
                     
-                    self.model.reset_gui()
+                    #self.model.reset_gui()
                     return
                 
                 
