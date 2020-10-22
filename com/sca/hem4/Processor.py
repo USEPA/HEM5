@@ -101,8 +101,6 @@ class Processor():
                 if self.abort.is_set():
                     Logger.logMessage("Aborting processing...")
                     print("abort")
-                    
-                    #self.model.reset_gui()
                     return
                 
                 
@@ -128,7 +126,8 @@ class Processor():
                     Logger.logMessage(message)
                     
                     self.skipped.append(facid)
-                    
+                    continue
+
                     ## if the try is successful this is where we would update the 
                     # dataframes or cache the last processed facility so that when 
                     # restart we know which faciltiy we want to start on
