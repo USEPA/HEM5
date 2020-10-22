@@ -151,6 +151,31 @@ class Optional(Page):
         self.buoyant_up = None
         self.bldgdw_up = None
         self.ur = None
+        
+        #set text variables for input labels
+        
+        #user receptor
+        self.urlbl = tk.StringVar()
+        self.urlbl.set("Please select a User Receptors file:")
+        
+        #variation
+        self.varlbl = tk.StringVar()
+        self.varlbl.set("Please select an Emissions Variation file:")
+        
+        #buoyant line
+        self.buoylbl = tk.StringVar()
+        self.buoylbl.set("Please select associated Buoyant Line"+
+                                 " Parameters file:")
+        
+        #poly vertex
+        self.polylbl = tk.StringVar()
+        self.polylbl.set("Please select associated Polygon Vertex file:")
+        
+        #building downwash
+        self.bldgdwlbl = tk.StringVar()
+        self.bldgdwlbl.set("Please select associated Building Dimensions file:")
+        
+        
     
         self.model = nav.model
         self.uploader = nav.uploader
@@ -248,7 +273,9 @@ class Optional(Page):
                 # Update the UI
                 [self.nav.nav.log.scr.insert(tk.INSERT, msg) for msg in self.model.multipoly.log]
     #            container.configure(bg='light green')
-                label['text'] = fullpath.split("\\")[-1]
+                
+                self.polylbl.set('')
+                self.polylbl.set(fullpath.split("\\")[-1])
  
 
     def uploadbuoyant(self, container, label, event):
@@ -273,7 +300,9 @@ class Optional(Page):
                 # Update the UI
                 [self.nav.nav.log.scr.insert(tk.INSERT, msg) for msg in self.model.multibuoy.log]
     #            container.configure(bg='light green')
-                label['text'] = fullpath.split("\\")[-1]
+                
+                self.buoylbl.set('')
+                self.buoylbl.set(fullpath.split("\\")[-1])
  
     
     def uploadBuildingDownwash(self, container, label, event):
@@ -297,7 +326,9 @@ class Optional(Page):
                 # Update the UI
                 [self.nav.nav.log.scr.insert(tk.INSERT, msg) for msg in self.model.bldgdw.log]
     #            container.configure(bg='light green')
-                label['text'] = fullpath.split("\\")[-1]
+    
+                self.bldgdwlbl.set('')
+                self.bldgdwlbl.set(fullpath.split("\\")[-1])
 
 
 
@@ -322,7 +353,9 @@ class Optional(Page):
                     self.model.model_optns['ureceptr'] = True
                     # Update the UI
                     [self.nav.nav.log.scr.insert(tk.INSERT, msg) for msg in self.model.ureceptr.log]
-                    label['text'] = fullpath.split("\\")[-1]
+                    
+                    self.urlbl.set('')
+                    self.urlbl.set(fullpath.split("\\")[-1])
      
                 
             
@@ -341,6 +374,20 @@ class DepDplt(Page):
         self.dep_part_up = None
         self.dep_land_up = None
         self.dep_seasons_up = None
+        
+        #set text variables for labels
+        
+        #particle size input
+        self.partlbl = tk.StringVar()
+        self.partlbl.set("Please select Particle Size file:")
+        
+        #land file input
+        self.landlbl = tk.StringVar()
+        self.landlbl.set("Please select Land Use file:")
+        
+        #seasons file input
+        self.seasonlbl = tk.StringVar()
+        self.seasonlbl.set("Please select Month-to-Season Vegetation file:")
         
         
         
@@ -420,7 +467,9 @@ class DepDplt(Page):
                 # Update the UI
                 [self.nav.nav.log.scr.insert(tk.INSERT, msg) for msg in self.model.partdep.log]
     #            container.configure(bg='light green')
-                label['text'] = fullpath.split("\\")[-1]
+    
+                self.partlbl.set('')
+                self.partlbl.set(fullpath.split("\\")[-1])
 
     def uploadLandUse(self, container, label, event):
         """
@@ -442,7 +491,9 @@ class DepDplt(Page):
                 # Update the UI
                 [self.nav.nav.log.scr.insert(tk.INSERT, msg) for msg in self.model.landuse.log]
     #            container.configure(bg='light green')
-                label['text'] = fullpath.split("\\")[-1]
+ 
+                self.landlbl.set('')
+                self.landlbl.set(fullpath.split("\\")[-1])
 
     def uploadSeasons(self, container, label, event):
         """ 
@@ -464,4 +515,6 @@ class DepDplt(Page):
                 # Update the UI
                 [self.nav.nav.log.scr.insert(tk.INSERT, msg) for msg in self.model.seasons.log]
     #            container.configure(bg='light green')
-                label['text'] = fullpath.split("\\")[-1]
+                
+                self.seasonlbl.set('')
+                self.seasonlbl.set(fullpath.split("\\")[-1])

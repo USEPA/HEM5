@@ -684,6 +684,27 @@ class Hem(Page):
         self.urep = None
         self.urepaltButton = None
         
+        #stringvar defaults for each input label
+        
+        #faclist
+        self.faclbl = tk.StringVar()
+        self.faclbl.set("1. Please select a Facilities List Options file:")
+        
+        #HAPemissions
+        self.haplbl = tk.StringVar()
+        self.haplbl.set("2. Please select a HAP Emissions file:")
+        
+        #emissions locations
+        self.emislbl = tk.StringVar()
+        self.emislbl.set("3. Please select an Emissions Location file:")
+        
+        #alt receptors
+        self.altlbl = tk.StringVar()
+        self.altlbl.set("Please select an alternate receptor CSV file:")
+        
+        
+                
+        
         #tab placehodler for nav
         self.current_tab = self.nav
         
@@ -794,7 +815,7 @@ class Hem(Page):
         
         
         self.button_file = tk.Label(self.s5, font=TEXT_FONT, bg=self.tab_color, 
-                             text="1. Please select a Facilities List Options file:")
+                             textvariable=self.faclbl)
         self.button_file.grid(row=3, column=1, sticky='W')
         
                                     
@@ -821,7 +842,7 @@ class Hem(Page):
         
         
         self.hap_file = tk.Label(self.s6, font=TEXT_FONT, bg=self.tab_color, 
-                             text="2. Please select a HAP Emissions file:")
+                             textvariable=self.haplbl)
         self.hap_file.grid(row=3, column=1, sticky='W')
         
                                     
@@ -846,10 +867,10 @@ class Hem(Page):
         self.emisLabel = tk.Label(self.s7, image=self.eileicon, bg=self.tab_color)
         self.emisLabel.image = self.fileicon # keep a reference!
         self.emisLabel.grid(row=2, column=0, padx=10)
-        
+                
         
         self.emis_file = tk.Label(self.s7, font=TEXT_FONT, bg=self.tab_color, 
-                             text="3. Please select an Emissions Location file:")
+                             textvariable=self.emislbl)
         self.emis_file.grid(row=2, column=1, sticky='W')
         
                                     
@@ -969,16 +990,23 @@ class Hem(Page):
                 # Update the UI
                 [self.nav.log.scr.insert(tk.INSERT, msg) for msg in self.model.faclist.log]
     #            container.configure(bg='light green')
-                label['text'] = fullpath.split("\\")[-1]
+                self.faclbl.set('')
+                self.faclbl.set(fullpath.split("\\")[-1])
                 
                 #trigger additional inputs fo user recptors, assuming we are not in "user receptors only" mode
                 if 'Y' in self.model.faclist.dataframe['user_rcpt'].tolist():
-                    #create user receptors
+                    #create user and reset text variable
+                    
                     self.add_ur()
                     self.model.dependencies.append('user_rcpt')
                     
                 else:
                     if 'user_rcpt' in self.model.dependencies:
+                        
+                        #remove from dependencies
+                        self.model.dependencies.remove('user_rcpt')
+
+                        
                         for child in self.optional.s8.winfo_children():
                             child.destroy()
                         
@@ -990,6 +1018,10 @@ class Hem(Page):
                     
                 else:
                     if 'emis_var' in self.model.dependencies:
+                        
+                        #remove from dependencies
+                        self.model.dependencies.remove('emis_var')
+                        
                         for child in self.optional.s9.winfo_children():
                             child.destroy()
                     
@@ -1005,6 +1037,10 @@ class Hem(Page):
                 
                 else:
                     if 'bldg_dw' in self.model.dependencies:
+                        
+                        #remove from dependencies
+                        self.model.dependencies.remove('bldg_dw')
+                        
                         for child in self.optional.s4.winfo_children():
                             child.destroy()
                         
@@ -1035,7 +1071,9 @@ class Hem(Page):
                     # Update the UI
                     [self.nav.log.scr.insert(tk.INSERT, msg) for msg in self.model.hapemis.log]
     #                container.configure(bg='light green')
-                    label['text'] = fullpath.split("\\")[-1]
+                    
+                    self.haplbl.set('')
+                    self.haplbl.set(fullpath.split("\\")[-1])
      
                     
             
@@ -1078,7 +1116,9 @@ class Hem(Page):
                         # Update the UI
                         [self.nav.log.scr.insert(tk.INSERT, msg) for msg in self.model.emisloc.log]
     #                    container.configure(bg='light green')
-                        label['text'] = fullpath.split("\\")[-1]
+                        
+                        self.emislbl.set('')
+                        self.emislbl.set(fullpath.split("\\")[-1])
      
         
                         #trigger additional inputs for buoyant line and polyvertex
@@ -1095,6 +1135,10 @@ class Hem(Page):
                             #reset gui if reuploading
                             
                             if 'poly' in self.model.dependencies:
+                                
+                                #remove from dependencies
+                                self.model.dependencies.remove('poly')
+                                
                                 for child in self.optional.s5.winfo_children():
                                     child.destroy()
                                 
@@ -1111,6 +1155,10 @@ class Hem(Page):
                         else:
                             #reset gui if reuploading    
                              if 'buoyant' in self.model.dependencies:
+                                
+                                #remove from dependencies
+                                self.model.dependencies.remove('buoyant') 
+                                 
                                 for child in self.optional.s4.winfo_children():
                                     child.destroy()
             
@@ -1166,16 +1214,29 @@ class Hem(Page):
               
                             # clear particle
                             if 'particle size' in self.model.dependencies:
+                                
+                                #remove from dependencies list
+            
+                                self.model.dependencies.remove('particle size')
+                                
                                 for child in self.depdeplt.s4.winfo_children():
                                     child.destroy()                        #                        self.dep_part.destroy()
                                             # clear land
                             if 'land use' in self.model.dependencies:
+                                
+                                #remove from dependencies
+                                self.model.dependencies.remove('land use')
+                                
                                 for child in self.depdeplt.s5.winfo_children():
                                     child.destroy()
                             #                        self.dep_land.destroy()
         
                             # clear vegetation
                             if 'seasons' in self.model.dependencies:
+                                
+                                #remove from dependencies
+                                self.model.dependencies.remove('seasons')
+                                
                                 for child in self.depdeplt.s6.winfo_children():
                                     child.destroy()
                             #                        self.dep_seasons.destroy()
@@ -1205,7 +1266,9 @@ class Hem(Page):
                 # Update the UI
                 [self.nav.log.scr.insert(tk.INSERT, msg) for msg in self.model.ureceptr.log]
     #            container.configure(bg='light green')
-                label['text'] = fullpath.split("\\")[-1]
+                
+                self.optional.urlbl.set('')
+                self.optional.urlbl.set(fullpath.split("\\")[-1])
             
             
     def uploadAltReceptors(self, container, label, event):
@@ -1225,7 +1288,9 @@ class Hem(Page):
     
                 # Update the UI
                 [self.scr.insert(tk.INSERT, msg) for msg in self.model.altreceptr.log]
-                label['text'] = fullpath.split("\\")[-1]
+                
+                self.altlbl.set('')
+                self.altlbl.set(fullpath.split("\\")[-1])
                 
             
     def uploadVariation(self, container, label, event):
@@ -1247,7 +1312,9 @@ class Hem(Page):
     
                 # Update the UI
                 [self.scr.insert(tk.INSERT, msg) for msg in self.model.emisvar.log]
-                label['text'] = fullpath.split("\\")[-1]
+                
+                self.optional.varlbl.set('')
+                self.optional.varlbl.set(fullpath.split("\\")[-1])
                
     
     def set_altrec(self):
@@ -1294,7 +1361,7 @@ class Hem(Page):
         
         
         self.ur_file = tk.Label(self.optional.s8, font=TEXT_FONT, bg=self.tab_color, 
-                             text="Please select a User Receptors file:")
+                             textvariable=self.optional.urlbl)
         self.ur_file.grid(row=1, column=1, sticky='W')
         
                                     
@@ -1332,7 +1399,7 @@ class Hem(Page):
         
         
         self.urep_file = tk.Label(self.s10, font=TEXT_FONT, bg=self.tab_color, 
-                             text="Please select an alternate receptor CSV file:")
+                             textvariable=self.altlbl)
         self.urep_file.grid(row=0, column=1, sticky='W')
         
                                     
@@ -1365,7 +1432,7 @@ class Hem(Page):
         
         
         self.emisvar_file = tk.Label(self.optional.s9, font=TEXT_FONT, bg=self.tab_color, 
-                             text="Please select an Emissions Variation file:")
+                             textvariable=self.optional.varlbl)
         self.emisvar_file.grid(row=1, column=1, sticky='W')
         
                                     
@@ -1397,8 +1464,7 @@ class Hem(Page):
         
         
         self.buoy_file = tk.Label(self.optional.s4, font=TEXT_FONT, bg=self.tab_color, 
-                             text="Please select associated Buoyant Line"+
-                                 " Parameters file:")
+                             textvariable=self.optional.buoylbl)
         self.buoy_file.grid(row=1, column=1, sticky='W')
         
                                     
@@ -1429,7 +1495,7 @@ class Hem(Page):
         
         
         self.poly_file = tk.Label(self.optional.s5, font=TEXT_FONT, bg=self.tab_color, 
-                             text="Please select associated Polygon Vertex file:")
+                             textvariable=self.optional.polylbl)
         self.poly_file.grid(row=1, column=1, sticky='W')
         
                                     
@@ -1459,7 +1525,7 @@ class Hem(Page):
         
         
         self.bldgdw_file = tk.Label(self.optional.s6, font=TEXT_FONT, bg=self.tab_color, 
-                             text="Please select associated Building Dimensions file:")
+                             textvariable=self.optional.bldgdwlbl)
         self.bldgdw_file.grid(row=1, column=1, sticky='W')
         
                                     
@@ -1954,15 +2020,20 @@ class Hem(Page):
 
         
         
-        self.button_file['text'] = "1. Please select a Facilities List Options file:"
+        self.faclbl.set('')
+        self.faclbl.set("1. Please select a Facilities List Options file:")
         self.button_file.unbind('<Button1>')
         self.fileLabel.unbind('<Button1>')
         
-        self.hap_file['text'] = "2. Please select a HAP Emissions file:"
+        
+        self.haplbl.set('')
+        self.haplbl.set("2. Please select a HAP Emissions file:")
         self.hap_file.unbind('<Button1>')
         self.hapLabel.unbind('<Button1>')
         
-        self.emis_file['text'] = "3. Please select a Emissions Location file:"
+        
+        self.emislbl.set('')
+        self.emislbl.set("3. Please select a Emissions Location file:")
         self.emis_file.unbind('<Button1>')
         self.emisLabel.unbind('<Button1>')
         
