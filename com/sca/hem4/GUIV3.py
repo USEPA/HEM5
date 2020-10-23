@@ -1823,7 +1823,9 @@ class Hem(Page):
         """
         self.running = False
         if self.aborted:
+            self.aborted = False
             self.reset_gui()
+            self.after(500, self.check_processing)
 
     def check_processing(self):
         """

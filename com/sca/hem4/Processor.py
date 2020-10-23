@@ -101,7 +101,7 @@ class Processor():
                 if self.abort.is_set():
                     Logger.logMessage("Aborting processing...")
                     print("abort")
-                    return
+                    return success
                 
                 
                 
