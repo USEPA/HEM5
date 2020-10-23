@@ -1962,7 +1962,7 @@ class Hem(Page):
         
         
         self.emislbl.set('')
-        self.emislbl.set("3. Please select a Emissions Location file:")
+        self.emislbl.set("3. Please select an Emissions Location file:")
         self.emis_file.unbind('<Button1>')
         self.emisLabel.unbind('<Button1>')
         
@@ -2057,11 +2057,25 @@ class Hem(Page):
             
             
             self.emislbl.set('')
-            self.emislbl.set("3. Please select a Emissions Location file:")
+            self.emislbl.set("3. Please select an Emissions Location file:")
             self.emis_file.unbind('<Button1>')
             self.emisLabel.unbind('<Button1>')
             
-            self.group_list.set('')
+           
+           #reset model values 
+            self.model.emisloc = None
+            self.model.hapemis = None
+            self.model.multipoly = None
+            self.model.multibuoy = None
+            self.model.ureceptr = None
+            self.model.bldgdw = None
+            self.model.partdep = None
+            self.model.landuse = None
+            self.model.seasons = None
+            self.model.emisvar = None
+            self.model.depdeplt = None
+            self.model.gasdryfacs = None
+            self.model.particlefacs = None
             
             #reset alt reeceptors
             if 'altrec' in self.model.dependencies:
@@ -2106,6 +2120,13 @@ class Hem(Page):
             self.model.dependencies = []
  
         elif inputtype == 'emisloc':
+            
+            #reset model values
+            self.model.multipoly = None
+            self.model.multibuoy = None
+            self.model.depdeplt = None
+            self.model.gasdryfacs = None
+            self.model.particlefacs = None
             
             if 'buoyant' in self.model.dependencies:
                 for child in self.optional.s4.winfo_children():
