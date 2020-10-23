@@ -57,7 +57,7 @@ import queue
 
 
 import numpy as np
-#from pandastable import Table, filedialog, np
+from pandastable import Table, filedialog, np
 
 
 
@@ -1485,7 +1485,7 @@ class Hem(Page):
         
         
         self.particle_file = tk.Label(self.depdeplt.s4, font=TEXT_FONT, bg=self.tab_color, 
-                             text="Please select Particle Size file:")
+                             textvariable=self.depdeplt.partlbl)
         self.particle_file.grid(row=1, column=1, sticky='W')
         
                                     
@@ -1516,7 +1516,7 @@ class Hem(Page):
         
         
         self.land_file = tk.Label(self.depdeplt.s5, font=TEXT_FONT, bg=self.tab_color, 
-                             text="Please select Land Use file:")
+                             textvariable=self.depdeplt.landlbl)
         self.land_file.grid(row=1, column=1, sticky='W')
         
                                     
@@ -1545,7 +1545,7 @@ class Hem(Page):
         
         
         self.seasons_file = tk.Label(self.depdeplt.s6, font=TEXT_FONT, bg=self.tab_color, 
-                             text="Please select Month-to-Season Vegetation file:")
+                             textvariable=self.depdeplt.seasonlbl)
         self.seasons_file.grid(row=1, column=1, sticky='W')
         
                                     
