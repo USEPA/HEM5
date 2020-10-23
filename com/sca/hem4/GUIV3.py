@@ -57,7 +57,7 @@ import queue
 
 
 import numpy as np
-from pandastable import Table, filedialog, np
+#from pandastable import Table, filedialog, np
 
 
 
@@ -985,6 +985,10 @@ class Hem(Page):
             
             if self.model.faclist.dataframe.empty == False:
                 
+                #reset all other inputs
+                self.reset_inputs('faclist')
+                
+         
                 self.model.facids = self.model.faclist.dataframe['fac_id']
     
                 # Update the UI
@@ -1000,32 +1004,13 @@ class Hem(Page):
                     self.add_ur()
                     self.model.dependencies.append('user_rcpt')
                     
-                else:
-                    if 'user_rcpt' in self.model.dependencies:
-                        
-                        #remove from dependencies
-                        self.model.dependencies.remove('user_rcpt')
-
-                        
-                        for child in self.optional.s8.winfo_children():
-                            child.destroy()
                         
                 #trigger additional inputs for emisvar
                 if 'Y' in self.model.faclist.dataframe['emis_var'].tolist():
                     #create create emis var
                     self.add_variation()
                     self.model.dependencies.append('emis_var')
-                    
-                else:
-                    if 'emis_var' in self.model.dependencies:
-                        
-                        #remove from dependencies
-                        self.model.dependencies.remove('emis_var')
-                        
-                        for child in self.optional.s9.winfo_children():
-                            child.destroy()
-                    
-                
+    
                         
                 #trigger additional inputs for building downwash
                 if 'Y' in self.model.faclist.dataframe['bldg_dw'].tolist():
@@ -1035,17 +1020,6 @@ class Hem(Page):
                     self.add_bldgdw()
                     self.model.dependencies.append('bldg_dw')
                 
-                else:
-                    if 'bldg_dw' in self.model.dependencies:
-                        
-                        #remove from dependencies
-                        self.model.dependencies.remove('bldg_dw')
-                        
-                        for child in self.optional.s4.winfo_children():
-                            child.destroy()
-                        
-                    
-            
         
 
     def uploadHAPEmissions(self, container, label, event):
@@ -1112,6 +1086,9 @@ class Hem(Page):
                     self.uploader.upload("emisloc", fullpath)
                     
                     if self.model.emisloc.dataframe.empty == False:
+                        
+                         #reset dependent inputs for emis loc
+                        self.reset_inputs('emisloc')
         
                         # Update the UI
                         [self.nav.log.scr.insert(tk.INSERT, msg) for msg in self.model.emisloc.log]
@@ -1131,16 +1108,7 @@ class Hem(Page):
                             self.add_poly()
                             self.model.dependencies.append('poly')
                             
-                        else:
-                            #reset gui if reuploading
-                            
-                            if 'poly' in self.model.dependencies:
-                                
-                                #remove from dependencies
-                                self.model.dependencies.remove('poly')
-                                
-                                for child in self.optional.s5.winfo_children():
-                                    child.destroy()
+                      
                                 
                                 
                         if 'B' in self.model.emisloc.dataframe['source_type'].tolist():
@@ -1152,15 +1120,7 @@ class Hem(Page):
                             self.add_buoyant()
                             self.model.dependencies.append('buoyant')
                             
-                        else:
-                            #reset gui if reuploading    
-                             if 'buoyant' in self.model.dependencies:
-                                
-                                #remove from dependencies
-                                self.model.dependencies.remove('buoyant') 
-                                 
-                                for child in self.optional.s4.winfo_children():
-                                    child.destroy()
+                       
             
                         # Deposition and depletion check
             
@@ -1209,38 +1169,7 @@ class Hem(Page):
                                 elif required == 'seasons':
                                     self.add_seasons()
                                     self.model.dependencies.append('seasons')
-                        else:
-                            # clear on new input without dep/deplt
-              
-                            # clear particle
-                            if 'particle size' in self.model.dependencies:
-                                
-                                #remove from dependencies list
-            
-                                self.model.dependencies.remove('particle size')
-                                
-                                for child in self.depdeplt.s4.winfo_children():
-                                    child.destroy()                        #                        self.dep_part.destroy()
-                                            # clear land
-                            if 'land use' in self.model.dependencies:
-                                
-                                #remove from dependencies
-                                self.model.dependencies.remove('land use')
-                                
-                                for child in self.depdeplt.s5.winfo_children():
-                                    child.destroy()
-                            #                        self.dep_land.destroy()
-        
-                            # clear vegetation
-                            if 'seasons' in self.model.dependencies:
-                                
-                                #remove from dependencies
-                                self.model.dependencies.remove('seasons')
-                                
-                                for child in self.depdeplt.s6.winfo_children():
-                                    child.destroy()
-                            #                        self.dep_seasons.destroy()
-
+                       
     
     def uploadUserReceptors(self, container, label, event):
         """
@@ -2110,6 +2039,88 @@ class Hem(Page):
         self.running = False
   
 #%%
+        
+    def reset_inputs(self, inputtype):
+        """ 
+        Resets itenerant HEM4 dependent inputs when a facilities list option file is reuploaded or
+        emissions location is reuploaded. For facilities list option file that is all inputs after it,
+        for emissions location file that is all inputs after that input.
+        """
+        
+        if inputtype == 'faclist':
+            #reset everything as you would the gui
+            
+            self.haplbl.set('')
+            self.haplbl.set("2. Please select a HAP Emissions file:")
+            self.hap_file.unbind('<Button1>')
+            self.hapLabel.unbind('<Button1>')
+            
+            
+            self.emislbl.set('')
+            self.emislbl.set("3. Please select a Emissions Location file:")
+            self.emis_file.unbind('<Button1>')
+            self.emisLabel.unbind('<Button1>')
+            
+            self.group_list.set('')
+            
+            #reset alt reeceptors
+            if 'altrec' in self.model.dependencies:
+                self.model.dependencies.remove('altrec')
+                self.urepLabel.destroy()
+                self.urep_file.destroy()
+                self.check_altrec.set(1)
+            
+            if 'user_rcpt' in self.model.dependencies:
+                for child in self.optional.s8.winfo_children():
+                    child.destroy()
+                                   
+            #emis var
+            if 'emis_var' in self.model.dependencies:
+                for child in self.optional.s9.winfo_children():
+                    child.destroy()
+                
+            if 'buoyant' in self.model.dependencies:
+                for child in self.optional.s4.winfo_children():
+                    child.destroy()
+                    
+            if 'poly' in self.model.dependencies:
+                for child in self.optional.s5.winfo_children():
+                    child.destroy()
+    
+            if 'bldg_dw' in self.model.dependencies:
+                for child in self.optional.s6.winfo_children():
+                    child.destroy()
+                
+            if 'particle size' in self.model.dependencies:
+                for child in self.depdeplt.s4.winfo_children():
+                    child.destroy()
+                    
+            if 'land use' in self.model.dependencies:
+                for child in self.depdeplt.s5.winfo_children():
+                    child.destroy()
+                
+            if 'seasons' in self.model.dependencies:
+                for child in self.depdeplt.s6.winfo_children():
+                    child.destroy()
+                    
+            self.model.dependencies = []
+ 
+        elif inputtype == 'emisloc':
+            
+            if 'buoyant' in self.model.dependencies:
+                for child in self.optional.s4.winfo_children():
+                    child.destroy()
+                    
+                self.model.dependencies.remove('buoyant')
+                    
+            if 'poly' in self.model.dependencies:
+                for child in self.optional.s5.winfo_children():
+                    child.destroy()
+            
+                self.model.dependencies.remove('poly')
+            
+    
+        
     def otr_config(self, widget1, color, event):
         
          widget1.configure(bg=color)
