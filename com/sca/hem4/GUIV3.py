@@ -2061,6 +2061,44 @@ class Hem(Page):
             self.emis_file.unbind('<Button1>')
             self.emisLabel.unbind('<Button1>')
             
+            #alt receptors
+            self.altlbl = tk.StringVar()
+            self.altlbl.set("Please select an alternate receptor CSV file:")
+            
+            #user receptor
+            self.optional.urlbl = tk.StringVar()
+            self.optional.urlbl.set("Please select a User Receptors file:")
+            
+            #variation
+            self.optional.varlbl = tk.StringVar()
+            self.optional.varlbl.set("Please select an Emissions Variation file:")
+            
+            #buoyant line
+            self.optional.buoylbl = tk.StringVar()
+            self.optional.buoylbl.set("Please select associated Buoyant Line"+
+                                     " Parameters file:")
+            
+            #poly vertex
+            self.optional.polylbl = tk.StringVar()
+            self.optional.polylbl.set("Please select associated Polygon Vertex file:")
+            
+            #building downwash
+            self.optional.bldgdwlbl = tk.StringVar()
+            self.optional.bldgdwlbl.set("Please select associated Building Dimensions file:")
+                
+            
+            #particle size input
+            self.depeplt.partlbl = tk.StringVar()
+            self.depdeplt.partlbl.set("Please select Particle Size file:")
+            
+            #land file input
+            self.depdeplt.landlbl = tk.StringVar()
+            self.depdeplt.landlbl.set("Please select Land Use file:")
+            
+            #seasons file input
+            self.depdeplt.seasonlbl = tk.StringVar()
+            self.depdeplt.seasonlbl.set("Please select Month-to-Season Vegetation file:")
+            
            
            #reset model values 
             self.model.emisloc = None
@@ -2127,6 +2165,15 @@ class Hem(Page):
             self.model.depdeplt = None
             self.model.gasdryfacs = None
             self.model.particlefacs = None
+            
+            #buoyant line
+            self.optional.buoylbl = tk.StringVar()
+            self.optional.buoylbl.set("Please select associated Buoyant Line"+
+                                     " Parameters file:")
+            
+            #poly vertex
+            self.optional.polylbl = tk.StringVar()
+            self.optional.polylbl.set("Please select associated Polygon Vertex file:")
             
             if 'buoyant' in self.model.dependencies:
                 for child in self.optional.s4.winfo_children():
