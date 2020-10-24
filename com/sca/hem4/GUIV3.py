@@ -2063,40 +2063,50 @@ class Hem(Page):
             
             #alt receptors
             self.altlbl = tk.StringVar()
+            self.altlbl.set('')
             self.altlbl.set("Please select an alternate receptor CSV file:")
             
             #user receptor
             self.optional.urlbl = tk.StringVar()
+            self.optional.urlbl.set('')
             self.optional.urlbl.set("Please select a User Receptors file:")
             
             #variation
             self.optional.varlbl = tk.StringVar()
+            self.optional.varlbl.set('')
             self.optional.varlbl.set("Please select an Emissions Variation file:")
             
             #buoyant line
             self.optional.buoylbl = tk.StringVar()
+            self.optional.buoylbl.set('')
             self.optional.buoylbl.set("Please select associated Buoyant Line"+
                                      " Parameters file:")
             
             #poly vertex
             self.optional.polylbl = tk.StringVar()
+            self.optional.polylbl.set('')
             self.optional.polylbl.set("Please select associated Polygon Vertex file:")
             
             #building downwash
             self.optional.bldgdwlbl = tk.StringVar()
+            self.optional.bldgdwlbl.set('')
             self.optional.bldgdwlbl.set("Please select associated Building Dimensions file:")
                 
             
             #particle size input
             self.depeplt.partlbl = tk.StringVar()
+            self.depdeplt.partlbl.set('')
             self.depdeplt.partlbl.set("Please select Particle Size file:")
             
             #land file input
             self.depdeplt.landlbl = tk.StringVar()
+            
+            self.depdeplt.landlbl.set('')
             self.depdeplt.landlbl.set("Please select Land Use file:")
             
             #seasons file input
             self.depdeplt.seasonlbl = tk.StringVar()
+            self.depdeplt.seasonlbl.set('')
             self.depdeplt.seasonlbl.set("Please select Month-to-Season Vegetation file:")
             
            
@@ -2168,11 +2178,13 @@ class Hem(Page):
             
             #buoyant line
             self.optional.buoylbl = tk.StringVar()
+            self.optional.buoylbl.set('')
             self.optional.buoylbl.set("Please select associated Buoyant Line"+
                                      " Parameters file:")
             
             #poly vertex
             self.optional.polylbl = tk.StringVar()
+            self.optional.polylbl.set('')
             self.optional.polylbl.set("Please select associated Polygon Vertex file:")
             
             if 'buoyant' in self.model.dependencies:
