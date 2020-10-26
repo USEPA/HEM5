@@ -57,7 +57,7 @@ import queue
 
 
 import numpy as np
-from pandastable import Table, filedialog, np
+#from pandastable import Table, filedialog, np
 
 
 
@@ -2094,7 +2094,7 @@ class Hem(Page):
                 
             
             #particle size input
-            self.depeplt.partlbl = tk.StringVar()
+            self.depdeplt.partlbl = tk.StringVar()
             self.depdeplt.partlbl.set('')
             self.depdeplt.partlbl.set("Please select Particle Size file:")
             
