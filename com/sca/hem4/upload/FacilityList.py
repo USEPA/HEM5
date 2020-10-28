@@ -316,7 +316,7 @@ class FacilityList(InputFile):
             met_annual = row[annual]
             start_spec_valid = True
             self.period_start_components = ""
-            period_start_spec = row[period_start]
+            period_start_spec = row[period_start].replace(" ","")
             if met_annual == "Y":
                 if period_start_spec != "":
                     Logger.logMessage("Facility " + facility + ": Period start specified but ignored because annual = 'Y'")
@@ -348,7 +348,7 @@ class FacilityList(InputFile):
 
             end_spec_valid = True
             self.period_end_components = ""
-            period_end_spec = row[period_end]
+            period_end_spec = row[period_end].replace(" ","")
             if met_annual == "Y":
                 if period_end_spec != "":
                     Logger.logMessage("Facility " + facility + ": Period end specified but ignored because annual = 'Y'")

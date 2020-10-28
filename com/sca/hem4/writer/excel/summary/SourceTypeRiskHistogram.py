@@ -218,8 +218,8 @@ class SourceTypeRiskHistogram(ExcelWriter, AltRecAwareSummary):
         # Re-sort source types based on maximum values (decending) and then compile values again.
         maximum, self.sourceTypes = (list(t) for t in zip(*sorted( zip(maximum, self.sourceTypes), reverse=True )))
         maximum.insert(0, 'Maximum (in 1 million)')
-        # The max value is the first one after the label (because we sorted!)
-        maximum.insert(1, maximum[1])
+        # The max value is the maximum MIR of the entire sector
+        maximum.insert(1, self.sector_mir)
 
         header = ['', 'Maximum Overall']
         header.extend(self.sourceTypes)
