@@ -57,7 +57,7 @@ import queue
 
 
 import numpy as np
-from pandastable import Table, filedialog, np
+#from pandastable import Table, filedialog, np
 
 
 
@@ -2126,12 +2126,7 @@ class Hem(Page):
             self.model.gasdryfacs = None
             self.model.particlefacs = None
             
-            #reset alt reeceptors
-            if 'altrec' in self.model.dependencies:
-                self.model.dependencies.remove('altrec')
-                self.urepLabel.destroy()
-                self.urep_file.destroy()
-                self.check_altrec.set(1)
+
             
             if 'user_rcpt' in self.model.dependencies:
                 for child in self.optional.s8.winfo_children():
