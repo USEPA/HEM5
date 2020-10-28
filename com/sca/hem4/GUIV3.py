@@ -57,7 +57,7 @@ import queue
 
 
 import numpy as np
-#from pandastable import Table, filedialog, np
+from pandastable import Table, filedialog, np
 
 
 
@@ -1968,12 +1968,17 @@ class Hem(Page):
         
         self.group_list.set('')
         
+        self.altlbl.set('')
+        self.altlbl.set("Please select an alternate receptor CSV file:")
         #reset alt reeceptors
         if 'altrec' in self.model.dependencies:
+
             self.model.dependencies.remove('altrec')
             self.urepLabel.destroy()
             self.urep_file.destroy()
-            self.check_altrec.set(1)
+            self.check_altrec.set(1)#alt receptors
+            
+            
         
          #find the last next button and disable that one
 
@@ -2061,10 +2066,6 @@ class Hem(Page):
             self.emis_file.unbind('<Button1>')
             self.emisLabel.unbind('<Button1>')
             
-            #alt receptors
-            self.altlbl = tk.StringVar()
-            self.altlbl.set('')
-            self.altlbl.set("Please select an alternate receptor CSV file:")
             
             #user receptor
             self.optional.urlbl = tk.StringVar()
