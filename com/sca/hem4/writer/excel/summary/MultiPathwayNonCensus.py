@@ -62,6 +62,8 @@ class MultiPathwayNonCensus(ExcelWriter):
             # Steps a-f in Steve's summary
             maxIndivRisks = MaximumIndividualRisksNonCensus(targetDir=targetDir, facilityId=facilityId)
             maxIndivRisks_df = maxIndivRisks.createDataframe()
+            # Replace nan with empty string
+            maxIndivRisks_df.replace('nan', '', regex=True, inplace=True)
 
             riskBkdn = RiskBreakdown(targetDir=targetDir, facilityId=facilityId)
             riskBkdn_df = riskBkdn.createDataframe()

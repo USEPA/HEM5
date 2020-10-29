@@ -60,6 +60,8 @@ class MultiPathway(ExcelWriter):
             # Steps a-f in Steve's summary
             maxIndivRisks = MaximumIndividualRisks(targetDir=targetDir, facilityId=facilityId)
             maxIndivRisks_df = maxIndivRisks.createDataframe()
+            # Replace nan with empty string
+            maxIndivRisks_df.replace('nan', '', regex=True, inplace=True)
 
             riskBkdn = RiskBreakdown(targetDir=targetDir, facilityId=facilityId)
             riskBkdn_df = riskBkdn.createDataframe()
@@ -161,7 +163,7 @@ class MultiPathway(ExcelWriter):
                 riskblocks_df = inner_summed.append(allouter_summed)
             else:
                 riskblocks_df = inner_summed
-
+            
             # Steps o-r
             asRisksPathway = self.getRisksPathway('As', riskblocks_df, facilityId, maxRiskAndHI_df, maxIndivRisks_df)
             pahRisksPathway = self.getRisksPathway('PAH', riskblocks_df, facilityId, maxRiskAndHI_df, maxIndivRisks_df)
