@@ -64,25 +64,25 @@ class BuoyantLine(DependentInputFile):
         for index, row in df.iterrows():
             facility = row[fac_id]
 
-            if row[avgbld_len] <= 0:
+            if row[avgbld_len] < 0:
                 Logger.logMessage("Facility " + facility + ": avg building length " + str(row[avgbld_len]) +
                                   " out of range.")
                 messagebox.showinfo("Out of Range", "Facility " + facility + ": avg building length " + str(row[avgbld_len]) +
                                   " out of range.")
                 return None
-            if row[avgbld_hgt] <= 0:
+            if row[avgbld_hgt] < 0:
                 Logger.logMessage("Facility " + facility + ": avg building height " + str(row[avgbld_hgt]) +
                                   " out of range.")
                 messagebox.showinfo("Out of Range", "Facility " + facility + ": avg building height " + str(row[avgbld_hgt]) +
                                   " out of range.")
                 return None
-            if row[avgbld_wid] <= 0:
+            if row[avgbld_wid] < 0:
                 Logger.logMessage("Facility " + facility + ": avg building width " + str(row[avgbld_wid]) +
                                   " out of range.")
                 messagebox.showinfo("Out of Range", "Facility " + facility + ": avg building width " + str(row[avgbld_wid]) +
                                   " out of range.")
                 return None
-            if row[avglin_wid] <= 0:
+            if row[avglin_wid] < 0:
                 Logger.logMessage("Facility " + facility + ": avg line width " + str(row[avglin_wid]) +
                                   " out of range.")
                 messagebox.showinfo("Out of Range", "Facility " + facility + ": avg line width " + str(row[avglin_wid]) +
@@ -94,7 +94,7 @@ class BuoyantLine(DependentInputFile):
                 messagebox.showinfo("Out of Range", "Facility " + facility + ": avg building separation " + str(row[avgbld_sep]) +
                                   " out of range.")
                 return None
-            if row[avgbuoy] <= 0:
+            if row[avgbuoy] < 0:
                 Logger.logMessage("Facility " + facility + ": avg buoyancy " + str(row[avgbuoy]) +
                                   " out of range.")
                 messagebox.showinfo("Out of Range", "Facility " + facility + ": avg buoyancy " + str(row[avgbuoy]) +

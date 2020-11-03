@@ -41,10 +41,11 @@ class MaxRisk(ExcelWriter, AltRecAwareSummary):
         blocksummary_df.drop_duplicates().reset_index(drop=True)
 
         if self.altrec == 'N':
-            
+                        
             # Drop records that (are not user receptors AND have population = 0)       
-            blocksummary_df.drop(blocksummary_df[(blocksummary_df.population == 0) & ("U" not in blocksummary_df.block)].index,
-                 inplace=True)
+            blocksummary_df.drop(blocksummary_df[(blocksummary_df.population == 0) & 
+                                                 (~blocksummary_df.block.str.contains('U', case=False))].
+                                                 index, inplace=True)
     
             aggs = {lat:'first', lon:'first', overlap:'first', elev:'first', utme:'first', blk_type:'first',
                     utmn:'first', hill:'first', fips:'first', block:'first', population:'first',
