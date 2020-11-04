@@ -44,8 +44,8 @@ class MaxRisk(ExcelWriter, AltRecAwareSummary):
                         
             # Drop records that (are not user receptors AND have population = 0)       
             blocksummary_df.drop(blocksummary_df[(blocksummary_df.population == 0) & 
-                                                 (~blocksummary_df.block.str.contains('U', case=False))].
-                                                 index, inplace=True)
+                                                 (~blocksummary_df.block.str.contains('U', case=False))].index,
+                                                 inplace=True)
     
             aggs = {lat:'first', lon:'first', overlap:'first', elev:'first', utme:'first', blk_type:'first',
                     utmn:'first', hill:'first', fips:'first', block:'first', population:'first',
@@ -107,6 +107,11 @@ class MaxRisk(ExcelWriter, AltRecAwareSummary):
             maxrisk_df = pd.DataFrame(risks, columns=[risktype, fips, block, population, risk])
             
         else:
+
+            # Drop records that (are not user receptors AND have population = 0)       
+            blocksummary_df.drop(blocksummary_df[(blocksummary_df.population == 0) & 
+                                                 (~blocksummary_df.rec_id.str.contains('U_', case=False))].index,
+                                                 inplace=True)
                         
             aggs = {lat:'first', lon:'first', overlap:'first', elev:'first', utme:'first', blk_type:'first',
                     utmn:'first', hill:'first', rec_id: 'first', population:'first',

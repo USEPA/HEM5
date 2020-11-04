@@ -270,9 +270,16 @@ class HI_Histogram(ExcelWriter, AltRecAwareSummary):
 
             blocksummary_df = blocksummary_df.append(bsc_df)
 
-        blocksummary_df.drop_duplicates().reset_index(drop=True)
+        blocksummary_df.reset_index(inplace=True, drop=True)
 
         if self.altrec == 'N':
+
+            # Census
+            
+            # Drop records that (are not user receptors AND have population = 0)
+            blocksummary_df.drop(blocksummary_df[(blocksummary_df.population == 0) & 
+                                                 (~blocksummary_df.block.str.contains('U', case=False))].index,
+                                                 inplace=True)
             
             aggs = {lat:'first', lon:'first', overlap:'first', elev:'first', utme:'first', blk_type:'first',
                     utmn:'first', hill:'first', fips:'first', block:'first', population:'first',
@@ -284,6 +291,13 @@ class HI_Histogram(ExcelWriter, AltRecAwareSummary):
             risk_summed = blocksummary_df.groupby([fips, block]).agg(aggs)[blockSummaryChronic.getColumns()]
             
         else:
+
+            # Alternate receptors
+            
+            # Drop records that (are not user receptors AND have population = 0)
+            blocksummary_df.drop(blocksummary_df[(blocksummary_df.population == 0) & 
+                                                 (~blocksummary_df.rec_id.str.contains('U', case=False))].index,
+                                                 inplace=True)
             
             aggs = {lat:'first', lon:'first', overlap:'first', elev:'first', utme:'first', blk_type:'first',
                     utmn:'first', hill:'first', rec_id: 'first', population:'first',

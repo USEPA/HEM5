@@ -102,7 +102,7 @@ class Downwash(DependentInputFile):
             for num in range(1, 37):
                 field = "value_" + str(num)
 
-                if row[keyword] in constrained and row[field] <= 0:
+                if row[keyword] in constrained and row[field] < 0:
                     Logger.logMessage("Invalid down wash value " + str(row[field]) + ".")
                     messagebox.showinfo("INvalid values", "Invalid down wash value " + str(row[field]) + ".")
                     return None
