@@ -92,13 +92,15 @@ class SourceTypeRiskHistogram(ExcelWriter, AltRecAwareSummary):
             byCols = [rec_id, source_id] if altrec=='Y' else [fips, block, source_id]
             inner_summed = allinner2_df.groupby(by=byCols, as_index=False).agg(aggs).reset_index(drop=True)
             
-            # Drop records that (are not user receptors AND have population = 0)
+            # Drop records that (are not user receptors AND have population = 0)       
             if altrec == 'N':
-                inner_summed.drop(inner_summed[(inner_summed.population == 0) & ("U" not in inner_summed.block)].index,
-                                 inplace=True)
+                inner_summed.drop(inner_summed[(inner_summed.population == 0) &
+                                               (~inner_summed.block.str.contains('U', case=False))].index,
+                                               inplace=True)
             else:
-                inner_summed.drop(inner_summed[(inner_summed.population == 0) & ("U" not in inner_summed.rec_id)].index,
-                                 inplace=True)
+                inner_summed.drop(inner_summed[(inner_summed.population == 0) & 
+                                               (~inner_summed.rec_id.str.contains('U_', case=False))].index,
+                                               inplace=True)
                         
             # Append to sector block risk DF
             sector_blkrisk = sector_blkrisk.append(inner_summed)
@@ -218,8 +220,8 @@ class SourceTypeRiskHistogram(ExcelWriter, AltRecAwareSummary):
         # Re-sort source types based on maximum values (decending) and then compile values again.
         maximum, self.sourceTypes = (list(t) for t in zip(*sorted( zip(maximum, self.sourceTypes), reverse=True )))
         maximum.insert(0, 'Maximum (in 1 million)')
-        # The max value is the first one after the label (because we sorted!)
-        maximum.insert(1, maximum[1])
+        # The max value is the maximum MIR of the entire sector
+        maximum.insert(1, self.sector_mir)
 
         header = ['', 'Maximum Overall']
         header.extend(self.sourceTypes)

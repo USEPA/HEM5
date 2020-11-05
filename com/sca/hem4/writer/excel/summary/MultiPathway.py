@@ -44,7 +44,9 @@ class MultiPathway(ExcelWriter):
         facilityMaxRiskAndHI_df = facilityMaxRiskAndHI.createDataframe()
 
         pollutantCrosswalk = PollutantCrosswalk(createDataframe=True)
-        pollutantCrosswalk_df = pollutantCrosswalk.dataframe
+        pollutantCrosswalk_df = pollutantCrosswalk.dataframe       
+        # Lowercase the pollutant name column
+        pollutantCrosswalk_df[pollutant_name] = pollutantCrosswalk_df[pollutant_name].str.lower()
 
         pathways = []
         for facilityId in self.facilityIds:
@@ -58,6 +60,8 @@ class MultiPathway(ExcelWriter):
             # Steps a-f in Steve's summary
             maxIndivRisks = MaximumIndividualRisks(targetDir=targetDir, facilityId=facilityId)
             maxIndivRisks_df = maxIndivRisks.createDataframe()
+            # Replace nan with empty string
+            maxIndivRisks_df.replace('nan', '', regex=True, inplace=True)
 
             riskBkdn = RiskBreakdown(targetDir=targetDir, facilityId=facilityId)
             riskBkdn_df = riskBkdn.createDataframe()
@@ -65,6 +69,8 @@ class MultiPathway(ExcelWriter):
                                     (riskBkdn_df[parameter] == 'Cancer risk') &
                                     (riskBkdn_df[source_id].str.contains('Total')) &
                                     (~riskBkdn_df[pollutant].str.contains('All '))]
+            # Lowercase the pollutant name column
+            riskBkdn_df[pollutant] = riskBkdn_df[pollutant].str.lower()
 
             # keep all records but give default designation of 'POL' to pollutants which are not in crosswalk
             rbkdn_df = riskBkdn_df.merge(pollutantCrosswalk_df, left_on=[pollutant], right_on=[pollutant_name], how="left")
@@ -157,7 +163,7 @@ class MultiPathway(ExcelWriter):
                 riskblocks_df = inner_summed.append(allouter_summed)
             else:
                 riskblocks_df = inner_summed
-
+            
             # Steps o-r
             asRisksPathway = self.getRisksPathway('As', riskblocks_df, facilityId, maxRiskAndHI_df, maxIndivRisks_df)
             pahRisksPathway = self.getRisksPathway('PAH', riskblocks_df, facilityId, maxRiskAndHI_df, maxIndivRisks_df)

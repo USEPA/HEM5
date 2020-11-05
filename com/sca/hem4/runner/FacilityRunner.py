@@ -565,8 +565,9 @@ class FacilityRunner():
                 comment='*')
 
         # Round utm coordinates to integers
-        plotf_df.utme = plotf_df.apply(lambda row: normal_round(row[utme]), axis=1)
-        plotf_df.utmn = plotf_df.apply(lambda row: normal_round(row[utmn]), axis=1)
+        if len(plotf_df) > 0:
+            plotf_df.utme = plotf_df.apply(lambda row: normal_round(row[utme]), axis=1)
+            plotf_df.utmn = plotf_df.apply(lambda row: normal_round(row[utmn]), axis=1)
 
         return plotf_df
 

@@ -47,6 +47,8 @@ class MultiPathwayNonCensus(ExcelWriter):
 
         pollutantCrosswalk = PollutantCrosswalk(createDataframe=True)
         pollutantCrosswalk_df = pollutantCrosswalk.dataframe
+        # Lowercase the pollutant name column
+        pollutantCrosswalk_df[pollutant_name] = pollutantCrosswalk_df[pollutant_name].str.lower()
 
         pathways = []
         for facilityId in self.facilityIds:
@@ -60,6 +62,8 @@ class MultiPathwayNonCensus(ExcelWriter):
             # Steps a-f in Steve's summary
             maxIndivRisks = MaximumIndividualRisksNonCensus(targetDir=targetDir, facilityId=facilityId)
             maxIndivRisks_df = maxIndivRisks.createDataframe()
+            # Replace nan with empty string
+            maxIndivRisks_df.replace('nan', '', regex=True, inplace=True)
 
             riskBkdn = RiskBreakdown(targetDir=targetDir, facilityId=facilityId)
             riskBkdn_df = riskBkdn.createDataframe()
@@ -67,6 +71,8 @@ class MultiPathwayNonCensus(ExcelWriter):
                                           (riskBkdn_df[parameter] == 'Cancer risk') &
                                           (riskBkdn_df[source_id].str.contains('Total')) &
                                           (~riskBkdn_df[pollutant].str.contains('All '))]
+            # Lowercase the pollutant name column
+            riskBkdn_df[pollutant] = riskBkdn_df[pollutant].str.lower()
 
             # keep all records but give default designation of 'POL' to pollutants which are not in crosswalk
             rbkdn_df = riskBkdn_df.merge(pollutantCrosswalk_df, left_on=[pollutant], right_on=[pollutant_name], how="left")
