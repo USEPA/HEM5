@@ -4,13 +4,16 @@ from math import floor, log10
 import pandas as pd
 from com.sca.hem4.writer.csv.BlockSummaryChronic import *
 from com.sca.hem4.writer.csv.BlockSummaryChronicNonCensus import BlockSummaryChronicNonCensus
+from com.sca.hem4.writer.excel.FacilityMaxRiskandHI import FacilityMaxRiskandHI
 
-output_dir = "C:\\Users\\Chris Stolte\\IdeaProjects\\HEM4\\output\\SEM"
+output_dir = "/Users/chris/Downloads/PrimCop"
+radius = 5000
 
 class AllReceptorsGenerator(InputFile):
 
-    def __init__(self, hem4_output_dir):
+    def __init__(self, hem4_output_dir, radius):
         self.output_dir = hem4_output_dir
+        self.radius = radius
 
         self.basepath = os.path.basename(os.path.normpath(self.output_dir))
         files = os.listdir(self.output_dir)
@@ -33,17 +36,30 @@ class AllReceptorsGenerator(InputFile):
 
         blocksummary_df = pd.DataFrame()
 
+        # Used for finding the fac center
+        maxRiskAndHI = FacilityMaxRiskandHI(targetDir=self.output_dir, filenameOverride="PrimCop_Actuals2_facility_max_risk_and_hi.xlsx")
+        maxRiskAndHI_df = maxRiskAndHI.createDataframe()
+
         for facilityId in self.facilityIds:
             print("Inspecting facility folder " + facilityId + " for output files...")
 
             try:
                 targetDir = self.output_dir + "/" + facilityId
 
+                maxrisk_df = maxRiskAndHI_df.loc[maxRiskAndHI_df['Facil_id'] == facilityId]
+                center_lat = maxrisk_df.iloc[0]['fac_center_latitude']
+                center_lon = maxrisk_df.iloc[0]['fac_center_longitude']
+                ceny, cenx, zone, hemi, epsg = UTM.ll2utm(center_lat, center_lon)
+
                 blockSummaryChronic = BlockSummaryChronicNonCensus(targetDir=targetDir, facilityId=facilityId) if self.altrec == 'Y' else \
                     BlockSummaryChronic(targetDir=targetDir, facilityId=facilityId)
 
                 bsc_df = blockSummaryChronic.createDataframe()
                 bsc_df['fac_count'] = 1
+
+                bsc_df[distance] = np.sqrt((cenx - bsc_df.utme)**2 + (ceny - bsc_df.utmn)**2)
+                maxdist = self.radius
+                bsc_df = bsc_df.query('distance <= @maxdist').copy()
                 blocksummary_df = blocksummary_df.append(bsc_df)
 
                 bsc_df['fac_count']
@@ -116,5 +132,5 @@ class AllReceptorsGenerator(InputFile):
         return df.fillna("")
 
 
-generator = AllReceptorsGenerator(hem4_output_dir=output_dir)
+generator = AllReceptorsGenerator(hem4_output_dir=output_dir, radius=radius)
 generator.generate()
