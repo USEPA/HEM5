@@ -1,5 +1,6 @@
 import fnmatch
 import os
+import re
 import pandas as pd
 from com.sca.hem4.writer.csv.AllInnerReceptors import AllInnerReceptors, block, fips, lat, lon, pollutant, overlap, \
     conc, fac_id
@@ -14,7 +15,7 @@ class MaxConcentrationLocator():
 
     def __init__(self, hem4_output_dir, pollutant_name):
         self.output_dir = hem4_output_dir
-        self.pollutant = pollutant_name.lower()
+        self.pollutant = re.escape(pollutant_name).lower()
 
         self.basepath = os.path.basename(os.path.normpath(self.output_dir))
         files = os.listdir(self.output_dir)
