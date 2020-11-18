@@ -8,7 +8,7 @@ from com.sca.hem4.writer.csv.AllOuterReceptors import AllOuterReceptors
 from com.sca.hem4.writer.csv.AllPolarReceptors import AllPolarReceptors
 from com.sca.hem4.writer.excel.InputSelectionOptions import InputSelectionOptions
 
-output_dir = "C:\\Users\\Chris Stolte\\IdeaProjects\\HEM4\\output\\CEN"
+output_dir = "C:\\HEM-inputs\\GUIv3_102020fixes_Test12"
 pollutant_name = "compounds"
 
 class MaxConcentrationLocator():
@@ -112,13 +112,13 @@ class MaxConcentrationLocator():
                 row = inner_sliced.loc[inner_sliced[conc].idxmax()]
                 if row[conc] > winning_row[conc]:
                     winning_row = row
-                    winning_type = 'U' if row[block].str.contains('U') else 'C'
+                    winning_type = 'U' if 'U' in row[block] else 'C'
 
                 outer_sliced = outer_summed.loc[outer_summed[pollutant] == p].reset_index()
                 row = outer_sliced.loc[outer_sliced[conc].idxmax()]
                 if row[conc] > winning_row[conc]:
                     winning_row = row
-                    winning_type = 'U' if row[block].str.contains('U') else 'C'
+                    winning_type = 'U' if 'U' in row[block] else 'C'
 
                 winning_row[fac_id] = facilityId
                 winning_row['type'] = winning_type
