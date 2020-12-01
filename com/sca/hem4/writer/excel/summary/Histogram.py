@@ -43,7 +43,7 @@ class Histogram(ExcelWriter, AltRecAwareSummary):
             foundMax = False
             for index, row in bsc_df.iterrows():
 
-                if not foundMax and row[population] > 0:
+                if not foundMax and (row[population] > 0 or 'U' in row[block]):
                     foundMax = True
                     rounded = self.round_to_sigfig(row[mir])
 
