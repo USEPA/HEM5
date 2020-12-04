@@ -6,8 +6,8 @@ from com.sca.hem4.writer.csv.BlockSummaryChronic import *
 from com.sca.hem4.writer.csv.BlockSummaryChronicNonCensus import BlockSummaryChronicNonCensus
 from com.sca.hem4.writer.excel.FacilityMaxRiskandHI import FacilityMaxRiskandHI
 
-output_dir = "/Users/chris/Downloads/PrimCop"
-radius = 5000
+output_dir = r"C:\Temp\aaadumb\PrimaryCopper_testing"
+radius = 50000
 
 class AllReceptorsGenerator(InputFile):
 
@@ -37,7 +37,7 @@ class AllReceptorsGenerator(InputFile):
         blocksummary_df = pd.DataFrame()
 
         # Used for finding the fac center
-        maxRiskAndHI = FacilityMaxRiskandHI(targetDir=self.output_dir, filenameOverride="PrimCop_Actuals2_facility_max_risk_and_hi.xlsx")
+        maxRiskAndHI = FacilityMaxRiskandHI(targetDir=self.output_dir, filenameOverride=self.basepath + "_facility_max_risk_and_hi.xlsx")
         maxRiskAndHI_df = maxRiskAndHI.createDataframe()
 
         for facilityId in self.facilityIds:
@@ -99,8 +99,9 @@ class AllReceptorsGenerator(InputFile):
 
         risk_summed['mir_rounded'] = risk_summed[mir].apply(self.round_to_sigfig, 1)
 
-        path = os.path.join(self.output_dir, 'MIR_HI_allreceptors.xlsx')
-        risk_summed.to_excel(path, index=False, columns=self.getColumns(), header=self.getHeader())
+        path = os.path.join(self.output_dir, 'MIR_HI_allreceptors.csv')
+        risk_summed.to_csv(path, index=False, columns=self.getColumns(), header=self.getHeader())
+#        risk_summed.to_excel(path, index=False, columns=self.getColumns(), header=self.getHeader())
 
     def determineAltRec(self, targetDir):
 
@@ -131,6 +132,6 @@ class AllReceptorsGenerator(InputFile):
         df = self.readFromPathCsv(self.getColumns())
         return df.fillna("")
 
-
 generator = AllReceptorsGenerator(hem4_output_dir=output_dir, radius=radius)
 generator.generate()
+
