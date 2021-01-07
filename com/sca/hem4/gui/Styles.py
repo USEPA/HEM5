@@ -1,0 +1,7 @@
+TITLE_FONT= ("Daytona", 16, 'bold')
+TAB_FONT =("Daytona", 11, 'bold')
+TEXT_FONT = ("Daytona", 14)
+
+MAIN_COLOR = "white"
+TAB_COLOR = "lightcyan3"
+HIGHLIGHT_COLOR = "snow3"

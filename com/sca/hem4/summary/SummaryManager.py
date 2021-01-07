@@ -17,6 +17,16 @@ from com.sca.hem4.log import Logger
 from com.sca.hem4.visualize.AcuteImpactsVisualizer import AcuteImpactsVisualizer
 from com.sca.hem4.writer.excel.summary.AltRecAwareSummary import AltRecAwareSummary
 
+maxRiskReportModule = importlib.import_module("com.sca.hem4.writer.excel.summary.MaxRisk")
+cancerDriversReportModule = importlib.import_module("com.sca.hem4.writer.excel.summary.CancerDrivers")
+hazardIndexDriversReportModule = importlib.import_module("com.sca.hem4.writer.excel.summary.HazardIndexDrivers")
+histogramModule = importlib.import_module("com.sca.hem4.writer.excel.summary.Histogram")
+hiHistogramModule = importlib.import_module("com.sca.hem4.writer.excel.summary.HI_Histogram")
+incidenceDriversReportModule = importlib.import_module("com.sca.hem4.writer.excel.summary.IncidenceDrivers")
+acuteImpactsReportModule = importlib.import_module("com.sca.hem4.writer.excel.summary.AcuteImpacts")
+sourceTypeRiskHistogramModule = importlib.import_module("com.sca.hem4.writer.excel.summary.SourceTypeRiskHistogram")
+multiPathwayModule = importlib.import_module("com.sca.hem4.writer.excel.summary.MultiPathway")
+
 class SummaryManager(AltRecAwareSummary):
 
     def __init__(self, targetDir, groupName, facilitylist):
