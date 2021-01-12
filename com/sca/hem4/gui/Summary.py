@@ -370,7 +370,12 @@ class Summary(Page):
                                             'Please enter a valid number of characters of the sourcetype ID.')
                     else:
                         ready = True
-
+            if "Max Concentration" in self.checked:
+                if self.pollutant_name.get() == "":
+                    messagebox.showinfo('Invalid pollutant',
+                                        'Pollutant must not be blank.')
+                else:
+                    ready = True
             else:
                 ready = True
 
