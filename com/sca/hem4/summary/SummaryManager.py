@@ -26,6 +26,7 @@ incidenceDriversReportModule = importlib.import_module("com.sca.hem4.writer.exce
 acuteImpactsReportModule = importlib.import_module("com.sca.hem4.writer.excel.summary.AcuteImpacts")
 sourceTypeRiskHistogramModule = importlib.import_module("com.sca.hem4.writer.excel.summary.SourceTypeRiskHistogram")
 multiPathwayModule = importlib.import_module("com.sca.hem4.writer.excel.summary.MultiPathway")
+maxConcentrationModule = importlib.import_module("com.sca.hem4.writer.excel.summary.MaxOffsiteConcentration")
 
 class SummaryManager(AltRecAwareSummary):
 
@@ -45,7 +46,8 @@ class SummaryManager(AltRecAwareSummary):
                                  'AcuteImpacts' : acuteImpactsReportModule,
                                  'SourceTypeRiskHistogram' : sourceTypeRiskHistogramModule,
                                  'MultiPathway' : multiPathwayModule,
-                                 'MultiPathwayNonCensus' : multiPathwayModuleNonCensus}
+                                 'MultiPathwayNonCensus' : multiPathwayModuleNonCensus,
+                                 'MaxOffsiteConcentration' : maxConcentrationModule}
 
         self.afterReportRun = {'AcuteImpacts' : self.visualizeAcuteImpacts}
 

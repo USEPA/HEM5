@@ -2,7 +2,7 @@ import tkinter as tk
 import PIL.Image
 import os
 from tkinter import messagebox
-from com.sca.hem4.gui.Styles import TEXT_FONT, MAIN_COLOR, TAB_COLOR, HIGHLIGHT_COLOR
+from com.sca.hem4.gui.Styles import TEXT_FONT, MAIN_COLOR, TAB_COLOR, HIGHLIGHT_COLOR, CHECKBOX_COLOR
 
 
 class Page(tk.Frame):
@@ -12,6 +12,7 @@ class Page(tk.Frame):
         self.main_color = MAIN_COLOR
         self.tab_color = TAB_COLOR
         self.highlightcolor = HIGHLIGHT_COLOR
+        self.checkbox_color = CHECKBOX_COLOR
 
     def add_margin(self, pil_img, top, right, bottom, left):
         width, height = pil_img.size

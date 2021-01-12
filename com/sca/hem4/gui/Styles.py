@@ -5,3 +5,5 @@ TEXT_FONT = ("Daytona", 14)
 MAIN_COLOR = "white"
 TAB_COLOR = "lightcyan3"
 HIGHLIGHT_COLOR = "snow3"
+
+CHECKBOX_COLOR = "light grey"
