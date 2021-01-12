@@ -1,6 +1,4 @@
 import fnmatch
-import os
-
 from com.sca.hem4.writer.csv.AllInnerReceptors import *
 from com.sca.hem4.writer.csv.AllOuterReceptors import AllOuterReceptors
 from com.sca.hem4.writer.csv.AllPolarReceptors import AllPolarReceptors
@@ -8,23 +6,16 @@ from com.sca.hem4.writer.excel.ExcelWriter import ExcelWriter
 from com.sca.hem4.writer.excel.InputSelectionOptions import InputSelectionOptions
 from com.sca.hem4.log.Logger import Logger
 
-hem4_output_dir = "C:/Users/Chris Stolte/IdeaProjects/HEM4/output/COP"
-hap = 'lead'
 
 class MaxOffsiteConcentrationNonCensus(ExcelWriter):
 
-    def __init__(self, targetDir, hap):
+    def __init__(self, targetDir, facilityIds, parameters=None):
         self.name = "Maximum Offsite Concentration Summary"
-        self.hap = hap
+        self.categoryName = parameters[0]
+        self.hap = parameters[1]
         self.categoryFolder = targetDir
-
-        files = os.listdir(self.categoryFolder)
-        rootpath = self.categoryFolder + '/'
-        self.facilityIds = [ item for item in files if os.path.isdir(os.path.join(rootpath, item))
-                             and 'inputs' not in item.lower() and 'acute maps' not in item.lower() ]
-
+        self.facilityIds = facilityIds
         self.filename = os.path.join(targetDir, "max_offsite_conc.xlsx")
-
 
     def getHeader(self):
         return ['Facility ID', 'Pollutant', 'Max Conc', 'Lat', 'Lon', 'Receptor Type', 'Receptor ID']
@@ -35,6 +26,8 @@ class MaxOffsiteConcentrationNonCensus(ExcelWriter):
     def generateOutputs(self):
         Logger.log("Creating " + self.name + " report...", None, False)
 
+        all_df = pd.DataFrame()
+
         for facilityId in self.facilityIds:
             targetDir = self.categoryFolder + "/" + facilityId
 
@@ -42,8 +35,6 @@ class MaxOffsiteConcentrationNonCensus(ExcelWriter):
             inputops = InputSelectionOptions(targetDir=targetDir, facilityId=facilityId)
             inputops_df = inputops.createDataframe()
             acute_yn = inputops_df['acute_yn'].iloc[0]
-
-            all_df = pd.DataFrame()
 
             # Polar recs
             allpolar = AllPolarReceptors(targetDir=targetDir, facilityId=facilityId, acuteyn=acute_yn)
@@ -53,13 +44,14 @@ class MaxOffsiteConcentrationNonCensus(ExcelWriter):
 
             allpolar_df = allpolar_df.loc[allpolar_df[pollutant].str.contains(self.hap, regex=True)]
 
-            allpolar_df = allpolar_df.groupby(by=[lat, lon, pollutant], as_index=False) \
-                .sum().reset_index(drop=True)
-            allpolar_df[rec_id] = ''
-            allpolar_df[rec_type] = 'P'
-            allpolar_df[fac_id] = facilityId
+            if len(allpolar_df) > 0:
+                allpolar_df = allpolar_df.groupby(by=[lat, lon, pollutant], as_index=False) \
+                    .sum().reset_index(drop=True)
+                allpolar_df[rec_id] = ''
+                allpolar_df[rec_type] = 'P'
+                allpolar_df[fac_id] = facilityId
 
-            all_df = all_df.append(allpolar_df)
+                all_df = all_df.append(allpolar_df)
 
             # Inner recs
             allinner = AllInnerReceptors(targetDir=targetDir, facilityId=facilityId, acuteyn=acute_yn)
@@ -71,12 +63,13 @@ class MaxOffsiteConcentrationNonCensus(ExcelWriter):
 
             allinner_df = allinner_df.loc[allinner_df[pollutant].str.contains(self.hap, regex=True)]
 
-            allinner_df = allinner_df.groupby(by=[rec_id, lat, lon, pollutant], as_index=False) \
-                .sum().reset_index(drop=True)
+            if len(allinner_df) > 0:
+                allinner_df = allinner_df.groupby(by=[rec_id, lat, lon, pollutant], as_index=False) \
+                    .sum().reset_index(drop=True)
 
-            allinner_df[rec_type] = allinner_df.apply(lambda row: MaxOffsiteConcentrationNonCensus.add_rec_type(row), axis=1)
-            allinner_df[fac_id] = facilityId
-            all_df = all_df.append(allinner_df)
+                allinner_df[rec_type] = allinner_df.apply(lambda row: MaxOffsiteConcentrationNonCensus.add_rec_type(row), axis=1)
+                allinner_df[fac_id] = facilityId
+                all_df = all_df.append(allinner_df)
 
             # Outer recs
             listOuter = []
@@ -97,16 +90,17 @@ class MaxOffsiteConcentrationNonCensus(ExcelWriter):
                                                     (allouter_df[overlap] == 'Y'))]
                     allouter_df = allouter_df.loc[allouter_df[pollutant].str.contains(self.hap, regex=True)]
 
-                    allouter_df = allouter_df.groupby(by=[rec_id, lat, lon, pollutant], as_index=False) \
-                        .sum().reset_index(drop=True)
+                    if len(allouter_df) > 0:
+                        allouter_df = allouter_df.groupby(by=[rec_id, lat, lon, pollutant], as_index=False) \
+                            .sum().reset_index(drop=True)
 
-                    allouter_df[fac_id] = facilityId
-                    allouter_df[rec_type] = allouter_df.apply(lambda row: MaxOffsiteConcentrationNonCensus.add_rec_type(row), axis=1)
+                        allouter_df[fac_id] = facilityId
+                        allouter_df[rec_type] = allouter_df.apply(lambda row: MaxOffsiteConcentrationNonCensus.add_rec_type(row), axis=1)
 
-                    all_df = all_df.append(allouter_df)
+                        all_df = all_df.append(allouter_df)
 
         # Group by pollutant and then find the max
-        max_conc_df = all_df.groupby(by=[pollutant], as_index=False).max().reset_index(drop=True)
+        max_conc_df = all_df.groupby(by=[fac_id, pollutant], as_index=False).max().reset_index(drop=True)
 
         # Put final df into array
         self.dataframe = pd.DataFrame(data=max_conc_df, columns=self.getColumns())
@@ -115,7 +109,4 @@ class MaxOffsiteConcentrationNonCensus(ExcelWriter):
 
     def add_rec_type(row):
         return 'U' if 'U' in row[rec_id] else 'C'
-
-maxOffsiteConc = MaxOffsiteConcentrationNonCensus(targetDir=hem4_output_dir, hap=hap)
-maxOffsiteConc.write()
 

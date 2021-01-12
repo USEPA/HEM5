@@ -26,7 +26,10 @@ incidenceDriversReportModule = importlib.import_module("com.sca.hem4.writer.exce
 acuteImpactsReportModule = importlib.import_module("com.sca.hem4.writer.excel.summary.AcuteImpacts")
 sourceTypeRiskHistogramModule = importlib.import_module("com.sca.hem4.writer.excel.summary.SourceTypeRiskHistogram")
 multiPathwayModule = importlib.import_module("com.sca.hem4.writer.excel.summary.MultiPathway")
+multiPathwayModuleNonCensus = importlib.import_module("com.sca.hem4.writer.excel.summary.MultiPathwayNonCensus")
 maxConcentrationModule = importlib.import_module("com.sca.hem4.writer.excel.summary.MaxOffsiteConcentration")
+maxConcentrationModuleNonCensus = importlib.import_module("com.sca.hem4.writer.excel.summary.MaxOffsiteConcentrationNonCensus")
+
 
 class SummaryManager(AltRecAwareSummary):
 
@@ -47,42 +50,28 @@ class SummaryManager(AltRecAwareSummary):
                                  'SourceTypeRiskHistogram' : sourceTypeRiskHistogramModule,
                                  'MultiPathway' : multiPathwayModule,
                                  'MultiPathwayNonCensus' : multiPathwayModuleNonCensus,
-                                 'MaxOffsiteConcentration' : maxConcentrationModule}
+                                 'MaxOffsiteConcentration' : maxConcentrationModule,
+                                 'MaxOffsiteConcentrationNonCensus' : maxConcentrationModuleNonCensus}
 
         self.afterReportRun = {'AcuteImpacts' : self.visualizeAcuteImpacts}
-
-#        # Get modeling group name from the beginning of the Facililty Max Risk and HI filename
-#        skeleton = os.path.join(self.categoryFolder, '*_facility_max_risk_and_hi.*')
-#        fname = glob.glob(skeleton)
-#        if fname:
-#            head, tail = os.path.split(fname[0])
-#            self.grpname = tail[:tail.find('facility_max_risk_and_hi')-1]
-#        else:
-#            Logger.logMessage("Cannot generate summaries because there is no Facility Max Risk and HI file")
-#            return 
-
-
         
     def createReport(self, categoryFolder, reportName, arguments=None):
 
-        # Multipathway is the only summary that has two implementation classes, one for the standard
+        # Multipathway and Max Conc have two implementation classes, one for the standard
         # case and one for when alternate receptors are used. But we don't expose that split
         # to users, therefore we run the alt rec summary when needed and determine that here. Since we can
         # assume that all facilities run in the same category used alternate receptors (or not...)
         # we only need to check the first one to decide.
 
-        
-        #reset status
         self.status = False
         
         try:
-            
             # First determine if alternate receptors were used
             altrec = self.determineAltRec(categoryFolder)
             if altrec == 'Y' and reportName == 'MultiPathway':
                 reportName = "MultiPathwayNonCensus"
-        
-#            Logger.logMessage("Starting report: " + reportName)
+            if altrec == 'Y' and reportName == 'MaxOffsiteConcentration':
+                reportName = "MaxOffsiteConcentrationNonCensus"
             
             module = self.availableReports[reportName]
             if module is None:
@@ -93,8 +82,6 @@ class SummaryManager(AltRecAwareSummary):
             reportArgs = [self.grpname, arguments]
             instance = reportClass(categoryFolder, self.facilityIds, reportArgs)
             instance.writeWithTimestamp()
-    
-#            Logger.logMessage("Finished report: " + reportName)
     
             if reportName in self.afterReportRun:
                 Logger.logMessage("Running post-report action for " + reportName)
@@ -111,7 +98,6 @@ class SummaryManager(AltRecAwareSummary):
              
         else:
             self.status = True
-
 
     def visualizeAcuteImpacts(self, categoryFolder):
         visualizer = AcuteImpactsVisualizer(sourceDir=categoryFolder)

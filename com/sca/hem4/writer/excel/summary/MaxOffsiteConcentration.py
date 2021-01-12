@@ -1,12 +1,11 @@
 import fnmatch
-import os
-
 from com.sca.hem4.writer.csv.AllInnerReceptors import *
 from com.sca.hem4.writer.csv.AllOuterReceptors import AllOuterReceptors
 from com.sca.hem4.writer.csv.AllPolarReceptors import AllPolarReceptors
 from com.sca.hem4.writer.excel.ExcelWriter import ExcelWriter
 from com.sca.hem4.writer.excel.InputSelectionOptions import InputSelectionOptions
 from com.sca.hem4.log.Logger import Logger
+
 
 class MaxOffsiteConcentration(ExcelWriter):
 
@@ -15,13 +14,8 @@ class MaxOffsiteConcentration(ExcelWriter):
         self.categoryName = parameters[0]
         self.hap = parameters[1]
         self.categoryFolder = targetDir
-
-        files = os.listdir(self.categoryFolder)
-        rootpath = self.categoryFolder + '/'
         self.facilityIds = facilityIds
-
         self.filename = os.path.join(targetDir, "max_offsite_conc.xlsx")
-
 
     def getHeader(self):
         return ['Facility ID', 'Pollutant', 'Max Conc', 'Lat', 'Lon', 'Receptor Type', 'Fips', 'Block']
