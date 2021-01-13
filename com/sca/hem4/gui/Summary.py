@@ -326,8 +326,8 @@ class Summary(Page):
                     reportNames.append('AcuteImpacts')
                     reportNameArgs['AcuteImpacts'] = None
                 if report == "Max Concentration":
-                    reportNames.append('MaxOffsiteConcentration')
-                    reportNameArgs['MaxOffsiteConcentration'] = self.pollutant_name.get()
+                    reportNames.append('MaxConcentrationLocator')
+                    reportNameArgs['MaxConcentrationLocator'] = self.pollutant_name.get()
                 if report == "Source Type Risk Histogram":
                     reportNames.append('SourceTypeRiskHistogram')
                     # Pass starting position and number of characters

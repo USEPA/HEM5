@@ -2,28 +2,34 @@ import fnmatch
 import os
 import re
 import pandas as pd
+
+from com.sca.hem4.log import Logger
 from com.sca.hem4.writer.csv.AllInnerReceptors import AllInnerReceptors, block, fips, lat, lon, pollutant, overlap, \
     conc, fac_id
 from com.sca.hem4.writer.csv.AllOuterReceptors import AllOuterReceptors
 from com.sca.hem4.writer.csv.AllPolarReceptors import AllPolarReceptors
+from com.sca.hem4.writer.excel.ExcelWriter import ExcelWriter
 from com.sca.hem4.writer.excel.InputSelectionOptions import InputSelectionOptions
 
-output_dir = "C:\\HEM-inputs\\GUIv3_102020fixes_Test12"
-pollutant_name = "compounds"
 
-class MaxConcentrationLocator():
+class MaxConcentrationLocator(ExcelWriter):
 
-    def __init__(self, hem4_output_dir, pollutant_name):
-        self.output_dir = hem4_output_dir
-        self.pollutant = re.escape(pollutant_name).lower()
+    def __init__(self, targetDir, facilityIds, parameters=None):
+        self.name = "Maximum Concentration Locator Summary"
+        self.categoryName = parameters[0]
+        self.pollutant = parameters[1]
+        self.categoryFolder = targetDir
+        self.facilityIds = facilityIds
+        self.filename = os.path.join(targetDir, "max_conc_locations.xlsx")
 
-        self.basepath = os.path.basename(os.path.normpath(self.output_dir))
-        files = os.listdir(self.output_dir)
-        rootpath = self.output_dir + '/'
-        self.facilityIds = [item for item in files if os.path.isdir(os.path.join(rootpath, item))
-                             and 'inputs' not in item.lower() and 'acute maps' not in item.lower()]
+    def getHeader(self):
+        return ['Facility ID', 'Pollutant', 'Max Concentration', 'Lat', 'Lon', 'FIPS', 'Block', 'Receptor Type']
 
-    def locate(self):
+    def getColumns(self):
+        return [fac_id, pollutant, conc, lat, lon, fips, block, 'type']
+
+    def generateOutputs(self):
+        Logger.log("Creating " + self.name + " report...", None, False)
 
         max_concentrations = pd.DataFrame()
 
@@ -31,7 +37,7 @@ class MaxConcentrationLocator():
             print("Inspecting facility folder " + facilityId + " for output files...")
 
             try:
-                targetDir = self.output_dir + "/" + facilityId
+                targetDir = self.categoryFolder + "/" + facilityId
 
                 # Determine if this facility was run with acute or not
                 inputops = InputSelectionOptions(targetDir=targetDir, facilityId=facilityId)
@@ -122,14 +128,8 @@ class MaxConcentrationLocator():
 
                 winning_row[fac_id] = facilityId
                 winning_row['type'] = winning_type
-                #print("Winning row for " + p + ": " + str(winning_row[lat]) + ", " + str(winning_row[lon]) + ", " + str(winning_row[conc]))
                 max_concentrations = max_concentrations.append(winning_row)
 
-        path = os.path.join(self.output_dir, 'max-conc-locations.xlsx')
-        max_concentrations.to_excel(path, index=False,
-            columns=[fac_id, pollutant, conc, lat, lon, fips, block, 'type'],
-            header=['Facility ID', 'Pollutant', 'Max Concentration', 'Lat', 'Lon', 'FIPS', 'Block', 'Receptor Type'])
-
-
-locator = MaxConcentrationLocator(output_dir, pollutant_name)
-locator.locate()
+        self.dataframe = pd.DataFrame(data=max_concentrations, columns=self.getColumns())
+        self.data = self.dataframe.values
+        yield self.dataframe

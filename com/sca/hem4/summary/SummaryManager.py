@@ -27,8 +27,7 @@ acuteImpactsReportModule = importlib.import_module("com.sca.hem4.writer.excel.su
 sourceTypeRiskHistogramModule = importlib.import_module("com.sca.hem4.writer.excel.summary.SourceTypeRiskHistogram")
 multiPathwayModule = importlib.import_module("com.sca.hem4.writer.excel.summary.MultiPathway")
 multiPathwayModuleNonCensus = importlib.import_module("com.sca.hem4.writer.excel.summary.MultiPathwayNonCensus")
-maxConcentrationModule = importlib.import_module("com.sca.hem4.writer.excel.summary.MaxOffsiteConcentration")
-maxConcentrationModuleNonCensus = importlib.import_module("com.sca.hem4.writer.excel.summary.MaxOffsiteConcentrationNonCensus")
+maxConcentrationLocatorModule = importlib.import_module("com.sca.hem4.writer.excel.summary.MaxConcentrationLocator")
 
 
 class SummaryManager(AltRecAwareSummary):
@@ -50,8 +49,7 @@ class SummaryManager(AltRecAwareSummary):
                                  'SourceTypeRiskHistogram' : sourceTypeRiskHistogramModule,
                                  'MultiPathway' : multiPathwayModule,
                                  'MultiPathwayNonCensus' : multiPathwayModuleNonCensus,
-                                 'MaxOffsiteConcentration' : maxConcentrationModule,
-                                 'MaxOffsiteConcentrationNonCensus' : maxConcentrationModuleNonCensus}
+                                 'MaxConcentrationLocator' : maxConcentrationLocatorModule}
 
         self.afterReportRun = {'AcuteImpacts' : self.visualizeAcuteImpacts}
         
@@ -70,8 +68,6 @@ class SummaryManager(AltRecAwareSummary):
             altrec = self.determineAltRec(categoryFolder)
             if altrec == 'Y' and reportName == 'MultiPathway':
                 reportName = "MultiPathwayNonCensus"
-            if altrec == 'Y' and reportName == 'MaxOffsiteConcentration':
-                reportName = "MaxOffsiteConcentrationNonCensus"
             
             module = self.availableReports[reportName]
             if module is None:
