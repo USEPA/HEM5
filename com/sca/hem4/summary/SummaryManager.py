@@ -28,6 +28,7 @@ sourceTypeRiskHistogramModule = importlib.import_module("com.sca.hem4.writer.exc
 multiPathwayModule = importlib.import_module("com.sca.hem4.writer.excel.summary.MultiPathway")
 multiPathwayModuleNonCensus = importlib.import_module("com.sca.hem4.writer.excel.summary.MultiPathwayNonCensus")
 maxConcentrationLocatorModule = importlib.import_module("com.sca.hem4.writer.excel.summary.MaxConcentrationLocator")
+sourcePollutantMaxRiskModule = importlib.import_module("com.sca.hem4.writer.excel.summary.SourcePollutantMaxRisk")
 
 
 class SummaryManager(AltRecAwareSummary):
@@ -49,7 +50,8 @@ class SummaryManager(AltRecAwareSummary):
                                  'SourceTypeRiskHistogram' : sourceTypeRiskHistogramModule,
                                  'MultiPathway' : multiPathwayModule,
                                  'MultiPathwayNonCensus' : multiPathwayModuleNonCensus,
-                                 'MaxConcentrationLocator' : maxConcentrationLocatorModule}
+                                 'MaxConcentrationLocator' : maxConcentrationLocatorModule,
+                                 'SourcePollutantMaxRisk' : sourcePollutantMaxRiskModule}
 
         self.afterReportRun = {'AcuteImpacts' : self.visualizeAcuteImpacts}
         

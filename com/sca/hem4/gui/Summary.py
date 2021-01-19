@@ -135,7 +135,7 @@ class Summary(Page):
         self.add_report_checkbox("Acute Impacts", self.l10, self.check_box)
         self.add_report_checkbox("Multipathway", self.r4, self.check_box)
         self.add_report_checkbox("Max Concentration", self.r5, self.set_hap)
-        self.add_report_checkbox("Max Risk and HI by Source\nand Pollutant", self.r6, self.check_box)
+        self.add_report_checkbox("Max Risk and HI by Source\nand Pollutant", self.r6, self.set_max_risk_sourcetype)
         self.add_report_checkbox("Source Type Risk Histogram", self.r7, self.set_sourcetype)
 
         ru = PIL.Image.open('images\icons8-create-48.png').resize((30,30))
@@ -157,11 +157,15 @@ class Summary(Page):
         rileLabel.bind("<Button-1>", self.run_reports)
 
     def add_report_checkbox(self, name, container, callback):
-        label = tk.Label(container, font=TEXT_FONT, width=22, anchor='w', bg=self.tab_color, text=name)
+        # Create a new frame to hold both inputs
+        frame = tk.Frame(container, width=300, height=50, pady=0, padx=0, bg=self.tab_color)
+        frame.grid(row=1, column=1, columnspan=4, padx=0, sticky="W")
+
+        label = tk.Label(frame, font=TEXT_FONT, width=22, anchor='w', bg=self.tab_color, text=name)
         label.grid(row=1, column=4, padx=5, sticky="w")
 
         # unchecked box
-        self.report_label = tk.Label(container, image=self.uncheckedIcon, bg=self.tab_color)
+        self.report_label = tk.Label(frame, image=self.uncheckedIcon, bg=self.tab_color)
         self.report_label.image = self.uncheckedIcon
         self.report_label.grid(row=1, column=3, padx=10, sticky='w')
         self.report_label.bind("<Button-1>", partial(callback, self.report_label, name))
@@ -193,7 +197,7 @@ class Summary(Page):
             self.pos_num = ttk.Entry(self.r8)
             self.pos_num["width"] = 5
             self.pos_num.grid(row=1, column=3, padx=5, sticky="W")
-            self.chars = tk.Label(self.r9, font=TEXT_FONT, bg=self.tab_color, text="Enter the number of characters \nof the sourcetype ID")
+            self.chars = tk.Label(self.r9, font=TEXT_FONT, bg=self.tab_color, text="Enter the number of characters \nof the sourcetype ID.")
             self.chars.grid(row=1, column=4, padx=5, sticky="W")
             self.chars_num = ttk.Entry(self.r9)
             self.chars_num["width"] = 5
@@ -208,6 +212,37 @@ class Summary(Page):
             self.pos_num.destroy()
             self.chars.destroy()
             self.chars_num.destroy()
+
+    # Source type histogram callback that presents two inputs for required parameters
+    def set_max_risk_sourcetype(self, icon, text, event):
+
+        if text not in self.checked:
+
+            icon.configure(image=self.checkedIcon)
+            self.checked.append(text)
+            self.checked_icons.append(icon)
+            self.max_risk_pos = tk.Label(self.r6, font=TEXT_FONT, bg=self.tab_color,
+                    text="Enter the position in the source ID where the\n source ID type begins.The default is 1.")
+            self.max_risk_pos.grid(row=2, column=4, padx=5, sticky="W")
+            self.max_risk_pos_num = ttk.Entry(self.r6)
+            self.max_risk_pos_num["width"] = 5
+            self.max_risk_pos_num.grid(row=2, column=3, padx=5, sticky="W")
+            self.max_risk_chars = tk.Label(self.r6, font=TEXT_FONT, bg=self.tab_color,
+                    text="Enter the number of characters \nof the sourcetype ID.")
+            self.max_risk_chars.grid(row=3, column=4, padx=5, sticky="W")
+            self.max_risk_chars_num = ttk.Entry(self.r6)
+            self.max_risk_chars_num["width"] = 5
+            self.max_risk_chars_num.grid(row=3, column=3, padx=5, sticky="W")
+
+        elif text in self.checked:
+
+            icon.configure(image=self.uncheckedIcon)
+            self.checked.remove(text)
+            self.checked_icons.remove(icon)
+            self.max_risk_pos.destroy()
+            self.max_risk_pos_num.destroy()
+            self.max_risk_chars.destroy()
+            self.max_risk_chars_num.destroy()
 
     # Max conc callback that presents pollutant name parameter
     def set_hap(self, icon, text, event):
@@ -256,11 +291,12 @@ class Summary(Page):
         executor = ThreadPoolExecutor(max_workers=1)
         future = executor.submit(self.createReports)
 
-        self.lift_page(self.nav.liLabel, self.nav.logLabel, self.nav.log, self.nav.current_button)
+        if self.reports_ready:
+            self.lift_page(self.nav.liLabel, self.nav.logLabel, self.nav.log, self.nav.current_button)
 
     def createReports(self,  arguments=None):
 
-        ready = False
+        self.reports_ready = False
 
         # set log file to append to in folder
         logpath = self.fullpath +"/hem4.log"
@@ -328,6 +364,26 @@ class Summary(Page):
                 if report == "Max Concentration":
                     reportNames.append('MaxConcentrationLocator')
                     reportNameArgs['MaxConcentrationLocator'] = self.pollutant_name.get()
+                if report == "Max Risk and HI by Source\nand Pollutant":
+                    reportNames.append('SourcePollutantMaxRisk')
+                    # Pass starting position and number of characters
+                    # Translate user supplied starting position to array index value (0-based indexing)
+                    if self.max_risk_pos_num.get() == '' or self.max_risk_pos_num.get() == '0':
+                        startpos = 0
+                        print(startpos)
+                    else:
+                        startpos = int(self.max_risk_pos_num.get()) - 1
+                        print(startpos)
+
+                    # Convert non-numeric to 0 (handles blank case)
+                    if self.max_risk_chars_num.get().isnumeric():
+                        numchars = int(self.max_risk_chars_num.get())
+                    else:
+                        numchars = 0
+                    print(numchars)
+
+                    reportNameArgs['SourcePollutantMaxRisk'] = [startpos, numchars]
+
                 if report == "Source Type Risk Histogram":
                     reportNames.append('SourceTypeRiskHistogram')
                     # Pass starting position and number of characters
@@ -359,28 +415,29 @@ class Summary(Page):
         if len(self.checked) == 0:
             messagebox.showinfo("No report selected", "Please select one or more report types to run.")
         else:
-            # check if source type has been selected
-            if "Source Type Risk Histogram" in self.checked:
+
+            self.reports_ready = True
+
+            # extra conditions for reports with parameters
+            if "Source Type Risk Histogram" in self.checked or\
+                    "Max Risk and HI by Source\nand Pollutant" in self.checked:
                 if startpos < 0:
                     messagebox.showinfo('Invalid starting position',
                                         'Starting position of the sourcetype ID must be > 0.')
-                else:
-                    if numchars <= 0:
-                        messagebox.showinfo('Invalid number of sourcetype ID characters',
-                                            'Please enter a valid number of characters of the sourcetype ID.')
-                    else:
-                        ready = True
+                    self.reports_ready = False
+                elif numchars <= 0:
+                    messagebox.showinfo('Invalid number of sourcetype ID characters',
+                                        'Please enter a valid number of characters of the sourcetype ID.')
+                    self.reports_ready = False
+
             if "Max Concentration" in self.checked:
                 if self.pollutant_name.get() == "":
                     messagebox.showinfo('Invalid pollutant',
                                         'Pollutant must not be blank.')
-                else:
-                    ready = True
-            else:
-                ready = True
+                    self.reports_ready = False
 
         # if checks have been passed
-        if ready:
+        if self.reports_ready:
             running_message = "\nRunning report(s) on facilities: " + ', '.join(faclist)
 
             # write to log
@@ -429,6 +486,12 @@ class Summary(Page):
                 self.pos_num.destroy()
                 self.chars.destroy()
                 self.chars_num.destroy()
+
+            if "Max Risk and HI by Source\nand Pollutant" in self.checked:
+                self.max_risk_pos.destroy()
+                self.max_risk_pos_num.destroy()
+                self.max_risk_chars.destroy()
+                self.max_risk_chars_num.destroy()
 
             if "Max Concentration" in self.checked:
                 self.pollutant_name.destroy()
