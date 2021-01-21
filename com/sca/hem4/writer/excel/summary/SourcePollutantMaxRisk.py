@@ -1,3 +1,4 @@
+import datetime
 import fnmatch
 import os
 import re
@@ -12,7 +13,6 @@ from com.sca.hem4.writer.excel.ExcelWriter import ExcelWriter
 from com.sca.hem4.writer.excel.FacilityMaxRiskandHI import FacilityMaxRiskandHI
 from com.sca.hem4.writer.excel.InputSelectionOptions import InputSelectionOptions
 from com.sca.hem4.writer.excel.summary.MaxRisk import risk
-
 
 class SourcePollutantMaxRisk(ExcelWriter):
 
@@ -40,7 +40,7 @@ class SourcePollutantMaxRisk(ExcelWriter):
     def generateOutputs(self):
         Logger.log("Creating " + self.name + " report...", None, False)
 
-        max_risk_df = pd.DataFrame()
+        print(datetime.datetime.now())
 
         # The first step is to load the risk breakdown output for each facility so that we
         # can recover the risk for each pollutant.
@@ -66,18 +66,12 @@ class SourcePollutantMaxRisk(ExcelWriter):
                 allinner = AllInnerReceptors(targetDir=targetDir, facilityId=facilityId, acuteyn=acute_yn)
                 allinner_df = allinner.createDataframe()
 
-                print(str(len(allinner_df)) + " inner rows before filter.")
-
                 # Don't consider schools and monitors
                 allinner_df = allinner_df.loc[(~allinner_df[block].str.contains('S')) &
                                               (~allinner_df[block].str.contains('M')) &
                                               (allinner_df[overlap] == 'N')]
 
-                print(str(len(allinner_df)) + " inner rows after filter.")
-
-                print(facilityId)
                 allinner_df[[mir, 'hq']] = allinner_df.apply(lambda row: self.calculateRisks(row[pollutant], row[conc]), axis=1)
-
                 allinner_df = allinner_df.loc[(allinner_df[mir] + allinner_df['hq'] > 0)]
 
                 # convert source ids to the code part only, and then group and sum
@@ -110,17 +104,26 @@ class SourcePollutantMaxRisk(ExcelWriter):
                                                       (~allouter_df[block].str.contains('M')) &
                                                       (allouter_df[overlap] == 'N')]
         
-                        print(str(len(allouter_df)) + " inner rows after filter.")
-        
-                        print(facilityId)
-                        allouter_df[[mir, 'hq']] = allouter_df.apply(lambda row: self.calculateRisks(row[pollutant], row[conc]), axis=1)
-        
-                        allouter_df = allouter_df.loc[(allouter_df[mir] + allouter_df['hq'] > 0)]
-        
+                        print(str(len(allouter_df)) + " outer rows after filter.")
+                        print(datetime.datetime.now())
+
+                        # Using apply with self.calculateRisks() takes way too long for the outer receptors, so instead
+                        # we perform vector operations and spoof the divide-by-zero problem by  using an impossibly
+                        # large number to divide by!
+                        allouter_df[ure] = allouter_df[pollutant].apply(lambda x: self.riskCache[x][ure])
+                        allouter_df[rfc] = allouter_df[pollutant].apply(lambda x: self.riskCache[x][rfc] if self.riskCache[x][rfc] != 0 else 10e32)
+                        allouter_df[mir] = allouter_df[conc] * allouter_df[ure]
+                        allouter_df['hq'] = allouter_df[conc] / 1000 / allouter_df[rfc]
+
+                        print("...after calculate risks...")
+                        print(datetime.datetime.now())
+
+                        allouter_df = allouter_df.loc[(allouter_df[mir] + allouter_df['hq'] > 10e-28)]
+
                         # convert source ids to the code part only, and then group and sum
                         allouter_df['type'] = allouter_df[source_id] \
                             .apply(lambda x: x[self.codePosition:self.codePosition+self.codeLength])
-        
+
                         # Aggregate risk, grouped by FIPS/block (or receptor id if we're using alternates) and source
                         aggs = {mir:'sum', 'hq':'sum'}
                         byCols = [lat, lon, population, 'type', pollutant]
@@ -146,7 +149,6 @@ class SourcePollutantMaxRisk(ExcelWriter):
                 self.find_max_hi_risk_and_type(grouped_df, maxRiskAndHI_df)
 
             final_df = final_df.append(grouped_df)
-            print("hey")
 
         self.dataframe = pd.DataFrame(data=final_df, columns=self.getColumns())
         self.data = self.dataframe.values
