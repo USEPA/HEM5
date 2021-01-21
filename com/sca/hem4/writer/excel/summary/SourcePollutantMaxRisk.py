@@ -103,22 +103,17 @@ class SourcePollutantMaxRisk(ExcelWriter):
                         allouter_df = allouter_df.loc[(~allouter_df[block].str.contains('S')) &
                                                       (~allouter_df[block].str.contains('M')) &
                                                       (allouter_df[overlap] == 'N')]
-        
-                        print(str(len(allouter_df)) + " outer rows after filter.")
-                        print(datetime.datetime.now())
 
                         # Using apply with self.calculateRisks() takes way too long for the outer receptors, so instead
-                        # we perform vector operations and spoof the divide-by-zero problem by  using an impossibly
-                        # large number to divide by!
+                        # we perform vector operations. Note the use of a reciprocal for the RFC value to avoid
+                        # divide-by-zero errors. Also note that we don't need to worry about URE/RFC values not being
+                        # in the cache here, because we already processed them all for the inner receptors.
                         allouter_df[ure] = allouter_df[pollutant].apply(lambda x: self.riskCache[x][ure])
-                        allouter_df[rfc] = allouter_df[pollutant].apply(lambda x: self.riskCache[x][rfc] if self.riskCache[x][rfc] != 0 else 10e32)
+                        allouter_df[rfc] = allouter_df[pollutant].apply(lambda x: 1 / self.riskCache[x][rfc] if self.riskCache[x][rfc] != 0 else 0)
                         allouter_df[mir] = allouter_df[conc] * allouter_df[ure]
-                        allouter_df['hq'] = allouter_df[conc] / 1000 / allouter_df[rfc]
+                        allouter_df['hq'] = (allouter_df[conc] * allouter_df[rfc]) / 1000
 
-                        print("...after calculate risks...")
-                        print(datetime.datetime.now())
-
-                        allouter_df = allouter_df.loc[(allouter_df[mir] + allouter_df['hq'] > 10e-28)]
+                        allouter_df = allouter_df.loc[(allouter_df[mir] + allouter_df['hq'] > 0)]
 
                         # convert source ids to the code part only, and then group and sum
                         allouter_df['type'] = allouter_df[source_id] \
