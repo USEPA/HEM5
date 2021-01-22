@@ -28,7 +28,7 @@ class SourcePollutantMaxRisk(ExcelWriter):
         self.haplib_df = DoseResponse().dataframe
         self.categoryFolder = targetDir
         self.facilityIds = facilityIds
-        self.filename = os.path.join(targetDir, self.categoryName + "_max_conc_locations.xlsx")
+        self.filename = os.path.join(targetDir, self.categoryName + "_facility_risk_hi_bysrchap.xlsx")
 
     def getHeader(self):
         return ['Facility', 'Facility MIR', 'Facility Incidence', 'Facility Max HI', 'Max HI Type', 'Source Type',
