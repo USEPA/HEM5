@@ -447,6 +447,7 @@ class Summary(Page):
             self.nav.log.scr.insert(tk.INSERT, "\n")
             self.nav.log.scr.configure(state='disabled')
 
+            self.titleLabel.configure(image=self.nav.greenIcon)
             summaryMgr = SummaryManager(self.fullpath, groupname, faclist)
 
             # loop through for each report selected
@@ -478,6 +479,8 @@ class Summary(Page):
             self.nav.log.scr.insert(tk.INSERT, "\n")
             self.nav.log.scr.configure(state='disabled')
             self.logfile.write(str(datetime.now()) + ":    " + "Risk Summary Reports Finished." + "\n")
+
+            self.titleLabel.configure(image=self.titleicon)
 
             messagebox.showinfo("Summary Reports Finished", "Risk summary reports for  " + ', '.join(faclist) + " run.")
 
