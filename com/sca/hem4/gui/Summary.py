@@ -30,8 +30,8 @@ class Summary(Page):
         meta_container = tk.Frame(self, bg=self.tab_color, bd=2)
         meta_container.pack(side="top", fill="both", expand=True)
 
-        self.meta_to = tk.Frame(self, bg=self.tab_color, height=200)
-        self.meta_to.pack(side="left", fill="both", expand=True)
+        self.filler = tk.Frame(self, bg=self.tab_color, height=200)
+        self.filler.pack(side="left", fill="both", expand=True)
 
         self.meta_two = tk.Frame(self, bg=self.tab_color, height=200)
         self.meta_two.pack(side="right", fill="both")
