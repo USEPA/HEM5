@@ -1,5 +1,5 @@
 TITLE_FONT= ("Daytona", 16, 'bold')
-TAB_FONT =("Daytona", 11, 'bold')
+TAB_FONT =("Daytona", 10, 'bold')
 TEXT_FONT = ("Daytona", 14)
 
 MAIN_COLOR = "white"
