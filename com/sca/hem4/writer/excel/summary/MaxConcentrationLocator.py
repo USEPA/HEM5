@@ -23,7 +23,7 @@ class MaxConcentrationLocator(ExcelWriter):
         self.filename = os.path.join(targetDir, self.categoryName + "_max_conc_locations.xlsx")
 
     def getHeader(self):
-        return ['Facility ID', 'Pollutant', 'Max Concentration', 'Lat', 'Lon', 'FIPS', 'Block', 'Receptor Type']
+        return ['Facility ID', 'Pollutant', 'Max Concentration (ug/m3)', 'Lat', 'Lon', 'FIPS', 'Block', 'Receptor Type']
 
     def getColumns(self):
         return [fac_id, pollutant, conc, lat, lon, fips, block, 'type']
@@ -112,7 +112,7 @@ class MaxConcentrationLocator(ExcelWriter):
                 winning_row = row
                 winning_row[fips] = None
                 winning_row[block] = None
-                winning_type = 'P'
+                winning_type = 'PG'
 
                 inner_sliced = inner_summed.loc[inner_summed[pollutant] == p].reset_index()
                 row = inner_sliced.loc[inner_sliced[conc].idxmax()]
