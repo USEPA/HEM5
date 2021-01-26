@@ -30,9 +30,12 @@ class Summary(Page):
         meta_container = tk.Frame(self, bg=self.tab_color, bd=2)
         meta_container.pack(side="top", fill="both", expand=True)
 
-        self.meta_two = tk.Frame(self, bg=self.tab_color)
-        self.meta_two.pack(side="bottom", fill="both")
-        self.meta_two.columnconfigure(2, weight=1)
+        self.filler = tk.Frame(self, bg=self.tab_color, height=200)
+        self.filler.pack(side="left", fill="both", expand=True)
+
+        self.meta_two = tk.Frame(self, bg=self.tab_color, height=200)
+        self.meta_two.pack(side="right", fill="both")
+        self.meta_two.columnconfigure(3, weight=1)
 
         self.container = tk.Frame(meta_container, bg=self.tab_color, borderwidth=0)
         self.container.grid(row=0, column=0)
@@ -62,7 +65,7 @@ class Summary(Page):
         self.s10 = tk.Frame(self.container, width=600, height=50, pady=5, padx=5, bg=self.tab_color)
         self.l10 = tk.Frame(self.s10, width=300, height=50, pady=5, padx=5, bg=self.tab_color)
         self.r10 = tk.Frame(self.s10, width=300, height=50, pady=5, padx=5, bg=self.tab_color)
-        self.s11 = tk.Frame(self.container, width=600, height=50, pady=5, padx=5, bg=self.tab_color)
+        # self.s11 = tk.Frame(self.container, width=600, height=50, pady=5, padx=5, bg=self.tab_color)
 
         self.container.grid_rowconfigure(12, weight=1)
         self.container.grid_columnconfigure(2, weight=1)
@@ -90,7 +93,7 @@ class Summary(Page):
         self.s10.grid(row=9, column=0, columnspan=2, sticky="nsew")
         self.l10.grid(row=1, column=0, columnspan=2, sticky="nsew")
         self.r10.grid(row=1, column=2, columnspan=2, sticky="nsew")
-        self.s11.grid(row=10, column=0, columnspan=2, sticky="nsew")
+        # self.s11.grid(row=10, column=0, columnspan=2, sticky="nsew")
 
         self.tt = PIL.Image.open('images\icons8-edit-graph-report-48-white.png').resize((30,30))
         self.tticon = self.add_margin(self.tt, 5, 0, 5, 0)
@@ -111,7 +114,7 @@ class Summary(Page):
         self.fileLabel.grid(row=1, column=0, padx=10)
 
         self.folder_select = tk.Label(self.s2,
-              text="Select output folder", font=TITLE_FONT, bg=self.tab_color, anchor="w")
+                                      text="Select output folder", font=TITLE_FONT, bg=self.tab_color, anchor="w")
         self.folder_select.grid(pady=10, padx=10, row=1, column=1)
         self.fileLabel.bind("<Button-1>", partial(self.browse, self.folder_select))
         self.folder_select.bind("<Button-1>", partial(self.browse, self.folder_select))
@@ -143,10 +146,10 @@ class Summary(Page):
         rileicon = ImageTk.PhotoImage(ricon)
         rileLabel = tk.Label(self.meta_two, image=rileicon, bg=self.tab_color)
         rileLabel.image = rileicon # keep a reference!
-        rileLabel.grid(row=0, column=1, padx=5, pady=20, sticky='E')
+        rileLabel.grid(row=1, column=1, padx=0, pady=20, sticky='E')
 
         run_button = tk.Label(self.meta_two, text="Run Reports", font=TEXT_FONT, bg=self.tab_color)
-        run_button.grid(row=0, column=2, padx=5, pady=20, sticky='W')
+        run_button.grid(row=1, column=2, padx=20, pady=20, sticky='W')
 
         run_button.bind("<Enter>", partial(self.color_config, run_button, rileLabel, self.meta_two, 'light grey'))
         run_button.bind("<Leave>", partial(self.color_config, run_button, rileLabel, self.meta_two, self.tab_color))
@@ -222,13 +225,13 @@ class Summary(Page):
             self.checked.append(text)
             self.checked_icons.append(icon)
             self.max_risk_pos = tk.Label(self.r6, font=TEXT_FONT, bg=self.tab_color,
-                    text="Enter the position in the source ID where the\n source ID type begins.The default is 1.")
+                                         text="Enter the position in the source ID where the\n source ID type begins.The default is 1.")
             self.max_risk_pos.grid(row=2, column=4, padx=5, sticky="W")
             self.max_risk_pos_num = ttk.Entry(self.r6)
             self.max_risk_pos_num["width"] = 5
             self.max_risk_pos_num.grid(row=2, column=3, padx=5, sticky="W")
             self.max_risk_chars = tk.Label(self.r6, font=TEXT_FONT, bg=self.tab_color,
-                    text="Enter the number of characters \nof the sourcetype ID.")
+                                           text="Enter the number of characters \nof the sourcetype ID.")
             self.max_risk_chars.grid(row=3, column=4, padx=5, sticky="W")
             self.max_risk_chars_num = ttk.Entry(self.r6)
             self.max_risk_chars_num["width"] = 5
@@ -419,7 +422,7 @@ class Summary(Page):
             self.reports_ready = True
 
             # extra conditions for reports with parameters
-            if "Source Type Risk Histogram" in self.checked or\
+            if "Source Type Risk Histogram" in self.checked or \
                     "Max Risk and HI by Source\nand Pollutant" in self.checked:
                 if startpos < 0:
                     messagebox.showinfo('Invalid starting position',

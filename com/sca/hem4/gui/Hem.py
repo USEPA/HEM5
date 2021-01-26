@@ -1035,26 +1035,21 @@ class Hem(Page):
         self.running = True
         self.disable_buttons()
 
-        #disable options tab
+        # disable options tab
         self.nav.optionsLabel.bind("<Button-1>", partial(self.disabled_message))
         self.nav.gearLabel.bind("<Button-1>", partial(self.disabled_message))
 
-
-
-        #exit button
-        #aermod user nav button
+        # quit button
         self.abortLabel= tk.Label(self.nav, text="  ABORT HEM RUN", font=TAB_FONT, fg='red', bg=self.main_color, height=2, anchor="w")
-        self.abortLabel.place(in_=self.nav.container, relwidth=0.2, rely=0.54, relx=0.1)
+        self.abortLabel.place(in_=self.nav.container, relwidth=0.2, rely=0.49, relx=0.1)
 
-
-        #bind icon and label events
+        # bind icon and label events
         self.abortLabel.bind("<Enter>", partial(self.otr_config, self.abortLabel,  self.highlightcolor))
         self.abortLabel.bind("<Leave>", partial(self.otr_config, self.abortLabel, self.main_color))
         self.abortLabel.bind("<Button-1>", lambda x:self.quit_app())
 
         if hasattr(self, 'back'):
             self.back.destroy()
-
 
         self.processor = Processor(self, self.model, Event())
         print('about to send to future')
@@ -1072,7 +1067,6 @@ class Hem(Page):
         """
 
         self.callbackQueue.put(self.finish_run)
-
 
     def finish_run(self):
         """
@@ -1123,8 +1117,6 @@ class Hem(Page):
             self.nav.log.scr.configure(state='disabled')
             self.nav.log.after(25, self.after_callback)
 
-
-    #%% Stop Function
     def quit_app(self):
         """
 
@@ -1199,24 +1191,17 @@ class Hem(Page):
             self.seasons_file.unbind('<Button1>')
             self.seasonsLabel.unbind('<Button1>')
 
-
-
     def reset_gui(self):
         #reset all inputs if everything finished. actually destroy and recreate all inputs
-
-
-
         self.faclbl.set('')
         self.faclbl.set("1. Please select a Facilities List Options file:")
         self.button_file.unbind('<Button1>')
         self.fileLabel.unbind('<Button1>')
 
-
         self.haplbl.set('')
         self.haplbl.set("2. Please select a HAP Emissions file:")
         self.hap_file.unbind('<Button1>')
         self.hapLabel.unbind('<Button1>')
-
 
         self.emislbl.set('')
         self.emislbl.set("3. Please select an Emissions Location file:")
@@ -1235,16 +1220,12 @@ class Hem(Page):
             self.urep_file.destroy()
             self.check_altrec.set(1)
 
-
-
-        #find the last next button and disable that one
-
+        # find the last next button and disable that one
         if 'user_rcpt' in self.model.dependencies:
             for child in self.optional.s8.winfo_children():
                 child.destroy()
 
-
-        #emis var
+        # emis var
         if 'emis_var' in self.model.dependencies:
             for child in self.optional.s9.winfo_children():
                 child.destroy()
@@ -1273,13 +1254,13 @@ class Hem(Page):
             for child in self.depdeplt.s6.winfo_children():
                 child.destroy()
 
-        #destroy stop
+        # destroy stop
         if hasattr(self, 'stop'):
             self.stop.destroy()
 
         self.current_tab = self.nav
 
-        #next button
+        # next button
         self.next = tk.Button(self.meta_two, text="Next", bg='lightgrey', relief='solid', borderwidth=2,
                               command=self.lift_tab, font=TEXT_FONT)
         self.next.grid(row=0, column=2, sticky='E', padx=20, pady=20)
@@ -1289,7 +1270,7 @@ class Hem(Page):
         self.optional.instruction_instance.set(" ")
         self.depdeplt.instruction_instance.set(" ")
 
-        #reenable options tab
+        # reenable options tab
         self.nav.optionsLabel.bind("<Button-1>", partial(self.nav.lift_page, self.nav.optionsLabel, self.nav.gearLabel, self.nav.options, self.nav.current_button))
         self.nav.gearLabel.bind("<Button-1>", partial(self.nav.lift_page, self.nav.gearLabel, self.nav.optionsLabel, self.nav.options, self.nav.current_button))
 
@@ -1297,10 +1278,7 @@ class Hem(Page):
         self.nav.iconLabel.configure(image=self.nav.runIcon)
         self.abortLabel.destroy()
 
-
         self.running = False
-
-    #%%
 
     def reset_inputs(self, inputtype):
         """
@@ -1310,65 +1288,61 @@ class Hem(Page):
         """
 
         if inputtype == 'faclist':
-            #reset everything as you would the gui
+            # reset everything as you would the gui
 
             self.haplbl.set('')
             self.haplbl.set("2. Please select a HAP Emissions file:")
             self.hap_file.unbind('<Button1>')
             self.hapLabel.unbind('<Button1>')
 
-
             self.emislbl.set('')
             self.emislbl.set("3. Please select an Emissions Location file:")
             self.emis_file.unbind('<Button1>')
             self.emisLabel.unbind('<Button1>')
 
-
-            #user receptor
+            # user receptor
             self.optional.urlbl = tk.StringVar()
             self.optional.urlbl.set('')
             self.optional.urlbl.set("Please select a User Receptors file:")
 
-            #variation
+            # variation
             self.optional.varlbl = tk.StringVar()
             self.optional.varlbl.set('')
             self.optional.varlbl.set("Please select an Emissions Variation file:")
 
-            #buoyant line
+            # buoyant line
             self.optional.buoylbl = tk.StringVar()
             self.optional.buoylbl.set('')
             self.optional.buoylbl.set("Please select associated Buoyant Line"+
                                       " Parameters file:")
 
-            #poly vertex
+            # poly vertex
             self.optional.polylbl = tk.StringVar()
             self.optional.polylbl.set('')
             self.optional.polylbl.set("Please select associated Polygon Vertex file:")
 
-            #building downwash
+            # building downwash
             self.optional.bldgdwlbl = tk.StringVar()
             self.optional.bldgdwlbl.set('')
             self.optional.bldgdwlbl.set("Please select associated Building Dimensions file:")
 
-
-            #particle size input
+            # particle size input
             self.depdeplt.partlbl = tk.StringVar()
             self.depdeplt.partlbl.set('')
             self.depdeplt.partlbl.set("Please select Particle Size file:")
 
-            #land file input
+            # land file input
             self.depdeplt.landlbl = tk.StringVar()
 
             self.depdeplt.landlbl.set('')
             self.depdeplt.landlbl.set("Please select Land Use file:")
 
-            #seasons file input
+            # seasons file input
             self.depdeplt.seasonlbl = tk.StringVar()
             self.depdeplt.seasonlbl.set('')
             self.depdeplt.seasonlbl.set("Please select Month-to-Season Vegetation file:")
 
-
-            #reset model values
+            # reset model values
             self.model.emisloc = None
             self.model.hapemis = None
             self.model.multipoly = None
@@ -1383,13 +1357,11 @@ class Hem(Page):
             self.model.gasdryfacs = None
             self.model.particlefacs = None
 
-
-
             if 'user_rcpt' in self.model.dependencies:
                 for child in self.optional.s8.winfo_children():
                     child.destroy()
 
-            #emis var
+            # emis var
             if 'emis_var' in self.model.dependencies:
                 for child in self.optional.s9.winfo_children():
                     child.destroy()
@@ -1422,20 +1394,20 @@ class Hem(Page):
 
         elif inputtype == 'emisloc':
 
-            #reset model values
+            # reset model values
             self.model.multipoly = None
             self.model.multibuoy = None
             self.model.depdeplt = None
             self.model.gasdryfacs = None
             self.model.particlefacs = None
 
-            #buoyant line
+            # buoyant line
             self.optional.buoylbl = tk.StringVar()
             self.optional.buoylbl.set('')
             self.optional.buoylbl.set("Please select associated Buoyant Line"+
                                       " Parameters file:")
 
-            #poly vertex
+            # poly vertex
             self.optional.polylbl = tk.StringVar()
             self.optional.polylbl.set('')
             self.optional.polylbl.set("Please select associated Polygon Vertex file:")
@@ -1452,12 +1424,8 @@ class Hem(Page):
 
                 self.model.dependencies.remove('poly')
 
-
-
     def otr_config(self, widget1, color, event):
-
         widget1.configure(bg=color)
-
 
     def color_config(self, widget1, widget2, container, color, event):
 
@@ -1465,9 +1433,7 @@ class Hem(Page):
         widget2.configure(bg=color)
         container.configure(bg=color)
 
-
-
-        #serve instructions
+        # serve instructions
         if self.hapLabel in [widget1, widget2]:
             if self.instruction_instance.get() == " ":
 
@@ -1485,7 +1451,6 @@ class Hem(Page):
             else:
                 self.instruction_instance.set(" ")
 
-
         elif self.fileLabel in [widget1, widget2]:
 
             if self.instruction_instance.get() == " ":
@@ -1494,7 +1459,6 @@ class Hem(Page):
 
             else:
                 self.instruction_instance.set(" ")
-
 
         elif "Please select an alternate receptor CSV file:" in [widget1['text'], widget2['text']]:
 
@@ -1505,7 +1469,6 @@ class Hem(Page):
             else:
                 self.instruction_instance.set(" ")
 
-
         elif "Please select associated Buoyant Line Parameters file:" in [widget1['text'], widget2['text']]:
 
             if self.optional.instruction_instance.get() == " ":
@@ -1514,7 +1477,6 @@ class Hem(Page):
 
             else:
                 self.optional.instruction_instance.set(" ")
-
 
         elif "Please select associated Polygon Vertex file:" in [widget1['text'], widget2['text']]:
 
@@ -1543,7 +1505,6 @@ class Hem(Page):
             else:
                 self.optional.instruction_instance.set(" ")
 
-
         elif "Please select associated Building Dimensions file:" in [widget1['text'], widget2['text']]:
 
             if self.optional.instruction_instance.get() == " ":
@@ -1553,7 +1514,6 @@ class Hem(Page):
             else:
                 self.optional.instruction_instance.set(" ")
 
-
         elif "Please select Particle Size file:" in [widget1['text'], widget2['text']]:
 
             if self.depdeplt.instruction_instance.get() == " ":
@@ -1562,7 +1522,6 @@ class Hem(Page):
 
             else:
                 self.depdeplt.instruction_instance.set(" ")
-
 
         elif "Please select Land Use file:" in [widget1['text'], widget2['text']]:
 
