@@ -1,22 +1,22 @@
 import os
 import datetime
 import xlsxwriter
-from com.sca.ej.summary.CancerDGSummary import CancerDGSummary
-from com.sca.ej.summary.CancerElaineSummary import CancerElaineSummary
-from com.sca.ej.summary.CancerKCSummary import CancerKCSummary
-from com.sca.ej.summary.HiDGSummary import HiDGSummary
-from com.sca.ej.summary.HiElaineSummary import HiElaineSummary
-from com.sca.ej.summary.HiKCSummary import HiKCSummary
-import com.sca.ej.table.HiRacialEthnic as hiRacialEthnicModule
-import com.sca.ej.table.HiAgeGroups as hiAgeGroupsModule
-import com.sca.ej.table.HiDiploma as hiDiplomaModule
-import com.sca.ej.table.HiPoverty as hiPovertyModule
-import com.sca.ej.table.HiLinguisticIsolation as hiLinguisticIsolationModule
-import com.sca.ej.table.CancerRacialEthnic as cancerRacialEthnicModule
-import com.sca.ej.table.CancerAgeGroups as cancerAgeGroupsModule
-import com.sca.ej.table.CancerDiploma as cancerDiplomaModule
-import com.sca.ej.table.CancerPoverty as cancerPovertyModule
-import com.sca.ej.table.CancerLinguisticIsolation as cancerLinguisticIsolationModule
+from com.sca.hem4.ej.summary.CancerDGSummary import CancerDGSummary
+from com.sca.hem4.ej.summary.CancerElaineSummary import CancerElaineSummary
+from com.sca.hem4.ej.summary.CancerKCSummary import CancerKCSummary
+from com.sca.hem4.ej.summary.HiDGSummary import HiDGSummary
+from com.sca.hem4.ej.summary.HiElaineSummary import HiElaineSummary
+from com.sca.hem4.ej.summary.HiKCSummary import HiKCSummary
+import com.sca.hem4.ej.table.HiRacialEthnic as hiRacialEthnicModule
+import com.sca.hem4.ej.table.HiAgeGroups as hiAgeGroupsModule
+import com.sca.hem4.ej.table.HiDiploma as hiDiplomaModule
+import com.sca.hem4.ej.table.HiPoverty as hiPovertyModule
+import com.sca.hem4.ej.table.HiLinguisticIsolation as hiLinguisticIsolationModule
+import com.sca.hem4.ej.table.CancerRacialEthnic as cancerRacialEthnicModule
+import com.sca.hem4.ej.table.CancerAgeGroups as cancerAgeGroupsModule
+import com.sca.hem4.ej.table.CancerDiploma as cancerDiplomaModule
+import com.sca.hem4.ej.table.CancerPoverty as cancerPovertyModule
+import com.sca.hem4.ej.table.CancerLinguisticIsolation as cancerLinguisticIsolationModule
 
 
 class ReportWriter():

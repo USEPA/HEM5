@@ -1,4 +1,4 @@
-from com.sca.ej.summary.DGSummary import DGSummary
+from com.sca.hem4.ej.summary.DGSummary import DGSummary
 
 
 class CancerDGSummary(DGSummary):

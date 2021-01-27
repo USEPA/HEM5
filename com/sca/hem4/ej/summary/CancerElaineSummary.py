@@ -1,4 +1,4 @@
-from com.sca.ej.summary.ElaineSummary import ElaineSummary
+from com.sca.hem4.ej.summary.ElaineSummary import ElaineSummary
 
 
 class CancerElaineSummary(ElaineSummary):

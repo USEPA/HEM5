@@ -2,7 +2,7 @@ from copy import deepcopy
 
 import numpy as np
 
-from com.sca.ej.data.DataModel import DataModel
+from com.sca.hem4.ej.data.DataModel import DataModel
 
 
 class ElaineSummary():

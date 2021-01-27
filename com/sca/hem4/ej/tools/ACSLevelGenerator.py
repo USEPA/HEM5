@@ -4,7 +4,7 @@ import pandas as pd
 from numpy import int16
 from pandas import np
 
-from com.sca.ej.data.ACSDataset import ACSDataset
+from com.sca.hem4.ej.data.ACSDataset import ACSDataset
 
 acs_path = "/DeepGreen/SCA/ACS18BGEstimates_EJsubset-enhancified.xlsx"
 output_dir = "/DeepGreen/SCA"

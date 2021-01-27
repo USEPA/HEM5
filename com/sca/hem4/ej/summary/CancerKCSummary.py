@@ -1,4 +1,4 @@
-from com.sca.ej.summary.KCSummary import KCSummary
+from com.sca.hem4.ej.summary.KCSummary import KCSummary
 
 
 class CancerKCSummary(KCSummary):

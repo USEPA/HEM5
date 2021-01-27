@@ -1,4 +1,4 @@
-from com.sca.ej.table.WorksheetTable import WorksheetTable
+from com.sca.hem4.ej.table.WorksheetTable import WorksheetTable
 
 
 class HiDiploma(WorksheetTable):

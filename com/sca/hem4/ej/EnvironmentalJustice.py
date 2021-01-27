@@ -1,7 +1,7 @@
 import datetime
 import os
-from com.sca.ej.data.DataModel import DataModel
-from com.sca.ej.ReportWriter import ReportWriter
+from com.sca.hem4.ej.data.DataModel import DataModel
+from com.sca.hem4.ej.ReportWriter import ReportWriter
 
 rec_path = r"C:\Git_HEM4\HEM4\output\PrimCopperActual\MIR_HI_allreceptors_50km.csv"
 acs_path = r"C:\ejtool\ejtool\ACS Data\ACS18BGEstimates_EJsubset_wb.xlsx"
