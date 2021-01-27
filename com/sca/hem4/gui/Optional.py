@@ -1,5 +1,5 @@
 from com.sca.hem4.gui.Page import Page
-from com.sca.hem4.gui.Styles import TITLE_FONT
+from com.sca.hem4.gui.Styles import TITLE_FONT, MAIN_COLOR
 import tkinter as tk
 from PIL import ImageTk
 import PIL.Image
@@ -84,7 +84,7 @@ class Optional(Page):
         self.titleLabel.grid(row=1, column=0, padx=10, pady=10)
 
 
-        self.title = tk.Label(self.s1, font=TITLE_FONT, fg="white", bg=self.tab_color,
+        self.title = tk.Label(self.s1, font=TITLE_FONT, fg=MAIN_COLOR, bg=self.tab_color,
                               text="ADDITIONAL INPUTS")
         self.title.grid(row=1, column=1, sticky="W", pady=10, padx=10)
 

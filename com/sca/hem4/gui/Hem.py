@@ -7,7 +7,7 @@ from com.sca.hem4.model.Model import Model
 import tkinter as tk
 import PIL.Image
 from PIL import ImageTk
-from com.sca.hem4.gui.Styles import TITLE_FONT, TAB_FONT, TEXT_FONT
+from com.sca.hem4.gui.Styles import TITLE_FONT, TAB_FONT, TEXT_FONT, MAIN_COLOR
 from com.sca.hem4.upload.FileUploader import FileUploader
 import tkinter.ttk as ttk
 from tkinter import messagebox
@@ -166,7 +166,7 @@ class Hem(Page):
         self.titleLabel.image = self.titleicon # keep a reference!
         self.titleLabel.grid(row=1, column=0, padx=10, pady=10)
 
-        self.title = tk.Label(self.s1, font=TITLE_FONT, fg="white", bg=self.tab_color,
+        self.title = tk.Label(self.s1, font=TITLE_FONT, fg=MAIN_COLOR, bg=self.tab_color,
                               text="HEM4")
         self.title.grid(row=1, column=1, sticky="W", pady=10, padx=10)
 

@@ -7,9 +7,6 @@ class EJ(Page):
     def __init__(self, nav, *args, **kwargs):
         Page.__init__(self, *args, **kwargs)
 
-        self.main_color = "white"
-        self.tab_color = "lightcyan3"
-
     # Event handlers for porting instructions
     def add_instructions(self, placeholder1, placeholder2):
 

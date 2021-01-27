@@ -3,7 +3,7 @@ from com.sca.hem4.gui.Page import Page
 import tkinter as tk
 import PIL.Image
 from PIL import ImageTk
-from com.sca.hem4.gui.Styles import TITLE_FONT, TEXT_FONT
+from com.sca.hem4.gui.Styles import TITLE_FONT, TEXT_FONT, MAIN_COLOR
 from functools import partial
 from tkinter.filedialog import askopenfilename
 from concurrent.futures import ThreadPoolExecutor
@@ -38,7 +38,7 @@ class Census(Page):
         self.titleLabel.image = self.titleicon # keep a reference!
         self.titleLabel.grid(row=1, column=0, padx=10, pady=10)
 
-        title2 = tk.Label(self.s1, text="REVISE CENSUS", font=TITLE_FONT, fg="white", bg=self.tab_color)
+        title2 = tk.Label(self.s1, text="REVISE CENSUS", font=TITLE_FONT, fg=MAIN_COLOR, bg=self.tab_color)
         title2.grid(row=1, column=1, padx=10, sticky='W', pady=10)
 
         fu = PIL.Image.open('images\icons8-folder-48.png').resize((30,30))
