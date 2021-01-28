@@ -19,19 +19,20 @@ class EJ(Page):
         self.container = tk.Frame(self, bg=self.tab_color, bd=2)
         self.container.pack(side="top", fill="both", expand=True)
 
-        self.run_container = tk.Frame(self, bg='blue', height=200)
-        self.run_container.pack(side="bottom", fill="both")
-
         # create grid
         self.title_frame = tk.Frame(self.container, height=100, bg=self.tab_color)
         self.folder_frame = tk.Frame(self.container, height=150, pady=5, padx=5, bg=self.tab_color)
         self.category_frame = tk.Frame(self.container, height=200, pady=5, padx=5, bg=self.tab_color)
         self.parameters_frame = tk.Frame(self.container, height=200, pady=5, padx=5, bg=self.tab_color)
+        self.toshi_frame = tk.Frame(self.container, height=200, pady=5, padx=5, bg=self.tab_color)
+        self.run_frame = tk.Frame(self.container, height=100, pady=5, padx=5, bg=self.tab_color)
 
         self.title_frame.grid(row=1, columnspan=5, sticky="nsew")
         self.folder_frame.grid(row=2, columnspan=5, sticky="nsew")
         self.category_frame.grid(row=3, columnspan=5, sticky="nsew")
         self.parameters_frame.grid(row=4, columnspan=5, sticky="nsew")
+        self.toshi_frame.grid(row=5, columnspan=5, sticky="nsew")
+        self.run_frame.grid(row=6, columnspan=5, sticky="e")
 
         # Create a folder dialog button
         title_image = PIL.Image.open('images\icons8-people-48.png').resize((30,30))
@@ -95,6 +96,33 @@ class EJ(Page):
         self.add_config(radius=50, risk=1)
         self.create_add_config()
 
+        # Fourth step - choose TOSHIs
+        self.step4 = tk.Label(self.toshi_frame, text="4.", font=TEXT_FONT, bg=self.tab_color, anchor="w")
+        self.step4.grid(pady=10, padx=10, row=1, column=0)
+
+        self.step4_instructions = tk.Label(self.toshi_frame, font=TEXT_FONT, bg=self.tab_color,
+                                           text="Include up to 3 TOSHIs in the report.")
+        self.step4_instructions.grid(row=1, column=1, padx=5, sticky="W", columnspan=4)
+
+        self.create_toshi_dropdown()
+
+        ru = PIL.Image.open('images\icons8-create-48.png').resize((30,30))
+        ricon = self.add_margin(ru, 5, 0, 5, 0)
+        rileicon = ImageTk.PhotoImage(ricon)
+        rileLabel = tk.Label(self.run_frame, image=rileicon, bg=self.tab_color)
+        rileLabel.image = rileicon # keep a reference!
+        rileLabel.grid(row=1, column=1, padx=0, pady=20, sticky='E')
+
+        run_button = tk.Label(self.run_frame, text="Run Reports", font=TEXT_FONT, bg=self.tab_color)
+        run_button.grid(row=1, column=2, padx=20, pady=20, sticky='E')
+
+        run_button.bind("<Enter>", partial(self.color_config, run_button, rileLabel, self.run_frame, 'light grey'))
+        run_button.bind("<Leave>", partial(self.color_config, run_button, rileLabel, self.run_frame, self.tab_color))
+        run_button.bind("<Button-1>", self.run_reports)
+
+        rileLabel.bind("<Enter>", partial(self.color_config, rileLabel, run_button, self.run_frame, 'light grey'))
+        rileLabel.bind("<Leave>", partial(self.color_config, rileLabel, run_button, self.run_frame, self.tab_color))
+        rileLabel.bind("<Button-1>", self.run_reports)
 
     # Event handlers for porting instructions
     def add_instructions(self, placeholder1, placeholder2):
@@ -121,6 +149,7 @@ class EJ(Page):
         print(self.fullpath)
         icon["text"] = self.fullpath.split("/")[-1]
 
+    # Note that when a config is removed, the add config button may have to reappear...
     def remove_config(self, config):
 
         if len(self.configs) > 1:
@@ -130,20 +159,23 @@ class EJ(Page):
             if self.add_config_btn is None:
                 self.create_add_config()
 
-            # sort all remaining rows and re-add them one at a time
-            sorted_x = {k: self.configs[k] for k in sorted(self.configs)}
+            # sort all remaining rows and re-grid them one at a time in order to preserve the
+            # row numbering
+            sorted_configs = {k: self.configs[k] for k in sorted(self.configs)}
             new_frame_row = 1
-            for config in sorted_x:
+            for config in sorted_configs:
                 self.configs[config].grid(row=new_frame_row+4, columnspan=5, padx=50, sticky="nsew")
                 new_frame_row += 1
         else:
             messagebox.showinfo('Error', "You must have at least one configuration.")
 
+    # Create the button that allows the user to add another config
     def create_add_config(self):
         self.add_config_btn = tk.Button(self.parameters_frame, text="Add config", bg='lightgrey', relief='solid',
                                         borderwidth=1, command=self.add_next_config, font=SMALL_TEXT_FONT)
         self.add_config_btn.grid(row=12, column=1, sticky='W', padx=7, pady=5)
 
+    # Add next config in response to user pressing add config button
     def add_next_config(self):
         self.add_config(radius=None, risk=None)
 
@@ -198,3 +230,37 @@ class EJ(Page):
 
         self.next_config += 1
 
+    def create_toshi_dropdown(self):
+        toshis = ('None', 'Developmental', 'Endocrine', 'Hemotological', 'Immunological', 'Kidney',
+                  'Liver', 'Neurological', 'Ocular', 'Reproductive', 'Respiratory', 'Skeletal',
+                  'Spleen', 'Thyroid','Whole Body')
+
+        # Label and drop down list
+        toshi_lbl = tk.Label(self.toshi_frame, text="Select TOSHI:", font=TEXT_FONT, bg=self.tab_color, padx=10)
+        toshi_lbl.grid(column=1, row=2, padx=5)
+        self.toshi_1_value = tk.StringVar()
+        self.toshi_1 = ttk.Combobox(self.toshi_frame, textvariable=self.toshi_1_value)
+        self.toshi_1['values'] = toshis
+        self.toshi_1.current(0)
+        self.toshi_1.grid(column=2, row=2)
+
+        # Label and drop down list
+        toshi_lbl = tk.Label(self.toshi_frame, text="Select TOSHI:", font=TEXT_FONT, bg=self.tab_color, padx=10)
+        toshi_lbl.grid(column=1, row=3, padx=5)
+        self.toshi_2_value = tk.StringVar()
+        self.toshi_2 = ttk.Combobox(self.toshi_frame, textvariable=self.toshi_2_value)
+        self.toshi_2['values'] = toshis
+        self.toshi_2.current(0)
+        self.toshi_2.grid(column=2, row=3)
+
+        # Label and drop down list
+        toshi_lbl = tk.Label(self.toshi_frame, text="Select TOSHI:", font=TEXT_FONT, bg=self.tab_color, padx=10)
+        toshi_lbl.grid(column=1, row=4, padx=5)
+        self.toshi_3_value = tk.StringVar()
+        self.toshi_3 = ttk.Combobox(self.toshi_frame, textvariable=self.toshi_3_value)
+        self.toshi_3['values'] = toshis
+        self.toshi_3.current(0)
+        self.toshi_3.grid(column=2, row=4)
+
+    def run_reports(self):
+        pass
