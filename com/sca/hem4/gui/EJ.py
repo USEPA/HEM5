@@ -69,7 +69,7 @@ class EJ(Page):
         self.step2.grid(pady=10, padx=10, row=1, column=0)
 
         self.step2_instructions = tk.Label(self.category_frame, font=TEXT_FONT, bg=self.tab_color,
-                              text="Enter a source category name and prefix.")
+                              text="Enter a run group name and prefix.")
         self.step2_instructions.grid(row=1, column=1, padx=5, sticky="W", columnspan=2)
 
         self.name_lbl = tk.Label(self.category_frame, font=TEXT_FONT, bg=self.tab_color, text="Name:")
@@ -85,15 +85,14 @@ class EJ(Page):
         self.category_prefix.grid(row=3, column=2, sticky="W")
 
         # Third step - configure report parameters
-        self.step3 = tk.Label(self.parameters_frame,
-                              text="3.", font=TEXT_FONT, bg=self.tab_color, anchor="w")
+        self.step3 = tk.Label(self.parameters_frame, text="3.", font=TEXT_FONT, bg=self.tab_color, anchor="w")
         self.step3.grid(pady=10, padx=10, row=1, column=0)
 
         self.step3_instructions = tk.Label(self.parameters_frame, font=TEXT_FONT, bg=self.tab_color,
-                                           text="Configure parameters (reports will be created for each configuration.)")
+                                   text="Choose Radius and Risk Level (reports will be created for each combination.)")
         self.step3_instructions.grid(row=1, column=1, padx=5, sticky="W", columnspan=4)
 
-        self.add_config(radius=50, risk=1)
+        self.add_config(radius=50, cancer_risk=1, hi_risk=1)
         self.create_add_config()
 
         # Fourth step - choose TOSHIs
@@ -101,7 +100,7 @@ class EJ(Page):
         self.step4.grid(pady=10, padx=10, row=1, column=0)
 
         self.step4_instructions = tk.Label(self.toshi_frame, font=TEXT_FONT, bg=self.tab_color,
-                                           text="Include up to 3 TOSHIs in the report.")
+                                   text="Include up to 3  Target Organ Specific Hazard Indices (TOSHIs) in the report.")
         self.step4_instructions.grid(row=1, column=1, padx=5, sticky="W", columnspan=4)
 
         self.create_toshi_dropdown()
@@ -171,62 +170,68 @@ class EJ(Page):
 
     # Create the button that allows the user to add another config
     def create_add_config(self):
-        self.add_config_btn = tk.Button(self.parameters_frame, text="Add config", bg='lightgrey', relief='solid',
+        self.add_config_btn = tk.Button(self.parameters_frame, text="Add combination", bg='lightgrey', relief='solid',
                                         borderwidth=1, command=self.add_next_config, font=SMALL_TEXT_FONT)
-        self.add_config_btn.grid(row=12, column=1, sticky='W', padx=7, pady=5)
+        self.add_config_btn.grid(row=12, column=1, sticky='W', padx=10, pady=5)
 
     # Add next config in response to user pressing add config button
     def add_next_config(self):
-        self.add_config(radius=None, risk=None)
+        self.add_config(radius=None, cancer_risk=None, hi_risk=None)
 
         num_configs = len(self.configs)
-        if num_configs == 4:
+        if num_configs == 3:
             self.add_config_btn.grid_forget()
             self.add_config_btn = None
 
-    def add_config(self, radius, risk):
+    def add_config(self, radius, cancer_risk, hi_risk):
         num_configs = len(self.configs)
-        print("num configs before adding: " + str(num_configs))
-
-        print("adding next config: " + str(self.next_config))
         config = self.next_config
         frame_color = 'lightyellow'
-        new_frame = tk.Frame(self.parameters_frame, height=200, pady=5, padx=5, bg=frame_color,
+        new_frame = tk.Frame(self.parameters_frame, height=100, pady=5, padx=5, bg=frame_color,
                              highlightbackground="grey", highlightthickness=1)
 
         frame_row = (num_configs%4)+5
-        print("new frame row: " + str(frame_row))
-        new_frame.grid(row=frame_row, columnspan=5, padx=50, sticky="nsew")
+        new_frame.grid(row=frame_row, column=0, columnspan=5, padx=50, sticky="nsew")
         self.configs[config] = new_frame
 
         starting_row = 2
         config_lbl = tk.Label(new_frame, font=SMALL_TEXT_FONT, bg=frame_color,
-                                   text="Configuration:")
-        config_lbl.grid(row=starting_row, column=1, rowspan=2, columnspan=2, padx=10, sticky="W")
+                                   text="Combination:")
+        config_lbl.grid(row=starting_row+1, column=1, padx=10, sticky="W")
 
         step3a = tk.Label(new_frame, font=SMALL_TEXT_FONT, bg=frame_color,
                                text="Radius (km):")
-        step3a.grid(row=starting_row, column=3, padx=5, pady=2, sticky="SE")
-        radius_num = EntryWithPlaceholder(new_frame, placeholder="Enter a radius value <=50")
-        radius_num["width"] = 30
+        step3a.grid(row=starting_row, column=2, padx=5, pady=2, sticky="SE")
+        radius_num = EntryWithPlaceholder(new_frame, placeholder="<= 50")
+        radius_num["width"] = 12
 
         if radius is not None:
             radius_num.set_value(radius)
-        radius_num.grid(row=starting_row, column=4, pady=3, sticky="SW")
+        radius_num.grid(row=starting_row, column=3, pady=3, sticky="SW")
 
         step3c = tk.Label(new_frame, font=SMALL_TEXT_FONT, bg=frame_color,
-                               text="Risk (out of 1,000,000):")
-        step3c.grid(row=starting_row+1, column=3, padx=5, pady=2, sticky="NE")
-        risk_num = EntryWithPlaceholder(new_frame, placeholder="Enter a risk threshold >= 1")
-        risk_num["width"] = 30
+                               text="Cancer Risk Level (in a million):")
+        step3c.grid(row=starting_row+1, column=2, padx=5, pady=2, sticky="NE")
+        risk_num = EntryWithPlaceholder(new_frame, placeholder=">= 1")
+        risk_num["width"] = 12
 
-        if risk is not None:
-            risk_num.set_value(risk)
-        risk_num.grid(row=starting_row+1, column=4, pady=3, sticky="NW")
+        if cancer_risk is not None:
+            risk_num.set_value(cancer_risk)
+        risk_num.grid(row=starting_row+1, column=3, pady=3, sticky="NW")
+
+        step3d = tk.Label(new_frame, font=SMALL_TEXT_FONT, bg=frame_color,
+                          text="Noncancer Risk/Hazard Index Level:")
+        step3d.grid(row=starting_row+2, column=2, padx=5, pady=2, sticky="NE")
+        hi_risk_num = EntryWithPlaceholder(new_frame, placeholder="integer 1-10")
+        hi_risk_num["width"] = 12
+
+        if hi_risk is not None:
+            hi_risk_num.set_value(hi_risk)
+        hi_risk_num.grid(row=starting_row+2, column=3, pady=3, sticky="NW")
 
         remove_btn = tk.Button(new_frame, text="Remove", bg='lightgrey', relief='solid', borderwidth=1,
                               command=partial(self.remove_config, config), font=SMALL_TEXT_FONT)
-        remove_btn.grid(row=starting_row, column=5, rowspan=2, sticky='E', padx=15, pady=5)
+        remove_btn.grid(row=starting_row+1, column=4, sticky='E', padx=10)
 
         self.next_config += 1
 
