@@ -2,8 +2,14 @@ import tkinter as tk
 
 
 class EntryWithPlaceholder(tk.Entry):
-    def __init__(self, master=None, placeholder="PLACEHOLDER", color='grey'):
-        super().__init__(master)
+    def __init__(self, master=None, placeholder="PLACEHOLDER", color='grey', name=None):
+
+        self.sv = tk.StringVar()
+
+        super().__init__(master, textvariable=self.sv, name=name)
+        self.sv.trace("w", lambda name, index, mode, sv=self.sv: self.handle_change(sv))
+
+        self.text_value = ""
 
         self.placeholder = placeholder
         self.placeholder_color = color
@@ -14,8 +20,13 @@ class EntryWithPlaceholder(tk.Entry):
 
         self.put_placeholder()
 
+    def handle_change(self, sv):
+        self.text_value = sv.get()
+
     def put_placeholder(self):
+        self.delete(0, tk.END)
         self.insert(0, self.placeholder)
+        self.text_value = ""
         self['fg'] = self.placeholder_color
 
     def foc_in(self, *args):
@@ -30,4 +41,8 @@ class EntryWithPlaceholder(tk.Entry):
     def set_value(self, value):
         self.delete(0, tk.END)
         self.insert(0, value)
+        self.text_value = value
         self['fg'] = self.default_fg_color
+
+    def get_text_value(self):
+        return self.text_value

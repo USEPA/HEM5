@@ -1,4 +1,7 @@
+from concurrent.futures.thread import ThreadPoolExecutor
 from tkinter import messagebox
+
+from time import sleep
 
 from com.sca.hem4.gui.EntryWithPlaceholder import EntryWithPlaceholder
 from com.sca.hem4.gui.Page import Page
@@ -13,8 +16,10 @@ class EJ(Page):
     def __init__(self, nav, *args, **kwargs):
         Page.__init__(self, *args, **kwargs)
         self.nav = nav
-        self.configs = {}
+        self.combinations = {}
+        self.run_configs = None
         self.next_config = 1
+        self.fullpath = None
 
         self.container = tk.Frame(self, bg=self.tab_color, bd=2)
         self.container.pack(side="top", fill="both", expand=True)
@@ -74,6 +79,7 @@ class EJ(Page):
 
         self.name_lbl = tk.Label(self.category_frame, font=TEXT_FONT, bg=self.tab_color, text="Name:")
         self.name_lbl.grid(row=2, column=1, padx=5, sticky="W")
+
         self.category_name = EntryWithPlaceholder(self.category_frame, placeholder="ex: Primary Copper Manufacturing")
         self.category_name["width"] = 36
         self.category_name.grid(row=2, column=2, sticky="W")
@@ -123,25 +129,27 @@ class EJ(Page):
         rileLabel.bind("<Leave>", partial(self.color_config, rileLabel, run_button, self.run_frame, self.tab_color))
         rileLabel.bind("<Button-1>", self.run_reports)
 
-    # Event handlers for porting instructions
-    def add_instructions(self, placeholder1, placeholder2):
+    def reset(self):
+        self.step1_instructions["text"] = "Select output folder"
+        self.fullpath = ""
 
-        # Dynamic instructions place holder
-        global instruction_instance
-        self.instruction_instance = tk.StringVar(placeholder1)
-        self.instruction_instance.set(" ")
-        self.dynamic_inst = tk.Label(placeholder2, wraplength=600, font=TEXT_FONT, padx=20, bg=self.tab_color)
-        self.dynamic_inst.config(height=4)
+        self.category_name.put_placeholder()
+        self.category_prefix.put_placeholder()
 
-        self.dynamic_inst["textvariable"] = self.instruction_instance
-        self.dynamic_inst.grid(row=0, column=0)
+        for frame in self.combinations.values():
+            frame.grid_forget()
 
-    def reset_instructions(self):
-        """
-        Function clears instructions from display box
-        """
-        global instruction_instance
-        self.instruction_instance.set(" ")
+        self.add_config(radius=50, cancer_risk=1, hi_risk=1)
+
+        if self.add_config_btn is None:
+            self.create_add_config()
+
+        self.toshi_1.current(0)
+        self.toshi_2.current(0)
+        self.toshi_3.current(0)
+
+        self.nav.peopleLabel.configure(image=self.nav.ejIcon)
+        self.titleLabel.configure(image=self.nav.ejIcon)
 
     def browse(self, icon, event):
         self.fullpath = tk.filedialog.askdirectory()
@@ -151,19 +159,19 @@ class EJ(Page):
     # Note that when a config is removed, the add config button may have to reappear...
     def remove_config(self, config):
 
-        if len(self.configs) > 1:
-            self.configs[config].destroy()
-            del self.configs[config]
+        if len(self.combinations) > 1:
+            self.combinations[config].destroy()
+            del self.combinations[config]
 
             if self.add_config_btn is None:
                 self.create_add_config()
 
             # sort all remaining rows and re-grid them one at a time in order to preserve the
             # row numbering
-            sorted_configs = {k: self.configs[k] for k in sorted(self.configs)}
+            sorted_configs = {k: self.combinations[k] for k in sorted(self.combinations)}
             new_frame_row = 1
             for config in sorted_configs:
-                self.configs[config].grid(row=new_frame_row+4, columnspan=5, padx=50, sticky="nsew")
+                self.combinations[config].grid(row=new_frame_row+4, columnspan=5, padx=50, sticky="nsew")
                 new_frame_row += 1
         else:
             messagebox.showinfo('Error', "You must have at least one configuration.")
@@ -178,13 +186,13 @@ class EJ(Page):
     def add_next_config(self):
         self.add_config(radius=None, cancer_risk=None, hi_risk=None)
 
-        num_configs = len(self.configs)
+        num_configs = len(self.combinations)
         if num_configs == 3:
             self.add_config_btn.grid_forget()
             self.add_config_btn = None
 
     def add_config(self, radius, cancer_risk, hi_risk):
-        num_configs = len(self.configs)
+        num_configs = len(self.combinations)
         config = self.next_config
         frame_color = 'lightyellow'
         new_frame = tk.Frame(self.parameters_frame, height=100, pady=5, padx=5, bg=frame_color,
@@ -192,7 +200,7 @@ class EJ(Page):
 
         frame_row = (num_configs%4)+5
         new_frame.grid(row=frame_row, column=0, columnspan=5, padx=50, sticky="nsew")
-        self.configs[config] = new_frame
+        self.combinations[config] = new_frame
 
         starting_row = 2
         config_lbl = tk.Label(new_frame, font=SMALL_TEXT_FONT, bg=frame_color,
@@ -202,7 +210,7 @@ class EJ(Page):
         step3a = tk.Label(new_frame, font=SMALL_TEXT_FONT, bg=frame_color,
                                text="Radius (km):")
         step3a.grid(row=starting_row, column=2, padx=5, pady=2, sticky="SE")
-        radius_num = EntryWithPlaceholder(new_frame, placeholder="<= 50")
+        radius_num = EntryWithPlaceholder(new_frame, placeholder="<= 50", name="radius")
         radius_num["width"] = 12
 
         if radius is not None:
@@ -212,7 +220,7 @@ class EJ(Page):
         step3c = tk.Label(new_frame, font=SMALL_TEXT_FONT, bg=frame_color,
                                text="Cancer Risk Level (in a million):")
         step3c.grid(row=starting_row+1, column=2, padx=5, pady=2, sticky="NE")
-        risk_num = EntryWithPlaceholder(new_frame, placeholder=">= 1")
+        risk_num = EntryWithPlaceholder(new_frame, placeholder=">= 1", name="cancer_risk")
         risk_num["width"] = 12
 
         if cancer_risk is not None:
@@ -222,7 +230,7 @@ class EJ(Page):
         step3d = tk.Label(new_frame, font=SMALL_TEXT_FONT, bg=frame_color,
                           text="Noncancer Risk/Hazard Index Level:")
         step3d.grid(row=starting_row+2, column=2, padx=5, pady=2, sticky="NE")
-        hi_risk_num = EntryWithPlaceholder(new_frame, placeholder="integer 1-10")
+        hi_risk_num = EntryWithPlaceholder(new_frame, placeholder="integer (1-10)", name="hi_risk")
         hi_risk_num["width"] = 12
 
         if hi_risk is not None:
@@ -267,5 +275,95 @@ class EJ(Page):
         self.toshi_3.current(0)
         self.toshi_3.grid(column=2, row=4)
 
-    def run_reports(self):
-        pass
+    def verify_options(self):
+
+        self.run_configs = {}
+
+        if self.fullpath is None:
+            messagebox.showinfo('Error', "Please select a HEM4 output folder.")
+            return False
+
+        if self.category_name.get_text_value() == '':
+            messagebox.showinfo('Error', "Please specify a run group name.")
+            return False
+
+        if self.category_prefix.get_text_value() == '':
+            messagebox.showinfo('Error', "Please specify a run group prefix.")
+            return False
+
+        for c in self.combinations.values():
+            radius_value = c.nametowidget("radius").get_text_value()
+            cancer_risk_value = c.nametowidget("cancer_risk").get_text_value()
+            hi_risk_value = c.nametowidget("hi_risk").get_text_value()
+
+            if radius_value == "" or cancer_risk_value == "" or hi_risk_value == "":
+                messagebox.showinfo('Error', "Please ensure all run combinations contain a value for radius, " +
+                                    "cancer risk, and HI risk.")
+                return False
+
+            try:
+                radius_value = float(radius_value)
+                cancer_risk_value = float(cancer_risk_value)
+                hi_risk_value = float(hi_risk_value)
+            except ValueError:
+                messagebox.showinfo('Error', "Please ensure all radius and risk values are numbers.")
+                return False
+
+            if radius_value <= 0 or radius_value > 50:
+                messagebox.showinfo('Error', "Please ensure all radius values satisfy 0 < radius <= 50.")
+                return False
+
+            if cancer_risk_value <= 0 or cancer_risk_value > 1000000:
+                messagebox.showinfo('Error', "Please ensure all cancer risk values satisfy 0 < risk <= 1,000,000.")
+                return False
+
+            if hi_risk_value not in [1, 2, 3, 4, 5, 6, 7, 8, 9, 10]:
+                messagebox.showinfo('Error', "Please ensure all HI risk values are an integer between 1-10.")
+                return False
+
+            existing = len(self.run_configs)
+            self.run_configs[existing] = {'radius': radius_value, 'cancer_risk': cancer_risk_value,
+                                          'hi_risk': hi_risk_value}
+
+            self.run_configs[existing]['toshis'] = []
+            if self.toshi_1_value.get() != 'None':
+                self.run_configs[existing]['toshis'].append(self.toshi_1_value.get())
+            if self.toshi_2_value.get() != 'None':
+                self.run_configs[existing]['toshis'].append(self.toshi_2_value.get())
+            if self.toshi_3_value.get() != 'None':
+                self.run_configs[existing]['toshis'].append(self.toshi_3_value.get())
+
+        return True
+
+    def run_reports(self, event):
+        # Verify all options ok
+        options_ok = self.verify_options()
+
+        # Launch the runner
+        if options_ok:
+            print("Ready to run!")
+
+            existing = len(self.run_configs)
+            print("There are " + str(existing) + " run combinations:")
+
+            for config in self.run_configs.values():
+                print("   --> radius=" + str(config["radius"]))
+                print("   --> cancer_risk=" + str(config["cancer_risk"]))
+                print("   --> hi_risk=" + str(config["hi_risk"]))
+
+                if len(config["toshis"]) > 0:
+                    print("   --> toshis=" + str(config["toshis"]) + "\n")
+                else:
+                    print("")
+
+            self.nav.peopleLabel.configure(image=self.nav.greenIcon)
+            self.titleLabel.configure(image=self.nav.greenIcon)
+
+            executor = ThreadPoolExecutor(max_workers=1)
+            future = executor.submit(self.create_reports)
+
+    def create_reports(self):
+        sleep(4)
+
+        messagebox.showinfo("Environmental Justice Reports Finished", "Please check the output folder for reports.")
+        self.reset()

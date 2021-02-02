@@ -164,9 +164,9 @@ class MainView(tk.Frame):
         eji = PIL.Image.open('images\\icons8-people-48.png').resize((30,30))
         ejnew = self.add_margin(eji, 3, 0, 3, 0)
 
-        ejIcon = ImageTk.PhotoImage(ejnew)
-        self.peopleLabel = tk.Label(self, image=ejIcon, bg=MAIN_COLOR)
-        self.peopleLabel.image = ejIcon # keep a reference!
+        self.ejIcon = ImageTk.PhotoImage(ejnew)
+        self.peopleLabel = tk.Label(self, image=self.ejIcon, bg=MAIN_COLOR)
+        self.peopleLabel.image = self.ejIcon # keep a reference!
         self.peopleLabel.place(in_=self.container, relwidth=0.1, rely=0.35)
 
         # bind icon and label events
