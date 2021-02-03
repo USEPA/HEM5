@@ -88,7 +88,7 @@ class DataModel():
 
         # ..without high school diploma
         self.national_bin[1][10] = 0.123000001
-        self.national_bin[0][10] = 0.123000001 * self.national_bin[0][0]
+        self.national_bin[0][10] = 0.123000001 * self.national_bin[0][9]
 
     def create_bins(self):
         # Create cancer bins and tabulate the risk based on the mir column. Note that there are 15 sub groups (columns)
