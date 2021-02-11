@@ -1,50 +1,33 @@
-import datetime
 import os
 from math import *
 from pandas import isna
-from com.sca.hem4.ej.data.ACSCountyTract import ACSCountyTract
-from com.sca.hem4.ej.data.ACSDataset import ACSDataset
-from com.sca.hem4.ej.data.MirHiAllReceptors import MirHiAllReceptors
+from com.sca.hem4.log import Logger
 
 
 class DataModel():
 
-    def __init__(self, mir_rec_path, acs_path, levels_path, toshis):
+    def __init__(self, missing_block_path, mir_rec_df, acs_df, levels_df, toshis):
 
         self.toshis = toshis
         self.cancer_bins = None
         self.toshi_bins = None
         self.max_risk = {}
         self.missing_block_groups = []
-        self.missing_block_group_path = os.path.dirname(os.path.abspath(acs_path))
+        self.missing_block_group_path = missing_block_path
 
         self.risk_column_map = {
             'Resp':'hi_resp', 'Live':'hi_live','Neur':'hi_neur', 'Deve':'hi_deve', 'Repr':'hi_repr',
             'Kidn':'hi_kidn', 'Ocul':'hi_ocul','Endo':'hi_endo', 'Hema':'hi_hema', 'Immu':'hi_immu','Skel':'hi_skel',
             'Sple':'hi_sple', 'Thyr':'hi_thyr', 'Whol':'hi_whol'
         }
-        
-        print("Loading hazard risk data...")
-        mir_hi_receptors = MirHiAllReceptors(path=mir_rec_path)
-        df = mir_hi_receptors.dataframe
-        self.hazards_df = df.loc[(~df['block'].str.contains('S')) & (~df['block'].str.contains('M'))
-                                 & (~df['block'].str.contains('P'))]
-        print("Found " + str(len(self.hazards_df)) + " hazard risk records.")
 
-        print("Loading ACS data...")
-        acs = ACSDataset(path=acs_path)
-        self.acs_df = acs.dataframe
+        self.hazards_df = mir_rec_df
 
-        print("Indexing...")
+        self.acs_df = acs_df
         self.acs_df.index = self.acs_df['STCNTRBG']
         self.acs_dict = self.acs_df.to_dict(orient='index')
 
-        print("Found " + str(len(self.acs_dict)) + " ACS records.")
-        print("Loading tract/county ACS data...")
-        levels = ACSCountyTract(path=levels_path)
-        self.levels_df = levels.dataframe
-
-        print("Indexing...")
+        self.levels_df = levels_df
         self.levels_df.index = self.levels_df['ID']
         self.levels_dict = self.levels_df.to_dict(orient='index')
 
@@ -98,7 +81,7 @@ class DataModel():
 
         self.total_missing_pop = 0
 
-        print("Tabulating data...")
+        Logger.logMessage("Tabulating data...")
         self.hazards_df.apply(lambda row: self.tabulate_mir_data(row), axis=1)
 
         # Calculate averages by dividing population for each sub group
@@ -107,8 +90,8 @@ class DataModel():
                 self.cancer_bins[12][index] = 0
             else:
                 self.cancer_bins[12][index] /= self.cancer_bins[11][index]
-        
-        print("Done with MIR tabulation.")
+
+        Logger.logMessage("Done with MIR tabulation.")
 
         # Next create toshi bins and tabulate risk for each requested toshi. Note that there are 15 sub groups (columns)
         # and 13 rows, which correspond to 11 risk bins + total + average.
@@ -117,7 +100,7 @@ class DataModel():
             self.max_risk[key] = 0
             self.toshi_bins[key] = [ [0]*15 for _ in range(13) ]
 
-        print("Tabulating toshi data...")
+        Logger.logMessage("Tabulating toshi data...")
         self.hazards_df.apply(lambda row: self.tabulate_toshi_data(row), axis=1)
 
         # Calculate averages by dividing population for each sub group
@@ -127,8 +110,8 @@ class DataModel():
                     bin[12][index] = 0
                 else:
                     bin[12][index] /= bin[11][index]
-        
-        print("Done with toshi tabulation.")
+
+        Logger.logMessage("Done with toshi tabulation.")
 
     def tabulate_national_data(self, row):
 
@@ -234,7 +217,7 @@ class DataModel():
                 or pct_age_gt64 is None or pct_edu_lths is None or pct_pov_lt50 is None or pct_pov_50_99 is None \
                 or pct_lowinc is None or pct_lingiso is None or pov_universe is None or edu_universe is None\
                 or pct_minority is None:
-            print("Unable to compile enough data to include this record: " + group_id)
+            Logger.logMessage("Unable to compile enough data to include this record: " + group_id)
             return
 
         pct_edu_universe = edu_universe / total_pop if total_pop > 0 else 0
@@ -328,7 +311,7 @@ class DataModel():
                 or pct_age_gt64 is None or pct_edu_lths is None or pct_pov_lt50 is None or pct_pov_50_99 is None \
                 or pct_lowinc is None or pct_lingiso is None or pov_universe is None or edu_universe is None\
                 or pct_minority is None:
-            print("Unable to compile enough data to include this record: " + group_id)
+            Logger.logMessage("Unable to compile enough data to include this record: " + group_id)
             return
 
         pct_edu_universe = edu_universe / total_pop if total_pop > 0 else 0
@@ -391,7 +374,7 @@ class DataModel():
     def write_missing_block_groups(self):
         if len(self.missing_block_groups) > 0:
             filepath = os.path.join(self.missing_block_group_path, 'missing_block_groups.txt')
-            print("Writing missing block group file: " + str(filepath))
+            Logger.logMessage("Writing missing block group file: " + str(filepath))
 
             with open(filepath, 'w') as f:
                 for item in self.missing_block_groups:
@@ -404,7 +387,7 @@ class DataModel():
         else:
             if block_group_id not in self.missing_block_groups:
                 self.missing_block_groups.append(block_group_id)
-                print("Block group not found in ACS data: " + str(block_group_id))
+                Logger.logMessage("Block group not found in ACS data: " + str(block_group_id))
 
         if block_group is None or isna(value):
             tract_id = block_group_id[:-1]
@@ -418,7 +401,7 @@ class DataModel():
                     county = self.levels_dict[county_id]
                     value = county[subgroup]
                 else:
-                    print("Couldn't resolve this record by either tract or county! " + block_group_id)
+                    Logger.logMessage("Couldn't resolve this record by either tract or county! " + block_group_id)
                     value = None
 
         return value / 100 if is_pct else value
@@ -426,7 +409,7 @@ class DataModel():
     @staticmethod
     def round_to_sigfig(x, sig=1):
         if x == 0:
-            return 0;
+            return 0
 
         if isnan(x):
             return float('NaN')

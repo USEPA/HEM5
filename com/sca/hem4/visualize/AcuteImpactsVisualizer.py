@@ -18,6 +18,7 @@ from bokeh.models import WMTSTileSource, LabelSet, ColumnDataSource, HoverTool, 
 from bokeh.models.widgets import Panel, Tabs
 from bokeh.plotting import figure, save
 
+from com.sca.hem4.support.Directory import Directory
 from com.sca.hem4.writer.csv.AllPolarReceptors import AllPolarReceptors
 from com.sca.hem4.writer.excel.summary.AcuteImpacts import *
 
@@ -32,10 +33,8 @@ class AcuteImpactsVisualizer():
     def __init__(self, sourceDir):
         self.sourceDir = sourceDir
         self.basepath = os.path.basename(os.path.normpath(sourceDir))
-        files = os.listdir(sourceDir)
-        rootpath = sourceDir+'/'
-        self.facilityIds = [ item for item in files if os.path.isdir(os.path.join(rootpath, item))
-                                       and 'inputs' not in item.lower() and 'acute maps' not in item.lower() ]
+        self.facilityIds = Directory.find_facilities(self.sourceDir)
+
     def visualize(self):
 
         # Suppress various bokeh warnings

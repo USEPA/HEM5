@@ -4,6 +4,8 @@ import re
 import numpy as np
 import pandas as pd
 
+from com.sca.hem4.log import Logger
+
 
 class ACSDataset:
 
@@ -38,11 +40,11 @@ class ACSDataset:
                         result = p.search(msg)
                         custom_msg = "Length Mismatch: Input file has " + result.group(1) + " columns, but should have " + \
                                      result.group(2) + " columns. Please make sure you have selected the correct file or file version."
-                        print("Error uploading input file: " + custom_msg)
+                        Logger.logMessage("Error uploading input file: " + custom_msg)
                     else:
-                        print("Error uploading input file: " + str(e) + " Please make sure you have selected the correct file or file version.")
+                        Logger.logMessage("Error uploading input file: " + str(e) + " Please make sure you have selected the correct file or file version.")
                 else:
-                    print("Error uploading input file: " + str(e) + " Please make sure you have selected the correct file or file version.")
+                    Logger.logMessage("Error uploading input file: " + str(e) + " Please make sure you have selected the correct file or file version.")
 
             else:
                 df = df.astype(str).applymap(self.convertEmptyToNaN)
@@ -99,7 +101,7 @@ class ACSDataset:
         try:
             df = pd.to_numeric(slice,errors="coerce")
         except BaseException as e:
-            print(str(e))
+            Logger.logMessage(str(e))
         else:
             return df
 
