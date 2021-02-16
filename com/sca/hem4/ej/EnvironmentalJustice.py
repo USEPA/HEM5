@@ -6,11 +6,13 @@ from com.sca.hem4.ej.ReportWriter import ReportWriter
 class EnvironmentalJustice():
 
     def __init__(self, mir_rec_df, acs_df, levels_df, outputdir, source_cat_name, source_cat_prefix, radius,
-                 requested_toshis):
+                 cancer_risk_threshold, hi_risk_threshold, requested_toshis):
         self.output_dir = outputdir
         self.source_cat = source_cat_name
         self.source_cat_prefix = source_cat_prefix
         self.radius = radius
+        self.cancer_risk_threshold = cancer_risk_threshold
+        self.hi_risk_threshold = hi_risk_threshold
         self.requested_toshis = requested_toshis
 
         # Create a data model to hold hazard and census demographic data
@@ -24,7 +26,9 @@ class EnvironmentalJustice():
             os.makedirs(self.output_dir)
 
         report_writer = ReportWriter(target_dir=self.output_dir, source_cat_prefix=self.source_cat_prefix,
-                                     source_cat=self.source_cat, radius=self.radius)
+                                     source_cat=self.source_cat, radius=self.radius,
+                                     cancer_risk_threshold=self.cancer_risk_threshold,
+                                     hi_risk_threshold=self.hi_risk_threshold)
 
         # Create cancer workbook...
         report_writer.create_cancer_workbook()

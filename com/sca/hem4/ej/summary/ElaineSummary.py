@@ -7,7 +7,9 @@ from com.sca.hem4.ej.data.DataModel import DataModel
 
 class ElaineSummary():
 
-    def __init__(self, radius, source_category):
+    def __init__(self, radius, cancer_risk_threshold, hi_risk_threshold, source_category):
+        self.cancer_risk_threshold = str(cancer_risk_threshold)
+        self.hi_risk_threshold = str(hi_risk_threshold)
         self.radius = str(radius)
         self.active_columns = [0, 1, 2, 3, 4, 5, 6, 7, 8, 11, 10, 13, 14]
 
@@ -140,7 +142,7 @@ class ElaineSummary():
         data = deepcopy(values)
 
         # We need only one row, which will be the sum of all bins except the first one (excluding total and avg...)
-        dg_data = data[1:11]
+        dg_data = self.get_risk_bins(data)
         row_totals = [sum(x) for x in zip(*dg_data)]
 
         saved_edu_pop = None

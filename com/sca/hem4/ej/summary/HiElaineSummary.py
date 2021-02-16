@@ -3,8 +3,10 @@ from com.sca.hem4.ej.summary.ElaineSummary import ElaineSummary
 
 class HiElaineSummary(ElaineSummary):
 
-    def __init__(self, radius, source_category, hazard_name):
+    def __init__(self, radius, cancer_risk_threshold, hi_risk_threshold, source_category, hazard_name):
         self.radius = str(radius)
+        self.cancer_risk_threshold = str(cancer_risk_threshold)
+        self.hi_risk_threshold = str(hi_risk_threshold)
         self.source_category = source_category
         self.hazard_name = hazard_name
 
@@ -14,4 +16,7 @@ class HiElaineSummary(ElaineSummary):
                ' km Study Area Radius'
 
     def get_risk_header(self):
-        return 'Population with Hazard Index Greater than 1'
+        return 'Population with Hazard Index Greater than ' + self.hi_risk_threshold
+
+    def get_risk_bins(self, data):
+        return data[self.hi_risk_threshold:11]

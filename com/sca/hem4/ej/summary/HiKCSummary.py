@@ -10,7 +10,10 @@ class HiKCSummary(KCSummary):
                'the modeled facilities with a hazard index greater than 1.'
 
     def get_risk_header(self):
-        return 'Population With a Hazard Index (HI) Greater Than 1'
+        return 'Population With a Hazard Index (HI) Greater Than ' + self.hi_risk_threshold
 
     def get_max_risk_header(self):
         return 'Maximum Hazard Index'
+
+    def get_risk_bins(self, data):
+        return data[self.hi_risk_threshold:11]

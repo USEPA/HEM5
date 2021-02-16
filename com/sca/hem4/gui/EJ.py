@@ -214,7 +214,7 @@ class EJ(Page):
             radius_num.set_value(radius)
         radius_num.grid(row=starting_row, column=3, pady=3, sticky="SW")
 
-        risk_num = EntryWithPlaceholder(new_frame, placeholder=">= 1", name="cancer_risk")
+        risk_num = EntryWithPlaceholder(new_frame, placeholder="(1-300)", name="cancer_risk")
         risk_num["width"] = 8
 
         self.radios[frame_name] = tk.IntVar()
@@ -342,12 +342,14 @@ class EJ(Page):
                 messagebox.showinfo('Error', "Please ensure all radius values satisfy 0 < radius <= 50.")
                 return False
 
-            if cancer_selected and (cancer_risk_value <= 0 or cancer_risk_value > 1000000):
-                messagebox.showinfo('Error', "Please ensure all cancer risk values satisfy 0 < risk <= 1,000,000.")
+            if cancer_selected and (cancer_risk_value not in [1, 5, 10, 20, 30, 40, 50, 100, 200, 300]):
+                messagebox.showinfo('Error', "Please ensure all cancer risk values are one of the following: " +
+                                    "[1, 5, 10, 20, 30, 40, 50, 100, 200, 300]")
                 return False
 
             if not cancer_selected and (hi_risk_value not in [1, 2, 3, 4, 5, 6, 7, 8, 9, 10]):
-                messagebox.showinfo('Error', "Please ensure all HI risk values are an integer between 1-10.")
+                messagebox.showinfo('Error', "Please ensure all HI risk values are one of the following: " +
+                                    "[1, 2, 3, 4, 5, 6, 7, 8, 9, 10]")
                 return False
 
             existing = len(self.run_configs)
@@ -433,7 +435,8 @@ class EJ(Page):
             ej = EnvironmentalJustice(mir_rec_df=filtered_mir_hi_df, acs_df=self.acs_df, levels_df=self.levels_df,
                                       outputdir=output_dir, source_cat_name=self.category_name.get_text_value(),
                                       source_cat_prefix=self.category_prefix.get_text_value(), radius=int(config["radius"]),
-                                      requested_toshis=toshis)
+                                      cancer_risk_threshold=int(config["cancer_risk"]),
+                                      hi_risk_threshold=int(config["hi_risk"]), requested_toshis=toshis)
 
             ej.create_reports()
             config_num += 1

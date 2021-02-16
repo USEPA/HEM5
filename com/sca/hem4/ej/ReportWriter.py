@@ -21,10 +21,12 @@ import com.sca.hem4.ej.table.CancerLinguisticIsolation as cancerLinguisticIsolat
 
 class ReportWriter():
 
-    def __init__(self, target_dir, source_cat, source_cat_prefix, radius):
+    def __init__(self, target_dir, source_cat, source_cat_prefix, radius, cancer_risk_threshold, hi_risk_threshold):
         self.output_dir = target_dir
         self.source_cat = source_cat
         self.source_cat_prefix = source_cat_prefix
+        self.cancer_risk_threshold = cancer_risk_threshold
+        self.hi_risk_threshold = hi_risk_threshold
         self.radius = radius
         self.workbook = None
         self.formats = None
@@ -122,11 +124,13 @@ class ReportWriter():
         dg_summary.create_summary(workbook=self.workbook, formats=self.formats,
                                   national_values=national_values, values=values)
 
-        kc_summary = CancerKCSummary(radius=self.radius, source_category=self.source_cat)
+        kc_summary = CancerKCSummary(radius=self.radius, cancer_risk_threshold=self.cancer_risk_threshold,
+                                     hi_risk_threshold=self.hi_risk_threshold, source_category=self.source_cat)
         kc_summary.create_summary(workbook=self.workbook, formats=self.formats,
                                   national_values=national_values, values=values, max_value=max_risk)
 
-        elaine_summary = CancerElaineSummary(radius=self.radius, source_category=self.source_cat)
+        elaine_summary = CancerElaineSummary(radius=self.radius, cancer_risk_threshold=self.cancer_risk_threshold,
+                                             hi_risk_threshold=self.hi_risk_threshold, source_category=self.source_cat)
         elaine_summary.create_summary(workbook=self.workbook, formats=self.formats,
                                       national_values=national_values, values=values)
 
@@ -135,11 +139,13 @@ class ReportWriter():
         dg_summary.create_summary(workbook=self.workbook, hazard_name=self.hazard_name,
                                   formats=self.formats, national_values=national_values, values=values)
 
-        kc_summary = HiKCSummary(radius=self.radius, source_category=self.source_cat)
+        kc_summary = HiKCSummary(radius=self.radius, cancer_risk_threshold=self.cancer_risk_threshold,
+                                 hi_risk_threshold=self.hi_risk_threshold, source_category=self.source_cat)
         kc_summary.create_summary(workbook=self.workbook, hazard_name=self.hazard_name, formats=self.formats,
                                   national_values=national_values, values=values, max_value=max_risk)
 
-        elaine_summary = HiElaineSummary(radius=self.radius, source_category=self.source_cat,
+        elaine_summary = HiElaineSummary(radius=self.radius, cancer_risk_threshold=self.cancer_risk_threshold,
+                                         hi_risk_threshold=self.hi_risk_threshold, source_category=self.source_cat,
                                          hazard_name=self.hazard_name)
         elaine_summary.create_summary(workbook=self.workbook, formats=self.formats,
                                       national_values=national_values, values=values)
