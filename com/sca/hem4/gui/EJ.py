@@ -457,7 +457,7 @@ class EJ(Page):
                   hi_thyr:'Thyr', hi_whol:'Whol'}
 
         for toshi in toshis:
-            df_new = df[df[toshi] > 1.5]
+            df_new = df[df[toshi] >= 1.5]
             if len(df_new) > 0:
                 prefix = toshis[toshi]
                 chosen[prefix] = self.toshis[prefix]
