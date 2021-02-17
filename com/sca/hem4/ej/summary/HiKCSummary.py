@@ -16,4 +16,4 @@ class HiKCSummary(KCSummary):
         return 'Maximum Hazard Index'
 
     def get_risk_bins(self, data):
-        return data[self.hi_risk_threshold:11]
+        return data[int(self.hi_risk_threshold):11]

@@ -19,4 +19,4 @@ class HiElaineSummary(ElaineSummary):
         return 'Population with Hazard Index Greater than ' + self.hi_risk_threshold
 
     def get_risk_bins(self, data):
-        return data[self.hi_risk_threshold:11]
+        return data[int(self.hi_risk_threshold):11]

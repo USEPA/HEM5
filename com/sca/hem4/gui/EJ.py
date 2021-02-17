@@ -15,7 +15,7 @@ from PIL import ImageTk
 from functools import partial
 
 from com.sca.hem4.log import Logger
-from com.sca.hem4.writer.csv.MirHIAllReceptors import MirHIAllReceptors
+from com.sca.hem4.writer.csv.MirHIAllReceptors import *
 
 
 class EJ(Page):
@@ -28,6 +28,10 @@ class EJ(Page):
         self.next_config = 1
         self.fullpath = None
 
+        self.toshis = {'Deve':'Developmental', 'Endo':'Endocrine', 'Hemo':'Hemotological', 'Immu':'Immunological',
+                       'Kidn':'Kidney', 'Live':'Liver', 'Neur':'Neurological', 'Ocul':'Ocular', 'Repr':'Reproductive',
+                       'Resp':'Respiratory', 'Skel':'Skeletal', 'Sple':'Spleen', 'Thyr':'Thyroid', 'Whol':'Whole Body'
+        }
         self.acs_df = None
         self.levels_df = None
         self.all_receptors_df = None
@@ -267,9 +271,7 @@ class EJ(Page):
             hi_radio['fg'] = 'black'
 
     def create_toshi_dropdown(self):
-        toshis = ('None', 'Developmental', 'Endocrine', 'Hemotological', 'Immunological', 'Kidney',
-                  'Liver', 'Neurological', 'Ocular', 'Reproductive', 'Respiratory', 'Skeletal',
-                  'Spleen', 'Thyroid','Whole Body')
+        toshis = self.toshis.values()
 
         # Label and drop down list
         toshi_lbl = tk.Label(self.toshi_frame, text="Select TOSHI:", font=TEXT_FONT, bg=self.tab_color, padx=10)
@@ -332,8 +334,8 @@ class EJ(Page):
 
             try:
                 radius_value = float(radius_value)
-                cancer_risk_value = float(cancer_risk_value) if cancer_selected else 0
-                hi_risk_value = float(hi_risk_value) if not cancer_selected else 0
+                cancer_risk_value = int(cancer_risk_value) if cancer_selected else 1
+                hi_risk_value = int(hi_risk_value) if not cancer_selected else 1
             except ValueError:
                 messagebox.showinfo('Error', "Please ensure all radius and risk values are numbers.")
                 return False
@@ -393,7 +395,7 @@ class EJ(Page):
                 self.levels_df = levels.dataframe
         except FileNotFoundError:
             messagebox.showinfo("Missing files",
-                       "Unable to find required ACS data. Please check your HEM4 resources folder and try again.")
+                            "Unable to find required ACS data. Please check your HEM4 resources folder and try again.")
 
         # Next, create (if doesn't exist) an all receptors file...
         all_receptors = MirHIAllReceptors(targetDir=self.fullpath)
@@ -429,8 +431,7 @@ class EJ(Page):
 
             # Infer which TOSHIs to include from the filtered all receptors file
             # should be of this form: {'Deve':'Developmental', 'Neur':'Neurological', ...}
-            # TODO
-            toshis = {}
+            toshis = self.choose_toshis(filtered_mir_hi_df)
 
             ej = EnvironmentalJustice(mir_rec_df=filtered_mir_hi_df, acs_df=self.acs_df, levels_df=self.levels_df,
                                       outputdir=output_dir, source_cat_name=self.category_name.get_text_value(),
@@ -438,8 +439,30 @@ class EJ(Page):
                                       cancer_risk_threshold=int(config["cancer_risk"]),
                                       hi_risk_threshold=int(config["hi_risk"]), requested_toshis=toshis)
 
-            ej.create_reports()
+            try:
+                ej.create_reports()
+            except BaseException as e:
+                print(e)
+
             config_num += 1
 
         messagebox.showinfo("Environmental Justice Reports Finished", "Please check the output folder for reports.")
         self.reset()
+
+    def choose_toshis(self, df):
+        chosen = {}
+
+        toshis = {hi_resp:'Resp', hi_live:'Live', hi_neur:'Neur', hi_deve:'Deve', hi_repr:'Repr', hi_kidn:'Kidn',
+                  hi_ocul:'Ocul', hi_endo:'Endo', hi_hema:'Hemo', hi_immu:'Immu', hi_skel:'Skel', hi_sple:'Sple',
+                  hi_thyr:'Thyr', hi_whol:'Whol'}
+
+        for toshi in toshis:
+            df_new = df[df[toshi] > 1.5]
+            if len(df_new) > 0:
+                prefix = toshis[toshi]
+                chosen[prefix] = self.toshis[prefix]
+
+        Logger.logMessage("TOSHIs chosen: ")
+        Logger.logMessage(', '.join(list(chosen.values())))
+
+        return chosen
