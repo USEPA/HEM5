@@ -116,8 +116,10 @@ class ReportWriter():
     def construct_filename(self, cancer=True):
         hazard_type = 'EJ_Cancer' if cancer else self.hazard_prefix + '_Noncancer'
         date_string = datetime.datetime.now().strftime("%m-%d-%Y")
+
+        risk = str(self.cancer_risk_threshold) if cancer else str(self.hi_risk_threshold)
         return os.path.join(self.output_dir, self.source_cat_prefix + '_' + str(self.radius) +
-                            '_km_' + hazard_type + '_demo_tables_' + date_string + '.xlsx')
+                            '_km_' + risk + '_' + hazard_type + '_demo_tables_' + date_string + '.xlsx')
 
     def create_cancer_summaries(self, national_values, values, max_risk):
         dg_summary = CancerDGSummary(radius=self.radius, source_category=self.source_cat)

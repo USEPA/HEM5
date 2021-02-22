@@ -15,6 +15,7 @@ from PIL import ImageTk
 from functools import partial
 
 from com.sca.hem4.log import Logger
+from com.sca.hem4.upload.MetLib import MetLib
 from com.sca.hem4.writer.csv.MirHIAllReceptors import *
 
 
@@ -155,6 +156,20 @@ class EJ(Page):
     def browse(self, icon, event):
         self.fullpath = tk.filedialog.askdirectory()
         icon["text"] = self.fullpath.split("/")[-1]
+
+        # We have to inspect the input faclist once we know the path in order to determine
+        # the minimum max_dist value that HEM4 used across all facilities during modeling.
+        # This value will be an upper bound on the radius choice in the EJ GUI.
+        faclist_path = os.path.join(self.fullpath, "Inputs/faclist.xlsx")
+        faclist = FacilityList(faclist_path, metlib=MetLib())
+        faclist.createDataframe()
+        faclist_df = faclist.dataframe
+        print(str(len(faclist_df)))
+
+        faclist_df[max_dist] = faclist_df[max_dist].fillna(50000)
+
+        self.min_max_dist = faclist_df[max_dist].min()
+        print("Min is " + str(self.min_max_dist))
 
     # Note that when a config is removed, the add config button may have to reappear...
     def remove_config(self, config):
@@ -344,6 +359,12 @@ class EJ(Page):
                 messagebox.showinfo('Error', "Please ensure all radius values satisfy 0 < radius <= 50.")
                 return False
 
+            min_max_dist_km = int(self.min_max_dist / 1000)
+            if radius_value > min_max_dist_km:
+                messagebox.showinfo('Error', "The selected HEM4 output folder included a facility run at max dist = " +
+                                    str(min_max_dist_km) + " km. Please ensure all radii are <= this value.")
+                return False
+
             if cancer_selected and (cancer_risk_value not in [1, 5, 10, 20, 30, 40, 50, 100, 200, 300]):
                 messagebox.showinfo('Error', "Please ensure all cancer risk values are one of the following: " +
                                     "[1, 5, 10, 20, 30, 40, 50, 100, 200, 300]")
@@ -360,9 +381,6 @@ class EJ(Page):
 
             self.run_configs[existing]['toshis'] = []
 
-            # TODO
-            # infer which TOSHIs to use based on data...
-
         return True
 
     def run_reports(self, event):
@@ -373,6 +391,7 @@ class EJ(Page):
         if options_ok:
 
             existing = len(self.run_configs)
+            Logger.logMessage("Running HEM4 Environmental Justice reporting tool...")
             Logger.logMessage("Ready to run " + str(existing) + " run combinations.")
 
             self.nav.peopleLabel.configure(image=self.nav.greenIcon)
@@ -395,7 +414,7 @@ class EJ(Page):
                 self.levels_df = levels.dataframe
         except FileNotFoundError:
             messagebox.showinfo("Missing files",
-                            "Unable to find required ACS data. Please check your HEM4 resources folder and try again.")
+                                "Unable to find required ACS data. Please check your HEM4 resources folder and try again.")
 
         # Next, create (if doesn't exist) an all receptors file...
         all_receptors = MirHIAllReceptors(targetDir=self.fullpath)
@@ -410,11 +429,14 @@ class EJ(Page):
         Logger.logMessage("MIR HI All Receptors dataset contains " + str(len(self.all_receptors_df)) + " records.")
 
         # Next, create an ej output directory if it doesn't already exist
-        # TODO (dispose on every run? new sub folder?)
         output_dir = os.path.join(self.fullpath, "ej")
         if not (os.path.exists(output_dir) or os.path.isdir(output_dir)):
             Logger.logMessage("Creating ej directory for results...")
             os.mkdir(output_dir)
+
+        # Next, compile a list of all facility folders in the output folder (which will be used when we create
+        # reports for each facility individually.)
+        facilities = Directory.find_facilities(self.fullpath)
 
         # Finally, create reports for each requested combination of parameters
         config_num = 1
@@ -444,6 +466,15 @@ class EJ(Page):
             except BaseException as e:
                 print(e)
 
+            Logger.logMessage("Creating facility specific reports...")
+            for facilityId in facilities:
+                Logger.logMessage(facilityId + "...")
+
+                # Use the Block Summary Chronic file instead of the MIR HI All receptors files to obtain risk values
+                blockSummaryChronic = BlockSummaryChronic(targetDir=self.fullpath, facilityId=facilityId)
+                bsc_df = blockSummaryChronic.createDataframe()
+
+                # Dynamically add a distance column
             config_num += 1
 
         messagebox.showinfo("Environmental Justice Reports Finished", "Please check the output folder for reports.")
