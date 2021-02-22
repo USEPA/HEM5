@@ -86,7 +86,7 @@ class MirHIAllReceptors(CsvWriter, InputFile):
                     mir:'sum', hi_resp:'sum', hi_live:'sum', hi_neur:'sum', hi_deve:'sum',
                     hi_repr:'sum', hi_kidn:'sum', hi_ocul:'sum', hi_endo:'sum', hi_hema:'sum',
                     hi_immu:'sum', hi_skel:'sum', hi_sple:'sum', hi_thyr:'sum', hi_whol:'sum', 'fac_count':'sum',
-                    distance:'first'}
+                    distance:'min'}
 
             # Aggregate concentration, grouped by FIPS/block
             risk_summed = blocksummary_df.groupby([fips, block]).agg(aggs)[columns]
@@ -98,7 +98,7 @@ class MirHIAllReceptors(CsvWriter, InputFile):
                     mir:'sum', hi_resp:'sum', hi_live:'sum', hi_neur:'sum', hi_deve:'sum',
                     hi_repr:'sum', hi_kidn:'sum', hi_ocul:'sum', hi_endo:'sum', hi_hema:'sum',
                     hi_immu:'sum', hi_skel:'sum', hi_sple:'sum', hi_thyr:'sum', hi_whol:'sum', 'fac_count':'sum',
-                    distance:'first'}
+                    distance:'min'}
 
             # Aggregate concentration, grouped by rec_id
             risk_summed = blocksummary_df.groupby([rec_id]).agg(aggs)[columns]
