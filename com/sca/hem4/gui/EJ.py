@@ -434,6 +434,12 @@ class EJ(Page):
             Logger.logMessage("Creating ej directory for results...")
             os.mkdir(output_dir)
 
+        # Next, get the max risk and HI so that we can assign a distance to the block summary chronic datasets
+        self.basepath = os.path.basename(os.path.normpath(self.fullpath))
+        maxRiskAndHI = FacilityMaxRiskandHI(targetDir=self.fullpath,
+                                            filenameOverride=self.basepath + "_facility_max_risk_and_hi.xlsx")
+        maxRiskAndHI_df = maxRiskAndHI.createDataframe()
+
         # Next, compile a list of all facility folders in the output folder (which will be used when we create
         # reports for each facility individually.)
         facilities = Directory.find_facilities(self.fullpath)
@@ -470,11 +476,42 @@ class EJ(Page):
             for facilityId in facilities:
                 Logger.logMessage(facilityId + "...")
 
+                fac_path = os.path.join(self.fullpath, facilityId)
+
                 # Use the Block Summary Chronic file instead of the MIR HI All receptors files to obtain risk values
-                blockSummaryChronic = BlockSummaryChronic(targetDir=self.fullpath, facilityId=facilityId)
+                blockSummaryChronic = BlockSummaryChronic(targetDir=fac_path, facilityId=facilityId)
                 bsc_df = blockSummaryChronic.createDataframe()
 
-                # Dynamically add a distance column
+                # add a distance column
+                maxrisk_df = maxRiskAndHI_df.loc[maxRiskAndHI_df['Facil_id'] == facilityId]
+                center_lat = maxrisk_df.iloc[0]['fac_center_latitude']
+                center_lon = maxrisk_df.iloc[0]['fac_center_longitude']
+                ceny, cenx, zone, hemi, epsg = UTM.ll2utm(center_lat, center_lon)
+                bsc_df[distance] = np.sqrt((cenx - bsc_df.utme)**2 + (ceny - bsc_df.utmn)**2)
+
+                filtered_bsc_df = bsc_df.query('distance <= @maxdist').copy()
+                Logger.logMessage("Filtered BlockSummaryChronic dataset (radius = " + str(maxdist) + ") contains " +
+                                  str(len(filtered_bsc_df)) + " records.")
+
+                toshis = self.choose_toshis(filtered_bsc_df)
+
+                fac_output_dir = os.path.join(output_dir, facilityId)
+                if not (os.path.exists(fac_output_dir) or os.path.isdir(fac_output_dir)):
+                    Logger.logMessage("Creating ej subdirectory for facility results...")
+                    os.mkdir(fac_output_dir)
+
+                try:
+                    ej = EnvironmentalJustice(mir_rec_df=filtered_bsc_df, acs_df=self.acs_df, levels_df=self.levels_df,
+                                          outputdir=fac_output_dir, source_cat_name=self.category_name.get_text_value(),
+                                          source_cat_prefix=self.category_prefix.get_text_value(), radius=int(config["radius"]),
+                                          cancer_risk_threshold=int(config["cancer_risk"]),
+                                          hi_risk_threshold=int(config["hi_risk"]), requested_toshis=toshis)
+
+
+                    ej.create_reports()
+                except BaseException as e:
+                    print(e)
+
             config_num += 1
 
         messagebox.showinfo("Environmental Justice Reports Finished", "Please check the output folder for reports.")

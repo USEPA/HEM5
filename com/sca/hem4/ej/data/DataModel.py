@@ -320,7 +320,7 @@ class DataModel():
         # Assign the block to a risk bin...this means not only giving the entire population represented by the block
         # to the total population column, but also giving a percentage of it to each sub group (based on the ACS
         # data.)
-        risk = row['mir_rounded'] * 1000000
+        risk = DataModel.round_to_sigfig(row['mir']) * 1000000
 
         # Update the max risk for mir if necessary
         if risk > self.max_risk['mir']:
