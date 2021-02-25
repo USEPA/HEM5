@@ -83,7 +83,7 @@ class DataModel():
 
         Logger.logMessage("Tabulating data...")
         self.hazards_df.apply(lambda row: self.tabulate_mir_data(row), axis=1)
-
+        
         # Calculate averages by dividing population for each sub group
         for index in range(15):
             if self.cancer_bins[11][index] == 0:
@@ -217,8 +217,19 @@ class DataModel():
                 or pct_age_gt64 is None or pct_edu_lths is None or pct_pov_lt50 is None or pct_pov_50_99 is None \
                 or pct_lowinc is None or pct_lingiso is None or pov_universe is None or edu_universe is None\
                 or pct_minority is None:
+            # This record can't be found in the ACS or default data, but if this record is a user receptor
+            # then it still needs to be analyzed to see if it's risk/HI is the highest. User receptors
+            # contain the letter U in their block id.
+            if 'U' in row['block']:
+                for key, item in self.toshis.items():
+                    tab_column = self.risk_column_map[key]
+                    risk = self.round_to_sigfig(row[tab_column], 1)
+                    # Update the max risk for this toshi if necessary (using rounded risk)
+                    if risk > self.max_risk[key]:
+                        self.max_risk[key] = risk
+                
             Logger.logMessage("Unable to compile enough data to include this record: " + group_id)
-            return
+            return None
 
         pct_edu_universe = edu_universe / total_pop if total_pop > 0 else 0
         pct_pov_universe = pov_universe / total_pop if total_pop > 0 else 0
@@ -227,9 +238,11 @@ class DataModel():
             tab_column = self.risk_column_map[key]
             bins = self.toshi_bins[key]
 
+            # Non-rounded risk is used to bin people, and rounded risk is for display
+            risk_raw = row[tab_column]
             risk = self.round_to_sigfig(row[tab_column], 1)
 
-            # Update the max risk for this toshi if necessary
+            # Update the max risk for this toshi if necessary (using rounded risk)
             if risk > self.max_risk[key]:
                 self.max_risk[key] = risk
 
@@ -259,9 +272,10 @@ class DataModel():
             # We have to update three rows here: the selected risk bin, the total, and the (eventual) average. Since
             # the average has to be weighted by the risk value, we will just use a "risk" of 1 for the other two to
             # unify the assignment code.
+            # Note: non-rounded HIs are used here
             rows = [selected_bin, 11, 12]
             for r in rows:
-                risk_value = risk if r == 12 else 1
+                risk_value = risk_raw if r == 12 else 1
                 bins[r][0] += population * risk_value
                 bins[r][1] += population * pct_white * risk_value
                 bins[r][2] += population * pct_black * risk_value
@@ -311,8 +325,17 @@ class DataModel():
                 or pct_age_gt64 is None or pct_edu_lths is None or pct_pov_lt50 is None or pct_pov_50_99 is None \
                 or pct_lowinc is None or pct_lingiso is None or pov_universe is None or edu_universe is None\
                 or pct_minority is None:
+            # This record can't be found in the ACS or default data, but if this record is a user receptor
+            # then it still needs to be analyzed to see if it's risk/HI is the highest. User receptors
+            # contain the letter U in their block id.
+            if 'U' in row['block']:
+                risk = DataModel.round_to_sigfig(row['mir']) * 1000000       
+                # Update the max risk for mir if necessary (using rounded risk)
+                if risk > self.max_risk['mir']:
+                    self.max_risk['mir'] = risk
+
             Logger.logMessage("Unable to compile enough data to include this record: " + group_id)
-            return
+            return None
 
         pct_edu_universe = edu_universe / total_pop if total_pop > 0 else 0
         pct_pov_universe = pov_universe / total_pop if total_pop > 0 else 0
@@ -320,9 +343,11 @@ class DataModel():
         # Assign the block to a risk bin...this means not only giving the entire population represented by the block
         # to the total population column, but also giving a percentage of it to each sub group (based on the ACS
         # data.)
+        # Non-rounded risk is used to bin people, and rounded risk is for display
+        risk_raw = row['mir']
         risk = DataModel.round_to_sigfig(row['mir']) * 1000000
 
-        # Update the max risk for mir if necessary
+        # Update the max risk for mir if necessary (using rounded risk)
         if risk > self.max_risk['mir']:
             self.max_risk['mir'] = risk
 
@@ -352,9 +377,10 @@ class DataModel():
         # We have to update three rows here: the selected risk bin, the total, and the (eventual) average. Since the
         # average has to be weighted by the risk value, we will just use a "risk" of 1 for the other two to unify
         # the assignment code.
+        # Note: non-rounded risk is used here
         rows = [selected_bin, 11, 12]
         for r in rows:
-            risk_value = risk if r == 12 else 1
+            risk_value = risk_raw if r == 12 else 1
             self.cancer_bins[r][0] += population * risk_value
             self.cancer_bins[r][1] += population * pct_white * risk_value
             self.cancer_bins[r][2] += population * pct_black * risk_value
@@ -402,7 +428,7 @@ class DataModel():
                     value = county[subgroup]
                 else:
                     Logger.logMessage("Couldn't resolve this record by either tract or county! " + block_group_id)
-                    value = None
+                    return None
 
         return value / 100 if is_pct else value
 
