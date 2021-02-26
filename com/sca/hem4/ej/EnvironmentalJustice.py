@@ -14,35 +14,53 @@ class EnvironmentalJustice():
         self.cancer_risk_threshold = cancer_risk_threshold
         self.hi_risk_threshold = hi_risk_threshold
         self.requested_toshis = requested_toshis
-
+        
         # Create a data model to hold hazard and census demographic data
         self.data_model = DataModel(mir_rec_df=mir_rec_df, acs_df=acs_df, levels_df=levels_df, toshis=requested_toshis,
                                     missing_block_path=outputdir)
+
+        self.report_writer = ReportWriter(target_dir=self.output_dir, source_cat_prefix=self.source_cat_prefix,
+                                     source_cat=self.source_cat, radius=self.radius,
+                                     cancer_risk_threshold=self.cancer_risk_threshold,
+                                     hi_risk_threshold=self.hi_risk_threshold)
 
     def create_reports(self):
 
         # First, create the output path if it doesn't exist
         if not os.path.isdir(self.output_dir):
             os.makedirs(self.output_dir)
-
-        report_writer = ReportWriter(target_dir=self.output_dir, source_cat_prefix=self.source_cat_prefix,
-                                     source_cat=self.source_cat, radius=self.radius,
-                                     cancer_risk_threshold=self.cancer_risk_threshold,
-                                     hi_risk_threshold=self.hi_risk_threshold)
-
+        
         # Create cancer workbook...
-        report_writer.create_cancer_workbook()
-        report_writer.create_cancer_tables(values=self.data_model.cancer_bins)
-        report_writer.create_cancer_summaries(national_values=self.data_model.national_bin,
+        self.report_writer.create_cancer_workbook()
+        self.report_writer.create_cancer_tables(values=self.data_model.cancer_bins)
+        self.report_writer.create_cancer_summaries(national_values=self.data_model.national_bin,
                                               values=self.data_model.cancer_bins,
                                               max_risk=self.data_model.max_risk['mir'])
-        report_writer.close_workbook()
+        self.report_writer.close_workbook()
 
         # Create all requested TOSHI workbooks
         for key,value in self.requested_toshis.items():
-            report_writer.create_toshi_workbook(key, value)
-            report_writer.create_hi_tables(values=self.data_model.toshi_bins[key])
-            report_writer.create_hi_summaries(national_values=self.data_model.national_bin,
+            self.report_writer.create_toshi_workbook(key, value)
+            self.report_writer.create_hi_tables(values=self.data_model.toshi_bins[key])
+            self.report_writer.create_hi_summaries(national_values=self.data_model.national_bin,
                                               values=self.data_model.toshi_bins[key],
                                               max_risk=self.data_model.max_risk[key])
-            report_writer.close_workbook()
+            self.report_writer.close_workbook()
+
+    def create_facility_summaries(self):
+        # First, create the output path if it doesn't exist
+        if not os.path.isdir(self.output_dir):
+            os.makedirs(self.output_dir)
+
+        # Create new facility summary workbooks and sheets if necessary
+        self.report_writer.create_facility_summaries(self.requested_toshis)
+        
+    def add_facility_summaries(self, facilityId):
+        self.report_writer.add_cancer_facility_summaries(facilityId=facilityId, national_values=self.data_model.national_bin,
+                                                  values=self.data_model.cancer_bins)
+
+        self.report_writer.add_hi_facility_summaries(facilityId=facilityId, national_values=self.data_model.national_bin,
+                                                  values=self.data_model.toshi_bins, toshis=self.requested_toshis)
+
+    def close_facility_summaries(self):
+        self.report_writer.close_all_workbooks()

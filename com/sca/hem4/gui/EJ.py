@@ -3,6 +3,7 @@ from concurrent.futures.thread import ThreadPoolExecutor
 from tkinter import messagebox
 
 from com.sca.hem4.ej.EnvironmentalJustice import EnvironmentalJustice
+from com.sca.hem4.ej.ReportWriter import ReportWriter
 from com.sca.hem4.ej.data.ACSCountyTract import ACSCountyTract
 from com.sca.hem4.ej.data.ACSDataset import ACSDataset
 from com.sca.hem4.gui.EntryWithPlaceholder import EntryWithPlaceholder
@@ -444,6 +445,9 @@ class EJ(Page):
         # reports for each facility individually.)
         facilities = Directory.find_facilities(self.fullpath)
 
+        # Initialize the class-level data storage for all facility summary workbooks
+        ReportWriter.init_facility_summaries()
+
         # Finally, create reports for each requested combination of parameters
         config_num = 1
         for config in self.run_configs.values():
@@ -461,13 +465,14 @@ class EJ(Page):
             # should be of this form: {'Deve':'Developmental', 'Neur':'Neurological', ...}
             toshis = self.choose_toshis(filtered_mir_hi_df)
 
-            ej = EnvironmentalJustice(mir_rec_df=filtered_mir_hi_df, acs_df=self.acs_df, levels_df=self.levels_df,
+            try:
+                ej = EnvironmentalJustice(mir_rec_df=filtered_mir_hi_df, acs_df=self.acs_df, levels_df=self.levels_df,
                                       outputdir=output_dir, source_cat_name=self.category_name.get_text_value(),
                                       source_cat_prefix=self.category_prefix.get_text_value(), radius=int(config["radius"]),
                                       cancer_risk_threshold=int(config["cancer_risk"]),
                                       hi_risk_threshold=int(config["hi_risk"]), requested_toshis=toshis)
 
-            try:
+                ej.create_facility_summaries()
                 ej.create_reports()
             except BaseException as e:
                 print(e)
@@ -493,7 +498,7 @@ class EJ(Page):
                 Logger.logMessage("Filtered BlockSummaryChronic dataset (radius = " + str(maxdist) + ") contains " +
                                   str(len(filtered_bsc_df)) + " records.")
 
-                toshis = self.choose_toshis(filtered_bsc_df)
+                # fac_toshis = self.choose_toshis(filtered_bsc_df)
 
                 fac_output_dir = os.path.join(output_dir, facilityId)
                 if not (os.path.exists(fac_output_dir) or os.path.isdir(fac_output_dir)):
@@ -507,12 +512,14 @@ class EJ(Page):
                                           cancer_risk_threshold=int(config["cancer_risk"]),
                                           hi_risk_threshold=int(config["hi_risk"]), requested_toshis=toshis)
 
-
                     ej.create_reports()
+                    ej.add_facility_summaries(facilityId=facilityId)
                 except BaseException as e:
                     print(e)
 
             config_num += 1
+
+        ej.close_facility_summaries()
 
         messagebox.showinfo("Environmental Justice Reports Finished", "Please check the output folder for reports.")
         self.reset()
