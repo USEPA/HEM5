@@ -344,7 +344,7 @@ class DataModel():
         # to the total population column, but also giving a percentage of it to each sub group (based on the ACS
         # data.)
         # Non-rounded risk is used to bin people, and rounded risk is for display
-        risk_raw = row['mir']
+        risk_raw = row['mir'] * 1000000
         risk = DataModel.round_to_sigfig(row['mir']) * 1000000
 
         # Update the max risk for mir if necessary (using rounded risk)
