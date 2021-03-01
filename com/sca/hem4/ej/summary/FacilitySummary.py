@@ -21,7 +21,7 @@ class FacilitySummary():
         FacilitySummary.sheets = {}
         FacilitySummary.lines = {}
 
-    def create_summary(self, workbook, formats, national_values, values, hazard_name=None):
+    def create_summary(self, workbook, formats, national_values, values, run_group_values, hazard_name=None):
 
         self.hazard_name = hazard_name
 
@@ -75,9 +75,12 @@ class FacilitySummary():
 
             worksheet.merge_range("A5:N5", '')
 
-            worksheet.merge_range("A6:A7", 'Run Group Name', formats['sub_header_1'])
+            worksheet.merge_range("A6:A7", self.source_category, formats['sub_header_1'])
             worksheet.write(5, 1, 'Proximity')
             worksheet.write(6, 1, self.get_risk_label())
+
+            next_line = 6
+            self.append_data(run_group_values, worksheet, formats, next_line-1)
 
             worksheet.merge_range("A8:N8", '')
 

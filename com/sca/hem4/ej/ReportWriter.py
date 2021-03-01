@@ -197,7 +197,7 @@ class ReportWriter():
 
             ReportWriter.facility_summary_workbooks[self.radius] = workbooks
 
-    def add_cancer_facility_summaries(self, facilityId, national_values, values):
+    def add_cancer_facility_summaries(self, facilityId, national_values, values, run_group_values):
         # Retrieve the workbooks that correspond to this radius
         workbook = ReportWriter.facility_summary_workbooks[self.radius][0]
         formats = self.create_formats(workbook)
@@ -208,9 +208,10 @@ class ReportWriter():
                                                    hi_risk_threshold=self.hi_risk_threshold,
                                                    source_category=self.source_cat)
         cancer_fac_summary.create_summary(workbook=workbook, hazard_name=self.hazard_name, formats=formats,
-                                          national_values=national_values, values=values)
+                                          national_values=national_values, values=values,
+                                          run_group_values=run_group_values)
 
-    def add_hi_facility_summaries(self, facilityId, national_values, values, toshis):
+    def add_hi_facility_summaries(self, facilityId, national_values, values, run_group_values, toshis):
 
         toshi_index = 1
         for toshi in toshis:
@@ -224,7 +225,8 @@ class ReportWriter():
                                                hi_risk_threshold=self.hi_risk_threshold,
                                                source_category=self.source_cat)
             hi_fac_summary.create_summary(workbook=workbook, hazard_name=self.hazard_name, formats=formats,
-                                      national_values=national_values, values=values[toshi])
+                                      national_values=national_values, values=values[toshi],
+                                          run_group_values=run_group_values[toshi])
 
             toshi_index += 1
 
