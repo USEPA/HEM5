@@ -224,7 +224,7 @@ class ReportWriter():
                                                hi_risk_threshold=self.hi_risk_threshold,
                                                source_category=self.source_cat)
             hi_fac_summary.create_summary(workbook=workbook, hazard_name=self.hazard_name, formats=formats,
-                                      national_values=national_values, values=values)
+                                      national_values=national_values, values=values[toshi])
 
             toshi_index += 1
 

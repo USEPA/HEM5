@@ -6,6 +6,7 @@ from com.sca.hem4.ej.EnvironmentalJustice import EnvironmentalJustice
 from com.sca.hem4.ej.ReportWriter import ReportWriter
 from com.sca.hem4.ej.data.ACSCountyTract import ACSCountyTract
 from com.sca.hem4.ej.data.ACSDataset import ACSDataset
+from com.sca.hem4.ej.summary.FacilitySummary import FacilitySummary
 from com.sca.hem4.gui.EntryWithPlaceholder import EntryWithPlaceholder
 from com.sca.hem4.gui.Page import Page
 import tkinter as tk
@@ -445,8 +446,9 @@ class EJ(Page):
         # reports for each facility individually.)
         facilities = Directory.find_facilities(self.fullpath)
 
-        # Initialize the class-level data storage for all facility summary workbooks
+        # Initialize the class-level data storage for all facility summary workbooks and sheets
         ReportWriter.init_facility_summaries()
+        FacilitySummary.init_sheets()
 
         # Finally, create reports for each requested combination of parameters
         config_num = 1

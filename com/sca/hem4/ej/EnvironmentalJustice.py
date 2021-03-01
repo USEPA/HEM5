@@ -53,7 +53,7 @@ class EnvironmentalJustice():
             os.makedirs(self.output_dir)
 
         # Create new facility summary workbooks and sheets if necessary
-        self.report_writer.create_facility_summaries(self.requested_toshis)
+        self.report_writer.create_facility_summaries(toshis=self.requested_toshis)
         
     def add_facility_summaries(self, facilityId):
         self.report_writer.add_cancer_facility_summaries(facilityId=facilityId, national_values=self.data_model.national_bin,
