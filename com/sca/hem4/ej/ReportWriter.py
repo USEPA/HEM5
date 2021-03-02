@@ -25,13 +25,15 @@ class ReportWriter():
 
     facility_summary_workbooks = {}
 
-    def __init__(self, target_dir, source_cat, source_cat_prefix, radius, cancer_risk_threshold, hi_risk_threshold):
+    def __init__(self, target_dir, source_cat, source_cat_prefix, radius, facility,
+                 cancer_risk_threshold, hi_risk_threshold):
         self.output_dir = target_dir
         self.source_cat = source_cat
         self.source_cat_prefix = source_cat_prefix
         self.cancer_risk_threshold = cancer_risk_threshold
         self.hi_risk_threshold = hi_risk_threshold
         self.radius = radius
+        self.facility = facility
         self.workbook = None
         self.formats = None
         self.hazard_prefix = None
@@ -130,17 +132,18 @@ class ReportWriter():
     def construct_filename(self, cancer=True):
         hazard_type = 'EJ_Cancer' if cancer else self.hazard_prefix + '_Noncancer'
         date_string = datetime.datetime.now().strftime("%m-%d-%Y")
-
+        facility_name = '' if self.facility is None else self.facility + '_'
         risk = str(self.cancer_risk_threshold) if cancer else str(self.hi_risk_threshold)
-        return os.path.join(self.output_dir, self.source_cat_prefix + '_' + str(self.radius) +
+        return os.path.join(self.output_dir, self.source_cat_prefix + '_' + facility_name + str(self.radius) +
                             '_km_' + risk + '_' + hazard_type + '_demo_tables_' + date_string + '.xlsx')
 
     def construct_facility_summary_filename(self, cancer=True, hazard_prefix=None):
         hazard_type = '_Cancer_' if cancer else hazard_prefix + '_Noncancer_'
         date_string = datetime.datetime.now().strftime("%m-%d-%Y")
+        facility_name = '' if self.facility is None else self.facility + '_'
 
-        return os.path.join(self.output_dir, self.source_cat_prefix + '_EJ-Summary_' + str(self.radius) +
-                            '_km_' + hazard_type + date_string + '.xlsx')
+        return os.path.join(self.output_dir, self.source_cat_prefix + '_' + facility_name + 'EJ-Summary_' +
+                            str(self.radius) + '_km_' + hazard_type + date_string + '.xlsx')
 
     def create_cancer_summaries(self, national_values, values, max_risk):
         dg_summary = CancerDGSummary(radius=self.radius, source_category=self.source_cat)
@@ -197,13 +200,13 @@ class ReportWriter():
 
             ReportWriter.facility_summary_workbooks[self.radius] = workbooks
 
-    def add_cancer_facility_summaries(self, facilityId, national_values, values, run_group_values):
+    def add_cancer_facility_summaries(self, national_values, values, run_group_values):
         # Retrieve the workbooks that correspond to this radius
         workbook = ReportWriter.facility_summary_workbooks[self.radius][0]
         formats = self.create_formats(workbook)
 
         # For each workbook, add an appropriately named sheet if it doesn't exist
-        cancer_fac_summary = CancerFacilitySummary(facilityId=facilityId, radius=self.radius,
+        cancer_fac_summary = CancerFacilitySummary(facilityId=self.facility, radius=self.radius,
                                                    cancer_risk_threshold=self.cancer_risk_threshold,
                                                    hi_risk_threshold=self.hi_risk_threshold,
                                                    source_category=self.source_cat)
@@ -211,7 +214,7 @@ class ReportWriter():
                                           national_values=national_values, values=values,
                                           run_group_values=run_group_values)
 
-    def add_hi_facility_summaries(self, facilityId, national_values, values, run_group_values, toshis):
+    def add_hi_facility_summaries(self, national_values, values, run_group_values, toshis):
 
         toshi_index = 1
         for toshi in toshis:
@@ -220,7 +223,7 @@ class ReportWriter():
             formats = self.create_formats(workbook)
 
             # For each workbook, add an appropriately named sheet if it doesn't exist
-            hi_fac_summary = HiFacilitySummary(facilityId=facilityId, radius=self.radius,
+            hi_fac_summary = HiFacilitySummary(facilityId=self.facility, radius=self.radius,
                                                cancer_risk_threshold=self.cancer_risk_threshold,
                                                hi_risk_threshold=self.hi_risk_threshold,
                                                source_category=self.source_cat)

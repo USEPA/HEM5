@@ -470,8 +470,8 @@ class EJ(Page):
             try:
                 ej = EnvironmentalJustice(mir_rec_df=filtered_mir_hi_df, acs_df=self.acs_df, levels_df=self.levels_df,
                                       outputdir=output_dir, source_cat_name=self.category_name.get_text_value(),
-                                      source_cat_prefix=self.category_prefix.get_text_value(), radius=int(config["radius"]),
-                                      cancer_risk_threshold=int(config["cancer_risk"]),
+                                      source_cat_prefix=self.category_prefix.get_text_value(),
+                                      radius=int(config["radius"]), cancer_risk_threshold=int(config["cancer_risk"]),
                                       hi_risk_threshold=int(config["hi_risk"]), requested_toshis=toshis)
 
                 ej.create_facility_summaries()
@@ -512,10 +512,11 @@ class EJ(Page):
                                           outputdir=fac_output_dir, source_cat_name=self.category_name.get_text_value(),
                                           source_cat_prefix=self.category_prefix.get_text_value(), radius=int(config["radius"]),
                                           cancer_risk_threshold=int(config["cancer_risk"]),
-                                          hi_risk_threshold=int(config["hi_risk"]), requested_toshis=toshis)
+                                          hi_risk_threshold=int(config["hi_risk"]), requested_toshis=toshis,
+                                          facility=facilityId)
 
                     fac_ej.create_reports()
-                    fac_ej.add_facility_summaries(facilityId=facilityId, run_group_data_model=ej.data_model)
+                    fac_ej.add_facility_summaries(run_group_data_model=ej.data_model)
                 except BaseException as e:
                     print(e)
 

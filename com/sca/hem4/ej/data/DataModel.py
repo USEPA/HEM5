@@ -3,12 +3,13 @@ from math import *
 from pandas import isna
 from com.sca.hem4.log import Logger
 
-
 class DataModel():
 
-    def __init__(self, missing_block_path, mir_rec_df, acs_df, levels_df, toshis):
+    def __init__(self, missing_block_path, mir_rec_df, acs_df, levels_df, toshis, radius, facility):
 
         self.toshis = toshis
+        self.radius = radius
+        self.facility = facility
         self.cancer_bins = None
         self.toshi_bins = None
         self.max_risk = {}
@@ -399,7 +400,7 @@ class DataModel():
 
     def write_missing_block_groups(self):
         if len(self.missing_block_groups) > 0:
-            filepath = os.path.join(self.missing_block_group_path, 'missing_block_groups.txt')
+            filepath = os.path.join(self.missing_block_group_path, str(self.radius) + '_km_missing_block_groups.txt')
             Logger.logMessage("Writing missing block group file: " + str(filepath))
 
             with open(filepath, 'w') as f:
