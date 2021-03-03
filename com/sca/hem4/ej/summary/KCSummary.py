@@ -28,6 +28,7 @@ class KCSummary():
         # Increase the cell size of the merged cells to highlight the formatting.
         worksheet.set_column(top_header_coords, 12)
         worksheet.set_column("A:A", 24)
+        worksheet.set_column("B:B", 16)
         worksheet.set_column("C:C", 16)
         worksheet.set_column("G:G", 14)
         worksheet.set_column("N:N", 14)

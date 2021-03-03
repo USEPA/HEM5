@@ -48,3 +48,4 @@ class CancerPoverty(WorksheetTable):
         worksheet.set_row(0, 42)
         worksheet.set_row(3, 48)
         worksheet.set_row(4, 48)
+        worksheet.set_column("D:D", 16)
