@@ -46,5 +46,5 @@ class CancerPoverty(WorksheetTable):
 
     def optional_format(self, worksheet):
         worksheet.set_row(0, 42)
-        worksheet.set_row(3, 44)
-        worksheet.set_row(4, 44)
+        worksheet.set_row(3, 48)
+        worksheet.set_row(4, 48)

@@ -34,7 +34,7 @@ class KCSummary():
         worksheet.set_row(0, 30)
         worksheet.set_row(2, 24)
         worksheet.set_row(3, 30)
-        worksheet.set_row(5, 42)
+        worksheet.set_row(5, 48)
         worksheet.set_row(6, 30)
         worksheet.set_row(10, 30)
         worksheet.set_row(11, 30)
