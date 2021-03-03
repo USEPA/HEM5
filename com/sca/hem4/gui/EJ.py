@@ -489,6 +489,9 @@ class EJ(Page):
                 blockSummaryChronic = BlockSummaryChronic(targetDir=fac_path, facilityId=facilityId)
                 bsc_df = blockSummaryChronic.createDataframe()
 
+                # Filter out schools and monitors
+                bsc_df = bsc_df.loc[(~bsc_df[block].str.contains('S')) & (~bsc_df[block].str.contains('M'))]
+
                 # add a distance column
                 maxrisk_df = maxRiskAndHI_df.loc[maxRiskAndHI_df['Facil_id'] == facilityId]
                 center_lat = maxrisk_df.iloc[0]['fac_center_latitude']

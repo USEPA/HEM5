@@ -109,8 +109,7 @@ class MirHIAllReceptors(CsvWriter, InputFile):
         risk_summed = risk_summed[self.getColumns()]
 
         # Weed out blocks that correspond to schools, monitors, etc.
-        risk_summed = risk_summed.loc[(~risk_summed[block].str.contains('S')) & (~risk_summed[block].str.contains('M'))
-                                 & (~risk_summed[block].str.contains('P'))]
+        risk_summed = risk_summed.loc[(~risk_summed[block].str.contains('S')) & (~risk_summed[block].str.contains('M'))]
 
         # dataframe to array
         self.dataframe = risk_summed
