@@ -34,7 +34,7 @@ class ElaineSummary():
         worksheet.merge_range("A3:C3", '')
         worksheet.write(3, 2, self.get_risk_header(), formats['sub_header_3'])
         worksheet.write(4, 1, 'Nationwide', formats['sub_header_3'])
-        worksheet.write(4, 2, 'Source Category', formats['sub_header_3'])
+        worksheet.write(4, 2, 'Source Category' if self.facility is None else 'Facility', formats['sub_header_3'])
         worksheet.write(5, 0, 'Total Population')
 
         worksheet.merge_range("B7:C7", 'White and Minority by Percent',  formats['sub_header_3'])

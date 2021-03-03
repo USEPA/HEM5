@@ -56,7 +56,7 @@ class KCSummary():
             worksheet.write(2, col_num+1, data)
 
         worksheet.write(5, 1, self.get_max_risk_header(), formats['sub_header_3'])
-        worksheet.write(6, 0, 'Source Category')
+        worksheet.write(6, 0, 'Source Category' if self.facility is None else 'Facility')
         worksheet.write(6, 1, max_value)
         worksheet.merge_range("A5:N5", '')
         worksheet.merge_range("C6:N6", self.get_risk_header(),  formats['sub_header_3'])
