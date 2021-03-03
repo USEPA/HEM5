@@ -7,11 +7,12 @@ from com.sca.hem4.ej.data.DataModel import DataModel
 
 class KCSummary():
 
-    def __init__(self, radius, cancer_risk_threshold, hi_risk_threshold, source_category):
+    def __init__(self, radius, cancer_risk_threshold, hi_risk_threshold, source_category, facility):
         self.cancer_risk_threshold = str(cancer_risk_threshold)
         self.hi_risk_threshold = str(hi_risk_threshold)
         self.radius = str(radius)
         self.source_category = source_category
+        self.facility = facility
         self.active_columns = [0, 14, 2, 3, 4, 5, 6, 7, 8, 11, 10, 13]
 
     def create_summary(self, workbook, formats, national_values, values, max_value, hazard_name=None):
@@ -26,10 +27,14 @@ class KCSummary():
 
         # Increase the cell size of the merged cells to highlight the formatting.
         worksheet.set_column(top_header_coords, 12)
+        worksheet.set_column("A:A", 24)
+        worksheet.set_column("C:C", 16)
+        worksheet.set_column("G:G", 14)
+        worksheet.set_column("N:N", 14)
         worksheet.set_row(0, 30)
         worksheet.set_row(2, 24)
         worksheet.set_row(3, 30)
-        worksheet.set_row(5, 30)
+        worksheet.set_row(5, 42)
         worksheet.set_row(6, 30)
         worksheet.set_row(10, 30)
         worksheet.set_row(11, 30)
@@ -46,7 +51,7 @@ class KCSummary():
         worksheet.write(3, 0, 'Nationwide')
         worksheet.merge_range("B2:N2", 'Demographic Group',  formats['sub_header_3'])
 
-        worksheet.set_row(2, 60, formats['sub_header_2'])
+        worksheet.set_row(2, 72, formats['sub_header_2'])
         for col_num, data in enumerate(column_headers):
             worksheet.write(2, col_num+1, data)
 
@@ -63,8 +68,10 @@ class KCSummary():
         self.append_data(values, worksheet, formats)
 
     def get_table_name(self):
-        return 'Table 2. Summary of Demographic Assessment of ' + self.hazard_name + ' Hazard Index Results for the ' + \
-               self.source_category + ' Source Category - ' + self.radius + ' km Study Area Radius'
+        scope = 'the ' + self.source_category + ' Source Category' if self.facility is None else \
+            'Facility ' + self.facility
+        return 'Table 2. Summary of Demographic Assessment of ' + self.hazard_name + ' Hazard Index Results for ' + \
+               scope + ' - ' + self.radius + ' km Study Area Radius'
 
     def get_columns(self):
         return ['', 'Total', 'Minority', 'African American', 'Native American',
@@ -149,3 +156,4 @@ class KCSummary():
                 worksheet.write(startrow, startcol+col, value)
 
         return startrow + 1
+

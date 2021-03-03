@@ -7,9 +7,10 @@ from com.sca.hem4.ej.data.DataModel import DataModel
 
 class DGSummary():
 
-    def __init__(self, radius, source_category):
+    def __init__(self, radius, source_category, facility):
         self.radius = str(radius)
         self.source_category = source_category
+        self.facility = facility
         self.active_columns = [0, 1, 14, 2, 3, 4, 5, 6, 7, 8, 11, 9, 10, 13]
 
     def create_summary(self, workbook, formats, national_values, values, hazard_name=None):
@@ -42,7 +43,7 @@ class DGSummary():
         # Create column headers
         worksheet.merge_range("A2:B2", '',  formats['sub_header_2'])
 
-        worksheet.set_row(1, 60, formats['sub_header_2'])
+        worksheet.set_row(1, 72, formats['sub_header_2'])
         for col_num, data in enumerate(column_headers):
             worksheet.write(1, col_num+1, data)
 
@@ -52,9 +53,13 @@ class DGSummary():
         worksheet.merge_range("A5:B5", 'Percentage of total')
 
         # Create sub header 2
-        worksheet.merge_range("A6:P6", 'Modeled ' + self.get_risk_name() + ' from the ' + self.source_category +
-                              ' Source Category',  formats['sub_header_4'])
-        worksheet.merge_range("A7:B7", 'Total population within ' + self.radius + ' km of any facility', formats['sub_header_3'])
+        scope = 'the ' + self.source_category + ' Source Category' if self.facility is None else \
+            'Facility ' + self.facility
+        worksheet.merge_range("A6:P6", 'Modeled ' + self.get_risk_name() + ' from ' + scope,  formats['sub_header_4'])
+
+        article = 'any' if self.facility is None else 'the'
+        worksheet.merge_range("A7:B7", 'Total population within ' + self.radius + ' km of ' + article + ' facility',
+                              formats['sub_header_3'])
         worksheet.merge_range("A8:B8", 'Percentage of total')
         worksheet.merge_range("A9:B9", self.get_risk_header())
 

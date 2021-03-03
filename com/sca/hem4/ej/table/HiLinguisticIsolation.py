@@ -3,11 +3,11 @@ from com.sca.hem4.ej.table.WorksheetTable import WorksheetTable
 
 class HiLinguisticIsolation(WorksheetTable):
 
-    def __init__(self, radius_value, source_category, prefix, name):
+    def __init__(self, radius_value, source_category, prefix, name, facility):
         self.active_columns = [0, 13]
         self.prefix = prefix
         self.name = name
-        WorksheetTable.__init__(self, radius=radius_value, source_category=source_category)
+        WorksheetTable.__init__(self, radius=radius_value, source_category=source_category, facility=facility)
 
     def get_bin_headers(self):
         return ['0 to <= 1', '>1 to <= 2', '>2 to <= 3', '>3 to <= 4', '>4 to <= 5', '>5 to <= 6', '>6 to <= 7',
@@ -18,10 +18,14 @@ class HiLinguisticIsolation(WorksheetTable):
                self.radius + ' km Study Area Radius'
 
     def get_sub_header_1(self):
-        return self.name + ' Hazard Index Ranges for the ' + self.source_category + ' Source Category'
+        scope = 'the ' + self.source_category + ' Source Category' if self.facility is None else \
+            'Facility ' + self.facility
+        return self.name + ' Hazard Index Ranges for ' + scope
 
     def get_sub_header_2(self):
-        return 'Number of People within ' + self.radius + ' km of any Facility in Different Hazard Index Ranges \u1D43'
+        article = 'any' if self.facility is None else 'the'
+        return 'Number of People within ' + self.radius + ' km of ' + article + \
+               ' Facility in Different Hazard Index Ranges \u1D43'
 
     def get_average_header(self):
         return "Average Hazard Index\u1D47"

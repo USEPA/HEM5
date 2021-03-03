@@ -146,33 +146,36 @@ class ReportWriter():
                             str(self.radius) + '_km_' + hazard_type + date_string + '.xlsx')
 
     def create_cancer_summaries(self, national_values, values, max_risk):
-        dg_summary = CancerDGSummary(radius=self.radius, source_category=self.source_cat)
+        dg_summary = CancerDGSummary(radius=self.radius, source_category=self.source_cat, facility=self.facility)
         dg_summary.create_summary(workbook=self.workbook, formats=self.formats,
                                   national_values=national_values, values=values)
 
         kc_summary = CancerKCSummary(radius=self.radius, cancer_risk_threshold=self.cancer_risk_threshold,
-                                     hi_risk_threshold=self.hi_risk_threshold, source_category=self.source_cat)
+                                     hi_risk_threshold=self.hi_risk_threshold, source_category=self.source_cat,
+                                     facility=self.facility)
         kc_summary.create_summary(workbook=self.workbook, formats=self.formats,
                                   national_values=national_values, values=values, max_value=max_risk)
 
         elaine_summary = CancerElaineSummary(radius=self.radius, cancer_risk_threshold=self.cancer_risk_threshold,
-                                             hi_risk_threshold=self.hi_risk_threshold, source_category=self.source_cat)
+                                             hi_risk_threshold=self.hi_risk_threshold, source_category=self.source_cat,
+                                             facility=self.facility)
         elaine_summary.create_summary(workbook=self.workbook, formats=self.formats,
                                       national_values=national_values, values=values)
 
     def create_hi_summaries(self, national_values, values, max_risk):
-        dg_summary = HiDGSummary(radius=self.radius, source_category=self.source_cat)
+        dg_summary = HiDGSummary(radius=self.radius, source_category=self.source_cat, facility=self.facility)
         dg_summary.create_summary(workbook=self.workbook, hazard_name=self.hazard_name,
                                   formats=self.formats, national_values=national_values, values=values)
 
         kc_summary = HiKCSummary(radius=self.radius, cancer_risk_threshold=self.cancer_risk_threshold,
-                                 hi_risk_threshold=self.hi_risk_threshold, source_category=self.source_cat)
+                                 hi_risk_threshold=self.hi_risk_threshold, source_category=self.source_cat,
+                                 facility=self.facility)
         kc_summary.create_summary(workbook=self.workbook, hazard_name=self.hazard_name, formats=self.formats,
                                   national_values=national_values, values=values, max_value=max_risk)
 
         elaine_summary = HiElaineSummary(radius=self.radius, cancer_risk_threshold=self.cancer_risk_threshold,
                                          hi_risk_threshold=self.hi_risk_threshold, source_category=self.source_cat,
-                                         hazard_name=self.hazard_name)
+                                         hazard_name=self.hazard_name, facility=self.facility)
         elaine_summary.create_summary(workbook=self.workbook, formats=self.formats,
                                       national_values=national_values, values=values)
 
@@ -236,11 +239,11 @@ class ReportWriter():
     def create_hi_tables(self, values):
         for key, value in self.hiSheets.items():
             table_class = getattr(value, key)
-            instance = table_class(self.radius, self.source_cat, self.hazard_prefix, self.hazard_name)
+            instance = table_class(self.radius, self.source_cat, self.hazard_prefix, self.hazard_name, self.facility)
             instance.create_table(workbook=self.workbook, formats=self.formats, values=values)
 
     def create_cancer_tables(self, values):
         for key, value in self.cancerSheets.items():
             table_class = getattr(value, key)
-            instance = table_class(self.radius, self.source_cat)
+            instance = table_class(self.radius, self.source_cat, self.facility)
             instance.create_table(workbook=self.workbook, formats=self.formats, values=values)

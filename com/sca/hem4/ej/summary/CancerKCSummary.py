@@ -4,8 +4,10 @@ from com.sca.hem4.ej.summary.KCSummary import KCSummary
 class CancerKCSummary(KCSummary):
 
     def get_table_name(self):
-        return 'Table 2. Summary of Demographic Assessment of Risk Results for the ' + \
-               self.source_category + ' Source Category - ' + self.radius + ' km Study Area Radius'
+        scope = 'the ' + self.source_category + ' Source Category' if self.facility is None else \
+            'Facility ' + self.facility
+        return 'Table 2. Summary of Demographic Assessment of Risk Results for ' + \
+               scope + ' - ' + self.radius + ' km Study Area Radius'
 
     def get_notes(self):
         return 'Notes:\n\n' + \

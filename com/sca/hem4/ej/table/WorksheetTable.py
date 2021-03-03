@@ -7,8 +7,9 @@ from com.sca.hem4.ej.data.DataModel import DataModel
 
 class WorksheetTable:
 
-    def __init__(self, radius, source_category):
+    def __init__(self, radius, source_category, facility=None):
         self.radius = str(radius)
+        self.facility = facility
 
         # The identifier controls the table name (and sheet) prefix. It depends on cancer (or not) and radius.
         if self.name and self.prefix:
@@ -30,11 +31,11 @@ class WorksheetTable:
 
         # Increase the cell size of the merged cells to highlight the formatting.
         worksheet.set_column(top_header_coords, 12)
-        worksheet.set_row(0, 30)
-        worksheet.set_row(1, 20)
-        worksheet.set_row(2, 20)
-        worksheet.set_row(3, 30)
-        worksheet.set_row(4, 30)
+        worksheet.set_row(0, 36)
+        worksheet.set_row(1, 28)
+        worksheet.set_row(2, 28)
+        worksheet.set_row(3, 36)
+        worksheet.set_row(4, 36)
         worksheet.set_row(17, 30)
         worksheet.set_row(18, 30)
         worksheet.set_row(19, 30)

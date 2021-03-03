@@ -17,7 +17,7 @@ class ElaineSummary():
         worksheet = workbook.add_worksheet(name=self.get_sheet_name())
 
         # Increase the cell sizes to match expected content.
-        worksheet.set_column("A:A", 18)
+        worksheet.set_column("A:A", 24)
         worksheet.set_column("B:B", 16)
         worksheet.set_column("C:C", 24)
         worksheet.set_row(1, 48)
@@ -31,6 +31,7 @@ class ElaineSummary():
         # Create top level header
         worksheet.merge_range("A2:C2", self.get_table_header(),  formats['sub_header_2'])
 
+        worksheet.merge_range("A3:C3", '')
         worksheet.write(3, 2, self.get_risk_header(), formats['sub_header_3'])
         worksheet.write(4, 1, 'Nationwide', formats['sub_header_3'])
         worksheet.write(4, 2, 'Source Category', formats['sub_header_3'])
