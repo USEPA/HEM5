@@ -21,12 +21,19 @@ from com.sca.hem4.upload.MetLib import MetLib
 from com.sca.hem4.writer.csv.MirHIAllReceptors import *
 
 
+# The GUI portion of the EJ functionality in HEM4. This class manages the various dialogs and options needed
+# to kick off a run of the EJ reporting tool. Its main entry into the code that actually performs the report
+# creation is the EnvironmentalJustice class from the ej package.
 class EJ(Page):
     def __init__(self, nav, *args, **kwargs):
         Page.__init__(self, *args, **kwargs)
         self.nav = nav
+
+        # Report combinations (radius, cancer risk, HI risk). The GUI allows up to 4 at once.
         self.combinations = {}
         self.radios = {}
+
+        # The data structures that correspond to combinations.
         self.run_configs = None
         self.next_config = 1
         self.fullpath = None
@@ -42,7 +49,7 @@ class EJ(Page):
         self.container = tk.Frame(self, bg=self.tab_color, bd=2)
         self.container.pack(side="top", fill="both", expand=True)
 
-        # create grid
+        # Create grid
         self.title_frame = tk.Frame(self.container, height=100, bg=self.tab_color)
         self.folder_frame = tk.Frame(self.container, height=150, pady=5, padx=5, bg=self.tab_color)
         self.category_frame = tk.Frame(self.container, height=200, pady=5, padx=5, bg=self.tab_color)
@@ -106,7 +113,7 @@ class EJ(Page):
         self.category_prefix["width"] = 8
         self.category_prefix.grid(row=3, column=2, sticky="W")
 
-        # Third step - configure report parameters
+        # Third step - configure report combinations
         self.step3 = tk.Label(self.parameters_frame, text="3.", font=TEXT_FONT, bg=self.tab_color, anchor="w")
         self.step3.grid(pady=10, padx=10, row=1, column=0)
 
@@ -135,6 +142,7 @@ class EJ(Page):
         rileLabel.bind("<Leave>", partial(self.color_config, rileLabel, run_button, self.run_frame, self.tab_color))
         rileLabel.bind("<Button-1>", self.run_reports)
 
+    # Reset the GUI to its original (default) state.
     def reset(self):
         self.step1_instructions["text"] = "Select output folder"
         self.fullpath = None
@@ -155,6 +163,7 @@ class EJ(Page):
         self.nav.peopleLabel.configure(image=self.nav.ejIcon)
         self.titleLabel.configure(image=self.nav.ejIcon)
 
+    # The folder browse handler.
     def browse(self, icon, event):
         self.fullpath = tk.filedialog.askdirectory()
         icon["text"] = self.fullpath.split("/")[-1]
@@ -171,9 +180,9 @@ class EJ(Page):
         faclist_df[max_dist] = faclist_df[max_dist].fillna(50000)
 
         self.min_max_dist = faclist_df[max_dist].min()
-        print("Min is " + str(self.min_max_dist))
 
-    # Note that when a config is removed, the add config button may have to reappear...
+    # Note that when a combination is removed, the add config button may have to reappear, depending on how many are
+    # left.
     def remove_config(self, config):
 
         if len(self.combinations) > 1:
@@ -183,7 +192,7 @@ class EJ(Page):
             if self.add_config_btn is None:
                 self.create_add_config()
 
-            # sort all remaining rows and re-grid them one at a time in order to preserve the
+            # Sort all remaining rows and re-grid them one at a time in order to preserve the
             # row numbering
             sorted_configs = {k: self.combinations[k] for k in sorted(self.combinations)}
             new_frame_row = 1
@@ -199,7 +208,7 @@ class EJ(Page):
                                         borderwidth=1, command=self.add_next_config, font=SMALL_TEXT_FONT)
         self.add_config_btn.grid(row=12, column=1, sticky='W', padx=10, pady=5)
 
-    # Add next config in response to user pressing add config button
+    # Add next config in response to user pressing add config button, and manage the availability of the button.
     def add_next_config(self):
         self.add_config(radius=None, cancer_risk=None, hi_risk=None)
 
@@ -208,6 +217,7 @@ class EJ(Page):
             self.add_config_btn.grid_forget()
             self.add_config_btn = None
 
+    # Create a new combination with default values.
     def add_config(self, radius, cancer_risk, hi_risk):
         num_configs = len(self.combinations)
         config = self.next_config
@@ -269,6 +279,7 @@ class EJ(Page):
 
         self.next_config += 1
 
+    # Handler for the cancer / HI radio button choice.
     def handle_radio(self, frame):
         frame_name = frame.winfo_name()
         cancer_radio = frame.nametowidget("cancer_radio")
@@ -287,36 +298,7 @@ class EJ(Page):
             cancer_radio['fg'] = 'lightgrey'
             hi_radio['fg'] = 'black'
 
-    def create_toshi_dropdown(self):
-        toshis = self.toshis.values()
-
-        # Label and drop down list
-        toshi_lbl = tk.Label(self.toshi_frame, text="Select TOSHI:", font=TEXT_FONT, bg=self.tab_color, padx=10)
-        toshi_lbl.grid(column=1, row=2, padx=5)
-        self.toshi_1_value = tk.StringVar()
-        self.toshi_1 = ttk.Combobox(self.toshi_frame, textvariable=self.toshi_1_value)
-        self.toshi_1['values'] = toshis
-        self.toshi_1.current(0)
-        self.toshi_1.grid(column=2, row=2)
-
-        # Label and drop down list
-        toshi_lbl = tk.Label(self.toshi_frame, text="Select TOSHI:", font=TEXT_FONT, bg=self.tab_color, padx=10)
-        toshi_lbl.grid(column=1, row=3, padx=5)
-        self.toshi_2_value = tk.StringVar()
-        self.toshi_2 = ttk.Combobox(self.toshi_frame, textvariable=self.toshi_2_value)
-        self.toshi_2['values'] = toshis
-        self.toshi_2.current(0)
-        self.toshi_2.grid(column=2, row=3)
-
-        # Label and drop down list
-        toshi_lbl = tk.Label(self.toshi_frame, text="Select TOSHI:", font=TEXT_FONT, bg=self.tab_color, padx=10)
-        toshi_lbl.grid(column=1, row=4, padx=5)
-        self.toshi_3_value = tk.StringVar()
-        self.toshi_3 = ttk.Combobox(self.toshi_frame, textvariable=self.toshi_3_value)
-        self.toshi_3['values'] = toshis
-        self.toshi_3.current(0)
-        self.toshi_3.grid(column=2, row=4)
-
+    # Ensure all options are valid before proceeding to run reports.
     def verify_options(self):
 
         self.run_configs = {}
@@ -385,6 +367,7 @@ class EJ(Page):
 
         return True
 
+    # Kick off creation of reports on a new thread.
     def run_reports(self, event):
         # Verify all options ok
         options_ok = self.verify_options()
@@ -402,6 +385,8 @@ class EJ(Page):
             executor = ThreadPoolExecutor(max_workers=1)
             future = executor.submit(self.create_reports)
 
+    # Load all needed data sets and create an instance of EnvironmentalJustice so that we can
+    # create reports.
     def create_reports(self):
 
         # First, load the ACS datasets needed for analysis (if they haven't already been loaded...)
@@ -530,6 +515,7 @@ class EJ(Page):
         messagebox.showinfo("Environmental Justice Reports Finished", "Please check the output folder for reports.")
         self.reset()
 
+    # The method that automatically selects TOSHIs to report on based on a heuristic in the risk data.
     def choose_toshis(self, df):
         chosen = {}
 
