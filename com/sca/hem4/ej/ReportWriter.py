@@ -21,8 +21,11 @@ import com.sca.hem4.ej.table.CancerPoverty as cancerPovertyModule
 import com.sca.hem4.ej.table.CancerLinguisticIsolation as cancerLinguisticIsolationModule
 
 
+# The class that provides methods for creating/closing workbooks and adding information to them.
 class ReportWriter():
 
+    # Class-level data structure that maintains facility specific workbooks across instances of ReportWriter so that
+    # facility data can be appended as we iterate.
     facility_summary_workbooks = {}
 
     def __init__(self, target_dir, source_cat, source_cat_prefix, radius, facility,
@@ -76,6 +79,7 @@ class ReportWriter():
 
         ReportWriter.init_facility_summaries()
 
+    # Create formats related to font, formatting, etc. that are used in Excel worksheets.
     def create_formats(self, workbook):
         formats = {}
 

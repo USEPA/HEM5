@@ -1,10 +1,10 @@
 from copy import deepcopy
-
 import numpy as np
-
 from com.sca.hem4.ej.data.DataModel import DataModel
 
 
+# A base class from which most other classes in this package inherit. This class provides default functionality for
+# creating worksheet cells that is common to most or all tables.
 class WorksheetTable:
 
     def __init__(self, radius, source_category, facility=None):
@@ -19,6 +19,7 @@ class WorksheetTable:
 
         self.source_category = source_category
 
+    # Create the main cell structure with headings and names, but no data.
     def create_table(self, workbook, formats, values):
         worksheet = workbook.add_worksheet(name=self.get_sheet_name())
         self.worksheet = worksheet
@@ -91,6 +92,7 @@ class WorksheetTable:
 
         self.optional_format(worksheet)
 
+    # Append the actual data.
     def append_data(self, values, worksheet, formats):
 
         data = deepcopy(values)
@@ -120,5 +122,7 @@ class WorksheetTable:
 
         return startrow + numrows
 
+    # This is a method that does nothing in the base class, but can be implemented in sub classes to perform formatting
+    # that is specific to their table. It is called in the base class and will be a no-op if not implemented.
     def optional_format(self, worksheet):
         pass

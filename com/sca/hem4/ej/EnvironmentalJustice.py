@@ -3,6 +3,8 @@ from com.sca.hem4.ej.data.DataModel import DataModel
 from com.sca.hem4.ej.ReportWriter import ReportWriter
 
 
+# The main encapsulation of an EJ run. This class contains all of the details needed to create reports such as:
+# ACS data, receptor data, naming, radius, risk thresholds, facility, and requested TOSHIs.
 class EnvironmentalJustice():
 
     def __init__(self, mir_rec_df, acs_df, levels_df, outputdir, source_cat_name, source_cat_prefix, radius,
@@ -22,11 +24,14 @@ class EnvironmentalJustice():
         self.data_model = DataModel(mir_rec_df=mir_rec_df, acs_df=acs_df, levels_df=levels_df, toshis=requested_toshis,
                                     missing_block_path=missing_block_path, radius=radius, facility=facility)
 
+        # Create a report writer which will use the given details to create workbooks with the appropriate sheets.
         self.report_writer = ReportWriter(target_dir=self.output_dir, source_cat_prefix=self.source_cat_prefix,
                                      source_cat=self.source_cat, radius=self.radius, facility=facility,
                                      cancer_risk_threshold=self.cancer_risk_threshold,
                                      hi_risk_threshold=self.hi_risk_threshold)
 
+    # Create the run group level reports for both cancer and HI. These workbooks contain both tables (i.e. RacialEthnic,
+    # Poverty, Diploma, etc.) and summaries (DGSummary, KCSummary, Elaine).
     def create_reports(self):
 
         # First, create the output path if it doesn't exist
@@ -50,14 +55,16 @@ class EnvironmentalJustice():
                                               max_risk=self.data_model.max_risk[key])
             self.report_writer.close_workbook()
 
+    # Create workbooks for facility specific reports.
     def create_facility_summaries(self):
         # First, create the output path if it doesn't exist
         if not os.path.isdir(self.output_dir):
             os.makedirs(self.output_dir)
 
-        # Create new facility summary workbooks and sheets if necessary
+        # Create new facility summary workbooks
         self.report_writer.create_facility_summaries(toshis=self.requested_toshis)
-        
+
+    # Add (or append to) worksheets for facility specific workbooks.
     def add_facility_summaries(self, run_group_data_model):
         self.report_writer.add_cancer_facility_summaries(national_values=self.data_model.national_bin,
                                                          values=self.data_model.cancer_bins,

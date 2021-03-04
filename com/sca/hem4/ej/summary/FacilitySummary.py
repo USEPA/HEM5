@@ -5,6 +5,7 @@ from com.sca.hem4.ej.data.DataModel import DataModel
 
 class FacilitySummary():
 
+    # Class level data structures that allow for appending facility data to an existing worksheet in the right place.
     sheets = {}
     lines = {}
 
