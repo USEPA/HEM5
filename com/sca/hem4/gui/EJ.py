@@ -339,8 +339,8 @@ class EJ(Page):
                 messagebox.showinfo('Error', "Please ensure all radius and risk values are numbers.")
                 return False
 
-            if radius_value <= 0 or radius_value > 50:
-                messagebox.showinfo('Error', "Please ensure all radius values satisfy 0 < radius <= 50.")
+            if radius_value < 1 or radius_value > 50:
+                messagebox.showinfo('Error', "Please ensure all radius values satisfy 1 <= radius <= 50.")
                 return False
 
             min_max_dist_km = int(self.min_max_dist / 1000)
