@@ -333,10 +333,8 @@ class EJ(Page):
 
             try:
                 radius_value = float(radius_value)
-                cancer_risk_value = int(cancer_risk_value) if cancer_selected else 1
-                hi_risk_value = int(hi_risk_value) if not cancer_selected else 1
             except ValueError:
-                messagebox.showinfo('Error', "Please ensure all radius and risk values are numbers.")
+                messagebox.showinfo('Error', "Please ensure all radius values are numbers.")
                 return False
 
             if radius_value < 1 or radius_value > 50:
@@ -349,15 +347,31 @@ class EJ(Page):
                                     str(min_max_dist_km) + " km. Please ensure all radii are <= this value.")
                 return False
 
-            if cancer_selected and (cancer_risk_value not in [1, 5, 10, 20, 30, 40, 50, 100, 200, 300]):
-                messagebox.showinfo('Error', "Please ensure all cancer risk values are one of the following: " +
-                                    "[1, 5, 10, 20, 30, 40, 50, 100, 200, 300]")
-                return False
+            if cancer_selected:
+                try:
+                    cancer_risk_value = int(cancer_risk_value)
+                except ValueError:
+                    messagebox.showinfo('Error', "Please ensure all cancer risk values are one of the following: " +
+                                        "[1, 5, 10, 20, 30, 40, 50, 100, 200, 300]")
+                    return False
 
-            if not cancer_selected and (hi_risk_value not in [1, 2, 3, 4, 5, 6, 7, 8, 9, 10]):
-                messagebox.showinfo('Error', "Please ensure all HI risk values are one of the following: " +
+                if cancer_risk_value not in [1, 5, 10, 20, 30, 40, 50, 100, 200, 300]:
+                    messagebox.showinfo('Error', "Please ensure all cancer risk values are one of the following: " +
+                                        "[1, 5, 10, 20, 30, 40, 50, 100, 200, 300]")
+                    return False
+
+            if not cancer_selected:
+                try:
+                    hi_risk_value = int(hi_risk_value)
+                except ValueError:
+                    messagebox.showinfo('Error', "Please ensure all HI risk values are one of the following: " +
+                                        "[1, 2, 3, 4, 5, 6, 7, 8, 9, 10]")
+                    return False
+
+                if hi_risk_value not in [1, 2, 3, 4, 5, 6, 7, 8, 9, 10]:
+                    messagebox.showinfo('Error', "Please ensure all HI risk values are one of the following: " +
                                     "[1, 2, 3, 4, 5, 6, 7, 8, 9, 10]")
-                return False
+                    return False
 
             existing = len(self.run_configs)
             self.run_configs[existing] = {'radius': radius_value, 'cancer_risk': cancer_risk_value,
