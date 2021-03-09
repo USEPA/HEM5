@@ -117,9 +117,12 @@ class EJ(Page):
         self.step3 = tk.Label(self.parameters_frame, text="3.", font=TEXT_FONT, bg=self.tab_color, anchor="w")
         self.step3.grid(pady=10, padx=10, row=1, column=0)
 
-        self.step3_instructions = tk.Label(self.parameters_frame, font=TEXT_FONT, bg=self.tab_color,
-                                   text="Choose Radius and Risk Level (reports will be created for each combination.)")
-        self.step3_instructions.grid(row=1, column=1, padx=5, sticky="W", columnspan=4)
+        step3_text = "Choose type of impact (cancer or noncancer) for basis of demographics analysis, the radius " +\
+                     "around each facility to include, and the impact level at which population percentages will " +\
+                     "be calculated. Note: proximity statistics will be included at your specified radius."
+        self.step3_instructions = tk.Label(self.parameters_frame, font=TEXT_FONT, bg=self.tab_color, wraplength=650,
+                                           justify="left", text=step3_text)
+        self.step3_instructions.grid(row=1, column=1, padx=5, sticky="W", columnspan=4, rowspan=3)
 
         self.add_config(radius=50, cancer_risk=1, hi_risk=1)
         self.create_add_config()
@@ -236,7 +239,7 @@ class EJ(Page):
         config_lbl.grid(row=starting_row, column=1, padx=10, sticky="W")
 
         step3a = tk.Label(new_frame, font=SMALL_TEXT_FONT, bg=frame_color,
-                               text="Radius (km):")
+                               text="Radius (km)")
         step3a.grid(row=starting_row, column=2, padx=5, pady=2, sticky="SE")
         radius_num = EntryWithPlaceholder(new_frame, placeholder="<= 50", name="radius")
         radius_num["width"] = 8
@@ -250,7 +253,7 @@ class EJ(Page):
 
         self.radios[frame_name] = tk.IntVar()
         self.radios[frame_name].set(0)
-        cancer_radio = tk.Radiobutton(new_frame, text="Cancer Risk Level        (in a million):", width=26,
+        cancer_radio = tk.Radiobutton(new_frame, text="Cancer Risk Level (in a million)      >=", width=26,
                                       bg=frame_color,font=SMALL_TEXT_FONT, variable=self.radios[frame_name],
                                       name="cancer_radio", command=partial(self.handle_radio, new_frame), value=0)
         cancer_radio.grid(row=starting_row+1, column=2, padx=5, pady=0, sticky="NE")
@@ -259,7 +262,7 @@ class EJ(Page):
             risk_num.set_value(cancer_risk)
         risk_num.grid(row=starting_row+1, column=3, pady=3, sticky="NW")
 
-        hi_radio = tk.Radiobutton(new_frame, text="Noncancer Risk/Hazard Index Level:", width=26,
+        hi_radio = tk.Radiobutton(new_frame, text="Noncancer Hazard Index Level         >", width=26,
                                   bg=frame_color, font=SMALL_TEXT_FONT, variable=self.radios[frame_name],
                                   command=partial(self.handle_radio, new_frame), name="hi_radio", value=1)
         hi_radio.grid(row=starting_row+2, column=2, padx=5, pady=0, sticky="NE")
