@@ -33,26 +33,34 @@ class EnvironmentalJustice():
     # Create the run group level reports for both cancer and HI. These workbooks contain both tables (i.e. RacialEthnic,
     # Poverty, Diploma, etc.) and summaries (DGSummary, KCSummary, Elaine).
     def create_reports(self):
+        self.create_cancer_reports()
+        self.create_hi_reports()
 
+    def create_cancer_reports(self):
         # First, create the output path if it doesn't exist
         if not os.path.isdir(self.output_dir):
             os.makedirs(self.output_dir)
-        
+
         # Create cancer workbook...
         self.report_writer.create_cancer_workbook()
         self.report_writer.create_cancer_tables(values=self.data_model.cancer_bins)
         self.report_writer.create_cancer_summaries(national_values=self.data_model.national_bin,
-                                              values=self.data_model.cancer_bins,
-                                              max_risk=self.data_model.max_risk['mir'])
+                                                   values=self.data_model.cancer_bins,
+                                                   max_risk=self.data_model.max_risk['mir'])
         self.report_writer.close_workbook()
+
+    def create_hi_reports(self):
+        # First, create the output path if it doesn't exist
+        if not os.path.isdir(self.output_dir):
+            os.makedirs(self.output_dir)
 
         # Create all requested TOSHI workbooks
         for key,value in self.requested_toshis.items():
             self.report_writer.create_toshi_workbook(key, value)
             self.report_writer.create_hi_tables(values=self.data_model.toshi_bins[key])
             self.report_writer.create_hi_summaries(national_values=self.data_model.national_bin,
-                                              values=self.data_model.toshi_bins[key],
-                                              max_risk=self.data_model.max_risk[key])
+                                                   values=self.data_model.toshi_bins[key],
+                                                   max_risk=self.data_model.max_risk[key])
             self.report_writer.close_workbook()
 
     # Create workbooks for facility specific reports.

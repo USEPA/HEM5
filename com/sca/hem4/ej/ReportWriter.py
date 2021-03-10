@@ -138,7 +138,7 @@ class ReportWriter():
         date_string = datetime.datetime.now().strftime("%m-%d-%Y")
         facility_name = '' if self.facility is None else self.facility + '_'
         risk = str(self.cancer_risk_threshold) if cancer else str(self.hi_risk_threshold)
-        return os.path.join(self.output_dir, self.source_cat_prefix + '_' + facility_name + str(self.radius) +
+        return os.path.join(self.output_dir, self.source_cat_prefix + '_' + facility_name + str(int(self.radius)) +
                             '_km_' + risk + '_' + hazard_type + '_demo_tables_' + date_string + '.xlsx')
 
     def construct_facility_summary_filename(self, cancer=True, hazard_prefix=None):
@@ -147,7 +147,7 @@ class ReportWriter():
         facility_name = '' if self.facility is None else self.facility + '_'
 
         return os.path.join(self.output_dir, self.source_cat_prefix + '_' + facility_name + 'EJ-Summary_' +
-                            str(self.radius) + '_km_' + hazard_type + date_string + '.xlsx')
+                            str(int(self.radius)) + '_km_' + hazard_type + date_string + '.xlsx')
 
     def create_cancer_summaries(self, national_values, values, max_risk):
         dg_summary = CancerDGSummary(radius=self.radius, source_category=self.source_cat, facility=self.facility)

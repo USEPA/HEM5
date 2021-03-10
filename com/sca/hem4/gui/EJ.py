@@ -353,6 +353,7 @@ class EJ(Page):
             if cancer_selected:
                 try:
                     cancer_risk_value = int(cancer_risk_value)
+                    hi_risk_value = 1
                 except ValueError:
                     messagebox.showinfo('Error', "Please ensure all cancer risk values are one of the following: " +
                                         "[1, 5, 10, 20, 30, 40, 50, 100, 200, 300]")
@@ -366,6 +367,7 @@ class EJ(Page):
             if not cancer_selected:
                 try:
                     hi_risk_value = int(hi_risk_value)
+                    cancer_risk_value = 1
                 except ValueError:
                     messagebox.showinfo('Error', "Please ensure all HI risk values are one of the following: " +
                                         "[1, 2, 3, 4, 5, 6, 7, 8, 9, 10]")
@@ -373,12 +375,12 @@ class EJ(Page):
 
                 if hi_risk_value not in [1, 2, 3, 4, 5, 6, 7, 8, 9, 10]:
                     messagebox.showinfo('Error', "Please ensure all HI risk values are one of the following: " +
-                                    "[1, 2, 3, 4, 5, 6, 7, 8, 9, 10]")
+                                        "[1, 2, 3, 4, 5, 6, 7, 8, 9, 10]")
                     return False
 
             existing = len(self.run_configs)
             self.run_configs[existing] = {'radius': radius_value, 'cancer_risk': cancer_risk_value,
-                                          'hi_risk': hi_risk_value}
+                                          'hi_risk': hi_risk_value, 'cancer_selected': cancer_selected}
 
             self.run_configs[existing]['toshis'] = []
 
@@ -418,7 +420,8 @@ class EJ(Page):
                 self.levels_df = levels.dataframe
         except FileNotFoundError:
             messagebox.showinfo("Missing files",
-                                "Unable to find required ACS data. Please check your HEM4 resources folder and try again.")
+                                "Unable to find required ACS data. Please check your HEM4 resources folder and " +
+                                "try again.")
 
         # Next, create (if doesn't exist) an all receptors file...
         all_receptors = MirHIAllReceptors(targetDir=self.fullpath)
@@ -457,6 +460,9 @@ class EJ(Page):
         for config in self.run_configs.values():
             Logger.logMessage("Creating EJ reports for combination #" + str(config_num))
 
+            # Determine if this config was for cancer or HI
+            cancer_selected = config["cancer_selected"]
+
             # Filter out MIR HI records that are outside the requested radius
             # Note the km to m conversion here!
             maxdist = config["radius"] * 1000
@@ -465,19 +471,21 @@ class EJ(Page):
             Logger.logMessage("Filtered MIR HI All Receptors dataset (radius = " + str(maxdist) + ") contains " +
                               str(len(filtered_mir_hi_df)) + " records.")
 
-            # Infer which TOSHIs to include from the filtered all receptors file
+            # Infer which TOSHIs to include from the filtered all receptors file (if HI selected)
             # should be of this form: {'Deve':'Developmental', 'Neur':'Neurological', ...}
-            toshis = self.choose_toshis(filtered_mir_hi_df)
+            toshis = {} if cancer_selected else self.choose_toshis(filtered_mir_hi_df)
 
             try:
                 ej = EnvironmentalJustice(mir_rec_df=filtered_mir_hi_df, acs_df=self.acs_df, levels_df=self.levels_df,
-                                      outputdir=output_dir, source_cat_name=self.category_name.get_text_value(),
-                                      source_cat_prefix=self.category_prefix.get_text_value(),
-                                      radius=int(config["radius"]), cancer_risk_threshold=int(config["cancer_risk"]),
-                                      hi_risk_threshold=int(config["hi_risk"]), requested_toshis=toshis)
+                                          outputdir=output_dir, source_cat_name=self.category_name.get_text_value(),
+                                          source_cat_prefix=self.category_prefix.get_text_value(),
+                                          radius=config["radius"], requested_toshis=toshis,
+                                          cancer_risk_threshold=config["cancer_risk"],
+                                          hi_risk_threshold=config["hi_risk"])
 
+                # We will create -either- the cancer or HI reports but not both.
+                ej.create_cancer_reports() if cancer_selected else ej.create_hi_reports()
                 ej.create_facility_summaries()
-                ej.create_reports()
             except BaseException as e:
                 print(e)
 
@@ -513,14 +521,16 @@ class EJ(Page):
                     os.mkdir(fac_output_dir)
 
                 try:
-                    fac_ej = EnvironmentalJustice(mir_rec_df=filtered_bsc_df, acs_df=self.acs_df, levels_df=self.levels_df,
-                                          outputdir=fac_output_dir, source_cat_name=self.category_name.get_text_value(),
-                                          source_cat_prefix=self.category_prefix.get_text_value(), radius=int(config["radius"]),
-                                          cancer_risk_threshold=int(config["cancer_risk"]),
-                                          hi_risk_threshold=int(config["hi_risk"]), requested_toshis=toshis,
-                                          facility=facilityId)
+                    fac_ej = EnvironmentalJustice(facility=facilityId, mir_rec_df=filtered_bsc_df, acs_df=self.acs_df,
+                                                  levels_df=self.levels_df, outputdir=fac_output_dir,
+                                                  source_cat_name=self.category_name.get_text_value(),
+                                                  source_cat_prefix=self.category_prefix.get_text_value(),
+                                                  radius=config["radius"], requested_toshis=toshis,
+                                                  cancer_risk_threshold=config["cancer_risk"],
+                                                  hi_risk_threshold=config["hi_risk"])
 
-                    fac_ej.create_reports()
+                    # We will create -either- the cancer or HI reports but not both.
+                    fac_ej.create_cancer_reports() if cancer_selected else fac_ej.create_hi_reports()
                     fac_ej.add_facility_summaries(run_group_data_model=ej.data_model)
                 except BaseException as e:
                     print(e)
@@ -540,11 +550,25 @@ class EJ(Page):
                   hi_ocul:'Ocul', hi_endo:'Endo', hi_hema:'Hemo', hi_immu:'Immu', hi_skel:'Skel', hi_sple:'Sple',
                   hi_thyr:'Thyr', hi_whol:'Whol'}
 
+        max_value = 0
+        max_toshi = None
         for toshi in toshis:
+
+            # Keep track of the max in case we need to fall back on it
+            max = df[toshi].max()
+            if max > max_value:
+                max_value = max
+                max_toshi = toshi
+
             df_new = df[df[toshi] >= 1.5]
             if len(df_new) > 0:
                 prefix = toshis[toshi]
                 chosen[prefix] = self.toshis[prefix]
+
+        # Fall back on the max TOSHI if none met the default threshold
+        if len(chosen) == 0:
+            prefix = toshis[max_toshi]
+            chosen[prefix] = self.toshis[prefix]
 
         Logger.logMessage("TOSHIs chosen: ")
         Logger.logMessage(', '.join(list(chosen.values())))

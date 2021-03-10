@@ -400,7 +400,8 @@ class DataModel():
 
     def write_missing_block_groups(self):
         if len(self.missing_block_groups) > 0:
-            filepath = os.path.join(self.missing_block_group_path, str(self.radius) + '_km_missing_block_groups.txt')
+            filepath = os.path.join(self.missing_block_group_path, str(int(self.radius)) +
+                                    '_km_missing_block_groups.txt')
             Logger.logMessage("Writing missing block group file: " + str(filepath))
 
             with open(filepath, 'w') as f:
