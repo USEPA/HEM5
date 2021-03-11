@@ -73,15 +73,17 @@ class EnvironmentalJustice():
         self.report_writer.create_facility_summaries(toshis=self.requested_toshis)
 
     # Add (or append to) worksheets for facility specific workbooks.
-    def add_facility_summaries(self, run_group_data_model):
-        self.report_writer.add_cancer_facility_summaries(national_values=self.data_model.national_bin,
-                                                         values=self.data_model.cancer_bins,
-                                                         run_group_values=run_group_data_model.cancer_bins)
+    def add_facility_summaries(self, run_group_data_model, cancer_selected):
 
-        self.report_writer.add_hi_facility_summaries(national_values=self.data_model.national_bin,
-                                                     values=self.data_model.toshi_bins,
-                                                     run_group_values=run_group_data_model.toshi_bins,
-                                                     toshis=self.requested_toshis)
+        if cancer_selected:
+            self.report_writer.add_cancer_facility_summaries(national_values=self.data_model.national_bin,
+                                                             values=self.data_model.cancer_bins,
+                                                             run_group_values=run_group_data_model.cancer_bins)
+        else:
+            self.report_writer.add_hi_facility_summaries(national_values=self.data_model.national_bin,
+                                                         values=self.data_model.toshi_bins,
+                                                         run_group_values=run_group_data_model.toshi_bins,
+                                                         toshis=self.requested_toshis)
 
     def close_facility_summaries(self):
         self.report_writer.close_all_workbooks()

@@ -530,10 +530,9 @@ class EJ(Page):
 
                     # We will create -either- the cancer or HI reports but not both.
                     fac_ej.create_cancer_reports() if cancer_selected else fac_ej.create_hi_reports()
-                    fac_ej.add_facility_summaries(run_group_data_model=ej.data_model)
+                    fac_ej.add_facility_summaries(run_group_data_model=ej.data_model, cancer_selected=cancer_selected)
                 except BaseException as e:
                     traceback.print_exc()
-                    #print(e)
 
             config_num += 1
 
