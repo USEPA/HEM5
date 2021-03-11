@@ -188,28 +188,34 @@ class ReportWriter():
         ReportWriter.facility_summary_workbooks = {}
 
     # Create facility summary workbooks as needed that will eventually be populated with facility summary data
-    def create_facility_summaries(self, toshis):
+    def create_facility_summaries(self, toshis, cancer_selected):
 
-        if self.radius not in ReportWriter.facility_summary_workbooks.keys():
+        workbook_key = str(self.radius) + ("cancer" if cancer_selected else "hi")
+        if workbook_key not in ReportWriter.facility_summary_workbooks.keys():
             # Create workbooks for this radius/risk combination. Note that the class-level data
             # structure that stores workbooks ("facility_summary_workbooks") is keyed by radius and contains a list
             # that looks like this: [cancer_workbook, toshi_1_workbook, toshi_2_workbook, ...]
             workbooks = []
-            cancer_filename = self.construct_facility_summary_filename(cancer=True)
-            new_workbook = xlsxwriter.Workbook(cancer_filename)
-            self.create_formats(new_workbook)
-            workbooks.append(new_workbook)
-            for toshi in toshis:
-                toshi_filename = self.construct_facility_summary_filename(cancer=False, hazard_prefix=toshi)
-                new_workbook = xlsxwriter.Workbook(toshi_filename)
+
+            if cancer_selected:
+                cancer_filename = self.construct_facility_summary_filename(cancer=True)
+                new_workbook = xlsxwriter.Workbook(cancer_filename)
                 self.create_formats(new_workbook)
                 workbooks.append(new_workbook)
 
-            ReportWriter.facility_summary_workbooks[self.radius] = workbooks
+            if not cancer_selected:
+                for toshi in toshis:
+                    toshi_filename = self.construct_facility_summary_filename(cancer=False, hazard_prefix=toshi)
+                    new_workbook = xlsxwriter.Workbook(toshi_filename)
+                    self.create_formats(new_workbook)
+                    workbooks.append(new_workbook)
+
+            ReportWriter.facility_summary_workbooks[workbook_key] = workbooks
 
     def add_cancer_facility_summaries(self, national_values, values, run_group_values):
-        # Retrieve the workbooks that correspond to this radius
-        workbook = ReportWriter.facility_summary_workbooks[self.radius][0]
+        # Retrieve the workbook that corresponds to this radius
+        workbook_key = str(self.radius) + "cancer"
+        workbook = ReportWriter.facility_summary_workbooks[workbook_key][0]
         formats = self.create_formats(workbook)
 
         # For each workbook, add an appropriately named sheet if it doesn't exist
@@ -223,11 +229,12 @@ class ReportWriter():
 
     def add_hi_facility_summaries(self, national_values, values, run_group_values, toshis):
 
-        toshi_index = 1
+        toshi_index = 0
         # toshis data structure has key/value pairs corresponding to prefix / hazard name
         for key,value in toshis.items():
             # Retrieve the workbook that corresponds to this radius / toshi
-            workbook = ReportWriter.facility_summary_workbooks[self.radius][toshi_index]
+            workbook_key = str(self.radius) + "hi"
+            workbook = ReportWriter.facility_summary_workbooks[workbook_key][toshi_index]
             formats = self.create_formats(workbook)
 
             # For each workbook, add an appropriately named sheet if it doesn't exist

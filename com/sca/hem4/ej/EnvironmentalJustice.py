@@ -64,13 +64,13 @@ class EnvironmentalJustice():
             self.report_writer.close_workbook()
 
     # Create workbooks for facility specific reports.
-    def create_facility_summaries(self):
+    def create_facility_summaries(self, cancer_selected):
         # First, create the output path if it doesn't exist
         if not os.path.isdir(self.output_dir):
             os.makedirs(self.output_dir)
 
         # Create new facility summary workbooks
-        self.report_writer.create_facility_summaries(toshis=self.requested_toshis)
+        self.report_writer.create_facility_summaries(toshis=self.requested_toshis, cancer_selected=cancer_selected)
 
     # Add (or append to) worksheets for facility specific workbooks.
     def add_facility_summaries(self, run_group_data_model, cancer_selected):

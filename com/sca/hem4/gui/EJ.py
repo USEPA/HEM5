@@ -486,7 +486,7 @@ class EJ(Page):
 
                 # We will create -either- the cancer or HI reports but not both.
                 ej.create_cancer_reports() if cancer_selected else ej.create_hi_reports()
-                ej.create_facility_summaries()
+                ej.create_facility_summaries(cancer_selected=cancer_selected)
             except BaseException as e:
                 print(e)
 
