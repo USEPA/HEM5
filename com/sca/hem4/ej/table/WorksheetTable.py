@@ -8,7 +8,7 @@ from com.sca.hem4.ej.data.DataModel import DataModel
 class WorksheetTable:
 
     def __init__(self, radius, source_category, facility=None):
-        self.radius = str(radius)
+        self.radius = str(int(radius) if radius.is_integer() else radius)
         self.facility = facility
 
         # The identifier controls the table name (and sheet) prefix. It depends on cancer (or not) and radius.

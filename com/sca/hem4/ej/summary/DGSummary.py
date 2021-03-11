@@ -8,7 +8,7 @@ from com.sca.hem4.ej.data.DataModel import DataModel
 class DGSummary():
 
     def __init__(self, radius, source_category, facility):
-        self.radius = str(radius)
+        self.radius = str(int(radius) if radius.is_integer() else radius)
         self.source_category = source_category
         self.facility = facility
         self.active_columns = [0, 1, 14, 2, 3, 4, 5, 6, 7, 8, 11, 9, 10, 13]

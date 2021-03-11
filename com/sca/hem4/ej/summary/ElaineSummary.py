@@ -10,7 +10,7 @@ class ElaineSummary():
     def __init__(self, radius, cancer_risk_threshold, hi_risk_threshold, source_category):
         self.cancer_risk_threshold = str(cancer_risk_threshold)
         self.hi_risk_threshold = str(hi_risk_threshold)
-        self.radius = str(radius)
+        self.radius = str(int(radius) if radius.is_integer() else radius)
         self.active_columns = [0, 1, 2, 3, 4, 5, 6, 7, 8, 11, 10, 13, 14]
 
     def create_summary(self, workbook, formats, national_values, values):

@@ -142,7 +142,7 @@ class ReportWriter():
                             '_km_' + risk + '_' + hazard_type + '_demo_tables_' + date_string + '.xlsx')
 
     def construct_facility_summary_filename(self, cancer=True, hazard_prefix=None):
-        hazard_type = '_Cancer_' if cancer else hazard_prefix + '_Noncancer_'
+        hazard_type = 'Cancer_' if cancer else hazard_prefix + '_Noncancer_'
         date_string = datetime.datetime.now().strftime("%m-%d-%Y")
         facility_name = '' if self.facility is None else self.facility + '_'
 
@@ -217,15 +217,16 @@ class ReportWriter():
                                                    cancer_risk_threshold=self.cancer_risk_threshold,
                                                    hi_risk_threshold=self.hi_risk_threshold,
                                                    source_category=self.source_cat)
-        cancer_fac_summary.create_summary(workbook=workbook, hazard_name=self.hazard_name, formats=formats,
+        cancer_fac_summary.create_summary(workbook=workbook, hazard_name=None, formats=formats,
                                           national_values=national_values, values=values,
                                           run_group_values=run_group_values)
 
     def add_hi_facility_summaries(self, national_values, values, run_group_values, toshis):
 
         toshi_index = 1
-        for toshi in toshis:
-            # Retrieve the workbook that correspond to this radius / toshi
+        # toshis data structure has key/value pairs corresponding to prefix / hazard name
+        for key,value in toshis.items():
+            # Retrieve the workbook that corresponds to this radius / toshi
             workbook = ReportWriter.facility_summary_workbooks[self.radius][toshi_index]
             formats = self.create_formats(workbook)
 
@@ -234,9 +235,9 @@ class ReportWriter():
                                                cancer_risk_threshold=self.cancer_risk_threshold,
                                                hi_risk_threshold=self.hi_risk_threshold,
                                                source_category=self.source_cat)
-            hi_fac_summary.create_summary(workbook=workbook, hazard_name=self.hazard_name, formats=formats,
-                                      national_values=national_values, values=values[toshi],
-                                          run_group_values=run_group_values[toshi])
+            hi_fac_summary.create_summary(workbook=workbook, hazard_name=value, formats=formats,
+                                      national_values=national_values, values=values[key],
+                                          run_group_values=run_group_values[key])
 
             toshi_index += 1
 

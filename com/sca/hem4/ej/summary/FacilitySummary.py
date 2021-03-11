@@ -13,7 +13,7 @@ class FacilitySummary():
         self.facilityId = facilityId
         self.cancer_risk_threshold = str(cancer_risk_threshold)
         self.hi_risk_threshold = str(hi_risk_threshold)
-        self.radius = str(radius)
+        self.radius = str(int(radius) if radius.is_integer() else radius)
         self.source_category = source_category
         self.active_columns = [0, 14, 2, 3, 4, 5, 6, 7, 8, 11, 10, 13]
 

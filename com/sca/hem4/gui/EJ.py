@@ -1,4 +1,5 @@
 import os
+import traceback
 from concurrent.futures.thread import ThreadPoolExecutor
 from tkinter import messagebox
 
@@ -471,9 +472,9 @@ class EJ(Page):
             Logger.logMessage("Filtered MIR HI All Receptors dataset (radius = " + str(maxdist) + ") contains " +
                               str(len(filtered_mir_hi_df)) + " records.")
 
-            # Infer which TOSHIs to include from the filtered all receptors file (if HI selected)
+            # Infer which TOSHIs to include from the filtered all receptors file
             # should be of this form: {'Deve':'Developmental', 'Neur':'Neurological', ...}
-            toshis = {} if cancer_selected else self.choose_toshis(filtered_mir_hi_df)
+            toshis = self.choose_toshis(filtered_mir_hi_df)
 
             try:
                 ej = EnvironmentalJustice(mir_rec_df=filtered_mir_hi_df, acs_df=self.acs_df, levels_df=self.levels_df,
@@ -513,8 +514,6 @@ class EJ(Page):
                 Logger.logMessage("Filtered BlockSummaryChronic dataset (radius = " + str(maxdist) + ") contains " +
                                   str(len(filtered_bsc_df)) + " records.")
 
-                # fac_toshis = self.choose_toshis(filtered_bsc_df)
-
                 fac_output_dir = os.path.join(output_dir, facilityId)
                 if not (os.path.exists(fac_output_dir) or os.path.isdir(fac_output_dir)):
                     Logger.logMessage("Creating ej subdirectory for facility results...")
@@ -533,7 +532,8 @@ class EJ(Page):
                     fac_ej.create_cancer_reports() if cancer_selected else fac_ej.create_hi_reports()
                     fac_ej.add_facility_summaries(run_group_data_model=ej.data_model)
                 except BaseException as e:
-                    print(e)
+                    traceback.print_exc()
+                    #print(e)
 
             config_num += 1
 
