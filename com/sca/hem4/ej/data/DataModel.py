@@ -1,6 +1,8 @@
 import os
 from math import *
 from pandas import isna
+
+from com.sca.hem4.CensusBlocks import fips
 from com.sca.hem4.log import Logger
 
 class DataModel():
@@ -24,6 +26,18 @@ class DataModel():
 
         self.hazards_df = mir_rec_df
 
+        # Prepare the county and tract info...
+        Logger.logMessage("Indexing county and tract information...")
+
+        # Start by filtering out state records...we only want the 5 digit county records.
+        counties_df = levels_df[levels_df["ID"].str.len() == 5]
+
+        county_list = self.hazards_df[fips].unique()
+        self.county_df = counties_df[counties_df["ID"].isin(county_list)]
+
+        state_list = list(set([county[:2] for county in county_list]))
+        self.state_df = counties_df[counties_df["ID"].str[:2].isin(state_list)]
+
         self.acs_df = acs_df
         self.acs_df.index = self.acs_df['STCNTRBG']
         self.acs_dict = self.acs_df.to_dict(orient='index')
@@ -33,6 +47,8 @@ class DataModel():
         self.levels_dict = self.levels_df.to_dict(orient='index')
 
         self.create_national_bin()
+        self.create_state_bin()
+        self.create_county_bin()
         self.create_bins()
         self.write_missing_block_groups()
 
@@ -74,6 +90,46 @@ class DataModel():
         self.national_bin[1][10] = 0.123000001
         self.national_bin[0][10] = 0.123000001 * self.national_bin[0][9]
 
+    def create_state_bin(self):
+        # Create state bin and tabulate population weighted demographic stats for each sub group.
+        self.state_bin = [ [0]*16 for _ in range(2) ]
+        self.state_df.apply(lambda row: self.tabulate_state_data(row), axis=1)
+
+        # Calculate averages by dividing population for each sub group
+        for index in range(1, 16):
+            self.state_bin[1][index] = self.state_bin[1][index] / (100 * self.state_bin[0][index])
+
+        self.state_bin[0][15] = self.state_bin[0][0] * self.state_bin[1][15]
+        for index in range(1, 15):
+            if index == 10:
+                self.state_bin[0][index] = self.state_bin[0][9] * self.state_bin[1][index]
+            elif index in [11, 12]:
+                self.state_bin[0][index] = self.state_bin[0][15] * self.state_bin[1][index]
+            else:
+                self.state_bin[0][index] = self.state_bin[0][0] * self.state_bin[1][index]
+
+        self.state_bin[1][0] = ""
+
+    def create_county_bin(self):
+        # Create county bin and tabulate population weighted demographic stats for each sub group.
+        self.county_bin = [ [0]*16 for _ in range(2) ]
+        self.county_df.apply(lambda row: self.tabulate_county_data(row), axis=1)
+
+        # Calculate averages by dividing population for each sub group
+        for index in range(1, 16):
+            self.county_bin[1][index] = self.county_bin[1][index] / (100 * self.county_bin[0][index])
+
+        self.county_bin[0][15] = self.county_bin[0][0] * self.county_bin[1][15]
+        for index in range(1, 15):
+            if index == 10:
+                self.county_bin[0][index] = self.county_bin[0][9] * self.county_bin[1][index]
+            elif index in [11, 12]:
+                self.county_bin[0][index] = self.county_bin[0][15] * self.county_bin[1][index]
+            else:
+                self.county_bin[0][index] = self.county_bin[0][0] * self.county_bin[1][index]
+
+        self.county_bin[1][0] = ""
+        
     def create_bins(self):
         # Create cancer bins and tabulate the risk based on the mir column. Note that there are 15 sub groups (columns)
         # and 13 rows, which correspond to 11 risk bins + total + average.
@@ -183,6 +239,144 @@ class DataModel():
             self.national_bin[1][14] += pct_minority * population
             self.national_bin[0][14] += population
 
+    def tabulate_state_data(self, row):
+
+        population = row['TOTALPOP']
+        pct_minority = row['PCT_MINORITY']
+        pct_white = row['PCT_NON_HISP_WHITE']
+        pct_black = row['PCT_NON_HISP_BLACK']
+        pct_amerind = row['PCT_NON_HISP_AMERIND']
+        pct_hawpac = row['PCT_HAWPAC']
+        pct_asian = row['PCT_ASIAN']
+        pct_other = row['PCT_NON_HISP_OTHER']
+        pct_twomore = row['PCT_TWOMORE']
+        pct_hisp = row['PCT_HISP']
+        pct_age_lt18 = row['PCT_AGE_LT18']
+        pct_age_gt64 = row['PCT_AGE_GT64']
+        edu_universe = row['EDU_UNIVERSE']
+        pct_edu_lths = row['PCT_EDU_LTHS']
+        pov_universe = row['POV_UNIVERSE_FRT']
+        pct_pov_lt50 = row['PCT_INC_POV_LT50']
+        pct_pov_50_99 = row['PCT_INC_POV_50TO99']
+        pct_lowinc = row['PCT_LOWINC']
+        pct_lingiso = row['PCT_LINGISO']
+
+        self.state_bin[0][0] += population
+        if not isna(pct_minority):
+            self.state_bin[1][1] += pct_white * population
+            self.state_bin[0][1] += population
+        if not isna(pct_black):
+            self.state_bin[1][2] += pct_black * population
+            self.state_bin[0][2] += population
+        if not isna((pct_amerind)):
+            self.state_bin[1][3] += pct_amerind * population
+            self.state_bin[0][3] += population
+        if not isna(pct_other) and not isna(pct_asian) and not isna(pct_hawpac) and not isna(pct_twomore):
+            self.state_bin[1][4] += pct_other * population
+            self.state_bin[0][4] += population
+        if not isna(pct_hisp):
+            self.state_bin[1][5] += pct_hisp * population
+            self.state_bin[0][5] += population
+        if not isna(pct_age_lt18):
+            self.state_bin[1][6] += pct_age_lt18 * population
+            self.state_bin[0][6] += population
+        if not isna(pct_age_gt64):
+            self.state_bin[1][8] += pct_age_gt64 * population
+            self.state_bin[0][8] += population
+        if not isna(pct_age_lt18) and not isna(pct_age_gt64):
+            self.state_bin[1][7] += (100 - pct_age_gt64 - pct_age_lt18) * population
+            self.state_bin[0][7] += population
+        if not isna(edu_universe):
+            self.state_bin[1][9] += edu_universe * 100
+            self.state_bin[0][9] += population
+        if not isna(pov_universe):
+            self.state_bin[1][15] += pov_universe * 100
+            self.state_bin[0][15] += population
+        if not isna(edu_universe) and not isna(pct_edu_lths):
+            self.state_bin[1][10] += pct_edu_lths * edu_universe
+            self.state_bin[0][10] += edu_universe
+        if not isna(pov_universe) and not isna(pct_pov_lt50) and not isna(pct_pov_50_99):
+            self.state_bin[1][11] += (pct_pov_lt50 + pct_pov_50_99) * pov_universe
+            self.state_bin[0][11] += pov_universe
+        if not isna(pov_universe) and not isna(pct_lowinc):
+            self.state_bin[1][12] += pct_lowinc * pov_universe
+            self.state_bin[0][12] += pov_universe
+        if not isna(pct_lingiso):
+            self.state_bin[1][13] += pct_lingiso * population
+            self.state_bin[0][13] += population
+        if not isna(pct_minority):
+            self.state_bin[1][14] += pct_minority * population
+            self.state_bin[0][14] += population
+
+    def tabulate_county_data(self, row):
+
+        population = row['TOTALPOP']
+        pct_minority = row['PCT_MINORITY']
+        pct_white = row['PCT_NON_HISP_WHITE']
+        pct_black = row['PCT_NON_HISP_BLACK']
+        pct_amerind = row['PCT_NON_HISP_AMERIND']
+        pct_hawpac = row['PCT_HAWPAC']
+        pct_asian = row['PCT_ASIAN']
+        pct_other = row['PCT_NON_HISP_OTHER']
+        pct_twomore = row['PCT_TWOMORE']
+        pct_hisp = row['PCT_HISP']
+        pct_age_lt18 = row['PCT_AGE_LT18']
+        pct_age_gt64 = row['PCT_AGE_GT64']
+        edu_universe = row['EDU_UNIVERSE']
+        pct_edu_lths = row['PCT_EDU_LTHS']
+        pov_universe = row['POV_UNIVERSE_FRT']
+        pct_pov_lt50 = row['PCT_INC_POV_LT50']
+        pct_pov_50_99 = row['PCT_INC_POV_50TO99']
+        pct_lowinc = row['PCT_LOWINC']
+        pct_lingiso = row['PCT_LINGISO']
+
+        self.county_bin[0][0] += population
+        if not isna(pct_minority):
+            self.county_bin[1][1] += pct_white * population
+            self.county_bin[0][1] += population
+        if not isna(pct_black):
+            self.county_bin[1][2] += pct_black * population
+            self.county_bin[0][2] += population
+        if not isna((pct_amerind)):
+            self.county_bin[1][3] += pct_amerind * population
+            self.county_bin[0][3] += population
+        if not isna(pct_other) and not isna(pct_asian) and not isna(pct_hawpac) and not isna(pct_twomore):
+            self.county_bin[1][4] += pct_other * population
+            self.county_bin[0][4] += population
+        if not isna(pct_hisp):
+            self.county_bin[1][5] += pct_hisp * population
+            self.county_bin[0][5] += population
+        if not isna(pct_age_lt18):
+            self.county_bin[1][6] += pct_age_lt18 * population
+            self.county_bin[0][6] += population
+        if not isna(pct_age_gt64):
+            self.county_bin[1][8] += pct_age_gt64 * population
+            self.county_bin[0][8] += population
+        if not isna(pct_age_lt18) and not isna(pct_age_gt64):
+            self.county_bin[1][7] += (100 - pct_age_gt64 - pct_age_lt18) * population
+            self.county_bin[0][7] += population
+        if not isna(edu_universe):
+            self.county_bin[1][9] += edu_universe * 100
+            self.county_bin[0][9] += population
+        if not isna(pov_universe):
+            self.county_bin[1][15] += pov_universe * 100
+            self.county_bin[0][15] += population
+        if not isna(edu_universe) and not isna(pct_edu_lths):
+            self.county_bin[1][10] += pct_edu_lths * edu_universe
+            self.county_bin[0][10] += edu_universe
+        if not isna(pov_universe) and not isna(pct_pov_lt50) and not isna(pct_pov_50_99):
+            self.county_bin[1][11] += (pct_pov_lt50 + pct_pov_50_99) * pov_universe
+            self.county_bin[0][11] += pov_universe
+        if not isna(pov_universe) and not isna(pct_lowinc):
+            self.county_bin[1][12] += pct_lowinc * pov_universe
+            self.county_bin[0][12] += pov_universe
+        if not isna(pct_lingiso):
+            self.county_bin[1][13] += pct_lingiso * population
+            self.county_bin[0][13] += population
+        if not isna(pct_minority):
+            self.county_bin[1][14] += pct_minority * population
+            self.county_bin[0][14] += population
+            
     def tabulate_toshi_data(self, row):
 
         # Identify the block group corresponding to this row.

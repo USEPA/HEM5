@@ -45,6 +45,8 @@ class EnvironmentalJustice():
         self.report_writer.create_cancer_workbook()
         self.report_writer.create_cancer_tables(values=self.data_model.cancer_bins)
         self.report_writer.create_cancer_summaries(national_values=self.data_model.national_bin,
+                                                   state_values=self.data_model.state_bin,
+                                                   county_values=self.data_model.county_bin,
                                                    values=self.data_model.cancer_bins,
                                                    max_risk=self.data_model.max_risk['mir'])
         self.report_writer.close_workbook()
@@ -59,6 +61,8 @@ class EnvironmentalJustice():
             self.report_writer.create_toshi_workbook(key, value)
             self.report_writer.create_hi_tables(values=self.data_model.toshi_bins[key])
             self.report_writer.create_hi_summaries(national_values=self.data_model.national_bin,
+                                                   state_values=self.data_model.state_bin,
+                                                   county_values=self.data_model.county_bin,
                                                    values=self.data_model.toshi_bins[key],
                                                    max_risk=self.data_model.max_risk[key])
             self.report_writer.close_workbook()
@@ -77,10 +81,14 @@ class EnvironmentalJustice():
 
         if cancer_selected:
             self.report_writer.add_cancer_facility_summaries(national_values=self.data_model.national_bin,
+                                                             state_values=self.data_model.state_bin,
+                                                             county_values=self.data_model.county_bin,
                                                              values=self.data_model.cancer_bins,
                                                              run_group_values=run_group_data_model.cancer_bins)
         else:
             self.report_writer.add_hi_facility_summaries(national_values=self.data_model.national_bin,
+                                                         state_values=self.data_model.state_bin,
+                                                         county_values=self.data_model.county_bin,
                                                          values=self.data_model.toshi_bins,
                                                          run_group_values=run_group_data_model.toshi_bins,
                                                          toshis=self.requested_toshis)

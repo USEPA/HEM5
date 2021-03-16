@@ -149,39 +149,45 @@ class ReportWriter():
         return os.path.join(self.output_dir, self.source_cat_prefix + '_' + facility_name + 'EJ-Summary_' +
                             str(int(self.radius)) + '_km_' + hazard_type + date_string + '.xlsx')
 
-    def create_cancer_summaries(self, national_values, values, max_risk):
+    def create_cancer_summaries(self, national_values, state_values, county_values, values, max_risk):
         dg_summary = CancerDGSummary(radius=self.radius, source_category=self.source_cat, facility=self.facility)
         dg_summary.create_summary(workbook=self.workbook, formats=self.formats,
-                                  national_values=national_values, values=values)
+                                  national_values=national_values, state_values=state_values,
+                                  county_values=county_values, values=values)
 
         kc_summary = CancerKCSummary(radius=self.radius, cancer_risk_threshold=self.cancer_risk_threshold,
                                      hi_risk_threshold=self.hi_risk_threshold, source_category=self.source_cat,
                                      facility=self.facility)
         kc_summary.create_summary(workbook=self.workbook, formats=self.formats,
-                                  national_values=national_values, values=values, max_value=max_risk)
+                                  national_values=national_values, state_values=state_values,
+                                  county_values=county_values, values=values, max_value=max_risk)
 
         elaine_summary = CancerElaineSummary(radius=self.radius, cancer_risk_threshold=self.cancer_risk_threshold,
                                              hi_risk_threshold=self.hi_risk_threshold, source_category=self.source_cat,
                                              facility=self.facility)
         elaine_summary.create_summary(workbook=self.workbook, formats=self.formats,
-                                      national_values=national_values, values=values)
+                                      national_values=national_values, state_values=state_values,
+                                      county_values=county_values, values=values)
 
-    def create_hi_summaries(self, national_values, values, max_risk):
+    def create_hi_summaries(self, national_values, state_values, county_values, values, max_risk):
         dg_summary = HiDGSummary(radius=self.radius, source_category=self.source_cat, facility=self.facility)
         dg_summary.create_summary(workbook=self.workbook, hazard_name=self.hazard_name,
-                                  formats=self.formats, national_values=national_values, values=values)
+                                  formats=self.formats, national_values=national_values,
+                                  state_values=state_values, county_values=county_values, values=values)
 
         kc_summary = HiKCSummary(radius=self.radius, cancer_risk_threshold=self.cancer_risk_threshold,
                                  hi_risk_threshold=self.hi_risk_threshold, source_category=self.source_cat,
                                  facility=self.facility)
         kc_summary.create_summary(workbook=self.workbook, hazard_name=self.hazard_name, formats=self.formats,
-                                  national_values=national_values, values=values, max_value=max_risk)
+                                  national_values=national_values, state_values=state_values,
+                                  county_values=county_values, values=values, max_value=max_risk)
 
         elaine_summary = HiElaineSummary(radius=self.radius, cancer_risk_threshold=self.cancer_risk_threshold,
                                          hi_risk_threshold=self.hi_risk_threshold, source_category=self.source_cat,
                                          hazard_name=self.hazard_name, facility=self.facility)
         elaine_summary.create_summary(workbook=self.workbook, formats=self.formats,
-                                      national_values=national_values, values=values)
+                                      national_values=national_values, state_values=state_values,
+                                      county_values=county_values, values=values)
 
     @staticmethod
     def init_facility_summaries():
@@ -212,7 +218,7 @@ class ReportWriter():
 
             ReportWriter.facility_summary_workbooks[workbook_key] = workbooks
 
-    def add_cancer_facility_summaries(self, national_values, values, run_group_values):
+    def add_cancer_facility_summaries(self, national_values, state_values, county_values, values, run_group_values):
         # Retrieve the workbook that corresponds to this radius
         workbook_key = str(self.radius) + "cancer"
         workbook = ReportWriter.facility_summary_workbooks[workbook_key][0]
@@ -224,10 +230,11 @@ class ReportWriter():
                                                    hi_risk_threshold=self.hi_risk_threshold,
                                                    source_category=self.source_cat)
         cancer_fac_summary.create_summary(workbook=workbook, hazard_name=None, formats=formats,
-                                          national_values=national_values, values=values,
+                                          national_values=national_values, state_values=state_values,
+                                          county_values=county_values, values=values,
                                           run_group_values=run_group_values)
 
-    def add_hi_facility_summaries(self, national_values, values, run_group_values, toshis):
+    def add_hi_facility_summaries(self, national_values, state_values, county_values, values, run_group_values, toshis):
 
         toshi_index = 0
         # toshis data structure has key/value pairs corresponding to prefix / hazard name
@@ -243,7 +250,8 @@ class ReportWriter():
                                                hi_risk_threshold=self.hi_risk_threshold,
                                                source_category=self.source_cat)
             hi_fac_summary.create_summary(workbook=workbook, hazard_name=value, formats=formats,
-                                      national_values=national_values, values=values[key],
+                                          national_values=national_values, state_values=state_values,
+                                          county_values=county_values, values=values[key],
                                           run_group_values=run_group_values[key])
 
             toshi_index += 1

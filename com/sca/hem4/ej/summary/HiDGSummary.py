@@ -10,7 +10,9 @@ class HiDGSummary(DGSummary):
 
     def get_notes(self):
         return 'Notes:\n\n' + \
-               '\u1D43Distributions by race, ethnicity, age, education, income and linguistic isolation are based on ' + \
+               '\u1D43Total nationwide population includes all 50 states plus Puerto Rico. Total state and county ' + \
+               'populations include any states and counties, respectively, within the study area radius of any modeled ' + \
+               'facility.\nDistributions by race, ethnicity, age, education, income and linguistic isolation are based on ' + \
                'demographic information at the census block group level. ' + self.hazard_name + ' hazard indices from ' + \
                self.source_category + ' emissions are modeled at the census block level.\n' + \
                '\u1D47The minority population includes people identifying as African American, Native American, Other ' + \

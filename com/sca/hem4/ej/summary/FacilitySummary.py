@@ -22,7 +22,8 @@ class FacilitySummary():
         FacilitySummary.sheets = {}
         FacilitySummary.lines = {}
 
-    def create_summary(self, workbook, formats, national_values, values, run_group_values, hazard_name=None):
+    def create_summary(self, workbook, formats, national_values, state_values, county_values, values, run_group_values,
+                       hazard_name=None):
 
         self.hazard_name = hazard_name
 
@@ -68,27 +69,31 @@ class FacilitySummary():
             # Create column headers
             worksheet.merge_range("A2:A3", 'Population Basis',  formats['sub_header_2'])
             worksheet.write(3, 0, 'Nationwide')
+            worksheet.write(4, 0, 'State')
+            worksheet.write(5, 0, 'County')
             worksheet.merge_range("B2:N2", 'Demographic Group',  formats['sub_header_3'])
 
             worksheet.set_row(2, 60, formats['sub_header_2'])
             for col_num, data in enumerate(column_headers):
                 worksheet.write(2, col_num+1, data)
 
-            worksheet.merge_range("A5:N5", '')
+            worksheet.merge_range("A7:N7", '')
 
-            worksheet.merge_range("A6:A7", self.source_category, formats['sub_header_1'])
-            worksheet.write(5, 1, 'Proximity')
-            worksheet.write(6, 1, self.get_risk_label())
+            worksheet.merge_range("A8:A9", self.source_category, formats['sub_header_1'])
+            worksheet.write(7, 1, 'Proximity')
+            worksheet.write(8, 1, self.get_risk_label())
 
-            next_line = 6
+            next_line = 8
             self.append_data(run_group_values, worksheet, formats, next_line-1)
 
-            worksheet.merge_range("A8:N8", '')
+            worksheet.merge_range("A10:N10", '')
 
-            self.append_national_data(national_values, worksheet, formats)
+            self.append_aggregated_data(national_values, worksheet, formats, 3)
+            self.append_aggregated_data(state_values, worksheet, formats, 4)
+            self.append_aggregated_data(county_values, worksheet, formats, 5)
 
             FacilitySummary.sheets[sheets_key] = worksheet
-            next_line = 9
+            next_line = 11
 
         # Update the worksheet with current facility info on next line
         facility_range = 'A' + str(next_line) + ':A' + str(next_line+1)
@@ -115,9 +120,9 @@ class FacilitySummary():
     def get_sheet_name(self):
         return "Facility Summary"
 
-    def append_national_data(self, national_values, worksheet, formats):
+    def append_aggregated_data(self, values, worksheet, formats, startrow):
 
-        data = deepcopy(national_values)
+        data = deepcopy(values)
 
         # For this summary, we only want the percentages, which are in the second row.
         for index in range(1, 15):
@@ -128,7 +133,6 @@ class FacilitySummary():
         col_idx = np.array(self.active_columns)
         slice = np.array(data)[row_idx[:, None], col_idx]
 
-        startrow = 3
         startcol = 2
 
         numrows = len(slice)

@@ -13,7 +13,7 @@ class DGSummary():
         self.facility = facility
         self.active_columns = [0, 1, 14, 2, 3, 4, 5, 6, 7, 8, 11, 9, 10, 13]
 
-    def create_summary(self, workbook, formats, national_values, values, hazard_name=None):
+    def create_summary(self, workbook, formats, national_values, state_values, county_values, values, hazard_name=None):
 
         self.hazard_name = hazard_name
         worksheet = workbook.add_worksheet(name=self.get_sheet_name())
@@ -29,13 +29,16 @@ class DGSummary():
         worksheet.set_row(0, 30)
         worksheet.set_row(2, 24)
         worksheet.set_row(5, 24)
-        worksheet.set_row(6, 30)
-        worksheet.set_row(10, 30)
-        worksheet.set_row(11, 30)
-        worksheet.set_row(12, 30)
-        worksheet.set_row(13, 30)
-        worksheet.set_row(14, 30)
-        worksheet.set_row(15, 30)
+        worksheet.set_row(8, 24)
+        worksheet.set_row(16, 30)
+        worksheet.set_row(17, 30)
+        worksheet.set_row(18, 30)
+        worksheet.set_row(19, 30)
+        worksheet.set_row(20, 30)
+        worksheet.set_row(21, 30)
+        worksheet.set_row(22, 30)
+        worksheet.set_row(23, 30)
+        worksheet.set_row(24, 30)
 
         # Create top level header
         worksheet.merge_range(top_header_coords, self.get_table_name(),  formats['top_header'])
@@ -47,26 +50,38 @@ class DGSummary():
         for col_num, data in enumerate(column_headers):
             worksheet.write(1, col_num+1, data)
 
-        # Create sub header 1
+        # Create sub header 1 (national)
         worksheet.merge_range("A3:P3", 'Nationwide Demographic Breakdown',  formats['sub_header_4'])
         worksheet.merge_range("A4:B4", 'Total population\u1D43')
         worksheet.merge_range("A5:B5", 'Percentage of total')
 
+        # state...
+        worksheet.merge_range("A6:P6", 'State Demographic Breakdown',  formats['sub_header_4'])
+        worksheet.merge_range("A7:B7", 'Total population\u1D43')
+        worksheet.merge_range("A8:B8", 'Percentage of total')
+
+        # county...
+        worksheet.merge_range("A9:P9", 'County Demographic Breakdown',  formats['sub_header_4'])
+        worksheet.merge_range("A10:B10", 'Total population\u1D43')
+        worksheet.merge_range("A11:B11", 'Percentage of total')
+
         # Create sub header 2
         scope = 'the ' + self.source_category + ' Source Category' if self.facility is None else \
             'Facility ' + self.facility
-        worksheet.merge_range("A6:P6", 'Modeled ' + self.get_risk_name() + ' from ' + scope,  formats['sub_header_4'])
+        worksheet.merge_range("A12:P12", 'Modeled ' + self.get_risk_name() + ' from ' + scope,  formats['sub_header_4'])
 
         article = 'any' if self.facility is None else 'the'
-        worksheet.merge_range("A7:B7", 'Total population within ' + self.radius + ' km of ' + article + ' facility',
+        worksheet.merge_range("A13:B13", 'Total population within ' + self.radius + ' km of ' + article + ' facility',
                               formats['sub_header_3'])
-        worksheet.merge_range("A8:B8", 'Percentage of total')
-        worksheet.merge_range("A9:B9", self.get_risk_header())
+        worksheet.merge_range("A14:B14", 'Percentage of total')
+        worksheet.merge_range("A15:B15", self.get_risk_header())
 
         # Create notes
-        worksheet.merge_range("A11:H18", self.get_notes(),  formats['notes'])
+        worksheet.merge_range("A17:H26", self.get_notes(),  formats['notes'])
 
-        self.append_national_data(national_values, worksheet, formats)
+        self.append_aggregated_data(national_values, worksheet, formats, 3)
+        self.append_aggregated_data(state_values, worksheet, formats, 6)
+        self.append_aggregated_data(county_values, worksheet, formats, 9)
         self.append_data(values, worksheet, formats)
 
     def get_columns(self):
@@ -78,16 +93,15 @@ class DGSummary():
     def get_sheet_name(self):
         return "DG Summary"
 
-    def append_national_data(self, national_values, worksheet, formats):
+    def append_aggregated_data(self, values, worksheet, formats, startrow):
 
-        data = deepcopy(national_values)
+        data = deepcopy(values)
 
         # First, select the columns that are relevant
         row_idx = np.array([i for i in range(0, len(data))])
         col_idx = np.array(self.active_columns)
         slice = np.array(data)[row_idx[:, None], col_idx]
 
-        startrow = 3
         startcol = 2
 
         numrows = len(slice)
@@ -115,7 +129,7 @@ class DGSummary():
         dg_data.insert(1, [0]*15)
 
         for index in range(1, 15):
-            # Education is a special case...we want the population over 25 as the denominator, not the total population!!
+            # Education is a special case...we want the population over 25 as the denominator, not the total population!
             if index == 10:
                 dg_data[1][index] = (dg_data[0][index] / dg_data[0][9]) if dg_data[0][9] > 0 else 0
             else:
@@ -128,7 +142,7 @@ class DGSummary():
         col_idx = np.array(self.active_columns)
         slice = np.array(dg_data)[row_idx[:, None], col_idx]
 
-        startrow = 6
+        startrow = 12
         startcol = 2
 
         numrows = len(slice)

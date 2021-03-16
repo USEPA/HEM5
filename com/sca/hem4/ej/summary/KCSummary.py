@@ -15,7 +15,8 @@ class KCSummary():
         self.facility = facility
         self.active_columns = [0, 14, 2, 3, 4, 5, 6, 7, 8, 11, 10, 13]
 
-    def create_summary(self, workbook, formats, national_values, values, max_value, hazard_name=None):
+    def create_summary(self, workbook, formats, national_values, state_values, county_values, values, max_value,
+                       hazard_name=None):
         self.hazard_name = hazard_name
         worksheet = workbook.add_worksheet(name=self.get_sheet_name())
 
@@ -35,14 +36,16 @@ class KCSummary():
         worksheet.set_row(0, 30)
         worksheet.set_row(2, 24)
         worksheet.set_row(3, 30)
-        worksheet.set_row(5, 48)
-        worksheet.set_row(6, 30)
-        worksheet.set_row(10, 30)
-        worksheet.set_row(11, 30)
+        worksheet.set_row(4, 30)
+        worksheet.set_row(5, 30)
+        worksheet.set_row(7, 48)
+        worksheet.set_row(8, 30)
         worksheet.set_row(12, 30)
         worksheet.set_row(13, 30)
         worksheet.set_row(14, 30)
         worksheet.set_row(15, 30)
+        worksheet.set_row(16, 30)
+        worksheet.set_row(17, 30)
 
         # Create top level header
         worksheet.merge_range(top_header_coords, self.get_table_name(),  formats['top_header'])
@@ -50,22 +53,26 @@ class KCSummary():
         # Create column headers
         worksheet.merge_range("A2:A3", 'Population Basis',  formats['sub_header_2'])
         worksheet.write(3, 0, 'Nationwide')
+        worksheet.write(4, 0, 'State')
+        worksheet.write(5, 0, 'County')
         worksheet.merge_range("B2:N2", 'Demographic Group',  formats['sub_header_3'])
 
         worksheet.set_row(2, 72, formats['sub_header_2'])
         for col_num, data in enumerate(column_headers):
             worksheet.write(2, col_num+1, data)
 
-        worksheet.write(5, 1, self.get_max_risk_header(), formats['sub_header_3'])
-        worksheet.write(6, 0, 'Source Category' if self.facility is None else 'Facility')
-        worksheet.write(6, 1, max_value)
-        worksheet.merge_range("A5:N5", '')
-        worksheet.merge_range("C6:N6", self.get_risk_header(),  formats['sub_header_3'])
+        worksheet.write(7, 1, self.get_max_risk_header(), formats['sub_header_3'])
+        worksheet.write(8, 0, 'Source Category' if self.facility is None else 'Facility')
+        worksheet.write(8, 1, max_value)
+        worksheet.merge_range("A7:N7", '')
+        worksheet.merge_range("C8:N8", self.get_risk_header(),  formats['sub_header_3'])
 
         # Create notes
-        worksheet.merge_range("A9:H12", self.get_notes(),  formats['notes'])
+        worksheet.merge_range("A11:H14", self.get_notes(),  formats['notes'])
 
-        self.append_national_data(national_values, worksheet, formats)
+        self.append_aggregated_data(national_values, worksheet, formats, 3)
+        self.append_aggregated_data(state_values, worksheet, formats, 4)
+        self.append_aggregated_data(county_values, worksheet, formats, 5)
         self.append_data(values, worksheet, formats)
 
     def get_table_name(self):
@@ -83,9 +90,9 @@ class KCSummary():
     def get_sheet_name(self):
         return "KC Summary"
 
-    def append_national_data(self, national_values, worksheet, formats):
+    def append_aggregated_data(self, values, worksheet, formats, startrow):
 
-        data = deepcopy(national_values)
+        data = deepcopy(values)
 
         # For this summary, we only want the percentages, which are in the second row.
         for index in range(1, 15):
@@ -96,7 +103,6 @@ class KCSummary():
         col_idx = np.array(self.active_columns)
         slice = np.array(data)[row_idx[:, None], col_idx]
 
-        startrow = 3
         startcol = 2
 
         numrows = len(slice)
@@ -126,7 +132,7 @@ class KCSummary():
 
         saved_edu_pop = None
         for index in range(1, 15):
-            # Education is a special case...we want the population over 25 as the denominator, not the total population!!
+            # Education is a special case...we want the population over 25 as the denominator, not the total population!
             if index == 9:
                 saved_edu_pop = row_totals[index]
 
@@ -140,7 +146,7 @@ class KCSummary():
         for c in self.active_columns:
             slice.append(row_totals[c])
 
-        startrow = 6
+        startrow = 8
         startcol = 2
 
         numcols = len(slice)
