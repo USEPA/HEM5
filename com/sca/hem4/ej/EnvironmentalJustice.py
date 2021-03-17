@@ -80,15 +80,15 @@ class EnvironmentalJustice():
     def add_facility_summaries(self, run_group_data_model, cancer_selected):
 
         if cancer_selected:
-            self.report_writer.add_cancer_facility_summaries(national_values=self.data_model.national_bin,
-                                                             state_values=self.data_model.state_bin,
-                                                             county_values=self.data_model.county_bin,
+            self.report_writer.add_cancer_facility_summaries(national_values=run_group_data_model.national_bin,
+                                                             state_values=run_group_data_model.state_bin,
+                                                             county_values=run_group_data_model.county_bin,
                                                              values=self.data_model.cancer_bins,
                                                              run_group_values=run_group_data_model.cancer_bins)
         else:
-            self.report_writer.add_hi_facility_summaries(national_values=self.data_model.national_bin,
-                                                         state_values=self.data_model.state_bin,
-                                                         county_values=self.data_model.county_bin,
+            self.report_writer.add_hi_facility_summaries(national_values=run_group_data_model.national_bin,
+                                                         state_values=run_group_data_model.state_bin,
+                                                         county_values=run_group_data_model.county_bin,
                                                          values=self.data_model.toshi_bins,
                                                          run_group_values=run_group_data_model.toshi_bins,
                                                          toshis=self.requested_toshis)

@@ -19,7 +19,9 @@ class ElaineSummary():
         # Increase the cell sizes to match expected content.
         worksheet.set_column("A:A", 24)
         worksheet.set_column("B:B", 16)
-        worksheet.set_column("C:C", 24)
+        worksheet.set_column("C:C", 16)
+        worksheet.set_column("D:D", 16)
+        worksheet.set_column("E:E", 24)
         worksheet.set_row(1, 48)
         worksheet.set_row(3, 48)
         worksheet.set_row(23, 30)

@@ -134,7 +134,9 @@ class ReportWriter():
         return formats
 
     def construct_filename(self, cancer=True):
-        hazard_type = 'EJ_Cancer' if cancer else self.hazard_prefix + '_Noncancer'
+        # Test_50_km_1_EJ_Neur_demo_tables_date.xlsx
+
+        hazard_type = 'EJ_Cancer' if cancer else 'EJ_' + self.hazard_prefix
         date_string = datetime.datetime.now().strftime("%m-%d-%Y")
         facility_name = '' if self.facility is None else self.facility + '_'
         risk = str(self.cancer_risk_threshold) if cancer else str(self.hi_risk_threshold)
@@ -142,7 +144,7 @@ class ReportWriter():
                             '_km_' + risk + '_' + hazard_type + '_demo_tables_' + date_string + '.xlsx')
 
     def construct_facility_summary_filename(self, cancer=True, hazard_prefix=None):
-        hazard_type = 'Cancer_' if cancer else hazard_prefix + '_Noncancer_'
+        hazard_type = 'Cancer_' if cancer else hazard_prefix + '_'
         date_string = datetime.datetime.now().strftime("%m-%d-%Y")
         facility_name = '' if self.facility is None else self.facility + '_'
 

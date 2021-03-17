@@ -68,7 +68,8 @@ class DGSummary():
         # Create sub header 2
         scope = 'the ' + self.source_category + ' Source Category' if self.facility is None else \
             'Facility ' + self.facility
-        worksheet.merge_range("A12:P12", 'Modeled ' + self.get_risk_name() + ' from ' + scope,  formats['sub_header_4'])
+        worksheet.merge_range("A12:P12", 'Proximity Results plus Modeled ' + self.get_risk_name() + ' from ' + scope,
+                              formats['sub_header_4'])
 
         article = 'any' if self.facility is None else 'the'
         worksheet.merge_range("A13:B13", 'Total population within ' + self.radius + ' km of ' + article + ' facility',
