@@ -151,18 +151,12 @@ class DGSummary():
         for row in range(0, numrows):
             for col in range(0, numcols):
 
-                # Most values in the table are rounded to the nearest integer, but the average risk / HI is
-                # rounded to preserve one sig fig.
                 value = slice[row][col]
                 if value != "":
                     value = float(value)
 
-                    format = None
-                    if row == 0:
-                        format = formats['number']
-                    elif row == 1:
-                        format = formats['percentage']
-                    else:
+                    format = formats['percentage'] if row == 1 else formats['number']
+                    if row > 1:
                         value = DataModel.round_to_sigfig(value, 2)
 
                     worksheet.write_number(startrow+row, startcol+col, value, format)
