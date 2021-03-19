@@ -116,7 +116,7 @@ class WorksheetTable:
                 value = DataModel.round_to_sigfig(slice[row][col], 2) if row == numrows-1 else slice[row][col]
                 format = formats['number'] if value > 1 else None
                 if value < 1:
-                    value = '=ROUND(' + str(value) + ', 1)'
+                    value = '=ROUND(' + str(value) + ', 0)'
 
                 worksheet.write(startrow+row, startcol+col, value, format)
 
