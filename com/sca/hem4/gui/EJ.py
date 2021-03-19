@@ -1,3 +1,4 @@
+import glob
 import os
 import traceback
 from concurrent.futures.thread import ThreadPoolExecutor
@@ -539,7 +540,31 @@ class EJ(Page):
         ej.close_facility_summaries()
 
         messagebox.showinfo("Environmental Justice Reports Finished", "Please check the output folder for reports.")
+
+        ej_directory = os.path.join(self.fullpath, "ej")
+        next_log_name = self.find_next_log_name(ej_directory)
+        Logger.archiveLog(run_dir=ej_directory, filename_override=next_log_name)
+        Logger.initializeLog()
+
         self.reset()
+
+    def find_next_log_name(self, directory):
+        logfiles = glob.glob(directory + "/hem4*.log")
+        if len(logfiles) == 0:
+            return "hem4.log"
+
+        logfiles.sort()
+        most_recent = logfiles[-1]
+        filename_no_extension = os.path.splitext(most_recent)[0]
+
+        # Does the filename already have a digit extender?
+        m = re.search(r'hem4_(\d+)$', filename_no_extension)
+        if m is None:
+            return filename_no_extension + "_1.log"
+        else:
+            part = int(m.group(1)) + 1
+            filename_no_extension = re.sub(r"hem4_\d+$", "hem4_%s" % part, filename_no_extension)
+            return filename_no_extension + ".log"
 
     # The method that automatically selects TOSHIs to report on based on a heuristic in the risk data.
     def choose_toshis(self, df):

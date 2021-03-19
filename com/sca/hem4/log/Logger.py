@@ -30,12 +30,13 @@ class Logger:
         Logger.logMessage("HEM4 Logging Initialized. See output subfolder for the log of your HEM4 run.\n")
 
     @staticmethod
-    def archiveLog(runDir):
+    def archiveLog(run_dir, filename_override=None):
         Logger.close(True)
         fileDir = os.path.dirname(os.path.realpath('__file__'))
         filename = os.path.join(fileDir, 'output/hem4.log')
         if os.path.isfile(filename):
-            shutil.move(filename, runDir)
+            destination = os.path.join(run_dir, filename_override) if filename_override is not None else run_dir
+            shutil.move(filename, destination)
 
     @staticmethod
     def appendLog(runDir):
