@@ -475,7 +475,7 @@ class EJ(Page):
 
             # Infer which TOSHIs to include from the filtered all receptors file
             # should be of this form: {'Deve':'Developmental', 'Neur':'Neurological', ...}
-            toshis = self.choose_toshis(filtered_mir_hi_df)
+            toshis = {} if cancer_selected else self.choose_toshis(filtered_mir_hi_df)
 
             try:
                 ej = EnvironmentalJustice(mir_rec_df=filtered_mir_hi_df, acs_df=self.acs_df, levels_df=self.levels_df,

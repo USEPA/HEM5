@@ -152,23 +152,24 @@ class DataModel():
 
         # Next create toshi bins and tabulate risk for each requested toshi. Note that there are 15 sub groups (columns)
         # and 13 rows, which correspond to 11 risk bins + total + average.
-        self.toshi_bins = {}
-        for key,value in self.toshis.items():
-            self.max_risk[key] = 0
-            self.toshi_bins[key] = [ [0]*15 for _ in range(13) ]
+        if len(self.toshis.items()) > 0:
+            self.toshi_bins = {}
+            for key,value in self.toshis.items():
+                self.max_risk[key] = 0
+                self.toshi_bins[key] = [ [0]*15 for _ in range(13) ]
 
-        Logger.logMessage("Tabulating toshi data...")
-        self.hazards_df.apply(lambda row: self.tabulate_toshi_data(row), axis=1)
+            Logger.logMessage("Tabulating toshi data...")
+            self.hazards_df.apply(lambda row: self.tabulate_toshi_data(row), axis=1)
 
-        # Calculate averages by dividing population for each sub group
-        for key, bin in self.toshi_bins.items():
-            for index in range(15):
-                if bin[11][index] == 0:
-                    bin[12][index] = 0
-                else:
-                    bin[12][index] /= bin[11][index]
+            # Calculate averages by dividing population for each sub group
+            for key, bin in self.toshi_bins.items():
+                for index in range(15):
+                    if bin[11][index] == 0:
+                        bin[12][index] = 0
+                    else:
+                        bin[12][index] /= bin[11][index]
 
-        Logger.logMessage("Done with toshi tabulation.")
+            Logger.logMessage("Done with toshi tabulation.")
 
     def tabulate_national_data(self, row):
 
