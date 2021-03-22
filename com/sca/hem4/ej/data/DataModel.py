@@ -65,8 +65,6 @@ class DataModel():
         for index in range(1, 15):
             if index == 10:
                 self.national_bin[0][index] = self.national_bin[0][9] * self.national_bin[1][index]
-            elif index in [11, 12]:
-                self.national_bin[0][index] = self.national_bin[0][15] * self.national_bin[1][index]
             else:
                 self.national_bin[0][index] = self.national_bin[0][0] * self.national_bin[1][index]
 
@@ -103,8 +101,6 @@ class DataModel():
         for index in range(1, 15):
             if index == 10:
                 self.state_bin[0][index] = self.state_bin[0][9] * self.state_bin[1][index]
-            elif index in [11, 12]:
-                self.state_bin[0][index] = self.state_bin[0][15] * self.state_bin[1][index]
             else:
                 self.state_bin[0][index] = self.state_bin[0][0] * self.state_bin[1][index]
 
@@ -123,8 +119,6 @@ class DataModel():
         for index in range(1, 15):
             if index == 10:
                 self.county_bin[0][index] = self.county_bin[0][9] * self.county_bin[1][index]
-            elif index in [11, 12]:
-                self.county_bin[0][index] = self.county_bin[0][15] * self.county_bin[1][index]
             else:
                 self.county_bin[0][index] = self.county_bin[0][0] * self.county_bin[1][index]
 
