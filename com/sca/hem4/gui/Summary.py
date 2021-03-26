@@ -5,7 +5,7 @@ import tkinter as tk
 import tkinter.ttk as ttk
 import PIL.Image
 from PIL import ImageTk
-from com.sca.hem4.gui.Styles import TITLE_FONT, TEXT_FONT, CHECKBOX_COLOR
+from com.sca.hem4.gui.Styles import TITLE_FONT, TEXT_FONT, MAIN_COLOR
 from functools import partial
 from tkinter.filedialog import askopenfilename
 from concurrent.futures import ThreadPoolExecutor
@@ -103,7 +103,7 @@ class Summary(Page):
         self.titleLabel.grid(row=1, column=0, padx=10, pady=10)
 
         #title
-        title = tk.Label(self.s1, text="CREATE RISK SUMMARY REPORTS", font=TITLE_FONT, fg="white", bg=self.tab_color, anchor="w")
+        title = tk.Label(self.s1, text="CREATE RISK SUMMARY REPORTS", font=TITLE_FONT, fg=MAIN_COLOR, bg=self.tab_color, anchor="w")
         title.grid(row=1, column=1, pady=10, padx=10)
 
         fu = PIL.Image.open('images\icons8-folder-48.png').resize((30,30))
@@ -114,7 +114,7 @@ class Summary(Page):
         self.fileLabel.grid(row=1, column=0, padx=10)
 
         self.folder_select = tk.Label(self.s2,
-              text="Select output folder", font=TITLE_FONT, bg=self.tab_color, anchor="w")
+                                      text="Select output folder", font=TITLE_FONT, bg=self.tab_color, anchor="w")
         self.folder_select.grid(pady=10, padx=10, row=1, column=1)
         self.fileLabel.bind("<Button-1>", partial(self.browse, self.folder_select))
         self.folder_select.bind("<Button-1>", partial(self.browse, self.folder_select))
@@ -195,12 +195,12 @@ class Summary(Page):
             icon.configure(image=self.checkedIcon)
             self.checked.append(text)
             self.checked_icons.append(icon)
-            self.pos = tk.Label(self.r8, font=TEXT_FONT, bg=self.tab_color, text="Enter the position in the source ID where the\n source ID type begins.The default is 1.")
+            self.pos = tk.Label(self.r8, font=TEXT_FONT, bg=self.tab_color, text="Enter the position in the source ID where the\n source type begins.The default is 1.")
             self.pos.grid(row=1, column=4, padx=5, sticky="W")
             self.pos_num = ttk.Entry(self.r8)
             self.pos_num["width"] = 5
             self.pos_num.grid(row=1, column=3, padx=5, sticky="W")
-            self.chars = tk.Label(self.r9, font=TEXT_FONT, bg=self.tab_color, text="Enter the number of characters \nof the sourcetype ID.")
+            self.chars = tk.Label(self.r9, font=TEXT_FONT, bg=self.tab_color, text="Enter the number of characters \nin the sourcetype ID.")
             self.chars.grid(row=1, column=4, padx=5, sticky="W")
             self.chars_num = ttk.Entry(self.r9)
             self.chars_num["width"] = 5
@@ -225,13 +225,13 @@ class Summary(Page):
             self.checked.append(text)
             self.checked_icons.append(icon)
             self.max_risk_pos = tk.Label(self.r6, font=TEXT_FONT, bg=self.tab_color,
-                    text="Enter the position in the source ID where the\n source ID type begins.The default is 1.")
+                                         text="Enter the position in the source ID where the\n source type begins.The default is 1.")
             self.max_risk_pos.grid(row=2, column=4, padx=5, sticky="W")
             self.max_risk_pos_num = ttk.Entry(self.r6)
             self.max_risk_pos_num["width"] = 5
             self.max_risk_pos_num.grid(row=2, column=3, padx=5, sticky="W")
             self.max_risk_chars = tk.Label(self.r6, font=TEXT_FONT, bg=self.tab_color,
-                    text="Enter the number of characters \nof the sourcetype ID.")
+                                           text="Enter the number of characters \nin the sourcetype ID.")
             self.max_risk_chars.grid(row=3, column=4, padx=5, sticky="W")
             self.max_risk_chars_num = ttk.Entry(self.r6)
             self.max_risk_chars_num["width"] = 5
@@ -422,7 +422,7 @@ class Summary(Page):
             self.reports_ready = True
 
             # extra conditions for reports with parameters
-            if "Source Type Risk Histogram" in self.checked or\
+            if "Source Type Risk Histogram" in self.checked or \
                     "Max Risk and HI by Source\nand Pollutant" in self.checked:
                 if startpos < 0:
                     messagebox.showinfo('Invalid starting position',
