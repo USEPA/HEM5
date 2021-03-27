@@ -510,6 +510,9 @@ class EJ(Page):
                 center_lon = maxrisk_df.iloc[0]['fac_center_longitude']
                 ceny, cenx, zone, hemi, epsg = UTM.ll2utm(center_lat, center_lon)
                 bsc_df[distance] = np.sqrt((cenx - bsc_df.utme)**2 + (ceny - bsc_df.utmn)**2)
+                
+                # add a rounded mir column
+                bsc_df['mir_rounded'] = bsc_df['mir'].apply(self.round_to_sigfig, 1)
 
                 filtered_bsc_df = bsc_df.query('distance <= @maxdist').copy()
                 Logger.logMessage("Filtered BlockSummaryChronic dataset (radius = " + str(maxdist) + ") contains " +
@@ -598,3 +601,15 @@ class EJ(Page):
         Logger.logMessage(', '.join(list(chosen.values())))
 
         return chosen
+
+
+    def round_to_sigfig(self, x, sig=1):
+        if x == 0:
+            return 0;
+
+        if math.isnan(x):
+            return float('NaN')
+
+        rounded = round(x, sig-int(floor(log10(abs(x))))-1)
+        return rounded
+    
