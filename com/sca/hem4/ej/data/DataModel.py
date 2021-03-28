@@ -46,7 +46,7 @@ class DataModel():
         self.levels_df.index = self.levels_df['ID']
         self.levels_dict = self.levels_df.to_dict(orient='index')
 
-        self.create_state_bin()
+        self.create_national_bin()
         self.create_state_bin()
         self.create_county_bin()
         self.create_bins()
