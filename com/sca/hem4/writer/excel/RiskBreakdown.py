@@ -44,8 +44,8 @@ class RiskBreakdown(ExcelWriter, InputFile):
 
     def getHeader(self):
         return ['Site type', 'Parameter', 'Source ID', 'Pollutant', 'Emission type', 'Value', 'Value rounded',
-                'Conc (ug/m3)', 'Conc rounded (ug/m3)', 'Emissions (tpy)',
-                'URE 1/(ug/m3)', 'RFc (mg/m3)']
+                'Conc (µg/m3)', 'Conc rounded (µg/m3)', 'Emissions (tpy)',
+                'URE 1/(µg/m3)', 'RFc (mg/m3)']
 
     def getColumns(self):
         return [site_type, parameter, source_id, pollutant, emis_type, value, value_rnd, conc, conc_rnd, emis_tpy, ure,

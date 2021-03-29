@@ -32,7 +32,7 @@ class Hem3AllPolarReceptors(CsvWriter, InputFile):
             return ['Source ID', 'Emission type', 'Conc (µg/m3)', 'Pollutant',
                 'Distance (m)', 'Angle (from north)', 'Sector', 'Ring number', 'Elevation (m)',
                 'Latitude', 'Longitude', 'Wet deposition (g/m2/yr)', 'Dry deposition (g/m2/yr)', 
-                'Acute Conc (ug/m3)', 'Overlap']
+                'Acute Conc (µg/m3)', 'Overlap']
         else:
             return ['Source ID', 'Emission type', 'Conc (µg/m3)', 'Pollutant',
                 'Distance (m)', 'Angle (from north)', 'Sector', 'Ring number', 'Elevation (m)',

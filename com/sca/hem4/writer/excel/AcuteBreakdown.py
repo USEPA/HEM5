@@ -39,8 +39,8 @@ class AcuteBreakdown(ExcelWriter, InputFile):
         self.achemmax_df = achemmax_df
 
     def getHeader(self):
-        return ['Pollutant', 'Source ID', 'Emission type', 'Max conc at populated receptor (ug/m3)', 
-                'Is max populated receptor interpolated? (Y/N)', 'Max conc at any receptor (ug/m3)',
+        return ['Pollutant', 'Source ID', 'Emission type', 'Max conc at populated receptor (µg/m3)',
+                'Is max populated receptor interpolated? (Y/N)', 'Max conc at any receptor (µg/m3)',
                 'Is max conc at any receptor interpolated? (Y/N)']
 
     def getColumns(self):

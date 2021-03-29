@@ -123,7 +123,7 @@ class Hem3AllOuterReceptors(CsvWriter, InputFile):
 
     def getHeader(self):
         return ['Latitude', 'Longitude', 'Conc (µg/m3)', 'Source ID', 'Pollutant',
-                'Emission type', 'Acute Conc (ug/m3)', 'Population', 'FIPs', 'Block', 'Elevation (m)',
+                'Emission type', 'Acute Conc (µg/m3)', 'Population', 'FIPs', 'Block', 'Elevation (m)',
                 'Overlap']
 
     def getColumns(self):

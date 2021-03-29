@@ -29,11 +29,11 @@ class AllPolarReceptors(CsvWriter, InputFile):
 
     def getHeader(self):
         if self.acute_yn == 'N':
-            return ['Source ID', 'Emission type', 'Pollutant', 'Conc (ug/m3)',
+            return ['Source ID', 'Emission type', 'Pollutant', 'Conc (µg/m3)',
                     'Distance (m)', 'Angle (from north)', 'Sector', 'Ring number', 'Elevation (m)',
                     'Latitude', 'Longitude', 'Overlap', 'Wet deposition (g/m2/yr)', 'Dry deposition (g/m2/yr)']
         else:
-            return ['Source ID', 'Emission type', 'Pollutant', 'Conc (ug/m3)', 'Acute conc (ug/m3)',
+            return ['Source ID', 'Emission type', 'Pollutant', 'Conc (µg/m3)', 'Acute conc (µg/m3)',
                     'Distance (m)', 'Angle (from north)', 'Sector', 'Ring number', 'Elevation (m)',
                     'Latitude', 'Longitude', 'Overlap', 'Wet deposition (g/m2/yr)', 'Dry deposition (g/m2/yr)']
             

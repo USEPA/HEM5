@@ -23,7 +23,7 @@ class MaxConcentrationLocator(ExcelWriter):
         self.filename = os.path.join(targetDir, self.categoryName + "_max_conc_locations.xlsx")
 
     def getHeader(self):
-        return ['Facility ID', 'Pollutant', 'Max Concentration (ug/m3)', 'Lat', 'Lon', 'FIPS', 'Block', 'Receptor Type']
+        return ['Facility ID', 'Pollutant', 'Max Concentration (µg/m3)', 'Lat', 'Lon', 'FIPS', 'Block', 'Receptor Type']
 
     def getColumns(self):
         return [fac_id, pollutant, conc, lat, lon, fips, block, 'type']

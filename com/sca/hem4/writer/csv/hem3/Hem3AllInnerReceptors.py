@@ -39,7 +39,7 @@ class Hem3AllInnerReceptors(CsvWriter, InputFile):
         if self.acute_yn:
             return ['Latitude', 'Longitude', 'Source ID', 'Emission type', 'Pollutant',
                 'Conc (µg/m3)', 'Population', 'FIPs', 'Block',
-                'Wet deposition (g/m2/yr)', 'Dry deposition (g/m2/yr)', 'Acute Conc (ug/m3)',
+                'Wet deposition (g/m2/yr)', 'Dry deposition (g/m2/yr)', 'Acute Conc (µg/m3)',
                 'Elevation (m)', 'Overlap']
         else:
             return ['Latitude', 'Longitude', 'Source ID', 'Emission type', 'Pollutant',
