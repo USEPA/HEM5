@@ -73,20 +73,20 @@ class DataModel():
         # Special hard-coding to conform to referenceable values!
 
         # ages...
-        self.national_bin[1][6] = 0.220000000
-        self.national_bin[0][6] = 0.220000000 * self.national_bin[0][0]
-        self.national_bin[1][7] = 0.620000000
-        self.national_bin[0][7] = 0.620000000 * self.national_bin[0][0]
-        self.national_bin[1][8] = 0.160000000
-        self.national_bin[0][8] = 0.160000000 * self.national_bin[0][0]
+        self.national_bin[1][6] = 0.226000000
+        self.national_bin[0][6] = 0.226000000 * self.national_bin[0][0]
+        self.national_bin[1][7] = 0.617000000
+        self.national_bin[0][7] = 0.617000000 * self.national_bin[0][0]
+        self.national_bin[1][8] = 0.157000000
+        self.national_bin[0][8] = 0.157000000 * self.national_bin[0][0]
 
         # below poverty level
-        self.national_bin[1][11] = 0.130000000
-        self.national_bin[0][11] = 0.130000000 * self.national_bin[0][0]
+        self.national_bin[1][11] = 0.134000000
+        self.national_bin[0][11] = 0.134000000 * self.national_bin[0][0]
 
         # ..without high school diploma
-        self.national_bin[1][10] = 0.120000000
-        self.national_bin[0][10] = 0.120000000 * self.national_bin[0][9]
+        self.national_bin[1][10] = 0.121000000
+        self.national_bin[0][10] = 0.121000000 * self.national_bin[0][9]
 
     def create_state_bin(self):
         # Create state bin and tabulate population weighted demographic stats for each sub group.
