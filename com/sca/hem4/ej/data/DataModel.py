@@ -28,7 +28,7 @@ class DataModel():
 
         # Prepare the county and tract info...
         Logger.logMessage("Indexing county and tract information...")
-
+        
         # Start by filtering out state records...we only want the 5 digit county records.
         counties_df = levels_df[levels_df["ID"].str.len() == 5]
 
@@ -73,26 +73,26 @@ class DataModel():
         # Special hard-coding to conform to referenceable values!
 
         # ages...
-        self.national_bin[1][6] = 0.228000001
-        self.national_bin[0][6] = 0.228000001 * self.national_bin[0][0]
-        self.national_bin[1][7] = 0.620000001
-        self.national_bin[0][7] = 0.620000001 * self.national_bin[0][0]
-        self.national_bin[1][8] = 0.152000001
-        self.national_bin[0][8] = 0.152000001 * self.national_bin[0][0]
+        self.national_bin[1][6] = 0.220000000
+        self.national_bin[0][6] = 0.220000000 * self.national_bin[0][0]
+        self.national_bin[1][7] = 0.620000000
+        self.national_bin[0][7] = 0.620000000 * self.national_bin[0][0]
+        self.national_bin[1][8] = 0.160000000
+        self.national_bin[0][8] = 0.160000000 * self.national_bin[0][0]
 
         # below poverty level
-        self.national_bin[1][11] = 0.141000001
-        self.national_bin[0][11] = 0.141000001 * self.national_bin[0][0]
+        self.national_bin[1][11] = 0.130000000
+        self.national_bin[0][11] = 0.130000000 * self.national_bin[0][0]
 
         # ..without high school diploma
-        self.national_bin[1][10] = 0.123000001
-        self.national_bin[0][10] = 0.123000001 * self.national_bin[0][9]
+        self.national_bin[1][10] = 0.120000000
+        self.national_bin[0][10] = 0.120000000 * self.national_bin[0][9]
 
     def create_state_bin(self):
         # Create state bin and tabulate population weighted demographic stats for each sub group.
         self.state_bin = [ [0]*16 for _ in range(2) ]
         self.state_df.apply(lambda row: self.tabulate_state_data(row), axis=1)
-
+        
         # Calculate averages by dividing population for each sub group
         for index in range(1, 16):
             self.state_bin[1][index] = self.state_bin[1][index] / (100 * self.state_bin[0][index])
