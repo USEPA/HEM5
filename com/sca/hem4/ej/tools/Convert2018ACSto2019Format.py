@@ -7,6 +7,8 @@ Created on Sun Mar 28 19:52:45 2021
 
 import pandas as pd
 
+#----------------------- ACS block group data ----------------------------------------------------------
+
 acs2018_file = r"C:\Git_HEM4\ACS data backup\acs_2018.xlsx"
 reformatted_acs2018_file = r"C:\Git_HEM4\ACS data backup\acs_2018_reformat.xlsx"
 
@@ -32,5 +34,12 @@ acs_df['AGE_UNIVERSE'] = acs_df['TOTALPOP']
 
 # Write using 2019 format
 acs_df.to_excel(reformatted_acs2018_file, columns=columns2019, index=False, header=True)
+
+
+#----------------------- ACS tract/county default data --------------------------------------------------
+
+columns2019 = ['ID', 'TOTALPOP', 'PCT_MINORITY', 'PCT_WHITE', 'PCT_BLACK', 'PCT_AMIND', 'PCT_OTHER_RACE', 'PCT_HISP',
+               'PCT_AGE_LT18', 'PCT_AGE_GT64', 'POV_UNIVERSE', 'PCT_LOWINC', 'PCT_POV', 'EDU_UNIVERSE', 'PCT_EDU_LTHS', 
+               'ISO_UNIVERSE', 'PCT_LINGISO', 'POP_FLAG', 'POVERTY_FLAG', 'EDUCATION_FLAG', 'LING_ISO_FLAG']
 
 

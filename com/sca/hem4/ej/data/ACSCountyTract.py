@@ -56,14 +56,14 @@ class ACSCountyTract:
     def getColumns(self):
         return ['ID', 'TOTALPOP', 'PCT_MINORITY', 'PCT_WHITE', 'PCT_BLACK', 'PCT_AMIND', 'PCT_OTHER_RACE', 'PCT_HISP',
                 'PCT_AGE_LT18', 'PCT_AGE_GT64', 'POV_UNIVERSE', 'PCT_LOWINC', 'PCT_POV', 'EDU_UNIVERSE', 'PCT_EDU_LTHS', 
-                'ISO_UNIVERSE', 'PCT_LINGISO', 'POP_FLAG', 'POVERTY_FLAG', 'EDUCATION_FLAG', 'LING_ISO_FLAG']
+                'PCT_LINGISO', 'POVERTY_FLAG', 'EDUCATION_FLAG', 'LING_ISO_FLAG']
 
     def createDataframe(self):
         # Type setting for reading
         self.numericColumns = ['TOTALPOP', 'PCT_MINORITY', 'PCT_WHITE', 'PCT_BLACK', 'PCT_AMIND', 'PCT_OTHER_RACE', 'PCT_HISP',
                                'PCT_AGE_LT18', 'PCT_AGE_GT64', 'POV_UNIVERSE', 'PCT_LOWINC', 'PCT_POV', 'EDU_UNIVERSE', 'PCT_EDU_LTHS', 
-                               'ISO_UNIVERSE', 'PCT_LINGISO']
-        self.strColumns = ['ID', 'POP_FLAG', 'POVERTY_FLAG', 'EDUCATION_FLAG', 'LING_ISO_FLAG']
+                               'PCT_LINGISO']
+        self.strColumns = ['ID', 'POVERTY_FLAG', 'EDUCATION_FLAG', 'LING_ISO_FLAG']
 
         df = self.readFromPath(self.getColumns())
 
