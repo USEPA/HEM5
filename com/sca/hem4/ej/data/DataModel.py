@@ -26,18 +26,17 @@ class DataModel():
 
         self.hazards_df = mir_rec_df
 
-        # Prepare the county and tract info...
-        Logger.logMessage("Indexing county and tract information...")
+        # Prepare the county and state info...
+        Logger.logMessage("Indexing county and state information...")
         
-        # Start by filtering out state records...we only want the 5 digit county records.
-        counties_df = levels_df[levels_df["ID"].str.len() == 5]
-
+        # Start by filtering out county records...we only want block groups with the 5 digit county codes.
         county_list = self.hazards_df[fips].unique()
-        self.county_df = counties_df[counties_df["ID"].isin(county_list)]
+        self.county_df = acs_df[acs_df["STCNTRBG"].str[:5].isin(county_list)]
 
+        # Now get all block groups starting with the 2 digit state codes.
         state_list = list(set([county[:2] for county in county_list]))
-        self.state_df = counties_df[counties_df["ID"].str[:2].isin(state_list)]
-
+        self.state_df = acs_df[acs_df["STCNTRBG"].str[:2].isin(state_list)]
+        
         self.acs_df = acs_df
         self.acs_df.index = self.acs_df['STCNTRBG']
         self.acs_dict = self.acs_df.to_dict(orient='index')
@@ -59,7 +58,10 @@ class DataModel():
 
         # Calculate averages by dividing population for each sub group
         for index in range(1, 16):
-            self.national_bin[1][index] = self.national_bin[1][index] / (100 * self.national_bin[0][index])
+            if index == 11:
+                self.national_bin[1][index] = self.national_bin[1][index] / (100 * self.national_bin[0][0])
+            else:
+                self.national_bin[1][index] = self.national_bin[1][index] / (100 * self.national_bin[0][index])
 
         self.national_bin[0][15] = self.national_bin[0][0] * self.national_bin[1][15]
         for index in range(1, 15):
@@ -70,23 +72,23 @@ class DataModel():
 
         self.national_bin[1][0] = ""
 
-        # Special hard-coding to conform to referenceable values!
-
-        # ages...
-        self.national_bin[1][6] = 0.226000000
-        self.national_bin[0][6] = 0.226000000 * self.national_bin[0][0]
-        self.national_bin[1][7] = 0.617000000
-        self.national_bin[0][7] = 0.617000000 * self.national_bin[0][0]
-        self.national_bin[1][8] = 0.157000000
-        self.national_bin[0][8] = 0.157000000 * self.national_bin[0][0]
-
-        # below poverty level
-        self.national_bin[1][11] = 0.134000000
-        self.national_bin[0][11] = 0.134000000 * self.national_bin[0][0]
-
-        # ..without high school diploma
-        self.national_bin[1][10] = 0.121000000
-        self.national_bin[0][10] = 0.121000000 * self.national_bin[0][9]
+#        # Special hard-coding to conform to referenceable values!
+#
+#        # ages...
+#        self.national_bin[1][6] = 0.226000000
+#        self.national_bin[0][6] = 0.226000000 * self.national_bin[0][0]
+#        self.national_bin[1][7] = 0.617000000
+#        self.national_bin[0][7] = 0.617000000 * self.national_bin[0][0]
+#        self.national_bin[1][8] = 0.157000000
+#        self.national_bin[0][8] = 0.157000000 * self.national_bin[0][0]
+#
+#        # below poverty level
+#        self.national_bin[1][11] = 0.134000000
+#        self.national_bin[0][11] = 0.134000000 * self.national_bin[0][0]
+#
+#        # ..without high school diploma
+#        self.national_bin[1][10] = 0.121000000
+#        self.national_bin[0][10] = 0.121000000 * self.national_bin[0][9]
 
     def create_state_bin(self):
         # Create state bin and tabulate population weighted demographic stats for each sub group.
@@ -95,8 +97,11 @@ class DataModel():
         
         # Calculate averages by dividing population for each sub group
         for index in range(1, 16):
-            self.state_bin[1][index] = self.state_bin[1][index] / (100 * self.state_bin[0][index])
-
+            if index == 11:
+                self.state_bin[1][index] = self.state_bin[1][index] / (100 * self.state_bin[0][0])
+            else:
+                self.state_bin[1][index] = self.state_bin[1][index] / (100 * self.state_bin[0][index])
+        
         self.state_bin[0][15] = self.state_bin[0][0] * self.state_bin[1][15]
         for index in range(1, 15):
             if index == 10:
@@ -113,7 +118,10 @@ class DataModel():
 
         # Calculate averages by dividing population for each sub group
         for index in range(1, 16):
-            self.county_bin[1][index] = self.county_bin[1][index] / (100 * self.county_bin[0][index])
+            if index == 11:
+                self.county_bin[1][index] = self.county_bin[1][index] / (100 * self.county_bin[0][0])
+            else:
+                self.county_bin[1][index] = self.county_bin[1][index] / (100 * self.county_bin[0][index])
 
         self.county_bin[0][15] = self.county_bin[0][0] * self.county_bin[1][15]
         for index in range(1, 15):
@@ -369,7 +377,7 @@ class DataModel():
         # level data.
         block_group = self.acs_dict[group_id] if group_id in self.acs_dict else None
         population = row['population']
-
+        
         total_pop = self.get_value(block_group, group_id, 'TOTALPOP', False)
         pct_minority = self.get_value(block_group, group_id, 'PCT_MINORITY')
         pct_white = self.get_value(block_group, group_id, 'PCT_WHITE')
