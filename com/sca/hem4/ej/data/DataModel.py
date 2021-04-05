@@ -26,18 +26,17 @@ class DataModel():
 
         self.hazards_df = mir_rec_df
 
-        # Prepare the county and tract info...
-        Logger.logMessage("Indexing county and tract information...")
-
-        # Start by filtering out state records...we only want the 5 digit county records.
-        counties_df = levels_df[levels_df["ID"].str.len() == 5]
-
+        # Prepare the county and state info...
+        Logger.logMessage("Indexing county and state information...")
+        
+        # Start by filtering out county records...we only want block groups with the 5 digit county codes.
         county_list = self.hazards_df[fips].unique()
-        self.county_df = counties_df[counties_df["ID"].isin(county_list)]
+        self.county_df = acs_df[acs_df["STCNTRBG"].str[:5].isin(county_list)]
 
+        # Now get all block groups starting with the 2 digit state codes.
         state_list = list(set([county[:2] for county in county_list]))
-        self.state_df = counties_df[counties_df["ID"].str[:2].isin(state_list)]
-
+        self.state_df = acs_df[acs_df["STCNTRBG"].str[:2].isin(state_list)]
+        
         self.acs_df = acs_df
         self.acs_df.index = self.acs_df['STCNTRBG']
         self.acs_dict = self.acs_df.to_dict(orient='index')
@@ -59,7 +58,10 @@ class DataModel():
 
         # Calculate averages by dividing population for each sub group
         for index in range(1, 16):
-            self.national_bin[1][index] = self.national_bin[1][index] / (100 * self.national_bin[0][index])
+            if index == 11:
+                self.national_bin[1][index] = self.national_bin[1][index] / (100 * self.national_bin[0][0])
+            else:
+                self.national_bin[1][index] = self.national_bin[1][index] / (100 * self.national_bin[0][index])
 
         self.national_bin[0][15] = self.national_bin[0][0] * self.national_bin[1][15]
         for index in range(1, 15):
@@ -70,33 +72,36 @@ class DataModel():
 
         self.national_bin[1][0] = ""
 
-        # Special hard-coding to conform to referenceable values!
-
-        # ages...
-        self.national_bin[1][6] = 0.228000001
-        self.national_bin[0][6] = 0.228000001 * self.national_bin[0][0]
-        self.national_bin[1][7] = 0.620000001
-        self.national_bin[0][7] = 0.620000001 * self.national_bin[0][0]
-        self.national_bin[1][8] = 0.152000001
-        self.national_bin[0][8] = 0.152000001 * self.national_bin[0][0]
-
-        # below poverty level
-        self.national_bin[1][11] = 0.141000001
-        self.national_bin[0][11] = 0.141000001 * self.national_bin[0][0]
-
-        # ..without high school diploma
-        self.national_bin[1][10] = 0.123000001
-        self.national_bin[0][10] = 0.123000001 * self.national_bin[0][9]
+#        # Special hard-coding to conform to referenceable values!
+#
+#        # ages...
+#        self.national_bin[1][6] = 0.226000000
+#        self.national_bin[0][6] = 0.226000000 * self.national_bin[0][0]
+#        self.national_bin[1][7] = 0.617000000
+#        self.national_bin[0][7] = 0.617000000 * self.national_bin[0][0]
+#        self.national_bin[1][8] = 0.157000000
+#        self.national_bin[0][8] = 0.157000000 * self.national_bin[0][0]
+#
+#        # below poverty level
+#        self.national_bin[1][11] = 0.134000000
+#        self.national_bin[0][11] = 0.134000000 * self.national_bin[0][0]
+#
+#        # ..without high school diploma
+#        self.national_bin[1][10] = 0.121000000
+#        self.national_bin[0][10] = 0.121000000 * self.national_bin[0][9]
 
     def create_state_bin(self):
         # Create state bin and tabulate population weighted demographic stats for each sub group.
         self.state_bin = [ [0]*16 for _ in range(2) ]
         self.state_df.apply(lambda row: self.tabulate_state_data(row), axis=1)
-
+        
         # Calculate averages by dividing population for each sub group
         for index in range(1, 16):
-            self.state_bin[1][index] = self.state_bin[1][index] / (100 * self.state_bin[0][index])
-
+            if index == 11:
+                self.state_bin[1][index] = self.state_bin[1][index] / (100 * self.state_bin[0][0])
+            else:
+                self.state_bin[1][index] = self.state_bin[1][index] / (100 * self.state_bin[0][index])
+        
         self.state_bin[0][15] = self.state_bin[0][0] * self.state_bin[1][15]
         for index in range(1, 15):
             if index == 10:
@@ -113,7 +118,10 @@ class DataModel():
 
         # Calculate averages by dividing population for each sub group
         for index in range(1, 16):
-            self.county_bin[1][index] = self.county_bin[1][index] / (100 * self.county_bin[0][index])
+            if index == 11:
+                self.county_bin[1][index] = self.county_bin[1][index] / (100 * self.county_bin[0][0])
+            else:
+                self.county_bin[1][index] = self.county_bin[1][index] / (100 * self.county_bin[0][index])
 
         self.county_bin[0][15] = self.county_bin[0][0] * self.county_bin[1][15]
         for index in range(1, 15):
@@ -169,23 +177,19 @@ class DataModel():
 
         population = row['TOTALPOP']
         pct_minority = row['PCT_MINORITY']
-        pct_white = row['PCT_NON_HISP_WHITE']
-        pct_black = row['PCT_NON_HISP_BLACK']
-        pct_amerind = row['PCT_NON_HISP_AMERIND']
-        pct_hawpac = row['PCT_HAWPAC']
-        pct_asian = row['PCT_ASIAN']
-        pct_other = row['PCT_NON_HISP_OTHER']
-        pct_twomore = row['PCT_TWOMORE']
+        pct_white = row['PCT_WHITE']
+        pct_black = row['PCT_BLACK']
+        pct_amerind = row['PCT_AMIND']
+        pct_other = row['PCT_OTHER_RACE']
         pct_hisp = row['PCT_HISP']
         pct_age_lt18 = row['PCT_AGE_LT18']
         pct_age_gt64 = row['PCT_AGE_GT64']
         edu_universe = row['EDU_UNIVERSE']
         pct_edu_lths = row['PCT_EDU_LTHS']
-        pov_universe = row['POV_UNIVERSE_FRT']
-        pct_pov_lt50 = row['PCT_INC_POV_LT50']
-        pct_pov_50_99 = row['PCT_INC_POV_50TO99']
+        pov_universe = row['POV_UNIVERSE']
         pct_lowinc = row['PCT_LOWINC']
         pct_lingiso = row['PCT_LINGISO']
+        pct_pov = row['PCT_POV']
 
         self.national_bin[0][0] += population
         if not isna(pct_minority):
@@ -197,7 +201,7 @@ class DataModel():
         if not isna((pct_amerind)):
             self.national_bin[1][3] += pct_amerind * population
             self.national_bin[0][3] += population
-        if not isna(pct_other) and not isna(pct_asian) and not isna(pct_hawpac) and not isna(pct_twomore):
+        if not isna(pct_other):
             self.national_bin[1][4] += pct_other * population
             self.national_bin[0][4] += population
         if not isna(pct_hisp):
@@ -221,8 +225,8 @@ class DataModel():
         if not isna(edu_universe) and not isna(pct_edu_lths):
             self.national_bin[1][10] += pct_edu_lths * edu_universe
             self.national_bin[0][10] += edu_universe
-        if not isna(pov_universe) and not isna(pct_pov_lt50) and not isna(pct_pov_50_99):
-            self.national_bin[1][11] += (pct_pov_lt50 + pct_pov_50_99) * pov_universe
+        if not isna(pov_universe):
+            self.national_bin[1][11] += pct_pov * pov_universe
             self.national_bin[0][11] += pov_universe
         if not isna(pov_universe) and not isna(pct_lowinc):
             self.national_bin[1][12] += pct_lowinc * pov_universe
@@ -238,23 +242,19 @@ class DataModel():
 
         population = row['TOTALPOP']
         pct_minority = row['PCT_MINORITY']
-        pct_white = row['PCT_NON_HISP_WHITE']
-        pct_black = row['PCT_NON_HISP_BLACK']
-        pct_amerind = row['PCT_NON_HISP_AMERIND']
-        pct_hawpac = row['PCT_HAWPAC']
-        pct_asian = row['PCT_ASIAN']
-        pct_other = row['PCT_NON_HISP_OTHER']
-        pct_twomore = row['PCT_TWOMORE']
+        pct_white = row['PCT_WHITE']
+        pct_black = row['PCT_BLACK']
+        pct_amerind = row['PCT_AMIND']
+        pct_other = row['PCT_OTHER_RACE']
         pct_hisp = row['PCT_HISP']
         pct_age_lt18 = row['PCT_AGE_LT18']
         pct_age_gt64 = row['PCT_AGE_GT64']
         edu_universe = row['EDU_UNIVERSE']
         pct_edu_lths = row['PCT_EDU_LTHS']
-        pov_universe = row['POV_UNIVERSE_FRT']
-        pct_pov_lt50 = row['PCT_INC_POV_LT50']
-        pct_pov_50_99 = row['PCT_INC_POV_50TO99']
+        pov_universe = row['POV_UNIVERSE']
         pct_lowinc = row['PCT_LOWINC']
         pct_lingiso = row['PCT_LINGISO']
+        pct_pov = row['PCT_POV']
 
         self.state_bin[0][0] += population
         if not isna(pct_minority):
@@ -266,7 +266,7 @@ class DataModel():
         if not isna((pct_amerind)):
             self.state_bin[1][3] += pct_amerind * population
             self.state_bin[0][3] += population
-        if not isna(pct_other) and not isna(pct_asian) and not isna(pct_hawpac) and not isna(pct_twomore):
+        if not isna(pct_other):
             self.state_bin[1][4] += pct_other * population
             self.state_bin[0][4] += population
         if not isna(pct_hisp):
@@ -290,8 +290,8 @@ class DataModel():
         if not isna(edu_universe) and not isna(pct_edu_lths):
             self.state_bin[1][10] += pct_edu_lths * edu_universe
             self.state_bin[0][10] += edu_universe
-        if not isna(pov_universe) and not isna(pct_pov_lt50) and not isna(pct_pov_50_99):
-            self.state_bin[1][11] += (pct_pov_lt50 + pct_pov_50_99) * pov_universe
+        if not isna(pov_universe):
+            self.state_bin[1][11] += pct_pov * pov_universe
             self.state_bin[0][11] += pov_universe
         if not isna(pov_universe) and not isna(pct_lowinc):
             self.state_bin[1][12] += pct_lowinc * pov_universe
@@ -307,23 +307,19 @@ class DataModel():
 
         population = row['TOTALPOP']
         pct_minority = row['PCT_MINORITY']
-        pct_white = row['PCT_NON_HISP_WHITE']
-        pct_black = row['PCT_NON_HISP_BLACK']
-        pct_amerind = row['PCT_NON_HISP_AMERIND']
-        pct_hawpac = row['PCT_HAWPAC']
-        pct_asian = row['PCT_ASIAN']
-        pct_other = row['PCT_NON_HISP_OTHER']
-        pct_twomore = row['PCT_TWOMORE']
+        pct_white = row['PCT_WHITE']
+        pct_black = row['PCT_BLACK']
+        pct_amerind = row['PCT_AMIND']
+        pct_other = row['PCT_OTHER_RACE']
         pct_hisp = row['PCT_HISP']
         pct_age_lt18 = row['PCT_AGE_LT18']
         pct_age_gt64 = row['PCT_AGE_GT64']
         edu_universe = row['EDU_UNIVERSE']
         pct_edu_lths = row['PCT_EDU_LTHS']
-        pov_universe = row['POV_UNIVERSE_FRT']
-        pct_pov_lt50 = row['PCT_INC_POV_LT50']
-        pct_pov_50_99 = row['PCT_INC_POV_50TO99']
+        pov_universe = row['POV_UNIVERSE']
         pct_lowinc = row['PCT_LOWINC']
         pct_lingiso = row['PCT_LINGISO']
+        pct_pov = row['PCT_POV']
 
         self.county_bin[0][0] += population
         if not isna(pct_minority):
@@ -335,7 +331,7 @@ class DataModel():
         if not isna((pct_amerind)):
             self.county_bin[1][3] += pct_amerind * population
             self.county_bin[0][3] += population
-        if not isna(pct_other) and not isna(pct_asian) and not isna(pct_hawpac) and not isna(pct_twomore):
+        if not isna(pct_other):
             self.county_bin[1][4] += pct_other * population
             self.county_bin[0][4] += population
         if not isna(pct_hisp):
@@ -359,8 +355,8 @@ class DataModel():
         if not isna(edu_universe) and not isna(pct_edu_lths):
             self.county_bin[1][10] += pct_edu_lths * edu_universe
             self.county_bin[0][10] += edu_universe
-        if not isna(pov_universe) and not isna(pct_pov_lt50) and not isna(pct_pov_50_99):
-            self.county_bin[1][11] += (pct_pov_lt50 + pct_pov_50_99) * pov_universe
+        if not isna(pov_universe):
+            self.county_bin[1][11] += pct_pov * pov_universe
             self.county_bin[0][11] += pov_universe
         if not isna(pov_universe) and not isna(pct_lowinc):
             self.county_bin[1][12] += pct_lowinc * pov_universe
@@ -381,45 +377,30 @@ class DataModel():
         # level data.
         block_group = self.acs_dict[group_id] if group_id in self.acs_dict else None
         population = row['population']
-
+        
         total_pop = self.get_value(block_group, group_id, 'TOTALPOP', False)
         pct_minority = self.get_value(block_group, group_id, 'PCT_MINORITY')
-        pct_white = self.get_value(block_group, group_id, 'PCT_NON_HISP_WHITE')
-        pct_black = self.get_value(block_group, group_id, 'PCT_NON_HISP_BLACK')
-        pct_amerind = self.get_value(block_group, group_id, 'PCT_NON_HISP_AMERIND')
-        pct_hawpac = self.get_value(block_group, group_id, 'PCT_HAWPAC')
-        pct_asian = self.get_value(block_group, group_id, 'PCT_ASIAN')
-        pct_other = self.get_value(block_group, group_id, 'PCT_NON_HISP_OTHER')
-        pct_twomore = self.get_value(block_group, group_id, 'PCT_TWOMORE')
+        pct_white = self.get_value(block_group, group_id, 'PCT_WHITE')
+        pct_black = self.get_value(block_group, group_id, 'PCT_BLACK')
+        pct_amerind = self.get_value(block_group, group_id, 'PCT_AMIND')
+        pct_other = self.get_value(block_group, group_id, 'PCT_OTHER_RACE')
         pct_hisp = self.get_value(block_group, group_id, 'PCT_HISP')
         pct_age_lt18 = self.get_value(block_group, group_id, 'PCT_AGE_LT18')
         pct_age_gt64 = self.get_value(block_group, group_id, 'PCT_AGE_GT64')
         edu_universe = self.get_value(block_group, group_id, 'EDU_UNIVERSE', False)
         pct_edu_lths = self.get_value(block_group, group_id, 'PCT_EDU_LTHS')
-        pov_universe = self.get_value(block_group, group_id, 'POV_UNIVERSE_FRT', False)
-        pct_pov_lt50 = self.get_value(block_group, group_id, 'PCT_INC_POV_LT50')
-        pct_pov_50_99 = self.get_value(block_group, group_id, 'PCT_INC_POV_50TO99')
-        pct_lowinc = self.get_value(block_group, group_id, 'PCT_LOWINC')
+        pov_universe = self.get_value(block_group, group_id, 'POV_UNIVERSE', False)
+        pct_2xpov = self.get_value(block_group, group_id, 'PCT_LOWINC')
         pct_lingiso = self.get_value(block_group, group_id, 'PCT_LINGISO')
+        pct_pov = self.get_value(block_group, group_id, 'PCT_POV')
 
         if pct_white is None or pct_black is None or pct_amerind is None or pct_other is None or pct_hisp is None \
-                or pct_asian is None or pct_hawpac is None or pct_twomore is None or pct_age_lt18 is None \
-                or pct_age_gt64 is None or pct_edu_lths is None or pct_pov_lt50 is None or pct_pov_50_99 is None \
-                or pct_lowinc is None or pct_lingiso is None or pov_universe is None or edu_universe is None\
-                or pct_minority is None:
-            # This record can't be found in the ACS or default data, but if this record is a user receptor
-            # then it still needs to be analyzed to see if it's risk/HI is the highest. User receptors
-            # contain the letter U in their block id.
-            if 'U' in row['block']:
-                for key, item in self.toshis.items():
-                    tab_column = self.risk_column_map[key]
-                    risk = self.round_to_sigfig(row[tab_column], 1)
-                    # Update the max risk for this toshi if necessary (using rounded risk)
-                    if risk > self.max_risk[key]:
-                        self.max_risk[key] = risk
-                
-            Logger.logMessage("Unable to compile enough data to include this record: " + group_id)
-            return None
+                or pct_age_lt18 is None \
+                or pct_age_gt64 is None or pct_edu_lths is None \
+                or pct_2xpov is None or pct_lingiso is None or pov_universe is None or edu_universe is None\
+                or pct_minority is None or pct_pov is None:
+            print("Unable to compile enough data to include this record: " + group_id)
+            return
 
         pct_edu_universe = edu_universe / total_pop if total_pop > 0 else 0
         pct_pov_universe = pov_universe / total_pop if total_pop > 0 else 0
@@ -428,7 +409,6 @@ class DataModel():
             tab_column = self.risk_column_map[key]
             bins = self.toshi_bins[key]
 
-            # Non-rounded risk is used to bin people, and rounded risk is for display
             risk_raw = row[tab_column]
             risk = self.round_to_sigfig(row[tab_column], 1)
 
@@ -477,8 +457,8 @@ class DataModel():
                 bins[r][8] += population * pct_age_gt64 * risk_value
                 bins[r][9] += population * pct_edu_universe * risk_value
                 bins[r][10] += population * pct_edu_universe * pct_edu_lths * risk_value
-                bins[r][11] += population * pct_pov_universe * (pct_pov_lt50 + pct_pov_50_99) * risk_value
-                bins[r][12] += population * pct_pov_universe * pct_lowinc * risk_value
+                bins[r][11] += population * pct_pov_universe * pct_pov * risk_value
+                bins[r][12] += population * pct_pov_universe * pct_2xpov * risk_value
                 bins[r][13] += population * pct_lingiso * risk_value
                 bins[r][14] += population * pct_minority * risk_value
             
@@ -492,40 +472,27 @@ class DataModel():
 
         total_pop = self.get_value(block_group, group_id, 'TOTALPOP', False)
         pct_minority = self.get_value(block_group, group_id, 'PCT_MINORITY')
-        pct_white = self.get_value(block_group, group_id, 'PCT_NON_HISP_WHITE')
-        pct_black = self.get_value(block_group, group_id, 'PCT_NON_HISP_BLACK')
-        pct_amerind = self.get_value(block_group, group_id, 'PCT_NON_HISP_AMERIND')
-        pct_hawpac = self.get_value(block_group, group_id, 'PCT_HAWPAC')
-        pct_asian = self.get_value(block_group, group_id, 'PCT_ASIAN')
-        pct_other = self.get_value(block_group, group_id, 'PCT_NON_HISP_OTHER')
-        pct_twomore = self.get_value(block_group, group_id, 'PCT_TWOMORE')
+        pct_white = self.get_value(block_group, group_id, 'PCT_WHITE')
+        pct_black = self.get_value(block_group, group_id, 'PCT_BLACK')
+        pct_amerind = self.get_value(block_group, group_id, 'PCT_AMIND')
+        pct_other = self.get_value(block_group, group_id, 'PCT_OTHER_RACE')
         pct_hisp = self.get_value(block_group, group_id, 'PCT_HISP')
         pct_age_lt18 = self.get_value(block_group, group_id, 'PCT_AGE_LT18')
         pct_age_gt64 = self.get_value(block_group, group_id, 'PCT_AGE_GT64')
         edu_universe = self.get_value(block_group, group_id, 'EDU_UNIVERSE', False)
         pct_edu_lths = self.get_value(block_group, group_id, 'PCT_EDU_LTHS')
-        pov_universe = self.get_value(block_group, group_id, 'POV_UNIVERSE_FRT', False)
-        pct_pov_lt50 = self.get_value(block_group, group_id, 'PCT_INC_POV_LT50')
-        pct_pov_50_99 = self.get_value(block_group, group_id, 'PCT_INC_POV_50TO99')
-        pct_lowinc = self.get_value(block_group, group_id, 'PCT_LOWINC')
+        pov_universe = self.get_value(block_group, group_id, 'POV_UNIVERSE', False)
+        pct_2xpov = self.get_value(block_group, group_id, 'PCT_LOWINC')
+        pct_pov = self.get_value(block_group, group_id, 'PCT_POV')
         pct_lingiso = self.get_value(block_group, group_id, 'PCT_LINGISO')
 
         if pct_white is None or pct_black is None or pct_amerind is None or pct_other is None or pct_hisp is None \
-                or pct_asian is None or pct_hawpac is None or pct_twomore is None or pct_age_lt18 is None \
-                or pct_age_gt64 is None or pct_edu_lths is None or pct_pov_lt50 is None or pct_pov_50_99 is None \
-                or pct_lowinc is None or pct_lingiso is None or pov_universe is None or edu_universe is None\
-                or pct_minority is None:
-            # This record can't be found in the ACS or default data, but if this record is a user receptor
-            # then it still needs to be analyzed to see if it's risk/HI is the highest. User receptors
-            # contain the letter U in their block id.
-            if 'U' in row['block']:
-                risk = DataModel.round_to_sigfig(row['mir']) * 1000000       
-                # Update the max risk for mir if necessary (using rounded risk)
-                if risk > self.max_risk['mir']:
-                    self.max_risk['mir'] = risk
-
-            Logger.logMessage("Unable to compile enough data to include this record: " + group_id)
-            return None
+                or pct_age_lt18 is None \
+                or pct_age_gt64 is None or pct_edu_lths is None \
+                or pct_2xpov is None or pct_lingiso is None or pov_universe is None or edu_universe is None \
+                or pct_minority is None or pct_pov is None:
+            print("Unable to compile enough data to include this record: " + group_id)
+            return
 
         pct_edu_universe = edu_universe / total_pop if total_pop > 0 else 0
         pct_pov_universe = pov_universe / total_pop if total_pop > 0 else 0
@@ -533,9 +500,8 @@ class DataModel():
         # Assign the block to a risk bin...this means not only giving the entire population represented by the block
         # to the total population column, but also giving a percentage of it to each sub group (based on the ACS
         # data.)
-        # Non-rounded risk is used to bin people, and rounded risk is for display
+        risk = row['mir_rounded'] * 1000000
         risk_raw = row['mir'] * 1000000
-        risk = DataModel.round_to_sigfig(row['mir']) * 1000000
 
         # Update the max risk for mir if necessary (using rounded risk)
         if risk > self.max_risk['mir']:
@@ -582,8 +548,8 @@ class DataModel():
             self.cancer_bins[r][8] += population * pct_age_gt64 * risk_value
             self.cancer_bins[r][9] += population * pct_edu_universe * risk_value
             self.cancer_bins[r][10] += population * pct_edu_universe * pct_edu_lths * risk_value
-            self.cancer_bins[r][11] += population * pct_pov_universe * (pct_pov_lt50 + pct_pov_50_99) * risk_value
-            self.cancer_bins[r][12] += population * pct_pov_universe * pct_lowinc * risk_value
+            self.cancer_bins[r][11] += population * pct_pov_universe * pct_pov * risk_value
+            self.cancer_bins[r][12] += population * pct_pov_universe * pct_2xpov * risk_value
             self.cancer_bins[r][13] += population * pct_lingiso * risk_value
             self.cancer_bins[r][14] += population * pct_minority * risk_value
 

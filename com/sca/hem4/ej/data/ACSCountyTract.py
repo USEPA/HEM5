@@ -54,22 +54,15 @@ class ACSCountyTract:
                 return df
 
     def getColumns(self):
-        return ['ID', 'TOTALPOP', 'PCT_MINORITY', 'PCT_WHITE', 'PCT_BLACK', 'PCT_HISP', 'PCT_ASIAN',
-                'PCT_AMERIND', 'PCT_HAWPAC', 'PCT_OTHER_RACE', 'PCT_TWOMORE', 'PCT_AGE_LT18',
-                'PCT_AGE_GT64', 'POV_UNIVERSE_FRT', 'PCT_LOWINC', 'PCT_INC_POV_LT50', 'PCT_INC_POV_50TO99',
-                'EDU_UNIVERSE', 'PCT_EDU_LTHS', 'PCT_LINGISO', 'PCT_NON_HISP', 'PCT_NON_HISP_WHITE', 'PCT_NON_HISP_BLACK',
-                'PCT_NON_HISP_AMERIND', 'PCT_NON_HISP_OTHER', 'PCT_HISP_WHITE', 'PCT_HISP_BLACK', 'PCT_HISP_AMERIND',
-                'PCT_HISP_OTHER', 'POVERTY_FLAG', 'EDUCATION_FLAG', 'LING_ISO_FLAG', 'FRACT_25UP']
+        return ['ID', 'TOTALPOP', 'PCT_MINORITY', 'PCT_WHITE', 'PCT_BLACK', 'PCT_AMIND', 'PCT_OTHER_RACE', 'PCT_HISP',
+                'PCT_AGE_LT18', 'PCT_AGE_GT64', 'POV_UNIVERSE', 'PCT_LOWINC', 'PCT_POV', 'EDU_UNIVERSE', 'PCT_EDU_LTHS', 
+                'PCT_LINGISO', 'POVERTY_FLAG', 'EDUCATION_FLAG', 'LING_ISO_FLAG']
 
     def createDataframe(self):
         # Type setting for reading
-        self.numericColumns = ['TOTALPOP', 'PCT_MINORITY', 'PCT_WHITE', 'PCT_BLACK', 'PCT_HISP', 'PCT_ASIAN',
-                               'PCT_AMERIND', 'PCT_HAWPAC', 'PCT_OTHER_RACE', 'PCT_TWOMORE', 'PCT_AGE_LT18',
-                               'PCT_AGE_GT64', 'POV_UNIVERSE_FRT', 'PCT_LOWINC', 'PCT_INC_POV_LT50',
-                               'PCT_INC_POV_50TO99', 'EDU_UNIVERSE', 'PCT_EDU_LTHS', 'PCT_LINGISO', 'PCT_NON_HISP',
-                               'PCT_NON_HISP_WHITE', 'PCT_NON_HISP_BLACK', 'PCT_NON_HISP_AMERIND', 'PCT_NON_HISP_OTHER',
-                               'PCT_HISP_WHITE', 'PCT_HISP_BLACK', 'PCT_HISP_AMERIND', 'PCT_HISP_OTHER',
-                               'FRACT_25UP']
+        self.numericColumns = ['TOTALPOP', 'PCT_MINORITY', 'PCT_WHITE', 'PCT_BLACK', 'PCT_AMIND', 'PCT_OTHER_RACE', 'PCT_HISP',
+                               'PCT_AGE_LT18', 'PCT_AGE_GT64', 'POV_UNIVERSE', 'PCT_LOWINC', 'PCT_POV', 'EDU_UNIVERSE', 'PCT_EDU_LTHS', 
+                               'PCT_LINGISO']
         self.strColumns = ['ID', 'POVERTY_FLAG', 'EDUCATION_FLAG', 'LING_ISO_FLAG']
 
         df = self.readFromPath(self.getColumns())
