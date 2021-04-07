@@ -1,6 +1,4 @@
 
-import importlib
-import os, glob
 import traceback
 
 import com.sca.hem4.writer.excel.summary.MaxRisk as maxRiskReportModule
@@ -13,22 +11,25 @@ import com.sca.hem4.writer.excel.summary.AcuteImpacts as acuteImpactsReportModul
 import com.sca.hem4.writer.excel.summary.SourceTypeRiskHistogram as sourceTypeRiskHistogramModule
 import com.sca.hem4.writer.excel.summary.MultiPathway as multiPathwayModule
 import com.sca.hem4.writer.excel.summary.MultiPathwayNonCensus as multiPathwayModuleNonCensus
+import com.sca.hem4.writer.excel.summary.MaxConcentrationLocator as maxConcentrationLocatorModule
+import com.sca.hem4.writer.excel.summary.SourcePollutantMaxRisk as sourcePollutantMaxRiskModule
+
 from com.sca.hem4.log import Logger
 from com.sca.hem4.visualize.AcuteImpactsVisualizer import AcuteImpactsVisualizer
 from com.sca.hem4.writer.excel.summary.AltRecAwareSummary import AltRecAwareSummary
 
-maxRiskReportModule = importlib.import_module("com.sca.hem4.writer.excel.summary.MaxRisk")
-cancerDriversReportModule = importlib.import_module("com.sca.hem4.writer.excel.summary.CancerDrivers")
-hazardIndexDriversReportModule = importlib.import_module("com.sca.hem4.writer.excel.summary.HazardIndexDrivers")
-histogramModule = importlib.import_module("com.sca.hem4.writer.excel.summary.Histogram")
-hiHistogramModule = importlib.import_module("com.sca.hem4.writer.excel.summary.HI_Histogram")
-incidenceDriversReportModule = importlib.import_module("com.sca.hem4.writer.excel.summary.IncidenceDrivers")
-acuteImpactsReportModule = importlib.import_module("com.sca.hem4.writer.excel.summary.AcuteImpacts")
-sourceTypeRiskHistogramModule = importlib.import_module("com.sca.hem4.writer.excel.summary.SourceTypeRiskHistogram")
-multiPathwayModule = importlib.import_module("com.sca.hem4.writer.excel.summary.MultiPathway")
-multiPathwayModuleNonCensus = importlib.import_module("com.sca.hem4.writer.excel.summary.MultiPathwayNonCensus")
-maxConcentrationLocatorModule = importlib.import_module("com.sca.hem4.writer.excel.summary.MaxConcentrationLocator")
-sourcePollutantMaxRiskModule = importlib.import_module("com.sca.hem4.writer.excel.summary.SourcePollutantMaxRisk")
+#maxRiskReportModule = importlib.import_module("com.sca.hem4.writer.excel.summary.MaxRisk")
+#cancerDriversReportModule = importlib.import_module("com.sca.hem4.writer.excel.summary.CancerDrivers")
+#hazardIndexDriversReportModule = importlib.import_module("com.sca.hem4.writer.excel.summary.HazardIndexDrivers")
+#histogramModule = importlib.import_module("com.sca.hem4.writer.excel.summary.Histogram")
+#hiHistogramModule = importlib.import_module("com.sca.hem4.writer.excel.summary.HI_Histogram")
+#incidenceDriversReportModule = importlib.import_module("com.sca.hem4.writer.excel.summary.IncidenceDrivers")
+#acuteImpactsReportModule = importlib.import_module("com.sca.hem4.writer.excel.summary.AcuteImpacts")
+#sourceTypeRiskHistogramModule = importlib.import_module("com.sca.hem4.writer.excel.summary.SourceTypeRiskHistogram")
+#multiPathwayModule = importlib.import_module("com.sca.hem4.writer.excel.summary.MultiPathway")
+#multiPathwayModuleNonCensus = importlib.import_module("com.sca.hem4.writer.excel.summary.MultiPathwayNonCensus")
+#maxConcentrationLocatorModule = importlib.import_module("com.sca.hem4.writer.excel.summary.MaxConcentrationLocator")
+#sourcePollutantMaxRiskModule = importlib.import_module("com.sca.hem4.writer.excel.summary.SourcePollutantMaxRisk")
 
 
 class SummaryManager(AltRecAwareSummary):
