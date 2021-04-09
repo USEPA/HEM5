@@ -13,7 +13,7 @@ class CancerElaineSummary(ElaineSummary):
     def get_table_header(self):
         scope = 'The ' + self.source_category + ' Source Category' if self.facility is None else \
             'Facility ' + self.facility
-        return 'Table A-6. ' + scope + ' : Demographic ' + \
+        return 'Table A-6. ' + scope + ' : Community ' + \
                'Assessment based on Cancer Risk Results - ' + self.radius + ' km Study Area Radius'
 
     def get_risk_header(self):

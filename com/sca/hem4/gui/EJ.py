@@ -71,7 +71,7 @@ class EJ(Page):
         self.titleLabel = tk.Label(self.title_frame, image=titleicon, bg=self.tab_color)
         self.titleLabel.image = titleicon # keep a reference!
         self.titleLabel.grid(row=1, column=0, padx=10, pady=10)
-        title = tk.Label(self.title_frame, text="CREATE ENVIRONMENTAL JUSTICE REPORTS", font=TITLE_FONT,
+        title = tk.Label(self.title_frame, text="CREATE COMMUNITY ASSESSMENT REPORTS", font=TITLE_FONT,
                          fg=MAIN_COLOR, bg=self.tab_color, anchor="w")
         title.grid(row=1, column=1, pady=10, padx=10)
 

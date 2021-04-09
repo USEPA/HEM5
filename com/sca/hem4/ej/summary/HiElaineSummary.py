@@ -14,7 +14,7 @@ class HiElaineSummary(ElaineSummary):
     def get_table_header(self):
         scope = 'The ' + self.source_category + ' Source Category' if self.facility is None else \
             'Facility ' + self.facility
-        return 'Table C-6. ' + scope + ' : Demographic ' + \
+        return 'Table C-6. ' + scope + ' : Community ' + \
                'Assessment based on ' + self.hazard_name + ' Hazard Index Results - ' + self.radius + \
                ' km Study Area Radius'
 

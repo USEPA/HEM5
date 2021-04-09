@@ -156,7 +156,7 @@ class MainView(tk.Frame):
         self.outputLabel.bind("<Button-1>", partial(self.lift_page, self.outputLabel, self.analyzeLabel, self.analyze, self.current_button))
 
         # EJ nav button
-        self.ejLabel = tk.Label(self, text="ENVIRONMENTAL JUSTICE", font=TAB_FONT, bg=MAIN_COLOR, height=2, pady=2, anchor="w")
+        self.ejLabel = tk.Label(self, text="COMMUNITY ASSESSMENT", font=TAB_FONT, bg=MAIN_COLOR, height=2, pady=2, anchor="w")
         self.ejLabel.place(in_=self.container, relwidth=0.2, rely=0.35, relx=0.1)
 
 
