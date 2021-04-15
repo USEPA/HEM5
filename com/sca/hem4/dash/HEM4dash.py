@@ -53,12 +53,15 @@ class HEM4dash():
             chklist = []
         
             for file in filelist:
-                chklist.append(os.path.isfile(file))
-        
+                fullname = os.path.join(self.dir, file)
+                chklist.append(os.path.isfile(fullname))
+                    
             if not all(chklist):
                 messagebox.showinfo("Invalid directory", " Please select a directory containing the results of a model run and summary reports for cancer risk drivers, "+
                                     "max risks, max TOSHI drivers, pollutant incidence drivers, source type incidence drivers, and cancer histograms.")
                 return None
+            else:
+                break
                 
 
         # Directory is correct. Continue...            
