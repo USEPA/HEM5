@@ -3,6 +3,7 @@ import math
 from com.sca.hem4.support.UTM import *
 from com.sca.hem4.model.Model import *
 from com.sca.hem4.log.Logger import Logger
+import sys
 
 rec_id = 'rec_id';
 fips = 'fips';
@@ -291,8 +292,8 @@ def getblocks(cenx, ceny, cenlon, cenlat, utmzone, hemi, maxdist, modeldist, sou
        
     for state, FIPS in censusfile2use.items():
         locations = FIPS
-        dtype_dict = '{"REC_NO":int, "FIPS":object, "IDMARPLOT":object, "POPULATION":int, "LAT":float, "LON":float, "ELEV":float, "HILL":float, "MOVED":object, "URBAN_POP":int}'
-        state_pd = read_json_file(state, dtype_dict)
+        dtype_dict = '{"REC_NO":int, "FIPS":object, "IDMARPLOT":object, "POPULATION":int, "LAT":float, "LON":float, "ELEV":float, "HILL":float, "URBAN_POP":int}'
+        state_pd = read_json_file(state, dtype_dict)        
         state_pd.columns = [x.lower() for x in state_pd.columns]
         state_pd.rename(inplace=True, index=str, columns={'rec_no' : 'rec_id'})
         check = state_pd[state_pd[fips].isin(locations)]
