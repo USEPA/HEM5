@@ -1,4 +1,6 @@
 import os
+from decimal import ROUND_HALF_UP, Decimal, getcontext
+
 from math import *
 from pandas import isna
 
@@ -591,11 +593,19 @@ class DataModel():
 
     @staticmethod
     def round_to_sigfig(x, sig=1):
+        # Convert float to decimal and set rounding definition
+        dc = getcontext()
+        dc.rounding = ROUND_HALF_UP
+        str_x = str(x)
+        d = Decimal(str_x)
+
         if x == 0:
-            return 0
+            return 0;
 
         if isnan(x):
             return float('NaN')
 
-        rounded = round(x, sig - int(floor(log10(abs(x)))) - 1)
+        # Round using decimal definition then switch result back to float
+        rounded = round(d, sig-int(floor(log10(abs(x))))-1)
+        rounded = float(rounded)
         return rounded

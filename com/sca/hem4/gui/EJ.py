@@ -8,6 +8,7 @@ from com.sca.hem4.ej.EnvironmentalJustice import EnvironmentalJustice
 from com.sca.hem4.ej.ReportWriter import ReportWriter
 from com.sca.hem4.ej.data.ACSCountyTract import ACSCountyTract
 from com.sca.hem4.ej.data.ACSDataset import ACSDataset
+from com.sca.hem4.ej.data.DataModel import DataModel
 from com.sca.hem4.ej.summary.FacilitySummary import FacilitySummary
 from com.sca.hem4.gui.EntryWithPlaceholder import EntryWithPlaceholder
 from com.sca.hem4.gui.Page import Page
@@ -21,7 +22,7 @@ from functools import partial
 from com.sca.hem4.log import Logger
 from com.sca.hem4.upload.MetLib import MetLib
 from com.sca.hem4.writer.csv.MirHIAllReceptors import *
-
+from decimal import ROUND_HALF_UP, Decimal, getcontext
 
 # The GUI portion of the EJ functionality in HEM4. This class manages the various dialogs and options needed
 # to kick off a run of the EJ reporting tool. Its main entry into the code that actually performs the report
@@ -512,7 +513,10 @@ class EJ(Page):
                 bsc_df[distance] = np.sqrt((cenx - bsc_df.utme)**2 + (ceny - bsc_df.utmn)**2)
                 
                 # add a rounded mir column
-                bsc_df['mir_rounded'] = bsc_df['mir'].apply(self.round_to_sigfig, 1)
+                try:
+                    bsc_df['mir_rounded'] = bsc_df['mir'].apply(DataModel.round_to_sigfig, 1)
+                except BaseException as e:
+                    print(e)
 
                 filtered_bsc_df = bsc_df.query('distance <= @maxdist').copy()
                 Logger.logMessage("Filtered BlockSummaryChronic dataset (radius = " + str(maxdist) + ") contains " +
@@ -542,7 +546,7 @@ class EJ(Page):
 
         ej.close_facility_summaries()
 
-        messagebox.showinfo("Environmental Justice Reports Finished", "Please check the output folder for reports.")
+        messagebox.showinfo("Community Assessment Reports Finished", "Please check the output folder for reports.")
 
         ej_directory = os.path.join(self.fullpath, "ej")
         next_log_name = self.find_next_log_name(ej_directory)
@@ -601,15 +605,3 @@ class EJ(Page):
         Logger.logMessage(', '.join(list(chosen.values())))
 
         return chosen
-
-
-    def round_to_sigfig(self, x, sig=1):
-        if x == 0:
-            return 0;
-
-        if math.isnan(x):
-            return float('NaN')
-
-        rounded = round(x, sig-int(floor(log10(abs(x))))-1)
-        return rounded
-    

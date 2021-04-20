@@ -157,7 +157,12 @@ class DGSummary():
 
                     format = formats['percentage'] if row == 1 else formats['number']
                     if row > 1:
-                        value = DataModel.round_to_sigfig(value, 2)
+                        value = DataModel.round_to_sigfig(value, 1)
+
+                    if row == 1:
+                        format = formats['percentage']
+                    else:
+                        format = formats['number'] if value > 1 else None
 
                     worksheet.write_number(startrow+row, startcol+col, value, format)
                 else:

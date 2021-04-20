@@ -113,11 +113,16 @@ class WorksheetTable:
                 # Most values in the table are rounded to the nearest integer, but the average risk / HI is
                 # rounded to preserve one sig fig. Note that Excel number formatting seems to do weird things
                 # for the value 0, so we're only using it when we get into the thousands or bigger.
-                value = DataModel.round_to_sigfig(slice[row][col], 2) if row == numrows-1 else slice[row][col]
-                format = formats['number'] if value > 1 else None
-                if value < 1:
-                    value = '=ROUND(' + str(value) + ', 0)'
+                if row == numrows-1:
+                    value = DataModel.round_to_sigfig(slice[row][col], 1)
+                    floated = float(value)
+                else:
+                    value = slice[row][col]
+                    floated = float(value)
+                    if floated < 1:
+                        value = '=ROUND(' + str(value) + ', 0)'
 
+                format = formats['number'] if floated > 1 else None
                 worksheet.write(startrow+row, startcol+col, value, format)
 
         return startrow + numrows
