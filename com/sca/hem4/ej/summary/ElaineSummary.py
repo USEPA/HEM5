@@ -93,57 +93,57 @@ class ElaineSummary():
         # white
         value = float(data[0][1])
         format = formats['percentage']
-        worksheet.write_number(7, startcol, DataModel.round_to_sigfig(value, 2), format)
+        worksheet.write_number(7, startcol, value, format)
 
         # non white
         value = 1 - value if exposure_value > 0 else 0
         format = formats['percentage']
-        worksheet.write_number(8, startcol, DataModel.round_to_sigfig(value, 2), format)
+        worksheet.write_number(8, startcol, value, format)
 
         # african american
         value = float(data[0][2])
         format = formats['percentage']
-        worksheet.write_number(10, startcol, DataModel.round_to_sigfig(value, 2), format)
+        worksheet.write_number(10, startcol, value, format)
 
         # native american
         value = float(data[0][3])
         format = formats['percentage']
-        worksheet.write_number(11, startcol, DataModel.round_to_sigfig(value, 2), format)
+        worksheet.write_number(11, startcol, value, format)
 
         # other
         value = float(data[0][4])
         format = formats['percentage']
-        worksheet.write_number(12, startcol, DataModel.round_to_sigfig(value, 2), format)
+        worksheet.write_number(12, startcol, value, format)
 
         # hispanic
         value = float(data[0][5])
         format = formats['percentage']
-        worksheet.write_number(13, startcol, DataModel.round_to_sigfig(value, 2), format)
+        worksheet.write_number(13, startcol, value, format)
 
         # below poverty level
         value = float(data[0][11])
         format = formats['percentage']
-        worksheet.write_number(15, startcol, DataModel.round_to_sigfig(value, 2), format)
+        worksheet.write_number(15, startcol, value, format)
 
         # above poverty level
         value = 1 - value if exposure_value > 0 else 0
         format = formats['percentage']
-        worksheet.write_number(16, startcol, DataModel.round_to_sigfig(value, 2), format)
+        worksheet.write_number(16, startcol, value, format)
 
         # without high school diploma
         value = float(data[0][10])
         format = formats['percentage']
-        worksheet.write_number(18, startcol, DataModel.round_to_sigfig(value, 2), format)
+        worksheet.write_number(18, startcol, value, format)
 
         # with high school diploma
         value = 1 - value if exposure_value > 0 else 0
         format = formats['percentage']
-        worksheet.write_number(19, startcol, DataModel.round_to_sigfig(value, 2), format)
+        worksheet.write_number(19, startcol, value, format)
 
         # linguistically isolated
         value = float(data[0][13])
         format = formats['percentage']
-        worksheet.write_number(21, startcol, DataModel.round_to_sigfig(value, 2), format)
+        worksheet.write_number(21, startcol, value, format)
 
     def append_data(self, values, worksheet, formats):
         data = deepcopy(values)
