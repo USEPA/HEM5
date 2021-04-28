@@ -1,0 +1,1 @@
+Select an entire output folder to open (for a run group, not merely a facility); then view and analyze the Community Assessment results using mapping and graphical visualization and statistical tools. Note: You must first run the Community Assessment Tool before using this tool.
