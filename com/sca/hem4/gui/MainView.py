@@ -307,7 +307,7 @@ class MainView(tk.Frame):
                             "modeling-human-exposure-model-hem")
 
     def hyperlink2(self, event):
-        webbrowser.open_new(r"https://www3.epa.gov/ttn/scram/models/aermod/aermod_userguide.pdf")
+        webbrowser.open_new(r"https://gaftp.epa.gov/Air/aqmg/SCRAM/models/preferred/aermod/aermod_userguide.pdf")
 
     def on_closing(self, hem, event):
 

@@ -140,19 +140,19 @@ class EJdash():
         ##### The app layout 
         app.layout = html.Div([
             
-                #Shutdown
-                dcc.Input(id="input1", type="hidden", value="shutdown"),
-                dcc.Input(id="input2", type="hidden"),
-
-                html.Div([
-                        html.H1("Community Assessment for HEM4 Run Group " + rungroup, style={'text-align':'left', 'font-weight': 'bold'}),
-                        html.Button('Click here to add another run group', id='dirbutton'),
-                        html.Br(),
-                        html.Br(),
-                        ], className = 'row'),
-                
-                html.H3(id='button-clicks'),
-                html.Hr(),
+#                #Shutdown
+#                dcc.Input(id="input1", type="hidden", value="shutdown"),
+#                dcc.Input(id="input2", type="hidden"),
+#
+#                html.Div([
+#                        html.H1("Community Assessment for HEM4 Run Group " + rungroup, style={'text-align':'left', 'font-weight': 'bold'}),
+#                        html.Button('Click here to add another run group', id='dirbutton'),
+#                        html.Br(),
+#                        html.Br(),
+#                        ], className = 'row'),
+#                
+#                html.H3(id='button-clicks'),
+#                html.Hr(),
                             
                 dcc.Tabs([
                         dcc.Tab(label="Bar Graph",children=[
@@ -732,31 +732,31 @@ class EJdash():
 #            return 'Shutting down server'
         
         
-        @app.callback(
-            Output('button-clicks', 'children'),
-            [Input('dirbutton', 'n_clicks')])
-        def getSecondDir(n_clicks):
-            root = tk.Tk()
-            root.lift()
-            root.withdraw()
-            seconddir = None
-            if n_clicks is not None:
-                seconddir= tk.filedialog.askdirectory()
-            root.destroy()
-            return seconddir
-
-        app.clientside_callback(
-            """
-            function() {
-            alert(“Client side callback triggered”);
-            document.getElementById("dirbutton").focus(); //use this to set the focus on whatever component you want
-            //document.getElementById("dirbutton").blur(); //this will remove the focus from a selected component
-            return;
-            }
-            """,
-            Output('input2', 'value'), #Callback needs an output, so this is dummy
-            [Input('dirbutton', 'n_clicks')] #This triggers the javascript callback
-        )            
+#        @app.callback(
+#            Output('button-clicks', 'children'),
+#            [Input('dirbutton', 'n_clicks')])
+#        def getSecondDir(n_clicks):
+#            root = tk.Tk()
+#            root.lift()
+#            root.withdraw()
+#            seconddir = None
+#            if n_clicks is not None:
+#                seconddir= tk.filedialog.askdirectory()
+#            root.destroy()
+#            return seconddir
+#
+#        app.clientside_callback(
+#            """
+#            function() {
+#            alert(“Client side callback triggered”);
+#            document.getElementById("dirbutton").focus(); //use this to set the focus on whatever component you want
+#            //document.getElementById("dirbutton").blur(); //this will remove the focus from a selected component
+#            return;
+#            }
+#            """,
+#            Output('input2', 'value'), #Callback needs an output, so this is dummy
+#            [Input('dirbutton', 'n_clicks')] #This triggers the javascript callback
+#        )            
         
         return app
 
