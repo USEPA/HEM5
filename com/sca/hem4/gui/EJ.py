@@ -76,7 +76,7 @@ class EJ(Page):
         self.folder_frame.grid(row=2, columnspan=5, sticky="nsew")
         self.category_frame.grid(row=3, columnspan=5, sticky="nsew")
         self.parameters_frame.grid(row=4, columnspan=5, sticky="nsew")
-        self.run_frame.grid(row=6, columnspan=5, sticky="e")
+        self.run_frame.grid(row=6, columnspan=5, sticky="nsew")
         self.EJdash_title_frame.grid(row=8, columnspan=5, sticky="nsew")
         self.EJdash_folder_frame.grid(row=9, columnspan=5, sticky="nsew")
         self.Instruction_frame.grid(row=11, columnspan=5, sticky="nsew")

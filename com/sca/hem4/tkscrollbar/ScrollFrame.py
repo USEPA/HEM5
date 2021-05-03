@@ -21,7 +21,7 @@ class ScrollFrame(tk.Frame):
 
         self.vsb.pack(side="right", fill="y")                                       #pack scrollbar to right of self
         self.canvas.pack(side="left", fill="both", expand=True)                     #pack canvas to left of self and expand to fil
-        self.canvas_window = self.canvas.create_window((4,4), window=self.viewPort, anchor="nw",            #add view port frame to canvas
+        self.canvas_window = self.canvas.create_window((0,0), window=self.viewPort, anchor="nw",            #add view port frame to canvas
                                   tags="self.viewPort")
 
         self.viewPort.bind("<Configure>", self.onFrameConfigure)                       #bind an event whenever the size of the viewPort frame changes.
