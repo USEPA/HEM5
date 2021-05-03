@@ -13,7 +13,7 @@ from com.sca.hem4.gui.EntryWithPlaceholder import EntryWithPlaceholder
 from com.sca.hem4.gui.Page import Page
 import tkinter as tk
 import tkinter.ttk as ttk
-from com.sca.hem4.gui.Styles import TEXT_FONT, SMALL_TEXT_FONT, TITLE_FONT, MAIN_COLOR, HIGHLIGHT_COLOR
+from com.sca.hem4.gui.Styles import TEXT_FONT, SMALL_TEXT_FONT, TITLE_FONT, MAIN_COLOR, HIGHLIGHT_COLOR, SUBTITLE_FONT
 import PIL.Image
 from PIL import ImageTk
 from functools import partial
@@ -21,12 +21,6 @@ from functools import partial
 from com.sca.hem4.log import Logger
 from com.sca.hem4.upload.MetLib import MetLib
 from com.sca.hem4.writer.csv.MirHIAllReceptors import *
-
-import sys
-from com.sca.hem4.dash.EJdash import EJdash
-from threading import Timer
-import webbrowser
-from com.sca.hem4.tkscrollbar.ScrollFrame import ScrollFrame
 
 
 # The GUI portion of the EJ functionality in HEM4. This class manages the various dialogs and options needed
@@ -59,29 +53,18 @@ class EJ(Page):
         self.container = tk.Frame(self, bg=self.tab_color, bd=2)
         self.container.pack(side="top", fill="both", expand=True)
 
-        #scrollbar
-        self.scrollFrame = ScrollFrame(self.container) # add a new scrollable frame.
-
         # Create grid
-        self.title_frame = tk.Frame(self.scrollFrame.viewPort, height=100, bg=self.tab_color)
-        self.folder_frame = tk.Frame(self.scrollFrame.viewPort, height=150, pady=5, padx=5, bg=self.tab_color)
-        self.category_frame = tk.Frame(self.scrollFrame.viewPort, height=200, pady=5, padx=5, bg=self.tab_color)
-        self.parameters_frame = tk.Frame(self.scrollFrame.viewPort, height=200, pady=5, padx=5, bg=self.tab_color)
-        self.run_frame = tk.Frame(self.scrollFrame.viewPort, height=100, pady=5, padx=5, bg=self.tab_color)
-        self.EJdash_title_frame = tk.Frame(self.scrollFrame.viewPort, height=100, bg=self.tab_color)
-        self.EJdash_folder_frame = tk.Frame(self.scrollFrame.viewPort, height=150, pady=5, padx=5, bg=self.tab_color)
-        self.Instruction_frame = tk.Frame(self.scrollFrame.viewPort, height=150, pady=5, padx=5, bg=self.tab_color)
+        self.title_frame = tk.Frame(self.container, height=100, bg=self.tab_color)
+        self.folder_frame = tk.Frame(self.container, height=150, pady=5, padx=5, bg=self.tab_color)
+        self.category_frame = tk.Frame(self.container, height=200, pady=5, padx=5, bg=self.tab_color)
+        self.parameters_frame = tk.Frame(self.container, height=200, pady=5, padx=5, bg=self.tab_color)
+        self.run_frame = tk.Frame(self.container, height=100, pady=5, padx=5, bg=self.tab_color)
 
         self.title_frame.grid(row=1, columnspan=5, sticky="nsew")
         self.folder_frame.grid(row=2, columnspan=5, sticky="nsew")
         self.category_frame.grid(row=3, columnspan=5, sticky="nsew")
         self.parameters_frame.grid(row=4, columnspan=5, sticky="nsew")
-        self.run_frame.grid(row=6, columnspan=5, sticky="nsew")
-        self.EJdash_title_frame.grid(row=8, columnspan=5, sticky="nsew")
-        self.EJdash_folder_frame.grid(row=9, columnspan=5, sticky="nsew")
-        self.Instruction_frame.grid(row=11, columnspan=5, sticky="nsew")
-
-        self.add_instructions(self.Instruction_frame, self.Instruction_frame)
+        self.run_frame.grid(row=6, columnspan=5, sticky="e")
 
                                
         # Create a folder dialog button
@@ -93,7 +76,11 @@ class EJ(Page):
         self.titleLabel.grid(row=1, column=0, padx=10, pady=10)
         title = tk.Label(self.title_frame, text="CREATE COMMUNITY ASSESSMENT REPORTS", font=TITLE_FONT,
                          fg=MAIN_COLOR, bg=self.tab_color, anchor="w")
-        title.grid(row=1, column=1, pady=10, padx=10)
+        title.grid(row=1, column=1, pady=10, padx=10, sticky="w")
+        subtitle = tk.Label(self.title_frame, text="Note: The Community Assessment module may be used with HEM4 runs based on U.S. Census Block receptors only.", 
+                            font=SMALL_TEXT_FONT, bg=self.tab_color, anchor="w", wraplength=600,
+                            justify="left")
+        subtitle.grid(row=2, column=1, pady=10, padx=10, sticky="w")
 
         # First step - choose an output folder
         self.step1 = tk.Label(self.folder_frame,
@@ -167,74 +154,6 @@ class EJ(Page):
         rileLabel.bind("<Leave>", partial(self.color_config, rileLabel, run_button, self.run_frame, self.tab_color))
         rileLabel.bind("<Button-1>", self.run_reports)
 
-
-        # Create a horizontal separator
-        ttk.Separator(self.scrollFrame.viewPort,orient='horizontal').grid(row=7, columnspan=5, sticky='ew')
-        
-        # Setup EJ dash run section
-        EJdash_title_image = PIL.Image.open('images\icons8-view-48.png').resize((30,30))
-        EJdash_tticon = self.add_margin(EJdash_title_image, 5, 0, 5, 0)
-        EJdash_titleicon = ImageTk.PhotoImage(EJdash_tticon)
-        EJdash_titleLabel = tk.Label(self.EJdash_title_frame, image=EJdash_titleicon, bg=self.tab_color)
-        EJdash_titleLabel.image = EJdash_titleicon # keep a reference!
-        EJdash_titleLabel.grid(row=1, column=0, padx=10, pady=10)
-        EJdash_title = tk.Label(self.EJdash_title_frame, text="VIEW COMMUNITY ASSESSMENT RESULTS IN WEB BROWSER", font=TITLE_FONT,
-                         fg=MAIN_COLOR, bg=self.tab_color, anchor="w")
-        EJdash_title.grid(row=1, column=1, pady=10, padx=10)
-
-        eju = PIL.Image.open('images\icons8-folder-48.png').resize((30,30))
-        ejicon = self.add_margin(eju, 5, 0, 5, 0)
-        ejdashicon = ImageTk.PhotoImage(ejicon)
-        ejdir_label = tk.Label(self.EJdash_folder_frame, image=ejdashicon, bg=self.tab_color)
-        ejdir_label.image = ejdashicon # keep a reference!
-        ejdir_label.grid(row=1, column=0, padx=(30,10))
-
-        self.ejdir_button = tk.Label(self.EJdash_folder_frame,
-                        text="Select community assessment folder", font=TEXT_FONT, bg=self.tab_color, anchor="w")
-        self.ejdir_button.grid(pady=10, padx=10, row=1, column=4)
-
-        ejdir_label.bind("<Enter>", partial(self.color_config, self.ejdir_button, ejdir_label, self.EJdash_folder_frame, 'light grey'))
-        ejdir_label.bind("<Leave>", partial(self.color_config, self.ejdir_button, ejdir_label, self.EJdash_folder_frame, self.tab_color))
-        ejdir_label.bind("<Button-1>", partial(self.getEJdir))
-
-        self.ejdir_button.bind("<Enter>", partial(self.color_config, self.ejdir_button, ejdir_label, self.EJdash_folder_frame, 'light grey'))
-        self.ejdir_button.bind("<Leave>", partial(self.color_config, self.ejdir_button, ejdir_label, self.EJdash_folder_frame, self.tab_color))
-        self.ejdir_button.bind("<Button-1>", partial(self.getEJdir))
-
-        #scrollbar
-        self.scrollFrame.pack(side="top", fill="both", expand=True)
-
-
-
-    #scrollbar
-    def createScrollFrame(self):
-        self.canvas = tk.Canvas(self, borderwidth=0, background="#ffffff")          #place canvas on self
-        self.viewPort = tk.Frame(self.canvas, background="#ffffff")                    #place a frame on the canvas, this frame will hold the child widgets 
-        self.vsb = tk.Scrollbar(self, orient="vertical", command=self.canvas.yview) #place a scrollbar on self 
-        self.canvas.configure(yscrollcommand=self.vsb.set)                          #attach scrollbar action to scroll of canvas
-
-        self.vsb.pack(side="right", fill="y")                                       #pack scrollbar to right of self
-        self.canvas.pack(side="left", fill="both", expand=True)                     #pack canvas to left of self and expand to fil
-        self.canvas_window = self.canvas.create_window((0,0), window=self.viewPort, anchor="nw",            #add view port frame to canvas
-                                  tags="self.viewPort")
-
-        self.viewPort.bind("<Configure>", self.onFrameConfigure)                       #bind an event whenever the size of the viewPort frame changes.
-        self.canvas.bind("<Configure>", self.onCanvasConfigure)                       #bind an event whenever the size of the viewPort frame changes.
-
-        self.onFrameConfigure(None)                                                 #perform an initial stretch on render, otherwise the scroll region has a tiny border until the first resize
-
-
-    #scrollbar
-    def onFrameConfigure(self, event):                                              
-        '''Reset the scroll region to encompass the inner frame'''
-        self.canvas.configure(scrollregion=self.canvas.bbox("all"))                 #whenever the size of the frame changes, alter the scroll region respectively.
-
-    #scrollbar
-    def onCanvasConfigure(self, event):
-        '''Reset the canvas window to encompass inner frame when required'''
-        canvas_width = event.width
-        self.canvas.itemconfig(self.canvas_window, width = canvas_width)            #whenever the size of the canvas changes alter the window region respectively.
-        
         
         
     # Reset the GUI to its original (default) state.
@@ -307,67 +226,6 @@ class EJ(Page):
         widget2.configure(bg=color)
         container.configure(bg=color)
 
-        #serve instructions
-        if self.fileLabel in [widget1, widget2]:
-            if self.instruction_instance.get() == " ":
-
-                self.browse_inst("instructions/source_cat_browse.txt")
-
-            else:
-                self.instruction_instance.set(" ")
-
-        elif self.ejdir_button in [widget1, widget2]:
-            if self.instruction_instance.get() == " ":
-                self.browse_inst("instructions/ejdash_browse.txt")
-
-            else:
-                self.instruction_instance.set(" ")
-
-
-    # Prepare to run EJdash
-    def getEJdir(self, arguments=None):
-        # Start a new thread for EJdash
-        executor = ThreadPoolExecutor(max_workers=1)
-        future = executor.submit(self.runejDash)
-
-    # Run the EJdash app
-    def runejDash(self,  arguments=None):
-        try:
-            # Redirect stdout
-            orig_stdout = sys.stdout
-            fileDir = os.path.dirname(os.path.realpath('__file__'))
-            stdout_file = os.path.join(fileDir, 'output/hem4.log')
-            sys.stdout = open(stdout_file, 'w')
-
-            # Get the directory and run the EJdash app
-            basedir= tk.filedialog.askdirectory()
-            ejdashapp = EJdash(basedir)
-            appobj = ejdashapp.buildApp()
-            if appobj != None:
-                Timer(1, self.open_EJbrowser).start()
-                appobj.run_server(debug= False, port=8050)
-
-                # Reset stdout to original state
-            sys.stdout = orig_stdout
-
-        except BaseException as ex:
-            self.exception = ex
-            fullStackInfo=''.join(traceback.format_exception(
-                etype=type(ex), value=ex, tb=ex.__traceback__))
-            message = "An error occurred while trying to run the EJdash app:\n" + fullStackInfo
-            Logger.logMessage(message)
-
-
-    def open_EJbrowser(self):
-        webbrowser.open_new('http://localhost:8050/')
-
-
-    def remove_EJdash_config(self, widget1, widget2, container, color, event):
-
-        widget1.configure(bg=color)
-        widget2.configure(bg=color)
-        container.configure(bg=color)
-        self.instruction_instance.set(" ")
 
 
     # Note that when a combination is removed, the add config button may have to reappear, depending on how many are
