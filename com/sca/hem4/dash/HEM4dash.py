@@ -37,7 +37,7 @@ class HEM4dash():
 
         if self.dir == "" or self.dir == None:
             messagebox.showinfo("Invalid directory", " Please select a directory containing the results of a model run and summary reports for cancer risk drivers, "+
-                                "max risks, max TOSHI drivers, pollutant incidence drivers, source type incidence drivers, and cancer histograms.")
+                                "max risks, max TOSHI drivers, pollutant incidence drivers, source type risk histogram, and cancer/HI histograms.")
             return None
 
         facrisk_file = self.SCname + "_facility_max_risk_and_hi.xlsx"
@@ -58,7 +58,7 @@ class HEM4dash():
                     
             if not all(chklist):
                 messagebox.showinfo("Invalid directory", " Please select a directory containing the results of a model run and summary reports for cancer risk drivers, "+
-                                    "max risks, max TOSHI drivers, pollutant incidence drivers, source type incidence drivers, and cancer histograms.")
+                                    "max risks, max TOSHI drivers, pollutant incidence drivers, source type risk histogram, and cancer/HI histograms.")
                 return None
             else:
                 break
