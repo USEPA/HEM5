@@ -1,0 +1,30 @@
+#### **The table diplays the results of HEM4's Community Assessment module, *and that module must be run before displaying results here.***
+#### **The Community Assessment module gives demographic estimates for scenarios that are based on distance and risk level. The table gives the number (or percent) of facilities that exceed the geographic averages for each of the following demographic groups:**
+* Minority
+* African American (or Black)
+* Native Americans
+* Other races and multiracial
+* Hispanic or Latino
+* Children 17 years of age and under
+* Adults 18 to 64 years of age
+* Adults 65 years of age and over
+* Adults without a high school diploma
+* People living below the poverty level
+* Linguistically isolated people
+
+> ###### *Statistics on total population, race, ethnicity, age, education level, low household income, poverty status and linguistic isolation are obtained from the Census [American Community Survey (ACS)](https://www.census.gov/programs-surveys/acs) 5-year averages for 2015-2019.*
+
+---
+
+> ###### ** The nationwide, state, and county geographic averages are based on proximity, not risk level. For example, the county average includes all counties with census blocks within the scenario distance, not just the ones above the scenario risk level. These are included to allow a comparison with the facility estimates.**
+
+---
+
+> #### **The table is interactive, and you can change several properties of it:**
+>> ###### There is a radio button below the table that allows you to show either the number of facilities (default) or the percent of facilities that exceed the geographic averages.
+
+
+>> ###### Because you may be interested in how many facilities exceed the geographic averages by a certain amount, there is a slider widget below the table that allows you to select any percentage above the geographic averages, from 0 to 100%, in increments of 5%. For example, if you wanted to know how many facilities were twice the geograhic averages, you would select 100%.
+
+
+>> ###### There is a button at the top of the table that allows export to a spreadsheet.

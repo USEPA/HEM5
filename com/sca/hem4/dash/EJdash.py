@@ -19,6 +19,7 @@ import webbrowser
 from flask import request
 import time
 import tkinter as tk
+from com.sca.hem4.gui.EJ import EJ
 
 
 class EJdash():
@@ -31,11 +32,23 @@ class EJdash():
     
         external_stylesheets = ['https://codepen.io/chriddyp/pen/bWLwgP.css']
         app = dash.Dash(__name__, external_stylesheets=external_stylesheets)
+        app.title = self.SCname + ' Community Assessment'
         
         mapbox_access_token = 'pk.eyJ1IjoiYnJ1enp5IiwiYSI6ImNrOTE5YmwzdDBhMXYzbW8yMjY4aWJ3eHQifQ.5tNjnlK2Y8b-U1kvfPP8FA'
         px.set_mapbox_access_token(mapbox_access_token)
         #pd.set_option("display.max_columns", 50)
         #pd.options.display.max_colwidth = 50
+        
+        ### create dictionary of metrics for display purposes
+        toshis = EJ('foo').toshis
+        display_mets = {k:v + ' HI' for (k,v) in toshis.items()}
+        display_mets['Cancer'] = 'Cancer Risk'
+        
+        ### Get markdown text
+        bar_instr = open('..\\HEM4\\instructions\\ejdash_bar.txt', 'r').read()
+        map_instr = open('..\\HEM4\\instructions\\ejdash_map.txt', 'r').read()
+        table_instr = open('..\\HEM4\\instructions\\ejdash_table.txt', 'r').read()
+       
                 
         ##### Get max risk and HI file and create a dataframe for the map
         fname = self.SCname + '_facility_max_risk_and_hi.xlsx'
@@ -136,9 +149,12 @@ class EJdash():
                 
                 maindf = maindf.append(temp, ignore_index = True)
         
-        
         ##### The app layout 
         app.layout = html.Div([
+            
+                html.Div([
+                        html.H1("Community Assessment for HEM4 Run Group " + rungroup, style={'text-align':'center', 'font-weight': 'bold'}),
+                        ], className = 'row'),
             
 #                #Shutdown
 #                dcc.Input(id="input1", type="hidden", value="shutdown"),
@@ -152,10 +168,9 @@ class EJdash():
 #                        ], className = 'row'),
 #                
 #                html.H3(id='button-clicks'),
-#                html.Hr(),
-                            
+#                html.Hr(), 
                 dcc.Tabs([
-                        dcc.Tab(label="Bar Graph",children=[
+                        dcc.Tab(label="Bar Graph", children=[
         
                             
                                 ###########  Start Chart Dropdowns  ##########
@@ -164,8 +179,8 @@ class EJdash():
                                     
                                     html.Div([html.H6("Risk Metric"),
                                              dcc.Dropdown(id='riskdrop',
-                                                          
-                                                          options=[{"label": i, "value": i} for i in metrics],
+                                                          options=[{"label": display_mets[i], "value": i} for i in metrics],
+#                                                          options=[{"label": v, "value": k} for k,v in display_mets],
                                                           multi=False,
                                                           clearable=True,
                                                           value = scenarios.loc[0, 'Metric'],
@@ -244,13 +259,15 @@ class EJdash():
                                                            'format': 'jpeg', # one of png, svg, jpeg, webp
                                                           'filename': 'Demographics Bar Chart',
                                                           'scale': 1}
-                                                  }),
+                                                  },
+                                                  
+                                        ),
                                         html.Hr()
                                         ], className='twelve columns'),
             
                         ]),
                 
-                        dcc.Tab(label="Map of Facilities",children=[
+                        dcc.Tab(label="Map of Facilities", children=[
                                 
                                 
                                             ###########  Start Map Dropdowns  ##########
@@ -298,7 +315,9 @@ class EJdash():
                                           dcc.Dropdown(id='rampdrop',
                                                        
                                                       options=[{"label": 'Blue to Red', "value": px.colors.sequential.Bluered},
+                                                               {"label": 'Blue to Yellow', "value": px.colors.sequential.Cividis},
                                                                {"label": 'Purple to Yellow', "value": px.colors.sequential.Viridis},
+                                                               {"label": 'Blue Scale', "value": px.colors.sequential.Blues},
                                                                {"label": 'Green Scale', "value": px.colors.sequential.Greens},
                                                                {"label": 'Red Scale', "value": px.colors.sequential.Reds}],
                                                       multi=False,
@@ -336,63 +355,10 @@ class EJdash():
                                        
                         ]),
                                                        
-                        dcc.Tab(label="Summary Table",children=[
+                        dcc.Tab(label="Summary Table", children=[
                                                      
                                        
-                                dash_table.DataTable(
-                                        id='table',
-                                        columns=[
-                                                {"name": ['Scenario', 'Metric'], "id": 'Metric'},
-                                                {"name": ['Scenario', 'Distance (km)'], "id": 'Distance (km)'},
-                                                {"name": ['Scenario', 'Risk Level'], "id": 'Risk Level'},
-                                                {"name": ['Scenario', 'Total Facility Count'], "id": 'Total Facility Count'},
-                                                {"name": ['', 'Average'], "id": 'Average'},
-                                                {"name": ['Number (or %) of Facilities Exceeding the Geographic Average', 'Minority'], "id": 'Minority'},
-                                                {"name": ['Number (or %) of Facilities Exceeding the Geographic Average', 'African American'], "id": 'African American'},
-                                                {"name": ['Number (or %) of Facilities Exceeding the Geographic Average', 'Native American'], "id": 'Native American'},
-                                                {"name": ['Number (or %) of Facilities Exceeding the Geographic Average', 'Other and Multiracial'], "id": 'Other and Multiracial'},
-                                                {"name": ['Number (or %) of Facilities Exceeding the Geographic Average', 'Hispanic or Latino'], "id": 'Hispanic or Latino'},
-                                                {"name": ['Number (or %) of Facilities Exceeding the Geographic Average', 'Age 0-17'], "id": 'Age 0-17'},
-                                                {"name": ['Number (or %) of Facilities Exceeding the Geographic Average', 'Age 18-64'], "id": 'Age 18-64'},
-                                                {"name": ['Number (or %) of Facilities Exceeding the Geographic Average', 'Age >=65'], "id": 'Age >=65'},
-                                                {"name": ['Number (or %) of Facilities Exceeding the Geographic Average', 'Below the Poverty Level'], "id": 'Below the Poverty Level'},
-                                                {"name": ['Number (or %) of Facilities Exceeding the Geographic Average', 'Over 25 Without a High School Diploma',], "id": 'Over 25 Without a High School Diploma',},
-                                                {"name": ['Number (or %) of Facilities Exceeding the Geographic Average', 'Linguistically Isolated'], "id": 'Linguistically Isolated'}
-                                                
-                                        ],
-                                        merge_duplicate_headers=True,
-                                        data=[],
-                                        page_action='none',     # render all of the data at once
-                                        style_table={'height': '800px', 'width': '100%', 'overflowY': 'auto'},
-                                        fixed_rows={"headers": True},
-                                        export_format = 'xlsx',
-                                        style_header={
-                                                'backgroundColor': 'LightGrey',
-                                                'fontWeight': 'bold',
-                                                'fontSize':16,
-                                                'border': '1px solid black',
-                                                'textAlign': 'center'
-                                                },
-        #                                style_as_list_view=True,        
-                                        style_cell={
-                                                'whiteSpace': 'normal',
-                                                'height': 'auto',
-                                                'font-family': 'verdana',
-                                                'fontSize':15,
-                                                'minWidth': '10px', 'width': '110px', 'maxWidth': '200px'},
-                                        style_cell_conditional=[
-                                                {'if': {'column_id': 'Metric'},'width': '5%'},
-                                                {'if': {'column_id': 'Distance (km)'},'width': '5%'},
-                                                {'if': {'column_id': 'Total Facility Count'},'width': '5%'},
-                                                {'if': {'column_id': 'Average'},'width': '5%'},
-                                                {'if': {'column_id': 'Risk Level'},'width': '8%'},
-                                                {'if': {'row_index': [3,4,5,9,10,11,15,16,17,21,22,23,27,28,29,33,34,35,39,40,41]},
-                                                 'backgroundColor': '#F7D8F4'
-                                                },
-        
-                                        ],
-                                                        
-                                        ),
+                                html.Div(id='callbackTable'),
                                 
                                 html.Hr(),                         
                                        
@@ -425,57 +391,18 @@ class EJdash():
                         ]),
                                         
                         dcc.Tab(label='Learn More',children=[
-                                html.H2('About the Bar Graph'),
-                                html.H3('Risk Metrics'),
-                                html.Div('''Information about risk metrics'''),
-                                html.H3('Distance'),
-                                html.Div('''Information about distance'''),
-                                html.H3('Risk/HI Level'),
-                                html.Div('''Information about risk/HI level'''),
-                                html.H3('Demographic Groups'),
-                                html.Div('''Information about demographic groups'''),
-                                html.H3('Bar Heights and Sorting'),
-                                html.Div('''Information about bar heights and sorting'''),
-                                html.H3('Other Graph Features'),
-                                html.Div('''Other relevant information about the graph; for example, mentioning that each bar represents a single facility, and the horizontal pink bar represents county, state, and national average levels for the group/metric/level in question.'''),
-                                html.Hr(),
-                                html.H2('About the Map'),
-                                html.H3('Metric to Display'),
-                                html.Div('''Information about metrics to display (MIR, Respiratory HI, etc.)'''),
-                                html.H3('Scale'),
-                                html.Div('''Quick explanation of the differences between linear and log scales'''),
-                                html.H3('Basemap'),
-                                html.Div('''Description of each of the basemaps available (light, dark, etc.)'''),
-                                html.H3('Color Ramp'),
-                                html.Div('''Description of each of the color ramps available (yellow to purple, blue to red, etc.)'''),
-                                html.H3('Dot Size'),
-                                html.Div('''Quick explanation of what dot size means'''),
-                                html.H3('Other Map Features'),
-                                html.Div('''Other relevant information about the map and what is displayed.'''),
-                                html.Hr(),
-                                html.H2('About the Summary Table'),
-                                html.H3('Scenarios'),
-                                html.Div('''Explanation that these columns collectively describe the combination of factors that contribute to determining how many/what percentage of facilities exceed the various averages, as shown in the table (but worded better than what I wrote)'''),
-                                html.H4('Metric'),
-                                html.Div('''Definitions of metrics - in the data I'm looking at, it's just cancer'''),
-                                html.H4('Distance'),
-                                html.Div('''Explanation of 50 vs 5 vs other distances'''),
-                                html.H4('Risk Level'),
-                                html.Div('''Definitions of terms like Proximity Only or the other risk levels (1/1 million, 50/1 million, etc)'''),
-                                html.H4('Total Facility Count'),
-                                html.Div('''Explanation that this shows how many facilities fall under the scenario described by the metric, distance, and risk level shown'''),
-                                html.H3('Average'),
-                                html.Div('''Explanation of nationwide vs state vs county terms and that this table compares the facility risk levels to those respective averages'''),
-                                html.H3('Demographic Groups'),
-                                html.Div('''Definitions (pulled straight from HEM4 guide) for Minority, African American, Native American, Other and Multiracial, Hispanic or Latino, Age 0-17, Age 18-64, Age >= 65, Below the Poverty Level, Over 25 Without a High School Diploma, andLinguistically Isolated'''),
-                                html.H3('Sliding Scale'),
-                                html.Div('''Explanation of sliding scale and the option to show the number of facilities vs the percentage of facilities in the table'''),
-                                html.Hr(),
-                                html.H2('About HEM4'),
-                                html.Div('''Probably pulled straight from HEM4 guide. Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.'''),
-                                html.Hr(),
+                                dcc.Tabs([
+                                        dcc.Tab(label='About the Bar Graph',children=[
+                                                dcc.Markdown(bar_instr),
+                                        ]),
+                                        dcc.Tab(label='About the Map',children=[
+                                                dcc.Markdown(map_instr),
+                                        ]),
+                                        dcc.Tab(label='About the Summary Table',children=[
+                                                dcc.Markdown(table_instr),
+                                        ]),
                                 ]),
-                                        
+                        ]),
                 ]),
         
                               
@@ -552,10 +479,10 @@ class EJdash():
                 
                 ### Set chart title based on user choice of proximity or risk        
                 if level == 'Proximity Only':
-                    title = '<b>Demographics for ' + risk + ' for Radius ' + distance + ' km (Proximity Only)</b>'
+                    title = '<b>Demographics for ' + display_mets[risk] + ' for Radius ' + distance + ' km (Proximity Only)</b>'
                     
                 else:
-                    title = '<b>Demographics for ' + risk + ' for Radius ' + distance + ' km (' + level +')</b>'
+                    title = '<b>Demographics for ' + display_mets[risk] + ' for Radius ' + distance + ' km (' + level +')</b>'
                     
                 numFacs = (dff['Facility'].count())
                 
@@ -674,13 +601,14 @@ class EJdash():
             return fig
            
          
-        @app.callback(Output('table', 'data'),
+        @app.callback(Output('callbackTable', 'children'),
                       [Input('my-slider', 'value'),
                        Input('radio', 'value')
                       ])        
         def maketable (slidepct, radval):
-            if slidepct is None:
-                slidepct = 0
+                       
+            if None in (slidepct, radval):
+                pass
             else:
                 tabledf = pd.DataFrame(columns = ['Metric', 'Distance (km)', 'Risk Level', 'Total Facility Count', 'Average'] + demogroups)        
                 scensComp = maindf.drop_duplicates(subset =['Metric', 'Distance', 'Risk_Level', 'RiskorProx'])
@@ -700,7 +628,7 @@ class EJdash():
                     facCount = len(comptemp[comptemp['Total Pop']>0])
                     
                     for i, basis in enumerate(['Nationwide', 'State', 'County']):
-                        tabletemp.at[counter, 'Metric'] =  scen.Metric
+                        tabletemp.at[counter, 'Metric'] =  display_mets[scen.Metric]
                         tabletemp.at[counter, 'Distance (km)'] = scen.Distance
                         tabletemp.at[counter, 'Risk Level'] = level
                         tabletemp.at[counter, 'Total Facility Count'] = facCount
@@ -715,12 +643,118 @@ class EJdash():
                                 else:
                                     cellval = '{}%'.format(round(len(comptemp[comptemp[group]/100 > (1 + slidepct/100)*avg])/facCount*100))
                             tabletemp.at[counter, group] = cellval
-        
+            
                         counter += 1    
                     tabledf = tabledf.append(tabletemp, ignore_index = True)
-                    data=tabledf.to_dict('records')
+                    
+                if radval == 'num':
+                    prefix = 'Number'
+                else:
+                    prefix = 'Percent'
+                    
+                if slidepct == 0:
+                    suffix = ''
+                else:
+                    suffix = 'by More Than {}%'.format(slidepct)
+                    
+                grphead = '{} of Facilities Exceeding the Geographic Average {}'.format(prefix, suffix)
+                    
+            #        if radval == 'num':
+            #            grphead = 'Number of Facilities Exceeding the Geographic Average'
+            #        else:
+            #            grphead = 'Percent of Facilities Exceeding the Geographic Average'
+                    
+                table = dash_table.DataTable(
+                                             
+                        columns=[
+                                {"name": ['Scenario', 'Metric'], "id": 'Metric', 'presentation': 'dropdown'},
+                                {"name": ['Scenario', 'Distance (km)'], "id": 'Distance (km)', 'presentation': 'dropdown'},
+                                {"name": ['Scenario', 'Risk Level'], "id": 'Risk Level', 'presentation': 'dropdown'},
+                                {"name": ['Scenario', 'Total Facility Count'], "id": 'Total Facility Count'},
+                                {"name": ['', 'Average'], "id": 'Average', 'presentation': 'dropdown'},
+                                {"name": [grphead, 'Minority'], "id": 'Minority'},
+                                {"name": [grphead, 'African American'], "id": 'African American'},
+                                {"name": [grphead, 'Native American'], "id": 'Native American'},
+                                {"name": [grphead, 'Other and Multiracial'], "id": 'Other and Multiracial'},
+                                {"name": [grphead, 'Hispanic or Latino'], "id": 'Hispanic or Latino'},
+                                {"name": [grphead, 'Age 0-17'], "id": 'Age 0-17'},
+                                {"name": [grphead, 'Age 18-64'], "id": 'Age 18-64'},
+                                {"name": [grphead, 'Age >=65'], "id": 'Age >=65'},
+                                {"name": [grphead, 'Below the Poverty Level'], "id": 'Below the Poverty Level'},
+                                {"name": [grphead, 'Over 25 Without a High School Diploma',], "id": 'Over 25 Without a High School Diploma',},
+                                {"name": [grphead, 'Linguistically Isolated'], "id": 'Linguistically Isolated'}
+                                
+                        ],
+                        
+                        dropdown={
+                                'Metric': {                               
+                                    'options': [
+                                        {'label': i, 'value': i}
+                                        for i in tabledf['Metric'].unique()
+                                    ],
+                                    'clearable':True
+                                },
+                                'Distance (km)': {
+                                    'options': [
+                                        {'label': i, 'value': i}
+                                        for i in tabledf['Distance (km)'].unique()
+                                    ],
+                                    'clearable':True
+                                },
+                                'Risk Level': { 
+                                    'options': [
+                                        {'label': i, 'value': i}
+                                        for i in tabledf['Risk Level'].unique()
+                                    ],
+                                    'clearable':True
+                                },
+                                'Average': {
+                                    'options': [
+                                        {'label': i, 'value': i}
+                                        for i in tabledf['Average'].unique()
+                                    ],
+                                    'clearable':True
+                                }
+                        },
+                                        
+                        merge_duplicate_headers=True,
+                        data=tabledf.to_dict('records'),
+                        page_action='none',     # render all of the data at once
+                        filter_action = 'native',
+                        style_table={'height': '800px', 'width': '100%', 'overflowY': 'auto'},
+                        fixed_rows={"headers": True},
+                        export_format = 'xlsx',
+                        style_header={
+                                'backgroundColor': 'LightGrey',
+                                'fontWeight': 'bold',
+                                'fontSize':16,
+                                'border': '1px solid black',
+                                'textAlign': 'center'
+                                },
+            #                                style_as_list_view=True,        
+                        style_cell={
+                                'whiteSpace': 'normal',
+                                'height': 'auto',
+                                'font-family': 'verdana',
+                                'fontSize':15,
+                                'minWidth': '10px', 'width': '110px', 'maxWidth': '200px'},
+                        style_cell_conditional=[
+                                {'if': {'column_id': 'Metric'},'width': '5%'},
+                                {'if': {'column_id': 'Distance (km)'},'width': '5%'},
+                                {'if': {'column_id': 'Total Facility Count'},'width': '5%'},
+                                {'if': {'column_id': 'Average'},'width': '5%'},
+                                {'if': {'column_id': 'Risk Level'},'width': '8%'},
+                                {'if': {'row_index': [3,4,5,9,10,11,15,16,17,21,22,23,27,28,29,33,34,35,39,40,41]},
+                                 'backgroundColor': '#F7D8F4'
+                                },
             
-            return data
+                        ],
+                                    
+                        ),
+    
+            return table
+        
+        return app
 
 
 #        @app.callback(
@@ -760,6 +794,8 @@ class EJdash():
         
         return app
 
+             
+                            
 
     def shutdown(self):
         func = request.environ.get('werkzeug.server.shutdown')
@@ -767,6 +803,8 @@ class EJdash():
             raise RuntimeError('Not running with the Werkzeug Server')
         time.sleep(20)
         func()
+                                                       
+                                   
 
         
 ##------------- Code to run the class ----------------------------------------    
