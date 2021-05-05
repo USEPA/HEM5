@@ -156,19 +156,6 @@ class EJdash():
                         html.H1("Community Assessment for HEM4 Run Group " + rungroup, style={'text-align':'center', 'font-weight': 'bold'}),
                         ], className = 'row'),
             
-#                #Shutdown
-#                dcc.Input(id="input1", type="hidden", value="shutdown"),
-#                dcc.Input(id="input2", type="hidden"),
-#
-#                html.Div([
-#                        html.H1("Community Assessment for HEM4 Run Group " + rungroup, style={'text-align':'left', 'font-weight': 'bold'}),
-#                        html.Button('Click here to add another run group', id='dirbutton'),
-#                        html.Br(),
-#                        html.Br(),
-#                        ], className = 'row'),
-#                
-#                html.H3(id='button-clicks'),
-#                html.Hr(), 
                 dcc.Tabs([
                         dcc.Tab(label="Bar Graph", children=[
         
@@ -757,13 +744,11 @@ class EJdash():
         return app
 
 
-#        @app.callback(
-#            Output(component_id='input2', component_property='children'),
-#            [Input(component_id='input1', component_property='value')]
-#        )
-#        def check_status(value):
-#            self.shutdown()
-#            return 'Shutting down server'
+        @app.server.route('/shutdown', methods=['GET'])
+        def shutdown():
+            print("Shutting down server")
+            self.shutdown_server()
+            return 'Server shutting down...'
         
         
 #        @app.callback(
@@ -797,11 +782,10 @@ class EJdash():
              
                             
 
-    def shutdown(self):
+    def shutdown_server(self):
         func = request.environ.get('werkzeug.server.shutdown')
         if func is None:
             raise RuntimeError('Not running with the Werkzeug Server')
-        time.sleep(20)
         func()
                                                        
                                    

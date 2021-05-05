@@ -21,6 +21,8 @@ from com.sca.hem4.log.Logger import Logger
 class Analyze(Page):
     def __init__(self, nav, *args, **kwargs):
         Page.__init__(self, *args, **kwargs)
+        
+        self.ejport = 8050
 
         meta_container = tk.Frame(self, bg=TAB_COLOR, bd=2)
         meta_container.pack(side="top", fill="both", expand=True)
@@ -237,6 +239,7 @@ class Analyze(Page):
 
     def runEJdash(self,  arguments=None):
         try:
+            self.ejport += 1
             # Redirect stdout
             orig_stdout = sys.stdout
             fileDir = os.path.dirname(os.path.realpath('__file__'))
@@ -249,7 +252,7 @@ class Analyze(Page):
             appobj = dashapp.buildApp()
             if appobj != None:
                 Timer(1, self.open_ejbrowser).start()
-                appobj.run_server(debug= False, port=8050)
+                appobj.run_server(debug= False, port=self.ejport)
 
                 # Reset stdout to original state
             sys.stdout = orig_stdout
@@ -266,7 +269,8 @@ class Analyze(Page):
         webbrowser.open_new('http://localhost:8030/')
 
     def open_ejbrowser(self):
-        webbrowser.open_new('http://localhost:8050/')
+        hoststring = 'http://localhost:' + str(self.ejport) + '/'
+        webbrowser.open_new(hoststring)
 
     def browse_button(self, event):
         datatypes = {

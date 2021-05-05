@@ -16,6 +16,7 @@ from com.sca.hem4.summary.SummaryManager import SummaryManager
 from com.sca.hem4.writer.excel.FacilityMaxRiskandHI import FacilityMaxRiskandHI
 import os
 import glob
+import tkinter.font as TkFont
 
 
 class Summary(Page):
@@ -39,7 +40,7 @@ class Summary(Page):
 
         self.container = tk.Frame(meta_container, bg=self.tab_color, borderwidth=0)
         self.container.grid(row=0, column=0)
-        self.container.grid_rowconfigure(11, weight=1)
+        self.container.grid_rowconfigure(12, weight=1)
 
         # create grid
         self.s1 = tk.Frame(self.container, width=600, height=50, bg=self.tab_color)
@@ -65,7 +66,12 @@ class Summary(Page):
         self.s10 = tk.Frame(self.container, width=600, height=50, pady=5, padx=5, bg=self.tab_color)
         self.l10 = tk.Frame(self.s10, width=300, height=50, pady=5, padx=5, bg=self.tab_color)
         self.r10 = tk.Frame(self.s10, width=300, height=50, pady=5, padx=5, bg=self.tab_color)
-        # self.s11 = tk.Frame(self.container, width=600, height=50, pady=5, padx=5, bg=self.tab_color)
+        self.s11 = tk.Frame(self.container, width=600, height=50, pady=5, padx=5, bg=self.tab_color)
+        self.l11 = tk.Frame(self.s11, width=300, height=50, pady=5, padx=5, bg=self.tab_color)
+        self.r11 = tk.Frame(self.s11, width=300, height=50, pady=5, padx=5, bg=self.tab_color)
+        self.s12 = tk.Frame(self.container, width=600, height=50, pady=5, padx=5, bg=self.tab_color)
+        self.l12 = tk.Frame(self.s12, width=300, height=50, pady=5, padx=5, bg=self.tab_color)
+        self.r12 = tk.Frame(self.s12, width=300, height=50, pady=5, padx=5, bg=self.tab_color)
 
         self.container.grid_rowconfigure(12, weight=1)
         self.container.grid_columnconfigure(2, weight=1)
@@ -93,7 +99,12 @@ class Summary(Page):
         self.s10.grid(row=9, column=0, columnspan=2, sticky="nsew")
         self.l10.grid(row=1, column=0, columnspan=2, sticky="nsew")
         self.r10.grid(row=1, column=2, columnspan=2, sticky="nsew")
-        # self.s11.grid(row=10, column=0, columnspan=2, sticky="nsew")
+        self.s11.grid(row=10, column=0, columnspan=2, sticky="nsew")
+        self.l11.grid(row=1, column=0, columnspan=2, sticky="nsew")
+        self.r11.grid(row=1, column=2, columnspan=2, sticky="nsew")
+        self.s12.grid(row=11, column=0, columnspan=2, sticky="nsew")
+        self.l12.grid(row=1, column=0, columnspan=2, sticky="nsew")
+        self.r12.grid(row=1, column=2, columnspan=2, sticky="nsew")
 
         self.tt = PIL.Image.open('images\icons8-edit-graph-report-48-white.png').resize((30,30))
         self.tticon = self.add_margin(self.tt, 5, 0, 5, 0)
@@ -129,17 +140,32 @@ class Summary(Page):
         checked = self.add_margin(ci, 5, 0, 5, 0)
         self.checkedIcon = ImageTk.PhotoImage(checked)
 
-        self.add_report_checkbox("Max Risk", self.l4, self.check_box)
+        #-------- Left header label ----------------
+        self.leftHeader = tk.Label(self.l4, text="Facility Summaries", font=TEXT_FONT, bg=self.tab_color, anchor="w")
+        # clone the font, set the underline attribute,
+        # and assign it to our label
+        f = TkFont.Font(self.leftHeader, self.leftHeader.cget("font"))
+        f.configure(underline = True)
+        self.leftHeader.configure(font=f)
+        self.leftHeader.grid(pady=10, padx=10, row=1, column=1)
+
+        #-------- Right header label ----------------
+        self.rightHeader = tk.Label(self.r4, text="Run Group Summaries", font=TEXT_FONT, bg=self.tab_color, anchor="e")
+        self.rightHeader.grid(pady=10, padx=(120,10), row=1, column=2, sticky="e")
+        # underline the label
+        self.rightHeader.configure(font=f)
+        
         self.add_report_checkbox("Cancer Drivers", self.l5, self.check_box)
+        self.add_report_checkbox("Max Risk and Hazard Indices", self.r5, self.check_box)
         self.add_report_checkbox("Hazard Index Drivers", self.l6, self.check_box)
-        self.add_report_checkbox("Risk Histogram", self.l7, self.check_box)
-        self.add_report_checkbox("Hazard Index Histogram", self.l8, self.check_box)
-        self.add_report_checkbox("Incidence Drivers", self.l9, self.check_box)
-        self.add_report_checkbox("Acute Impacts", self.l10, self.check_box)
-        self.add_report_checkbox("Multipathway", self.r4, self.check_box)
-        self.add_report_checkbox("Max Concentration", self.r5, self.set_hap)
-        self.add_report_checkbox("Max Risk and HI by Source\nand Pollutant", self.r6, self.set_max_risk_sourcetype)
-        self.add_report_checkbox("Source Type Risk Histogram", self.r7, self.set_sourcetype)
+        self.add_report_checkbox("Risk Histogram", self.r6, self.check_box)
+        self.add_report_checkbox("Acute Impacts", self.l7, self.check_box)
+        self.add_report_checkbox("Hazard Index Histogram", self.r7, self.check_box)
+        self.add_report_checkbox("Multipathway", self.l8, self.check_box)
+        self.add_report_checkbox("Incidence Drivers", self.r8, self.check_box)
+        self.add_report_checkbox("Max Concentration", self.l9, self.set_hap)
+        self.add_report_checkbox("Source Type Risk Histogram", self.r9, self.set_sourcetype)
+        self.add_report_checkbox("Max Risk and HI by Source\nand Pollutant", self.l11, self.set_max_risk_sourcetype)
 
         ru = PIL.Image.open('images\icons8-create-48.png').resize((30,30))
         ricon = self.add_margin(ru, 5, 0, 5, 0)
@@ -195,14 +221,14 @@ class Summary(Page):
             icon.configure(image=self.checkedIcon)
             self.checked.append(text)
             self.checked_icons.append(icon)
-            self.pos = tk.Label(self.r8, font=TEXT_FONT, bg=self.tab_color, text="Enter the position in the source ID where the\n source type begins.The default is 1.")
+            self.pos = tk.Label(self.r10, font=TEXT_FONT, bg=self.tab_color, text="Enter the position in the source ID where the\n source type begins.The default is 1.")
             self.pos.grid(row=1, column=4, padx=5, sticky="W")
-            self.pos_num = ttk.Entry(self.r8)
+            self.pos_num = ttk.Entry(self.r10)
             self.pos_num["width"] = 5
             self.pos_num.grid(row=1, column=3, padx=5, sticky="W")
-            self.chars = tk.Label(self.r9, font=TEXT_FONT, bg=self.tab_color, text="Enter the number of characters \nin the sourcetype ID.")
+            self.chars = tk.Label(self.r11, font=TEXT_FONT, bg=self.tab_color, text="Enter the number of characters \nin the sourcetype ID.")
             self.chars.grid(row=1, column=4, padx=5, sticky="W")
-            self.chars_num = ttk.Entry(self.r9)
+            self.chars_num = ttk.Entry(self.r11)
             self.chars_num["width"] = 5
             self.chars_num.grid(row=1, column=3, padx=5, sticky="W")
 
@@ -224,16 +250,16 @@ class Summary(Page):
             icon.configure(image=self.checkedIcon)
             self.checked.append(text)
             self.checked_icons.append(icon)
-            self.max_risk_pos = tk.Label(self.r6, font=TEXT_FONT, bg=self.tab_color,
+            self.max_risk_pos = tk.Label(self.l12, font=TEXT_FONT, bg=self.tab_color,
                                          text="Enter the position in the source ID where the\n source type begins.The default is 1.")
             self.max_risk_pos.grid(row=2, column=4, padx=5, sticky="W")
-            self.max_risk_pos_num = ttk.Entry(self.r6)
+            self.max_risk_pos_num = ttk.Entry(self.l12)
             self.max_risk_pos_num["width"] = 5
             self.max_risk_pos_num.grid(row=2, column=3, padx=5, sticky="W")
-            self.max_risk_chars = tk.Label(self.r6, font=TEXT_FONT, bg=self.tab_color,
+            self.max_risk_chars = tk.Label(self.l12, font=TEXT_FONT, bg=self.tab_color,
                                            text="Enter the number of characters \nin the sourcetype ID.")
             self.max_risk_chars.grid(row=3, column=4, padx=5, sticky="W")
-            self.max_risk_chars_num = ttk.Entry(self.r6)
+            self.max_risk_chars_num = ttk.Entry(self.l12)
             self.max_risk_chars_num["width"] = 5
             self.max_risk_chars_num.grid(row=3, column=3, padx=5, sticky="W")
 
@@ -256,7 +282,7 @@ class Summary(Page):
             self.checked_icons.append(icon)
 
             # Create a new frame to hold both the input and the instructions
-            self.n5 = tk.Frame(self.r5, width=300, height=50, pady=0, padx=0, bg=self.tab_color)
+            self.n5 = tk.Frame(self.l10, width=300, height=50, pady=0, padx=0, bg=self.tab_color)
             self.n5.grid(row=2, column=1, columnspan=4, padx=0, sticky="w")
             self.pollutant_label = tk.Label(self.n5, font=TEXT_FONT, bg=self.tab_color, text="Enter a pollutant name")
             self.pollutant_label.grid(row=1, column=4, padx=5, sticky="w")

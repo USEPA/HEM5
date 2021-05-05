@@ -515,12 +515,6 @@ class HEM4dash():
             
             
             app.layout = html.Div([
-
-#                    dcc.Interval(id='interval1', interval=5 * 1000, n_intervals=0),
-#                    html.H1(id='label1', children=''),
-
-                dcc.Input(id="input1", type="hidden", value="shutdown"),
-                dcc.Input(id="input2", type="hidden"),
                 
                 html.Div([
                             html.H1("HEM4 Results for " + self.SCname + " Model Run", style={'text-align':'center', 'font-weight': 'bold'}),
@@ -626,13 +620,10 @@ class HEM4dash():
             ])
 
 
-            @app.callback(
-                Output(component_id='input2', component_property='children'),
-                [Input(component_id='input1', component_property='value')]
-            )
-            def check_status(value):
-                self.shutdown()
-                return 'Shutting down server'
+            @app.server.route('/shutdown', methods=['GET'])
+            def shutdown():
+                self.shutdown_server()
+                return 'Server shutting down...'
 
                 
             return app
@@ -642,7 +633,7 @@ class HEM4dash():
  
 
 
-    def shutdown(self):
+    def shutdown_server(self):
         func = request.environ.get('werkzeug.server.shutdown')
         if func is None:
             raise RuntimeError('Not running with the Werkzeug Server')
