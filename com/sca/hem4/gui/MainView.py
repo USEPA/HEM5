@@ -12,7 +12,6 @@ from com.sca.hem4.gui.Log import Log
 from com.sca.hem4.gui.Start import Start
 from com.sca.hem4.gui.Summary import Summary
 from com.sca.hem4.gui.EJ import EJ
-import os
 
 class MainView(tk.Frame):
     def __init__(self, master, *args, **kwargs):
@@ -332,13 +331,6 @@ class MainView(tk.Frame):
         webbrowser.open_new(r"https://gaftp.epa.gov/Air/aqmg/SCRAM/models/preferred/aermod/aermod_userguide.pdf")
 
     def on_closing(self, hem, event):
-
-        # If open, close the log file
-        fileDir = os.path.dirname(os.path.realpath('__file__'))
-        logfile = os.path.join(fileDir, 'output/hem4.log')
-        logfObj = open(logfile, "wb+")
-        if not logfObj.closed:
-            logfObj.close()
 
         if hem.running == True:
 
