@@ -7,8 +7,8 @@ Created on Wed Feb 26 07:07:56 2020
 import dash
 import dash_table
 import dash_core_components as dcc
-import dash_html_components as html #This is a test to see if I opened the branch correctly! 
-import plotly.graph_objects as go   #If this comment appears, then I'm good.
+import dash_html_components as html 
+import plotly.graph_objects as go 
 import subprocess, webbrowser
 from threading import Timer
 import pandas as pd
@@ -523,8 +523,14 @@ class HEM4dash():
                 dcc.Input(id="input2", type="hidden"),
                 
                 html.Div([
-                            html.H1("HEM4 Results for " + self.SCname + " Model Run", style={'text-align':'center', 'font-weight': 'bold'}),
-                            html.Hr(),
+                        html.Hr(),    
+                        html.H1("HEM4 Results for " + self.SCname + " Model Run", style={'text-align':'center', 'font-weight': 'bold'}),
+                        html.Hr(),
+                        ]),
+            
+            dcc.Tabs([
+                dcc.Tab(label="Facility Map",children=[
+                        html.Div([
                             html.H4("Facility Map ({} Facilities)".format(numFacs), style={'font-weight': 'bold'}),
                             html.Hr()
                         ]),
@@ -533,14 +539,16 @@ class HEM4dash():
                     html.Div([
                         map_dcc,            
                     ]),   
+            ]),
+            ]),
+                dcc.Tab(label="Cancer Incidence",children=[
                     
                     html.Div([
                         html.Hr(),
                         html.H4("Cancer Incidence by Pollutant and Source Type", style={'font-weight': 'bold'}),
                         html.H5("(Total Incidence is {0:.2E})".format(TotalInc)),
                         html.Hr()
-                    ])
-                ]),
+                    ]),
                 
                 
                 html.Div([
@@ -552,41 +560,55 @@ class HEM4dash():
                         srcinc_dcc,                       
                     ],style={'width': '48%', 'display': 'inline-block'}),
                     
+                ]),
+            ]),
+                dcc.Tab(label="Population Risks",children=[
+            
                     html.Div([
                         html.Hr(),
                         html.H4("Population Risks", style={'font-weight': 'bold'}),
                         html.Hr()
-                    ])
-                ]),
+                    ]),
                     
                     
                 html.Div([
                     canhisto_dcc,
-                    html.Hr()
+                    html.Hr(),
+                    hihisto_dcc,
                 ]),
                 
+            ]),
+            
+                dcc.Tab(label="Risk Drivers",children=[
+            
                 html.Div([
-                    hihisto_dcc,
                     html.Hr(),
                     html.H4("Pollutant and Source Risk and HI Drivers (of Max Risk and HI)", style={'font-weight': 'bold'}),
                     html.Hr()
                 ]),
                 html.Div([
-                    riskdriv_dcc
+                    riskdriv_dcc,
+                    html.Hr(),
+                    HIDriv_dcc,
                     
                 ], style={'width': '100%'}),
                
+            ]),
+            
+            dcc.Tab(label="Acute Screening Estimates",children=[
                     
                 html.Div([
                     html.Hr(),
-                    HIDriv_dcc,
-                    html.Hr(),
                     html.H4("Acute Screening Estimates", style={'font-weight': 'bold'}),
-                    html.Hr()
+                    html.Hr(),
+                    acute_dcc,
                 ]),
+            
+            ]),
+            
+            dcc.Tab(label="Maximum Risk and HI Data",children=[
                     
                  html.Div([
-                    acute_dcc,
                     html.Hr(),
                     html.H4("Maximum Risk and HI Data", style={'font-weight': 'bold'}),
                     html.Hr()
@@ -621,7 +643,11 @@ class HEM4dash():
                             export_headers = 'display',
                             include_headers_on_copy_paste = True
                             )
-                ])    
+                ])   
+            
+            ]),
+            
+            ]),
                 
             ])
 
