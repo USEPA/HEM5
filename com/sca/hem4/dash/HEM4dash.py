@@ -7,8 +7,8 @@ Created on Wed Feb 26 07:07:56 2020
 import dash
 import dash_table
 import dash_core_components as dcc
-import dash_html_components as html
-import plotly.graph_objects as go
+import dash_html_components as html #This is a test to see if I opened the branch correctly! 
+import plotly.graph_objects as go   #If this comment appears, then I'm good.
 import subprocess, webbrowser
 from threading import Timer
 import pandas as pd
