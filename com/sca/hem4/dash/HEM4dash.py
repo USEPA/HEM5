@@ -256,16 +256,22 @@ class HEM4dash():
                         'height':500,
                         'hovermode':"closest",
                         'mapbox':
-                            {'style':"carto-positron",
+                            {'style':'carto-positron',
                              'center':{
                                 'lon': avglon,
                                 'lat': avglat
                                 },
-                            'zoom':3.5,
+                            'zoom':3,
                             'accesstoken':'pk.eyJ1IjoiYnJ1enp5IiwiYSI6ImNrOTE5YmwzdDBhMXYzbW8yMjY4aWJ3eHQifQ.5tNjnlK2Y8b-U1kvfPP8FA'
                             },
                             
-                        }
+                        },
+                             'config':{'modeBarButtonsToRemove': ['lasso2d', 'select2d', 'hoverCompareCartesian', 'hoverClosestCartesian'],
+                                        'toImageButtonOptions': {
+                                                'format': 'jpeg', # one of png, svg, jpeg, webp
+                                                'filename': 'Facility Map',
+                                                'scale': 1}
+                                        }
                         })
             
             Map_updatemenus=list([
