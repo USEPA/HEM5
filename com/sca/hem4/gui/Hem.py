@@ -1564,11 +1564,11 @@ class Hem(Page):
                 for i in self.nav.current_button:
                     i.configure(bg=self.main_color)
 
-            print('Current Button before:', self.nav.current_button)
-            print('page:', page)
+#            print('Current Button before:', self.nav.current_button)
+#            print('page:', page)
             page.lift()
             self.nav.current_button = [widget1, widget2]
-            print('Current Button after:', self.nav.current_button)
+#            print('Current Button after:', self.nav.current_button)
         except Exception as e:
 
             print(e)

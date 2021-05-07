@@ -57,7 +57,9 @@ class MainView(tk.Frame):
         self.options.place(in_=self.container, relx=0.3, relwidth=0.7, relheight=1)
         self.options.lower()
 
-        # HEM4 nav button
+
+        #------------------- HEM4 nav button ----------------------------------------
+        
         self.newrunLabel= tk.Label(self, text="RUN HEM4", font=TAB_FONT, bg=MAIN_COLOR, height=2, pady=2, anchor="w")
         self.newrunLabel.place(in_=self.container, relwidth=0.2, relx=0.1, rely=0.07)
 
@@ -87,31 +89,11 @@ class MainView(tk.Frame):
         self.iconLabel.bind("<Leave>", partial(self.color_config, self.iconLabel, self.newrunLabel,MAIN_COLOR))
         self.iconLabel.bind("<Button-1>", partial(self.lift_page, self.iconLabel, self.newrunLabel, self.hem, self.current_button))
 
-        # Census nav button
-        self.optionsLabel= tk.Label(self, text="REVISE CENSUS DATA", font=TAB_FONT, bg=MAIN_COLOR, height=2, anchor="w")
-        self.optionsLabel.place(in_=self.container, relwidth=0.2, rely=0.14, relx=0.1)
 
-        # add run icon with margin for highlight
-        oi = PIL.Image.open('images\icons8-settings-48.png').resize((30,30))
-        oinew = self.add_margin(oi, 2, 0, 2, 0)
-
-        optionIcon = ImageTk.PhotoImage(oinew)
-        self.gearLabel = tk.Label(self, image=optionIcon, bg=MAIN_COLOR)
-        self.gearLabel.image = optionIcon # keep a reference!
-        self.gearLabel.place(in_=self.container, relwidth=0.1, rely=0.14)
-
-        # bind icon and label events
-        self.optionsLabel.bind("<Enter>", partial(self.color_config, self.optionsLabel, self.gearLabel, HIGHLIGHT_COLOR))
-        self.optionsLabel.bind("<Leave>", partial(self.color_config, self.optionsLabel, self.gearLabel,MAIN_COLOR))
-        self.optionsLabel.bind("<Button-1>", partial(self.lift_page, self.optionsLabel, self.gearLabel, self.options, self.current_button))
-
-        self.gearLabel.bind("<Enter>", partial(self.color_config, self.gearLabel, self.optionsLabel, HIGHLIGHT_COLOR))
-        self.gearLabel.bind("<Leave>", partial(self.color_config, self.gearLabel, self.optionsLabel,MAIN_COLOR))
-        self.gearLabel.bind("<Button-1>", partial(self.lift_page, self.gearLabel, self.optionsLabel, self.options, self.current_button))
-
-        # Risk Summary nav button
+        #----------- Risk Summary nav button --------------------------------------
+        
         self.riskLabel= tk.Label(self, text="SUMMARIZE RISKS", font=TAB_FONT, bg=MAIN_COLOR, height=2, pady=2, anchor="w")
-        self.riskLabel.place(in_=self.container, relwidth=0.2, rely=0.21, relx=0.1)
+        self.riskLabel.place(in_=self.container, relwidth=0.2, rely=0.14, relx=0.1)
 
         # add run icon with margin for highlight
         self.si = PIL.Image.open('images\icons8-edit-graph-report-48.png').resize((30,30))
@@ -122,18 +104,40 @@ class MainView(tk.Frame):
 
         self.summaryLabel = tk.Label(self, image=self.summaryIcon, bg=MAIN_COLOR)
         self.summaryLabel.image = self.summaryIcon # keep a reference!
-        self.summaryLabel.place(in_=self.container, relwidth=0.1, rely=0.21)
+        self.summaryLabel.place(in_=self.container, relwidth=0.1, rely=0.14)
 
         # bind icon and label events
         self.riskLabel.bind("<Enter>", partial(self.color_config, self.riskLabel, self.summaryLabel, HIGHLIGHT_COLOR))
         self.riskLabel.bind("<Leave>", partial(self.color_config, self.riskLabel, self.summaryLabel, MAIN_COLOR))
         self.riskLabel.bind("<Button-1>", partial(self.lift_page, self.riskLabel, self.summaryLabel, self.summary, self.current_button))
 
-        self.summaryLabel.bind("<Enter>", partial(self.color_config, self.summaryLabel, self.riskLabel, HIGHLIGHT_COLOR))
-        self.summaryLabel.bind("<Leave>", partial(self.color_config, self.summaryLabel, self.riskLabel, MAIN_COLOR))
-        self.summaryLabel.bind("<Button-1>", partial(self.lift_page, self.summaryLabel, self.riskLabel, self.summary, self.current_button))
 
-        # Analyze Outputs nav button
+        #------------------------  EJ nav button --------------------------------------
+        
+        self.ejLabel = tk.Label(self, text="COMMUNITY ASSESSMENT", font=TAB_FONT, bg=MAIN_COLOR, height=2, pady=2, anchor="w")
+        self.ejLabel.place(in_=self.container, relwidth=0.2, rely=0.21, relx=0.1)
+
+        # add run icon with margin for highlight
+        eji = PIL.Image.open('images\\icons8-people-48.png').resize((30,30))
+        ejnew = self.add_margin(eji, 3, 0, 3, 0)
+
+        self.ejIcon = ImageTk.PhotoImage(ejnew)
+        self.peopleLabel = tk.Label(self, image=self.ejIcon, bg=MAIN_COLOR)
+        self.peopleLabel.image = self.ejIcon # keep a reference!
+        self.peopleLabel.place(in_=self.container, relwidth=0.1, rely=0.21)
+
+        # bind icon and label events
+        self.ejLabel.bind("<Enter>", partial(self.color_config, self.ejLabel, self.peopleLabel, HIGHLIGHT_COLOR))
+        self.ejLabel.bind("<Leave>", partial(self.color_config, self.ejLabel, self.peopleLabel,MAIN_COLOR))
+        self.ejLabel.bind("<Button-1>", partial(self.lift_page, self.ejLabel, self.peopleLabel, self.ej, self.current_button))
+
+        self.peopleLabel.bind("<Enter>", partial(self.color_config, self.peopleLabel, self.ejLabel, HIGHLIGHT_COLOR))
+        self.peopleLabel.bind("<Leave>", partial(self.color_config, self.peopleLabel, self.ejLabel,MAIN_COLOR))
+        self.peopleLabel.bind("<Button-1>", partial(self.lift_page, self.peopleLabel, self.ejLabel, self.ej, self.current_button))
+
+
+        #---------------- Analyze Outputs nav button -----------------------------------
+        
         self.analyzeLabel= tk.Label(self, text="ANALYZE OUTPUTS", font=TAB_FONT, bg=MAIN_COLOR, height=2, pady=2, anchor="w")
         self.analyzeLabel.place(in_=self.container, relwidth=0.2, rely=0.28, relx=0.1)
 
@@ -155,33 +159,11 @@ class MainView(tk.Frame):
         self.outputLabel.bind("<Leave>", partial(self.color_config, self.outputLabel, self.analyzeLabel,MAIN_COLOR))
         self.outputLabel.bind("<Button-1>", partial(self.lift_page, self.outputLabel, self.analyzeLabel, self.analyze, self.current_button))
 
-        # EJ nav button
-        self.ejLabel = tk.Label(self, text="COMMUNITY ASSESSMENT", font=TAB_FONT, bg=MAIN_COLOR, height=2, pady=2, anchor="w")
-        self.ejLabel.place(in_=self.container, relwidth=0.2, rely=0.35, relx=0.1)
 
-
-        # add run icon with margin for highlight
-        eji = PIL.Image.open('images\\icons8-people-48.png').resize((30,30))
-        ejnew = self.add_margin(eji, 3, 0, 3, 0)
-
-        self.ejIcon = ImageTk.PhotoImage(ejnew)
-        self.peopleLabel = tk.Label(self, image=self.ejIcon, bg=MAIN_COLOR)
-        self.peopleLabel.image = self.ejIcon # keep a reference!
-        self.peopleLabel.place(in_=self.container, relwidth=0.1, rely=0.35)
-
-        # bind icon and label events
-        self.ejLabel.bind("<Enter>", partial(self.color_config, self.ejLabel, self.peopleLabel, HIGHLIGHT_COLOR))
-        self.ejLabel.bind("<Leave>", partial(self.color_config, self.ejLabel, self.peopleLabel,MAIN_COLOR))
-        self.ejLabel.bind("<Button-1>", partial(self.lift_page, self.ejLabel, self.peopleLabel, self.ej, self.current_button))
-
-        self.peopleLabel.bind("<Enter>", partial(self.color_config, self.peopleLabel, self.ejLabel, HIGHLIGHT_COLOR))
-        self.peopleLabel.bind("<Leave>", partial(self.color_config, self.peopleLabel, self.ejLabel,MAIN_COLOR))
-        self.peopleLabel.bind("<Button-1>", partial(self.lift_page, self.peopleLabel, self.ejLabel, self.ej, self.current_button))
-
-
-        # Log nav button
+        #-------------------- Log nav button -------------------------------------------
+        
         self.logLabel= tk.Label(self, text="LOG", font=TAB_FONT, bg=MAIN_COLOR, height=2, anchor="w")
-        self.logLabel.place(in_=self.container, relwidth=0.2, rely=0.42, relx=0.1)
+        self.logLabel.place(in_=self.container, relwidth=0.2, rely=0.35, relx=0.1)
 
         # add run icon with margin for highlight
         self.li = PIL.Image.open('images\icons8-console-48.png').resize((30,30))
@@ -190,7 +172,7 @@ class MainView(tk.Frame):
         logIcon = ImageTk.PhotoImage(linew)
         self.liLabel = tk.Label(self, image=logIcon, bg=MAIN_COLOR)
         self.liLabel.image = logIcon # keep a reference!
-        self.liLabel.place(in_=self.container, relwidth=0.1, rely=0.42)
+        self.liLabel.place(in_=self.container, relwidth=0.1, rely=0.35)
 
         # bind icon and label events
         self.logLabel.bind("<Enter>", partial(self.color_config, self.logLabel, self.liLabel, HIGHLIGHT_COLOR))
@@ -201,7 +183,43 @@ class MainView(tk.Frame):
         self.liLabel.bind("<Leave>", partial(self.color_config, self.liLabel, self.logLabel,MAIN_COLOR))
         self.liLabel.bind("<Button-1>", partial(self.lift_page, self.liLabel, self.logLabel, self.log, self.current_button))
 
-        # user nav button
+
+        # -----------------Census nav button -------------------------------
+        
+        self.optionsLabel= tk.Label(self, text="REVISE CENSUS DATA", font=TAB_FONT, bg=MAIN_COLOR, height=2, anchor="w")
+        self.optionsLabel.place(in_=self.container, relwidth=0.2, rely=0.49, relx=0.1)
+#        self.optionsLabel.place(in_=self.container, relwidth=0.2, rely=0.14, relx=0.1)
+
+        # add run icon with margin for highlight
+        oi = PIL.Image.open('images\icons8-settings-48.png').resize((30,30))
+        oinew = self.add_margin(oi, 2, 0, 2, 0)
+
+        optionIcon = ImageTk.PhotoImage(oinew)
+        self.gearLabel = tk.Label(self, image=optionIcon, bg=MAIN_COLOR)
+        self.gearLabel.image = optionIcon # keep a reference!
+        self.gearLabel.place(in_=self.container, relwidth=0.1, rely=0.49)
+#        self.gearLabel.place(in_=self.container, relwidth=0.1, rely=0.14)
+
+        # bind icon and label events
+        self.optionsLabel.bind("<Enter>", partial(self.color_config, self.optionsLabel, self.gearLabel, HIGHLIGHT_COLOR))
+        self.optionsLabel.bind("<Leave>", partial(self.color_config, self.optionsLabel, self.gearLabel,MAIN_COLOR))
+        self.optionsLabel.bind("<Button-1>", partial(self.lift_page, self.optionsLabel, self.gearLabel, self.options, self.current_button))
+
+        self.gearLabel.bind("<Enter>", partial(self.color_config, self.gearLabel, self.optionsLabel, HIGHLIGHT_COLOR))
+        self.gearLabel.bind("<Leave>", partial(self.color_config, self.gearLabel, self.optionsLabel,MAIN_COLOR))
+        self.gearLabel.bind("<Button-1>", partial(self.lift_page, self.gearLabel, self.optionsLabel, self.options, self.current_button))
+
+
+        self.summaryLabel.bind("<Enter>", partial(self.color_config, self.summaryLabel, self.riskLabel, HIGHLIGHT_COLOR))
+        self.summaryLabel.bind("<Leave>", partial(self.color_config, self.summaryLabel, self.riskLabel, MAIN_COLOR))
+        self.summaryLabel.bind("<Button-1>", partial(self.lift_page, self.summaryLabel, self.riskLabel, self.summary, self.current_button))
+
+
+
+
+
+        #------------------------ HEM4 Users Guide nav button ----------------------------
+        
         ugLabel= tk.Label(self, text="HEM4 USER GUIDE", font=TAB_FONT, bg=MAIN_COLOR, height=2, anchor="w")
         ugLabel.place(in_=self.container, relwidth=0.2, rely=0.63, relx=0.1)
 
@@ -222,7 +240,9 @@ class MainView(tk.Frame):
         bookLabel.bind("<Leave>", partial(self.color_config, bookLabel, ugLabel,MAIN_COLOR))
         bookLabel.bind("<Button-1>", self.hyperlink1)
 
-        # aermod user nav button
+
+        #------------------ aermod user nav button --------------------------------
+        
         agLabel= tk.Label(self, text="AERMOD USER GUIDE", font=TAB_FONT, bg=MAIN_COLOR, height=2, anchor="w")
         agLabel.place(in_=self.container, relwidth=0.2, rely=0.7, relx=0.1)
 
@@ -243,7 +263,8 @@ class MainView(tk.Frame):
         bookLabel2.bind("<Leave>", partial(self.color_config, bookLabel2, agLabel,MAIN_COLOR))
         bookLabel2.bind("<Button-1>", self.hyperlink2)
 
-        # aermod user nav button
+        #------------------- Exit nav button ------------------------------------
+        
         closeLabel= tk.Label(self, text="EXIT", font=TAB_FONT, bg=MAIN_COLOR, height=2, anchor="w")
         closeLabel.place(in_=self.container, relwidth=0.2, rely=0.77, relx=0.1)
 
@@ -279,11 +300,11 @@ class MainView(tk.Frame):
                 for i in self.current_button:
                     i.configure(bg=MAIN_COLOR)
 
-            print('Current Button before:', self.current_button)
-            print('page:', page)
+#            print('Current Button before:', self.current_button)
+#            print('page:', page)
             page.lift()
             self.current_button = [widget1, widget2]
-            print('Current Button after:', self.current_button)
+#            print('Current Button after:', self.current_button)
         except Exception as e:
 
             print(e)
@@ -307,7 +328,7 @@ class MainView(tk.Frame):
                             "modeling-human-exposure-model-hem")
 
     def hyperlink2(self, event):
-        webbrowser.open_new(r"https://www3.epa.gov/ttn/scram/models/aermod/aermod_userguide.pdf")
+        webbrowser.open_new(r"https://gaftp.epa.gov/Air/aqmg/SCRAM/models/preferred/aermod/aermod_userguide.pdf")
 
     def on_closing(self, hem, event):
 
@@ -319,3 +340,5 @@ class MainView(tk.Frame):
 
         else:
             self.home.destroy()
+            
+        

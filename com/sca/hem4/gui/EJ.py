@@ -14,7 +14,7 @@ from com.sca.hem4.gui.EntryWithPlaceholder import EntryWithPlaceholder
 from com.sca.hem4.gui.Page import Page
 import tkinter as tk
 import tkinter.ttk as ttk
-from com.sca.hem4.gui.Styles import TEXT_FONT, SMALL_TEXT_FONT, TITLE_FONT, MAIN_COLOR
+from com.sca.hem4.gui.Styles import TEXT_FONT, SMALL_TEXT_FONT, TITLE_FONT, MAIN_COLOR, HIGHLIGHT_COLOR, SUBTITLE_FONT
 import PIL.Image
 from PIL import ImageTk
 from functools import partial
@@ -30,6 +30,7 @@ from decimal import ROUND_HALF_UP, Decimal, getcontext
 class EJ(Page):
     def __init__(self, nav, *args, **kwargs):
         Page.__init__(self, *args, **kwargs)
+        
         self.nav = nav
 
         # Report combinations (radius, cancer risk, HI risk). The GUI allows up to 4 at once.
@@ -49,6 +50,7 @@ class EJ(Page):
         self.levels_df = None
         self.all_receptors_df = None
 
+
         self.container = tk.Frame(self, bg=self.tab_color, bd=2)
         self.container.pack(side="top", fill="both", expand=True)
 
@@ -65,6 +67,7 @@ class EJ(Page):
         self.parameters_frame.grid(row=4, columnspan=5, sticky="nsew")
         self.run_frame.grid(row=6, columnspan=5, sticky="e")
 
+                               
         # Create a folder dialog button
         title_image = PIL.Image.open('images\icons8-people-48.png').resize((30,30))
         tticon = self.add_margin(title_image, 5, 0, 5, 0)
@@ -74,7 +77,11 @@ class EJ(Page):
         self.titleLabel.grid(row=1, column=0, padx=10, pady=10)
         title = tk.Label(self.title_frame, text="CREATE COMMUNITY ASSESSMENT REPORTS", font=TITLE_FONT,
                          fg=MAIN_COLOR, bg=self.tab_color, anchor="w")
-        title.grid(row=1, column=1, pady=10, padx=10)
+        title.grid(row=1, column=1, pady=10, padx=10, sticky="w")
+        subtitle = tk.Label(self.title_frame, text="Note: The Community Assessment module may be used with HEM4 runs based on U.S. Census Block receptors only.", 
+                            font=SMALL_TEXT_FONT, bg=self.tab_color, anchor="w", wraplength=600,
+                            justify="left")
+        subtitle.grid(row=2, column=1, pady=10, padx=10, sticky="w")
 
         # First step - choose an output folder
         self.step1 = tk.Label(self.folder_frame,
@@ -148,6 +155,8 @@ class EJ(Page):
         rileLabel.bind("<Leave>", partial(self.color_config, rileLabel, run_button, self.run_frame, self.tab_color))
         rileLabel.bind("<Button-1>", self.run_reports)
 
+        
+        
     # Reset the GUI to its original (default) state.
     def reset(self):
         self.step1_instructions["text"] = "Select output folder"
@@ -186,6 +195,39 @@ class EJ(Page):
         faclist_df[max_dist] = faclist_df[max_dist].fillna(50000)
 
         self.min_max_dist = faclist_df[max_dist].min()
+
+
+    # Event handlers for porting instructions
+    def add_instructions(self, placeholder1, placeholder2):
+
+        # Dynamic instructions place holder
+        global instruction_instance
+        self.instruction_instance = tk.StringVar(placeholder1)
+        self.instruction_instance.set(" ")
+        self.dynamic_inst = tk.Label(placeholder2, wraplength=600, font=TEXT_FONT, padx=20, bg=self.tab_color)
+        self.dynamic_inst.config(height=4)
+
+        self.dynamic_inst["textvariable"] = self.instruction_instance
+        self.dynamic_inst.grid(row=11, column=0)
+
+
+    def browse_inst(self, location):
+        """
+        Function looks up text file with instructions for specified input
+        browse buttons
+        """
+        global instruction_instance
+        self.read_inst = open(location, 'r')
+        self.instruction_instance.set(self.read_inst.read())
+
+
+    def color_config(self, widget1, widget2, container, color, event):
+
+        widget1.configure(bg=color)
+        widget2.configure(bg=color)
+        container.configure(bg=color)
+
+
 
     # Note that when a combination is removed, the add config button may have to reappear, depending on how many are
     # left.
