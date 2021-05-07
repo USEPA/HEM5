@@ -58,7 +58,7 @@ class CsvWriter(Writer):
         dfname.to_csv(self.filename, header=False, mode="a", index=False, chunksize=1000)
         
     def fileTooBig(self, size):
-        threshold = 1024 * 1024 * 1024 * 1.5
+        threshold = 1024 * 1024 * 1024
         return True if size >= threshold else False
 
     def startNewFile(self):

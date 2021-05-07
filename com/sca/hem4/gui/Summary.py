@@ -40,7 +40,7 @@ class Summary(Page):
 
         self.container = tk.Frame(meta_container, bg=self.tab_color, borderwidth=0)
         self.container.grid(row=0, column=0)
-        self.container.grid_rowconfigure(12, weight=1)
+        self.container.grid_rowconfigure(13, weight=1)
 
         # create grid
         self.s1 = tk.Frame(self.container, width=600, height=50, bg=self.tab_color)
@@ -73,7 +73,7 @@ class Summary(Page):
         self.l12 = tk.Frame(self.s12, width=300, height=50, pady=5, padx=5, bg=self.tab_color)
         self.r12 = tk.Frame(self.s12, width=300, height=50, pady=5, padx=5, bg=self.tab_color)
 
-        self.container.grid_rowconfigure(12, weight=1)
+        self.container.grid_rowconfigure(13, weight=1)
         self.container.grid_columnconfigure(2, weight=1)
         self.container.grid(sticky="nsew")
         self.s1.grid(row=1, column=0, columnspan=4, sticky="nsew")
@@ -99,9 +99,14 @@ class Summary(Page):
         self.s10.grid(row=9, column=0, columnspan=2, sticky="nsew")
         self.l10.grid(row=1, column=0, columnspan=2, sticky="nsew")
         self.r10.grid(row=1, column=2, columnspan=2, sticky="nsew")
+        self.s10.grid_columnconfigure(0, weight=1, uniform="s10half")
+        self.s10.grid_columnconfigure(1, weight=1, uniform="s10half")
         self.s11.grid(row=10, column=0, columnspan=2, sticky="nsew")
         self.l11.grid(row=1, column=0, columnspan=2, sticky="nsew")
         self.r11.grid(row=1, column=2, columnspan=2, sticky="nsew")
+        self.s11.grid_columnconfigure(0, weight=1, uniform="s11half")
+        self.s11.grid_columnconfigure(1, weight=1, uniform="s11half")
+#        self.s11.grid_columnconfigure(0, weight=1)
         self.s12.grid(row=11, column=0, columnspan=2, sticky="nsew")
         self.l12.grid(row=1, column=0, columnspan=2, sticky="nsew")
         self.r12.grid(row=1, column=2, columnspan=2, sticky="nsew")
@@ -227,7 +232,7 @@ class Summary(Page):
             self.pos_num["width"] = 5
             self.pos_num.grid(row=1, column=3, padx=5, sticky="W")
             self.chars = tk.Label(self.r11, font=TEXT_FONT, bg=self.tab_color, text="Enter the number of characters \nin the sourcetype ID.")
-            self.chars.grid(row=1, column=4, padx=5, sticky="W")
+            self.chars.grid(row=1, column=4, padx=(5,90), sticky="W")
             self.chars_num = ttk.Entry(self.r11)
             self.chars_num["width"] = 5
             self.chars_num.grid(row=1, column=3, padx=5, sticky="W")
@@ -284,7 +289,7 @@ class Summary(Page):
             # Create a new frame to hold both the input and the instructions
             self.n5 = tk.Frame(self.l10, width=300, height=50, pady=0, padx=0, bg=self.tab_color)
             self.n5.grid(row=2, column=1, columnspan=4, padx=0, sticky="w")
-            self.pollutant_label = tk.Label(self.n5, font=TEXT_FONT, bg=self.tab_color, text="Enter a pollutant name")
+            self.pollutant_label = tk.Label(self.n5, font=TEXT_FONT, bg=self.tab_color, text="Enter a pollutant \nname")
             self.pollutant_label.grid(row=1, column=4, padx=5, sticky="w")
             self.pollutant_name = ttk.Entry(self.n5)
             self.pollutant_name["width"] = 20
@@ -369,7 +374,7 @@ class Summary(Page):
             for report in self.checked:
                 print(self.checked)
 
-                if report == 'Max Risk':
+                if report == 'Max Risk and Hazard Indices':
                     reportNames.append('MaxRisk')
                     reportNameArgs['MaxRisk'] = None
                 if report == 'Cancer Drivers':
