@@ -181,6 +181,9 @@ class EJ(Page):
     # The folder browse handler.
     def browse(self, icon, event):
         self.fullpath = tk.filedialog.askdirectory()
+        if not self.fullpath:
+            return
+        
         icon["text"] = self.fullpath.split("/")[-1]
 
         # We have to inspect the input faclist once we know the path in order to determine

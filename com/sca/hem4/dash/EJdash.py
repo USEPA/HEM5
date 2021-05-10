@@ -45,9 +45,9 @@ class EJdash():
         display_mets['Cancer'] = 'Cancer Risk'
         
         ### Get markdown text
-        bar_instr = open('..\\HEM4\\instructions\\ejdash_bar.txt', 'r').read()
-        map_instr = open('..\\HEM4\\instructions\\ejdash_map.txt', 'r').read()
-        table_instr = open('..\\HEM4\\instructions\\ejdash_table.txt', 'r').read()
+        bar_instr = open('instructions/ejdash_bar.txt', 'r').read()
+        map_instr = open('instructions/ejdash_map.txt', 'r').read()
+        table_instr = open('instructions/ejdash_table.txt', 'r').read()
        
                 
         ##### Get max risk and HI file and create a dataframe for the map
