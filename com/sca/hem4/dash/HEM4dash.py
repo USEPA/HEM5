@@ -253,7 +253,7 @@ class HEM4dash():
                             }],
                             
                         "layout": {'autosize':True,
-                        'height':500,
+                        'height':800,
                         'hovermode':"closest",
                         'mapbox':
                             {'style':'carto-positron',
@@ -536,16 +536,75 @@ class HEM4dash():
             
             dcc.Tabs([
                 dcc.Tab(label="Facility Map",children=[
+                        
                         html.Div([
                             html.H4("Facility Map ({} Facilities)".format(numFacs), style={'font-weight': 'bold'}),
                             html.Hr()
                         ]),
                 
+                        html.Div([
+                                
+                                html.H6("Linear or Log Scale"),
+                                  dcc.Dropdown(id='scaledrop',
+                                               
+                                              options=[{"label": 'Linear', "value": 'linear'},
+                                                       {"label": 'Log', "value": 'log'}
+                                                       ],
+                                              multi=False,
+                                              clearable=False,
+                                              value = 'linear',
+                                              placeholder="Linear or Log Scale",
+                                              ),
+                                
+                                                
+                                html.H6("Basemap"),
+                                  dcc.Dropdown(id='basemapdrop',
+                                               
+                                              options=[{"label": 'Light', "value": 'carto-positron'},
+                                                       {"label": 'Dark', "value": 'carto-darkmatter'},
+                                                       {"label": 'Satellite', "value": 'satellite-streets'},
+                                                       {"label": 'Streets', "value": 'open-street-map'}
+                                                       ],
+                                              multi=False,
+                                              clearable=False,
+                                              value = 'carto-positron',
+                                              placeholder="Select a Basemap",
+                                              ),
+                          
+                                html.H6("Color Ramp"),  
+                                  dcc.Dropdown(id='rampdrop',
+                                               
+                                              options=[{"label": 'Blue to Red', "value": px.colors.sequential.Bluered},
+                                                       {"label": 'Purple to Yellow', "value": px.colors.sequential.Viridis},
+                                                       {"label": 'Green Scale', "value": px.colors.sequential.Greens},
+                                                       {"label": 'Red Scale', "value": px.colors.sequential.Reds}],
+                                              multi=False,
+                                              clearable=False,
+                                              value = px.colors.sequential.Viridis,
+                                              placeholder="Select a Color Ramp",
+                                              ),
+                                               
+                                html.H6("Dot Size"),  
+                                  dcc.Dropdown(id='sizedrop',
+                                               
+                                              options=[{"label": i, "value": i} for i in range(5,16)],
+                                              multi=False,
+                                              clearable=False,
+                                              value = 6,
+                                              placeholder="Select a Dot Size",
+                                              ),
+                        ], className = 'two columns'),
+                                               
+                                               
+                        
                 html.Div([
                     html.Div([
-                        map_dcc,            
-                    ]),   
-            ]),
+                        map_dcc,
+                    ], 
+                        className='ten columns'),
+                
+                                
+                        ], className = 'row'),
             ]),
                 dcc.Tab(label="Cancer Incidence",children=[
                     
@@ -662,6 +721,14 @@ class HEM4dash():
                 Output(component_id='input2', component_property='children'),
                 [Input(component_id='input1', component_property='value')]
             )
+            
+            @app.callback(Output('map_dcc', 'figure'),
+             [Input('basemapdrop', 'value'),
+              Input('rampdrop', 'value'),
+              Input('scaledrop', 'value'),
+              Input('sizedrop', 'value')
+              ])
+            
             def check_status(value):
                 self.shutdown()
                 return 'Shutting down server'
