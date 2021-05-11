@@ -107,9 +107,6 @@ class HEM4dash():
                'Thyroid HI', 'Thyroid Block', 'Whole body HI', 'Whole Body Block', 'Cancer Incidence',
                'Met Station', 'Distance to Met Station (km)', 'Facility Center Lat', 'Facility Center Lon',
                'Rural or Urban']
-        avglat = df_max_can.loc[:,'Facility Center Lat'].mean()
-        avglon = df_max_can.loc[:,'Facility Center Lon'].mean()
-        numFacs = df_max_can.loc[:,'Facility'].count()
         MaxRisk = df_max_can.loc[:,'MIR (in a million)'].max()
         
         try:
@@ -204,123 +201,6 @@ class HEM4dash():
                 HIScale = 'log'
             else:
                 HIScale = 'linear'
-                
-                    
-            #Determine whether to display cancer risk or maximum TOSHI in the map
-            if ((Overall_MaxHI <= 1.49) or ((MaxRisk >= 50) and (Overall_MaxHI <= 2))):
-                mapMetric = df_max_can['MIR (in a million)']
-                mapMetr_name = 'MIR (in a million)'
-            else:
-                mapMetric = df_max_can['Max TOSHI']
-                mapMetr_name = 'Max TOSHI'
-            
-            #Format the max risk file so the map popups don't have so many digits
-            cols2format_E=['MIR (in a million)', 'Respiratory HI', 'Liver HI', 'Neurological HI',
-                  'Developmental HI','Reproductive HI','Kidney HI', 'Ocular HI',
-                  'Endocrine HI', 'Hematological HI', 'Immunological HI', 'Skeletal HI',
-                  'Spleen HI', 'Thyroid HI',  'Whole body HI', 'Max TOSHI', 'Cancer Incidence']
-    
-            cols2format_f=['MIR Lat', 'MIR Lon','Facility Center Lat', 'Facility Center Lon']
-    
-            for column in cols2format_E:
-                df_max_can[column] = df_max_can[column].map(lambda x: '{:.2E}'.format(x))
-    
-            for column in cols2format_f:
-                df_max_can[column] = df_max_can[column].map(lambda x: '{:.6f}'.format(x)) 
-                    
-            # Create a map from df_max_can
-            popup = ["Facility: {} <br>MIR (in a million): {} <br>MIR Block: {} <br>Max TOSHI: {} <br>Max TOSHI Organ: {}".format(i,j,k,l,m)\
-                     for i,j,k,l,m in zip(df_max_can['Facility'], df_max_can['MIR (in a million)'], df_max_can['MIR Block'],\
-                                          df_max_can['Max TOSHI'], df_max_can['Max TOSHI Organ'])]
-            
-            riskmapTitle = 'Facility Map' + ' for ' + self.SCname
-            riskMap = go.Figure({"data": [{
-                            "type": "scattermapbox",
-                            "lat": df_max_can['Facility Center Lat'],
-                            "lon": df_max_can['Facility Center Lon'],
-                            "hoverinfo": "text",
-                            "text": popup,
-                            "mode": "markers",
-                            "marker": {
-                                "size": 8,
-                                "opacity": 1,
-                                "color": mapMetric,
-                                "colorbar.title" : mapMetr_name,
-                                "cmin": mapMetric.min(),
-                                "cmax": mapMetric.max(),
-                                "showscale": True
-                                }
-                            }],
-                            
-                        "layout": {'autosize':True,
-                        'height':800,
-                        'hovermode':"closest",
-                        'mapbox':
-                            {'style':'carto-positron',
-                             'center':{
-                                'lon': avglon,
-                                'lat': avglat
-                                },
-                            'zoom':3,
-                            'accesstoken':'pk.eyJ1IjoiYnJ1enp5IiwiYSI6ImNrOTE5YmwzdDBhMXYzbW8yMjY4aWJ3eHQifQ.5tNjnlK2Y8b-U1kvfPP8FA'
-                            },
-                            
-                        },
-                             'config':{'modeBarButtonsToRemove': ['lasso2d', 'select2d', 'hoverCompareCartesian', 'hoverClosestCartesian'],
-                                        'toImageButtonOptions': {
-                                                'format': 'jpeg', # one of png, svg, jpeg, webp
-                                                'filename': 'Facility Map',
-                                                'scale': 1}
-                                        }
-                        })
-            
-            Map_updatemenus=list([
-                
-                dict(
-                    buttons=list([
-                        
-                        dict(
-                            args=[{'mapbox.style': 'carto-positron'}],
-                            label='Light',
-                            method='relayout'
-                        ),
-                        
-                        dict(
-                            args=[{'mapbox.style': 'open-street-map'}],
-                            label='Street Map',
-                            method='relayout'
-                        ),                    
-                        
-                        dict(
-                            args=[{'mapbox.style': 'carto-darkmatter'}],
-                            label='Dark',
-                            method='relayout'
-                        ),
-                        
-                        dict(
-                            args=[{'mapbox.style': 'satellite-streets'}],
-                            label='Satellite',
-                            method='relayout'
-                        )
-                    ]),
-                    # direction where I want the menu to expand when I click on it
-                    direction = 'up',
-                    active = 0,
-                    showactive = True,
-                  
-                    # here I specify where I want to place this drop-down on the map
-                    x = 0.05,
-                    xanchor = 'left',
-                    y = .05,
-                    yanchor = 'bottom',
-             
-                ),
-                  
-                ])
-            
-            riskMap.update_layout(margin={"r":0,"t":0,"l":0,"b":0})
-            riskMap.update_layout(title = riskmapTitle, updatemenus = Map_updatemenus,
-                                  coloraxis_colorbar=dict(title=mapMetr_name))
             
             # Create a bar chart of risk drivers
             
@@ -329,7 +209,7 @@ class HEM4dash():
             else:
                 riskDriv = px.bar(df_canc_driv, x = 'Facility', y = 'Source/Pollutant Risk',
                                   color = 'Pollutant', barmode = 'relative', hover_data=('Source ID', 'Pollutant'),
-                                  text = 'Source ID', range_x = [0,15], height = 600)
+                                  text = 'Source ID', height = 600)
                 riskDriv.layout.yaxis = {'title': 'Source/Pollutant Risk (in a million)', 'type': riskScale}
                 riskDriv.update_layout(title = 'Source and Pollutant Risk Drivers of Max Risk' + ' for ' + self.SCname +
                                        '<br>(facility risk ≥ 0.5 in a million)',
@@ -346,7 +226,7 @@ class HEM4dash():
                         
                 HIDriv = px.bar(df_max_HI, x="Facility ID", y="Hazard Index", color="Pollutant", barmode="relative",
                                 facet_row ="HI Type", text = 'Source ID', height=300*numTOs,
-                                range_x = [0, 15], opacity=1)
+                                opacity=1)
                 HIDriv.update_layout(title = 'Source and Pollutant Drivers of Max HI' + ' for ' + self.SCname +
                                      '<br>(facility HI ≥ 0.2)',
                                      yaxis={'type': HIScale},
@@ -383,7 +263,7 @@ class HEM4dash():
                 
                 # Create bar charts of acute HQs
                 acuteBar = px.bar(df_acute_melt, x="Pollutant", y="HQ", color='Reference Value', barmode= 'overlay',
-                                opacity = .7, range_x = [0, 5], height = 700, hover_name = "Facility",
+                                opacity = .7, height = 700, hover_name = "Facility",
                                 text = 'Facility')
                 acuteBar.update_layout(title = 'Acute Screening Hazard Quotients' + ' for ' + self.SCname +
                                        '<br>(for pollutants with HQ ≥ 0.5)',
@@ -439,18 +319,6 @@ class HEM4dash():
             # Create layout of the app
             # The config code modifies the dcc graph objects
             
-            map_config = {'modeBarButtonsToRemove': ['toggleSpikelines','hoverCompareCartesian', 'lassoSelect'],
-                            'doubleClickDelay': 1000,
-                            'toImageButtonOptions': {
-                                'format': 'png', # one of png, svg, jpeg, webp
-                                'filename': 'HEM4 Results ' + self.SCname + ' Map',
-                                'height': 700,
-                                'width': 1500,
-                                'scale': 1 # Multiply title/legend/axis/canvas sizes by this factor
-                                }
-                            }
-            
-            
             chart_config = {'modeBarButtonsToRemove': ['toggleSpikelines','hoverCompareCartesian', 'lassoSelect', 'boxSelect'],
                             'doubleClickDelay': 1000,
                             'toImageButtonOptions': {
@@ -474,11 +342,7 @@ class HEM4dash():
                             }
             
             #Here, if the dataframe for the graph is empty, don't make a graph
-            if df_max_can.empty:
-                map_dcc = ''
-            else:
-                map_dcc = dcc.Graph(figure = riskMap, config = map_config) 
-                
+
             if df_canc_driv.empty:
                 riskdriv_dcc = ''
             else:
@@ -535,77 +399,7 @@ class HEM4dash():
                         ]),
             
             dcc.Tabs([
-                dcc.Tab(label="Facility Map",children=[
-                        
-                        html.Div([
-                            html.H4("Facility Map ({} Facilities)".format(numFacs), style={'font-weight': 'bold'}),
-                            html.Hr()
-                        ]),
-                
-                        html.Div([
-                                
-                                html.H6("Linear or Log Scale"),
-                                  dcc.Dropdown(id='scaledrop',
-                                               
-                                              options=[{"label": 'Linear', "value": 'linear'},
-                                                       {"label": 'Log', "value": 'log'}
-                                                       ],
-                                              multi=False,
-                                              clearable=False,
-                                              value = 'linear',
-                                              placeholder="Linear or Log Scale",
-                                              ),
-                                
-                                                
-                                html.H6("Basemap"),
-                                  dcc.Dropdown(id='basemapdrop',
-                                               
-                                              options=[{"label": 'Light', "value": 'carto-positron'},
-                                                       {"label": 'Dark', "value": 'carto-darkmatter'},
-                                                       {"label": 'Satellite', "value": 'satellite-streets'},
-                                                       {"label": 'Streets', "value": 'open-street-map'}
-                                                       ],
-                                              multi=False,
-                                              clearable=False,
-                                              value = 'carto-positron',
-                                              placeholder="Select a Basemap",
-                                              ),
-                          
-                                html.H6("Color Ramp"),  
-                                  dcc.Dropdown(id='rampdrop',
-                                               
-                                              options=[{"label": 'Blue to Red', "value": px.colors.sequential.Bluered},
-                                                       {"label": 'Purple to Yellow', "value": px.colors.sequential.Viridis},
-                                                       {"label": 'Green Scale', "value": px.colors.sequential.Greens},
-                                                       {"label": 'Red Scale', "value": px.colors.sequential.Reds}],
-                                              multi=False,
-                                              clearable=False,
-                                              value = px.colors.sequential.Viridis,
-                                              placeholder="Select a Color Ramp",
-                                              ),
-                                               
-                                html.H6("Dot Size"),  
-                                  dcc.Dropdown(id='sizedrop',
-                                               
-                                              options=[{"label": i, "value": i} for i in range(5,16)],
-                                              multi=False,
-                                              clearable=False,
-                                              value = 6,
-                                              placeholder="Select a Dot Size",
-                                              ),
-                        ], className = 'two columns'),
-                                               
-                                               
-                        
-                html.Div([
-                    html.Div([
-                        map_dcc,
-                    ], 
-                        className='ten columns'),
-                
-                                
-                        ], className = 'row'),
-            ]),
+
                 dcc.Tab(label="Cancer Incidence",children=[
                     
                     html.Div([
@@ -721,13 +515,6 @@ class HEM4dash():
                 Output(component_id='input2', component_property='children'),
                 [Input(component_id='input1', component_property='value')]
             )
-            
-            @app.callback(Output('map_dcc', 'figure'),
-             [Input('basemapdrop', 'value'),
-              Input('rampdrop', 'value'),
-              Input('scaledrop', 'value'),
-              Input('sizedrop', 'value')
-              ])
             
             def check_status(value):
                 self.shutdown()
