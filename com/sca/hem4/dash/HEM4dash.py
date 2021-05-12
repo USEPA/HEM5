@@ -72,6 +72,9 @@ class HEM4dash():
         app = dash.Dash(__name__, external_stylesheets=external_stylesheets)
         app.title = 'HEM 4 Results: ' + self.SCname
                 
+        mapbox_access_token = 'pk.eyJ1IjoiYnJ1enp5IiwiYSI6ImNrOTE5YmwzdDBhMXYzbW8yMjY4aWJ3eHQifQ.5tNjnlK2Y8b-U1kvfPP8FA'
+        px.set_mapbox_access_token(mapbox_access_token)
+        
         # Create dataframe of max risks
         fname = self.SCname + "_facility_max_risk_and_hi.xlsx"
         max_rsk_hi = os.path.join(self.dir, fname)
@@ -108,6 +111,9 @@ class HEM4dash():
                'Met Station', 'Distance to Met Station (km)', 'Facility Center Lat', 'Facility Center Lon',
                'Rural or Urban']
         MaxRisk = df_max_can.loc[:,'MIR (in a million)'].max()
+        mapmets = ['MIR (in a million)', 'Respiratory HI','Liver HI','Neurological HI','Developmental HI',
+                   'Reproductive HI', 'Kidney HI', 'Ocular HI', 'Endocrine HI', 'Hematological HI',
+                   'Immunological HI','Skeletal HI', 'Spleen HI', 'Thyroid HI']
         
         try:
         
@@ -399,6 +405,93 @@ class HEM4dash():
                         ]),
             
             dcc.Tabs([
+                    
+                dcc.Tab(label="Facility Map", children=[
+                        
+                        ###########  Start Map Dropdowns  ##########
+
+                        html.Div([
+                                
+                                html.H6("Metric to Display"),
+                                  dcc.Dropdown(id='metdrop',
+                                               
+                                              options=[{"label": i, "value": i} for i in mapmets],
+                                              multi=False,
+                                              clearable=False,
+                                              value = 'MIR (in a million)',
+                                              placeholder="Select a Metric",
+                                              ),
+                                
+                                html.H6("Linear or Log Scale"),
+                                  dcc.Dropdown(id='scaledrop',
+                                               
+                                              options=[{"label": 'Linear', "value": 'linear'},
+                                                       {"label": 'Log', "value": 'log'}
+                                                       ],
+                                              multi=False,
+                                              clearable=False,
+                                              value = 'linear',
+                                              placeholder="Linear or Log Scale",
+                                              ),
+                                
+                                                
+                                html.H6("Basemap"),
+                                  dcc.Dropdown(id='basemapdrop',
+                                               
+                                              options=[{"label": 'Light', "value": 'carto-positron'},
+                                                       {"label": 'Dark', "value": 'carto-darkmatter'},
+                                                       {"label": 'Satellite', "value": 'satellite-streets'},
+                                                       {"label": 'Streets', "value": 'open-street-map'}
+                                                       ],
+                                              multi=False,
+                                              clearable=False,
+                                              value = 'carto-positron',
+                                              placeholder="Select a Basemap",
+                                              ),
+                          
+                                html.H6("Color Ramp"),  
+                                  dcc.Dropdown(id='rampdrop',
+                                               
+                                              options=[{"label": 'Blue to Red', "value": px.colors.sequential.Bluered},
+                                                       {"label": 'Blue to Yellow', "value": px.colors.sequential.Cividis},
+                                                       {"label": 'Purple to Yellow', "value": px.colors.sequential.Viridis},
+                                                       {"label": 'Blue Scale', "value": px.colors.sequential.Blues},
+                                                       {"label": 'Green Scale', "value": px.colors.sequential.Greens},
+                                                       {"label": 'Red Scale', "value": px.colors.sequential.Reds}],
+                                              multi=False,
+                                              clearable=False,
+                                              value = px.colors.sequential.Viridis,
+                                              placeholder="Select a Color Ramp",
+                                              ),
+                                               
+                                html.H6("Dot Size"),  
+                                  dcc.Dropdown(id='sizedrop',
+                                               
+                                              options=[{"label": i, "value": i} for i in range(5,16)],
+                                              multi=False,
+                                              clearable=False,
+                                              value = 6,
+                                              placeholder="Select a Dot Size",
+                                              ),
+                        ], className = 'two columns'),
+                                               
+                        html.Div([
+                              
+                                html.Div([
+                                    dcc.Graph(id = 'map', style={"height": 800}, config = {
+                                            'modeBarButtonsToRemove': ['lasso2d', 'select2d', 'hoverCompareCartesian', 'hoverClosestCartesian'],
+                                            'toImageButtonOptions': {
+                                                    'format': 'jpeg', # one of png, svg, jpeg, webp
+                                                    'filename': 'Facility Map',
+                                                    'scale': 1}
+                                              }),
+                                ], className='ten columns'),
+                        
+                                        
+                        ], className = 'row'),                       
+                    
+                    
+                ]),    
 
                 dcc.Tab(label="Cancer Incidence",children=[
                     
@@ -509,6 +602,47 @@ class HEM4dash():
             ]),
                 
             ])
+            
+            @app.callback(Output('map', 'figure'),
+                     [Input('basemapdrop', 'value'),
+                      Input('rampdrop', 'value'),
+                      Input('scaledrop', 'value'),
+                      Input('sizedrop', 'value'),
+                      Input('metdrop', 'value')
+                      ])  
+            def makemap (basemap, ramp, scale, dotsize, metric):
+                
+                dff = df_max_can 
+#                dff['logmetric'] = np.log10(dff['MIR (in a million)'])
+                
+                cenlat = dff['Facility Center Lat'].mean()
+                cenlon = dff['Facility Center Lon'].mean()
+                zoom = 4
+                
+                if scale == 'log':
+                    prefix = '1E '
+                    color = np.log10(dff[metric])
+                    
+                else:
+                    prefix = ''
+                    color = metric
+                    
+                hoverdata = ["Facility: {} <br>MIR (in a million): {} <br>MIR Block: {} <br>Max TOSHI: {} <br>Max TOSHI Organ: {}".format(i,j,k,l,m)\
+                     for i,j,k,l,m in zip(dff['Facility'], dff['MIR (in a million)'], dff['MIR Block'],\
+                                          dff['Max TOSHI'], dff['Max TOSHI Organ'])]
+                           
+                fig = px.scatter_mapbox(dff, lat = 'Facility Center Lat', lon = 'Facility Center Lon', color = color,
+                                        mapbox_style = basemap, color_continuous_scale=ramp, opacity = 1, zoom = zoom,
+                                        center = dict(lat = cenlat, lon = cenlon),
+#                                        hover_name = 'Facility',
+#                                        hover_data = hoverdata                           
+                                        )
+                fig.update_traces(marker=dict(size=dotsize))
+                fig.update_layout(title = '<b>Facility Map - {}</b>'.format(metric),
+                                  title_font=dict(size = 22, color = 'black'), uirevision = 'foo',
+                                  )
+                fig.update_coloraxes(colorbar_tickprefix= prefix, colorbar_title = metric)
+                return fig
 
 
             @app.callback(
