@@ -112,9 +112,6 @@ class EmissionsLocations(InputFile):
             hfacsrc = set(hsource['facsrc'])
             efacsrc = set(esource['facsrc'])
             
-            hsource = set(self.hapemis.dataframe[self.hapemis.dataframe[fac_id].isin(in_hap)][source_id])
-            esource = set(df[df[fac_id].isin(in_emis)][source_id])
-
             if hfacsrc != efacsrc:
                 Logger.logMessage("Your Emissions Location and HAP Emissions file have mismatched source IDs. " +
                                   "Please correct one or both files with matching sources and upload again.")

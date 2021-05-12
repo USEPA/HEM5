@@ -11,6 +11,7 @@ from com.sca.hem4.upload.DependentInputFile import DependentInputFile
 from tkinter import messagebox
 
 from com.sca.hem4.upload.EmissionsLocations import source_type
+import pandas as pd
 
 avgbld_len = 'avgbld_len';
 avgbld_hgt = 'avgbld_hgt';
@@ -18,6 +19,8 @@ avgbld_wid = 'avgbld_wid';
 avglin_wid = 'avglin_wid';
 avgbld_sep = 'avgbld_sep';
 avgbuoy = 'avgbuoy';
+blpgrp_id = 'blpgrp_id';
+source_id = 'source_id';
 
 class BuoyantLine(DependentInputFile):
 
@@ -29,16 +32,16 @@ class BuoyantLine(DependentInputFile):
 
         # Specify dtypes for all fields
         self.numericColumns = [avgbld_len,avgbld_hgt,avgbld_wid,avglin_wid,avgbld_sep,avgbuoy]
-        self.strColumns = [fac_id]
+        self.strColumns = [fac_id, blpgrp_id, source_id]
 
         multibuoy_df = self.readFromPath(
-            (fac_id, avgbld_len, avgbld_hgt, avgbld_wid, avglin_wid, avgbld_sep, avgbuoy))
+            (fac_id, blpgrp_id, source_id, avgbld_len, avgbld_hgt, avgbld_wid, avglin_wid, avgbld_sep, avgbuoy))
             
         self.dataframe = multibuoy_df
 
     def clean(self, df):
         cleaned = df.fillna({avgbld_len:0, avgbld_hgt:0, avgbld_wid:0, avglin_wid:0, avgbld_sep:0, avgbuoy:0})        
-        cleaned.replace(to_replace={fac_id:{"nan":""}}, inplace=True)
+        cleaned.replace(to_replace={fac_id:{"nan":""}, blpgrp_id:{"nan":""}, source_id:{"nan":""}}, inplace=True)
         cleaned = cleaned.reset_index(drop = True)
 
         return cleaned
@@ -49,18 +52,62 @@ class BuoyantLine(DependentInputFile):
         # Strict: Invalid values in these columns will cause the upload to fail immediately.
         # ----------------------------------------------------------------------------------
         if len(df.loc[(df[fac_id] == '')]) > 0:
-            Logger.logMessage("One or more facility IDs are missing in the Buoyant Line List.")
-            messagebox.showinfo("Missing facility IDs", "One or more facility IDs are missing in the Buoyant Line List.")
+            Logger.logMessage("One or more facility IDs are missing in the Buoyant Line Parameter file.")
+            messagebox.showinfo("Missing facility IDs", "One or more facility IDs are missing in the Buoyant Line Parameter file.")
             return None
+ 
+        # Buoyant line group id's can be no longer than 8 characaters
+        blpgrpid_len = df[blpgrp_id].str.len().max()
+        if blpgrpid_len > 8:
+            Logger.logMessage("At least one buoyant line group id in the Buoyant Line Parameter file is longer than 8 characters.")
+            messagebox.showinfo("Buoyant Line Group ID too long", "At least one buoyant line group id in the Buoyant Line Parameter file is longer than 8 characters.")
+            
+        
+        # Check for duplicate facility ids if buoyant line group ids are not being used
+        if len(df[df[blpgrp_id]!=""]) == 0:
+            duplicates = self.duplicates(df, [fac_id])
+            if len(duplicates) > 0:
+                Logger.logMessage("One or more records are duplicated in the Buoyant Line Parameters List (key=fac_id):")
+                messagebox.showinfo("Duplicate records", "One or more records are duplicated in the Buoyant Line Parameters List (key=fac_id):")
+                for d in duplicates:
+                    Logger.logMessage(d)
+                return None
 
-        duplicates = self.duplicates(df, [fac_id])
-        if len(duplicates) > 0:
-            Logger.logMessage("One or more records are duplicated in the Buoyant Line Parameters List (key=fac_id):")
-            messagebox.showinfo("Duplicate records", "One or more records are duplicated in the Buoyant Line Parameters List (key=fac_id):")
-            for d in duplicates:
-                Logger.logMessage(d)
+        # Make sure all source id's are unique for each facility. 
+        unique_ids = df.groupby([fac_id])[source_id].nunique()
+        num_rows = df.groupby([fac_id]).size()
+        qa_df = pd.DataFrame({'num_unique':unique_ids, 'num_rows':num_rows})
+        compare_counts = qa_df['num_unique'] == qa_df['num_rows']
+        if compare_counts.all() == False:
+            Logger.logMessage("The Buoyant Line Parameter file contains one or more facilities with non-unique source IDs.")
+            messagebox.showinfo("Non-unique Source IDs", "The Buoyant Line Parameter file contains one or more facilities with non-unique source IDs.")
             return None
-
+            
+        # A facility cannot contain an empty group id with the others non-empty. This means
+        # a facility with an empty group id can only have one row in the parameter file.
+        facs_w_blankgrpid = df[df[blpgrp_id]==""][fac_id].unique()
+        rowchk_df = df[df[fac_id].isin(facs_w_blankgrpid)].groupby([fac_id]).size().reset_index(name='rowcounts')
+        if all(x == 1 for x in rowchk_df['rowcounts']) == False:
+            Logger.logMessage("The Buoyant Line Parameter file contains one or more facilities that have both empty and non-empty group IDs.")
+            messagebox.showinfo("Empty and non-empty buoyant line group IDs", "The Buoyant Line Parameter file contains one or more facilities that have both empty and non-empty group IDs.")
+            return None
+        
+        # Make sure all source IDs in the buoyant parameter file are listed as buoyant line
+        # sources in the Emission Location file.
+        # Note: Ignore sources in blp file with empty group id
+        el_srcs = self.emisloc_df[self.emisloc_df['source_type']=='B'][[fac_id, source_id]]
+        blp_srcs = df[df[blpgrp_id] != ""][[fac_id, source_id]]
+        if len(blp_srcs) > 0:
+            el_srcs['facsrc'] = el_srcs[fac_id] + el_srcs[source_id]
+            blp_srcs['facsrc'] = blp_srcs[fac_id] + blp_srcs[source_id]
+            elfacsrc = set(el_srcs['facsrc'])
+            blpfacsrc = set(blp_srcs['facsrc'])
+            if elfacsrc != blpfacsrc:
+                Logger.logMessage("For at least one facility, there are missmatched buoyant line Source IDs in the Emission Location file and the Buoyant Line Parameter file.")
+                messagebox.showinfo("Missmatched buoyant line Source IDs", "For at least one facility, there are missmatched buoyant line Source IDs in the Emission Location file and the Buoyant Line Parameter file.")
+                return None
+                
+        
         for index, row in df.iterrows():
             facility = row[fac_id]
 
@@ -103,13 +150,13 @@ class BuoyantLine(DependentInputFile):
 
         # check for unassigned buoyant line
         check_buoyant_assignment = set(df[fac_id])
-
+        
         # get buoyant line facility list
         find_b = self.emisloc_df[self.emisloc_df[source_type] == 'B']
         buoyant_fac = set(find_b[fac_id])
 
         if check_buoyant_assignment != buoyant_fac:
-            buoyant_unassigned = set(check_buoyant_assignment - buoyant_fac)
+            buoyant_unassigned = check_buoyant_assignment.symmetric_difference(buoyant_fac)
 
             messagebox.showinfo("Unassigned buoyant Line parameters", "buoyant" +
                                 " Line parameters for " +
