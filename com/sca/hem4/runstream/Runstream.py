@@ -13,6 +13,7 @@ from com.sca.hem4.model.Model import *
 from com.sca.hem4.support.UTM import *
 from com.sca.hem4.support.NormalRounding import *
 from com.sca.hem4.upload.EmissionsLocations import *
+from com.sca.hem4.upload.BuoyantLine import *
 
 class Runstream():
     """
@@ -599,60 +600,167 @@ class Runstream():
                         self.inp_f.write(solink)
                         
                     
-                # Buoyant Line Source ---------------------------------------------
+        # Buoyant Line Sources ---------------------------------------------
+        # These are handled differently from other sources because order matters
+        
+        if self.buoyant_df is not None:
+                        
+            # Are buoyant line groups being used? If so, write differently from non-group way.
+            if len(self.buoyant_df[self.buoyant_df['source_id'] != ""]) > 0:
+
+                # ------ Using buoyant line groups -------------------------------
                 
-                elif srct[index] == 'B':
-                    soloc = ("SO LOCATION " + str(srid[index]) + " BUOYLINE " + 
-                             str(xco1[index]) + " " + str(yco1[index]) + " " + 
-                             str(xco2[index]) + " " + str(yco2[index]) + " " + 
-                             str(elev[index]) + "\n")
+                # Get buoyant line source id data from Emission Locations
+                el_blsrcs = self.emisloc_df[self.emisloc_df['source_type']=='B']
+                el_blsrcs.set_index('source_id', drop=False, inplace=True)
+                
+                # Iterrate over buoyant_df and write individual buoyant line LOCATION and SRCPARAM rows (source ids)
+                for index, row in self.buoyant_df.iterrows():
+                    
+                    bl_srcid = row[source_id]
+                    bl_xco1 = normal_round(el_blsrcs['utme'].loc[bl_srcid])
+                    bl_yco1 = normal_round(el_blsrcs['utmn'].loc[bl_srcid])
+                    bl_xco2 = normal_round(el_blsrcs['utme_x2'].loc[bl_srcid])
+                    bl_yco2 = normal_round(el_blsrcs['utmn_y2'].loc[bl_srcid])
+                    bl_elev = el_blsrcs['elev'].loc[bl_srcid]
+                    bl_relh = round(el_blsrcs['areavolrelhgt'].loc[bl_srcid],2)
+                                     
+                    soloc = ("SO LOCATION " + str(bl_srcid) + " BUOYLINE " + 
+                             str(bl_xco1) + " " + str(bl_yco1) + " " + 
+                             str(bl_xco2) + " " + str(bl_yco2) + " " + 
+                             str(bl_elev) + "\n")
                     
                     blemis = 1000 
-                    soparam = ("SO SRCPARAM " + str(srid[index]) + " " + 
-                               str(blemis) + " " + str(relh[index]) + "\n")
-                    
-                    if first_buoyant == 0:
-                        sobuopa = ("SO BLPINPUT " + str(self.buoyant_df['avgbld_len'].iloc[0]) + 
-                                   " " + str(self.buoyant_df['avgbld_hgt'].iloc[0]) + 
-                                   " " + str(self.buoyant_df['avgbld_wid'].iloc[0]) + 
-                                   " " + str(self.buoyant_df['avglin_wid'].iloc[0]) + 
-                                   " " + str(self.buoyant_df['avgbld_sep'].iloc[0]) + 
-                                   " " + str(self.buoyant_df['avgbuoy'].iloc[0]) + "\n")
-                        
-                        first_buoyant = 1
-                        self.inp_f.write(sobuopa)
-                    
+                    soparam = ("SO SRCPARAM " + str(bl_srcid) + " " + 
+                               str(blemis) + " " + str(bl_relh) + "\n")
+    
                     self.inp_f.write(soloc)
                     self.inp_f.write(soparam)
-                    
+    
                     if self.urban == True:
-                        urbanopt = "SO URBANSRC " + str(srid[index]) + "\n"
+                        urbanopt = "SO URBANSRC " + str(bl_srcid) + "\n"
                         self.inp_f.write(urbanopt)
                     
                     if self.blddw == "Y":
-                        self.get_blddw(srid[index])
+                        self.get_blddw(bl_srcid)
                         
                     if phase['phase'] == 'P':
-                        self.get_particle(srid[index])
+                        self.get_particle(bl_srcid)
                         
                     elif phase['phase'] == 'V':
-                        self.get_vapor(srid[index])
+                        self.get_vapor(bl_srcid)
                         
                     if ((self.emisvar_df is not None) and (type(self.emisvar_df) != str)
-                        and (srid[index] in self.emisvar_df['source_id'].values)):
-                        self.get_variation(srid[index])
+                        and (bl_srcid in self.emisvar_df['source_id'].values)):
+                        self.get_variation(bl_srcid)
                    
                     #if linked file
                     elif ((self.emisvar_df is not None) and 
-                          (type(self.emisvar_df) == str) and (srid[index] in var_sources)):
+                          (type(self.emisvar_df) == str) and (bl_srcid in var_sources)):
                         
                         solink = ("SO HOUREMIS " + self.emisvar_df + " " + 
-                                  srid[index] + " \n")
+                                  bl_srcid + " \n")
                         self.inp_f.write(solink)
+    
+                    
+                # Now write the buoyant line parameter data which is by buoyant line group.
+                # First get the parameters for each buoyant line group.
+                blpgrp_parms = self.buoyant_df.drop_duplicates(subset=[fac_id, blpgrp_id, avgbld_len, 
+                                            avgbld_hgt, avgbld_wid, avglin_wid, avgbld_sep, avgbuoy])
+                
+                for index, row in blpgrp_parms.iterrows():                    
+                    sobuopa = ("SO BLPINPUT " + str(row[blpgrp_id]) + 
+                               " " + str(row[avgbld_len]) + 
+                               " " + str(row[avgbld_hgt]) + 
+                               " " + str(row[avgbld_wid]) + 
+                               " " + str(row[avglin_wid]) + 
+                               " " + str(row[avgbld_sep]) + 
+                               " " + str(row[avgbuoy]) + "\n")
+                    self.inp_f.write(sobuopa)
+                
+                
+                # Write the BLPGROUP source groups
+                for bgrp, group in self.buoyant_df.groupby(blpgrp_id):
+                    if bgrp != "":
+                        sobuogrp = "SO BLPGROUP " + str(bgrp) + " "
+                        for index, row in group.iterrows():
+                            sobuogrp = sobuogrp + row[source_id] + " "
+                        sobuogrp = sobuogrp + "\n"
+                        self.inp_f.write(sobuogrp)
+                        
+            else:
+                
+                # ------------- Buoyant line groups not used ------------------------
 
+                # Get buoyant line source id data from Emission Locations
+                el_blsrcs = self.emisloc_df[self.emisloc_df['source_type']=='B']
+                
+                # Iterrate over buoyant_df and write individual buoyant line LOCATION and SRCPARAM rows (source ids)
+                for index, row in el_blsrcs.iterrows():
+                    
+                    bl_srcid = row[source_id]
+                    bl_xco1 = normal_round(row['utme'])
+                    bl_yco1 = normal_round(row['utmn'])
+                    bl_xco2 = normal_round(row['utme_x2'])
+                    bl_yco2 = normal_round(row['utmn_y2'])
+                    bl_elev = row['elev']
+                    bl_relh = round(row['areavolrelhgt'],2)
+                                     
+                    soloc = ("SO LOCATION " + str(bl_srcid) + " BUOYLINE " + 
+                             str(bl_xco1) + " " + str(bl_yco1) + " " + 
+                             str(bl_xco2) + " " + str(bl_yco2) + " " + 
+                             str(bl_elev) + "\n")
+                    
+                    blemis = 1000 
+                    soparam = ("SO SRCPARAM " + str(bl_srcid) + " " + 
+                               str(blemis) + " " + str(bl_relh) + "\n")
+    
+                    self.inp_f.write(soloc)
+                    self.inp_f.write(soparam)
+    
+                    if self.urban == True:
+                        urbanopt = "SO URBANSRC " + str(bl_srcid) + "\n"
+                        self.inp_f.write(urbanopt)
+                    
+                    if self.blddw == "Y":
+                        self.get_blddw(bl_srcid)
+                        
+                    if phase['phase'] == 'P':
+                        self.get_particle(bl_srcid)
+                        
+                    elif phase['phase'] == 'V':
+                        self.get_vapor(bl_srcid)
+                        
+                    if ((self.emisvar_df is not None) and (type(self.emisvar_df) != str)
+                        and (bl_srcid in self.emisvar_df['source_id'].values)):
+                        self.get_variation(bl_srcid)
+                   
+                    #if linked file
+                    elif ((self.emisvar_df is not None) and 
+                          (type(self.emisvar_df) == str) and (bl_srcid in var_sources)):
+                        
+                        solink = ("SO HOUREMIS " + self.emisvar_df + " " + 
+                                  bl_srcid + " \n")
+                        self.inp_f.write(solink)
+    
+                    
+                # Now write the buoyant line parameter data which is by buoyant line group.
+                # First get the parameters for each buoyant line group.
+                blpgrp_parms = self.buoyant_df.drop_duplicates(subset=[avgbld_len, 
+                                            avgbld_hgt, avgbld_wid, avglin_wid, avgbld_sep, avgbuoy])
+                
+                for index, row in blpgrp_parms.iterrows():                    
+                    sobuopa = ("SO BLPINPUT " + 
+                               " " + str(row[avgbld_len]) + 
+                               " " + str(row[avgbld_hgt]) + 
+                               " " + str(row[avgbld_wid]) + 
+                               " " + str(row[avglin_wid]) + 
+                               " " + str(row[avgbld_sep]) + 
+                               " " + str(row[avgbuoy]) + "\n")
+                    self.inp_f.write(sobuopa)
                 
              
-             # SO Source groups ---------------------------------------------
+        # SO Source groups ---------------------------------------------
             
         self.uniqsrcs = srid.unique()
         for i in np.arange(len(self.uniqsrcs)): 
