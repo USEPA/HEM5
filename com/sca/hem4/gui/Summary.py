@@ -315,8 +315,9 @@ class Summary(Page):
 
 
         self.fullpath = tk.filedialog.askdirectory()
-        print(self.fullpath)
-        icon["text"] = self.fullpath.split("/")[-1]
+        # Make sure a directory was selected
+        if self.fullpath:
+            icon["text"] = self.fullpath.split("/")[-1]
 
     def run_reports(self, event):
 
