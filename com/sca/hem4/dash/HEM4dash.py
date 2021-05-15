@@ -70,7 +70,7 @@ class HEM4dash():
         external_stylesheets = ['https://codepen.io/chriddyp/pen/bWLwgP.css']
         
         app = dash.Dash(__name__, external_stylesheets=external_stylesheets)
-        app.title = 'HEM 4 Results: ' + self.SCname
+        app.title = 'HEM4 Summary Results: ' + self.SCname
                 
         mapbox_access_token = 'pk.eyJ1IjoiYnJ1enp5IiwiYSI6ImNrOTE5YmwzdDBhMXYzbW8yMjY4aWJ3eHQifQ.5tNjnlK2Y8b-U1kvfPP8FA'
         px.set_mapbox_access_token(mapbox_access_token)
@@ -111,9 +111,10 @@ class HEM4dash():
                'Met Station', 'Distance to Met Station (km)', 'Facility Center Lat', 'Facility Center Lon',
                'Rural or Urban']
         MaxRisk = df_max_can.loc[:,'MIR (in a million)'].max()
-        mapmets = ['MIR (in a million)', 'Respiratory HI','Liver HI','Neurological HI','Developmental HI',
+        mapmets = ['MIR (in a million)', 'Respiratory HI', 'Liver HI','Neurological HI','Developmental HI',
                    'Reproductive HI', 'Kidney HI', 'Ocular HI', 'Endocrine HI', 'Hematological HI',
                    'Immunological HI','Skeletal HI', 'Spleen HI', 'Thyroid HI']
+        numFacs = df_max_can.loc[:,'Facility'].count()
         
         try:
         
@@ -221,8 +222,11 @@ class HEM4dash():
                                        '<br>(facility risk ≥ 0.5 in a million)',
                                        yaxis={'type': riskScale},
                                        xaxis={'type':'category', 'categoryorder': 'array',
-                                              'categoryarray': df_canc_driv['Facility']}
+                                              'categoryarray': df_canc_driv['Facility']
+                                              }
                                        )
+                riskDriv.update_xaxes(range = (-.5, min(numFacs,50)))
+                
                     
             # Create a bar chart of HI drivers
             
@@ -330,7 +334,7 @@ class HEM4dash():
                             'toImageButtonOptions': {
                                 'format': 'png', # one of png, svg, jpeg, webp
                                 'filename': 'HEM4 Results ' + self.SCname,
-                                'height': 700,
+                                'height': 800,
                                 'width': 1100,
                                 'scale': 1 # Multiply title/legend/axis/canvas sizes by this factor
                                 }
@@ -395,12 +399,13 @@ class HEM4dash():
 #                    dcc.Interval(id='interval1', interval=5 * 1000, n_intervals=0),
 #                    html.H1(id='label1', children=''),
 
-                dcc.Input(id="input1", type="hidden", value="shutdown"),
-                dcc.Input(id="input2", type="hidden"),
+# Mark commented these out
+#                dcc.Input(id="input1", type="hidden", value="shutdown"),
+#                dcc.Input(id="input2", type="hidden"),
                 
                 html.Div([
                         html.Hr(),    
-                        html.H1("HEM4 Results for " + self.SCname + " Model Run", style={'text-align':'center', 'font-weight': 'bold'}),
+                        html.H1("HEM4 Summary Results for " + self.SCname + " Model Run", style={'text-align':'center', 'font-weight': 'bold'}),
                         html.Hr(),
                         ]),
             
@@ -558,7 +563,7 @@ class HEM4dash():
             
             ]),
             
-            dcc.Tab(label="Maximum Risk and HI Data",children=[
+            dcc.Tab(label="Chronic Risk Summary Table",children=[
                     
                  html.Div([
                     html.Hr(),
@@ -612,7 +617,7 @@ class HEM4dash():
                       ])  
             def makemap (basemap, ramp, scale, dotsize, metric):
                 
-                dff = df_max_can 
+                dff = df_dashtable 
 #                dff['logmetric'] = np.log10(dff['MIR (in a million)'])
                 
                 cenlat = dff['Facility Center Lat'].mean()
@@ -627,9 +632,9 @@ class HEM4dash():
                     prefix = ''
                     color = metric
                     
-                hoverdata = ["Facility: {} <br>MIR (in a million): {} <br>MIR Block: {} <br>Max TOSHI: {} <br>Max TOSHI Organ: {}".format(i,j,k,l,m)\
-                     for i,j,k,l,m in zip(dff['Facility'], dff['MIR (in a million)'], dff['MIR Block'],\
-                                          dff['Max TOSHI'], dff['Max TOSHI Organ'])]
+#                hoverdata = ["Facility: {} <br>MIR (in a million): {} <br>MIR Block: {} <br>Max TOSHI: {} <br>Max TOSHI Organ: {}".format(i,j,k,l,m)\
+#                     for i,j,k,l,m in zip(dff['Facility'], dff['MIR (in a million)'], dff['MIR Block'],\
+#                                          dff['Max TOSHI'], dff['Max TOSHI Organ'])]
                            
                 fig = px.scatter_mapbox(dff, lat = 'Facility Center Lat', lon = 'Facility Center Lon', color = color,
                                         mapbox_style = basemap, color_continuous_scale=ramp, opacity = 1, zoom = zoom,
@@ -644,15 +649,15 @@ class HEM4dash():
                 fig.update_coloraxes(colorbar_tickprefix= prefix, colorbar_title = metric)
                 return fig
 
-
-            @app.callback(
-                Output(component_id='input2', component_property='children'),
-                [Input(component_id='input1', component_property='value')]
-            )
-            
-            def check_status(value):
-                self.shutdown()
-                return 'Shutting down server'
+# Mark commented these out
+#            @app.callback(
+#                Output(component_id='input2', component_property='children'),
+#                [Input(component_id='input1', component_property='value')]
+#            )
+#            
+#            def check_status(value):
+#                self.shutdown()
+#                return 'Shutting down server'
 
                 
             return app
