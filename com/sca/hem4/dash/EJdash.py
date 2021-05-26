@@ -64,10 +64,28 @@ class EJdash():
         mapmets = ['MIR (in a million)', 'Respiratory HI', 'Liver HI', 'Neurological HI', 'Developmental HI',
                  'Reproductive HI', 'Kidney HI', 'Ocular HI', 'Endocrine HI', 'Hematological HI', 'Immunological HI',
                  'Skeletal HI', 'Spleen HI', 'Thyroid HI']
+
+
+        ejdir = os.path.join(self.dir, 'ej')
+
+        # Record the number of people age >= 25 for each facility and for each distance
+        list_subfolders_nameonly = [f.name for f in os.scandir(ejdir) if f.is_dir()]
+        for subfolder in list_subfolders_nameonly:
+            facilityID = subfolder
+            facfolder = os.path.join(ejdir, subfolder)
+            facfiles = os.listdir(facfolder)
+            cancerfiles = fnmatch.filter(facfiles, '*Cancer_demo*')
+            for cfile in cancerfiles:
+               part1 = cfile.split('_km_',1)[0]
+               distance = part1.split('_')[-1]
+               cfile_path = os.path.join(ejdir, subfolder, cfile)
+               cfile_df = pd.read_excel(cfile_path, sheet_name='TableB3C', skiprows=5, header=None)
+               age25pop = cfile_df.iloc[11,3]
+               
+            
         
         ##### Get EJ summary files
         pattern_list = ["*Summary*"]
-        ejdir = os.path.join(self.dir, 'ej')
         files = os.listdir(ejdir)
         for pattern in pattern_list:
             file_list = fnmatch.filter(files, pattern)
