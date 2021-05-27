@@ -101,7 +101,7 @@ class Page(tk.Frame):
         This function opens file dialogs for uploading inputs
         """
 
-        if filename is None:
+        if not filename:
             # upload was canceled
             print("Canceled!")
             return None

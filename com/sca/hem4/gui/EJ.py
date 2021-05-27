@@ -134,7 +134,7 @@ class EJ(Page):
                                            justify="left", text=step3_text)
         self.step3_instructions.grid(row=1, column=1, padx=5, sticky="W", columnspan=4, rowspan=3)
 
-        self.add_config(radius=50, cancer_risk=1, hi_risk=1)
+        self.add_config(initYN="Y", radius=50, cancer_risk=1, hi_risk=1)
         self.create_add_config()
 
         ru = PIL.Image.open('images\icons8-create-48.png').resize((30,30))
@@ -170,7 +170,7 @@ class EJ(Page):
 
         self.combinations = {}
 
-        self.add_config(radius=50, cancer_risk=1, hi_risk=1)
+        self.add_config(initYN="Y", radius=50, cancer_risk=1, hi_risk=1)
 
         if self.add_config_btn is None:
             self.create_add_config()
@@ -261,7 +261,7 @@ class EJ(Page):
 
     # Add next config in response to user pressing add config button, and manage the availability of the button.
     def add_next_config(self):
-        self.add_config(radius=None, cancer_risk=None, hi_risk=None)
+        self.add_config(initYN="N", radius=None, cancer_risk=None, hi_risk=None)
 
         num_configs = len(self.combinations)
         if num_configs == 4:
@@ -269,7 +269,7 @@ class EJ(Page):
             self.add_config_btn = None
 
     # Create a new combination with default values.
-    def add_config(self, radius, cancer_risk, hi_risk):
+    def add_config(self, initYN, radius, cancer_risk, hi_risk):
         num_configs = len(self.combinations)
         config = self.next_config
         frame_color = 'lightyellow'
@@ -324,9 +324,10 @@ class EJ(Page):
         hi_risk_num['state'] = 'disabled'
         hi_radio['fg'] = 'lightgrey'
 
-        remove_btn = tk.Button(new_frame, text="Remove", bg='lightgrey', relief='solid', borderwidth=1,
-                              command=partial(self.remove_config, config), font=SMALL_TEXT_FONT)
-        remove_btn.grid(row=starting_row+1, column=4, sticky='E', padx=10)
+        if initYN == "N":
+            remove_btn = tk.Button(new_frame, text="Remove", bg='lightgrey', relief='solid', borderwidth=1,
+                                  command=partial(self.remove_config, config), font=SMALL_TEXT_FONT)
+            remove_btn.grid(row=starting_row+1, column=4, sticky='E', padx=10)
 
         self.next_config += 1
 
