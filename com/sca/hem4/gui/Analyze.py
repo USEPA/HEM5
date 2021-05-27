@@ -511,7 +511,10 @@ class Analyze(Page):
 
     def maps_button(self, event):
         filename = tk.filedialog.askopenfilename(filetypes = [("html or kml files","*.html; *.kml; *.kmz")])
-        webbrowser.open(filename)
+        if not filename:
+            return None
+        else:
+            webbrowser.open(filename)
 
     def browse(self):
 

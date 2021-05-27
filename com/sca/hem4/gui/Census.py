@@ -84,7 +84,8 @@ class Census(Page):
         """
 
         # Indicate with green icon that updater is running
-        self.rileLabel.configure(image=self.home.greenIcon)
+        self.titleLabel.configure(image=self.home.greenIcon)
+        self.home.gearLabel.configure(image=self.home.greenIcon)
         
         # Disable select folder and run button
         self.folder_select.configure(state='disabled')
@@ -119,7 +120,8 @@ class Census(Page):
         self.rileLabel.configure(state='normal')
         self.rileLabel.bind("<Button-1>", self.update_census)
         self.folder_select['text'] = "Please select a census update file:"
-        self.rileLabel.configure(image=self.rileicon)
+        self.titleLabel.configure(image=self.titleicon)
+        self.home.gearLabel.configure(image=self.home.gearLabel.image)
         
         #reenable hem4 tab
         self.home.newrunLabel.bind("<Button-1>", partial(self.home.lift_page, self.home.newrunLabel, self.home.iconLabel, self.home.hem, self.home.current_button))
@@ -131,6 +133,8 @@ class Census(Page):
         
         self.censusupdater = CensusUpdater()
         fullpath = self.openFile(askopenfilename())
-        if fullpath is not None:
+        if not fullpath:
+            return
+        else:
             self.censusUpdatePath = fullpath
             self.folder_select['text'] = fullpath.split("\\")[-1]

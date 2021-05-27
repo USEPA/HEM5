@@ -13,12 +13,7 @@ import dash_core_components as dcc
 import dash_html_components as html
 import plotly.graph_objects as go
 from dash.dependencies import Input, Output
-import traceback
-from threading import Timer
-import webbrowser
 from flask import request
-import time
-import tkinter as tk
 from com.sca.hem4.gui.EJ import EJ
 
 
@@ -68,7 +63,9 @@ class EJdash():
 
         ejdir = os.path.join(self.dir, 'ej')
 
-        # Record the number of people age >= 25 for each facility and for each distance
+        # Record the number of people age >= 25 for each facility and for each distance.
+        # Use dictionary where key is facility + distance
+        age25pop = {}
         list_subfolders_nameonly = [f.name for f in os.scandir(ejdir) if f.is_dir()]
         for subfolder in list_subfolders_nameonly:
             facilityID = subfolder
@@ -79,10 +76,11 @@ class EJdash():
                part1 = cfile.split('_km_',1)[0]
                distance = part1.split('_')[-1]
                cfile_path = os.path.join(ejdir, subfolder, cfile)
-               cfile_df = pd.read_excel(cfile_path, sheet_name='TableB3C', skiprows=5, header=None)
-               age25pop = cfile_df.iloc[11,3]
-               
-            
+               excel = pd.ExcelFile(cfile_path)
+               sheetname = fnmatch.filter(excel.sheet_names, 'Table*3C')
+               cfile_df = pd.read_excel(cfile_path, sheet_name=sheetname[0], skiprows=5, header=None)
+               popoverage25 = cfile_df.iloc[11,3]
+               age25pop[facilityID+'_'+distance] = popoverage25
         
         ##### Get EJ summary files
         pattern_list = ["*Summary*"]
@@ -153,13 +151,26 @@ class EJdash():
                 temp.insert(2, 'Risk_Level', sheet)
                 
                 ## Adding cols for demog group pop; and facility names in rows where absent
-                for i, row in temp.iterrows():
-                    for col in demogroups:
-                        newcol = col + ' Pop'
+                ## Note: over 25 without a HS diploma uses count of people over age 25, not total pop
+                for col in demogroups:
+                    newcol = col + ' Pop'
+                    if col != 'Over 25 Without a High School Diploma':
                         temp[newcol] = (temp[col] * temp['Total Pop'])
-                                                                 
+                    else:
+                        temp[newcol] = 0
+                        
+                for i, row in temp.iterrows():
                     if pd.isna(row[3]):
                         temp.iat[i,3] = temp.iat[i-1,3]
+                    
+                    # Fillin over age 25 pop
+                    # key = facility id + distance
+                    age25pop_key = temp.iloc[i,3] + '_' + temp.iloc[i,1]
+                    count_age25up = age25pop[age25pop_key]
+                    temp.loc[i, 'Over 25 Without a High School Diploma Pop'] = \
+                                temp.loc[i, 'Over 25 Without a High School Diploma'] * count_age25up
+
+                                                                 
                 
                 # Convert the decimal fractions to percents for the demo groups        
                 for col in demogroups:
@@ -415,8 +426,7 @@ class EJdash():
  
         ##############################
         ##  Callbacks
-        ##############################
-                          
+        ##############################                          
                           
         ### Callback for the Distance Dropdown                  
         @app.callback(Output('distdrop', 'options'),
