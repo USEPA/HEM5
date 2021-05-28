@@ -118,29 +118,21 @@ class Process_outputs():
             return
 
         
-        #----------- create All_Outer_Receptor output file -----------------
-        try:
-            
-            all_outer_receptors = AllOuterReceptorsNonCensus(self.outdir, self.facid, self.model, self.plot_df, self.acute_yn) if altrec \
-                            else AllOuterReceptors(self.outdir, self.facid, self.model, self.plot_df, self.acute_yn)
-            if not self.model.outerblks_df.empty:
-                all_outer_receptors.write(generateOnly=self.generateOnly)
-                self.model.all_outer_receptors_df = all_outer_receptors.dataframe
-                Logger.logMessage("Completed AllOuterReceptors output")
-            else:
-                Logger.logMessage("No outer receptors. Did not create AllOuterReceptors output.")
-                
-        except BaseException as e:
-        
-            var = traceback.format_exc()
-            Logger.logMessage(var)
+        # ----------- create All_Outer_Receptor output file -----------------
+        all_outer_receptors = AllOuterReceptorsNonCensus(self.outdir, self.facid, self.model, self.plot_df, self.acute_yn) if altrec \
+                        else AllOuterReceptors(self.outdir, self.facid, self.model, self.plot_df, self.acute_yn)
+        if not self.model.outerblks_df.empty:
+            all_outer_receptors.write(generateOnly=self.generateOnly)
+            self.model.all_outer_receptors_df = all_outer_receptors.dataframe
+            Logger.logMessage("Completed AllOuterReceptors output")
+        else:
+            Logger.logMessage("No outer receptors. Did not create AllOuterReceptors output.")
 
         if self.abort.is_set():
             Logger.logMessage("Terminating output processing...")
             return
 
-
-        #----------- create temporal output file if necessary -----------------
+        # ----------- create temporal output file if necessary -----------------
         if self.temporal:
             temporal = Temporal(self.outdir, self.facid, self.model, self.plot_df)
             temporal.write()

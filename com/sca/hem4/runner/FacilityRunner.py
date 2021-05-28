@@ -185,16 +185,9 @@ class FacilityRunner():
     
                     # Put the acute plot file into the Model class
                     self.model.acuteplot_df = aplot_df
- 
-                               
+
                 # Process outputs for single facility
-                try:
-                    
-                    self.process_outputs(fac_folder, plot_df)
-                    
-                except BaseException as e:
-                
-                    Logger.logMessage(str(e))
+                self.process_outputs(fac_folder, plot_df)
                 
 
         else:
@@ -308,16 +301,7 @@ class FacilityRunner():
                 
                 
             # Process outputs for this facility
-            try:
-            
-                self.process_outputs(fac_folder, plot_df)
-                
-            except BaseException as e:
-                
-                Logger.logMessage(str(e))
-                
-           
-               
+            self.process_outputs(fac_folder, plot_df)
     
     def prep(self):
         
