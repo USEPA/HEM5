@@ -471,6 +471,7 @@ class EJ(Page):
             messagebox.showinfo("Missing files",
                                 "Unable to find required ACS data. Please check your HEM4 resources folder and " +
                                 "try again.")
+            return
 
         # Next, create (if doesn't exist) an all receptors file...
         all_receptors = MirHIAllReceptors(targetDir=self.fullpath)
@@ -494,7 +495,14 @@ class EJ(Page):
         self.basepath = os.path.basename(os.path.normpath(self.fullpath))
         maxRiskAndHI = FacilityMaxRiskandHI(targetDir=self.fullpath,
                                             filenameOverride=self.basepath + "_facility_max_risk_and_hi.xlsx")
-        maxRiskAndHI_df = maxRiskAndHI.createDataframe()
+
+        try:
+            maxRiskAndHI_df = maxRiskAndHI.createDataframe()
+        except FileNotFoundError as e:
+            Logger.logMessage("Couldn't find max risk file. Aborting...")
+            messagebox.showinfo("File Not Found", "Please check the output folder for a properly named max risk file.")
+            self.reset()
+            return
 
         # Next, compile a list of all facility folders in the output folder (which will be used when we create
         # reports for each facility individually.)
@@ -536,7 +544,7 @@ class EJ(Page):
                 ej.create_cancer_reports() if cancer_selected else ej.create_hi_reports()
                 ej.create_facility_summaries(cancer_selected=cancer_selected)
             except BaseException as e:
-                print(e)
+                Logger.logMessage(e)
 
             Logger.logMessage("Creating facility specific reports...")
             for facilityId in facilities:
@@ -562,7 +570,7 @@ class EJ(Page):
                 try:
                     bsc_df['mir_rounded'] = bsc_df['mir'].apply(DataModel.round_to_sigfig, 1)
                 except BaseException as e:
-                    print(e)
+                    Logger.logMessage(e)
 
                 filtered_bsc_df = bsc_df.query('distance <= @maxdist').copy()
                 Logger.logMessage("Filtered BlockSummaryChronic dataset (radius = " + str(maxdist) + ") contains " +
