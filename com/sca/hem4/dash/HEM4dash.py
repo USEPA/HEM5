@@ -7,8 +7,8 @@ Created on Wed Feb 26 07:07:56 2020
 import dash
 import dash_table
 import dash_core_components as dcc
-import dash_html_components as html
-import plotly.graph_objects as go
+import dash_html_components as html 
+import plotly.graph_objects as go 
 import subprocess, webbrowser
 from threading import Timer
 import pandas as pd
@@ -37,7 +37,7 @@ class HEM4dash():
 
         if self.dir == "" or self.dir == None:
             messagebox.showinfo("Invalid directory", " Please select a directory containing the results of a model run and summary reports for cancer risk drivers, "+
-                                "max risks, max TOSHI drivers, pollutant incidence drivers, source type risk histogram, and cancer/HI histograms.")
+                                "max risks, max TOSHI drivers, pollutant incidence drivers, source type incidence drivers, and cancer histograms.")
             return None
 
         facrisk_file = self.SCname + "_facility_max_risk_and_hi.xlsx"
@@ -58,7 +58,7 @@ class HEM4dash():
                     
             if not all(chklist):
                 messagebox.showinfo("Invalid directory", " Please select a directory containing the results of a model run and summary reports for cancer risk drivers, "+
-                                    "max risks, max TOSHI drivers, pollutant incidence drivers, source type risk histogram, and cancer/HI histograms.")
+                                    "max risks, max TOSHI drivers, pollutant incidence drivers, source type incidence drivers, and cancer histograms.")
                 return None
             else:
                 break
@@ -70,8 +70,11 @@ class HEM4dash():
         external_stylesheets = ['https://codepen.io/chriddyp/pen/bWLwgP.css']
         
         app = dash.Dash(__name__, external_stylesheets=external_stylesheets)
-        app.title = 'HEM 4 Results: ' + self.SCname
+        app.title = 'HEM4 Summary Results: ' + self.SCname
                 
+        mapbox_access_token = 'pk.eyJ1IjoiYnJ1enp5IiwiYSI6ImNrOTE5YmwzdDBhMXYzbW8yMjY4aWJ3eHQifQ.5tNjnlK2Y8b-U1kvfPP8FA'
+        px.set_mapbox_access_token(mapbox_access_token)
+        
         # Create dataframe of max risks
         fname = self.SCname + "_facility_max_risk_and_hi.xlsx"
         max_rsk_hi = os.path.join(self.dir, fname)
@@ -107,10 +110,11 @@ class HEM4dash():
                'Thyroid HI', 'Thyroid Block', 'Whole body HI', 'Whole Body Block', 'Cancer Incidence',
                'Met Station', 'Distance to Met Station (km)', 'Facility Center Lat', 'Facility Center Lon',
                'Rural or Urban']
-        avglat = df_max_can.loc[:,'Facility Center Lat'].mean()
-        avglon = df_max_can.loc[:,'Facility Center Lon'].mean()
-        numFacs = df_max_can.loc[:,'Facility'].count()
         MaxRisk = df_max_can.loc[:,'MIR (in a million)'].max()
+        mapmets = ['MIR (in a million)', 'Respiratory HI', 'Liver HI','Neurological HI','Developmental HI',
+                   'Reproductive HI', 'Kidney HI', 'Ocular HI', 'Endocrine HI', 'Hematological HI',
+                   'Immunological HI','Skeletal HI', 'Spleen HI', 'Thyroid HI']
+        numFacs = df_max_can.loc[:,'Facility'].count()
         
         try:
         
@@ -204,117 +208,6 @@ class HEM4dash():
                 HIScale = 'log'
             else:
                 HIScale = 'linear'
-                
-                    
-            #Determine whether to display cancer risk or maximum TOSHI in the map
-            if ((Overall_MaxHI <= 1.49) or ((MaxRisk >= 50) and (Overall_MaxHI <= 2))):
-                mapMetric = df_max_can['MIR (in a million)']
-                mapMetr_name = 'MIR (in a million)'
-            else:
-                mapMetric = df_max_can['Max TOSHI']
-                mapMetr_name = 'Max TOSHI'
-            
-            #Format the max risk file so the map popups don't have so many digits
-            cols2format_E=['MIR (in a million)', 'Respiratory HI', 'Liver HI', 'Neurological HI',
-                  'Developmental HI','Reproductive HI','Kidney HI', 'Ocular HI',
-                  'Endocrine HI', 'Hematological HI', 'Immunological HI', 'Skeletal HI',
-                  'Spleen HI', 'Thyroid HI',  'Whole body HI', 'Max TOSHI', 'Cancer Incidence']
-    
-            cols2format_f=['MIR Lat', 'MIR Lon','Facility Center Lat', 'Facility Center Lon']
-    
-            for column in cols2format_E:
-                df_max_can[column] = df_max_can[column].map(lambda x: '{:.2E}'.format(x))
-    
-            for column in cols2format_f:
-                df_max_can[column] = df_max_can[column].map(lambda x: '{:.6f}'.format(x)) 
-                    
-            # Create a map from df_max_can
-            popup = ["Facility: {} <br>MIR (in a million): {} <br>MIR Block: {} <br>Max TOSHI: {} <br>Max TOSHI Organ: {}".format(i,j,k,l,m)\
-                     for i,j,k,l,m in zip(df_max_can['Facility'], df_max_can['MIR (in a million)'], df_max_can['MIR Block'],\
-                                          df_max_can['Max TOSHI'], df_max_can['Max TOSHI Organ'])]
-            
-            riskmapTitle = 'Facility Map' + ' for ' + self.SCname
-            riskMap = go.Figure({"data": [{
-                            "type": "scattermapbox",
-                            "lat": df_max_can['Facility Center Lat'],
-                            "lon": df_max_can['Facility Center Lon'],
-                            "hoverinfo": "text",
-                            "text": popup,
-                            "mode": "markers",
-                            "marker": {
-                                "size": 8,
-                                "opacity": 1,
-                                "color": mapMetric,
-                                "colorbar.title" : mapMetr_name,
-                                "cmin": mapMetric.min(),
-                                "cmax": mapMetric.max(),
-                                "showscale": True
-                                }
-                            }],
-                            
-                        "layout": {'autosize':True,
-                        'height':500,
-                        'hovermode':"closest",
-                        'mapbox':
-                            {'style':"carto-positron",
-                             'center':{
-                                'lon': avglon,
-                                'lat': avglat
-                                },
-                            'zoom':3.5,
-                            'accesstoken':'pk.eyJ1IjoiYnJ1enp5IiwiYSI6ImNrOTE5YmwzdDBhMXYzbW8yMjY4aWJ3eHQifQ.5tNjnlK2Y8b-U1kvfPP8FA'
-                            },
-                            
-                        }
-                        })
-            
-            Map_updatemenus=list([
-                
-                dict(
-                    buttons=list([
-                        
-                        dict(
-                            args=[{'mapbox.style': 'carto-positron'}],
-                            label='Light',
-                            method='relayout'
-                        ),
-                        
-                        dict(
-                            args=[{'mapbox.style': 'open-street-map'}],
-                            label='Street Map',
-                            method='relayout'
-                        ),                    
-                        
-                        dict(
-                            args=[{'mapbox.style': 'carto-darkmatter'}],
-                            label='Dark',
-                            method='relayout'
-                        ),
-                        
-                        dict(
-                            args=[{'mapbox.style': 'satellite-streets'}],
-                            label='Satellite',
-                            method='relayout'
-                        )
-                    ]),
-                    # direction where I want the menu to expand when I click on it
-                    direction = 'up',
-                    active = 0,
-                    showactive = True,
-                  
-                    # here I specify where I want to place this drop-down on the map
-                    x = 0.05,
-                    xanchor = 'left',
-                    y = .05,
-                    yanchor = 'bottom',
-             
-                ),
-                  
-                ])
-            
-            riskMap.update_layout(margin={"r":0,"t":0,"l":0,"b":0})
-            riskMap.update_layout(title = riskmapTitle, updatemenus = Map_updatemenus,
-                                  coloraxis_colorbar=dict(title=mapMetr_name))
             
             # Create a bar chart of risk drivers
             
@@ -323,14 +216,17 @@ class HEM4dash():
             else:
                 riskDriv = px.bar(df_canc_driv, x = 'Facility', y = 'Source/Pollutant Risk',
                                   color = 'Pollutant', barmode = 'relative', hover_data=('Source ID', 'Pollutant'),
-                                  text = 'Source ID', range_x = [0,15], height = 600)
+                                  text = 'Source ID', height = 600)
                 riskDriv.layout.yaxis = {'title': 'Source/Pollutant Risk (in a million)', 'type': riskScale}
                 riskDriv.update_layout(title = 'Source and Pollutant Risk Drivers of Max Risk' + ' for ' + self.SCname +
                                        '<br>(facility risk ≥ 0.5 in a million)',
                                        yaxis={'type': riskScale},
                                        xaxis={'type':'category', 'categoryorder': 'array',
-                                              'categoryarray': df_canc_driv['Facility']}
+                                              'categoryarray': df_canc_driv['Facility']
+                                              }
                                        )
+                riskDriv.update_xaxes(range = (-.5, min(numFacs,50)))
+                
                     
             # Create a bar chart of HI drivers
             
@@ -340,7 +236,7 @@ class HEM4dash():
                         
                 HIDriv = px.bar(df_max_HI, x="Facility ID", y="Hazard Index", color="Pollutant", barmode="relative",
                                 facet_row ="HI Type", text = 'Source ID', height=300*numTOs,
-                                range_x = [0, 15], opacity=1)
+                                opacity=1)
                 HIDriv.update_layout(title = 'Source and Pollutant Drivers of Max HI' + ' for ' + self.SCname +
                                      '<br>(facility HI ≥ 0.2)',
                                      yaxis={'type': HIScale},
@@ -377,7 +273,7 @@ class HEM4dash():
                 
                 # Create bar charts of acute HQs
                 acuteBar = px.bar(df_acute_melt, x="Pollutant", y="HQ", color='Reference Value', barmode= 'overlay',
-                                opacity = .7, range_x = [0, 5], height = 700, hover_name = "Facility",
+                                opacity = .7, height = 700, hover_name = "Facility",
                                 text = 'Facility')
                 acuteBar.update_layout(title = 'Acute Screening Hazard Quotients' + ' for ' + self.SCname +
                                        '<br>(for pollutants with HQ ≥ 0.5)',
@@ -433,24 +329,12 @@ class HEM4dash():
             # Create layout of the app
             # The config code modifies the dcc graph objects
             
-            map_config = {'modeBarButtonsToRemove': ['toggleSpikelines','hoverCompareCartesian', 'lassoSelect'],
-                            'doubleClickDelay': 1000,
-                            'toImageButtonOptions': {
-                                'format': 'png', # one of png, svg, jpeg, webp
-                                'filename': 'HEM4 Results ' + self.SCname + ' Map',
-                                'height': 700,
-                                'width': 1500,
-                                'scale': 1 # Multiply title/legend/axis/canvas sizes by this factor
-                                }
-                            }
-            
-            
             chart_config = {'modeBarButtonsToRemove': ['toggleSpikelines','hoverCompareCartesian', 'lassoSelect', 'boxSelect'],
                             'doubleClickDelay': 1000,
                             'toImageButtonOptions': {
                                 'format': 'png', # one of png, svg, jpeg, webp
                                 'filename': 'HEM4 Results ' + self.SCname,
-                                'height': 700,
+                                'height': 800,
                                 'width': 1100,
                                 'scale': 1 # Multiply title/legend/axis/canvas sizes by this factor
                                 }
@@ -468,11 +352,7 @@ class HEM4dash():
                             }
             
             #Here, if the dataframe for the graph is empty, don't make a graph
-            if df_max_can.empty:
-                map_dcc = ''
-            else:
-                map_dcc = dcc.Graph(figure = riskMap, config = map_config) 
-                
+
             if df_canc_driv.empty:
                 riskdriv_dcc = ''
             else:
@@ -515,26 +395,117 @@ class HEM4dash():
             
             
             app.layout = html.Div([
+
+#                    dcc.Interval(id='interval1', interval=5 * 1000, n_intervals=0),
+#                    html.H1(id='label1', children=''),
+
+# Mark commented these out
+#                dcc.Input(id="input1", type="hidden", value="shutdown"),
+#                dcc.Input(id="input2", type="hidden"),
                 
                 html.Div([
-                            html.H1("HEM4 Results for " + self.SCname + " Model Run", style={'text-align':'center', 'font-weight': 'bold'}),
-                            html.Hr(),
-                            html.H4("Facility Map ({} Facilities)".format(numFacs), style={'font-weight': 'bold'}),
-                            html.Hr()
+                        html.Hr(),    
+                        html.H1("HEM4 Summary Results for " + self.SCname + " Model Run", style={'text-align':'center', 'font-weight': 'bold'}),
+                        html.Hr(),
                         ]),
-                
-                html.Div([
-                    html.Div([
-                        map_dcc,            
-                    ]),   
+            
+            dcc.Tabs([
+                    
+                dcc.Tab(label="Facility Map", children=[
+                        
+                        ###########  Start Map Dropdowns  ##########
+
+                        html.Div([
+                                
+                                html.H6("Metric to Display"),
+                                  dcc.Dropdown(id='metdrop',
+                                               
+                                              options=[{"label": i, "value": i} for i in mapmets],
+                                              multi=False,
+                                              clearable=False,
+                                              value = 'MIR (in a million)',
+                                              placeholder="Select a Metric",
+                                              ),
+                                
+                                html.H6("Linear or Log Scale"),
+                                  dcc.Dropdown(id='scaledrop',
+                                               
+                                              options=[{"label": 'Linear', "value": 'linear'},
+                                                       {"label": 'Log', "value": 'log'}
+                                                       ],
+                                              multi=False,
+                                              clearable=False,
+                                              value = 'linear',
+                                              placeholder="Linear or Log Scale",
+                                              ),
+                                
+                                                
+                                html.H6("Basemap"),
+                                  dcc.Dropdown(id='basemapdrop',
+                                               
+                                              options=[{"label": 'Light', "value": 'carto-positron'},
+                                                       {"label": 'Dark', "value": 'carto-darkmatter'},
+                                                       {"label": 'Satellite', "value": 'satellite-streets'},
+                                                       {"label": 'Streets', "value": 'open-street-map'}
+                                                       ],
+                                              multi=False,
+                                              clearable=False,
+                                              value = 'carto-positron',
+                                              placeholder="Select a Basemap",
+                                              ),
+                          
+                                html.H6("Color Ramp"),  
+                                  dcc.Dropdown(id='rampdrop',
+                                               
+                                              options=[{"label": 'Blue to Red', "value": px.colors.sequential.Bluered},
+                                                       {"label": 'Blue to Yellow', "value": px.colors.sequential.Cividis},
+                                                       {"label": 'Purple to Yellow', "value": px.colors.sequential.Viridis},
+                                                       {"label": 'Blue Scale', "value": px.colors.sequential.Blues},
+                                                       {"label": 'Green Scale', "value": px.colors.sequential.Greens},
+                                                       {"label": 'Red Scale', "value": px.colors.sequential.Reds}],
+                                              multi=False,
+                                              clearable=False,
+                                              value = px.colors.sequential.Viridis,
+                                              placeholder="Select a Color Ramp",
+                                              ),
+                                               
+                                html.H6("Dot Size"),  
+                                  dcc.Dropdown(id='sizedrop',
+                                               
+                                              options=[{"label": i, "value": i} for i in range(5,16)],
+                                              multi=False,
+                                              clearable=False,
+                                              value = 6,
+                                              placeholder="Select a Dot Size",
+                                              ),
+                        ], className = 'two columns'),
+                                               
+                        html.Div([
+                              
+                                html.Div([
+                                    dcc.Graph(id = 'map', style={"height": 800}, config = {
+                                            'modeBarButtonsToRemove': ['lasso2d', 'select2d', 'hoverCompareCartesian', 'hoverClosestCartesian'],
+                                            'toImageButtonOptions': {
+                                                    'format': 'jpeg', # one of png, svg, jpeg, webp
+                                                    'filename': 'Facility Map',
+                                                    'scale': 1}
+                                              }),
+                                ], className='ten columns'),
+                        
+                                        
+                        ], className = 'row'),                       
+                    
+                    
+                ]),    
+
+                dcc.Tab(label="Cancer Incidence",children=[
                     
                     html.Div([
                         html.Hr(),
                         html.H4("Cancer Incidence by Pollutant and Source Type", style={'font-weight': 'bold'}),
                         html.H5("(Total Incidence is {0:.2E})".format(TotalInc)),
                         html.Hr()
-                    ])
-                ]),
+                    ]),
                 
                 
                 html.Div([
@@ -546,41 +517,55 @@ class HEM4dash():
                         srcinc_dcc,                       
                     ],style={'width': '48%', 'display': 'inline-block'}),
                     
+                ]),
+            ]),
+                dcc.Tab(label="Population Risks",children=[
+            
                     html.Div([
                         html.Hr(),
                         html.H4("Population Risks", style={'font-weight': 'bold'}),
                         html.Hr()
-                    ])
-                ]),
+                    ]),
                     
                     
                 html.Div([
                     canhisto_dcc,
-                    html.Hr()
+                    html.Hr(),
+                    hihisto_dcc,
                 ]),
                 
+            ]),
+            
+                dcc.Tab(label="Risk Drivers",children=[
+            
                 html.Div([
-                    hihisto_dcc,
                     html.Hr(),
                     html.H4("Pollutant and Source Risk and HI Drivers (of Max Risk and HI)", style={'font-weight': 'bold'}),
                     html.Hr()
                 ]),
                 html.Div([
-                    riskdriv_dcc
+                    riskdriv_dcc,
+                    html.Hr(),
+                    HIDriv_dcc,
                     
                 ], style={'width': '100%'}),
                
+            ]),
+            
+            dcc.Tab(label="Acute Screening Estimates",children=[
                     
                 html.Div([
                     html.Hr(),
-                    HIDriv_dcc,
-                    html.Hr(),
                     html.H4("Acute Screening Estimates", style={'font-weight': 'bold'}),
-                    html.Hr()
+                    html.Hr(),
+                    acute_dcc,
                 ]),
+            
+            ]),
+            
+            dcc.Tab(label="Chronic Risk Summary Table",children=[
                     
                  html.Div([
-                    acute_dcc,
                     html.Hr(),
                     html.H4("Maximum Risk and HI Data", style={'font-weight': 'bold'}),
                     html.Hr()
@@ -615,15 +600,64 @@ class HEM4dash():
                             export_headers = 'display',
                             include_headers_on_copy_paste = True
                             )
-                ])    
+                ])   
+            
+            ]),
+            
+            ]),
                 
             ])
+            
+            @app.callback(Output('map', 'figure'),
+                     [Input('basemapdrop', 'value'),
+                      Input('rampdrop', 'value'),
+                      Input('scaledrop', 'value'),
+                      Input('sizedrop', 'value'),
+                      Input('metdrop', 'value')
+                      ])  
+            def makemap (basemap, ramp, scale, dotsize, metric):
+                
+                dff = df_dashtable 
+#                dff['logmetric'] = np.log10(dff['MIR (in a million)'])
+                
+                cenlat = dff['Facility Center Lat'].mean()
+                cenlon = dff['Facility Center Lon'].mean()
+                zoom = 4
+                
+                if scale == 'log':
+                    prefix = '1E '
+                    color = np.log10(dff[metric])
+                    
+                else:
+                    prefix = ''
+                    color = metric
+                    
+#                hoverdata = ["Facility: {} <br>MIR (in a million): {} <br>MIR Block: {} <br>Max TOSHI: {} <br>Max TOSHI Organ: {}".format(i,j,k,l,m)\
+#                     for i,j,k,l,m in zip(dff['Facility'], dff['MIR (in a million)'], dff['MIR Block'],\
+#                                          dff['Max TOSHI'], dff['Max TOSHI Organ'])]
+                           
+                fig = px.scatter_mapbox(dff, lat = 'Facility Center Lat', lon = 'Facility Center Lon', color = color,
+                                        mapbox_style = basemap, color_continuous_scale=ramp, opacity = 1, zoom = zoom,
+                                        center = dict(lat = cenlat, lon = cenlon),
+#                                        hover_name = 'Facility',
+#                                        hover_data = hoverdata                           
+                                        )
+                fig.update_traces(marker=dict(size=dotsize))
+                fig.update_layout(title = '<b>Facility Map - {}</b>'.format(metric),
+                                  title_font=dict(size = 22, color = 'black'), uirevision = 'foo',
+                                  )
+                fig.update_coloraxes(colorbar_tickprefix= prefix, colorbar_title = metric)
+                return fig
 
-
-            @app.server.route('/shutdown', methods=['GET'])
-            def shutdown():
-                self.shutdown_server()
-                return 'Server shutting down...'
+# Mark commented these out
+#            @app.callback(
+#                Output(component_id='input2', component_property='children'),
+#                [Input(component_id='input1', component_property='value')]
+#            )
+#            
+#            def check_status(value):
+#                self.shutdown()
+#                return 'Shutting down server'
 
                 
             return app
@@ -633,7 +667,7 @@ class HEM4dash():
  
 
 
-    def shutdown_server(self):
+    def shutdown(self):
         func = request.environ.get('werkzeug.server.shutdown')
         if func is None:
             raise RuntimeError('Not running with the Werkzeug Server')
