@@ -500,7 +500,7 @@ class EJ(Page):
             maxRiskAndHI_df = maxRiskAndHI.createDataframe()
         except FileNotFoundError as e:
             Logger.logMessage("Couldn't find max risk file. Aborting...")
-            messagebox.showinfo("File Not Found", "Please check the output folder for a properly named max risk file.")
+            messagebox.showinfo("File Not Found", "Please check the output folder for a properly named Facility Max Risk and HI file.")
             self.reset()
             return
 
