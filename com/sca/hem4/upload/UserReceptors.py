@@ -47,8 +47,7 @@ class UserReceptors(DependentInputFile):
         # ----------------------------------------------------------------------------------
         if len(df.loc[(df[fac_id] == '')]) > 0:
             Logger.logMessage("One or more facility IDs are missing in the User Receptors List.")
-            messagebox.showinfo("Missing facility IDs", "One or more facility IDs are missing in the User Receptors List.")
-            
+            messagebox.showinfo("Missing facility IDs", "One or more facility IDs are missing in the User Receptors List.")            
             return None
 
         if len(df.loc[(df[location_type] != 'L') & (df[location_type] != 'U')]) > 0:
@@ -64,6 +63,13 @@ class UserReceptors(DependentInputFile):
                 Logger.logMessage(d)
             return None
 
+        invalidchar_df = df[(df[rec_type]=='P') & ((df[rec_id].str.contains('S')) | (df[rec_id].str.contains('M')))]
+        if len(invalidchar_df) > 0:
+            Logger.logMessage("At least one User Receptor of type P contains an 'S' or 'M' in its ID. These letters "
+                              "cannot be used in the ID of a populated user receptor. Please adjust the ID.")
+            messagebox.showinfo("Invalid User Receptor ID", "At least one User Receptor of type P contains an 'S' or 'M' in its ID. These letters "
+                              "cannot be used in the ID of a populated user receptor. Please adjust the ID.")
+            return None
         
         for index, row in df.iterrows():
 
