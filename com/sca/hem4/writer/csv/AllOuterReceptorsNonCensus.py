@@ -1,5 +1,6 @@
 import re
 import operator
+import math
 
 from pandas import Series
 
@@ -244,7 +245,7 @@ class AllOuterReceptorsNonCensus(CsvWriter, InputFile):
                     
                     # compute the number of CSV files (batches) to output and number of rows from outerconcs to use in 
                     # each batch.
-                    num_batches = int(round(num_rows_output/self.batchSize))
+                    num_batches = math.ceil(num_rows_output/self.batchSize)
                     num_outerconc_rows_per_batch = int(round(self.batchSize / num_rows_hapemis)) * num_srcids
                                     
                     for k in range(num_batches):
@@ -440,7 +441,7 @@ class AllOuterReceptorsNonCensus(CsvWriter, InputFile):
      
                     # compute the number of CSV files (batches) to output and number of rows from outerconcs to use in 
                     # each batch.
-                    num_batches = int(round(num_rows_output/self.batchSize))
+                    num_batches = math.ceil(num_rows_output/self.batchSize)
                     num_outerconc_rows_per_batch = int(round(self.batchSize / num_rows_hapemis)) * num_srcids
                                     
                     for k in range(num_batches):
