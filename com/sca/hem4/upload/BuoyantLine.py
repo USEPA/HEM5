@@ -61,6 +61,16 @@ class BuoyantLine(DependentInputFile):
         if blpgrpid_len > 8:
             Logger.logMessage("At least one buoyant line group id in the Buoyant Line Parameter file is longer than 8 characters.")
             messagebox.showinfo("Buoyant Line Group ID too long", "At least one buoyant line group id in the Buoyant Line Parameter file is longer than 8 characters.")
+        
+        # Make sure all parameters for each line (source id) in a group are the same
+        v = df[blpgrp_id].value_counts()
+        # buoyant line groups with more than one line
+        grp_srcs = df[(df[blpgrp_id].isin(v.index[v.gt(1)])) & (df[blpgrp_id] != "")]
+        dup_chk = grp_srcs[grp_srcs.duplicated(subset=[avgbld_len,avgbld_hgt,avgbld_wid,avglin_wid,avgbld_sep,avgbuoy],keep=False)]
+        if grp_srcs.shape[0] != dup_chk.shape[0]:
+            Logger.logMessage("There is at least one buoyant line group in the Buoyant Line Parameter file with source IDs that do not have the same parameters.")
+            messagebox.showinfo("Parameters differ in buoyant line group", "There is at least one buoyant line group in the Buoyant Line Parameter file with source IDs that do not have the same parameters.")
+            return None
             
         
         # Check for duplicate facility ids if buoyant line group ids are not being used

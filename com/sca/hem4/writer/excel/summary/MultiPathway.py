@@ -50,6 +50,8 @@ class MultiPathway(ExcelWriter):
 
         pathways = []
         for facilityId in self.facilityIds:
+            print("*** Working on facility: " + facilityId + " ***")
+
             targetDir = self.categoryFolder + "/" + facilityId
 
             # Determine if this facility was run with acute or not
@@ -229,8 +231,10 @@ class MultiPathway(ExcelWriter):
             maxPathway = [self.categoryName, facilityId, maxRiskAndHI_df.iloc[0][rural_urban], 'MIR', designationValue,'','', '',
                           '', '', 0, 0, 0]
         else:
-            maxRisk = onlyThis.loc[onlyThis['risk'].idxmax()].iloc[0]
-            quartet_df = riskblocks_df[(riskblocks_df[fips] == maxRisk[fips]) & (riskblocks_df[block] == maxRisk[block])]
+            maxRisk = onlyThis.loc[[onlyThis['risk'].idxmax()]]
+            maxfips = maxRisk[fips].iloc[0]
+            maxblock = maxRisk[block].iloc[0]
+            quartet_df = riskblocks_df[(riskblocks_df[fips] == maxfips) & (riskblocks_df[block] == maxblock)]
 
             asRiskValue = 0 if quartet_df.loc[quartet_df[designation] == 'As'].empty else \
                 quartet_df.loc[quartet_df[designation] == 'As'].iloc[0]['risk']

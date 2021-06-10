@@ -261,7 +261,7 @@ class Analyze(Page):
             self.exception = ex
             fullStackInfo=''.join(traceback.format_exception(
                 etype=type(ex), value=ex, tb=ex.__traceback__))
-            message = "An error occurred while trying to run the HEM4dash app:\n" + fullStackInfo
+            message = "An error occurred while trying to run the EJ dash app:\n" + fullStackInfo
             Logger.logMessage(message)
 
 
