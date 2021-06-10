@@ -4,6 +4,7 @@ import fnmatch
 import os
 import pandas as pd
 import numpy as np
+from tkinter import messagebox
 
 import plotly
 import plotly.express as px
@@ -15,6 +16,7 @@ import plotly.graph_objects as go
 from dash.dependencies import Input, Output
 from flask import request
 from com.sca.hem4.gui.EJ import EJ
+from com.sca.hem4.log.Logger import Logger
 
 
 class EJdash():
@@ -24,7 +26,14 @@ class EJdash():
         self.SCname = os.path.split(self.dir)[1]
 
     def buildApp(self):
-    
+
+        ejdir = os.path.join(self.dir, 'ej')
+        # Confirm the ej subdirectory exists. This app requires it.
+        if not os.path.isdir(ejdir):
+            messagebox.showinfo("Missing ej sub-directory", "The directory chosen does not contain an ej sub-directory. Please ensure that the "+
+                                "Community Assessment tool has been run on this directory.")
+            return None            
+
         external_stylesheets = ['https://codepen.io/chriddyp/pen/bWLwgP.css']
         app = dash.Dash(__name__, external_stylesheets=external_stylesheets)
         app.title = self.SCname + ' Community Assessment'
@@ -61,33 +70,62 @@ class EJdash():
                  'Skeletal HI', 'Spleen HI', 'Thyroid HI']
 
 
-        ejdir = os.path.join(self.dir, 'ej')
-
-        # Record the number of people age >= 25 for each facility and for each distance.
-        # Use dictionary where key is facility + distance
+        # Record the number of people age >= 25 for each facility for proximity and risk/HI level.
+        # Use dictionary where key is facility + metric + distance + prox/risk
         age25pop = {}
         list_subfolders_nameonly = [f.name for f in os.scandir(ejdir) if f.is_dir()]
         for subfolder in list_subfolders_nameonly:
             facilityID = subfolder
             facfolder = os.path.join(ejdir, subfolder)
             facfiles = os.listdir(facfolder)
-            cancerfiles = fnmatch.filter(facfiles, '*Cancer_demo*')
+            cancerfiles = fnmatch.filter(facfiles, '*_demo_*')
             for cfile in cancerfiles:
+               # Parse facility filename to get parameters 
                part1 = cfile.split('_km_',1)[0]
+               part2 = cfile.split('_km_',1)[1]
                distance = part1.split('_')[-1]
+               level = int(part2.split('_')[0])
+               metric = part2.split('_')[2].lower()
                cfile_path = os.path.join(ejdir, subfolder, cfile)
                excel = pd.ExcelFile(cfile_path)
-               sheetname = fnmatch.filter(excel.sheet_names, 'Table*3C')
-               cfile_df = pd.read_excel(cfile_path, sheet_name=sheetname[0], skiprows=5, header=None)
-               popoverage25 = cfile_df.iloc[11,3]
-               age25pop[facilityID+'_'+distance] = popoverage25
+               sheetname = fnmatch.filter(excel.sheet_names, 'Table*3*C')
+               cfile_df = pd.read_excel(cfile_path, sheet_name=sheetname[0], 
+                                        skiprows=5, nrows = 12, header=None,
+                                        names=['range','emptycol','totpop','age25pop','noHS'])
+               
+               # First, set index based on the metric
+               if metric == "cancer":
+                   cfile_df.index = [0,1,5,10,20,30,40,50,100,200,300,'tot']
+               else:
+                   cfile_df.index = [0,1,2,3,4,5,6,7,8,9,10,'tot']
+               
+               # Count of age 25 and up based on the risk/HI level
+               riskage25 = cfile_df.iloc[level:-1,3].sum()
+               age25pop[facilityID+'_'+metric+'_'+distance+'_risk'] = riskage25
+                   
+               # Count of age 25 and up based on proximity
+               proxage25 = cfile_df.iloc[11,3]
+               age25pop[facilityID+'_'+metric+'_'+distance+'_prox'] = proxage25
+
         
         ##### Get EJ summary files
         pattern_list = ["*Summary*"]
         files = os.listdir(ejdir)
         for pattern in pattern_list:
             file_list = fnmatch.filter(files, pattern)
-        
+         
+        # Make sure there are unique rungroups in this folder
+        rungroups = [i.split('_',1)[0] for i in file_list]
+        rungroups_unique = set(rungroups)
+        if len(rungroups_unique) > 1:
+            emessage = ("The rungroup names on the files in this folder are " +
+                        "not unique. Please correct this before running this application. The following rungroup names were found: \n" +
+                        ",".join(list(rungroups_unique)))
+            messagebox.showinfo('Rungroup names not unique', emessage)
+            Logger.logMessage(emessage)
+            raise Exception(emessage)
+                        
+            
         rungroup = file_list[0].split('_')[0]
         extension = file_list[0].split('_')[5]
         demogroups = ['Minority', 'African American','Native American', 'Other and Multiracial', 'Hispanic or Latino',
@@ -132,7 +170,7 @@ class EJdash():
         
         compdf.drop_duplicates(inplace = True)
         
-        ### Create a dataframe of the facility data        
+        ### Create a dataframe of the facility data  
         mainnames = ['Facility', 'RiskorProx', 'Total Pop', 'Minority', 'African American','Native American',
                      'Other and Multiracial', 'Hispanic or Latino','Age 0-17', 'Age 18-64', 'Age >=65',
                      'Below the Poverty Level', 'Over 25 Without a High School Diploma','Linguistically Isolated']        
@@ -145,7 +183,7 @@ class EJdash():
             sheets = xl.sheet_names
             for sheet in sheets:
         
-                temp = xl.parse(skiprows = [0,1,3,4,5,6,7,8,9], names = mainnames)
+                temp = xl.parse(skiprows = [0,1,3,4,5,6,7,8,9], names = mainnames, sheet_name=sheet)
                 temp.insert(0, 'Metric', file.split('_')[4])
                 temp.insert(1, 'Distance', file.split('_')[2])
                 temp.insert(2, 'Risk_Level', sheet)
@@ -161,23 +199,26 @@ class EJdash():
                         
                 for i, row in temp.iterrows():
                     if pd.isna(row[3]):
+                        # Store the facility id in the DF
                         temp.iat[i,3] = temp.iat[i-1,3]
                     
-                    # Fillin over age 25 pop
-                    # key = facility id + distance
-                    age25pop_key = temp.iloc[i,3] + '_' + temp.iloc[i,1]
+                    # Fill-in over age 25 pop
+                    # key = facility id + metric + distance + prox/risk
+                    if row['RiskorProx'] == 'Proximity':
+                        age25pop_key = temp.iloc[i,3] + '_' + temp.iloc[i,0].lower() + '_' + temp.iloc[i,1] + '_' + 'prox'
+                    else:
+                        age25pop_key = temp.iloc[i,3] + '_' + temp.iloc[i,0].lower() + '_' + temp.iloc[i,1] + '_' + 'risk'                        
                     count_age25up = age25pop[age25pop_key]
                     temp.loc[i, 'Over 25 Without a High School Diploma Pop'] = \
                                 temp.loc[i, 'Over 25 Without a High School Diploma'] * count_age25up
 
-                                                                 
                 
                 # Convert the decimal fractions to percents for the demo groups        
                 for col in demogroups:
                     temp[col] = 100 * temp[col]
                 
                 maindf = maindf.append(temp, ignore_index = True)
-        
+         
         ##### The app layout 
         app.layout = html.Div([
             
@@ -198,7 +239,7 @@ class EJdash():
                                                           options=[{"label": display_mets[i], "value": i} for i in metrics],
 #                                                          options=[{"label": v, "value": k} for k,v in display_mets],
                                                           multi=False,
-                                                          clearable=True,
+                                                          clearable=False,
                                                           value = scenarios.loc[0, 'Metric'],
                                                           placeholder="Select a Metric",
                                                           ),
@@ -207,7 +248,7 @@ class EJdash():
                                     html.Div([html.H6("Distance (km)"),
                                               dcc.Dropdown(id='distdrop',             
                                                           multi=False,
-                                                          clearable=True,
+                                                          clearable=False,
                                                           value = scenarios.loc[0, 'Distance'],
                                                           placeholder="Select a Distance (km)",
                                                           ),
@@ -216,7 +257,7 @@ class EJdash():
                                     html.Div([html.H6("Risk/HI Level"),
                                               dcc.Dropdown(id='leveldrop',
                                                           multi=False,
-                                                          clearable=True,
+                                                          clearable=False,
                                                           value = scenarios.loc[0, 'Risk_Level'],
                                                           placeholder="Select a Risk or HI Level",
                                                           ),
@@ -227,7 +268,7 @@ class EJdash():
                                                            
                                                           options=[{"label": i, "value": i} for i in demogroups],
                                                           multi=False,
-                                                          clearable=True,
+                                                          clearable=False,
                                                           value = 'Minority',
                                                           placeholder= 'Select a Demographic Group',
                                                           ),
@@ -471,6 +512,7 @@ class EJdash():
             else:
                 if level == 'Proximity Only':
                     dff = maindf.loc[(maindf['Metric'] == risk) & (maindf['Distance'] == distance) & (maindf['RiskorProx'] == 'Proximity')]
+                    dff = dff.drop_duplicates(subset=['Distance','Facility'], keep='first')
                 else:
                     dff = maindf.loc[(maindf['Metric'] == risk) & (maindf['Distance'] == distance) & (maindf['Risk_Level'] == level) &
                                      (maindf['RiskorProx'] != 'Proximity')]
