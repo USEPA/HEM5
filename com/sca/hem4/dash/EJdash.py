@@ -27,12 +27,15 @@ class EJdash():
 
     def buildApp(self):
 
-        ejdir = os.path.join(self.dir, 'ej')
-        # Confirm the ej subdirectory exists. This app requires it.
-        if not os.path.isdir(ejdir):
-            messagebox.showinfo("Missing ej sub-directory", "The directory chosen does not contain an ej sub-directory. Please ensure that the "+
-                                "Community Assessment tool has been run on this directory.")
-            return None            
+        # Make sure a directory was selected and it contains EJ results
+        if self.dir:
+            ejdir = os.path.join(self.dir, 'ej')
+            if not os.path.isdir(ejdir):
+                messagebox.showinfo("Missing ej sub-directory", "The directory chosen does not contain an ej sub-directory. Please ensure that the "+
+                                    "Community Assessment tool has been run on this directory.")
+                return None
+        else:
+            return None
 
         external_stylesheets = ['https://codepen.io/chriddyp/pen/bWLwgP.css']
         app = dash.Dash(__name__, external_stylesheets=external_stylesheets)
@@ -71,41 +74,62 @@ class EJdash():
 
 
         # Record the number of people age >= 25 for each facility for proximity and risk/HI level.
-        # Use dictionary where key is facility + metric + distance + prox/risk
+        # Use dictionary where key is facility + metric + distance + level + risk/prox
         age25pop = {}
         list_subfolders_nameonly = [f.name for f in os.scandir(ejdir) if f.is_dir()]
         for subfolder in list_subfolders_nameonly:
             facilityID = subfolder
             facfolder = os.path.join(ejdir, subfolder)
             facfiles = os.listdir(facfolder)
-            cancerfiles = fnmatch.filter(facfiles, '*_demo_*')
-            for cfile in cancerfiles:
+            demofiles = fnmatch.filter(facfiles, '*_demo_*')
+            for dfile in demofiles:
                # Parse facility filename to get parameters 
-               part1 = cfile.split('_km_',1)[0]
-               part2 = cfile.split('_km_',1)[1]
+               part1 = dfile.split('_km_',1)[0]
+               part2 = dfile.split('_km_',1)[1]
                distance = part1.split('_')[-1]
                level = int(part2.split('_')[0])
                metric = part2.split('_')[2].lower()
-               cfile_path = os.path.join(ejdir, subfolder, cfile)
-               excel = pd.ExcelFile(cfile_path)
+               dfile_path = os.path.join(ejdir, subfolder, dfile)
+               excel = pd.ExcelFile(dfile_path)
                sheetname = fnmatch.filter(excel.sheet_names, 'Table*3*C')
-               cfile_df = pd.read_excel(cfile_path, sheet_name=sheetname[0], 
+               dfile_df = pd.read_excel(dfile_path, sheet_name=sheetname[0], 
                                         skiprows=5, nrows = 12, header=None,
                                         names=['range','emptycol','totpop','age25pop','noHS'])
                
-               # First, set index based on the metric
+               # Define index based on the metric and risk ranges. Key is risk level and value is index number
+               r_index = {}
                if metric == "cancer":
-                   cfile_df.index = [0,1,5,10,20,30,40,50,100,200,300,'tot']
+                   r_index[0]=0
+                   r_index[1]=1
+                   r_index[5]=2
+                   r_index[10]=3
+                   r_index[20]=4
+                   r_index[30]=5
+                   r_index[40]=6
+                   r_index[50]=7
+                   r_index[100]=8
+                   r_index[200]=9
+                   r_index[300]=10
                else:
-                   cfile_df.index = [0,1,2,3,4,5,6,7,8,9,10,'tot']
+                   r_index[0]=0
+                   r_index[1]=1
+                   r_index[2]=2
+                   r_index[3]=3
+                   r_index[4]=4
+                   r_index[5]=5
+                   r_index[6]=6
+                   r_index[7]=7
+                   r_index[8]=8
+                   r_index[9]=9
+                   r_index[10]=10
                
                # Count of age 25 and up based on the risk/HI level
-               riskage25 = cfile_df.iloc[level:-1,3].sum()
-               age25pop[facilityID+'_'+metric+'_'+distance+'_risk'] = riskage25
+               riskage25 = dfile_df.iloc[r_index[level]:-1,3].sum()
+               age25pop[facilityID+'_'+metric+'_'+distance+'_'+str(level)+'_risk'] = riskage25
                    
                # Count of age 25 and up based on proximity
-               proxage25 = cfile_df.iloc[11,3]
-               age25pop[facilityID+'_'+metric+'_'+distance+'_prox'] = proxage25
+               proxage25 = dfile_df.iloc[11,3]
+               age25pop[facilityID+'_'+metric+'_'+distance+'_'+str(level)+'_prox'] = proxage25
 
         
         ##### Get EJ summary files
@@ -127,7 +151,6 @@ class EJdash():
                         
             
         rungroup = file_list[0].split('_')[0]
-        extension = file_list[0].split('_')[5]
         demogroups = ['Minority', 'African American','Native American', 'Other and Multiracial', 'Hispanic or Latino',
                       'Age 0-17', 'Age 18-64', 'Age >=65','Below the Poverty Level', 'Over 25 Without a High School Diploma',
                       'Linguistically Isolated']
@@ -137,6 +160,7 @@ class EJdash():
         scen_ind = 0
         
         for file in file_list:
+                extension = file.split('_')[5]
                 metric = file.split('_')[4]
                 distance = file.split('_')[2]
                 fname = os.path.join(ejdir, file)
@@ -203,11 +227,16 @@ class EJdash():
                         temp.iat[i,3] = temp.iat[i-1,3]
                     
                     # Fill-in over age 25 pop
-                    # key = facility id + metric + distance + prox/risk
-                    if row['RiskorProx'] == 'Proximity':
-                        age25pop_key = temp.iloc[i,3] + '_' + temp.iloc[i,0].lower() + '_' + temp.iloc[i,1] + '_' + 'prox'
+                    # key = facility id + metric + distance + risk/HI level + prox/risk
+                    if sheet[0] == 'R':
+                        rlevel = sheet[sheet.find("=")+2:sheet.find("-")]
                     else:
-                        age25pop_key = temp.iloc[i,3] + '_' + temp.iloc[i,0].lower() + '_' + temp.iloc[i,1] + '_' + 'risk'                        
+                        rlevel = sheet[sheet.find(">")+2:]
+                        
+                    if row['RiskorProx'] == 'Proximity':
+                        age25pop_key = temp.iloc[i,3] + '_' + temp.iloc[i,0].lower() + '_' + temp.iloc[i,1] + '_' + rlevel + '_prox'
+                    else:
+                        age25pop_key = temp.iloc[i,3] + '_' + temp.iloc[i,0].lower() + '_' + temp.iloc[i,1] + '_' + rlevel + '_risk'                        
                     count_age25up = age25pop[age25pop_key]
                     temp.loc[i, 'Over 25 Without a High School Diploma Pop'] = \
                                 temp.loc[i, 'Over 25 Without a High School Diploma'] * count_age25up

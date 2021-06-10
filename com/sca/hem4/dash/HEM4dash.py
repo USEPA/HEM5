@@ -33,36 +33,34 @@ class HEM4dash():
 
     def buildApp(self):
         
-        # Confirm this is a run group folder
+        # Make sure a directory was selected and it is a run group directory
 
-        if self.dir == "" or self.dir == None:
-            messagebox.showinfo("Invalid directory", " Please select a directory containing the results of a model run and summary reports for cancer risk drivers, "+
-                                "max risks, max TOSHI drivers, pollutant incidence drivers, source type incidence drivers, and cancer histograms.")
+        if self.dir:
+            facrisk_file = self.SCname + "_facility_max_risk_and_hi.xlsx"
+            candriver_file = self.SCname + "_cancer_drivers.xlsx"
+            hidriver_file = self.SCname + "_hazard_index_drivers.xlsx"
+            incdriver_file = self.SCname + "_incidence_drivers.xlsx"
+            srctype_file = self.SCname + "_source_type_risk.xlsx"
+            histrisk_file = self.SCname + "_histogram_risk.xlsx"
+            histhi_file = self.SCname + "_hi_histogram.xlsx"
+            filelist = [facrisk_file, candriver_file, hidriver_file, incdriver_file, srctype_file,
+                        histrisk_file, histhi_file]
+            while True:
+                chklist = []
+            
+                for file in filelist:
+                    fullname = os.path.join(self.dir, file)
+                    chklist.append(os.path.isfile(fullname))
+                        
+                if not all(chklist):
+                    messagebox.showinfo("Invalid directory", " Please select a directory containing the results of a model run and summary reports for cancer risk drivers, "+
+                                        "max risks, max TOSHI drivers, pollutant incidence drivers, source type incidence drivers, and cancer histograms.")
+                    return None
+                else:
+                    break
+        else:
             return None
-
-        facrisk_file = self.SCname + "_facility_max_risk_and_hi.xlsx"
-        candriver_file = self.SCname + "_cancer_drivers.xlsx"
-        hidriver_file = self.SCname + "_hazard_index_drivers.xlsx"
-        incdriver_file = self.SCname + "_incidence_drivers.xlsx"
-        srctype_file = self.SCname + "_source_type_risk.xlsx"
-        histrisk_file = self.SCname + "_histogram_risk.xlsx"
-        histhi_file = self.SCname + "_hi_histogram.xlsx"
-        filelist = [facrisk_file, candriver_file, hidriver_file, incdriver_file, srctype_file,
-                    histrisk_file, histhi_file]
-        while True:
-            chklist = []
-        
-            for file in filelist:
-                fullname = os.path.join(self.dir, file)
-                chklist.append(os.path.isfile(fullname))
                     
-            if not all(chklist):
-                messagebox.showinfo("Invalid directory", " Please select a directory containing the results of a model run and summary reports for cancer risk drivers, "+
-                                    "max risks, max TOSHI drivers, pollutant incidence drivers, source type incidence drivers, and cancer histograms.")
-                return None
-            else:
-                break
-                
 
         # Directory is correct. Continue...            
             
