@@ -338,9 +338,8 @@ def getblocks(cenx, ceny, cenlon, cenlat, utmzone, hemi, maxdist, modeldist, sou
         raise Exception(emessage)
         
     modelblksduplicates = modelblks[modelblks.duplicated(['idmarplot'])]
-    print(modelblksduplicates)
     if len(modelblksduplicates) > 0:
-        emessage = "Error! Census blocks contain duplicate lat/long values."
+        emessage = "Error! Census blocks contain duplicate idmarplot values."
         Logger.logMessage(emessage)
         messagebox.showinfo("Error", "Census blocks contain duplicate idmarplot values.")
         raise Exception(emessage)
