@@ -587,7 +587,10 @@ class EJdash():
                     ytitle = '<b>' + group + ' (%)</b>'
                     type = 'linear'
                 
-                fig = px.bar(dff, x='Facility', y=yaxis, height=800, width=1500, text = text,opacity=.7)
+                hoverdata = {group: ':.1f',
+                             group +' Pop': ':0f'}
+                                
+                fig = px.bar(dff, x='Facility', y=yaxis, height=800, width=1500, text = text,opacity=.7, hover_data=hoverdata)
                 fig.update_yaxes(type = type, title_text=ytitle, title_font=dict(size = 16, color = 'black'))
                 fig.update_xaxes(title_text='<b>Facility</b>', title_font=dict(size = 16, color = 'black'), tickangle=40,
                                  type = 'category', range = (-.5, min(numFacs,50)))
@@ -669,9 +672,31 @@ class EJdash():
                 prefix = ''
                 color = metric
                 
-            hoverdata = ['Block ID', 'MIR (in a million)', 'Cancer Incidence','Respiratory HI', 'Liver HI', 'Neurological HI', 'Developmental HI',
-                 'Reproductive HI', 'Kidney HI', 'Ocular HI', 'Endocrine HI', 'Hematological HI', 'Immunological HI',
-                 'Skeletal HI', 'Spleen HI', 'Thyroid HI',  'Latitude', 'Longitude']
+#            hoverdata = ['Block ID', 'MIR (in a million)', 'Cancer Incidence','Respiratory HI', 'Liver HI', 'Neurological HI', 'Developmental HI',
+#                 'Reproductive HI', 'Kidney HI', 'Ocular HI', 'Endocrine HI', 'Hematological HI', 'Immunological HI',
+#                 'Skeletal HI', 'Spleen HI', 'Thyroid HI',  'Latitude', 'Longitude']
+            
+            hoverdata={
+                    'MIR (in a million)':':.1e',
+                    'Respiratory HI':':.1e',
+                    'Liver HI':':.1e',
+                    'Neurological HI':':.1e',
+                    'Developmental HI':':.1e',
+                    'Reproductive HI':':.1e',
+                    'Kidney HI':':.1e',
+                    'Ocular HI':':.1e',
+                    'Endocrine HI':':.1e',
+                    'Hematological HI':':.1e',
+                    'Immunological HI':':.1e',
+                    'Skeletal HI':':.1e',
+                    'Spleen HI':':.1e',
+                    'Thyroid HI':':.1e',
+                    'Latitude':':.7f',
+                    'Longitude':':.7f',
+                    }
+            
+#            if scale == 'log':
+#                    hoverdata['color'] = False
                        
             fig = px.scatter_mapbox(dff, lat = 'Latitude', lon = 'Longitude', color = color,
                                     mapbox_style = basemap, color_continuous_scale=ramp, opacity = 1, zoom = zoom,
