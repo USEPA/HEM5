@@ -332,7 +332,6 @@ class HEM4dash():
                             'toImageButtonOptions': {
                                 'format': 'png', # one of png, svg, jpeg, webp
                                 'filename': 'HEM4 Results ' + self.SCname,
-                                'height': 800,
                                 'width': 1100,
                                 'scale': 1 # Multiply title/legend/axis/canvas sizes by this factor
                                 }
@@ -343,7 +342,6 @@ class HEM4dash():
                             'toImageButtonOptions': {
                                 'format': 'png', # one of png, svg, jpeg, webp
                                 'filename': 'HEM4 Results ' + self.SCname,
-                                'height': 1200,
                                 'width': 1100,
                                 'scale': 1 # Multiply title/legend/axis/canvas sizes by this factor
                                 }
@@ -354,15 +352,15 @@ class HEM4dash():
             if df_canc_driv.empty:
                 riskdriv_dcc = ''
             else:
-                riskdriv_dcc = dcc.Graph(figure = riskDriv, config = chart_config)
+                riskdriv_dcc = dcc.Graph(figure = riskDriv, config = chart_config, style = {'height': 600})
                 
             if df_max_HI.empty:
                 HIDriv_dcc = ''
             else:
-                HIDriv_dcc = dcc.Graph(figure = HIDriv, config = HIDriv_config)
+                HIDriv_dcc = dcc.Graph(figure = HIDriv, config = HIDriv_config, style = {'height': numTOs*300})
                 
             try:
-                acute_dcc = dcc.Graph(figure = acuteBar, config = chart_config)
+                acute_dcc = dcc.Graph(figure = acuteBar, config = chart_config, style = {'height': 600})
             except:
                 acute_dcc = ''    
                 
@@ -379,12 +377,12 @@ class HEM4dash():
             if df_can_histo.empty:
                 canhisto_dcc = ''
             else:
-                canhisto_dcc = dcc.Graph(figure = can_histo, config = chart_config)    
+                canhisto_dcc = dcc.Graph(figure = can_histo, config = chart_config, style = {'height': 600})    
                 
             if df_hi_histo.empty:
                 hihisto_dcc = ''
             else:
-                hihisto_dcc = dcc.Graph(figure = hi_histo, config = chart_config) 
+                hihisto_dcc = dcc.Graph(figure = hi_histo, config = chart_config, style = {'height': 600}) 
             
             
             #Reformatting columns because dashtable does not sort scientific notation
@@ -633,12 +631,41 @@ class HEM4dash():
 #                hoverdata = ["Facility: {} <br>MIR (in a million): {} <br>MIR Block: {} <br>Max TOSHI: {} <br>Max TOSHI Organ: {}".format(i,j,k,l,m)\
 #                     for i,j,k,l,m in zip(dff['Facility'], dff['MIR (in a million)'], dff['MIR Block'],\
 #                                          dff['Max TOSHI'], dff['Max TOSHI Organ'])]
+                hoverdata={
+                        'MIR (in a million)':':.1e',
+                        'MIR Block': True,
+                        'Max TOSHI':':.1e',
+                        'Max TOSHI Organ': True,
+#                        'Respiratory HI':':.1e',
+#                        'Liver HI':':.1e',
+#                        'Neurological HI':':.1e',
+#                        'Developmental HI':':.1e',
+#                        'Reproductive HI':':.1e',
+#                        'Kidney HI':':.1e',
+#                        'Ocular HI':':.1e',
+#                        'Endocrine HI':':.1e',
+#                        'Hematological HI':':.1e',
+#                        'Immunological HI':':.1e',
+#                        'Skeletal HI':':.1e',
+#                        'Spleen HI':':.1e',
+#                        'Thyroid HI':':.1e',
+                        'Cancer Incidence': ':.1e',
+                        'Met Station': True,
+                        'Distance to Met Station (km)': ':0f',
+                        'Facility Center Lat':':.7f',
+                        'Facility Center Lon':':.7f',
+#                        'Rural or Urban'
+                        
+                }
+                
+#                if scale == 'log':
+#                    hoverdata['color'] = False
                            
                 fig = px.scatter_mapbox(dff, lat = 'Facility Center Lat', lon = 'Facility Center Lon', color = color,
                                         mapbox_style = basemap, color_continuous_scale=ramp, opacity = 1, zoom = zoom,
                                         center = dict(lat = cenlat, lon = cenlon),
-#                                        hover_name = 'Facility',
-#                                        hover_data = hoverdata                           
+                                        hover_name = 'Facility',
+                                        hover_data = hoverdata                           
                                         )
                 fig.update_traces(marker=dict(size=dotsize))
                 fig.update_layout(title = '<b>Facility Map - {}</b>'.format(metric),
