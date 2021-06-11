@@ -3,7 +3,6 @@ import math
 from com.sca.hem4.support.UTM import *
 from com.sca.hem4.model.Model import *
 from com.sca.hem4.log.Logger import Logger
-from tkinter import messagebox
 import sys
 
 rec_id = 'rec_id';
@@ -334,14 +333,12 @@ def getblocks(cenx, ceny, cenlon, cenlat, utmzone, hemi, maxdist, modeldist, sou
     if len(modelblksduplicates) > 0:
         emessage = "Error! Census blocks contain duplicate lat/long values."
         Logger.logMessage(emessage)
-        messagebox.showinfo("Error", "Census blocks contain duplicate lat/long values.")
         raise Exception(emessage)
         
     modelblksduplicates = modelblks[modelblks.duplicated(['idmarplot'])]
     if len(modelblksduplicates) > 0:
         emessage = "Error! Census blocks contain duplicate idmarplot values."
         Logger.logMessage(emessage)
-        messagebox.showinfo("Error", "Census blocks contain duplicate idmarplot values.")
         raise Exception(emessage)
 
     # Add overlap column and default to N
