@@ -327,6 +327,19 @@ def getblocks(cenx, ceny, cenlon, cenlat, utmzone, hemi, maxdist, modeldist, sou
 
     #subset the censusblks dataframe to blocks that are within the modeling distance of the facility 
     modelblks = censusblks.query('distance <= @maxdist').copy()
+    
+    # Confirm the dataframe does not contain duplicates
+    modelblksduplicates = modelblks[modelblks.duplicated(['lat', 'lon'])]
+    if len(modelblksduplicates) > 0:
+        emessage = "Error! Census blocks contain duplicate lat/long values."
+        Logger.logMessage(emessage)
+        raise Exception(emessage)
+        
+    modelblksduplicates = modelblks[modelblks.duplicated(['idmarplot'])]
+    if len(modelblksduplicates) > 0:
+        emessage = "Error! Census blocks contain duplicate idmarplot values."
+        Logger.logMessage(emessage)
+        raise Exception(emessage)
 
     # Add overlap column and default to N
     modelblks[overlap] = 'N'
