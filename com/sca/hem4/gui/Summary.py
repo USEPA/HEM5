@@ -35,7 +35,7 @@ class Summary(Page):
         self.filler.pack(side="left", fill="both", expand=True)
 
         self.meta_two = tk.Frame(self, bg=self.tab_color, height=200)
-        self.meta_two.pack(side="right", fill="both")
+        self.meta_two.pack(side="right", fill="both", expand=True)
         self.meta_two.columnconfigure(3, weight=1)
 
         self.container = tk.Frame(meta_container, bg=self.tab_color, borderwidth=0)
