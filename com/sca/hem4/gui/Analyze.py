@@ -22,6 +22,7 @@ class Analyze(Page):
     def __init__(self, nav, *args, **kwargs):
         Page.__init__(self, *args, **kwargs)
         
+        self.hem4dashport = 8030
         self.ejport = 8050
 
         meta_container = tk.Frame(self, bg=TAB_COLOR, bd=2)
@@ -212,6 +213,7 @@ class Analyze(Page):
         
     def runDash(self,  arguments=None):
         try:
+            self.hem4dashport += 1
             # Redirect stdout
             orig_stdout = sys.stdout
             fileDir = os.path.dirname(os.path.realpath('__file__'))
@@ -224,7 +226,7 @@ class Analyze(Page):
             appobj = dashapp.buildApp()
             if appobj != None:
                 Timer(1, self.open_browser).start()
-                appobj.run_server(debug= False, port=8030)
+                appobj.run_server(debug= False, port=self.hem4dashport)
 
                 # Reset stdout to original state
             sys.stdout = orig_stdout
@@ -266,7 +268,8 @@ class Analyze(Page):
 
 
     def open_browser(self):
-        webbrowser.open_new('http://localhost:8030/')
+        hoststring = 'http://localhost:' + str(self.hem4dashport) + '/'
+        webbrowser.open_new(hoststring)
 
     def open_ejbrowser(self):
         hoststring = 'http://localhost:' + str(self.ejport) + '/'
