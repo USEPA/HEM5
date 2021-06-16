@@ -1,3 +1,9 @@
+"""
+Gui.py:
+This gui module starts the HEM4 application and is located in the root directory of the repository 
+(HEM4) to accommodate how Pyinstaller wants the directory structure to be ordered. All other gui modules are
+located in HEM4/com/sca/hem4/gui. Pyinstaller wants the initial module to be located in the root.
+"""
 import tkinter as tk
 from com.sca.hem4.gui.MainView import MainView
 
