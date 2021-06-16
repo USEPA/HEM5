@@ -1,4 +1,4 @@
-#### **The bar graph diplays the results of HEM4's Community Assessment module, *and that module must be run before displaying results here.***
+#### **The bar graph displays the results of HEM4's Community Assessment module, *and that module must be run before displaying results here.***
 #### **The Community Assessment module gives demographic estimates for scenarios that are based on distance and risk level, and the demographic groups included are:**
 * Minority
 * African American (or Black)

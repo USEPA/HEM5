@@ -1,4 +1,4 @@
-#### **The table diplays the results of HEM4's Community Assessment module, *and that module must be run before displaying results here.***
+#### **The table displays the results of HEM4's Community Assessment module, *and that module must be run before displaying results here.***
 #### **The Community Assessment module gives demographic estimates for scenarios that are based on distance and risk level. The table gives the number (or percent) of facilities that exceed the geographic averages for each of the following demographic groups:**
 * Minority
 * African American (or Black)
@@ -24,7 +24,7 @@
 >> ###### There is a radio button below the table that allows you to show either the number of facilities (default) or the percent of facilities that exceed the geographic averages.
 
 
->> ###### Because you may be interested in how many facilities exceed the geographic averages by a certain amount, there is a slider widget below the table that allows you to select any percentage above the geographic averages, from 0 to 100%, in increments of 5%. For example, if you wanted to know how many facilities were twice the geograhic averages, you would select 100%.
+>> ###### Because you may be interested in how many facilities exceed the geographic averages by a certain amount, there is a slider widget below the table that allows you to select any percentage above the geographic averages, from 0 to 100%, in increments of 5%. For example, if you wanted to know how many facilities were twice the geographic averages, you would select 100%.
 
 
 >> ###### There is a button at the top of the table that allows export to a spreadsheet.
