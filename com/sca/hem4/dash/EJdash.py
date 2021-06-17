@@ -2,6 +2,7 @@
 
 import fnmatch
 import os
+import sys
 import pandas as pd
 import numpy as np
 from tkinter import messagebox
@@ -25,6 +26,18 @@ class EJdash():
         self.dir = dirtouse
         self.SCname = os.path.split(self.dir)[1]
 
+    def resource_path(self, relative_path):
+        # get absolute path to resource
+        try:
+            # PyInstaller creates a temp folder and stores path in _MEIPASS
+            base_path = sys._MEIPASS
+        except Exception:
+            cd = os.path.abspath(".")
+            base_path = os.path.join(cd, 'com\\sca\\hem4\\dash')
+                
+        return os.path.join(base_path, relative_path)
+
+
     def buildApp(self):
 
         # Make sure a directory was selected and it contains EJ results
@@ -38,7 +51,7 @@ class EJdash():
             return None
 
         external_stylesheets = ['https://codepen.io/chriddyp/pen/bWLwgP.css']
-        app = dash.Dash(__name__, external_stylesheets=external_stylesheets)
+        app = dash.Dash(__name__, external_stylesheets=external_stylesheets, assets_folder=self.resource_path('assets'))
         app.title = self.SCname + ' Community Assessment'
         
         mapbox_access_token = 'pk.eyJ1IjoiYnJ1enp5IiwiYSI6ImNrOTE5YmwzdDBhMXYzbW8yMjY4aWJ3eHQifQ.5tNjnlK2Y8b-U1kvfPP8FA'
