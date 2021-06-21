@@ -4,6 +4,7 @@ from com.sca.hem4.support.Directory import Directory
 from com.sca.hem4.writer.csv.BlockSummaryChronic import *
 from com.sca.hem4.writer.csv.BlockSummaryChronicNonCensus import BlockSummaryChronicNonCensus
 from com.sca.hem4.writer.excel.FacilityMaxRiskandHI import FacilityMaxRiskandHI
+from tkinter import messagebox
 
 
 class MirHIAllReceptors(CsvWriter, InputFile):
@@ -43,8 +44,14 @@ class MirHIAllReceptors(CsvWriter, InputFile):
         blocksummary_df = pd.DataFrame()
 
         # Used for finding the fac center
-        maxRiskAndHI = FacilityMaxRiskandHI(targetDir=self.output_dir, filenameOverride=self.basepath + "_facility_max_risk_and_hi.xlsx")
-        maxRiskAndHI_df = maxRiskAndHI.createDataframe()
+        try:
+            maxRiskAndHI = FacilityMaxRiskandHI(targetDir=self.output_dir, filenameOverride=self.basepath + "_facility_max_risk_and_hi.xlsx")
+            maxRiskAndHI_df = maxRiskAndHI.createDataframe()
+        except FileNotFoundError:
+            messagebox.showinfo("Missing facility max risk and hi",
+                                "Unable to find the required file: \n" + self.basepath + "_facility_max_risk_and_hi.xlsx" +
+                                "\nPlease correct and try again.")
+            return            
 
         for facilityId in self.facilityIds:
             Logger.logMessage("Inspecting facility folder " + facilityId + " for output files...")
