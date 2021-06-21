@@ -607,8 +607,8 @@ class EJdash():
                              group +' Pop': ':0f'}
                                 
                 fig = px.bar(dff, x='Facility', y=yaxis, height=800, width=1500, text = text,opacity=.7, hover_data=hoverdata)
-                fig.update_yaxes(type = type, title_text=ytitle, title_font=dict(size = 16, color = 'black', automargin=True))
-                fig.update_xaxes(title_text='<b>Facility</b>', title_font=dict(size = 16, color = 'black', automargin=True), tickangle=40,
+                fig.update_yaxes(type = type, title_text=ytitle, title_font=dict(size = 16, color = 'black'), automargin=True)
+                fig.update_xaxes(title_text='<b>Facility</b>', title_font=dict(size = 16, color = 'black'), automargin=True, tickangle=40,
                                  type = 'category', range = (-.5, min(numFacs,50)))
                 fig.update_layout(title = title, title_font=dict(size = 22, color = 'black'),
                                   clickmode="event+select", hovermode = 'closest',
