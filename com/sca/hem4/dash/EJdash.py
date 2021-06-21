@@ -143,7 +143,6 @@ class EJdash():
                # Count of age 25 and up based on proximity
                proxage25 = dfile_df.iloc[11,3]
                age25pop[facilityID+'_'+metric+'_'+distance+'_'+str(level)+'_prox'] = proxage25
-
         
         ##### Get EJ summary files
         pattern_list = ["*Summary*"]
@@ -220,7 +219,10 @@ class EJdash():
             sheets = xl.sheet_names
             for sheet in sheets:
         
-                temp = xl.parse(skiprows = [0,1,3,4,5,6,7,8,9], names = mainnames, sheet_name=sheet)
+                # Read Excel sheet as dtype string and then convert columns 2 onward to float.
+                # This ensures the facility ID is a string.
+                temp = xl.parse(skiprows = [0,1,3,4,5,6,7,8,9], names = mainnames, sheet_name=sheet, dtype=str)
+                temp[temp.columns[2:]] = temp[temp.columns[2:]].astype(float)
                 temp.insert(0, 'Metric', file.split('_')[4])
                 temp.insert(1, 'Distance', file.split('_')[2])
                 temp.insert(2, 'Risk_Level', sheet)
@@ -235,7 +237,8 @@ class EJdash():
                         temp[newcol] = 0
                         
                 for i, row in temp.iterrows():
-                    if pd.isna(row[3]):
+#                    if pd.isna(row[3]):
+                    if row[3] == 'nan':
                         # Store the facility id in the DF
                         temp.iat[i,3] = temp.iat[i-1,3]
                     
@@ -603,16 +606,19 @@ class EJdash():
                 hoverdata = {group: ':.1f',
                              group +' Pop': ':0f'}
                                 
-                fig = px.bar(dff, x='Facility', y=yaxis, height=800, width=1500, text = text,opacity=.7, hover_data=hoverdata)
+                # Set bar width to 30 pixels per facility
+                autowidth = numFacs*30
+                fig = px.bar(dff, x='Facility', y=yaxis, height=800, width=autowidth, text = text,opacity=.7, hover_data=hoverdata)
                 fig.update_yaxes(type = type, title_text=ytitle, title_font=dict(size = 16, color = 'black'))
                 fig.update_xaxes(title_text='<b>Facility</b>', title_font=dict(size = 16, color = 'black'), tickangle=40,
-                                 type = 'category', range = (-.5, min(numFacs,50)))
+                                 type = 'category', range = (-.5, numFacs))
                 fig.update_layout(title = title, title_font=dict(size = 22, color = 'black'),
-                                  clickmode="event+select", hovermode = 'closest')
+                                  clickmode="event+select", hovermode = 'closest',
+                                  margin=dict(r=100))
                 fig.update_traces(texttemplate=texttemplate)
                 
                 stats = [natwide,statwide,countwide]
-                label = "<b>Nation: {}<br> State: {}<br> County: {}</b>".format(natwide, statwide, countwide)
+                label = "<b>Nation: {}%<br> State: {}%<br> County: {}%</b>".format(natwide, statwide, countwide)
                    
                 ### Add national, state, and county averages, but only for percentage plots 
                 if barht == 'Pct':
