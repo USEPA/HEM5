@@ -151,7 +151,7 @@ class EJdash():
             file_list = fnmatch.filter(files, pattern)
          
         # Make sure there are unique rungroups in this folder
-        rungroups = [i.split('_',1)[0] for i in file_list]
+        rungroups = [i.split('_EJ-Summary_',1)[0] for i in file_list]
         rungroups_unique = set(rungroups)
         if len(rungroups_unique) > 1:
             emessage = ("The rungroup names on the files in this folder are " +
@@ -162,7 +162,7 @@ class EJdash():
             raise Exception(emessage)
                         
             
-        rungroup = file_list[0].split('_')[0]
+        rungroup = file_list[0].split('_EJ-Summary_')[0]
         demogroups = ['Minority', 'African American','Native American', 'Other and Multiracial', 'Hispanic or Latino',
                       'Age 0-17', 'Age 18-64', 'Age >=65','Below the Poverty Level', 'Over 25 Without a High School Diploma',
                       'Linguistically Isolated']
@@ -172,9 +172,10 @@ class EJdash():
         scen_ind = 0
         
         for file in file_list:
-                extension = file.split('_')[5]
-                metric = file.split('_')[4]
-                distance = file.split('_')[2]
+                tail = file.split('_EJ-Summary_')[1]
+                extension = tail.split('_')[-1]
+                metric = tail.split('_')[2]
+                distance = tail.split('_')[0]
                 fname = os.path.join(ejdir, file)
                 xl = pd.ExcelFile(fname)
                 RHI = xl.sheet_names
@@ -215,6 +216,7 @@ class EJdash():
         
         for file in file_list:
             fname = os.path.join(ejdir, file)
+            tail = file.split('_EJ-Summary_')[1]
             xl = pd.ExcelFile(fname)
             sheets = xl.sheet_names
             for sheet in sheets:
@@ -223,8 +225,8 @@ class EJdash():
                 # This ensures the facility ID is a string.
                 temp = xl.parse(skiprows = [0,1,3,4,5,6,7,8,9], names = mainnames, sheet_name=sheet, dtype=str)
                 temp[temp.columns[2:]] = temp[temp.columns[2:]].astype(float)
-                temp.insert(0, 'Metric', file.split('_')[4])
-                temp.insert(1, 'Distance', file.split('_')[2])
+                temp.insert(0, 'Metric', tail.split('_')[2])
+                temp.insert(1, 'Distance', tail.split('_')[0])
                 temp.insert(2, 'Risk_Level', sheet)
                 
                 ## Adding cols for demog group pop; and facility names in rows where absent

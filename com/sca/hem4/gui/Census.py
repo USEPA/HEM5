@@ -83,29 +83,37 @@ class Census(Page):
         Function creates thread for running HEM4 concurrently with tkinter GUI
         """
 
-        # Indicate with green icon that updater is running
-        self.titleLabel.configure(image=self.home.greenIcon)
-        self.home.gearLabel.configure(image=self.home.greenIcon)
-        
-        # Disable select folder and run button
-        self.folder_select.configure(state='disabled')
-        self.folder_select.bind("<Button-1>", partial(self.disabled_message))
-        self.fileLabel.configure(state='disabled')
-        self.fileLabel.bind("<Button-1>", partial(self.disabled_message))
-        self.run_button.configure(state='disabled')
-        self.run_button.bind("<Button-1>", partial(self.disabled_message))
-        self.rileLabel.configure(state='disabled')
-        self.rileLabel.bind("<Button-1>", partial(self.disabled_message))
-        
-        #disable hem4 tab
-        self.home.newrunLabel.bind("<Button-1>", partial(self.disabled_message))
-        self.home.iconLabel.bind("<Button-1>", partial(self.disabled_message))
+        # Make sure census change file has been uploaded
+        try:
+            self.censusUpdatePath
 
+        except AttributeError:
+            messagebox.showinfo("Update file not selected", "Please use the 'Select a census update file' button before using the Revise button")
+            return
 
-        executor = ThreadPoolExecutor(max_workers=1)
-
-        future = executor.submit(self.censusupdater.update, self.censusUpdatePath)
-        future.add_done_callback(self.finish_census_update)
+        else:
+            # Indicate with green icon that updater is running
+            self.titleLabel.configure(image=self.home.greenIcon)
+            self.home.gearLabel.configure(image=self.home.greenIcon)
+            
+            # Disable select folder and run button
+            self.folder_select.configure(state='disabled')
+            self.folder_select.bind("<Button-1>", partial(self.disabled_message))
+            self.fileLabel.configure(state='disabled')
+            self.fileLabel.bind("<Button-1>", partial(self.disabled_message))
+            self.run_button.configure(state='disabled')
+            self.run_button.bind("<Button-1>", partial(self.disabled_message))
+            self.rileLabel.configure(state='disabled')
+            self.rileLabel.bind("<Button-1>", partial(self.disabled_message))
+            
+            #disable hem4 tab
+            self.home.newrunLabel.bind("<Button-1>", partial(self.disabled_message))
+            self.home.iconLabel.bind("<Button-1>", partial(self.disabled_message))
+            
+            executor = ThreadPoolExecutor(max_workers=1)
+    
+            future = executor.submit(self.censusupdater.update, self.censusUpdatePath)
+            future.add_done_callback(self.finish_census_update)
 
 
     def finish_census_update(self, future):

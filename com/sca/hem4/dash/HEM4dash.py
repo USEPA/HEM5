@@ -286,10 +286,12 @@ class HEM4dash():
             if df_inc_drv.empty:
                 pass
             else:
+                pieTitle1 = 'Cancer Incidence by Pollutant' + ' for ' + self.SCname
+                if len(pieTitle1) > 40:
+                    pieTitle1 = 'Cancer Incidence by Pollutant' + ' for <br>' + self.SCname
+                pieTitle = pieTitle1 + '<br>(for pollutants that contribute at least 1%)'
                 inc_Pie = px.pie(df_inc_drv, names = 'Pollutant', values = 'Cancer Incidence',
-                                 title = 'Cancer Incidence by Pollutant' + ' for ' + self.SCname +
-                                 '<br>(for pollutants that contribute at least 1%)'
-                                 )
+                                 title = pieTitle)
                 inc_Pie.update_layout(title={'x' : 0.75, 'xref' : 'container', 'xanchor': 'right'})
             
             #Create a pie chart of cancer incidence by source type
@@ -297,10 +299,12 @@ class HEM4dash():
             if Inc_row_melt.empty:
                 pass
             else:
+                pieTitle = 'Cancer Incidence by Source Type' + ' for ' + self.SCname
+                if len(pieTitle) > 40:
+                    pieTitle = 'Cancer Incidence by Source Type' + ' for <br>' + self.SCname
                 src_inc_Pie = px.pie(Inc_row_melt, names = 'Source Type', values = 'Cancer Incidence',
                                  labels = {'Total Incidence': TotalInc},
-                                 title = 'Cancer Incidence by Source Type' + ' for ' + self.SCname
-                                 )
+                                 title = pieTitle)
                 src_inc_Pie.update_layout(title={'x' : 0.75, 'xref' : 'container', 'xanchor': 'right'})
             
             # Create a cancer histogram
@@ -690,7 +694,7 @@ class HEM4dash():
         except Exception as e:
             messagebox.showinfo("Input Error", e)
  
-
+            
 
     def shutdown(self):
         func = request.environ.get('werkzeug.server.shutdown')

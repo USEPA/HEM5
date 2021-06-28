@@ -51,7 +51,7 @@ class AcuteBreakdown(ExcelWriter, InputFile):
         # First get breakdown info of max acute at a populated receptor
         popinfo_list = []
         for index, row in self.achempop_df.iterrows():
-            if row[notes] == 'Discrete':
+            if row[notes].split(' ')[0] == 'Discrete':
                 # max acute is at an inner block
                 pol_list = self.model.all_inner_receptors_df[
                         (self.model.all_inner_receptors_df[lon] == row[lon]) & 
@@ -61,7 +61,7 @@ class AcuteBreakdown(ExcelWriter, InputFile):
                 # N indicates this is not an interpolated block
                 for j in range(len(pol_list)):
                     pol_list[j].append('N')
-            else:
+            elif row[notes].split(' ')[0] == 'Interpolated':
                 # max acute is at an outer block
                 pol_list = self.model.all_outer_receptors_df[
                         (self.model.all_outer_receptors_df[lon] == row[lon]) & 
@@ -71,6 +71,9 @@ class AcuteBreakdown(ExcelWriter, InputFile):
                 # Y indicates this is an interpolated block
                 for j in range(len(pol_list)):
                     pol_list[j].append('Y')
+            else:
+                # No populated acute values
+                pol_list = [["","","",0,""]]
 
             popinfo_list.extend(pol_list)
                             
@@ -108,7 +111,6 @@ class AcuteBreakdown(ExcelWriter, InputFile):
             maxinfo_list.extend(maxpol_list)
         
         # Combine pop and all breakdown dataframes into one
-                
         popinfo_df = pd.DataFrame(popinfo_list, columns=['pollutant','source_id','emis_type','aconc_pop',pop_interp])
         maxinfo_df = pd.DataFrame(maxinfo_list, columns=['pollutant','source_id','emis_type','aconc_all',all_interp])
         
