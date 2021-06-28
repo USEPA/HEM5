@@ -129,7 +129,7 @@ class HEM4dash():
             df_canc_driv['Pollutant'] = df_canc_driv['Pollutant'].str.title()
 #            df_canc_driv['Facility']= df_canc_driv['Facility'] = 'F' + df_canc_driv['Facility'].astype(str)
             df_canc_driv.sort_values(by = ['Facility MIR'],ascending = False, inplace = True)
-                    
+                               
             # Create dataframe of max TOSHI drivers
             fname = self.SCname + "_hazard_index_drivers.xlsx"
             hi_driv_file = os.path.join(self.dir, fname)
@@ -138,6 +138,7 @@ class HEM4dash():
             df_max_HI.sort_values(by = ['HI Total'], ascending = False, inplace = True)
             df_max_HI = df_max_HI.loc[(df_max_HI['HI Total'] >= 0.2) & (df_max_HI['Hazard Index'] >= .1 * df_max_HI['HI Total'])]
             df_max_HI['Pollutant'] = df_max_HI['Pollutant'].str.title()
+#            df_max_HI.rename(columns={'Facility ID' : 'Facility'})
 #            df_max_HI['Facility ID']= df_max_HI['Facility ID'] = 'F' + df_max_HI['Facility ID'].astype(str)
             
             
@@ -220,7 +221,9 @@ class HEM4dash():
                 riskDriv.update_layout(title = 'Source and Pollutant Risk Drivers of Max Risk' + ' for ' + self.SCname +
                                        '<br>(facility risk ≥ 0.5 in a million)',
                                        yaxis={'type': riskScale, 'automargin':True},
-                                       xaxis={'tickangle':45, 'automargin':True}
+                                       xaxis={'tickangle':45, 'automargin':True,
+                                              'type':'category', 'categoryorder': 'array',
+                                              'categoryarray': df_canc_driv['Facility']}
                                        )
                 riskDriv.update_xaxes(range = (-.5, min(numFacs,50)))
                 
@@ -237,7 +240,10 @@ class HEM4dash():
                 HIDriv.update_layout(title = 'Source and Pollutant Drivers of Max HI' + ' for ' + self.SCname +
                                      '<br>(facility HI ≥ 0.2)',
                                      yaxis={'type': HIScale, 'automargin':True},
-                                     xaxis={'tickangle':45,'automargin':True})
+                                     xaxis={'tickangle':45,'automargin':True,
+                                            'type':'category', 'categoryorder': 'array',
+                                            'categoryarray': df_max_HI['Facility ID']},
+                                            xaxis_title="Facility",)
                 HIDriv.update_yaxes(matches=None)
                 riskDriv.update_xaxes(range = (-.5, min(numFacs,50)))
             
@@ -270,12 +276,11 @@ class HEM4dash():
                 
                 # Create bar charts of acute HQs
                 acuteBar = px.bar(df_acute_melt, x="Pollutant", y="HQ", color='Reference Value', barmode= 'overlay',
-                                opacity = .7, height = 700, hover_name = "Facility",
-                                text = 'Facility')
+                                opacity = .7, height = 600, hover_name = "Facility", text = 'Facility')
                 acuteBar.update_layout(title = 'Acute Screening Hazard Quotients' + ' for ' + self.SCname +
                                        '<br>(for pollutants with HQ ≥ 0.5)',
                                        yaxis={'type': acuteScale},
-                                       xaxis={'tickangle':45},
+                                       xaxis={'tickangle':45, 'automargin':True},
                                        )
             except:
                 pass
@@ -285,10 +290,13 @@ class HEM4dash():
             if df_inc_drv.empty:
                 pass
             else:
+                if len(self.SCname) > 15:
+                    poll_title = f'Cancer Incidence by Pollutant for <br>{self.SCname}<br>(for pollutants that contribute at least 1%)'
+                else:
+                    poll_title = f'Cancer Incidence by Pollutant for {self.SCname}<br>(for pollutants that contribute at least 1%)'
+                
                 inc_Pie = px.pie(df_inc_drv, names = 'Pollutant', values = 'Cancer Incidence',
-                                 title = 'Cancer Incidence by Pollutant' + ' for ' + self.SCname +
-                                 '<br>(for pollutants that contribute at least 1%)'
-                                 )
+                                 title = poll_title)
                 inc_Pie.update_layout(title={'x' : 0.75, 'xref' : 'container', 'xanchor': 'right'})
             
             #Create a pie chart of cancer incidence by source type
