@@ -68,22 +68,37 @@ class AcuteChemicalPopulatedNonCensus(ExcelWriter):
                     
             # loop over each pollutant and find the discrete receptor with the max acute conc
             for x in pols:
-                max_idx = innsum[((innsum[pollutant].str.lower() == x)
-                                   & (innsum[population] > 0))][aconc].idxmax()
-                # Overlap?
-                if innsum[overlap].loc[max_idx] == 'N':
-                    maxconc_df.loc[x, aconc] = innsum[aconc].loc[max_idx]
-                    maxconc_df.loc[x, lon] = innsum[lon].loc[max_idx]
-                    maxconc_df.loc[x, lat] = innsum[lat].loc[max_idx]
-                    maxconc_df.loc[x, notes] = 'Discrete'
-                else:
+                if innsum[((innsum[pollutant].str.lower() == x)
+                                       & ((innsum[population] > 0) |
+                                          (innsum['blkid'].str.contains('U')==True))
+                                       & (innsum[overlap] == 'N'))].empty == False:
+            
                     max_idx = innsum[((innsum[pollutant].str.lower() == x)
-                                   & (innsum[population] > 0)
-                                   & (innsum[overlap] == 'N'))][aconc].idxmax()
-                    maxconc_df.loc[x, aconc] = innsum[aconc].loc[max_idx]
-                    maxconc_df.loc[x, lon] = innsum[lon].loc[max_idx]
-                    maxconc_df.loc[x, lat] = innsum[lat].loc[max_idx]
-                    maxconc_df.loc[x, notes] = 'Overlapped source. Next highest discrete.'
+                                       & ((innsum[population] > 0) |
+                                          (innsum['blkid'].str.contains('U')==True)))][aconc].idxmax()
+                    # Overlap?
+                    if innsum[overlap].loc[max_idx] == 'N':
+                        maxconc_df.loc[x, aconc] = innsum[aconc].loc[max_idx]
+                        maxconc_df.loc[x, lon] = innsum[lon].loc[max_idx]
+                        maxconc_df.loc[x, lat] = innsum[lat].loc[max_idx]
+                        maxconc_df.loc[x, notes] = 'Discrete'
+                    else:
+                        max_idx = innsum[((innsum[pollutant].str.lower() == x)
+                                       & ((innsum[population] > 0) |
+                                          (innsum['blkid'].str.contains('U')==True))
+                                       & (innsum[overlap] == 'N'))][aconc].idxmax()
+                        maxconc_df.loc[x, aconc] = innsum[aconc].loc[max_idx]
+                        maxconc_df.loc[x, lon] = innsum[lon].loc[max_idx]
+                        maxconc_df.loc[x, lat] = innsum[lat].loc[max_idx]
+                        maxconc_df.loc[x, notes] = 'Discrete overlapped source. Next highest discrete.'
+                        
+                else:
+                    
+                    maxconc_df.loc[x, aconc] = 0
+                    maxconc_df.loc[x, lon] = 0
+                    maxconc_df.loc[x, lat] = 0
+                    maxconc_df.loc[x, notes] = 'No max acute value for this pollutant'
+                    
         
         # 2) Next, search the outer receptor concs
 
@@ -109,23 +124,30 @@ class AcuteChemicalPopulatedNonCensus(ExcelWriter):
                 outsum = outer_df.groupby([pollutant, lat, lon]).agg(aggs)[newcolumns]
     
                 for p in pols:
-                    max_idx = outsum[outsum[pollutant].str.lower() == p][aconc].idxmax()
-                    # Overlap?
-                    if outsum[overlap].loc[max_idx] == 'Y':
-                        # Look for next highest with no overlap
+                    if outsum[((outsum[pollutant].str.lower() == p)
+                                       & ((outsum[population] > 0) |
+                                          (outsum['blkid'].str.contains('U')==True)))].empty == False:
+                
                         max_idx = outsum[((outsum[pollutant].str.lower() == p)
-                                        & (outsum[population] > 0)
-                                        & (outsum[overlap] == 'N'))][aconc].idxmax()
-                        noteTxt = 'Overlapped source. Next highest interpolated.'
-                    else:
-                        noteTxt = 'Interpolated'
-
-                    # Compare to stored value
-                    if outsum[aconc].loc[max_idx] > maxconc_df[aconc].loc[p]:
-                        maxconc_df.loc[p, aconc] = outsum[aconc].loc[max_idx]
-                        maxconc_df.loc[p, lon] = outsum[lon].loc[max_idx]
-                        maxconc_df.loc[p, lat] = outsum[lat].loc[max_idx]
-                        maxconc_df.loc[p, notes] = 'Interpolated'
+                                           & ((outsum[population] > 0) |
+                                              (outsum['blkid'].str.contains('U')==True)))][aconc].idxmax()
+                        # Overlap?
+                        if outsum[overlap].loc[max_idx] == 'Y':
+                            # Look for next highest with no overlap
+                            max_idx = outsum[((outsum[pollutant].str.lower() == p)
+                                            & ((outsum[population] > 0) |
+                                              (outsum['blkid'].str.contains('U')==True))
+                                            & (outsum[overlap] == 'N'))][aconc].idxmax()
+                            noteTxt = 'Interpolated overlapped source. Next highest interpolated.'
+                        else:
+                            noteTxt = 'Interpolated'
+    
+                        # Compare to stored value
+                        if outsum[aconc].loc[max_idx] > maxconc_df[aconc].loc[p]:
+                            maxconc_df.loc[p, aconc] = outsum[aconc].loc[max_idx]
+                            maxconc_df.loc[p, lon] = outsum[lon].loc[max_idx]
+                            maxconc_df.loc[p, lat] = outsum[lat].loc[max_idx]
+                            maxconc_df.loc[p, notes] = noteTxt
         
         # 3) Build output dataframe
         acute_df = polinfo.join(maxconc_df, how='inner')
@@ -137,9 +159,10 @@ class AcuteChemicalPopulatedNonCensus(ExcelWriter):
         acute_df[population] = 0
         acute_df[utme] = 0
         acute_df[utmn] = 0
-               
+        
+        
         for index, row in acute_df.iterrows():
-            if row[notes] == 'Interpolated':
+            if row[notes].split(" ")[0] == 'Interpolated':
                 acute_df.at[index,elev] = self.model.outerblks_df.loc[(self.model.outerblks_df[lon] == row[lon]) & 
                                                (self.model.outerblks_df[lat] == row[lat]), elev].values[0]
                 acute_df.at[index,hill] = self.model.outerblks_df.loc[(self.model.outerblks_df[lon] == row[lon]) & 
@@ -158,7 +181,7 @@ class AcuteChemicalPopulatedNonCensus(ExcelWriter):
                                                (self.model.outerblks_df[lat] == row[lat]), rec_id].values[0]
                 acute_df.at[index,rec_type] = self.model.outerblks_df.loc[(self.model.outerblks_df[lon] == row[lon]) & 
                                                (self.model.outerblks_df[lat] == row[lat]), rec_type].values[0]
-            else:
+            elif row[notes].split(" ")[0] == 'Discrete':
                 acute_df.at[index,elev] = self.model.innerblks_df.loc[(self.model.innerblks_df[lon] == row[lon]) & 
                                                (self.model.innerblks_df[lat] == row[lat]), elev].values[0]
                 acute_df.at[index,hill] = self.model.innerblks_df.loc[(self.model.innerblks_df[lon] == row[lon]) & 
@@ -178,6 +201,17 @@ class AcuteChemicalPopulatedNonCensus(ExcelWriter):
                 acute_df.at[index,rec_type] = self.model.innerblks_df.loc[(self.model.innerblks_df[lon] == row[lon]) & 
                                                (self.model.innerblks_df[lat] == row[lat]), rec_type].values[0]
         
+            else:
+                acute_df.at[index,elev] = 0
+                acute_df.at[index,hill] = 0
+                acute_df.at[index,population] = 0
+                acute_df.at[index,distance] = 0
+                acute_df.at[index,angle] = 0
+                acute_df.at[index,utmn] = 0
+                acute_df.at[index,utme] = 0
+                acute_df.at[index,rec_id] = ''
+                acute_df.at[index,rec_type] = ''
+                
         cols = [pollutant, aconc, aconc_sci, aegl_1_1h,aegl_1_8h,aegl_2_1h,aegl_2_8h,erpg_1,erpg_2,
                  idlh_10,mrl,rel,teel_0,teel_1, population, distance, angle, elev, hill, rec_id,
                  utme, utmn, lat, lon, rec_type, notes]

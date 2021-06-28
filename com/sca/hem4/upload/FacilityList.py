@@ -198,7 +198,7 @@ class FacilityList(InputFile):
             # ring1
             if row[ring1] < 100 or row[ring1] > row[max_dist]:
                 Logger.logMessage("Facility " + facility + ": ring1 value " + str(row[ring1]) +
-                                  " out of range. Defaulting to 100.")
+                                  " out of range. The first ring will be assigned a distance that is off plant property but not less than 100m.")
                 row[ring1] = 100
 
             # Facility center...comma separated list that should start with either "U" (meaning UTM coords) or "L"

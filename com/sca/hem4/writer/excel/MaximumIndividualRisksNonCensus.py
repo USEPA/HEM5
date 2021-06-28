@@ -95,10 +95,11 @@ class MaximumIndividualRisksNonCensus(ExcelWriter, InputFile):
                 mr_dist = self.model.all_polar_receptors_df[(self.model.all_polar_receptors_df[lon] == mr_lon) & (self.model.all_polar_receptors_df[lat] == mr_lat)][distance].values[0]
                 mr_angle = self.model.all_polar_receptors_df[(self.model.all_polar_receptors_df[lon] == mr_lon) & (self.model.all_polar_receptors_df[lat] == mr_lat)][angle].values[0]
                 mr_elev = self.model.all_polar_receptors_df[(self.model.all_polar_receptors_df[lon] == mr_lon) & (self.model.all_polar_receptors_df[lat] == mr_lat)][elev].values[0]
-                mr_hill = self.model.all_polar_receptors_df[(self.model.all_polar_receptors_df[lon] == mr_lon) & (self.model.all_polar_receptors_df[lat] == mr_lat)][hill].values[0]
+                # hill height, utme, and utmn are not stored in AllPolarReceptors
+                mr_hill = 0
+                mr_utme = 0
+                mr_utmn = 0
                 mr_recid = ""
-                mr_utme = self.model.all_polar_receptors_df[(self.model.all_polar_receptors_df[lon] == mr_lon) & (self.model.all_polar_receptors_df[lat] == mr_lat)][utme].values[0]
-                mr_utmn = self.model.all_polar_receptors_df[(self.model.all_polar_receptors_df[lon] == mr_lon) & (self.model.all_polar_receptors_df[lat] == mr_lat)][utmn].values[0]
                 mr_rectype = "Polar"
                 mr_notes = "Overlapped source. Using polar receptor."
             elif self.model.risk_by_latlon[blk_type].loc[iop_idx] == "I":
@@ -305,10 +306,11 @@ class MaximumIndividualRisksNonCensus(ExcelWriter, InputFile):
                     mr_dist = self.model.all_polar_receptors_df[(self.model.all_polar_receptors_df[lon] == mr_lon) & (self.model.all_polar_receptors_df[lat] == mr_lat)][distance].values[0]
                     mr_angle = self.model.all_polar_receptors_df[(self.model.all_polar_receptors_df[lon] == mr_lon) & (self.model.all_polar_receptors_df[lat] == mr_lat)][angle].values[0]
                     mr_elev = self.model.all_polar_receptors_df[(self.model.all_polar_receptors_df[lon] == mr_lon) & (self.model.all_polar_receptors_df[lat] == mr_lat)][elev].values[0]
-                    mr_hill = self.model.all_polar_receptors_df[(self.model.all_polar_receptors_df[lon] == mr_lon) & (self.model.all_polar_receptors_df[lat] == mr_lat)][hill].values[0]
+                    # hill height, utme, and utmn are not stored in AllPolarReceptors
+                    mr_hill = 0
+                    mr_utme = 0
+                    mr_utmn = 0
                     mr_recid = ""
-                    mr_utme = self.model.all_polar_receptors_df[(self.model.all_polar_receptors_df[lon] == mr_lon) & (self.model.all_polar_receptors_df[lat] == mr_lat)][utme].values[0]
-                    mr_utmn = self.model.all_polar_receptors_df[(self.model.all_polar_receptors_df[lon] == mr_lon) & (self.model.all_polar_receptors_df[lat] == mr_lat)][utmn].values[0]
                     mr_rectype = "Polar"
                     mr_notes = "Overlapped source. Using polar receptor."
                 elif self.model.risk_by_latlon[blk_type].loc[iop_idx] == "I":
