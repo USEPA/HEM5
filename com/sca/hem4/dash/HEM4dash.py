@@ -681,7 +681,7 @@ class HEM4dash():
                                         hover_data = hoverdata                           
                                         )
                 fig.update_traces(marker=dict(size=dotsize))
-                fig.update_layout(title = '<b>Facility Map - {}</b>'.format(metric),
+                fig.update_layout(title = f'<b>Facility Map ({numFacs} facilities) - {metric}</b>',
                                   title_font=dict(size = 22, color = 'black'), uirevision = 'foo',
                                   )
                 fig.update_coloraxes(colorbar_tickprefix= prefix, colorbar_title = metric)
