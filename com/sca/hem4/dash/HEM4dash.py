@@ -108,11 +108,11 @@ class HEM4dash():
                'Thyroid HI', 'Thyroid Block', 'Whole body HI', 'Whole Body Block', 'Cancer Incidence',
                'Met Station', 'Distance to Met Station (km)', 'Facility Center Lat', 'Facility Center Lon',
                'Rural or Urban']
-        MaxRisk = df_max_can.loc[:,'MIR (in a million)'].max()
+        MaxRisk = df_max_can['MIR (in a million)'].max()
         mapmets = ['MIR (in a million)', 'Respiratory HI', 'Liver HI','Neurological HI','Developmental HI',
                    'Reproductive HI', 'Kidney HI', 'Ocular HI', 'Endocrine HI', 'Hematological HI',
                    'Immunological HI','Skeletal HI', 'Spleen HI', 'Thyroid HI']
-        numFacs = df_max_can.loc[:,'Facility'].count()
+        numFacs = df_max_can['Facility'].count()
         
         try:
         
@@ -127,18 +127,20 @@ class HEM4dash():
             df_canc_driv['Source/Pollutant Risk_MILL'] = df_canc_driv['Cancer Risk']*1000000
             df_canc_driv.columns = ['Facility', 'Facility MIR', 'Pollutant', 'S/P Risk', 'Source ID', 'Source/Pollutant Risk']
             df_canc_driv['Pollutant'] = df_canc_driv['Pollutant'].str.title()
-            df_canc_driv['Facility']= df_canc_driv['Facility'] = 'F' + df_canc_driv['Facility'].astype(str)
+#            df_canc_driv['Facility']= df_canc_driv['Facility'] = 'F' + df_canc_driv['Facility'].astype(str)
             df_canc_driv.sort_values(by = ['Facility MIR'],ascending = False, inplace = True)
-                    
+                               
             # Create dataframe of max TOSHI drivers
             fname = self.SCname + "_hazard_index_drivers.xlsx"
             hi_driv_file = os.path.join(self.dir, fname)
             df_max_HI = pd.read_excel(hi_driv_file, dtype=dataTypes2)
             HI_types_formax = list(set(df_max_HI['HI Type']))
+            df_max_HI.sort_values(by = ['HI Total'], ascending = False, inplace = True)
             df_max_HI = df_max_HI.loc[(df_max_HI['HI Total'] >= 0.2) & (df_max_HI['Hazard Index'] >= .1 * df_max_HI['HI Total'])]
             df_max_HI['Pollutant'] = df_max_HI['Pollutant'].str.title()
-            df_max_HI['Facility ID']= df_max_HI['Facility ID'] = 'F' + df_max_HI['Facility ID'].astype(str)
-            df_max_HI.sort_values(by = ['HI Total'], ascending = False, inplace = True)
+#            df_max_HI.rename(columns={'Facility ID' : 'Facility'})
+#            df_max_HI['Facility ID']= df_max_HI['Facility ID'] = 'F' + df_max_HI['Facility ID'].astype(str)
+            
             
             
             HI_types = list(set(df_max_HI['HI Type']))
@@ -149,7 +151,7 @@ class HEM4dash():
             df_max_can.insert(6, "Max TOSHI", MaxHI)
             df_max_can.insert(7, "Max TOSHI Organ", MaxHIid)
             df_max_can.loc[df_max_can["Max TOSHI"] == 0, "Max TOSHI Organ"] = ''
-            Overall_MaxHI = df_max_can.loc[:,"Max TOSHI"].max()
+            Overall_MaxHI = df_max_can["Max TOSHI"].max()
             
             #Creating a df just for the dashtable
             df_dashtable = df_max_can.copy()
@@ -197,12 +199,12 @@ class HEM4dash():
             
             
             #Determine whether to use log or linear scales in graphics
-            if (MaxRisk >= 10 * df_max_can.loc[:,'MIR (in a million)'].median()):
+            if (MaxRisk >= 10 * df_max_can['MIR (in a million)'].median()):
                 riskScale = 'log'
             else:
                 riskScale = 'linear'
                 
-            if (Overall_MaxHI >= 10 * df_max_can.loc[:,'Max TOSHI'].median()):
+            if (Overall_MaxHI >= 10 * df_max_can['Max TOSHI'].median()):
                 HIScale = 'log'
             else:
                 HIScale = 'linear'
@@ -218,10 +220,10 @@ class HEM4dash():
                 riskDriv.layout.yaxis = {'title': 'Source/Pollutant Risk (in a million)', 'type': riskScale}
                 riskDriv.update_layout(title = 'Source and Pollutant Risk Drivers of Max Risk' + ' for ' + self.SCname +
                                        '<br>(facility risk ≥ 0.5 in a million)',
-                                       yaxis={'type': riskScale},
-                                       xaxis={'type':'category', 'categoryorder': 'array',
-                                              'categoryarray': df_canc_driv['Facility']
-                                              }
+                                       yaxis={'type': riskScale, 'automargin':True},
+                                       xaxis={'tickangle':45, 'automargin':True,
+                                              'type':'category', 'categoryorder': 'array',
+                                              'categoryarray': df_canc_driv['Facility']}
                                        )
                 riskDriv.update_xaxes(range = (-.5, min(numFacs,50)))
                 
@@ -237,10 +239,13 @@ class HEM4dash():
                                 opacity=1)
                 HIDriv.update_layout(title = 'Source and Pollutant Drivers of Max HI' + ' for ' + self.SCname +
                                      '<br>(facility HI ≥ 0.2)',
-                                     yaxis={'type': HIScale},
-                                     xaxis={'type':'category', 'categoryorder': 'array', 'categoryarray': df_max_HI['Facility ID']})
-                # HIDriv.update_xaxes(matches=None, showticklabels = True)
+                                     yaxis={'type': HIScale, 'automargin':True},
+                                     xaxis={'tickangle':45,'automargin':True,
+                                            'type':'category', 'categoryorder': 'array',
+                                            'categoryarray': df_max_HI['Facility ID']},
+                                            xaxis_title="Facility",)
                 HIDriv.update_yaxes(matches=None)
+                riskDriv.update_xaxes(range = (-.5, min(numFacs,50)))
             
             
             try:
@@ -271,12 +276,11 @@ class HEM4dash():
                 
                 # Create bar charts of acute HQs
                 acuteBar = px.bar(df_acute_melt, x="Pollutant", y="HQ", color='Reference Value', barmode= 'overlay',
-                                opacity = .7, height = 700, hover_name = "Facility",
-                                text = 'Facility')
+                                opacity = .7, height = 600, hover_name = "Facility", text = 'Facility')
                 acuteBar.update_layout(title = 'Acute Screening Hazard Quotients' + ' for ' + self.SCname +
                                        '<br>(for pollutants with HQ ≥ 0.5)',
                                        yaxis={'type': acuteScale},
-                                       xaxis={'type':'category', 'categoryorder': 'array', 'categoryarray': df_acute_melt['Pollutant']},
+                                       xaxis={'tickangle':45, 'automargin':True},
                                        )
             except:
                 pass
@@ -286,12 +290,13 @@ class HEM4dash():
             if df_inc_drv.empty:
                 pass
             else:
-                pieTitle1 = 'Cancer Incidence by Pollutant' + ' for ' + self.SCname
-                if len(pieTitle1) > 40:
-                    pieTitle1 = 'Cancer Incidence by Pollutant' + ' for <br>' + self.SCname
-                pieTitle = pieTitle1 + '<br>(for pollutants that contribute at least 1%)'
+                if len(self.SCname) > 15:
+                    poll_title = f'Cancer Incidence by Pollutant for <br>{self.SCname}<br>(for pollutants that contribute at least 1%)'
+                else:
+                    poll_title = f'Cancer Incidence by Pollutant for {self.SCname}<br>(for pollutants that contribute at least 1%)'
+                
                 inc_Pie = px.pie(df_inc_drv, names = 'Pollutant', values = 'Cancer Incidence',
-                                 title = pieTitle)
+                                 title = poll_title)
                 inc_Pie.update_layout(title={'x' : 0.75, 'xref' : 'container', 'xanchor': 'right'})
             
             #Create a pie chart of cancer incidence by source type
@@ -299,12 +304,16 @@ class HEM4dash():
             if Inc_row_melt.empty:
                 pass
             else:
-                pieTitle = 'Cancer Incidence by Source Type' + ' for ' + self.SCname
-                if len(pieTitle) > 40:
-                    pieTitle = 'Cancer Incidence by Source Type' + ' for <br>' + self.SCname
+                if len(self.SCname) > 15:
+                    src_title = f'Cancer Incidence by Source Type for <br>{self.SCname}'
+                else:
+                    src_title = f'Cancer Incidence by Source Type for {self.SCname}'
+                
+                
                 src_inc_Pie = px.pie(Inc_row_melt, names = 'Source Type', values = 'Cancer Incidence',
                                  labels = {'Total Incidence': TotalInc},
-                                 title = pieTitle)
+                                 title = src_title
+                                 )
                 src_inc_Pie.update_layout(title={'x' : 0.75, 'xref' : 'container', 'xanchor': 'right'})
             
             # Create a cancer histogram
@@ -672,7 +681,7 @@ class HEM4dash():
                                         hover_data = hoverdata                           
                                         )
                 fig.update_traces(marker=dict(size=dotsize))
-                fig.update_layout(title = '<b>Facility Map - {}</b>'.format(metric),
+                fig.update_layout(title = f'<b>Facility Map ({numFacs} facilities) - {metric}</b>',
                                   title_font=dict(size = 22, color = 'black'), uirevision = 'foo',
                                   )
                 fig.update_coloraxes(colorbar_tickprefix= prefix, colorbar_title = metric)
@@ -694,7 +703,7 @@ class HEM4dash():
         except Exception as e:
             messagebox.showinfo("Input Error", e)
  
-            
+
 
     def shutdown(self):
         func = request.environ.get('werkzeug.server.shutdown')

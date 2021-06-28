@@ -69,11 +69,13 @@ class AcuteChemicalPopulatedNonCensus(ExcelWriter):
             # loop over each pollutant and find the discrete receptor with the max acute conc
             for x in pols:
                 if innsum[((innsum[pollutant].str.lower() == x)
-                                       & (innsum[population] > 0)
+                                       & ((innsum[population] > 0) |
+                                          (innsum['blkid'].str.contains('U')==True))
                                        & (innsum[overlap] == 'N'))].empty == False:
             
                     max_idx = innsum[((innsum[pollutant].str.lower() == x)
-                                       & (innsum[population] > 0))][aconc].idxmax()
+                                       & ((innsum[population] > 0) |
+                                          (innsum['blkid'].str.contains('U')==True)))][aconc].idxmax()
                     # Overlap?
                     if innsum[overlap].loc[max_idx] == 'N':
                         maxconc_df.loc[x, aconc] = innsum[aconc].loc[max_idx]
@@ -82,7 +84,8 @@ class AcuteChemicalPopulatedNonCensus(ExcelWriter):
                         maxconc_df.loc[x, notes] = 'Discrete'
                     else:
                         max_idx = innsum[((innsum[pollutant].str.lower() == x)
-                                       & (innsum[population] > 0)
+                                       & ((innsum[population] > 0) |
+                                          (innsum['blkid'].str.contains('U')==True))
                                        & (innsum[overlap] == 'N'))][aconc].idxmax()
                         maxconc_df.loc[x, aconc] = innsum[aconc].loc[max_idx]
                         maxconc_df.loc[x, lon] = innsum[lon].loc[max_idx]
@@ -122,15 +125,18 @@ class AcuteChemicalPopulatedNonCensus(ExcelWriter):
     
                 for p in pols:
                     if outsum[((outsum[pollutant].str.lower() == p)
-                                       & (outsum[population] > 0))].empty == False:
+                                       & ((outsum[population] > 0) |
+                                          (outsum['blkid'].str.contains('U')==True)))].empty == False:
                 
                         max_idx = outsum[((outsum[pollutant].str.lower() == p)
-                                           & (outsum[population] > 0))][aconc].idxmax()
+                                           & ((outsum[population] > 0) |
+                                              (outsum['blkid'].str.contains('U')==True)))][aconc].idxmax()
                         # Overlap?
                         if outsum[overlap].loc[max_idx] == 'Y':
                             # Look for next highest with no overlap
                             max_idx = outsum[((outsum[pollutant].str.lower() == p)
-                                            & (outsum[population] > 0)
+                                            & ((outsum[population] > 0) |
+                                              (outsum['blkid'].str.contains('U')==True))
                                             & (outsum[overlap] == 'N'))][aconc].idxmax()
                             noteTxt = 'Interpolated overlapped source. Next highest interpolated.'
                         else:

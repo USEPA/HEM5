@@ -99,7 +99,8 @@ class AcuteChemicalPopulated(ExcelWriter, InputFile):
                             maxconc_df.loc[x, notes] = 'Discrete'
                         else:
                             max_idx = innsum[((innsum[pollutant].str.lower() == x)
-                                           & (innsum[population] > 0)
+                                           & ((innsum[population] > 0) |
+                                              (innsum['blkid'].str.contains('U')==True))
                                            & (innsum[overlap] == 'N'))][aconc].idxmax()
                             maxconc_df.loc[x, aconc] = innsum[aconc].loc[max_idx]
                             maxconc_df.loc[x, lon] = innsum[lon].loc[max_idx]
@@ -139,7 +140,8 @@ class AcuteChemicalPopulated(ExcelWriter, InputFile):
         
                     for p in pols:
                         if outsum[((outsum[pollutant].str.lower() == p)
-                                           & (outsum[population] > 0))].empty == False:
+                                           & ((outsum[population] > 0) |
+                                              (outsum['blkid'].str.contains('U')==True)))].empty == False:
                     
                             max_idx = outsum[((outsum[pollutant].str.lower() == p)
                                                & ((outsum[population] > 0) |
