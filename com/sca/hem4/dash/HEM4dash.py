@@ -304,9 +304,15 @@ class HEM4dash():
             if Inc_row_melt.empty:
                 pass
             else:
+                if len(self.SCname) > 15:
+                    src_title = f'Cancer Incidence by Source Type for <br>{self.SCname}'
+                else:
+                    src_title = f'Cancer Incidence by Source Type for {self.SCname}'
+                
+                
                 src_inc_Pie = px.pie(Inc_row_melt, names = 'Source Type', values = 'Cancer Incidence',
                                  labels = {'Total Incidence': TotalInc},
-                                 title = 'Cancer Incidence by Source Type' + ' for ' + self.SCname
+                                 title = src_title
                                  )
                 src_inc_Pie.update_layout(title={'x' : 0.75, 'xref' : 'container', 'xanchor': 'right'})
             
