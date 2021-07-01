@@ -70,14 +70,15 @@ class BuoyantLine(DependentInputFile):
             messagebox.showinfo("Buoyant Line Group ID too long", "At least one buoyant line group id in the Buoyant Line Parameter file is longer than 8 characters. Please correct.")
             return None
         
-        # Make sure all parameters for each line (source id) in a group are the same
-        v = df[blpgrp_id].value_counts()
+        # Make sure all parameters for each line (source id) in a group per facility are the same
+        df['facblpgrp'] = df[fac_id] + df[blpgrp_id]
+        v = df['facblpgrp'].value_counts()
         # buoyant line groups with more than one line
-        grp_srcs = df[(df[blpgrp_id].isin(v.index[v.gt(1)])) & (df[blpgrp_id] != "")]
+        grp_srcs = df[df['facblpgrp'].isin(v.index[v.gt(1)])]
         dup_chk = grp_srcs[grp_srcs.duplicated(subset=[avgbld_len,avgbld_hgt,avgbld_wid,avglin_wid,avgbld_sep,avgbuoy],keep=False)]
         if grp_srcs.shape[0] != dup_chk.shape[0]:
-            Logger.logMessage("There is at least one buoyant line group in the Buoyant Line Parameter file with source IDs that do not have the same parameters. Please correct.")
-            messagebox.showinfo("Parameters differ in buoyant line group", "There is at least one buoyant line group in the Buoyant Line Parameter file with source IDs that do not have the same parameters. Please correct.")
+            Logger.logMessage("There is at least one buoyant line group for a given facility in the Buoyant Line Parameter file with source IDs that do not have the same parameters. Please correct.")
+            messagebox.showinfo("Parameters differ in buoyant line group", "There is at least one buoyant line group for a given facility in the Buoyant Line Parameter file with source IDs that do not have the same parameters. Please correct.")
             return None
             
         
