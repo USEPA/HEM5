@@ -135,9 +135,9 @@ class HEM4dash():
             hi_driv_file = os.path.join(self.dir, fname)
             df_max_HI = pd.read_excel(hi_driv_file, dtype=dataTypes2)
             HI_types_formax = list(set(df_max_HI['HI Type']))
-            df_max_HI.sort_values(by = ['HI Total'], ascending = False, inplace = True)
             df_max_HI = df_max_HI.loc[(df_max_HI['HI Total'] >= 0.2) & (df_max_HI['Hazard Index'] >= .1 * df_max_HI['HI Total'])]
             df_max_HI['Pollutant'] = df_max_HI['Pollutant'].str.title()
+            df_max_HI.sort_values(by = ['HI Total'], ascending = False, inplace = True)
 #            df_max_HI.rename(columns={'Facility ID' : 'Facility'})
 #            df_max_HI['Facility ID']= df_max_HI['Facility ID'] = 'F' + df_max_HI['Facility ID'].astype(str)
             
@@ -232,8 +232,7 @@ class HEM4dash():
             
             if df_max_HI.empty:
                 pass
-            else:
-                        
+            else: 
                 HIDriv = px.bar(df_max_HI, x="Facility ID", y="Hazard Index", color="Pollutant", barmode="relative",
                                 facet_row ="HI Type", text = 'Source ID', height=300*numTOs,
                                 opacity=1)
@@ -245,7 +244,7 @@ class HEM4dash():
                                             'categoryarray': df_max_HI['Facility ID']},
                                             xaxis_title="Facility",)
                 HIDriv.update_yaxes(matches=None)
-                riskDriv.update_xaxes(range = (-.5, min(numFacs,50)))
+                HIDriv.update_xaxes(range = (-.5, min(numFacs,50)))
             
             
             try:
@@ -340,7 +339,7 @@ class HEM4dash():
             # Create layout of the app
             # The config code modifies the dcc graph objects
             
-            chart_config = {'modeBarButtonsToRemove': ['toggleSpikelines','hoverCompareCartesian', 'lassoSelect', 'boxSelect'],
+            chart_config = {'modeBarButtonsToRemove': ['toggleSpikelines','hoverCompareCartesian', 'lasso2d', 'select2d'],
                             'doubleClickDelay': 1000,
                             'toImageButtonOptions': {
                                 'format': 'png', # one of png, svg, jpeg, webp
@@ -350,7 +349,7 @@ class HEM4dash():
                                 }
                             }
             
-            HIDriv_config = {'modeBarButtonsToRemove': ['toggleSpikelines','hoverCompareCartesian', 'lassoSelect'],
+            HIDriv_config = {'modeBarButtonsToRemove': ['toggleSpikelines','hoverCompareCartesian', 'lasso2d', 'select2d'],
                             'doubleClickDelay': 1000,
                             'toImageButtonOptions': {
                                 'format': 'png', # one of png, svg, jpeg, webp
