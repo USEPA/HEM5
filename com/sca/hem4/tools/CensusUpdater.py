@@ -37,8 +37,6 @@ class CensusUpdater():
 
     def update(self, changesetFilepath):
         try:
-            #Debug
-            import pdb; pdb.set_trace() 
             
             changeset_df = self.readFromPath(changesetFilepath)
 
