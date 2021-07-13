@@ -13,16 +13,6 @@ from com.sca.hem4.upload.EmissionsLocations import method
 
 def check_phase(r):
         
-    print('facility', r['fac_id'])
-                
-    print('vdep:', r['vdep'])
-    
-    print('vdepl:', r['vdepl'])
-    
-    print('pdep:', r['pdep'])
-    
-    print ('pdepl:', r['pdepl'])
-
     if r['dep'] != 'nan':
         dep = r['dep'].upper()
     else:
@@ -57,12 +47,11 @@ def check_phase(r):
     else:
         pdepl = ''
         
-    poss = ['DO', 'WO', 'WD']
+    poss = ['DO', 'WO', 'WD', 'CO']
 
     phaseResult = []
 
-
-    if dep == 'Y' and depl == 'N' and vdep == 'NO' and vdepl == 'NO' and pdep == 'NO' and pdepl == 'NO':
+    if dep == 'N' and depl == 'N' and vdep == 'CO' and vdepl == 'NO' and pdep == 'CO' and pdepl == 'NO':
         # Special case where only breakout of particle and vapor is needed in the outputs, but no dep/depl
         phase = 'Z'
         phaseResult.append(phase)
@@ -109,7 +98,6 @@ def check_phase(r):
         phaseResult = ''
         
      
-    print('phaseResult:', phaseResult)
     return(phaseResult)
 
 def check_dep(faclist_df, emisloc_df):
@@ -137,24 +125,13 @@ def check_dep(faclist_df, emisloc_df):
     depletion = faclist_df['depl'].tolist()
     vapor_depl = faclist_df['vdepl'].tolist()
     part_depl = faclist_df['pdepl'].tolist()
-    
-#    print("phase", phase)
-#    
-#    print("deposition:", deposition, type(deposition))
-#    print("vapor deposition:", vapor_depo)
-#    print("particle deposition:", part_depo)
-#    
-#    
-#    print("depletion:", depletion)
-#    print("vapor depletion", vapor_depl)
-#    print("particle depletion", part_depl)
-    
+        
     #loop through each positionally
     i = 0
     for fac_id, p in phase:
         
         
-        if p == 'P':
+        if p == 'P' and part_depo[i] != 'CO':
 
             if usingMethodOne(emisloc_df):
                 #add facid
@@ -470,6 +447,5 @@ def single_phase(phase, depos, deple, vdepo, pdepo, vdepl, pdepl):
                     opts.append(" DRYDPLT WETDPLT ")
 
 
-    print('Keyword', opts)
     return {'phase': phase, 'settings': opts}
 

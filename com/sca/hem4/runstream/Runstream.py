@@ -108,12 +108,18 @@ class Runstream():
         #logic for phase setting in model options
                 
         if phase['phase'] == 'P':
-            optdp = phase['settings'][0]
+            if len(phase['settings']) > 0:
+                optdp = phase['settings'][0]
+            else:
+                optdp = ''
             titletwo = "CO TITLETWO  Particle-phase emissions \n"
             
         
         elif phase['phase'] == 'V':
-            optdp = phase['settings'][0]
+            if len(phase['settings']) > 0:
+                optdp = phase['settings'][0]
+            else:
+                optdp = ''
             titletwo = "CO TITLETWO  Vapor-phase emissions \n"
             
         else:
@@ -307,10 +313,10 @@ class Runstream():
                     if self.blddw == "Y":
                         self.get_blddw(srid[index])
                         
-                    if phase['phase'] == 'P':
+                    if phase['phase'] == 'P' and len(phase['settings']) > 0:
                         self.get_particle(srid[index])
                         
-                    elif phase['phase'] == 'V':
+                    elif phase['phase'] == 'V' and len(phase['settings']) > 0:
                         self.get_vapor(srid[index])
                           
                     if (self.emisvar_df is not None and type(self.emisvar_df) != str
@@ -347,10 +353,10 @@ class Runstream():
                     if self.blddw == "Y":
                         self.get_blddw(srid[index])
                         
-                    if phase['phase'] == 'P':
+                    if phase['phase'] == 'P' and len(phase['settings']) > 0:
                         self.get_particle(srid[index])
                         
-                    elif phase['phase'] == 'V':
+                    elif phase['phase'] == 'V' and len(phase['settings']) > 0:
                         self.get_vapor(srid[index])
                         
                     if (self.emisvar_df is not None and type(self.emisvar_df) != str
@@ -386,10 +392,10 @@ class Runstream():
                     if self.blddw == "Y":
                         self.get_blddw(srid[index])
                         
-                    if phase['phase'] == 'P':
+                    if phase['phase'] == 'P' and len(phase['settings']) > 0:
                         self.get_particle(srid[index])
                         
-                    elif phase['phase'] == 'V':
+                    elif phase['phase'] == 'V' and len(phase['settings']) > 0:
                         self.get_vapor(srid[index])
                         
                     if (self.emisvar_df is not None and type(self.emisvar_df) != str
@@ -426,10 +432,10 @@ class Runstream():
                     if self.blddw == "Y":
                         self.get_blddw(srid[index])
                         
-                    if phase['phase'] == 'P':
+                    if phase['phase'] == 'P' and len(phase['settings']) > 0:
                         self.get_particle(srid[index])
                         
-                    elif phase['phase'] == 'V':
+                    elif phase['phase'] == 'V' and len(phase['settings']) > 0:
                         self.get_vapor(srid[index])
                         
                     if (self.emisvar_df is not None and type(self.emisvar_df) != str
@@ -465,10 +471,10 @@ class Runstream():
                     if self.blddw == "Y":
                         self.get_blddw(srid[index])
                         
-                    if phase['phase'] == 'P':
+                    if phase['phase'] == 'P' and len(phase['settings']) > 0:
                         self.get_particle(srid[index])
                         
-                    elif phase['phase'] == 'V':
+                    elif phase['phase'] == 'V' and len(phase['settings']) > 0:
                         self.get_vapor(srid[index])
                     
                     if ((self.emisvar_df is not None) and (type(self.emisvar_df) != str)
@@ -537,10 +543,10 @@ class Runstream():
                     if self.blddw == "Y":
                         self.get_blddw(srid[index])
                         
-                    if phase['phase'] == 'P':
+                    if phase['phase'] == 'P' and len(phase['settings']) > 0:
                         self.get_particle(srid[index])
                         
-                    elif phase['phase'] == 'V':
+                    elif phase['phase'] == 'V' and len(phase['settings']) > 0:
                         self.get_vapor(srid[index])
                     
                     if ((self.emisvar_df is not None) and (type(self.emisvar_df) != str)
@@ -581,10 +587,10 @@ class Runstream():
                     if self.blddw == "Y":
                         self.get_blddw(srid[index])
                         
-                    if phase['phase'] == 'P':
+                    if phase['phase'] == 'P' and len(phase['settings']) > 0:
                         self.get_particle(srid[index])
                         
-                    elif phase['phase'] == 'V':
+                    elif phase['phase'] == 'V' and len(phase['settings']) > 0:
                         self.get_vapor(srid[index])
                     
                     if ((self.emisvar_df is not None) and (type(self.emisvar_df) != str)
@@ -644,10 +650,10 @@ class Runstream():
                     if self.blddw == "Y":
                         self.get_blddw(bl_srcid)
                         
-                    if phase['phase'] == 'P':
+                    if phase['phase'] == 'P' and len(phase['settings']) > 0:
                         self.get_particle(bl_srcid)
                         
-                    elif phase['phase'] == 'V':
+                    elif phase['phase'] == 'V' and len(phase['settings']) > 0:
                         self.get_vapor(bl_srcid)
                         
                     if ((self.emisvar_df is not None) and (type(self.emisvar_df) != str)
@@ -725,10 +731,10 @@ class Runstream():
                     if self.blddw == "Y":
                         self.get_blddw(bl_srcid)
                         
-                    if phase['phase'] == 'P':
+                    if phase['phase'] == 'P' and len(phase['settings']) > 0:
                         self.get_particle(bl_srcid)
                         
-                    elif phase['phase'] == 'V':
+                    elif phase['phase'] == 'V' and len(phase['settings']) > 0:
                         self.get_vapor(bl_srcid)
                         
                     if ((self.emisvar_df is not None) and (type(self.emisvar_df) != str)

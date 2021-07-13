@@ -115,13 +115,17 @@ class InputChecker():
                     result['dependencies'].append('bouyant')
                     
                 # check for deposition or depletion
-                if ['B'] in self.model.faclist.dataframe[phase].tolist():
+                if (['B'] in self.model.faclist.dataframe[phase].tolist() and 
+                            self.model.faclist.dataframe[vdep] != 'CO' and 
+                            self.model.faclist.dataframe[pdep] != 'CO'):
                     result['dependencies'].append('both')
                     
-                if ['V'] in self.model.faclist.dataframe[phase].tolist():
+                if (['V'] in self.model.faclist.dataframe[phase].tolist() and 
+                                self.model.faclist.dataframe[vdep] != 'CO'):
                     result['dependencies'].append('vapor')
                     
-                if ['P'] in self.model.faclist.dataframe[phase].tolist():
+                if (['P'] in self.model.faclist.dataframe[phase].tolist() and 
+                                self.model.faclist.dataframe[pdep] != 'CO'):
                     result['dependencies'].append('particle')
 
         result['result'] = 'ready'
