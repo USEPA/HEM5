@@ -50,7 +50,7 @@ def check_phase(r):
     poss = ['DO', 'WO', 'WD', 'CO']
 
     phaseResult = []
-
+    
     if dep == 'N' and depl == 'N' and vdep == 'CO' and vdepl == 'NO' and pdep == 'CO' and pdepl == 'NO':
         # Special case where only breakout of particle and vapor is needed in the outputs, but no dep/depl
         phase = 'Z'
