@@ -35,7 +35,7 @@ class FacilityPrep():
         op_maxdist = self.model.facops[max_dist].iloc[0]
         op_modeldist = self.model.facops[model_dist].iloc[0]
         op_circles = self.model.facops[circles].iloc[0]
-        op_radial = self.model.facops[radial].iloc[0]
+        op_radial = int(self.model.facops[radial].iloc[0])
         op_overlap = self.model.facops[overlap_dist].iloc[0]
 
         self.fac_center = self.model.facops[fac_center].iloc[0]

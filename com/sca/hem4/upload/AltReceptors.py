@@ -48,8 +48,6 @@ class AltReceptors(InputFile):
             return None
 
         if len(df.loc[(df[location_type] != 'L') & (df[location_type] != 'U')]) > 0:
-            #Debug
-            import pdb; pdb.set_trace() 
             Logger.logMessage("One or more receptors are missing a Location Type in the Alternate User Receptors List.")
             messagebox.showinfo("Missing Location Type", "One or more receptors are missing a Location Type in the Alternate User Receptors List.")
             return None
