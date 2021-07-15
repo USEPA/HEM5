@@ -206,19 +206,19 @@ def check_dep(faclist_df, emisloc_df):
 
                     if usingMethodOne(emisloc_df):
                         options.append('particle size')
-                    
-                    strarr = ['WD', 'DO']
-                    if (any(c in vapor_depo[i] for c in strarr) or 
-                        any(c in vapor_depl[i] for c in strarr)):
-                        options.append('land use')
-                        options.append('seasons')
-                    
+                                        
                 elif (('NO' in part_depo[i]) and ('NO' in part_depl[i])):
                     strarr = ['WD', 'DO']
                     if (any(c in vapor_depo[i] for c in strarr) or 
                         any(c in vapor_depl[i] for c in strarr)):
                         options.append('land use')
                         options.append('seasons')
+
+                strarr = ['WD', 'DO']
+                if (any(c in vapor_depo[i] for c in strarr) or 
+                    any(c in vapor_depl[i] for c in strarr)):
+                    options.append('land use')
+                    options.append('seasons')
                     
          
             inputs.append(options)

@@ -137,7 +137,7 @@ class ReportWriter():
         # Test_50_km_1_EJ_Neur_demo_tables_date.xlsx
 
         hazard_type = 'EJ_Cancer' if cancer else 'EJ_' + self.hazard_prefix
-        date_string = datetime.datetime.now().strftime("%m-%d-%Y")
+        date_string = datetime.datetime.now().strftime("%m-%d-%Y-%H-%M")
         facility_name = '' if self.facility is None else self.facility + '_'
         risk = str(self.cancer_risk_threshold) if cancer else str(self.hi_risk_threshold)
         return os.path.join(self.output_dir, self.source_cat_prefix + '_' + facility_name + str(int(self.radius)) +
@@ -145,7 +145,7 @@ class ReportWriter():
 
     def construct_facility_summary_filename(self, cancer=True, hazard_prefix=None):
         hazard_type = 'Cancer_' if cancer else hazard_prefix + '_'
-        date_string = datetime.datetime.now().strftime("%m-%d-%Y")
+        date_string = datetime.datetime.now().strftime("%m-%d-%Y-%H-%M")
         facility_name = '' if self.facility is None else self.facility + '_'
 
         return os.path.join(self.output_dir, self.source_cat_prefix + '_' + facility_name + 'EJ-Summary_' +
