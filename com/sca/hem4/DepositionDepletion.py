@@ -168,34 +168,33 @@ def check_dep(faclist_df, emisloc_df):
                 if any(c in part_depo[i] for c in strarr):
                     if usingMethodOne(emisloc_df):
                         options.append('particle size')
-                
-                    if (('WD' in vapor_depo[i]) or ('DO' in vapor_depo[i])):
-                        options.append('land use')
-                        options.append('seasons')
-            
-                elif (('NO' in part_depo[i]) and (('WD' in vapor_depo[i]) or ('DO' in vapor_depo[i]))):
-                     options.append('land use')
-                     options.append('seasons')
+                            
+#                elif (('NO' in part_depo[i]) and (('WD' in vapor_depo[i]) or ('DO' in vapor_depo[i]))):
+#                     options.append('land use')
+#                     options.append('seasons')
+
+                if (('WD' in vapor_depo[i]) or ('DO' in vapor_depo[i])):
+                    options.append('land use')
+                    options.append('seasons')
                 
             elif (depletion[i] == 'Y' and deposition[i] != 'Y'):
                 
                 strarr = ['DO', 'WO', 'WD']
                 if any(c in part_depl[i] for c in strarr):
-
                     if usingMethodOne(emisloc_df):
                         options.append('particle size')
 
-                    if (('WD' in vapor_depl[i]) or ('DO' in vapor_depl[i])):
-                        options.append('land use')
-                        options.append('seasons')                        
-                
-                elif (('NO' in part_depl[i]) and (('WD' in vapor_depl[i]) or ('DO' in vapor_depl[i]))):
+                if (('WD' in vapor_depl[i]) or ('DO' in vapor_depl[i])):
                     options.append('land use')
-                    options.append('seasons')
+                    options.append('seasons')                        
+                
+#                elif (('NO' in part_depl[i]) and (('WD' in vapor_depl[i]) or ('DO' in vapor_depl[i]))):
+#                    options.append('land use')
+#                    options.append('seasons')
                     
-                elif (('NO' in part_depl[i]) and ('NO' in vapor_depl[i])):
-                    if usingMethodOne(emisloc_df):
-                        options.append('particle size')
+#                elif (('NO' in part_depl[i]) and ('NO' in vapor_depl[i])):
+#                    if usingMethodOne(emisloc_df):
+#                        options.append('particle size')
     
     
             elif (deposition[i] == 'Y' and depletion[i] == 'Y'):
@@ -207,12 +206,12 @@ def check_dep(faclist_df, emisloc_df):
                     if usingMethodOne(emisloc_df):
                         options.append('particle size')
                                         
-                elif (('NO' in part_depo[i]) and ('NO' in part_depl[i])):
-                    strarr = ['WD', 'DO']
-                    if (any(c in vapor_depo[i] for c in strarr) or 
-                        any(c in vapor_depl[i] for c in strarr)):
-                        options.append('land use')
-                        options.append('seasons')
+#                elif (('NO' in part_depo[i]) and ('NO' in part_depl[i])):
+#                    strarr = ['WD', 'DO']
+#                    if (any(c in vapor_depo[i] for c in strarr) or 
+#                        any(c in vapor_depl[i] for c in strarr)):
+#                        options.append('land use')
+#                        options.append('seasons')
 
                 strarr = ['WD', 'DO']
                 if (any(c in vapor_depo[i] for c in strarr) or 
