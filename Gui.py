@@ -32,5 +32,8 @@ if __name__ == "__main__":
     main = MainView(root)
     main.pack(side="top", fill="both", expand=True)
     root.protocol("WM_DELETE_WINDOW", lambda: on_closing(main.hem))
+    #Testing
+#    root.geometry("1000x800")
+    #End testing
     root.wm_minsize(1000,800)
     root.mainloop()

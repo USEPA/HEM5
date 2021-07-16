@@ -145,7 +145,7 @@ def check_dep(faclist_df, emisloc_df):
             #add facid
             options = [fac_id]
 
-            if (deposition[i] == 'Y' or depletion[i] == 'Y'):
+            if (deposition[i] == 'Y' or depletion[i] == 'Y') and (vapor_depo[i] != 'CO'):
                 
                 if (('DO' in vapor_depo[i]) or ('WD' in vapor_depo[i])):
                     options.append('land use')
@@ -184,7 +184,7 @@ def check_dep(faclist_df, emisloc_df):
                     if usingMethodOne(emisloc_df):
                         options.append('particle size')
 
-                if (('WD' in vapor_depl[i]) or ('DO' in vapor_depl[i])):
+                if (('WD' in vapor_depl[i]) or ('DO' in vapor_depl[i])) and (vapor_depo[i] != 'CO'):
                     options.append('land use')
                     options.append('seasons')                        
                 
