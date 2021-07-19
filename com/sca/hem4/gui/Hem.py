@@ -77,10 +77,6 @@ class Hem(Page):
         meta_container = tk.Frame(self, bg=self.tab_color, bd=2)
         meta_container.pack(side="top", fill="both", expand=True)
 
-#        self.meta_two = tk.Frame(meta_container, bg=self.tab_color)
-#        self.meta_two.pack(side="bottom", fill="both")
-#        self.meta_two.columnconfigure(2, weight=1)
-
         self.meta_two = tk.Frame(self, bg=self.tab_color)
         self.meta_two.pack(side="bottom", fill="both")
         self.meta_two.columnconfigure(2, weight=1)
@@ -145,7 +141,6 @@ class Hem(Page):
         self.s8 = tk.Frame(self.container, width=600, height=50, pady=5, padx=5, bg=self.tab_color)
         self.s9 = tk.Frame(self.container, width=600, height=50, pady=5, padx=5, bg=self.tab_color)
         self.s10 = tk.Frame(self.container, width=600, height=50, pady=5, padx=5, bg=self.tab_color)
-        self.s11 = tk.Frame(self.container, width=600, height=50, pady=5, padx=5, bg=self.tab_color)
 
         self.alturep = tk.Frame(self.container, width=250, height=250,  bg=self.tab_color, pady=5, padx=5)
 
@@ -161,7 +156,6 @@ class Hem(Page):
         self.s8.grid(row=9, column=0, columnspan=2, sticky="nsew")
         self.s9.grid(row=10, column=0, columnspan=2, sticky="nsew")
         self.s10.grid(row=11, column=0, columnspan=2, sticky="nsew")
-        self.s11.grid(row=12, column=0, columnspan=2, sticky="nsew")
 
         self.s2.grid_propagate(0)
 
@@ -266,12 +260,9 @@ class Hem(Page):
         self.emisLabel.bind("<Button-1>",  lambda x: self.uploadEmissionLocations(self.s7, self.emis_file, x))
 
         #next button
-        self.next = tk.Button(self.s11, text="Next", bg='lightgrey', relief='solid', borderwidth=2,
+        self.next = tk.Button(self.meta_two, text="Next", bg='lightgrey', relief='solid', borderwidth=2,
                               command=self.lift_tab, font=TEXT_FONT)
         self.next.grid(row=0, column=0, sticky='E', padx=20, pady=20)
-#        self.next = tk.Button(self.meta_two, text="Next", bg='lightgrey', relief='solid', borderwidth=2,
-#                              command=self.lift_tab, font=TEXT_FONT)
-#        self.next.grid(row=0, column=0, sticky='E', padx=20, pady=20)
 
     def lift_tab(self):
         print("current tab:", self.current_tab)
