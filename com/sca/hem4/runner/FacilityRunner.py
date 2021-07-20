@@ -53,7 +53,7 @@ class FacilityRunner():
                 
                 Logger.logMessage(str(e))
 
-
+        
         # phases dictionary
         if self.model.model_optns['phase'] in ('P', 'V', 'B'):
             phases = sort(fac)

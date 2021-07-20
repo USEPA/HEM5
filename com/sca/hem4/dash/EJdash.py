@@ -563,6 +563,7 @@ class EJdash():
                 else:
                     dff = maindf.loc[(maindf['Metric'] == risk) & (maindf['Distance'] == distance) & (maindf['Risk_Level'] == level) &
                                      (maindf['RiskorProx'] != 'Proximity')]
+                    dff = dff.drop_duplicates(subset=['Distance','Facility','Metric','Risk_Level'], keep='first')
                 
                 if sort == 'Pct':
                     sorter = group

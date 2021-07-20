@@ -72,6 +72,7 @@ class Summary(Page):
         self.s12 = tk.Frame(self.container, width=600, height=50, pady=5, padx=5, bg=self.tab_color)
         self.l12 = tk.Frame(self.s12, width=300, height=50, pady=5, padx=5, bg=self.tab_color)
         self.r12 = tk.Frame(self.s12, width=300, height=50, pady=5, padx=5, bg=self.tab_color)
+        self.s13 = tk.Frame(self.container, width=600, height=50, pady=5, padx=5, bg=self.tab_color)
 
         self.container.grid_rowconfigure(13, weight=1)
         self.container.grid_columnconfigure(2, weight=1)
@@ -110,6 +111,7 @@ class Summary(Page):
         self.s12.grid(row=11, column=0, columnspan=2, sticky="nsew")
         self.l12.grid(row=1, column=0, columnspan=2, sticky="nsew")
         self.r12.grid(row=1, column=2, columnspan=2, sticky="nsew")
+        self.s13.grid(row=12, column=0, columnspan=2, sticky="nsew")
 
         self.tt = PIL.Image.open('images\icons8-edit-graph-report-48-white.png').resize((30,30))
         self.tticon = self.add_margin(self.tt, 5, 0, 5, 0)
@@ -175,19 +177,19 @@ class Summary(Page):
         ru = PIL.Image.open('images\icons8-create-48.png').resize((30,30))
         ricon = self.add_margin(ru, 5, 0, 5, 0)
         rileicon = ImageTk.PhotoImage(ricon)
-        rileLabel = tk.Label(self.meta_two, image=rileicon, bg=self.tab_color)
+        rileLabel = tk.Label(self.s13, image=rileicon, bg=self.tab_color)
         rileLabel.image = rileicon # keep a reference!
         rileLabel.grid(row=1, column=1, padx=0, pady=20, sticky='E')
 
-        run_button = tk.Label(self.meta_two, text="Run Reports", font=TEXT_FONT, bg=self.tab_color)
+        run_button = tk.Label(self.s13, text="Run Reports", font=TEXT_FONT, bg=self.tab_color)
         run_button.grid(row=1, column=2, padx=20, pady=20, sticky='W')
 
-        run_button.bind("<Enter>", partial(self.color_config, run_button, rileLabel, self.meta_two, 'light grey'))
-        run_button.bind("<Leave>", partial(self.color_config, run_button, rileLabel, self.meta_two, self.tab_color))
+        run_button.bind("<Enter>", partial(self.color_config, run_button, rileLabel, self.s13, 'light grey'))
+        run_button.bind("<Leave>", partial(self.color_config, run_button, rileLabel, self.s13, self.tab_color))
         run_button.bind("<Button-1>", self.run_reports)
 
-        rileLabel.bind("<Enter>", partial(self.color_config, rileLabel, run_button, self.meta_two, 'light grey'))
-        rileLabel.bind("<Leave>", partial(self.color_config, rileLabel, run_button, self.meta_two, self.tab_color))
+        rileLabel.bind("<Enter>", partial(self.color_config, rileLabel, run_button, self.s13, 'light grey'))
+        rileLabel.bind("<Leave>", partial(self.color_config, rileLabel, run_button, self.s13, self.tab_color))
         rileLabel.bind("<Button-1>", self.run_reports)
 
     def add_report_checkbox(self, name, container, callback):

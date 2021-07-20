@@ -276,7 +276,7 @@ class FacilityList(InputFile):
                     row[multiplier] = 1
 
             # pdep, pdepl, vdep, vdepl
-            valid = ['NO', 'WO', 'DO', 'WD']
+            valid = ['NO', 'WO', 'DO', 'WD', 'CO']
             row[vdep] = row[vdep].upper()
             row[vdepl] = row[vdepl].upper()
             row[pdep] = row[pdep].upper()
