@@ -253,7 +253,7 @@ class Hem(Page):
         self.emisLabel.bind("<Leave>", lambda x: self.remove_config(self.emisLabel, self.emis_file, self.s7, self.tab_color, x))
         self.emisLabel.bind("<Button-1>",  lambda x: self.uploadEmissionLocations(self.s7, self.emis_file, x))
 
-        #next button
+        # next button
         self.next = tk.Button(self.meta_two, text="Next", bg='lightgrey', relief='solid', borderwidth=2,
                               command=self.lift_tab, font=TEXT_FONT)
         self.next.grid(row=10, column=2, sticky='E', padx=20, pady=20)
