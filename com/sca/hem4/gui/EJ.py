@@ -55,11 +55,11 @@ class EJ(Page):
         self.container.pack(side="top", fill="both", expand=True)
 
         # Create grid
-        self.title_frame = tk.Frame(self.container, height=100, bg=self.tab_color)
-        self.folder_frame = tk.Frame(self.container, height=150, pady=5, padx=5, bg=self.tab_color)
-        self.category_frame = tk.Frame(self.container, height=200, pady=5, padx=5, bg=self.tab_color)
-        self.parameters_frame = tk.Frame(self.container, height=200, pady=5, padx=5, bg=self.tab_color)
-        self.run_frame = tk.Frame(self.container, height=100, pady=5, padx=5, bg=self.tab_color)
+        self.title_frame = tk.Frame(self.container, height=80, bg=self.tab_color)
+        self.folder_frame = tk.Frame(self.container, height=120, pady=1, padx=5, bg=self.tab_color)
+        self.category_frame = tk.Frame(self.container, height=200, pady=1, padx=5, bg=self.tab_color)
+        self.parameters_frame = tk.Frame(self.container, height=200, pady=1, padx=5, bg=self.tab_color)
+        self.run_frame = tk.Frame(self.container, height=100, pady=1, padx=5, bg=self.tab_color)
 
         self.title_frame.grid(row=1, columnspan=5, sticky="nsew")
         self.folder_frame.grid(row=2, columnspan=5, sticky="nsew")
@@ -74,18 +74,18 @@ class EJ(Page):
         titleicon = ImageTk.PhotoImage(tticon)
         self.titleLabel = tk.Label(self.title_frame, image=titleicon, bg=self.tab_color)
         self.titleLabel.image = titleicon # keep a reference!
-        self.titleLabel.grid(row=1, column=0, padx=10, pady=10)
+        self.titleLabel.grid(row=1, column=0, padx=10, pady=1)
         title = tk.Label(self.title_frame, text="CREATE COMMUNITY ASSESSMENT REPORTS", font=TITLE_FONT,
                          fg=MAIN_COLOR, bg=self.tab_color, anchor="w")
-        title.grid(row=1, column=1, pady=10, padx=10, sticky="w")
+        title.grid(row=1, column=1, pady=2, padx=10, sticky="w")
         subtitle = tk.Label(self.title_frame, text="Note: The Community Assessment module may be used with HEM4 runs based on U.S. Census Block receptors only.", 
                             font=SMALL_TEXT_FONT, bg=self.tab_color, anchor="w", wraplength=600,
                             justify="left")
-        subtitle.grid(row=2, column=1, pady=10, padx=10, sticky="w")
+        subtitle.grid(row=2, column=1, pady=2, padx=10, sticky="w")
 
         # First step - choose an output folder
         self.step1 = tk.Label(self.folder_frame,
-                              text="1.", font=TEXT_FONT, bg=self.tab_color, anchor="w")
+                              text="1.", font=SMALL_TEXT_FONT, bg=self.tab_color, anchor="w")
         self.step1.grid(pady=10, padx=10, row=1, column=0)
 
         fu = PIL.Image.open('images\icons8-folder-48.png').resize((30,30))
@@ -96,41 +96,41 @@ class EJ(Page):
         self.fileLabel.grid(row=1, column=1, padx=10)
 
         self.step1_instructions = tk.Label(self.folder_frame,
-                                      text="Select output folder", font=TEXT_FONT, bg=self.tab_color, anchor="w")
+                                      text="Select output folder", font=SMALL_TEXT_FONT, bg=self.tab_color, anchor="w")
         self.step1_instructions.grid(pady=10, padx=10, row=1, column=2)
         self.fileLabel.bind("<Button-1>", partial(self.browse, self.step1_instructions))
         self.step1_instructions.bind("<Button-1>", partial(self.browse, self.step1_instructions))
 
         # Second step - choose category name and prefix
         self.step2 = tk.Label(self.category_frame,
-                              text="2.", font=TEXT_FONT, bg=self.tab_color, anchor="w")
+                              text="2.", font=SMALL_TEXT_FONT, bg=self.tab_color, anchor="w")
         self.step2.grid(pady=10, padx=10, row=1, column=0)
 
-        self.step2_instructions = tk.Label(self.category_frame, font=TEXT_FONT, bg=self.tab_color,
+        self.step2_instructions = tk.Label(self.category_frame, font=SMALL_TEXT_FONT, bg=self.tab_color,
                               text="Enter a run group name and prefix.")
         self.step2_instructions.grid(row=1, column=1, padx=5, sticky="W", columnspan=2)
 
-        self.name_lbl = tk.Label(self.category_frame, font=TEXT_FONT, bg=self.tab_color, text="Name:")
+        self.name_lbl = tk.Label(self.category_frame, font=SMALL_TEXT_FONT, bg=self.tab_color, text="Name:")
         self.name_lbl.grid(row=2, column=1, padx=5, sticky="W")
 
         self.category_name = EntryWithPlaceholder(self.category_frame, placeholder="ex: Primary Copper Manufacturing")
         self.category_name["width"] = 36
         self.category_name.grid(row=2, column=2, sticky="W")
 
-        self.prefix_lbl = tk.Label(self.category_frame, font=TEXT_FONT, bg=self.tab_color, text="Prefix:")
+        self.prefix_lbl = tk.Label(self.category_frame, font=SMALL_TEXT_FONT, bg=self.tab_color, text="Prefix:")
         self.prefix_lbl.grid(row=3, column=1, padx=5, sticky="W")
         self.category_prefix = EntryWithPlaceholder(self.category_frame, placeholder="ex: PCM")
         self.category_prefix["width"] = 8
         self.category_prefix.grid(row=3, column=2, sticky="W")
 
         # Third step - configure report combinations
-        self.step3 = tk.Label(self.parameters_frame, text="3.", font=TEXT_FONT, bg=self.tab_color, anchor="w")
+        self.step3 = tk.Label(self.parameters_frame, text="3.", font=SMALL_TEXT_FONT, bg=self.tab_color, anchor="w")
         self.step3.grid(pady=10, padx=10, row=1, column=0)
 
         step3_text = "Choose type of impact (cancer or noncancer) for basis of demographics analysis, the radius " +\
                      "around each facility to include, and the impact level at which population percentages will " +\
                      "be calculated. Note: proximity statistics will be included at your specified radius."
-        self.step3_instructions = tk.Label(self.parameters_frame, font=TEXT_FONT, bg=self.tab_color, wraplength=650,
+        self.step3_instructions = tk.Label(self.parameters_frame, font=SMALL_TEXT_FONT, bg=self.tab_color, wraplength=650,
                                            justify="left", text=step3_text)
         self.step3_instructions.grid(row=1, column=1, padx=5, sticky="W", columnspan=4, rowspan=3)
 
