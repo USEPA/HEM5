@@ -38,43 +38,35 @@ class Optional(Page):
         self.bldgdwlbl = tk.StringVar()
         self.bldgdwlbl.set("Please select associated Building Dimensions file:")
 
-
-
         self.model = nav.model
         self.uploader = nav.uploader
-
         self.nav = nav
 
         ##Frames for main inputs
         self.required_inputs = tk.Frame(self, width=600, bg=self.tab_color)
         self.required_inputs.pack(fill="both", expand=True, side="top")
 
-
         self.s1 = tk.Frame(self.required_inputs, width=600, height=50, bg=self.tab_color)
-        self.s2 = tk.Frame(self.required_inputs, width=600, height=50, pady=5, padx=5, bg=self.tab_color)
-        self.s3 = tk.Frame(self.required_inputs, width=600, height=50, pady=5, padx=5, bg=self.tab_color)
-        self.s4 = tk.Frame(self.required_inputs, width=600, height=50, pady=5, padx=5, bg=self.tab_color)
-        self.s5 = tk.Frame(self.required_inputs, width=600, height=50, pady=5, padx=5, bg=self.tab_color)
-        self.s6 = tk.Frame(self.required_inputs, width=600, height=50, pady=5, padx=5, bg=self.tab_color)
-        self.s7 = tk.Frame(self.required_inputs, width=600, height=50, pady=5, padx=5, bg=self.tab_color)
-        self.s8 = tk.Frame(self.required_inputs, width=600, height=50, pady=5, padx=5, bg=self.tab_color)
-        self.s9 = tk.Frame(self.required_inputs, width=600, height=50, pady=5, padx=5, bg=self.tab_color)
-
+        self.s3 = tk.Frame(self.required_inputs, width=600, pady=5, padx=5, bg=self.tab_color)
+        self.s4 = tk.Frame(self.required_inputs, width=600, pady=5, padx=5, bg=self.tab_color)
+        self.s5 = tk.Frame(self.required_inputs, width=600, pady=5, padx=5, bg=self.tab_color)
+        self.s6 = tk.Frame(self.required_inputs, width=600, pady=5, padx=5, bg=self.tab_color)
+        self.s7 = tk.Frame(self.required_inputs, width=600, pady=5, padx=5, bg=self.tab_color)
+        self.s8 = tk.Frame(self.required_inputs, width=600, pady=5, padx=5, bg=self.tab_color)
+        self.s9 = tk.Frame(self.required_inputs, width=600, pady=5, padx=5, bg=self.tab_color)
 
         #grid layout for main inputs
         self.s1.grid(row=0, column=0, columnspan=2, sticky="nsew")
-        self.s2.grid(row=1, column=0)
-        self.s3.grid(row=2, column=0, columnspan=2, sticky="nsew", pady=10)
-        self.s8.grid(row=3, column=0, columnspan=2, sticky="nsew")
-        self.s9.grid(row=4, column=0, columnspan=2, sticky="nsew")
-        self.s4.grid(row=5, column=0, columnspan=2, sticky="nsew")
-        self.s5.grid(row=6, column=0, columnspan=2, sticky="nsew")
-        self.s6.grid(row=7, column=0, columnspan=2, sticky="nsew")
-        self.s7.grid(row=10, column=0, columnspan=2, sticky="nsew")
+        self.s3.grid(row=1, column=0, columnspan=2, sticky="nsew", pady=10)
+        self.s8.grid(row=2, column=0, columnspan=2, sticky="nsew")
+        self.s9.grid(row=3, column=0, columnspan=2, sticky="nsew")
+        self.s4.grid(row=4, column=0, columnspan=2, sticky="nsew")
+        self.s5.grid(row=5, column=0, columnspan=2, sticky="nsew")
+        self.s6.grid(row=6, column=0, columnspan=2, sticky="nsew")
+        self.s7.grid(row=7, column=0, columnspan=2, sticky="nsew")
 
-        self.required_inputs.grid_rowconfigure(10, weight=1)
+        self.required_inputs.grid_rowconfigure(9, weight=1)
         self.required_inputs.grid_columnconfigure(2, weight=1)
-        self.s2.grid_propagate(0)
 
         self.tt = PIL.Image.open('images\icons8-add-column-48-white.png').resize((30,30))
         self.tticon = self.add_margin(self.tt, 5, 0, 5, 0)

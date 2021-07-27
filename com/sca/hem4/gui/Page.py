@@ -54,6 +54,7 @@ class Page(tk.Frame):
 
         self.dynamic_inst = tk.Label(placeholder2, wraplength=600, font=TEXT_FONT, padx=20, bg=self.tab_color)
         self.dynamic_inst.config(height=4)
+        self.dynamic_inst.config(width=64)
 
         self.dynamic_inst["textvariable"] = self.instruction_instance
         self.dynamic_inst.grid(row=0, column=0)
@@ -75,9 +76,8 @@ class Page(tk.Frame):
         """
         global instruction_instance
         self.read_inst = open(location, 'r')
-        self.instruction_instance.set(self.read_inst.read())
-        self.instruction_instance.set(self.read_inst.read())
-        self.instruction_instance.set(self.read_inst.read())
+        instructions = self.read_inst.read()
+        self.instruction_instance.set(instructions)
 
     def show(self):
         self.lift()

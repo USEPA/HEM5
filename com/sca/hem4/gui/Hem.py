@@ -75,14 +75,14 @@ class Hem(Page):
 
         # Create containers for gui
         meta_container = tk.Frame(self, bg=self.tab_color, bd=2)
-        meta_container.pack(side="top", fill="both", expand=True)
+        meta_container.pack(side="top", fill="both", expand=False)
 
         self.meta_two = tk.Frame(self, bg=self.tab_color)
-        self.meta_two.pack(side="bottom", fill="both")
+        self.meta_two.pack(side='bottom', fill='both', expand=True)
         self.meta_two.columnconfigure(2, weight=1)
 
         self.container = tk.Frame(meta_container, bg=self.tab_color, borderwidth=0)
-        self.container.grid(row=0, column =0)
+        self.container.grid(row=0, column=0)
         self.container.grid_rowconfigure(15, weight=1)
 
         #HEM4 GUI tabs
@@ -132,32 +132,26 @@ class Hem(Page):
         # self.required_inputs = tk.Frame(self, width=600, bg=self.tab_color)
         # self.required_inputs.pack(fill="both", expand=True, side="top")
         self.s1 = tk.Frame(self.container, width=600, height=50, bg=self.tab_color)
-        self.s2 = tk.Frame(self.container, width=600, height=50, pady=5, padx=5, bg=self.tab_color)
         self.s3 = tk.Frame(self.container, width=600, height=75, pady=5, padx=5, bg=self.tab_color)
         self.s4 = tk.Frame(self.container, width=600, height=50, pady=5, padx=5, bg=self.tab_color)
         self.s5 = tk.Frame(self.container, width=600, height=50, pady=5, padx=5, bg=self.tab_color)
         self.s6 = tk.Frame(self.container, width=600, height=50, pady=5, padx=5, bg=self.tab_color)
         self.s7 = tk.Frame(self.container, width=600, height=50, pady=5, padx=5, bg=self.tab_color)
-        self.s8 = tk.Frame(self.container, width=600, height=50, pady=5, padx=5, bg=self.tab_color)
-        self.s9 = tk.Frame(self.container, width=600, height=50, pady=5, padx=5, bg=self.tab_color)
         self.s10 = tk.Frame(self.container, width=600, height=50, pady=5, padx=5, bg=self.tab_color)
 
         self.alturep = tk.Frame(self.container, width=250, height=250,  bg=self.tab_color, pady=5, padx=5)
 
         # grid layout for main inputs
         self.s1.grid(row=1, column=0, columnspan=2, sticky="nsew")
-        self.s2.grid(row=2, column=0, columnspan=2, sticky="nsew")
         self.alturep.grid(row=4, column=0, columnspan=2, sticky="nsew")
         self.s3.grid(row=3, column=0, columnspan=2, sticky="nsew", pady=10)
         self.s4.grid(row=5, column=0, columnspan=2, sticky="nsew")
         self.s5.grid(row=6, column=0, columnspan=2, sticky="nsew")
         self.s6.grid(row=7, column=0, columnspan=2, sticky="nsew")
         self.s7.grid(row=8, column=0, columnspan=2, sticky="nsew")
-        self.s8.grid(row=9, column=0, columnspan=2, sticky="nsew")
-        self.s9.grid(row=10, column=0, columnspan=2, sticky="nsew")
-        self.s10.grid(row=11, column=0, columnspan=2, sticky="nsew")
+        self.s10.grid(row=9, column=0, columnspan=2, sticky="nsew")
 
-        self.s2.grid_propagate(0)
+        #self.s2.grid_propagate(0)
 
         self.tt = PIL.Image.open('images\icons8-virtual-machine-52-white.png').resize((30,30))
         self.tticon = self.add_margin(self.tt, 5, 0, 5, 0)
@@ -259,10 +253,12 @@ class Hem(Page):
         self.emisLabel.bind("<Leave>", lambda x: self.remove_config(self.emisLabel, self.emis_file, self.s7, self.tab_color, x))
         self.emisLabel.bind("<Button-1>",  lambda x: self.uploadEmissionLocations(self.s7, self.emis_file, x))
 
-        #next button
+        # next button
         self.next = tk.Button(self.meta_two, text="Next", bg='lightgrey', relief='solid', borderwidth=2,
                               command=self.lift_tab, font=TEXT_FONT)
-        self.next.grid(row=0, column=0, sticky='E', padx=20, pady=20)
+
+        self.next.grid(row=10, column=2, sticky='E', padx=20, pady=20)
+
 
     def lift_tab(self):
         print("current tab:", self.current_tab)
@@ -276,7 +272,7 @@ class Hem(Page):
                 # add back button
                 self.back = tk.Button(self.meta_two, text="Back", bg='lightgrey', relief='solid', borderwidth=2,
                                       command=self.back_tab, font=TEXT_FONT)
-                self.back.grid(row=0, column=1, sticky='W', padx=20, pady=20)
+                self.back.grid(row=10, column=1, sticky='W', padx=20, pady=20)
 
                 self.optional.lift()
                 self.current_tab = self.optional
@@ -1261,7 +1257,7 @@ class Hem(Page):
         self.current_tab = self.nav
 
         # next button
-        self.next = tk.Button(self.meta_two, text="Next", bg='lightgrey', relief='solid', borderwidth=2,
+        self.next = tk.Button(self, text="Next", bg='lightgrey', relief='solid', borderwidth=2,
                               command=self.lift_tab, font=TEXT_FONT)
         self.next.grid(row=0, column=2, sticky='E', padx=20, pady=20)
 
@@ -1429,9 +1425,9 @@ class Hem(Page):
 
     def color_config(self, widget1, widget2, container, color, event):
 
-        widget1.configure(bg=color)
-        widget2.configure(bg=color)
-        container.configure(bg=color)
+        # widget1.configure(bg=color)
+        # widget2.configure(bg=color)
+        # container.configure(bg=color)
 
         # serve instructions
         if self.hapLabel in [widget1, widget2]:
@@ -1543,9 +1539,9 @@ class Hem(Page):
 
     def remove_config(self, widget1, widget2, container, color, event):
 
-        widget1.configure(bg=color)
-        widget2.configure(bg=color)
-        container.configure(bg=color)
+        # widget1.configure(bg=color)
+        # widget2.configure(bg=color)
+        # container.configure(bg=color)
         self.instruction_instance.set(" ")
         self.optional.instruction_instance.set(" ")
         self.depdeplt.instruction_instance.set(" ")
@@ -1572,3 +1568,8 @@ class Hem(Page):
         except Exception as e:
 
             print(e)
+
+    def on_configure(self, event):
+        # update scrollregion after starting 'mainloop'
+        # when all widgets are in canvas
+        self.canvas.configure(scrollregion=self.canvas.bbox('all'))
