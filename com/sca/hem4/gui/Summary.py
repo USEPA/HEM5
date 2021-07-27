@@ -106,7 +106,6 @@ class Summary(Page):
         self.s12.grid(row=11, column=0, columnspan=2, sticky="nsew")
         self.l12.grid(row=1, column=0, columnspan=2, sticky="nsew")
         self.r12.grid(row=1, column=2, columnspan=2, sticky="nsew")
-        self.s13.grid(row=12, column=0, columnspan=2, sticky="nsew")
 
         self.tt = PIL.Image.open('images\icons8-edit-graph-report-48-white.png').resize((30,30))
         self.tticon = self.add_margin(self.tt, 5, 0, 5, 0)
