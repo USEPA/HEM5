@@ -1257,9 +1257,9 @@ class Hem(Page):
         self.current_tab = self.nav
 
         # next button
-        self.next = tk.Button(self, text="Next", bg='lightgrey', relief='solid', borderwidth=2,
+        self.next = tk.Button(self.meta_two, text="Next", bg='lightgrey', relief='solid', borderwidth=2,
                               command=self.lift_tab, font=TEXT_FONT)
-        self.next.grid(row=0, column=2, sticky='E', padx=20, pady=20)
+        self.next.grid(row=10, column=2, sticky='E', padx=20, pady=20)
 
         global instruction_instance
         self.instruction_instance.set(" ")
