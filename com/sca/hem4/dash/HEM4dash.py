@@ -259,7 +259,6 @@ class HEM4dash():
                                         value_vars = ['REL', 'AEGL-1', 'ERPG-1', 'AEGL-2', 'ERPG-2'])
                 indexNames = df_acute_melt[ df_acute_melt['HQ'] == 0 ].index
                 df_acute_melt.drop(indexNames , inplace=True)
-                df_acute_melt['Facility']= df_acute_melt['Facility'] = 'F' + df_acute_melt['Facility'].astype(str)
                 df_acute_melt= df_acute_melt.loc[df_acute_melt['HQ']>=0.5]
                 df_acute_melt.sort_values(by = ['HQ'],ascending = False, inplace = True)
                 
