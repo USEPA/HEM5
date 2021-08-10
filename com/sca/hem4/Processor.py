@@ -99,8 +99,11 @@ class Processor():
             for facid in fac_list:
                 print(facid)
                 if self.abort.is_set():
-                    Logger.logMessage("Aborting processing...")
-                    print("abort")
+                    Logger.logMessage('HEM4 RUN GROUP: ' + str(self.model.group_name) + ' canceled')
+                    messagebox.showinfo('Run Canceled', 'HEM4 RUN GROUP: ' + str(self.model.group_name) + ' canceled')
+                    self.nav.abortLabel.destroy()
+#                    Logger.logMessage("Aborting processing...")
+                    success = False
                     return success
                 
                 
