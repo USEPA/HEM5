@@ -347,26 +347,41 @@ class FacilityRunner():
                         
                 
     def check_run(self, fac_folder, phasetype):
+
+        # Did user abort?
+        if self.abort.is_set():
+            success = False
+            self.model.aermod = False
+            return success
         
         ## Check for successful aermod run:
         output = os.path.join("aermod", "aermod.out")
-        check = open(output, 'r')
-        message = check.read()
-        now = datetime.now().time()
-        current_time = now.strftime("%H:%M:%S")
-        if 'AERMOD Finishes UN-successfully' in message:
+        if os.path.exists(output):
+            check = open(output, 'r')
+            message = check.read()
+            now = datetime.now().time()
+            current_time = now.strftime("%H:%M:%S")
+            if 'AERMOD Finishes UN-successfully' in message:
+                success = False
+                self.model.aermod = False
+    
+                
+                Logger.logMessage("Aermod ran unsuccessfully. Please check the "+
+                                  "error section of the aermod.out file in the "  + str(self.facilityId) + 
+                                  " output folder. Ended at time "+ current_time)
+            else:
+                success = True
+                self.aermod = True
+                Logger.logMessage("Aermod ran successfully. Ended at time " + current_time)
+            check.close()
+        else:
+            # aermod.out does not exist
             success = False
             self.model.aermod = False
-
             
-            Logger.logMessage("Aermod ran unsuccessfully. Please check the "+
-                              "error section of the aermod.out file in the "  + str(self.facilityId) + 
-                              " output folder. Ended at time "+ current_time)
-        else:
-            success = True
-            self.aermod = True
-            Logger.logMessage("Aermod ran successfully. Ended at time " + current_time)
-        check.close()
+            Logger.logMessage("Aermod finished but the aermod.out file does not exist. Please check the "+
+                              "aermod folder for any *.TMP or *.ERR files that may indicate the problem.")
+            
 
         if success == True:
              

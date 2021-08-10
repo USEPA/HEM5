@@ -23,39 +23,40 @@ class EmisVar(DependentInputFile):
         
         #not calling standard read_file because length of columns is variable
         #depending on varation type
+                    
+        emisvar_df = pd.read_excel(self.path, skiprows=0, dtype=str)
+                    
+        emisvar_df.columns = map(str.lower, emisvar_df.columns)
         
-        #checking to see if variaiton file is excel or txt.
-        #NEED TO MAKE SURE THE LINKED FILE HAS A .txt in it or append
+        # rename first three columns
+        emisvar_df.rename(columns={emisvar_df.columns[0]: fac_id,
+                                   emisvar_df.columns[1]: source_id,
+                                   emisvar_df.columns[2]: "variation"}, inplace=True)
         
-        if self.path[-3:] == 'txt': 
-            
-            self.dataframe = self.path #save linked file path in place of dataframe
-        
-        else: #excel file used
-        
-            emisvar_df = pd.read_excel(self.path, skiprows=0, dtype=str)
-            
-            emisvar_df.columns = map(str.lower, emisvar_df.columns)
-            
-            # rename first three columns
-            emisvar_df.rename(columns={"facility id": fac_id,
-                                       "source id": source_id,
-                                       emisvar_df.columns[2]: "variation"}, inplace=True)
-            
-            # convert all columns to float64 except first three
-            float_cols=[i for i in emisvar_df.columns if i not in ["fac_id","source_id","variation"]]
-            for col in float_cols:
-                emisvar_df[col]=pd.to_numeric(emisvar_df[col], errors="coerce")
+        # convert all columns to float64 except first three
+        float_cols=[i for i in emisvar_df.columns if i not in ["fac_id","source_id","variation"]]
+        for col in float_cols:
+            emisvar_df[col]=pd.to_numeric(emisvar_df[col], errors="coerce")
 
-            self.dataframe = emisvar_df
+        self.dataframe = emisvar_df
 
-        cleaned = self.clean(self.dataframe)
-        validated = self.validate(cleaned)
-        
-        
+        try:
+            cleaned = self.clean(self.dataframe)
+
+        except BaseException as e:
+            messagebox.showinfo("Error uploading emission variation file ", "Error says: " + str(e) + 
+                                " \n\nPlease make sure you have selected the correct file or file version.")
+            
+            dataframe = pd.DataFrame()
+            return dataframe
+
+        else:
+            validated = self.validate(cleaned)
+    
+    
         if validated is None:
                 
-            self.dataframe = pd.DataFrame()
+                self.dataframe = pd.DataFrame()
 
 
     def clean(self, df):
@@ -91,15 +92,14 @@ class EmisVar(DependentInputFile):
             valid = ['SEASON', 'MONTH', 'HROFDY', 'WSPEED', 'SEASHR', 'HRDOW',
                      'HRDOW7', 'SHRDOW', 'SHRDOW7', 'MHRDOW', 'MHRDOW7']
             if row['variation'] not in valid:
-                Logger.logMessage("Facility " + facility + ": variation value invalid.")
-                messagebox.showinfo("Variation invalid", "Facility " + facility + ": variation value invalid.")
+                Logger.logMessage("Facility " + facility + " has invalid emission variation value of " + row['variation'])
+                messagebox.showinfo("Variation invalid", "Facility " + facility + " has invalid emission variation value of " + row['variation'])
                 
                 return None
         #-----------------------------------------------------------------------------------------------------
         # Confirm that all facilities needing emission variation according to the Facility List
         # are in the emission variation file.
         
-        print("still going?")
         # facilities in emission variation file
         var_facs = set(df[fac_id])
         
