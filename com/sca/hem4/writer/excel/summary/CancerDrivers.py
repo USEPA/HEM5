@@ -46,8 +46,11 @@ class CancerDrivers(ExcelWriter, AltRecAwareSummary):
             allrisk_df = allrisk_df.append(bkdn_df)
 
         allrisk_df.drop_duplicates().reset_index(drop=True)
-        cancerdrivers_df = pd.DataFrame(allrisk_df, columns=[fac_id, mir, pollutant, value, source_id])
+        allrisk_nodups_df = pd.DataFrame(allrisk_df, columns=[fac_id, mir, pollutant, value, source_id])
 
+        # Sum risk by facility, source_id, pollutant, and mir
+        cancerdrivers_df = allrisk_nodups_df.groupby([fac_id, source_id, pollutant, mir])[value].sum().reset_index()
+        
         # Sort by descending mir
         cancerdrivers_df.sort_values(by=[mir], inplace=True, ascending=False)
         

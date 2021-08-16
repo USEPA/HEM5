@@ -3,11 +3,13 @@ import os, fnmatch, sys
 from com.sca.hem4.log.Logger import Logger
 from com.sca.hem4.upload.DoseResponse import *
 from com.sca.hem4.writer.csv.AllOuterReceptors import AllOuterReceptors
+from com.sca.hem4.writer.csv.AllOuterReceptorsNonCensus import AllOuterReceptorsNonCensus
 from com.sca.hem4.writer.excel.MaximumIndividualRisks import *
 from com.sca.hem4.model.Model import *
 from com.sca.hem4.support.UTM import *
 from com.sca.hem4.FacilityPrep import *
 import traceback
+from com.sca.hem4.writer.excel.summary.AltRecAwareSummary import AltRecAwareSummary
 
 site_type = 'site_type';
 conc_rnd = 'conc_rnd';
@@ -33,6 +35,10 @@ class RiskBreakdown(ExcelWriter, InputFile):
         self.filename = path
         self.targetDir = targetDir
         self.acute_yn = acuteyn
+
+        # Record whether or not alternate receptors used
+        altrecfinder = AltRecAwareSummary()
+        self.altrec = altrecfinder.determineAltRec(self.targetDir)
 
 
         # Local cache for URE/RFC values
@@ -109,8 +115,8 @@ class RiskBreakdown(ExcelWriter, InputFile):
                         # Search each outer receptor file for the lat/lon in row
                         foundit = False
                         for f in listOuter:
-                            allouter = AllOuterReceptors(targetDir=self.targetDir, acuteyn=self.acute_yn, 
-                                                         filenameOverride=f)
+                            allouter = AllOuterReceptorsNonCensus(targetDir=self.targetDir, acuteyn=self.acute_yn, filenameOverride=f) if self.altrec \
+                                else AllOuterReceptors(targetDir=self.targetDir, acuteyn=self.acute_yn, filenameOverride=f)
                             outconcs = allouter.createDataframe()
     
                             concdata = outconcs[[lat,lon,source_id,pollutant,emis_type,conc]] \

@@ -23,6 +23,7 @@ from com.sca.hem4.log import Logger
 from com.sca.hem4.upload.MetLib import MetLib
 from com.sca.hem4.writer.csv.MirHIAllReceptors import *
 from decimal import ROUND_HALF_UP, Decimal, getcontext
+from com.sca.hem4.writer.excel.summary.AltRecAwareSummary import AltRecAwareSummary
 
 # The GUI portion of the EJ functionality in HEM4. This class manages the various dialogs and options needed
 # to kick off a run of the EJ reporting tool. Its main entry into the code that actually performs the report
@@ -182,6 +183,16 @@ class EJ(Page):
     def browse(self, icon, event):
         self.fullpath = tk.filedialog.askdirectory()
         if not self.fullpath:
+            return
+        
+        # Make sure the folder selected is not for an Alternate Receptor run group.
+        # EJ cannot be run on that because there is no census block id to link to.
+        altrecfinder = AltRecAwareSummary()
+        altrec = altrecfinder.determineAltRec(self.fullpath)
+        if altrec == 'Y':
+            messagebox.showinfo('Cannot run Community Assessment on this folder',
+                                'The folder selected for a Community Assessment contains HEM4 outputs that ' +
+                                'use Alternate Receptors. These cannot be used with the Community Assessment Tool.')
             return
         
         icon["text"] = self.fullpath.split("/")[-1]

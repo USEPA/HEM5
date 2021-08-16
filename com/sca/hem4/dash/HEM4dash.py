@@ -51,10 +51,13 @@ class HEM4dash():
                 for file in filelist:
                     fullname = os.path.join(self.dir, file)
                     chklist.append(os.path.isfile(fullname))
-                        
+                
                 if not all(chklist):
-                    messagebox.showinfo("Invalid directory", " Please select a directory containing the results of a model run and summary reports for cancer risk drivers, "+
-                                        "max risks, max TOSHI drivers, pollutant incidence drivers, source type incidence drivers, and cancer histograms.")
+                    missingfile_list = [i for (i, v) in zip(filelist, chklist) if not v]
+                    missingfile_msg = '\n'.join(missingfile_list)
+                    messagebox.showinfo("Invalid directory", "Please select a directory containing the results of a model run and summary reports for cancer risk drivers, "+
+                                        "max risks, max TOSHI drivers, pollutant incidence drivers, source type incidence drivers, and cancer histograms. This directory is missing: \n" +
+                                        missingfile_msg)
                     return None
                 else:
                     break

@@ -27,6 +27,7 @@ class Summary(Page):
 
         self.checked = []
         self.checked_icons = []
+        self.fullpath = None
 
         meta_container = tk.Frame(self, bg=self.tab_color, bd=2)
         meta_container.pack(side="top", fill="both", expand=False)
@@ -296,13 +297,16 @@ class Summary(Page):
 
     def browse(self, icon, event):
 
-
         self.fullpath = tk.filedialog.askdirectory()
         # Make sure a directory was selected
         if self.fullpath:
             icon["text"] = self.fullpath.split("/")[-1]
 
     def run_reports(self, event):
+        
+        if self.fullpath == None or self.fullpath == '':
+            messagebox.showinfo('Select a folder', 'Please select a folder to summarize.')
+            return
 
         self.nav.summaryLabel.configure(image=self.nav.greenIcon)
 
