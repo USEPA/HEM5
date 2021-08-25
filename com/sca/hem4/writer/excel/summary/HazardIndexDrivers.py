@@ -55,7 +55,10 @@ class HazardIndexDrivers(ExcelWriter, AltRecAwareSummary):
             allrisk_df = allrisk_df.append(bkdn_df)
 
         allrisk_df.drop_duplicates().reset_index(drop=True)
-        hidrivers_df = pd.DataFrame(allrisk_df, columns=[fac_id, parameter, "total", source_id, pollutant, value])
+        allrisk_nodups_df = pd.DataFrame(allrisk_df, columns=[fac_id, parameter, "total", source_id, pollutant, value])
+
+        # Sum HI by facility, parameter, source_id, pollutant, and total HI
+        hidrivers_df = allrisk_nodups_df.groupby([fac_id, parameter, source_id, pollutant, "total"])[value].sum().reset_index()
 
         # The risk contribution is the risk divided by the MIR.
         hidrivers_df[risk_contrib] = hidrivers_df.apply(

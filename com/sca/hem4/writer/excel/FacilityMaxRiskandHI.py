@@ -93,7 +93,12 @@ class FacilityMaxRiskandHI(ExcelWriter, InputFile):
                 ovlpcnt = inncnt
             riskrow.append(ovlpcnt)
 
-            riskrow.append(self.incidence.iloc[0]['inc'])
+            # Get total incidence
+            inc_df = self.incidence[(self.incidence['source_id']=='Total') & 
+                                    (self.incidence['pollutant']=='All modeled pollutants')]
+            totinc = inc_df['inc'].sum()
+            
+            riskrow.append(totinc)
             riskrow.append(self.model.computedValues['metfile'])
             riskrow.append(self.model.computedValues['distance'])
             riskrow.append(self.model.computedValues['cenlat'])
