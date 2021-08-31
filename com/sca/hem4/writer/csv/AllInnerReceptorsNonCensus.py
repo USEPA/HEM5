@@ -37,9 +37,15 @@ class AllInnerReceptorsNonCensus(CsvWriter, InputFile):
         
 
     def getHeader(self):
-        return ['Receptor ID', 'Latitude', 'Longitude', 'Source ID', 'Emission type', 'Pollutant',
-                'Conc (µg/m3)', 'Acute Conc (µg/m3)', 'Elevation (m)',
-                'Dry deposition (g/m2/yr)', 'Wet deposition (g/m2/yr)', 'Population', 'Overlap']
+        if self.acute_yn == 'Y':
+            return ['Receptor ID', 'Latitude', 'Longitude', 'Source ID', 'Emission type', 'Pollutant',
+                    'Conc (µg/m3)', 'Acute Conc (µg/m3)', 'Elevation (m)',
+                    'Dry deposition (g/m2/yr)', 'Wet deposition (g/m2/yr)', 'Population', 'Overlap']
+        else:
+            return ['Receptor ID', 'Latitude', 'Longitude', 'Source ID', 'Emission type', 'Pollutant',
+                    'Conc (µg/m3)', 'Elevation (m)',
+                    'Dry deposition (g/m2/yr)', 'Wet deposition (g/m2/yr)', 'Population', 'Overlap']
+            
 
     def getColumns(self):
         if self.acute_yn == 'N':
@@ -67,51 +73,6 @@ class AllInnerReceptorsNonCensus(CsvWriter, InputFile):
         self.plotcols[3] = [utme,utmn,source_id,result,wdp,aresult,emis_type]
 
 
-#        # If acute was run for this facility, read the acute plotfile
-#        if self.acute_yn == 'Y':
-#            apfile = open(self.targetDir + "maxhour.plt", "r")
-#
-#            if self.rtype == 0:
-#                # No deposition
-#                self.aplot_df = pd.read_table(apfile, delim_whitespace=True, header=None, 
-#                    names=[utme,utmn,aresult,elev,hill,flag,avg_time,source_id,num_yrs,net_id],
-#                    usecols=[0,1,2,3,4,5,6,7,8,9], 
-#                    converters={utme:np.float64,utmn:np.float64,aresult:np.float64,elev:np.float64,hill:np.float64
-#                           ,flag:np.float64,avg_time:np.str,source_id:np.str,rank:np.str,net_id:np.str
-#                           ,concdate:np.str},
-#                    comment='*')             
-#            elif self.rtype == 1:
-#                # Wet and Dry deposition
-#                self.aplot_df = pd.read_table(apfile, delim_whitespace=True, header=None, 
-#                    names=[utme,utmn,aresult,adry,awet,elev,hill,flag,avg_time,source_id,num_yrs,net_id],
-#                    usecols=[0,1,2,3,4,5,6,7,8,9,10,11], 
-#                    converters={utme:np.float64,utmn:np.float64,aresult:np.float64,adry:np.float64,
-#                                awet:np.float64,elev:np.float64,hill:np.float64,flag:np.float64,
-#                                avg_time:np.str,source_id:np.str,rank:np.str,net_id:np.str,concdate:np.str},
-#                    comment='*')                       
-#            elif self.rtype == 2:
-#                # Dry only deposition
-#                self.aplot_df = pd.read_table(apfile, delim_whitespace=True, header=None, 
-#                    names=[utme,utmn,aresult,adry,elev,hill,flag,avg_time,source_id,num_yrs,net_id],
-#                    usecols=[0,1,2,3,4,5,6,7,8,9,10], 
-#                    converters={utme:np.float64,utmn:np.float64,aresult:np.float64,adry:np.float64,
-#                                elev:np.float64,hill:np.float64,flag:np.float64,
-#                                avg_time:np.str,source_id:np.str,rank:np.str,net_id:np.str,concdate:np.str},
-#                    comment='*')                       
-#            elif self.rtype == 3:
-#                # Wet only deposition
-#                self.aplot_df = pd.read_table(apfile, delim_whitespace=True, header=None, 
-#                    names=[utme,utmn,aresult,awet,elev,hill,flag,avg_time,source_id,num_yrs,net_id],
-#                    usecols=[0,1,2,3,4,5,6,7,8,9,10], 
-#                    converters={utme:np.float64,utmn:np.float64,aresult:np.float64,awet:np.float64,
-#                                elev:np.float64,hill:np.float64,flag:np.float64,
-#                                avg_time:np.str,source_id:np.str,rank:np.str,net_id:np.str,concdate:np.str},
-#                    comment='*')
-#            else:
-#                #TODO need to pass this to the log and skip to next facility
-#                Logger.logMessage("Error! Invalid rtype in AllInnerReceptors")
-
-        
         # Extract Chronic inner concs from Chronic plotfile and round the utm coordinates
         innercplot_df = self.plot_df.query("net_id != 'POLGRID1'").copy()
         innercplot_df.utme = innercplot_df.utme.round()
@@ -139,7 +100,7 @@ class AllInnerReceptorsNonCensus(CsvWriter, InputFile):
         # process inner concs one source_id at a time
         for x in srcids:
             innerplot_onesrcid = innerplot_df[self.plotcols[self.rtype]].loc[innerplot_df[source_id] == x]
-            hapemis_onesrcid = self.model.runstream_hapemis[[source_id,pollutant,emis_tpy]].loc[self.model.runstream_hapemis[source_id] == x]
+            hapemis_onesrcid = self.model.runstream_hapemis[[source_id,pollutant,emis_tpy,part_frac]].loc[self.model.runstream_hapemis[source_id] == x]
             for row1 in innerplot_onesrcid.itertuples():
                 for row2 in hapemis_onesrcid.itertuples():
 
@@ -155,15 +116,28 @@ class AllInnerReceptorsNonCensus(CsvWriter, InputFile):
                     d_lat = record[lat].values[0]
                     d_lon = record[lon].values[0]
                     d_sourceid = row1.source_id
-                    d_emistype = row1.emis_type
                     d_pollutant = row2.pollutant
-                    d_conc = row1[4] * row2[3] * self.cf
-                    d_aconc = row1[5] * row2[3] * self.cf * self.model.facops.iloc[0][multiplier]
                     d_elev = record[elev].values[0]
-                    d_drydep = "" if self.rtype in [0,3] else row1.ddp * row2.emis_tpy * self.cf
-                    d_wetdep = "" if self.rtype in [0,2] else row1.wdp * row2.emis_tpy * self.cf
                     d_population = record[population].values[0]
                     d_overlap = record[overlap].values[0]
+                    d_emistype = row1.emis_type
+                    if d_emistype == 'C':
+                        d_conc = row1.result * row2.emis_tpy * self.cf
+                        d_aconc = row1.aresult * row2.emis_tpy * self.cf * self.model.facops.iloc[0][multiplier]
+                        d_drydep = "" if self.rtype in [0,3] else row1.ddp * row2.emis_tpy * self.cf
+                        d_wetdep = "" if self.rtype in [0,2] else row1.wdp * row2.emis_tpy * self.cf
+                    elif d_emistype == 'P':
+                        d_conc = row1.result * row2.emis_tpy * self.cf * row2.part_frac
+                        d_aconc = row1.aresult * row2.emis_tpy * self.cf * self.model.facops.iloc[0][multiplier] \
+                                                * row2.part_frac
+                        d_drydep = "" if self.rtype in [0,3] else row1.ddp * row2.emis_tpy * self.cf * row2.part_frac
+                        d_wetdep = "" if self.rtype in [0,2] else row1.wdp * row2.emis_tpy * self.cf * row2.part_frac
+                    else:
+                        d_conc = row1.result * row2.emis_tpy * self.cf * (1 - row2.part_frac)
+                        d_aconc = row1.aresult * row2.emis_tpy * self.cf * self.model.facops.iloc[0][multiplier] \
+                                                * (1 - row2.part_frac)
+                        d_drydep = "" if self.rtype in [0,3] else row1.ddp * row2.emis_tpy * self.cf * (1 - row2.part_frac)
+                        d_wetdep = "" if self.rtype in [0,2] else row1.wdp * row2.emis_tpy * self.cf * (1 - row2.part_frac)
                     
                     if self.acute_yn == 'N':
                         datalist = [d_recid, d_lat, d_lon, d_sourceid, d_emistype, d_pollutant, d_conc,

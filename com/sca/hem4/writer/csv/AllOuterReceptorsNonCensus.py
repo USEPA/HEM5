@@ -248,7 +248,7 @@ class AllOuterReceptorsNonCensus(CsvWriter, InputFile):
                     num_batches = math.ceil(num_rows_output/self.batchSize)
                     num_outerconc_rows_per_batch = int(round(self.batchSize / num_rows_hapemis)) * num_srcids
                                     
-                    for k in range(num_batches):
+                    for k in range(num_batches-1):
                         start = k * num_outerconc_rows_per_batch
                         end = start + num_outerconc_rows_per_batch
                         outerconcs_batch = outerconcs[start:end]
@@ -444,7 +444,7 @@ class AllOuterReceptorsNonCensus(CsvWriter, InputFile):
                     num_batches = math.ceil(num_rows_output/self.batchSize)
                     num_outerconc_rows_per_batch = int(round(self.batchSize / num_rows_hapemis)) * num_srcids
                                     
-                    for k in range(num_batches):
+                    for k in range(num_batches-1):
                         start = k * num_outerconc_rows_per_batch
                         end = start + num_outerconc_rows_per_batch
                         outerconcs_batch = outerconcs[start:end]
