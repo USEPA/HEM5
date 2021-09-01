@@ -89,12 +89,7 @@ class Histogram(ExcelWriter, AltRecAwareSummary):
         else:
 
             # Alternate receptors
-            
-            # Drop records that (are not user receptors AND have population = 0)
-            blocksummary_df.drop(blocksummary_df[(blocksummary_df.population == 0) & 
-                                                 (~blocksummary_df.rec_id.str.contains('U', case=False))].index,
-                                                 inplace=True)
-            
+                        
             aggs = {lat:'first', lon:'first', overlap:'first', elev:'first', utme:'first', blk_type:'first',
                     utmn:'first', hill:'first', rec_id: 'first', population:'first',
                     mir:'sum', hi_resp:'sum', hi_live:'sum', hi_neur:'sum', hi_deve:'sum',

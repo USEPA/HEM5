@@ -107,8 +107,8 @@ class MultiPathwayNonCensus(ExcelWriter):
             allinner = AllInnerReceptorsNonCensus(targetDir=targetDir, facilityId=facilityId, acuteyn=acute_yn)
             allinner_df = allinner.createDataframe()
 
-            # Only keep records that have non-zero population or represent non-overlapped user receptors
-            allinner_df = allinner_df.loc[(allinner_df[population] > 0) & (allinner_df[overlap] == 'N')]
+            # Only keep non-overlapped records
+            allinner_df = allinner_df.loc[allinner_df[overlap] == 'N']
 
             # group by and sum by fips, block, population, lat, lon, pollutant
             allinner_df = allinner_df.groupby(by=[rec_id, population, lat, lon, pollutant], as_index=False) \
@@ -143,8 +143,8 @@ class MultiPathwayNonCensus(ExcelWriter):
                     
                     anyOuters = "Y"
                     
-                    # Only keep records that have non-zero population or represent non-overlapped user receptors
-                    allouter_df = allouter_df.loc[(allouter_df[population] > 0) & (allouter_df[overlap] == 'N')]
+                    # Only keep non-overlapped records
+                    allouter_df = allouter_df.loc[allouter_df[overlap] == 'N']
     
                     allouter_df = allouter_df.groupby(by=[rec_id, population, lat, lon, pollutant], as_index=False) \
                         .sum().reset_index(drop=True)

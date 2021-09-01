@@ -39,15 +39,12 @@ class MaxRisk(ExcelWriter, AltRecAwareSummary):
                 blocksummary_df = blocksummary_df.append(bsc_df)
 
         blocksummary_df.drop_duplicates().reset_index(drop=True)
-                
+        
         
         if self.altrec == 'N':
                         
-#            # Drop records that (are not user receptors AND have population = 0)       
-#            blocksummary_df.drop(blocksummary_df[(blocksummary_df.population == 0) & 
-#                                                 (~blocksummary_df.block.str.contains('U', case=False))].index,
-#                                                 inplace=True)
-
+            # Census data
+            
             # Pull out user receptors
             user_df = blocksummary_df[blocksummary_df[block].str.contains('U', case=False)]
 
@@ -119,21 +116,8 @@ class MaxRisk(ExcelWriter, AltRecAwareSummary):
             
         else:
 
-#            # Drop records that (are not user receptors AND have population = 0)       
-#            blocksummary_df.drop(blocksummary_df[(blocksummary_df.population == 0) & 
-#                                                 (~blocksummary_df.rec_id.str.contains('U_', case=False))].index,
-#                                                 inplace=True)
-
-            # Pull out user receptors
-            user_df = blocksummary_df[blocksummary_df[rec_id].str.contains('U', case=False)]
-
-            # Drop records with population = 0       
-            blocksummary_df.drop(blocksummary_df[blocksummary_df.population == 0].index,
-                                                 inplace=True)
-            
-            # Append any user receptors
-            blocksummary_df = blocksummary_df.append(user_df)
-                        
+            # Alternate receptors
+                                    
             aggs = {lat:'first', lon:'first', overlap:'first', elev:'first', utme:'first', blk_type:'first',
                     utmn:'first', hill:'first', rec_id: 'first', population:'first',
                     mir:'sum', hi_resp:'sum', hi_live:'sum', hi_neur:'sum', hi_deve:'sum',

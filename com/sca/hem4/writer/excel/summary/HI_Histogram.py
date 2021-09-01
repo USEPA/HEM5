@@ -76,6 +76,12 @@ class HI_Histogram(ExcelWriter, AltRecAwareSummary):
                   [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],
                   [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0]]
 
+        # Set the receptor id variable as block or rec_id depending on altrec value
+        if self.altrec == 'Y':
+            receptorvar = 'rec_id'
+        else:
+            receptorvar = 'block'
+            
         blocksummary_df = pd.DataFrame()
         for facilityId in self.facilityIds:
             targetDir = self.categoryFolder + "/" + facilityId
@@ -86,7 +92,7 @@ class HI_Histogram(ExcelWriter, AltRecAwareSummary):
             bsc_df = blockSummaryChronic.createDataframe()
 
             # Get max resp value that has a population > 0
-            respMax = bsc_df.loc[bsc_df[((bsc_df[population] > 0) | (bsc_df[block].str.contains('U')))][hi_resp].idxmax()]
+            respMax = bsc_df.loc[bsc_df[((bsc_df[population] > 0) | (bsc_df[eval('receptorvar')].str.contains('U',case=False)))][hi_resp].idxmax()]
             rounded = self.round_to_sigfig(respMax[hi_resp])
             if rounded > 1000:
                 counts[0][1] = counts[0][1] + 1
@@ -99,7 +105,7 @@ class HI_Histogram(ExcelWriter, AltRecAwareSummary):
             if rounded <= 1:
                 counts[4][1] = counts[4][1] + 1
 
-            liveMax = bsc_df.loc[bsc_df[((bsc_df[population] > 0) | (bsc_df[block].str.contains('U')))][hi_live].idxmax()]
+            liveMax = bsc_df.loc[bsc_df[((bsc_df[population] > 0) | (bsc_df[eval('receptorvar')].str.contains('U',case=False)))][hi_live].idxmax()]
             rounded = self.round_to_sigfig(liveMax[hi_live])
             if rounded > 1000:
                 counts[0][3] = counts[0][3] + 1
@@ -112,7 +118,7 @@ class HI_Histogram(ExcelWriter, AltRecAwareSummary):
             if rounded <= 1:
                 counts[4][3] = counts[4][3] + 1
 
-            neuroMax = bsc_df.loc[bsc_df[((bsc_df[population] > 0) | (bsc_df[block].str.contains('U')))][hi_neur].idxmax()]
+            neuroMax = bsc_df.loc[bsc_df[((bsc_df[population] > 0) | (bsc_df[eval('receptorvar')].str.contains('U',case=False)))][hi_neur].idxmax()]
             rounded = self.round_to_sigfig(neuroMax[hi_neur])
             if rounded > 1000:
                 counts[0][5] = counts[0][5] + 1
@@ -125,7 +131,7 @@ class HI_Histogram(ExcelWriter, AltRecAwareSummary):
             if rounded <= 1:
                 counts[4][5] = counts[4][5] + 1
 
-            deveMax = bsc_df.loc[bsc_df[((bsc_df[population] > 0) | (bsc_df[block].str.contains('U')))][hi_deve].idxmax()]
+            deveMax = bsc_df.loc[bsc_df[((bsc_df[population] > 0) | (bsc_df[eval('receptorvar')].str.contains('U',case=False)))][hi_deve].idxmax()]
             rounded = self.round_to_sigfig(deveMax[hi_deve])
             if rounded > 1000:
                 counts[0][7] = counts[0][7] + 1
@@ -138,7 +144,7 @@ class HI_Histogram(ExcelWriter, AltRecAwareSummary):
             if rounded <= 1:
                 counts[4][7] = counts[4][7] + 1
 
-            reproMax = bsc_df.loc[bsc_df[((bsc_df[population] > 0) | (bsc_df[block].str.contains('U')))][hi_repr].idxmax()]
+            reproMax = bsc_df.loc[bsc_df[((bsc_df[population] > 0) | (bsc_df[eval('receptorvar')].str.contains('U',case=False)))][hi_repr].idxmax()]
             rounded = self.round_to_sigfig(reproMax[hi_repr])
             if rounded > 1000:
                 counts[0][9] = counts[0][9] + 1
@@ -151,7 +157,7 @@ class HI_Histogram(ExcelWriter, AltRecAwareSummary):
             if rounded <= 1:
                 counts[4][9] = counts[4][9] + 1
 
-            kidnMax = bsc_df.loc[bsc_df[((bsc_df[population] > 0) | (bsc_df[block].str.contains('U')))][hi_kidn].idxmax()]
+            kidnMax = bsc_df.loc[bsc_df[((bsc_df[population] > 0) | (bsc_df[eval('receptorvar')].str.contains('U',case=False)))][hi_kidn].idxmax()]
             rounded = self.round_to_sigfig(kidnMax[hi_kidn])
             if rounded > 1000:
                 counts[0][11] = counts[0][11] + 1
@@ -164,7 +170,7 @@ class HI_Histogram(ExcelWriter, AltRecAwareSummary):
             if rounded <= 1:
                 counts[4][11] = counts[4][11] + 1
 
-            oculMax = bsc_df.loc[bsc_df[((bsc_df[population] > 0) | (bsc_df[block].str.contains('U')))][hi_ocul].idxmax()]
+            oculMax = bsc_df.loc[bsc_df[((bsc_df[population] > 0) | (bsc_df[eval('receptorvar')].str.contains('U',case=False)))][hi_ocul].idxmax()]
             rounded = self.round_to_sigfig(oculMax[hi_ocul])
             if rounded > 1000:
                 counts[0][13] = counts[0][13] + 1
@@ -177,7 +183,7 @@ class HI_Histogram(ExcelWriter, AltRecAwareSummary):
             if rounded <= 1:
                 counts[4][13] = counts[4][13] + 1
 
-            endoMax = bsc_df.loc[bsc_df[((bsc_df[population] > 0) | (bsc_df[block].str.contains('U')))][hi_endo].idxmax()]
+            endoMax = bsc_df.loc[bsc_df[((bsc_df[population] > 0) | (bsc_df[eval('receptorvar')].str.contains('U',case=False)))][hi_endo].idxmax()]
             rounded = self.round_to_sigfig(endoMax[hi_endo])
             if rounded > 1000:
                 counts[0][15] = counts[0][15] + 1
@@ -190,7 +196,7 @@ class HI_Histogram(ExcelWriter, AltRecAwareSummary):
             if rounded <= 1:
                 counts[4][15] = counts[4][15] + 1
 
-            hemaMax = bsc_df.loc[bsc_df[((bsc_df[population] > 0) | (bsc_df[block].str.contains('U')))][hi_hema].idxmax()]
+            hemaMax = bsc_df.loc[bsc_df[((bsc_df[population] > 0) | (bsc_df[eval('receptorvar')].str.contains('U',case=False)))][hi_hema].idxmax()]
             rounded = self.round_to_sigfig(hemaMax[hi_hema])
             if rounded > 1000:
                 counts[0][17] = counts[0][17] + 1
@@ -203,7 +209,7 @@ class HI_Histogram(ExcelWriter, AltRecAwareSummary):
             if rounded <= 1:
                 counts[4][17] = counts[4][17] + 1
 
-            immuMax = bsc_df.loc[bsc_df[((bsc_df[population] > 0) | (bsc_df[block].str.contains('U')))][hi_immu].idxmax()]
+            immuMax = bsc_df.loc[bsc_df[((bsc_df[population] > 0) | (bsc_df[eval('receptorvar')].str.contains('U',case=False)))][hi_immu].idxmax()]
             rounded = self.round_to_sigfig(immuMax[hi_immu])
             if rounded > 1000:
                 counts[0][19] = counts[0][19] + 1
@@ -216,7 +222,7 @@ class HI_Histogram(ExcelWriter, AltRecAwareSummary):
             if rounded <= 1:
                 counts[4][19] = counts[4][19] + 1
 
-            skelMax = bsc_df.loc[bsc_df[((bsc_df[population] > 0) | (bsc_df[block].str.contains('U')))][hi_skel].idxmax()]
+            skelMax = bsc_df.loc[bsc_df[((bsc_df[population] > 0) | (bsc_df[eval('receptorvar')].str.contains('U',case=False)))][hi_skel].idxmax()]
             rounded = self.round_to_sigfig(skelMax[hi_skel])
             if rounded > 1000:
                 counts[0][21] = counts[0][21] + 1
@@ -229,7 +235,7 @@ class HI_Histogram(ExcelWriter, AltRecAwareSummary):
             if rounded <= 1:
                 counts[4][21] = counts[4][21] + 1
 
-            spleMax = bsc_df.loc[bsc_df[((bsc_df[population] > 0) | (bsc_df[block].str.contains('U')))][hi_sple].idxmax()]
+            spleMax = bsc_df.loc[bsc_df[((bsc_df[population] > 0) | (bsc_df[eval('receptorvar')].str.contains('U',case=False)))][hi_sple].idxmax()]
             rounded = self.round_to_sigfig(spleMax[hi_sple])
             if rounded > 1000:
                 counts[0][23] = counts[0][23] + 1
@@ -242,7 +248,7 @@ class HI_Histogram(ExcelWriter, AltRecAwareSummary):
             if rounded <= 1:
                 counts[4][23] = counts[4][23] + 1
 
-            thyrMax = bsc_df.loc[bsc_df[((bsc_df[population] > 0) | (bsc_df[block].str.contains('U')))][hi_thyr].idxmax()]
+            thyrMax = bsc_df.loc[bsc_df[((bsc_df[population] > 0) | (bsc_df[eval('receptorvar')].str.contains('U',case=False)))][hi_thyr].idxmax()]
             rounded = self.round_to_sigfig(thyrMax[hi_thyr])
             if rounded > 1000:
                 counts[0][25] = counts[0][25] + 1
@@ -255,7 +261,7 @@ class HI_Histogram(ExcelWriter, AltRecAwareSummary):
             if rounded <= 1:
                 counts[4][25] = counts[4][25] + 1
 
-            wholMax = bsc_df.loc[bsc_df[((bsc_df[population] > 0) | (bsc_df[block].str.contains('U')))][hi_whol].idxmax()]
+            wholMax = bsc_df.loc[bsc_df[((bsc_df[population] > 0) | (bsc_df[eval('receptorvar')].str.contains('U',case=False)))][hi_whol].idxmax()]
             rounded = self.round_to_sigfig(wholMax[hi_whol])
             if rounded > 1000:
                 counts[0][27] = counts[0][27] + 1
@@ -293,12 +299,7 @@ class HI_Histogram(ExcelWriter, AltRecAwareSummary):
         else:
 
             # Alternate receptors
-            
-            # Drop records that (are not user receptors AND have population = 0)
-            blocksummary_df.drop(blocksummary_df[(blocksummary_df.population == 0) & 
-                                                 (~blocksummary_df.rec_id.str.contains('U', case=False))].index,
-                                                 inplace=True)
-            
+                        
             aggs = {lat:'first', lon:'first', overlap:'first', elev:'first', utme:'first', blk_type:'first',
                     utmn:'first', hill:'first', rec_id: 'first', population:'first',
                     mir:'sum', hi_resp:'sum', hi_live:'sum', hi_neur:'sum', hi_deve:'sum',

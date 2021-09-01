@@ -92,14 +92,10 @@ class SourceTypeRiskHistogram(ExcelWriter, AltRecAwareSummary):
             byCols = [rec_id, source_id] if altrec=='Y' else [fips, block, source_id]
             inner_summed = allinner2_df.groupby(by=byCols, as_index=False).agg(aggs).reset_index(drop=True)
             
-            # Drop records that (are not user receptors AND have population = 0)       
+            # Drop records that (are not user receptors AND have population = 0). Do not do this for altrec.      
             if altrec == 'N':
                 inner_summed.drop(inner_summed[(inner_summed.population == 0) &
                                                (~inner_summed.block.str.contains('U', case=False))].index,
-                                               inplace=True)
-            else:
-                inner_summed.drop(inner_summed[(inner_summed.population == 0) & 
-                                               (~inner_summed.rec_id.str.contains('U_', case=False))].index,
                                                inplace=True)
                         
             # Append to sector block risk DF
@@ -139,12 +135,9 @@ class SourceTypeRiskHistogram(ExcelWriter, AltRecAwareSummary):
                     byCols = [rec_id, source_id] if altrec=='Y' else [fips, block, source_id]
                     outer_summed = allouter2_df.groupby(by=byCols, as_index=False).agg(aggs).reset_index(drop=True)
     
-                    # Drop records that (are not user receptors AND have population = 0)
+                    # Drop records that (are not user receptors AND have population = 0). Do not do this for altrec.
                     if altrec == 'N':
                         outer_summed.drop(outer_summed[(outer_summed.population == 0) & ("U" not in outer_summed.block)].index,
-                                         inplace=True)
-                    else:
-                        outer_summed.drop(outer_summed[(outer_summed.population == 0) & ("U" not in outer_summed.rec_id)].index,
                                          inplace=True)
     
                     # Append to sector block risk DF
