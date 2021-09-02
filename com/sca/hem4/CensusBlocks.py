@@ -241,6 +241,99 @@ def in_box(modelblks, sourcelocs, modeldist, maxdist, overlap_dist, model):
         
     return innerblks, outerblks
 
+
+#%%
+def in_box_NonCensus(modelblks, sourcelocs, modeldist, maxdist, overlap_dist, model):
+
+    ## This function determines if a block within modelblks is within a fringe of any source ##
+    
+    outerblks = modelblks.copy()
+    # Initialize overlap
+    outerblks['overlap'] = 'N'
+
+    # Create empty inner blocks data frame
+    colnames = list(modelblks.columns)
+    innerblks = pd.DataFrame([], columns=colnames)
+    
+    #...... Find blocks within modeldist of point sources.........
+        
+    ptsources = sourcelocs.query("source_type in ('P','C','H','V','N','B')")
+    for index, row in ptsources.iterrows():
+        src_x = row[utme]
+        src_y = row[utmn]
+        indist = outerblks.query('sqrt((@src_x - utme)**2 + (@src_y - utmn)**2) <= @modeldist')
+
+        # Determine overlap
+        indist['overlap'] = np.where(np.sqrt(np.double((indist[utme]-src_x)**2 +
+                                       (indist[utmn]-src_y)**2)) <= overlap_dist, "Y", "N")
+      
+        if len(indist) > 0:
+            # Append to innerblks and shrink outerblks
+            innerblks = innerblks.append(indist).reset_index(drop=True)
+            innerblks = innerblks[~innerblks[rec_id].duplicated()]
+            outerblks = outerblks[~outerblks[rec_id].isin(innerblks[rec_id])].copy()
+
+#            #Do any of these inner or outer blocks overlap this source?
+#            innerblks.loc[innerblks['overlap'] != 'Y', 'overlap'] = np.where(np.sqrt(np.double((innerblks[utme]-src_x)**2 +
+#                                           (innerblks[utmn]-src_y)**2)) <= overlap_dist, "Y", "N")
+#            if not outerblks.empty:
+#                outerblks.loc[outerblks['overlap'] != 'Y', 'overlap'] = np.where(np.sqrt(np.double((outerblks[utme]-src_x)**2 +
+#                                               (outerblks[utmn]-src_y)**2)) <= overlap_dist, "Y", "N")
+
+    #....... Find blocks within modeldist of area sources ..........
+
+    if not outerblks.empty:
+                
+        areasources = sourcelocs.query("source_type in ('A')")
+        for index, row in areasources.iterrows():
+            box_x = row[utme]
+            box_y = row[utmn]
+            len_x = row["lengthx"]
+            len_y = row["lengthy"]
+            angle_val = row["angle"]
+            fringe = modeldist
+            outerblks["inbox"], outerblks['overlap'] = zip(*outerblks.apply(lambda row1: rotatedbox(row1[utme],
+                     row1[utmn], box_x, box_y, len_x, len_y, angle_val, fringe, overlap_dist), axis=1))
+            indist = outerblks.query('inbox == True')
+            if len(indist) > 0:
+                # Append to innerblks and shrink outerblks
+                innerblks = innerblks.append(indist).reset_index(drop=True)
+                innerblks = innerblks[~innerblks[rec_id].duplicated()]
+                outerblks = outerblks[~outerblks[rec_id].isin(innerblks[rec_id])]
+            
+            if outerblks.empty:
+                # Break for loop if no more outer blocks
+                break
+                  
+
+    #....... If there are polygon sources, find blocks within modeldist of any polygon side ..........
+    
+    if not outerblks.empty:
+        polyvertices = sourcelocs.query("source_type in ('I')")
+        if len(polyvertices) > 1:
+                            
+            # Are any blocks within the modeldist of any polygon side?
+            # Process each source_id
+            if not outerblks.empty:
+                for grp,df in polyvertices.groupby(source_id):
+                    # loop over each row of the source_id specific dataframe (df)
+                    for i in range(0, df.shape[0]-1):
+                        v1 = np.array([df.iloc[i][utme], df.iloc[i][utmn]])
+                        v2 = np.array([df.iloc[i+1][utme], df.iloc[i+1][utmn]])
+                        outerblks["nearpoly"] = (outerblks.apply(lambda row: polygonbox(v1, v2, 
+                             np.array([row[utme],row[utmn]]), modeldist), axis=1))
+                        polyblks = outerblks.query('nearpoly == True')
+                        if len(polyblks) > 0:
+                            innerblks = innerblks.append(polyblks).reset_index(drop=True)
+                            innerblks = innerblks[~innerblks[rec_id].duplicated()]
+                            outerblks = outerblks[~outerblks[rec_id].isin(innerblks[rec_id])]
+                    if outerblks.empty:
+                        # Break for loop if no more outer blocks
+                        break
+
+        
+    return innerblks, outerblks
+
 #%%
 def read_json_file(path_to_file, dtype_dict):
     with open(path_to_file) as p:

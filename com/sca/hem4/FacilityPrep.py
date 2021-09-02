@@ -876,7 +876,7 @@ class FacilityPrep():
             
         
         # Split modelblks into inner and outer block receptors
-        innerblks, outerblks = in_box(modelblks, sourcelocs, modeldist, maxdist, overlap_dist, self.model)
+        innerblks, outerblks = in_box_NonCensus(modelblks, sourcelocs, modeldist, maxdist, overlap_dist, self.model)
 
 #        Logger.log("OUTERBLOCKS", outerblks, False)
 
