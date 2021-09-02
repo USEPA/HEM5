@@ -166,8 +166,8 @@ def in_box(modelblks, sourcelocs, modeldist, maxdist, overlap_dist, model):
         if len(indist) > 0:
             # Append to innerblks and shrink outerblks
             innerblks = innerblks.append(indist).reset_index(drop=True)
-            innerblks = innerblks[~innerblks[rec_id].duplicated()]
-            outerblks = outerblks[~outerblks[rec_id].isin(innerblks[rec_id])].copy()
+            innerblks = innerblks[~innerblks[idmarplot].duplicated()]
+            outerblks = outerblks[~outerblks[idmarplot].isin(innerblks[idmarplot])].copy()
 
 #            #Do any of these inner or outer blocks overlap this source?
 #            innerblks.loc[innerblks['overlap'] != 'Y', 'overlap'] = np.where(np.sqrt(np.double((innerblks[utme]-src_x)**2 +
@@ -175,7 +175,6 @@ def in_box(modelblks, sourcelocs, modeldist, maxdist, overlap_dist, model):
 #            if not outerblks.empty:
 #                outerblks.loc[outerblks['overlap'] != 'Y', 'overlap'] = np.where(np.sqrt(np.double((outerblks[utme]-src_x)**2 +
 #                                               (outerblks[utmn]-src_y)**2)) <= overlap_dist, "Y", "N")
-
 
     #....... Find blocks within modeldist of area sources ..........
 
@@ -195,8 +194,8 @@ def in_box(modelblks, sourcelocs, modeldist, maxdist, overlap_dist, model):
             if len(indist) > 0:
                 # Append to innerblks and shrink outerblks
                 innerblks = innerblks.append(indist).reset_index(drop=True)
-                innerblks = innerblks[~innerblks[rec_id].duplicated()]
-                outerblks = outerblks[~outerblks[rec_id].isin(innerblks[rec_id])]
+                innerblks = innerblks[~innerblks[idmarplot].duplicated()]
+                outerblks = outerblks[~outerblks[idmarplot].isin(innerblks[idmarplot])]
             
             if outerblks.empty:
                 # Break for loop if no more outer blocks
@@ -217,8 +216,8 @@ def in_box(modelblks, sourcelocs, modeldist, maxdist, overlap_dist, model):
                 intract = pd.merge(outerblks, polyvertices, how='inner', on='tract')
                 if len(intract) > 0:
                     innerblks = innerblks.append(intract).reset_index(drop=True)
-                    innerblks = innerblks[~innerblks[rec_id].duplicated()]
-                    outerblks = outerblks[~outerblks[rec_id].isin(innerblks[rec_id])]
+                    innerblks = innerblks[~innerblks[idmarplot].duplicated()]
+                    outerblks = outerblks[~outerblks[idmarplot].isin(innerblks[idmarplot])]
             
             # Are any blocks within the modeldist of any polygon side?
             # Process each source_id
@@ -233,8 +232,8 @@ def in_box(modelblks, sourcelocs, modeldist, maxdist, overlap_dist, model):
                         polyblks = outerblks.query('nearpoly == True')
                         if len(polyblks) > 0:
                             innerblks = innerblks.append(polyblks).reset_index(drop=True)
-                            innerblks = innerblks[~innerblks[rec_id].duplicated()]
-                            outerblks = outerblks[~outerblks[rec_id].isin(innerblks[rec_id])]
+                            innerblks = innerblks[~innerblks[idmarplot].duplicated()]
+                            outerblks = outerblks[~outerblks[idmarplot].isin(innerblks[idmarplot])]
                     if outerblks.empty:
                         # Break for loop if no more outer blocks
                         break
@@ -327,7 +326,7 @@ def getblocks(cenx, ceny, cenlon, cenlat, utmzone, hemi, maxdist, modeldist, sou
 
     #subset the censusblks dataframe to blocks that are within the modeling distance of the facility 
     modelblks = censusblks.query('distance <= @maxdist').copy()
-    
+        
     # Confirm the dataframe does not contain duplicates
     modelblksduplicates = modelblks[modelblks.duplicated(['lat', 'lon'])]
     if len(modelblksduplicates) > 0:
