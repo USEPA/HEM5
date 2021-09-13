@@ -806,7 +806,9 @@ class FacilityPrep():
         return inbox
 
     def copyUTMColumns(self, utmn, utme):
-        return [utmn, utme]
+        round_utmn = round(utmn)
+        round_utme = round(utme)
+        return [round_utmn, round_utme]
 
     #%% compute a bearing from the center of the facility to a receptor (utm coordinates)
     def bearing(self, utme, utmn, cenx, ceny):

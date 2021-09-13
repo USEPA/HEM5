@@ -117,7 +117,7 @@ class AllInnerReceptors(CsvWriter, InputFile):
                     else:
                         record = self.model.innerblks_df.loc[(self.model.innerblks_df[utme] == row1[1]) & (self.model.innerblks_df[utmn] == row1[2])]
                         self.innblkCache[key] = record
-
+                    
                     d_fips = record[fips].values[0]
                     d_idmarplot = record[idmarplot].values[0]
                     d_block = d_idmarplot[-10:]
