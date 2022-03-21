@@ -321,7 +321,7 @@ class InputChecker():
             
                     for d in bdsource:
                         if d not in list(esource):
-                            
+                                                        
                             logMsg14c = ("Source ids for Emissions Locations and Building Downwash file"+ 
                                        " do not match, please upload corresponding files.")
                             result['result'] =  logMsg14c

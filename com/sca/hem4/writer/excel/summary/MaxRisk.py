@@ -38,7 +38,8 @@ class MaxRisk(ExcelWriter, AltRecAwareSummary):
                 bsc_df = blockSummaryChronic.createDataframe()
                 blocksummary_df = blocksummary_df.append(bsc_df)
 
-        blocksummary_df.drop_duplicates().reset_index(drop=True)
+        blocksummary_df.drop_duplicates(inplace=True)
+        blocksummary_df.reset_index(drop=True, inplace=True)
         
         
         if self.altrec == 'N':
