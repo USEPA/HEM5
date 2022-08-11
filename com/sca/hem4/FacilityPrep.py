@@ -229,8 +229,8 @@ class FacilityPrep():
         
         if self.model.altRec_optns.get('altrec', None):
 
-            self.innerblks, self.outerblks = self.getBlocksFromUrep(facid, cenx, ceny, cenlon, cenlat, facutmzonenum,
-                hemi, maxdist, modeldist, sourcelocs, op_overlap)
+            self.innerblks, self.outerblks = getBlocksFromAltRecs(facid, cenx, ceny, cenlon, cenlat, facutmzonenum,
+                hemi, maxdist, modeldist, sourcelocs, op_overlap, self.model)
 
         else:
             
@@ -828,73 +828,7 @@ class FacilityPrep():
         return angle        
 
 
-    # Determine inner and outer blocks from the set of alternate receptors.
-    def getBlocksFromUrep(self, facid, cenx, ceny, cenlon, cenlat, utmZone, hemi, maxdist, modeldist, sourcelocs, overlap_dist):
-        
-        # convert max outer ring distance from meters to degrees latitude
-        maxdist_deg = maxdist*39.36/36/2000/60
-        
-        altrecs = self.model.altreceptr.dataframe.copy()
 
-        # If any population values are missing, we cannot create an Incidence report
-        self.model.altRec_optns['altrec_nopop'] = altrecs.isnull().any()[population]
-        altrecs[population] = pd.to_numeric(altrecs[population], errors='coerce').fillna(0)
-
-        # If any elevation or hill height values are missing, we must run in FLAT mode.
-        self.model.altRec_optns['altrec_flat'] = altrecs.isnull().any()[elev] or altrecs.isnull().any()[hill]
-        altrecs[elev] = pd.to_numeric(altrecs[elev], errors='coerce').fillna(0)
-        altrecs[hill] = pd.to_numeric(altrecs[hill], errors='coerce').fillna(0)
-
-        # Which location type is being used? If lat/lon, convert to UTM. Otherwise, just copy over
-        # the relevant values.
-        ltype = altrecs.iloc[0][location_type]
-        if ltype == 'L':
-            altrecs[[utmn, utme]] = altrecs.apply(lambda row: UTM.ll2utm_alt(row[lat],row[lon],utmZone,hemi), 
-                                    result_type="expand", axis=1)
-        else:
-            altrecs[[utmn, utme]] = altrecs.apply(lambda row: self.copyUTMColumns(row[lat],row[lon]), 
-                                    result_type="expand", axis=1)
-
-        # Set utmzone as the common zone
-        altrecs[utmz] = utmZone
-
-        #coerce hill and elevation into floats
-        altrecs[hill] = pd.to_numeric(altrecs[hill], errors='coerce').fillna(0)
-        altrecs[elev] = pd.to_numeric(altrecs[elev], errors='coerce').fillna(0)
-
-        #compute distance and bearing (angle) from the center of the facility
-        altrecs['distance'] = np.sqrt((cenx - altrecs.utme)**2 + (ceny - altrecs.utmn)**2)
-        altrecs['angle'] = altrecs.apply(lambda row: bearing(row[utme],row[utmn],cenx,ceny), axis=1)
-        altrecs['urban_pop'] = 0
-
-        #subset the altrecs dataframe to blocks that are within the max distance of the facility
-        modelblks = altrecs.query('distance <= @maxdist')
-
-        # If no blocks within max distance, then this facility cannot be modeled; skip it.
-        if modelblks.empty == True:
-            Logger.logMessage("There are no discrete receptors within the max distance of this facility. " +
-                              "Aborting processing of this facility.")
-            raise RuntimeError("No discrete receptors")
-            
-        
-        # Split modelblks into inner and outer block receptors
-        innerblks, outerblks = in_box_NonCensus(modelblks, sourcelocs, modeldist, maxdist, overlap_dist, self.model)
-
-#        Logger.log("OUTERBLOCKS", outerblks, False)
-
-        # convert utme, utmn, utmz, and population to appropriate numeric types
-        innerblks[utme] = innerblks[utme].astype(np.float64)
-        innerblks[utmn] = innerblks[utmn].astype(np.float64)
-        innerblks[utmz] = innerblks[utmz].astype(int)
-        innerblks[population] = pd.to_numeric(innerblks[population], errors='coerce').astype(int)
-        
-        if not outerblks.empty:
-            outerblks[utme] = outerblks[utme].astype(np.float64)
-            outerblks[utmn] = outerblks[utmn].astype(np.float64)
-            outerblks[utmz] = outerblks[utmz].astype(int)
-            outerblks[population] = pd.to_numeric(outerblks[population], errors='coerce').astype(int)
-
-        return innerblks, outerblks
 
 
     #%% Calculate elevation and hill height for user-specified receptors

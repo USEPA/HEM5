@@ -19,8 +19,9 @@ angle = 'angle';
 #%%
 def haversineDistance(blkcoors, faclon, faclat):
     """
-    Calculate the great circle distance in kilometers between two points 
+    Calculate the great circle distance in meters between two points 
     on the earth (specified in decimal degrees)
+    
     blkcoors - numpy array of census block coordinates (lon, lat)
     faclon - longitude of facility center
     faclat - latitude of facility center
@@ -34,10 +35,10 @@ def haversineDistance(blkcoors, faclon, faclat):
     # haversine formula 
     dlon = blkcoors_rad[:,0] - faclon_rad 
     dlat = blkcoors_rad[:,1] - faclat_rad 
-    a = np.sin(dlat/2)**2 + np.cos(blkcoors_rad[:,1]) * np.cos(faclat) * np.sin(dlon/2)**2
+    a = np.sin(dlat/2)**2 + np.cos(blkcoors_rad[:,1]) * np.cos(faclat_rad) * np.sin(dlon/2)**2
     c = 2 * np.arcsin(np.sqrt(a)) 
     r = 6371 # Radius of earth in kilometers. Use 3956 for miles. Determines return value units.
-    return c * r        
+    return c * r * 1000       
 
 
 #%% compute a bearing from the center of a facility to a census receptor
@@ -483,6 +484,79 @@ def getblocks(cenx, ceny, cenlon, cenlat, utmzone, hemi, maxdist, modeldist, sou
     return innerblks, outerblks
 
 
+#%%
+# Determine inner and outer receptors from the set of alternate receptors.
+def getBlocksFromAltRecs(facid, cenx, ceny, cenlon, cenlat, utmZone, hemi, maxdist, modeldist
+                         , sourcelocs, overlap_dist, model):
+    
+    # convert max outer ring distance from meters to degrees latitude
+    maxdist_deg = maxdist*39.36/36/2000/60
+    
+    altrecs = model.altreceptr.dataframe.copy()
+
+    # If any population values are missing, we cannot create an Incidence report
+    model.altRec_optns['altrec_nopop'] = altrecs.isnull().any()[population]
+    altrecs[population] = pd.to_numeric(altrecs[population], errors='coerce').fillna(0)
+
+    # If any elevation or hill height values are missing, we must run in FLAT mode.
+    model.altRec_optns['altrec_flat'] = altrecs.isnull().any()[elev] or altrecs.isnull().any()[hill]
+    altrecs[elev] = pd.to_numeric(altrecs[elev], errors='coerce').fillna(0)
+    altrecs[hill] = pd.to_numeric(altrecs[hill], errors='coerce').fillna(0)
+
+    # Compute distance from the center of the facility to each alternate receptor
+    reccoors = np.array(tuple(zip(altrecs.lon, altrecs.lat)))
+    altrecs[distance] = haversineDistance(reccoors, cenlon, cenlat)
+
+    #subset the altrecs dataframe to blocks that are within the max distance of the facility
+    modelblks = altrecs.query('distance <= @maxdist')
+
+    # If no blocks within max distance, then this facility cannot be modeled; skip it.
+    if modelblks.empty == True:
+        Logger.logMessage("There are no discrete receptors within the max distance of this facility. " +
+                          "Aborting processing of this facility.")
+        raise RuntimeError("No discrete receptors")
+
+    # Which location type is being used? If lat/lon, convert to UTM. Otherwise, just copy over
+    # the relevant values.
+    ltype = modelblks.iloc[0]['location_type']
+    if ltype == 'L':
+        modelblks[[utmn, utme]] = modelblks.apply(lambda row: UTM.ll2utm_alt(row[lat],row[lon],utmZone,hemi), 
+                                result_type="expand", axis=1)
+    else:
+        modelblks[[utmn, utme]] = modelblks.apply(lambda row: self.copyUTMColumns(row[lat],row[lon]), 
+                                result_type="expand", axis=1)
+
+    # Set utmzone as the common zone
+    modelblks[utmz] = utmZone
+
+    #coerce hill and elevation into floats
+    modelblks[hill] = pd.to_numeric(modelblks[hill], errors='coerce').fillna(0)
+    modelblks[elev] = pd.to_numeric(modelblks[elev], errors='coerce').fillna(0)
+
+    # Compute bearing (angle) from the center of the facility to each receptor
+    modelblks['angle'] = modelblks.apply(lambda row: bearing(row[utme],row[utmn],cenx,ceny), axis=1)
+
+    # No urban pop value for alternate receptors
+    modelblks['urban_pop'] = 0
+            
+    # Split modelblks into inner and outer block receptors
+    innerblks, outerblks = in_box_NonCensus(modelblks, sourcelocs, modeldist, maxdist, overlap_dist, model)
+
+#        Logger.log("OUTERBLOCKS", outerblks, False)
+
+    # convert utme, utmn, utmz, and population to appropriate numeric types
+    innerblks[utme] = innerblks[utme].astype(np.float64)
+    innerblks[utmn] = innerblks[utmn].astype(np.float64)
+    innerblks[utmz] = innerblks[utmz].astype(int)
+    innerblks[population] = pd.to_numeric(innerblks[population], errors='coerce').astype(int)
+    
+    if not outerblks.empty:
+        outerblks[utme] = outerblks[utme].astype(np.float64)
+        outerblks[utmn] = outerblks[utmn].astype(np.float64)
+        outerblks[utmz] = outerblks[utmz].astype(int)
+        outerblks[population] = pd.to_numeric(outerblks[population], errors='coerce').astype(int)
+
+    return innerblks, outerblks
 
 
 
