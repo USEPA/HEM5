@@ -16,6 +16,29 @@ distance = 'distance';
 angle = 'angle';
 
 
+#%%
+def haversineDistance(blkcoors, faclon, faclat):
+    """
+    Calculate the great circle distance in kilometers between two points 
+    on the earth (specified in decimal degrees)
+    blkcoors - numpy array of census block coordinates (lon, lat)
+    faclon - longitude of facility center
+    faclat - latitude of facility center
+    """
+    # convert decimal degrees to radians
+    blkcoors_rad = np.deg2rad(blkcoors)
+    faclon_rad = np.deg2rad(faclon)
+    faclat_rad = np.deg2rad(faclat)
+#    lon1, lat1, lon2, lat2 = map(np.deg2rad, [lon1, lat1, lon2, lat2])
+    
+    # haversine formula 
+    dlon = blkcoors_rad[:,0] - faclon_rad 
+    dlat = blkcoors_rad[:,1] - faclat_rad 
+    a = np.sin(dlat/2)**2 + np.cos(blkcoors_rad[:,1]) * np.cos(faclat) * np.sin(dlon/2)**2
+    c = 2 * np.arcsin(np.sqrt(a)) 
+    r = 6371 # Radius of earth in kilometers. Use 3956 for miles. Determines return value units.
+    return c * r        
+
 
 #%% compute a bearing from the center of a facility to a census receptor
 def bearing(utme, utmn, cenx, ceny):
@@ -401,23 +424,11 @@ def getblocks(cenx, ceny, cenlon, cenlat, utmzone, hemi, maxdist, modeldist, sou
     #combine all frames df's
     censusblks = pd.concat(frames)
 
-    #compute UTMs from lat/lon using the common zone       
-    censusblks[[utmn, utme]] = censusblks.apply(lambda row: UTM.ll2utm_alt(row[lat],row[lon],utmzone,hemi), 
-                                               result_type="expand", axis=1)
+    #compute distance from the center of the facility to each block
+    blkcoors = np.array(tuple(zip(censusblks.lon, censusblks.lat)))
+    censusblks[distance] = haversineDistance(blkcoors, cenlon, cenlat)
 
-    #set utmz as the common zone
-    censusblks[utmz] = utmzone
-    
-   
-    #coerce hill and elevation into floats
-    censusblks[hill] = pd.to_numeric(censusblks[hill], errors='coerce').fillna(0)
-    censusblks[elev] = pd.to_numeric(censusblks[elev], errors='coerce').fillna(0)
-
-    #compute distance and bearing (angle) from the center of the facility
-    censusblks[distance] = np.sqrt((cenx - censusblks.utme)**2 + (ceny - censusblks.utmn)**2)
-    censusblks[angle] = censusblks.apply(lambda row: bearing(row[utme],row[utmn],cenx,ceny), axis=1)
-
-    #subset the censusblks dataframe to blocks that are within the modeling distance of the facility 
+    #subset the censusblks dataframe to blocks that are within the max distance of the facility 
     modelblks = censusblks.query('distance <= @maxdist').copy()
         
     # Confirm the dataframe does not contain duplicates
@@ -435,6 +446,20 @@ def getblocks(cenx, ceny, cenlon, cenlat, utmzone, hemi, maxdist, modeldist, sou
 
     # Add overlap column and default to N
     modelblks[overlap] = 'N'
+
+    #compute UTMs from lat/lon using the common zone       
+    modelblks[[utmn, utme]] = modelblks.apply(lambda row: UTM.ll2utm_alt(row[lat],row[lon],utmzone,hemi), 
+                                               result_type="expand", axis=1)
+
+    #set utmz as the common zone
+    modelblks[utmz] = utmzone
+
+    # Compute the bearing (angle) from the facility center to each modeling block
+    modelblks[angle] = modelblks.apply(lambda row: bearing(row[utme],row[utmn],cenx,ceny), axis=1)
+      
+    #coerce hill and elevation into floats
+    modelblks[hill] = pd.to_numeric(modelblks[hill], errors='coerce').fillna(0)
+    modelblks[elev] = pd.to_numeric(modelblks[elev], errors='coerce').fillna(0)
     
     # Split modelblks into inner and outer block receptors
     innerblks, outerblks = in_box(modelblks, sourcelocs, modeldist, maxdist, overlap_dist, model)
