@@ -40,6 +40,16 @@ def haversineDistance(blkcoors, faclon, faclat):
     r = 6371 # Radius of earth in kilometers. Use 3956 for miles. Determines return value units.
     return c * r * 1000       
 
+def simpleUTMDistance(blkcoors, cenx, ceny):
+    """
+    Calculate the "simple" distance in meters between two points
+    on the earth (specified in UTM coordinates)
+
+    blkcoors - numpy array of census block coordinates (utme, utmn)
+    cenx - longitude of facility center
+    ceny - latitude of facility center
+    """
+    return np.sqrt((cenx - blkcoors[0])**2 + (ceny - blkcoors[1])**2)
 
 #%% compute a bearing from the center of a facility to a census receptor
 def bearing(utme, utmn, cenx, ceny):

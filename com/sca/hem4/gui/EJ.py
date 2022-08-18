@@ -575,7 +575,7 @@ class EJ(Page):
                 center_lat = maxrisk_df.iloc[0]['fac_center_latitude']
                 center_lon = maxrisk_df.iloc[0]['fac_center_longitude']
                 ceny, cenx, zone, hemi, epsg = UTM.ll2utm(center_lat, center_lon)
-                bsc_df[distance] = np.sqrt((cenx - bsc_df.utme)**2 + (ceny - bsc_df.utmn)**2)
+                bsc_df[distance] = haversineDistance(bsc_df[['lon', 'lat']], center_lon, center_lat)
                 
                 # add a rounded mir column
                 try:

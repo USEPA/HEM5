@@ -71,8 +71,6 @@ class MirHIAllReceptors(CsvWriter, InputFile):
                 bsc_df = blockSummaryChronic.createDataframe()
                 bsc_df['fac_count'] = 1
 
-                # bsc_df[distance] = np.sqrt((cenx - bsc_df.utme)**2 + (ceny - bsc_df.utmn)**2)
-
                 bsc_df[distance] = haversineDistance(bsc_df[['lon', 'lat']], center_lon, center_lat)
 
                 maxdist = self.radius
