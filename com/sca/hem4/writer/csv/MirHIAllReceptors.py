@@ -4,6 +4,7 @@ from com.sca.hem4.support.Directory import Directory
 from com.sca.hem4.writer.csv.BlockSummaryChronic import *
 from com.sca.hem4.writer.csv.BlockSummaryChronicNonCensus import BlockSummaryChronicNonCensus
 from com.sca.hem4.writer.excel.FacilityMaxRiskandHI import FacilityMaxRiskandHI
+from com.sca.hem4.CensusBlocks import haversineDistance
 from tkinter import messagebox
 
 
@@ -70,7 +71,10 @@ class MirHIAllReceptors(CsvWriter, InputFile):
                 bsc_df = blockSummaryChronic.createDataframe()
                 bsc_df['fac_count'] = 1
 
-                bsc_df[distance] = np.sqrt((cenx - bsc_df.utme)**2 + (ceny - bsc_df.utmn)**2)
+                # bsc_df[distance] = np.sqrt((cenx - bsc_df.utme)**2 + (ceny - bsc_df.utmn)**2)
+
+                bsc_df[distance] = haversineDistance(bsc_df[['lon', 'lat']], center_lon, center_lat)
+
                 maxdist = self.radius
                 bsc_df = bsc_df.query('distance <= @maxdist').copy()
                 blocksummary_df = blocksummary_df.append(bsc_df)
