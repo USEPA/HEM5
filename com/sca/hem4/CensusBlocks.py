@@ -26,6 +26,7 @@ def haversineDistance(blkcoors, faclon, faclat):
     faclon - longitude of facility center
     faclat - latitude of facility center
     """
+    
     # convert decimal degrees to radians
     blkcoors_rad = np.deg2rad(blkcoors)
     faclon_rad = np.deg2rad(faclon)

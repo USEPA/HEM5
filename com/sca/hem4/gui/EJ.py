@@ -567,15 +567,16 @@ class EJ(Page):
                 blockSummaryChronic = BlockSummaryChronic(targetDir=fac_path, facilityId=facilityId)
                 bsc_df = blockSummaryChronic.createDataframe()
 
-                # Filter out schools and monitors
-                bsc_df = bsc_df.loc[(~bsc_df[block].str.contains('S')) & (~bsc_df[block].str.contains('M'))]
+                # Filter out zero population blocks
+                bsc_df = bsc_df[bsc_df['population'] != 0]
 
                 # add a distance column
                 maxrisk_df = maxRiskAndHI_df.loc[maxRiskAndHI_df['Facil_id'] == facilityId]
                 center_lat = maxrisk_df.iloc[0]['fac_center_latitude']
                 center_lon = maxrisk_df.iloc[0]['fac_center_longitude']
                 ceny, cenx, zone, hemi, epsg = UTM.ll2utm(center_lat, center_lon)
-                bsc_df[distance] = haversineDistance(bsc_df[['lon', 'lat']], center_lon, center_lat)
+                blkcoors = np.array(tuple(zip(bsc_df.lon, bsc_df.lat)))
+                bsc_df[distance] = haversineDistance(blkcoors, center_lon, center_lat)
                 
                 # add a rounded mir column
                 try:
