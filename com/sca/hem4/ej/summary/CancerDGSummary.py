@@ -32,7 +32,8 @@ class CancerDGSummary(DGSummary):
     def get_columns(self):
         return ['', 'Total Population', 'White', 'Minority\u1D9C', 'African American', 'Native American',
                 'Other and Multiracial', 'Hispanic or Latino\u1D48', 'Age (Years)\n0-17', 'Age (Years)\n18-64',
-                'Age (Years)\n>=65', 'People Living Below the Poverty Level', 'Total Number >= 25 Years Old',
+                'Age (Years)\n>=65', 'People Living Below the Poverty Level', 'People Living Below 2x the Poverty Level',
+                'Total Number >= 25 Years Old',
                 'Number >= 25 Years Old without a High School Diploma', 'People Living in Linguistic Isolation']
 
     def get_risk_header(self):

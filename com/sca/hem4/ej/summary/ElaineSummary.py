@@ -11,7 +11,7 @@ class ElaineSummary():
         self.cancer_risk_threshold = str(cancer_risk_threshold)
         self.hi_risk_threshold = str(hi_risk_threshold)
         self.radius = str(int(radius) if radius.is_integer() else radius)
-        self.active_columns = [0, 1, 2, 3, 4, 5, 6, 7, 8, 11, 10, 13, 14]
+        self.active_columns = [0, 1, 2, 3, 4, 5, 6, 7, 8, 11, 12, 10, 13, 14]
 
     def create_summary(self, workbook, formats, national_values, state_values, county_values, values):
         worksheet = workbook.add_worksheet(name=self.get_sheet_name())
@@ -54,17 +54,18 @@ class ElaineSummary():
 
         worksheet.merge_range("C15:D15", 'Income by Percent',  formats['sub_header_3'])
         worksheet.write(15, 0, 'Below Poverty Level')
-        worksheet.write(16, 0, 'Above Poverty Level')
+        worksheet.write(16, 0, 'Below Two Times Poverty Level')
+        worksheet.write(17, 0, 'Above Poverty Level')
 
-        worksheet.merge_range("C18:D18", 'Education by Percent',  formats['sub_header_3'])
-        worksheet.write(18, 0, 'Over 25 and without a High School Diploma', formats['notes'])
-        worksheet.write(19, 0, 'Over 25 and with a High School Diploma', formats['notes'])
+        worksheet.merge_range("C19:D19", 'Education by Percent',  formats['sub_header_3'])
+        worksheet.write(19, 0, 'Over 25 and without a High School Diploma', formats['notes'])
+        worksheet.write(20, 0, 'Over 25 and with a High School Diploma', formats['notes'])
 
-        worksheet.merge_range("C21:D21", 'Linguistically Isolated by Percent', formats['sub_header_3'])
-        worksheet.write(21, 0, 'Linguistically Isolated')
+        worksheet.merge_range("C22:D22", 'Linguistically Isolated by Percent', formats['sub_header_3'])
+        worksheet.write(22, 0, 'Linguistically Isolated')
 
         # Create notes
-        worksheet.merge_range("A23:E27", self.get_notes(),  formats['notes'])
+        worksheet.merge_range("A24:E28", self.get_notes(),  formats['notes'])
 
         self.append_aggregated_data(national_values, worksheet, formats, 1)
         self.append_aggregated_data(state_values, worksheet, formats, 2)
@@ -125,25 +126,30 @@ class ElaineSummary():
         format = formats['percentage']
         worksheet.write_number(15, startcol, value, format)
 
+        # below 2x poverty level
+        value = float(data[0][12])
+        format = formats['percentage']
+        worksheet.write_number(16, startcol, value, format)
+
         # above poverty level
         value = 1 - value if exposure_value > 0 else 0
         format = formats['percentage']
-        worksheet.write_number(16, startcol, value, format)
+        worksheet.write_number(17, startcol, value, format)
 
         # without high school diploma
         value = float(data[0][10])
         format = formats['percentage']
-        worksheet.write_number(18, startcol, value, format)
+        worksheet.write_number(19, startcol, value, format)
 
         # with high school diploma
         value = 1 - value if exposure_value > 0 else 0
         format = formats['percentage']
-        worksheet.write_number(19, startcol, value, format)
+        worksheet.write_number(20, startcol, value, format)
 
         # linguistically isolated
         value = float(data[0][13])
         format = formats['percentage']
-        worksheet.write_number(21, startcol, value, format)
+        worksheet.write_number(22, startcol, value, format)
 
     def append_data(self, values, worksheet, formats):
         data = deepcopy(values)
@@ -198,18 +204,22 @@ class ElaineSummary():
         value = float(row_totals[11])
         worksheet.write_number(15, 4, value, format)
 
+        # below 2x poverty level
+        value = float(row_totals[12])
+        worksheet.write_number(16, 4, value, format)
+
         # above poverty level
         value = 1 - value if exposure_value > 0 else 0
-        worksheet.write_number(16, 4, value, format)
+        worksheet.write_number(17, 4, value, format)
 
         # without high school diploma
         value = float(row_totals[10])
-        worksheet.write_number(18, 4, value, format)
+        worksheet.write_number(19, 4, value, format)
 
         # with high school diploma
         value = 1 - value if exposure_value > 0 else 0
-        worksheet.write_number(19, 4, value, format)
+        worksheet.write_number(20, 4, value, format)
 
         # linguistically isolated
         value = float(row_totals[13])
-        worksheet.write_number(21, 4, value, format)
+        worksheet.write_number(22, 4, value, format)
