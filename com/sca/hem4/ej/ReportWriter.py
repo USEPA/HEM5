@@ -55,14 +55,19 @@ class ReportWriter():
                              'CancerLinguisticIsolation': cancerLinguisticIsolationModule}
 
     def create_cancer_workbook(self):
-        filename = self.construct_filename(cancer=True)
+        filename = ReportWriter.construct_filename(self.hazard_prefix, self.facility, self.cancer_risk_threshold,
+                                                   self.hi_risk_threshold, self.output_dir, self.source_cat_prefix,
+                                                   self.radius, cancer=True)
         self.workbook = xlsxwriter.Workbook(filename)
         self.formats = self.create_formats(self.workbook)
 
     def create_toshi_workbook(self, prefix, name):
         self.hazard_prefix = prefix
         self.hazard_name = name
-        filename = self.construct_filename(cancer=False)
+        filename = ReportWriter.construct_filename(self.hazard_prefix, self.facility, self.cancer_risk_threshold,
+                                                   self.hi_risk_threshold, self.output_dir, self.source_cat_prefix,
+                                                   self.radius, cancer=False)
+
         self.workbook = xlsxwriter.Workbook(filename)
         self.formats = self.create_formats(self.workbook)
 
@@ -133,23 +138,45 @@ class ReportWriter():
 
         return formats
 
-    def construct_filename(self, cancer=True):
+    @staticmethod
+    def construct_filename(hazard_prefix=None, facility=None, cancer_risk_threshold=None, hi_risk_threshold=None,
+                           output_dir=None, source_cat_prefix=None, radius=None, cancer=True):
         # Test_50_km_1_EJ_Neur_demo_tables_date.xlsx
 
-        hazard_type = 'EJ_Cancer' if cancer else 'EJ_' + self.hazard_prefix
+        hazard_type = 'EJ_Cancer' if cancer else 'EJ_' + hazard_prefix
         date_string = datetime.datetime.now().strftime("%m-%d-%Y-%H-%M")
-        facility_name = '' if self.facility is None else self.facility + '_'
-        risk = str(self.cancer_risk_threshold) if cancer else str(self.hi_risk_threshold)
-        return os.path.join(self.output_dir, self.source_cat_prefix + '_' + facility_name + str(int(self.radius)) +
+        facility_name = '' if facility is None else facility + '_'
+        risk = str(cancer_risk_threshold) if cancer else str(hi_risk_threshold)
+        return os.path.join(output_dir, source_cat_prefix + '_' + facility_name + str(int(radius)) +
                             '_km_' + risk + '_' + hazard_type + '_demo_tables_' + date_string + '.xlsx')
 
-    def construct_facility_summary_filename(self, cancer=True, hazard_prefix=None):
+    @staticmethod
+    def construct_facility_summary_filename(hazard_prefix=None, facility=None,
+                                            output_dir=None, source_cat_prefix=None, radius=None, cancer=True):
         hazard_type = 'Cancer_' if cancer else hazard_prefix + '_'
         date_string = datetime.datetime.now().strftime("%m-%d-%Y-%H-%M")
-        facility_name = '' if self.facility is None else self.facility + '_'
+        facility_name = '' if facility is None else facility + '_'
 
-        return os.path.join(self.output_dir, self.source_cat_prefix + '_' + facility_name + 'EJ-Summary_' +
-                            str(int(self.radius)) + '_km_' + hazard_type + date_string + '.xlsx')
+        return os.path.join(output_dir, source_cat_prefix + '_' + facility_name + 'EJ-Summary_' +
+                            str(int(radius)) + '_km_' + hazard_type + date_string + '.xlsx')
+
+    # def construct_filename(self, cancer=True):
+    #     # Test_50_km_1_EJ_Neur_demo_tables_date.xlsx
+    #
+    #     hazard_type = 'EJ_Cancer' if cancer else 'EJ_' + self.hazard_prefix
+    #     date_string = datetime.datetime.now().strftime("%m-%d-%Y-%H-%M")
+    #     facility_name = '' if self.facility is None else self.facility + '_'
+    #     risk = str(self.cancer_risk_threshold) if cancer else str(self.hi_risk_threshold)
+    #     return os.path.join(self.output_dir, self.source_cat_prefix + '_' + facility_name + str(int(self.radius)) +
+    #                         '_km_' + risk + '_' + hazard_type + '_demo_tables_' + date_string + '.xlsx')
+
+    # def construct_facility_summary_filename(self, cancer=True, hazard_prefix=None):
+    #     hazard_type = 'Cancer_' if cancer else hazard_prefix + '_'
+    #     date_string = datetime.datetime.now().strftime("%m-%d-%Y-%H-%M")
+    #     facility_name = '' if self.facility is None else self.facility + '_'
+    #
+    #     return os.path.join(self.output_dir, self.source_cat_prefix + '_' + facility_name + 'EJ-Summary_' +
+    #                         str(int(self.radius)) + '_km_' + hazard_type + date_string + '.xlsx')
 
     def create_cancer_summaries(self, national_values, state_values, county_values, values, max_risk):
         dg_summary = CancerDGSummary(radius=self.radius, source_category=self.source_cat, facility=self.facility)
@@ -206,14 +233,20 @@ class ReportWriter():
             workbooks = []
 
             if cancer_selected:
-                cancer_filename = self.construct_facility_summary_filename(cancer=True)
+                cancer_filename =\
+                    ReportWriter.construct_facility_summary_filename(None, self.facility,
+                                                                     self.output_dir, self.source_cat_prefix,
+                                                                     self.radius, cancer=True)
                 new_workbook = xlsxwriter.Workbook(cancer_filename)
                 self.create_formats(new_workbook)
                 workbooks.append(new_workbook)
 
             if not cancer_selected:
                 for toshi in toshis:
-                    toshi_filename = self.construct_facility_summary_filename(cancer=False, hazard_prefix=toshi)
+                    toshi_filename =\
+                        self.construct_facility_summary_filename(toshi, self.facility,
+                                                                 self.output_dir, self.source_cat_prefix,
+                                                                 self.radius, cancer=False)
                     new_workbook = xlsxwriter.Workbook(toshi_filename)
                     self.create_formats(new_workbook)
                     workbooks.append(new_workbook)

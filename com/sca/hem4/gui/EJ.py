@@ -184,7 +184,15 @@ class EJ(Page):
         self.fullpath = tk.filedialog.askdirectory()
         if not self.fullpath:
             return
-        
+
+        # Issue a warning if the path chosen is long. This can cause problems with the
+        # Windows path length limit of 260 characters.
+        if len(self.fullpath) > 150:
+            messagebox.showinfo('Path length warning',
+                                'The folder selected for a Community Assessment is deeply nested or contains ' +
+                                'long names. Consider using a different path to avoid unexpected behavior that ' +
+                                'arises from exceeding the Windows path length limit of 260 characters.')
+
         # Make sure the folder selected is not for an Alternate Receptor run group.
         # EJ cannot be run on that because there is no census block id to link to.
         altrecfinder = AltRecAwareSummary()
@@ -535,15 +543,15 @@ class EJ(Page):
             # Note the km to m conversion here!
             maxdist = config["radius"] * 1000
 
-            filtered_mir_hi_df = self.all_receptors_df.query('distance <= @maxdist').copy()
-            Logger.logMessage("Filtered MIR HI All Receptors dataset (radius = " + str(maxdist) + ") contains " +
-                              str(len(filtered_mir_hi_df)) + " records.")
-
-            # Infer which TOSHIs to include from the filtered all receptors file
-            # should be of this form: {'Deve':'Developmental', 'Neur':'Neurological', ...}
-            toshis = {} if cancer_selected else self.choose_toshis(filtered_mir_hi_df)
-
             try:
+                filtered_mir_hi_df = self.all_receptors_df.query('distance <= @maxdist').copy()
+                Logger.logMessage("Filtered MIR HI All Receptors dataset (radius = " + str(maxdist) + ") contains " +
+                                  str(len(filtered_mir_hi_df)) + " records.")
+
+                # Infer which TOSHIs to include from the filtered all receptors file
+                # should be of this form: {'Deve':'Developmental', 'Neur':'Neurological', ...}
+                toshis = {} if cancer_selected else self.choose_toshis(filtered_mir_hi_df)
+
                 ej = EnvironmentalJustice(mir_rec_df=filtered_mir_hi_df, acs_df=self.acs_df, levels_df=self.levels_df,
                                           outputdir=output_dir, source_cat_name=self.category_name.get_text_value(),
                                           source_cat_prefix=self.category_prefix.get_text_value(),
@@ -561,39 +569,36 @@ class EJ(Page):
             for facilityId in facilities:
                 Logger.logMessage(facilityId + "...")
 
-                fac_path = os.path.join(self.fullpath, facilityId)
+                try:
+                    fac_path = os.path.join(self.fullpath, facilityId)
 
-                # Use the Block Summary Chronic file instead of the MIR HI All receptors files to obtain risk values
-                blockSummaryChronic = BlockSummaryChronic(targetDir=fac_path, facilityId=facilityId)
-                bsc_df = blockSummaryChronic.createDataframe()
+                    # Use the Block Summary Chronic file instead of the MIR HI All receptors files to obtain risk values
+                    blockSummaryChronic = BlockSummaryChronic(targetDir=fac_path, facilityId=facilityId)
+                    bsc_df = blockSummaryChronic.createDataframe()
 
-                # Filter out zero population blocks
-                bsc_df = bsc_df[bsc_df['population'] != 0]
+                    # Filter out zero population blocks
+                    bsc_df = bsc_df[bsc_df['population'] != 0]
 
-                # add a distance column
-                maxrisk_df = maxRiskAndHI_df.loc[maxRiskAndHI_df['Facil_id'] == facilityId]
-                center_lat = maxrisk_df.iloc[0]['fac_center_latitude']
-                center_lon = maxrisk_df.iloc[0]['fac_center_longitude']
-                ceny, cenx, zone, hemi, epsg = UTM.ll2utm(center_lat, center_lon)
-                blkcoors = np.array(tuple(zip(bsc_df.lon, bsc_df.lat)))
-                bsc_df[distance] = haversineDistance(blkcoors, center_lon, center_lat)
+                    # add a distance column
+                    maxrisk_df = maxRiskAndHI_df.loc[maxRiskAndHI_df['Facil_id'] == facilityId]
+                    center_lat = maxrisk_df.iloc[0]['fac_center_latitude']
+                    center_lon = maxrisk_df.iloc[0]['fac_center_longitude']
+                    ceny, cenx, zone, hemi, epsg = UTM.ll2utm(center_lat, center_lon)
+                    blkcoors = np.array(tuple(zip(bsc_df.lon, bsc_df.lat)))
+                    bsc_df[distance] = haversineDistance(blkcoors, center_lon, center_lat)
                 
-                # add a rounded mir column
-                try:
+                    # add a rounded mir column
                     bsc_df['mir_rounded'] = bsc_df['mir'].apply(DataModel.round_to_sigfig, 1)
-                except BaseException as e:
-                    Logger.logMessage(e)
 
-                filtered_bsc_df = bsc_df.query('distance <= @maxdist').copy()
-                Logger.logMessage("Filtered BlockSummaryChronic dataset (radius = " + str(maxdist) + ") contains " +
-                                  str(len(filtered_bsc_df)) + " records.")
+                    filtered_bsc_df = bsc_df.query('distance <= @maxdist').copy()
+                    Logger.logMessage("Filtered BlockSummaryChronic dataset (radius = " + str(maxdist) + ") contains " +
+                                      str(len(filtered_bsc_df)) + " records.")
 
-                fac_output_dir = os.path.join(output_dir, facilityId)
-                if not (os.path.exists(fac_output_dir) or os.path.isdir(fac_output_dir)):
-                    Logger.logMessage("Creating ej subdirectory for facility results...")
-                    os.mkdir(fac_output_dir)
+                    fac_output_dir = os.path.join(output_dir, facilityId)
+                    if not (os.path.exists(fac_output_dir) or os.path.isdir(fac_output_dir)):
+                        Logger.logMessage("Creating ej subdirectory for facility results...")
+                        os.mkdir(fac_output_dir)
 
-                try:
                     fac_ej = EnvironmentalJustice(facility=facilityId, mir_rec_df=filtered_bsc_df, acs_df=self.acs_df,
                                                   levels_df=self.levels_df, outputdir=fac_output_dir,
                                                   source_cat_name=self.category_name.get_text_value(),
@@ -605,8 +610,9 @@ class EJ(Page):
                     # We will create -either- the cancer or HI reports but not both.
                     fac_ej.create_cancer_reports() if cancer_selected else fac_ej.create_hi_reports()
                     fac_ej.add_facility_summaries(run_group_data_model=ej.data_model, cancer_selected=cancer_selected)
+
                 except BaseException as e:
-                    traceback.print_exc()
+                    Logger.logMessage(e)
 
             config_num += 1
 
