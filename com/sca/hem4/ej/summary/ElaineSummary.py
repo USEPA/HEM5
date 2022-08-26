@@ -210,22 +210,26 @@ class ElaineSummary():
         value = float(row_totals[11])
         worksheet.write_number(15, 4, value, format)
 
-        # below 2x poverty level
-        value = float(row_totals[12])
-        worksheet.write_number(16, 4, value, format)
-
         # above poverty level
         value = 1 - value if exposure_value > 0 else 0
+        worksheet.write_number(16, 4, value, format)
+
+        # below 2x poverty level
+        value = float(row_totals[12])
         worksheet.write_number(17, 4, value, format)
+
+        # above 2x poverty level
+        value = 1 - value if exposure_value > 0 else 0
+        worksheet.write_number(18, 4, value, format)
 
         # without high school diploma
         value = float(row_totals[10])
-        worksheet.write_number(19, 4, value, format)
+        worksheet.write_number(20, 4, value, format)
 
         # with high school diploma
         value = 1 - value if exposure_value > 0 else 0
-        worksheet.write_number(20, 4, value, format)
+        worksheet.write_number(21, 4, value, format)
 
         # linguistically isolated
         value = float(row_totals[13])
-        worksheet.write_number(22, 4, value, format)
+        worksheet.write_number(23, 4, value, format)
