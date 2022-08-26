@@ -82,9 +82,9 @@ class KCSummary():
                scope + ' - ' + self.radius + ' km Study Area Radius'
 
     def get_columns(self):
-        return ['', 'Total', 'Minority', 'African American', 'Native American',
+        return ['', 'Total', 'People of Color', 'African American', 'Native American',
                 'Other and Multiracial', 'Hispanic or Latino', 'Age (Years)\n0-17', 'Age (Years)\n18-64',
-                'Age (Years)\n>=65', 'Below the Poverty Level', 'Below Two Times the Poverty Level',
+                'Age (Years)\n>=65', 'Below the Poverty Level', 'Below Twice the Poverty Level',
                 'Over 25 Without a High School Diploma', 'Linguistically Isolated']
 
     def get_sheet_name(self):

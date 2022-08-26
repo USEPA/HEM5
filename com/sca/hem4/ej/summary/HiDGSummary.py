@@ -5,7 +5,7 @@ class HiDGSummary(DGSummary):
 
     def get_table_name(self):
         return 'C-6. Distribution of Hazard Indices for Racial and Ethnic Groups, Age Groups, Adults without a ' + \
-               'High School Diploma, People Living in Households Below the Poverty Level, and People Living in ' + \
+               'High School Diploma, People Living in Low Income Households, and People Living in ' + \
                'Linguistic Isolation - ' + self.radius + ' km Study Area Radius'
 
     def get_notes(self):
@@ -15,7 +15,7 @@ class HiDGSummary(DGSummary):
                'facility.\nDistributions by race, ethnicity, age, education, income and linguistic isolation are based on ' + \
                'demographic information at the census block group level. ' + self.hazard_name + ' hazard indices from ' + \
                self.source_category + ' emissions are modeled at the census block level.\n' + \
-               '\u1D47The minority population includes people identifying as African American, Native American, Other ' + \
+               '\u1D47The People of Color population includes people identifying as African American, Native American, Other ' + \
                'and Multiracial, or Hispanic/Latino. Measures are taken to avoid double counting of people identifying ' + \
                'as both Hispanic/Latino and a racial minority.\n' + \
                '\u1D9CIn order to avoid double counting, the "Hispanic or Latino" category is treated as a distinct ' + \

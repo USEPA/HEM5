@@ -472,11 +472,11 @@ class EJ(Page):
         Logger.logMessage("Loading ACS data...")
         try:
             if self.acs_df is None:
-                acs = ACSDataset(path="resources/acs.xlsx")
+                acs = ACSDataset(path="resources/acs.csv")
                 self.acs_df = acs.dataframe
 
             if self.levels_df is None:
-                levels = ACSCountyTract(path="resources/acs-levels.xlsx")
+                levels = ACSCountyTract(path="resources/acs-levels.csv")
                 self.levels_df = levels.dataframe
         except FileNotFoundError:
             messagebox.showinfo("Missing files",

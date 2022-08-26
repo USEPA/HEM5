@@ -41,12 +41,12 @@ class ElaineSummary():
         worksheet.write(4, 4, 'Source Category' if self.facility is None else 'Facility', formats['sub_header_3'])
         worksheet.write(5, 0, 'Total Population')
 
-        worksheet.merge_range("C7:D7", 'White and Minority by Percent',  formats['sub_header_3'])
+        worksheet.merge_range("C7:D7", 'White and People of Color by Percent',  formats['sub_header_3'])
 
         worksheet.write(7, 0, 'White')
-        worksheet.write(8, 0, 'Minority')
+        worksheet.write(8, 0, 'People of Color')
 
-        worksheet.merge_range("C10:D10", 'Minority by Percent',  formats['sub_header_3'])
+        worksheet.merge_range("C10:D10", 'People of Color by Percent',  formats['sub_header_3'])
         worksheet.write(10, 0, 'African American')
         worksheet.write(11, 0, 'Native American')
         worksheet.write(12, 0, 'Other and Multiracial')
@@ -54,18 +54,19 @@ class ElaineSummary():
 
         worksheet.merge_range("C15:D15", 'Income by Percent',  formats['sub_header_3'])
         worksheet.write(15, 0, 'Below Poverty Level')
-        worksheet.write(16, 0, 'Below Two Times Poverty Level')
-        worksheet.write(17, 0, 'Above Poverty Level')
+        worksheet.write(16, 0, 'Above Poverty Level')
+        worksheet.write(17, 0, 'Below Twice Poverty Level')
+        worksheet.write(18, 0, 'Above Twice Poverty Level')
 
-        worksheet.merge_range("C19:D19", 'Education by Percent',  formats['sub_header_3'])
-        worksheet.write(19, 0, 'Over 25 and without a High School Diploma', formats['notes'])
-        worksheet.write(20, 0, 'Over 25 and with a High School Diploma', formats['notes'])
+        worksheet.merge_range("C20:D20", 'Education by Percent',  formats['sub_header_3'])
+        worksheet.write(20, 0, 'Over 25 and without a High School Diploma', formats['notes'])
+        worksheet.write(21, 0, 'Over 25 and with a High School Diploma', formats['notes'])
 
-        worksheet.merge_range("C22:D22", 'Linguistically Isolated by Percent', formats['sub_header_3'])
-        worksheet.write(22, 0, 'Linguistically Isolated')
+        worksheet.merge_range("C23:D23", 'Linguistically Isolated by Percent', formats['sub_header_3'])
+        worksheet.write(23, 0, 'Linguistically Isolated')
 
         # Create notes
-        worksheet.merge_range("A24:E28", self.get_notes(),  formats['notes'])
+        worksheet.merge_range("A25:E29", self.get_notes(),  formats['notes'])
 
         self.append_aggregated_data(national_values, worksheet, formats, 1)
         self.append_aggregated_data(state_values, worksheet, formats, 2)
@@ -126,30 +127,35 @@ class ElaineSummary():
         format = formats['percentage']
         worksheet.write_number(15, startcol, value, format)
 
-        # below 2x poverty level
-        value = float(data[0][12])
-        format = formats['percentage']
-        worksheet.write_number(16, startcol, value, format)
-
         # above poverty level
         value = 1 - value if exposure_value > 0 else 0
         format = formats['percentage']
+        worksheet.write_number(16, startcol, value, format)
+
+        # below 2x poverty level
+        value = float(data[0][12])
+        format = formats['percentage']
         worksheet.write_number(17, startcol, value, format)
+
+        # above 2x poverty level
+        value = 1 - value if exposure_value > 0 else 0
+        format = formats['percentage']
+        worksheet.write_number(18, startcol, value, format)
 
         # without high school diploma
         value = float(data[0][10])
         format = formats['percentage']
-        worksheet.write_number(19, startcol, value, format)
+        worksheet.write_number(20, startcol, value, format)
 
         # with high school diploma
         value = 1 - value if exposure_value > 0 else 0
         format = formats['percentage']
-        worksheet.write_number(20, startcol, value, format)
+        worksheet.write_number(21, startcol, value, format)
 
         # linguistically isolated
         value = float(data[0][13])
         format = formats['percentage']
-        worksheet.write_number(22, startcol, value, format)
+        worksheet.write_number(23, startcol, value, format)
 
     def append_data(self, values, worksheet, formats):
         data = deepcopy(values)

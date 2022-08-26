@@ -15,19 +15,20 @@ class ACSCountyTract:
         self.log = []
         self.numericColumns = []
         self.strColumns = []
-        self.skiprows = 0
+        self.skiprows = 1
 
         if createDataframe:
             self.createDataframe()
 
-    # Read values in from a source .xls(x) file. Note that we initially read everything in as a string,
+    # Read values in from a source .csv file. Note that we initially read everything in as a string,
     # and then convert columns which have been specified as numeric to a float64. That way, all empty
     # values in the resultant dataframe become NaN values. All values will either be strings or float64s.
     def readFromPath(self, colnames):
         with open(self.path, "rb") as f:
 
             try:
-                df = pd.read_excel(f, skiprows=self.skiprows, names=colnames, dtype=str, na_values=[''], keep_default_na=False)
+                df = pd.read_csv(f, skiprows=self.skiprows, names=colnames, dtype=str, 
+                                      na_values=[''], keep_default_na=False)
 
             except BaseException as e:
 

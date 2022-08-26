@@ -15,7 +15,7 @@ class ACSDataset:
         self.log = []
         self.numericColumns = []
         self.strColumns = []
-        self.skiprows = 0
+        self.skiprows = 1
 
         if createDataframe:
             self.createDataframe()
@@ -27,7 +27,8 @@ class ACSDataset:
         with open(self.path, "rb") as f:
 
             try:
-                df = pd.read_excel(f, skiprows=self.skiprows, names=colnames, dtype=str, na_values=[''], keep_default_na=False)
+                df = pd.read_csv(f, skiprows=self.skiprows, names=colnames, dtype=str, 
+                                      na_values=[''], keep_default_na=False)
 
             except BaseException as e:
 
