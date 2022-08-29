@@ -33,6 +33,7 @@ class KCSummary():
         worksheet.set_column("C:C", 16)
         worksheet.set_column("G:G", 14)
         worksheet.set_column("N:N", 14)
+        worksheet.set_column("O:O", 12)
         worksheet.set_row(0, 30)
         worksheet.set_row(2, 24)
         worksheet.set_row(3, 30)
