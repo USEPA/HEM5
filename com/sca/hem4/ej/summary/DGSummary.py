@@ -93,7 +93,7 @@ class DGSummary():
                 'Number >= 25 Years Old without a High School Diploma', 'People Living in Linguistic Isolation']
 
     def get_sheet_name(self):
-        return "DG Summary"
+        return "Proximity & Ave. Risk Summary"
 
     def append_aggregated_data(self, values, worksheet, formats, startrow):
 

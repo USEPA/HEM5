@@ -127,6 +127,9 @@ class ReportWriter():
             'valign': 'top',
             'text_wrap': 1})
 
+        formats['wrap'] = workbook.add_format({
+            'text_wrap': 1})
+
         formats['number'] = workbook.add_format({
             'num_format': '#,##0'})
 

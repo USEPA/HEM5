@@ -89,7 +89,7 @@ class KCSummary():
                 'Over 25 Without a High School Diploma', 'Linguistically Isolated']
 
     def get_sheet_name(self):
-        return "KC Summary"
+        return "Pop. At Risk Summary"
 
     def append_aggregated_data(self, values, worksheet, formats, startrow):
 
