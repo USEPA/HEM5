@@ -79,7 +79,7 @@ class EJ(Page):
         title = tk.Label(self.title_frame, text="CREATE COMMUNITY ASSESSMENT REPORTS", font=TITLE_FONT,
                          fg=MAIN_COLOR, bg=self.tab_color, anchor="w")
         title.grid(row=1, column=1, pady=2, padx=10, sticky="w")
-        subtitle = tk.Label(self.title_frame, text="Note: The Community Assessment module may be used with HEM4 runs based on U.S. Census Block receptors only.", 
+        subtitle = tk.Label(self.title_frame, text="Note: The Community Assessment module may be used with HEM4 runs based on U.S. Census Block receptors only. Demographic results are available out to the smallest radius modeled for any facility in the run group.", 
                             font=SMALL_TEXT_FONT, bg=self.tab_color, anchor="w", wraplength=600,
                             justify="left")
         subtitle.grid(row=2, column=1, pady=2, padx=10, sticky="w")

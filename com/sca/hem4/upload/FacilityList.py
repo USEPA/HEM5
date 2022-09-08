@@ -329,6 +329,10 @@ class FacilityList(InputFile):
                 for s in starts:
                     if not s.isdigit():
                         start_spec_valid = False
+                
+                # If no start hour given, assign value of 1
+                if len(starts) == 3:
+                    starts.append('1')
 
                 if len(starts) < 3 or len(starts) > 4:
                     start_spec_valid = False
@@ -359,6 +363,10 @@ class FacilityList(InputFile):
                 for e in ends:
                     if not e.isdigit():
                         end_spec_valid = False
+
+                # If no end hour given, assign value of 24
+                if len(ends) == 3:
+                    ends.append('24')
 
                 if len(ends) < 3 or len(ends) > 4:
                     end_spec_valid = False
@@ -401,5 +409,7 @@ class FacilityList(InputFile):
         return df
 
     def get_timestamp(self, components):
-        component_dt = datetime(year=int(components[0]), month=int(components[1]), day=int(components[2]))
+        # Note: hours input are 1-24 but mktime needs them to be 0-23. So subtract 1.
+        component_dt = datetime(year=int(components[0]), month=int(components[1]), 
+                                day=int(components[2]), hour=int(components[3])-1)
         return time.mktime(component_dt.timetuple())

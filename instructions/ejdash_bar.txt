@@ -1,6 +1,6 @@
 #### **The bar graph displays the results of HEM4's Community Assessment module, *and that module must be run before displaying results here.***
 #### **The Community Assessment module gives demographic estimates for scenarios that are based on distance and risk level, and the demographic groups included are:**
-* Minority
+* People of Color
 * African American (or Black)
 * Native Americans
 * Other races and multiracial
@@ -12,7 +12,7 @@
 * People living below the poverty level
 * Linguistically isolated people
 
->###### *Statistics on total population, race, ethnicity, age, education level, low household income, poverty status and linguistic isolation are obtained from the Census [American Community Survey (ACS)](https://www.census.gov/programs-surveys/acs) 5-year averages for 2015-2019.*
+>###### *Statistics on total population, race, ethnicity, age, education level, low household income, poverty status and linguistic isolation are obtained from the Census [American Community Survey (ACS)](https://www.census.gov/programs-surveys/acs) 5-year averages for 2016-2020.*
 
 ____
 ##### **The graph is interactive, and you can change several properties of it:**
