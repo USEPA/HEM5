@@ -11,7 +11,7 @@ class DGSummary():
         self.radius = str(int(radius) if radius.is_integer() else radius)
         self.source_category = source_category
         self.facility = facility
-        self.active_columns = [0, 1, 14, 2, 3, 4, 5, 6, 7, 8, 11, 9, 10, 13]
+        self.active_columns = [0, 1, 14, 2, 3, 4, 5, 6, 7, 8, 11, 12, 9, 10, 13]
 
     def create_summary(self, workbook, formats, national_values, state_values, county_values, values, hazard_name=None):
 
@@ -86,13 +86,14 @@ class DGSummary():
         self.append_data(values, worksheet, formats)
 
     def get_columns(self):
-        return ['', 'Total Population', 'White', 'Minority\u1D47', 'African American', 'Native American',
+        return ['', 'Total Population', 'White', 'People of Color\u1D47', 'African American', 'Native American',
                 'Other and Multiracial', 'Hispanic or Latino\u1D9C', 'Age (Years)\n0-17', 'Age (Years)\n18-64',
-                'Age (Years)\n>=65', 'People Living Below the Poverty Level', 'Total Number >= 25 Years Old',
+                'Age (Years)\n>=65', 'People Living Below the Poverty Level',
+                'People Living Below Twice the Poverty Level', 'Total Number >= 25 Years Old',
                 'Number >= 25 Years Old without a High School Diploma', 'People Living in Linguistic Isolation']
 
     def get_sheet_name(self):
-        return "DG Summary"
+        return "Proximity & Ave. Risk Summary"
 
     def append_aggregated_data(self, values, worksheet, formats, startrow):
 

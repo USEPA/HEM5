@@ -14,7 +14,7 @@ class CancerPoverty(WorksheetTable):
                 '50 to < 100', '100 to < 200', '200 to < 300', '>= 300']
 
     def get_table_name(self):
-        return 'Table ' + self.identifier + '-4. Distribution of Cancer Risk for People Living in Households Below Two Times ' + \
+        return 'Table ' + self.identifier + '-4. Distribution of Cancer Risk for People Living in Households Below Twice ' + \
                'the Poverty Level and Below the Poverty Level - ' + self.radius + ' km Study Area Radius'
 
     def get_sub_header_1(self):
@@ -41,7 +41,7 @@ class CancerPoverty(WorksheetTable):
         return 'Table' + self.identifier + '4C'
 
     def get_columns(self):
-        return ['Total Population', 'People Living in Households with Income Below 2 Times the Poverty Level',
+        return ['Total Population', 'People Living in Households with Income Below Twice the Poverty Level',
                 'People Living in Households with Income Below the Poverty Level']
 
     def optional_format(self, worksheet):

@@ -14,7 +14,7 @@ class HiPoverty(WorksheetTable):
                 '>7 to <= 8', '>8 to <= 9', '>9 to <= 10', '> 10']
 
     def get_table_name(self):
-        return 'Table ' + self.identifier + '-4. Distribution of Hazard Indices for People Living in Households Below Two Times the ' + \
+        return 'Table ' + self.identifier + '-4. Distribution of Hazard Indices for People Living in Households Below Twice the ' + \
                 'Poverty Level and Below the Poverty Level - ' + self.radius + ' km Study Area Radius'
 
     def get_sub_header_1(self):
@@ -41,7 +41,7 @@ class HiPoverty(WorksheetTable):
         return 'Table' + self.identifier + '4NC'
 
     def get_columns(self):
-        return ['Total Population', 'People Living in Households with Income Below 2 Times the Poverty Level',
+        return ['Total Population', 'People Living in Households with Income Below Twice the Poverty Level',
                 'People Living in Households with Income Below the Poverty Level']
 
     def optional_format(self, worksheet):

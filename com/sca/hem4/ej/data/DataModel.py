@@ -1,4 +1,6 @@
 import os
+import csv
+
 from decimal import ROUND_HALF_UP, Decimal, getcontext
 
 from math import *
@@ -558,21 +560,24 @@ class DataModel():
     def write_missing_block_groups(self):
         if len(self.missing_block_groups) > 0:
             filepath = os.path.join(self.missing_block_group_path, str(int(self.radius)) +
-                                    '_km_missing_block_groups.txt')
-            Logger.logMessage("Writing missing block group file: " + str(filepath))
-
-            with open(filepath, 'w') as f:
-                for item in self.missing_block_groups:
-                    f.write("%s\n" % item)
+                                    '_km_defaulted_block_groups.txt')
+            Logger.logMessage("Writing defaulted block group file: " + str(filepath))
+            
+            with open(filepath, "w") as f:
+                wr = csv.writer(f, delimiter="-")
+                wr.writerows(self.missing_block_groups)
+                
+#            with open(filepath, 'w') as f:
+#                for item in self.missing_block_groups:
+#                    f.write("%s\n" % item)
 
     def get_value(self, block_group, block_group_id, subgroup, is_pct=True):
 
         if block_group is not None:
             value = block_group[subgroup]
         else:
-            if block_group_id not in self.missing_block_groups:
-                self.missing_block_groups.append(block_group_id)
-                Logger.logMessage("Block group not found in ACS data: " + str(block_group_id))
+            if not any(block_group_id in sublist for sublist in self.missing_block_groups):
+                Logger.logMessage("Block group not found in ACS data will be defaulted: " + str(block_group_id))
 
         if block_group is None or isna(value):
             tract_id = block_group_id[:-1]
@@ -580,13 +585,25 @@ class DataModel():
             if tract_id in self.levels_dict:
                 tract = self.levels_dict[tract_id]
                 value = tract[subgroup]
+                if not any(block_group_id in sublist for sublist in self.missing_block_groups):
+                    self.missing_block_groups.append([block_group_id,'defaulted by tract'])
+            
+            elif block_group_id in self.levels_dict:
+                blkgrp = self.levels_dict[block_group_id] 
+                value = blkgrp[subgroup]
+                if not any(block_group_id in sublist for sublist in self.missing_block_groups):
+                    self.missing_block_groups.append([block_group_id,'defaulted by nearest block group'])
+        
             else:
                 county_id = block_group_id[:5]
                 if county_id in self.levels_dict:
                     county = self.levels_dict[county_id]
                     value = county[subgroup]
+                    if not any(block_group_id in sublist for sublist in self.missing_block_groups):
+                        self.missing_block_groups.append([block_group_id,'defaulted by county'])
+
                 else:
-                    Logger.logMessage("Couldn't resolve this record by either tract or county! " + block_group_id)
+                    Logger.logMessage("Couldn't resolve this record by tract, nearest block group or county! " + block_group_id)
                     return None
 
         return value / 100 if is_pct else value

@@ -13,7 +13,7 @@ class KCSummary():
         self.radius = str(int(radius) if radius.is_integer() else radius)
         self.source_category = source_category
         self.facility = facility
-        self.active_columns = [0, 14, 2, 3, 4, 5, 6, 7, 8, 11, 10, 13]
+        self.active_columns = [0, 14, 2, 3, 4, 5, 6, 7, 8, 11, 12, 10, 13]
 
     def create_summary(self, workbook, formats, national_values, state_values, county_values, values, max_value,
                        hazard_name=None):
@@ -33,6 +33,7 @@ class KCSummary():
         worksheet.set_column("C:C", 16)
         worksheet.set_column("G:G", 14)
         worksheet.set_column("N:N", 14)
+        worksheet.set_column("O:O", 12)
         worksheet.set_row(0, 30)
         worksheet.set_row(2, 24)
         worksheet.set_row(3, 30)
@@ -82,13 +83,13 @@ class KCSummary():
                scope + ' - ' + self.radius + ' km Study Area Radius'
 
     def get_columns(self):
-        return ['', 'Total', 'Minority', 'African American', 'Native American',
+        return ['', 'Total', 'People of Color', 'African American', 'Native American',
                 'Other and Multiracial', 'Hispanic or Latino', 'Age (Years)\n0-17', 'Age (Years)\n18-64',
-                'Age (Years)\n>=65', 'Below the Poverty Level', 'Over 25 Without a High School Diploma',
-                'Linguistically Isolated']
+                'Age (Years)\n>=65', 'Below the Poverty Level', 'Below Twice the Poverty Level',
+                'Over 25 Without a High School Diploma', 'Linguistically Isolated']
 
     def get_sheet_name(self):
-        return "KC Summary"
+        return "Pop. At Risk Summary"
 
     def append_aggregated_data(self, values, worksheet, formats, startrow):
 
@@ -105,7 +106,7 @@ class KCSummary():
 
         startcol = 2
 
-        numrows = len(slice)
+        numrows = len(slice) - 1
         numcols = len(slice[0])
         for row in range(0, numrows):
             for col in range(0, numcols):

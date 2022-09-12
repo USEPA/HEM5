@@ -38,7 +38,7 @@ class Start(Page):
         title1 = tk.Label(self.s1, text="HEM4", font=TITLE_FONT, bg=self.tab_color)
         title1.grid(row=0, column=2, pady=20)
 
-        title2 = tk.Label(self.s1, text="Version 4.1 ", font=TEXT_FONT, bg=self.tab_color)
+        title2 = tk.Label(self.s1, text="Version 4.2 ", font=TEXT_FONT, bg=self.tab_color)
         title2.grid(row=1, column=2, pady=20)
 
         #some information

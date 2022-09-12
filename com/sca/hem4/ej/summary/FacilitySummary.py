@@ -15,7 +15,7 @@ class FacilitySummary():
         self.hi_risk_threshold = str(hi_risk_threshold)
         self.radius = str(int(radius) if radius.is_integer() else radius)
         self.source_category = source_category
-        self.active_columns = [0, 14, 2, 3, 4, 5, 6, 7, 8, 11, 10, 13]
+        self.active_columns = [0, 14, 2, 3, 4, 5, 6, 7, 8, 11, 12, 10, 13]
 
     @staticmethod
     def init_sheets():
@@ -112,10 +112,10 @@ class FacilitySummary():
         return ''
 
     def get_columns(self):
-        return ['', 'Total', 'Minority', 'African American', 'Native American',
+        return ['', 'Total', 'People of Color', 'African American', 'Native American',
                 'Other and Multiracial', 'Hispanic or Latino', 'Age (Years)\n0-17', 'Age (Years)\n18-64',
-                'Age (Years)\n>=65', 'Below the Poverty Level', 'Over 25 Without a High School Diploma',
-                'Linguistically Isolated']
+                'Age (Years)\n>=65', 'Below the Poverty Level', 'Below Twice the Poverty Level',
+                'Over 25 Without a High School Diploma', 'Linguistically Isolated']
 
     def get_sheet_name(self):
         return "Facility Summary"

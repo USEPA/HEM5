@@ -11,7 +11,7 @@ class CancerKCSummary(KCSummary):
 
     def get_notes(self):
         return 'Notes:\n\n' + \
-               'The minority population is the total population minus the white population.\n' + \
+               'The People of Color population is the total population minus the White population.\n' + \
                'Source Category population figures are for the population residing within ' + self.radius + ' km from the center of ' + \
                'the modeled facilities with cancer risk greater than or equal to 1 in 1 million.'
 

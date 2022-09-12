@@ -163,14 +163,15 @@ class EJdash():
                         
             
         rungroup = file_list[0].split('_EJ-Summary_')[0]
-        demogroups = ['Minority', 'African American','Native American', 'Other and Multiracial', 'Hispanic or Latino',
-                      'Age 0-17', 'Age 18-64', 'Age >=65','Below the Poverty Level', 'Over 25 Without a High School Diploma',
+        demogroups = ['People of Color', 'African American','Native American', 'Other and Multiracial', 'Hispanic or Latino',
+                      'Age 0-17', 'Age 18-64', 'Age >=65','Below the Poverty Level', 
+                      'Below Two Times the Poverty Level', 'Over 25 Without a High School Diploma',
                       'Linguistically Isolated']
         
         ### Go through the files (and sheets within files) to get all the scenarios run in the Community Assessment module
         scenarios = pd.DataFrame(columns = ['Metric', 'Distance', 'Risk_Level', 'Filename'])
         scen_ind = 0
-        
+                
         for file in file_list:
                 tail = file.split('_EJ-Summary_')[1]
                 extension = tail.split('_')[-1]
@@ -192,13 +193,14 @@ class EJdash():
         metrics = scenarios['Metric'].unique()
         
         ### Create a dataframe of the national, state, and county averages
-        compnames = ['Average', 'Total Pop', 'Minority', 'African American','Native American',
+        compnames = ['Average', 'Total Pop', 'People of Color', 'African American','Native American',
                      'Other and Multiracial', 'Hispanic or Latino','Age 0-17', 'Age 18-64', 'Age >=65',
-                     'Below the Poverty Level', 'Over 25 Without a High School Diploma','Linguistically Isolated']
+                     'Below the Poverty Level', 'Below Two Times the Poverty Level',
+                     'Over 25 Without a High School Diploma','Linguistically Isolated']
         compdf = pd.DataFrame()
         
         for scen in scenarios.itertuples():
-            temp = pd.read_excel(scen.Filename, skiprows = [0,1], usecols = [0, 2,3,4,5,6,7,8,9,10,11,12,13],
+            temp = pd.read_excel(scen.Filename, skiprows = [0,1], usecols = [0, 2,3,4,5,6,7,8,9,10,11,12,13,14],
                                  names = compnames
                                  )
             compdata = temp.loc[temp['Average'].isin(['Nationwide', 'State', 'County'])]
@@ -208,9 +210,10 @@ class EJdash():
         compdf.drop_duplicates(inplace = True)
         
         ### Create a dataframe of the facility data  
-        mainnames = ['Facility', 'RiskorProx', 'Total Pop', 'Minority', 'African American','Native American',
+        mainnames = ['Facility', 'RiskorProx', 'Total Pop', 'People of Color', 'African American','Native American',
                      'Other and Multiracial', 'Hispanic or Latino','Age 0-17', 'Age 18-64', 'Age >=65',
-                     'Below the Poverty Level', 'Over 25 Without a High School Diploma','Linguistically Isolated']        
+                     'Below the Poverty Level', 'Below Two Times the Poverty Level',
+                     'Over 25 Without a High School Diploma','Linguistically Isolated']        
         maindf = pd.DataFrame()
         noprox = scenarios[~scenarios['Risk_Level'].isin(['Proximity Only'])]
         
@@ -316,7 +319,7 @@ class EJdash():
                                                           options=[{"label": i, "value": i} for i in demogroups],
                                                           multi=False,
                                                           clearable=False,
-                                                          value = 'Minority',
+                                                          value = 'People of Color',
                                                           placeholder= 'Select a Demographic Group',
                                                           ),
                                             ], className = 'two columns'),
@@ -777,7 +780,7 @@ class EJdash():
             
                         counter += 1    
                     tabledf = tabledf.append(tabletemp, ignore_index = True)
-                    
+                
                 if radval == 'num':
                     prefix = 'Number'
                 else:
@@ -803,7 +806,7 @@ class EJdash():
                                 {"name": ['Scenario', 'Risk Level'], "id": 'Risk Level', 'presentation': 'dropdown'},
                                 {"name": ['Scenario', 'Total Facility Count'], "id": 'Total Facility Count'},
                                 {"name": ['', 'Average'], "id": 'Average', 'presentation': 'dropdown'},
-                                {"name": [grphead, 'Minority'], "id": 'Minority'},
+                                {"name": [grphead, 'People of Color'], "id": 'People of Color'},
                                 {"name": [grphead, 'African American'], "id": 'African American'},
                                 {"name": [grphead, 'Native American'], "id": 'Native American'},
                                 {"name": [grphead, 'Other and Multiracial'], "id": 'Other and Multiracial'},
@@ -812,6 +815,7 @@ class EJdash():
                                 {"name": [grphead, 'Age 18-64'], "id": 'Age 18-64'},
                                 {"name": [grphead, 'Age >=65'], "id": 'Age >=65'},
                                 {"name": [grphead, 'Below the Poverty Level'], "id": 'Below the Poverty Level'},
+                                {"name": [grphead, 'Below Two Times the Poverty Level'], "id": 'Below Two Times the Poverty Level'},
                                 {"name": [grphead, 'Over 25 Without a High School Diploma',], "id": 'Over 25 Without a High School Diploma',},
                                 {"name": [grphead, 'Linguistically Isolated'], "id": 'Linguistically Isolated'}
                                 
