@@ -389,9 +389,7 @@ def getblocks(cenx, ceny, cenlon, cenlat, utmzone, hemi, maxdist, modeldist, sou
         
     # convert max outer ring distance from meters to degrees latitude
     maxdist_deg = maxdist*39.36/36/2000/60
-
-    ##%% census key look-up
-
+    
     #load census key into data frame
     dtype_dict = '{"ELEV_MAX":float,"FILE_NAME":object,"FIPS":object,"LAT_MAX":float,"LAT_MIN":float,"LON_MAX":float,"LON_MIN":float,"MIN_REC":int,"NO":int,"YEAR":int}'
     census_key = read_json_file("census/census_key.json", dtype_dict)
@@ -472,7 +470,21 @@ def getblocks(cenx, ceny, cenlon, cenlat, utmzone, hemi, maxdist, modeldist, sou
     #coerce hill and elevation into floats
     modelblks[hill] = pd.to_numeric(modelblks[hill], errors='coerce').fillna(0)
     modelblks[elev] = pd.to_numeric(modelblks[elev], errors='coerce').fillna(0)
-    
+        
+    # If the user has not selected Urban or Rural dispersion, then compute default
+    # by taking all blocks within 3km of facility and compute the population density.
+    # If > 750 people/square km, then urban. Compute urban population by summing all
+    # block population within 20km.
+    if model.facops.iloc[0]['rural_urban'] == '':
+        pop3km_sum = modelblks[modelblks['distance'] <= 3000]['population'].sum()
+        if pop3km_sum/28.27433388 > 750:
+            pop20km_sum = modelblks[modelblks['distance'] <= 20000]['population'].sum()
+            model.facops['rural_urban'] = 'U'
+            model.facops['urban_pop'] = pop20km_sum
+        else:
+            model.facops['rural_urban'] = 'R'
+            model.facops['urban_pop'] = 0
+        
     # Split modelblks into inner and outer block receptors
     innerblks, outerblks = in_box(modelblks, sourcelocs, modeldist, maxdist, overlap_dist, model)
         
@@ -490,8 +502,7 @@ def getblocks(cenx, ceny, cenlon, cenlat, utmzone, hemi, maxdist, modeldist, sou
         outerblks[utmz] = outerblks[utmz].astype(int)
         outerblks[population] = pd.to_numeric(outerblks[population], errors='coerce').astype(int)
         outerblks[rec_type] = 'C'
-        
-        
+    
     return innerblks, outerblks
 
 

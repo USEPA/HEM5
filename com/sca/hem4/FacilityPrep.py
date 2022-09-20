@@ -234,8 +234,10 @@ class FacilityPrep():
 
         else:
             
-            self.innerblks, self.outerblks = getblocks(cenx, ceny, cenlon, cenlat, facutmzonenum, hemi, maxdist, 
-                                             modeldist, sourcelocs, op_overlap, self.model)
+            self.innerblks, self.outerblks = getblocks(cenx, ceny, cenlon, cenlat, 
+                                                       facutmzonenum, hemi, maxdist, 
+                                                       modeldist, sourcelocs, op_overlap, 
+                                                       self.model)
 
         if self.innerblks.empty:
             Logger.logMessage("No discrete receptors within the max distance. Aborting processing for this facility.")
