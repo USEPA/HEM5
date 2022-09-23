@@ -461,6 +461,12 @@ def getblocks(cenx, ceny, cenlon, cenlat, utmzone, hemi, maxdist, modeldist, sou
 
     #subset the censusblks dataframe to blocks that are within the max distance of the facility 
     modelblks = censusblks.query('distance <= @maxdist').copy()
+
+    # Check again. If no blocks within max distance, then this facility cannot be modeled; skip it.
+    if len(modelblks) == 0:
+        Logger.logMessage("There are no discrete receptors within the max distance of this facility. " +
+                          "Aborting processing of this facility.")
+        raise ValueError("No discrete receptors selected within max distance")
         
     # Confirm the dataframe does not contain duplicates
     modelblksduplicates = modelblks[modelblks.duplicated(['lat', 'lon'])]
