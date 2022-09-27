@@ -1,6 +1,6 @@
 import glob
 import os
-import traceback
+import pandas as pd
 from concurrent.futures.thread import ThreadPoolExecutor
 from tkinter import messagebox
 
@@ -476,6 +476,8 @@ class EJ(Page):
     # create reports.
     def create_reports(self):
 
+        skipped_list = []
+        
         # First, load the ACS datasets needed for analysis (if they haven't already been loaded...)
         Logger.logMessage("Loading ACS data...")
         try:
@@ -571,6 +573,12 @@ class EJ(Page):
 
                 try:
                     fac_path = os.path.join(self.fullpath, facilityId)
+                    
+                    # If this facility directory is empty, skip it
+                    if len(os.listdir(fac_path)) == 0:
+                        skipped_list.append(facilityId)
+                        Logger.logMessage("Skipping facility " + facilityId + " because directory is empty.")
+                        continue 
 
                     # Use the Block Summary Chronic file instead of the MIR HI All receptors files to obtain risk values
                     blockSummaryChronic = BlockSummaryChronic(targetDir=fac_path, facilityId=facilityId)
@@ -618,6 +626,12 @@ class EJ(Page):
 
         ej.close_facility_summaries()
 
+        # Write out the list of any skipped facilities
+        if len(skipped_list) > 0:
+            skipped_path = os.path.join(self.fullpath, 'Skipped EJ facilities.xlsx')
+            skipped_df = pd.DataFrame(skipped_list, columns=['Facility ID'])
+            skipped_df.to_excel(skipped_path, index=False)
+        
         messagebox.showinfo("Community Assessment Reports Finished", "Please check the output folder for reports.")
 
         ej_directory = os.path.join(self.fullpath, "ej")
