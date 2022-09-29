@@ -59,6 +59,10 @@ class MirHIAllReceptors(CsvWriter, InputFile):
 
             try:
                 targetDir = self.output_dir + "/" + facilityId
+                
+                # Skip empty directories
+                if len(os.listdir(targetDir)) == 0:
+                    continue
 
                 maxrisk_df = maxRiskAndHI_df.loc[maxRiskAndHI_df['Facil_id'] == facilityId]
                 center_lat = maxrisk_df.iloc[0]['fac_center_latitude']

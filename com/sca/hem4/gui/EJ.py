@@ -576,7 +576,8 @@ class EJ(Page):
                     
                     # If this facility directory is empty, skip it
                     if len(os.listdir(fac_path)) == 0:
-                        skipped_list.append(facilityId)
+                        if facilityId not in skipped_list:
+                            skipped_list.append(facilityId)
                         Logger.logMessage("Skipping facility " + facilityId + " because directory is empty.")
                         continue 
 
