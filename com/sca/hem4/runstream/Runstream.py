@@ -14,6 +14,7 @@ from com.sca.hem4.support.UTM import *
 from com.sca.hem4.support.NormalRounding import *
 from com.sca.hem4.upload.EmissionsLocations import *
 from com.sca.hem4.upload.BuoyantLine import *
+from com.sca.hem4.log.Logger import Logger
 
 class Runstream():
     """
@@ -155,39 +156,24 @@ class Runstream():
         #determine alternate receptor status
         altrec = self.model.altRec_optns.get("altrec", None)
         
-        #check for user specified urban option
+        # Determine urban/rural dispersion setting
         if self.facoptn_df['rural_urban'].values[0] == 'U':
             self.urban = True
             urbanopt = "CO URBANOPT " + str(self.facoptn_df['urban_pop'].values[0]) + "\n"
             self.inp_f.write(urbanopt)
              
-        #if rural is forced, leave urban as false
+        # If rural, leave urban as false
         elif self.facoptn_df['rural_urban'].values[0] == 'R':
             
             self.urban = False
         
-        #if there is nothing, default is to determine an urban option from the census data
-        # unless alternate receptors are being used then leave urban as false
+        # If there is nothing, then leave urban as false (use rural)
         else:
-            if not altrec:
-                # Get shortest distance in innerblks and check for urban population
-                # Exclude user-supplied receptors and user receptors already in the census data
-                if not innerblks.empty:
-                    inn_wo_ur = innerblks[~innerblks['idmarplot'].str.contains('U')]
-                    closest = inn_wo_ur.nsmallest(1, 'distance')
-                    if closest['urban_pop'].values[0] > 0:
-                        self.urban = True
-                        urbanopt = "CO URBANOPT  " + str(closest['urban_pop'].values[0]) + "\n"
-                        self.inp_f.write(urbanopt)
-                        
-                else: #get shortest distance from outerblocks 
-                    out_wo_ur = outerblks[~outerblks['idmarplot'].str.contains('U')]
-                    closest = out_wo_ur.nsmallest(1, 'distance')
-                    if closest['urban_pop'].values[0] > 0:
-                        self.urban = True
-                        urbanopt = "CO URBANOPT " + str(closest['urban_pop'].values[0]) + "\n"
-                        self.inp_f.write(urbanopt)
-        
+
+            self.urban = False
+            Logger.logMessage("Urban/rural setting was not determined. " +
+                              "Using rural dispersion.")
+
         #set urban in model options
         self.model.model_optns['urban'] = self.urban
 

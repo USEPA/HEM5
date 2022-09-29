@@ -387,19 +387,24 @@ def cntyinzone(lat_min, lon_min, lat_max, lon_max, cenlat, cenlon, maxdist_deg):
 #%%
 def getblocks(cenx, ceny, cenlon, cenlat, utmzone, hemi, maxdist, modeldist, sourcelocs, overlap_dist, model):
         
-    # convert max outer ring distance from meters to degrees latitude
-    maxdist_deg = maxdist*39.36/36/2000/60
-
-    ##%% census key look-up
-
+    # Convert max outer ring distance from meters to degrees latitude
+    # Note: if user has not selected urban/rural, then defaulting happens and that requires
+    #       at least 20km for the max modeling distance. If user supplied max modeling distance
+    #       is less than 20km, then compute maxdist_deg using 20km. Blocks are subset to the real
+    #       max distance later.
+    if model.facops.iloc[0]['rural_urban'] == '' and model.facops.iloc[0]['max_dist'] < 20000:
+        maxdist_deg = 20000*39.36/36/2000/60
+    else:
+        maxdist_deg = maxdist*39.36/36/2000/60
+    
     #load census key into data frame
     dtype_dict = '{"ELEV_MAX":float,"FILE_NAME":object,"FIPS":object,"LAT_MAX":float,"LAT_MIN":float,"LON_MAX":float,"LON_MIN":float,"MIN_REC":int,"NO":int,"YEAR":int}'
     census_key = read_json_file("census/census_key.json", dtype_dict)
     census_key.columns = [x.lower() for x in census_key.columns]
 
 
-    #create selection for "inzone" and find where true in census_key dataframe
-
+    # "inzone" represents counties within the max distance modeling radius
+    # create selection for "inzone" and find where true in census_key dataframe
     census_key["inzone"] = census_key.apply(lambda row: cntyinzone(row["lat_min"], row["lon_min"], row["lat_max"], row["lon_max"], cenlat, cenlon, maxdist_deg), axis=1)
     cntyinzone_df = census_key.query('inzone == True')
     
@@ -440,8 +445,28 @@ def getblocks(cenx, ceny, cenlon, cenlat, utmzone, hemi, maxdist, modeldist, sou
     blkcoors = np.array(tuple(zip(censusblks.lon, censusblks.lat)))
     censusblks[distance] = haversineDistance(blkcoors, cenlon, cenlat)
 
+    # If the user has not selected Urban or Rural dispersion, then compute default
+    # by taking all blocks within 3km of facility and compute the population density.
+    # If > 750 people/square km, then urban. Compute urban population by summing all
+    # block population within 20km.
+    if model.facops.iloc[0]['rural_urban'] == '':
+        pop3km_sum = censusblks[censusblks['distance'] <= 3000]['population'].sum()
+        if pop3km_sum/28.27433388 > 750:
+            pop20km_sum = censusblks[censusblks['distance'] <= 20000]['population'].sum()
+            model.facops['rural_urban'] = 'U'
+            model.facops['urban_pop'] = pop20km_sum
+        else:
+            model.facops['rural_urban'] = 'R'
+            model.facops['urban_pop'] = 0
+
     #subset the censusblks dataframe to blocks that are within the max distance of the facility 
     modelblks = censusblks.query('distance <= @maxdist').copy()
+
+    # Check again. If no blocks within max distance, then this facility cannot be modeled; skip it.
+    if len(modelblks) == 0:
+        Logger.logMessage("There are no discrete receptors within the max distance of this facility. " +
+                          "Aborting processing of this facility.")
+        raise ValueError("No discrete receptors selected within max distance")
         
     # Confirm the dataframe does not contain duplicates
     modelblksduplicates = modelblks[modelblks.duplicated(['lat', 'lon'])]
@@ -473,6 +498,7 @@ def getblocks(cenx, ceny, cenlon, cenlat, utmzone, hemi, maxdist, modeldist, sou
     modelblks[hill] = pd.to_numeric(modelblks[hill], errors='coerce').fillna(0)
     modelblks[elev] = pd.to_numeric(modelblks[elev], errors='coerce').fillna(0)
     
+    
     # Split modelblks into inner and outer block receptors
     innerblks, outerblks = in_box(modelblks, sourcelocs, modeldist, maxdist, overlap_dist, model)
         
@@ -490,8 +516,7 @@ def getblocks(cenx, ceny, cenlon, cenlat, utmzone, hemi, maxdist, modeldist, sou
         outerblks[utmz] = outerblks[utmz].astype(int)
         outerblks[population] = pd.to_numeric(outerblks[population], errors='coerce').astype(int)
         outerblks[rec_type] = 'C'
-        
-        
+    
     return innerblks, outerblks
 
 
