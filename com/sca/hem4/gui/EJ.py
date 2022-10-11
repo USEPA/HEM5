@@ -76,10 +76,10 @@ class EJ(Page):
         self.titleLabel = tk.Label(self.title_frame, image=titleicon, bg=self.tab_color)
         self.titleLabel.image = titleicon # keep a reference!
         self.titleLabel.grid(row=1, column=0, padx=10, pady=1)
-        title = tk.Label(self.title_frame, text="CREATE COMMUNITY ASSESSMENT REPORTS", font=TITLE_FONT,
+        title = tk.Label(self.title_frame, text="CREATE DEMOGRAPHIC ASSESSMENT REPORTS", font=TITLE_FONT,
                          fg=MAIN_COLOR, bg=self.tab_color, anchor="w")
         title.grid(row=1, column=1, pady=2, padx=10, sticky="w")
-        subtitle = tk.Label(self.title_frame, text="Note: The Community Assessment module may be used with HEM4 runs based on U.S. Census Block receptors only. Demographic results are available out to the smallest radius modeled for any facility in the run group.", 
+        subtitle = tk.Label(self.title_frame, text="Note: The Demographic Assessment module may be used with HEM4 runs based on U.S. Census Block receptors only. Demographic results are available out to the smallest radius modeled for any facility in the run group.", 
                             font=SMALL_TEXT_FONT, bg=self.tab_color, anchor="w", wraplength=600,
                             justify="left")
         subtitle.grid(row=2, column=1, pady=2, padx=10, sticky="w")
@@ -189,7 +189,7 @@ class EJ(Page):
         # Windows path length limit of 260 characters.
         if len(self.fullpath) > 150:
             messagebox.showinfo('Path length warning',
-                                'The folder selected for a Community Assessment is deeply nested or contains ' +
+                                'The folder selected for a Demographic Assessment is deeply nested or contains ' +
                                 'long names. Consider using a different path to avoid unexpected behavior that ' +
                                 'arises from exceeding the Windows path length limit of 260 characters.')
 
@@ -198,9 +198,9 @@ class EJ(Page):
         altrecfinder = AltRecAwareSummary()
         altrec = altrecfinder.determineAltRec(self.fullpath)
         if altrec == 'Y':
-            messagebox.showinfo('Cannot run Community Assessment on this folder',
-                                'The folder selected for a Community Assessment contains HEM4 outputs that ' +
-                                'use Alternate Receptors. These cannot be used with the Community Assessment Tool.')
+            messagebox.showinfo('Cannot run Demographic Assessment on this folder',
+                                'The folder selected for a Demographic Assessment contains HEM4 outputs that ' +
+                                'use Alternate Receptors. These cannot be used with the Demographic Assessment Tool.')
             return
         
         icon["text"] = self.fullpath.split("/")[-1]
@@ -633,7 +633,7 @@ class EJ(Page):
             skipped_df = pd.DataFrame(skipped_list, columns=['Facility ID'])
             skipped_df.to_excel(skipped_path, index=False)
         
-        messagebox.showinfo("Community Assessment Reports Finished", "Please check the output folder for reports.")
+        messagebox.showinfo("Demographic Assessment Reports Finished", "Please check the output folder for reports.")
 
         ej_directory = os.path.join(self.fullpath, "ej")
         next_log_name = self.find_next_log_name(ej_directory)

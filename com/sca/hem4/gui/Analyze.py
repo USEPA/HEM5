@@ -136,7 +136,7 @@ class Analyze(Page):
         self.dashLabel.bind("<Leave>", lambda x: self.remove_config(self.button_dash, self.dashLabel, self.s6, TAB_COLOR, x))
         self.dashLabel.bind("<Button-1>", partial(self.dash_button))
 
-        title3 = tk.Label(self.s8, text="COMMUNITY ASSESSMENT OUTPUTS", font=SUBTITLE_FONT, fg=MAIN_COLOR, bg=TAB_COLOR)
+        title3 = tk.Label(self.s8, text="DEMOGRAPHIC ASSESSMENT OUTPUTS", font=SUBTITLE_FONT, fg=MAIN_COLOR, bg=TAB_COLOR)
         title3.grid(row=1, column=3, padx=40, pady=10)
 
         ejdi = PIL.Image.open('images\icons8-view-48.png').resize((30,30))
@@ -146,7 +146,7 @@ class Analyze(Page):
         self.ejdashLabel.image = ejdashicon # keep a reference!
         self.ejdashLabel.grid(row=1, column=0, padx=(80,10))
 
-        self.button_ejdash = tk.Label(self.s9, text="View community assessment outputs in web browser",
+        self.button_ejdash = tk.Label(self.s9, text="View demographic assessment outputs in web browser",
                                     font=TEXT_FONT, bg=TAB_COLOR)
         self.button_ejdash.grid(row=1, column=1)
 

@@ -114,7 +114,7 @@ class MainView(tk.Frame):
 
         #------------------------  EJ nav button --------------------------------------
         
-        self.ejLabel = tk.Label(self, text="COMMUNITY ASSESSMENT", font=TAB_FONT, bg=MAIN_COLOR, height=2, pady=2, anchor="w")
+        self.ejLabel = tk.Label(self, text="DEMOGRAPHIC ASSESSMENT", font=TAB_FONT, bg=MAIN_COLOR, height=2, pady=2, anchor="w")
         self.ejLabel.place(in_=self.container, relwidth=0.2, rely=0.21, relx=0.1)
 
         # add run icon with margin for highlight
