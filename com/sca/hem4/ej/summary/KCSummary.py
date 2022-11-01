@@ -79,7 +79,7 @@ class KCSummary():
     def get_table_name(self):
         scope = 'the ' + self.source_category + ' Source Category' if self.facility is None else \
             'Facility ' + self.facility
-        return 'Table 2. Summary of Community Assessment of ' + self.hazard_name + ' Hazard Index Results for ' + \
+        return 'Table 2. Summary of Demographic Assessment of ' + self.hazard_name + ' Hazard Index Results for ' + \
                scope + ' - ' + self.radius + ' km Study Area Radius'
 
     def get_columns(self):

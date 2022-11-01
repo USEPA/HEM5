@@ -45,14 +45,14 @@ class EJdash():
             ejdir = os.path.join(self.dir, 'ej')
             if not os.path.isdir(ejdir):
                 messagebox.showinfo("Missing ej sub-directory", "The directory chosen does not contain an ej sub-directory. Please ensure that the "+
-                                    "Community Assessment tool has been run on this directory.")
+                                    "Demographic Assessment tool has been run on this directory.")
                 return None
         else:
             return None
 
         external_stylesheets = ['https://codepen.io/chriddyp/pen/bWLwgP.css']
         app = dash.Dash(__name__, external_stylesheets=external_stylesheets, assets_folder=self.resource_path('assets'))
-        app.title = self.SCname + ' Community Assessment'
+        app.title = self.SCname + ' Demographic Assessment'
         
         mapbox_access_token = 'pk.eyJ1IjoiYnJ1enp5IiwiYSI6ImNrOTE5YmwzdDBhMXYzbW8yMjY4aWJ3eHQifQ.5tNjnlK2Y8b-U1kvfPP8FA'
         px.set_mapbox_access_token(mapbox_access_token)
@@ -168,7 +168,7 @@ class EJdash():
                       'Below Two Times the Poverty Level', 'Over 25 Without a High School Diploma',
                       'Linguistically Isolated']
         
-        ### Go through the files (and sheets within files) to get all the scenarios run in the Community Assessment module
+        ### Go through the files (and sheets within files) to get all the scenarios run in the Demographic Assessment module
         scenarios = pd.DataFrame(columns = ['Metric', 'Distance', 'Risk_Level', 'Filename'])
         scen_ind = 0
                 
@@ -273,7 +273,7 @@ class EJdash():
         app.layout = html.Div([
             
                 html.Div([
-                        html.H1("Community Assessment for HEM4 Run Group " + rungroup, style={'text-align':'center', 'font-weight': 'bold'}),
+                        html.H1("Demographic Assessment for HEM4 Run Group " + rungroup, style={'text-align':'center', 'font-weight': 'bold'}),
                         ], className = 'row'),
             
                 dcc.Tabs([
