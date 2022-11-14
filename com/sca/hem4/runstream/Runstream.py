@@ -847,7 +847,7 @@ class Runstream():
                 
                 for j in range(1, num_rings+1):
                     indexStr = "S" + str(i) + "R" + str(j)
-                    rephill1 = str(self.polar_df["hill"].loc[indexStr]) + " "
+                    rephill1 = str(self.polar_df[hill].loc[indexStr]) + " "
                     self.inp_f.write(rephill1)
                 self.inp_f.write(newline)
         

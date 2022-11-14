@@ -55,7 +55,7 @@ class Hem(Page):
         # Create a file uploader
         self.uploader = FileUploader(self.model)
 
-        # Upload the Dose response, Target Organ Endponts, and MetLib libraries
+        # Upload the Dose response, Target Organ Endponts, MetLib, and Census data
         success = self.uploader.uploadLibrary("haplib")
         if not success:
             messagebox.showinfo('Error', "Invalid Dose Response file. Check log for details.")
@@ -67,7 +67,7 @@ class Hem(Page):
         success = self.uploader.uploadLibrary("metlib")
         if not success:
             messagebox.showinfo('Error', "Invalid Met Libary file. Check log for details.")
-
+        
         # Create running helpers
         self.running = False
         self.aborted = False
