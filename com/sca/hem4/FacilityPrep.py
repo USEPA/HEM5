@@ -348,9 +348,7 @@ class FacilityPrep():
         
                     # Append user_recs to innerblks
                     self.innerblks = self.innerblks.append(user_recs, ignore_index=True)
-                    
-                    print("Finished processing User Receptors")
-                        
+                                            
     
             # >= 3 rings, must be > 0 && <= 50000, and monotonically increasing
     
@@ -515,7 +513,6 @@ class FacilityPrep():
                 # if polar receptor still has missing elevation, fill it in
                 polar_df[elev], polar_df[hill], polar_df['avgelev'] = zip(*polar_df.apply(lambda row: 
                             self.assign_polar_elev_step2(row,self.innerblks,self.outerblks,emislocs), axis=1))
-                print("Finished step1")
             else:
                 polar_df[elev] = 0
                 polar_df[hill] = 0
@@ -524,9 +521,7 @@ class FacilityPrep():
     
             # Assign the polar grid data frame to the model
             self.model.polargrid = polar_df
-            
-            print("Finished processing Polar Receptors")
-    
+                
             
             #%% Compile the Aermod runstream file
  
@@ -550,11 +545,13 @@ class FacilityPrep():
 
         except Exception as ex:
             
-            fullStackInfo=''.join(traceback.format_exception(
-                etype=type(ex), value=ex, tb=ex.__traceback__))
+            fullStackInfo = traceback.format_exc()
             message = "An error occurred while running the FacilityPrep module:\n" + fullStackInfo
             print(message)
             Logger.logMessage(message)
+            
+            runstream = None
+            return runstream
             
     
     

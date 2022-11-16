@@ -396,12 +396,17 @@ def getblocks(cenx, ceny, cenlon, cenlat, utmzone, hemi, maxdist, modeldist, sou
         maxdist_deg = 20000*39.36/36/2000/60
     else:
         maxdist_deg = maxdist*39.36/36/2000/60
-  
+
     # Subset the national census blocks to blocks within one lat/lon of the facility center.
     # This creates a smaller dataframe that is more efficient.
     censusblks = model.census.dataframe.filter(
         (pl.col('lat') <= cenlat+1) & (pl.col('lat') >= cenlat-1) 
         & (pl.col('lon') <= cenlon+1) & (pl.col('lon') >= cenlon-1)).collect().to_pandas()
+
+    if len(censusblks) == 0:
+        Logger.logMessage("There are no discrete receptors within the max distance of this facility. " +
+                          "Aborting processing of this facility.")
+        raise ValueError("No discrete receptors selected within max distance")
 
     # Compute a distance (in meters) between each block and the facility center
     blkcoors = np.array(tuple(zip(censusblks.lon, censusblks.lat)))
@@ -428,7 +433,7 @@ def getblocks(cenx, ceny, cenlon, cenlat, utmzone, hemi, maxdist, modeldist, sou
 
     #subset the censusblks dataframe to blocks that are within the max distance of the facility 
     modelblks = censusblks.query('distance <= @maxdist').copy()
-
+    
     # Check again. If no blocks within max distance, then this facility cannot be modeled; skip it.
     if len(modelblks) == 0:
         Logger.logMessage("There are no discrete receptors within the max distance of this facility. " +

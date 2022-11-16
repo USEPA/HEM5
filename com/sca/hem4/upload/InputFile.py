@@ -131,7 +131,7 @@ class InputFile(ABC):
                     messagebox.showinfo("Error uploading input file", "Some non-numeric values were found in numeric columns in this data set: " +
                                   os.path.basename(self.path))
                     
-                    dataframe = pd.Dataframe()
+                    dataframe = pd.DataFrame()
                     return dataframe
 
                 types = self.get_column_types()

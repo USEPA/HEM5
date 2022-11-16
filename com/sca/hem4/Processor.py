@@ -135,8 +135,7 @@ class Processor():
                 except BaseException as ex:
 
                     self.exception = ex
-                    fullStackInfo=''.join(traceback.format_exception(
-                        etype=type(ex), value=ex, tb=ex.__traceback__))
+                    fullStackInfo = traceback.format_exc()
     
                     message = "An error occurred while running a facility:\n" + fullStackInfo
                     print(message)
