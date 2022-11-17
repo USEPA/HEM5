@@ -524,9 +524,10 @@ class EJ(Page):
             messagebox.showinfo("File Not Found", "Please check the output folder for a properly named Facility Max Risk and HI file.")
             self.reset()
             return
-                
-        # Next, get the list of facilities to be analyzed from the maxRiskAndHI_df dataframe
-        facilities = maxRiskAndHI_df['Facil_id'].tolist()
+
+        # Next, compile a list of all facility folders in the output folder (which will be used when we create
+        # reports for each facility individually.)
+        facilities = Directory.find_facilities(self.fullpath)
 
         # Initialize the class-level data storage for all facility summary workbooks and sheets
         ReportWriter.init_facility_summaries()

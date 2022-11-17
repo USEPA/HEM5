@@ -1,6 +1,5 @@
 import os
 import csv
-import traceback
 
 from decimal import ROUND_HALF_UP, Decimal, getcontext
 
@@ -59,7 +58,6 @@ class DataModel():
     def create_national_bin(self):
         # Create national bin and tabulate population weighted demographic stats for each sub group.
         self.national_bin = [ [0]*16 for _ in range(2) ]
-        self.national_counter = 0
         self.acs_df.apply(lambda row: self.tabulate_national_data(row), axis=1)
 
         # Calculate averages by dividing population for each sub group
@@ -181,78 +179,68 @@ class DataModel():
 
     def tabulate_national_data(self, row):
 
-        try:
-                        
-            population = row['TOTALPOP']
-            pct_minority = row['PCT_MINORITY']
-            pct_white = row['PCT_WHITE']
-            pct_black = row['PCT_BLACK']
-            pct_amerind = row['PCT_AMIND']
-            pct_other = row['PCT_OTHER_RACE']
-            pct_hisp = row['PCT_HISP']
-            pct_age_lt18 = row['PCT_AGE_LT18']
-            pct_age_gt64 = row['PCT_AGE_GT64']
-            edu_universe = row['EDU_UNIVERSE']
-            pct_edu_lths = row['PCT_EDU_LTHS']
-            pov_universe = row['POV_UNIVERSE']
-            pct_lowinc = row['PCT_LOWINC']
-            pct_lingiso = row['PCT_LINGISO']
-            pct_pov = row['PCT_POV']
-    
-            self.national_bin[0][0] += population
-            if not isna(pct_minority):
-                self.national_bin[1][1] += pct_white * population
-                self.national_bin[0][1] += population
-            if not isna(pct_black):
-                self.national_bin[1][2] += pct_black * population
-                self.national_bin[0][2] += population
-            if not isna((pct_amerind)):
-                self.national_bin[1][3] += pct_amerind * population
-                self.national_bin[0][3] += population
-            if not isna(pct_other):
-                self.national_bin[1][4] += pct_other * population
-                self.national_bin[0][4] += population
-            if not isna(pct_hisp):
-                self.national_bin[1][5] += pct_hisp * population
-                self.national_bin[0][5] += population
-            if not isna(pct_age_lt18):
-                self.national_bin[1][6] += pct_age_lt18 * population
-                self.national_bin[0][6] += population
-            if not isna(pct_age_gt64):
-                self.national_bin[1][8] += pct_age_gt64 * population
-                self.national_bin[0][8] += population
-            if not isna(pct_age_lt18) and not isna(pct_age_gt64):
-                self.national_bin[1][7] += (100 - pct_age_gt64 - pct_age_lt18) * population
-                self.national_bin[0][7] += population
-            if not isna(edu_universe):
-                self.national_bin[1][9] += edu_universe * 100
-                self.national_bin[0][9] += population
-            if not isna(pov_universe):
-                self.national_bin[1][15] += pov_universe * 100
-                self.national_bin[0][15] += population
-            if not isna(edu_universe) and not isna(pct_edu_lths):
-                self.national_bin[1][10] += pct_edu_lths * edu_universe
-                self.national_bin[0][10] += edu_universe
-            if not isna(pov_universe):
-                self.national_bin[1][11] += pct_pov * pov_universe
-                self.national_bin[0][11] += pov_universe
-            if not isna(pov_universe) and not isna(pct_lowinc):
-                self.national_bin[1][12] += pct_lowinc * pov_universe
-                self.national_bin[0][12] += pov_universe
-            if not isna(pct_lingiso):
-                self.national_bin[1][13] += pct_lingiso * population
-                self.national_bin[0][13] += population
-            if not isna(pct_minority):
-                self.national_bin[1][14] += pct_minority * population
-                self.national_bin[0][14] += population
-                
-        except Exception as ex:
+        population = row['TOTALPOP']
+        pct_minority = row['PCT_MINORITY']
+        pct_white = row['PCT_WHITE']
+        pct_black = row['PCT_BLACK']
+        pct_amerind = row['PCT_AMIND']
+        pct_other = row['PCT_OTHER_RACE']
+        pct_hisp = row['PCT_HISP']
+        pct_age_lt18 = row['PCT_AGE_LT18']
+        pct_age_gt64 = row['PCT_AGE_GT64']
+        edu_universe = row['EDU_UNIVERSE']
+        pct_edu_lths = row['PCT_EDU_LTHS']
+        pov_universe = row['POV_UNIVERSE']
+        pct_lowinc = row['PCT_LOWINC']
+        pct_lingiso = row['PCT_LINGISO']
+        pct_pov = row['PCT_POV']
 
-            fullStackInfo = traceback.format_exc()
-            message = "An error occurred while creating the national data model:\n" + fullStackInfo
-            Logger.logMessage(message)
-            return
-
+        self.national_bin[0][0] += population
+        if not isna(pct_minority):
+            self.national_bin[1][1] += pct_white * population
+            self.national_bin[0][1] += population
+        if not isna(pct_black):
+            self.national_bin[1][2] += pct_black * population
+            self.national_bin[0][2] += population
+        if not isna((pct_amerind)):
+            self.national_bin[1][3] += pct_amerind * population
+            self.national_bin[0][3] += population
+        if not isna(pct_other):
+            self.national_bin[1][4] += pct_other * population
+            self.national_bin[0][4] += population
+        if not isna(pct_hisp):
+            self.national_bin[1][5] += pct_hisp * population
+            self.national_bin[0][5] += population
+        if not isna(pct_age_lt18):
+            self.national_bin[1][6] += pct_age_lt18 * population
+            self.national_bin[0][6] += population
+        if not isna(pct_age_gt64):
+            self.national_bin[1][8] += pct_age_gt64 * population
+            self.national_bin[0][8] += population
+        if not isna(pct_age_lt18) and not isna(pct_age_gt64):
+            self.national_bin[1][7] += (100 - pct_age_gt64 - pct_age_lt18) * population
+            self.national_bin[0][7] += population
+        if not isna(edu_universe):
+            self.national_bin[1][9] += edu_universe * 100
+            self.national_bin[0][9] += population
+        if not isna(pov_universe):
+            self.national_bin[1][15] += pov_universe * 100
+            self.national_bin[0][15] += population
+        if not isna(edu_universe) and not isna(pct_edu_lths):
+            self.national_bin[1][10] += pct_edu_lths * edu_universe
+            self.national_bin[0][10] += edu_universe
+        if not isna(pov_universe):
+            self.national_bin[1][11] += pct_pov * pov_universe
+            self.national_bin[0][11] += pov_universe
+        if not isna(pov_universe) and not isna(pct_lowinc):
+            self.national_bin[1][12] += pct_lowinc * pov_universe
+            self.national_bin[0][12] += pov_universe
+        if not isna(pct_lingiso):
+            self.national_bin[1][13] += pct_lingiso * population
+            self.national_bin[0][13] += population
+        if not isna(pct_minority):
+            self.national_bin[1][14] += pct_minority * population
+            self.national_bin[0][14] += population
 
     def tabulate_state_data(self, row):
 
