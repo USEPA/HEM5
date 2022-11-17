@@ -59,15 +59,18 @@ class SourceTypeRiskHistogram(ExcelWriter, AltRecAwareSummary):
         
         # Initialize set of source id's
         allsrcids = set()
-        
-        
+                
         for facilityId in self.facilityIds:
                         
             targetDir = self.categoryFolder + "/" + facilityId
 
+            # determine if alternate receptors were used
             altrec = self.determineAltRec(self.categoryFolder)
 
+            # determine acute status
+            faclist['acute'] = faclist['acute'].fillna(value='N')
             acute_yn = faclist[faclist['fac_id']==facilityId]['acute'].iloc[0]
+            
             allinner = AllInnerReceptorsNonCensus(targetDir=targetDir, facilityId=facilityId, acuteyn=acute_yn) if altrec=='Y' else \
                 AllInnerReceptors(targetDir=targetDir, facilityId=facilityId, acuteyn=acute_yn)
             allinner_df = allinner.createDataframe()
@@ -81,8 +84,6 @@ class SourceTypeRiskHistogram(ExcelWriter, AltRecAwareSummary):
                                 how='left', on='pollutant')
             
             allinner2_df['risk'] = allinner2_df[conc] * allinner2_df['ure']
-
-#            allinner_df['risk'] = allinner_df.apply(lambda x: self.calculateRisk(x[pollutant], x[conc]), axis=1)
 
             # convert source ids to the code part only, and then group and sum
             allinner2_df[source_id] = allinner2_df[source_id].apply(lambda x: x[self.codePosition:self.codePosition+self.codeLength])

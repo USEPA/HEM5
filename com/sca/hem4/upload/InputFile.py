@@ -6,6 +6,8 @@ from abc import ABC
 from abc import abstractmethod
 import pandas as pd
 from tkinter import messagebox
+import polars as pl
+import numpy as np
 
 
 from com.sca.hem4.log.Logger import Logger
@@ -129,7 +131,7 @@ class InputFile(ABC):
                     messagebox.showinfo("Error uploading input file", "Some non-numeric values were found in numeric columns in this data set: " +
                                   os.path.basename(self.path))
                     
-                    dataframe = pd.Dataframe()
+                    dataframe = pd.DataFrame()
                     return dataframe
 
                 types = self.get_column_types()
@@ -144,6 +146,45 @@ class InputFile(ABC):
                 else:
                     return validated
 
+
+    # Read values in from a source .csv file using the polars library and use Lazy
+    # evaluation. A lazyframe is created for future querying.
+    def readFromPathCsvPolars(self):
+        with open(self.path, "rb") as f:
+                        
+            try:
+                
+                plf = pl.scan_csv(f.name, dtypes=self.datatypes)
+                                
+                
+                # self.skiprows = 1
+                                    
+                # df = pl.read_csv(f, skip_rows=self.skiprows, has_header=True, new_columns=colnames, 
+                #                  null_values='', dtypes=self.datatypes)
+            
+            except BaseException as e:
+                
+                plf = None
+                Logger.logMessage(str(e))
+                
+            else:
+                
+                if plf is None:
+                    return None
+                else:
+                    return plf
+                
+                # cleaned = self.clean(df)
+                # validated = self.validate(cleaned)
+                
+                # if validated is None:
+                #     return pd.DataFrame()
+                
+                # else:
+                #     return validated
+                
+                
+                
     # This method is being applied to every cell to guard against values which
     # have only whitespace.
     def convertEmptyToNaN(self, x):
@@ -168,7 +209,7 @@ class InputFile(ABC):
                 return df
 
     def get_column_types(self):
-        floatTypes = {col: pd.np.float64 for col in self.numericColumns}
+        floatTypes = {col: np.float64 for col in self.numericColumns}
 
         dtypes = {col: str for col in self.strColumns}
 

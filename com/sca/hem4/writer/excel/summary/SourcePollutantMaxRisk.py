@@ -58,7 +58,7 @@ class SourcePollutantMaxRisk(ExcelWriter):
         final_df = pd.DataFrame()
         for facilityId in self.facilityIds:
             print("Inspecting facility folder " + facilityId + " for output files...")
-
+            
             maxRiskAndHI_df = facilityMaxRiskAndHI_df.loc[facilityMaxRiskAndHI_df['Facil_id'] == facilityId]
 
             try:

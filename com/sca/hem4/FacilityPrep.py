@@ -13,6 +13,7 @@ from com.sca.hem4.upload.FacilityList import *
 from com.sca.hem4.support.NormalRounding import *
 import sys
 import math
+import traceback
 
 distance = 'distance';
 angle = 'angle';
@@ -28,510 +29,530 @@ class FacilityPrep():
         
 
     def createRunstream(self, facid, runPhase):
-
-        #%%---------- Facility Options --------------------------------------
-        self.model.facops = self.model.faclist.dataframe.loc[self.model.faclist.dataframe[fac_id] == facid]
-
-        op_maxdist = self.model.facops[max_dist].iloc[0]
-        op_modeldist = self.model.facops[model_dist].iloc[0]
-        op_circles = self.model.facops[circles].iloc[0]
-        op_radial = int(self.model.facops[radial].iloc[0])
-        op_overlap = self.model.facops[overlap_dist].iloc[0]
-
-        self.fac_center = self.model.facops[fac_center].iloc[0]
-        self.ring_distances = self.model.facops['ring_distances'].iloc[0]
-
-        #%%---------- Emissions Locations --------------------------------------
-        emislocs = self.model.emisloc.dataframe.loc[self.model.emisloc.dataframe[fac_id] == facid]
-
         
-        # If there is a bouyant line source with other sources, then it has to come last because of an Aermod v19191 bug.
-        blRows = emislocs[emislocs[source_type]=='B']
-        srcTypes = set(emislocs[source_type])
-        if not blRows.empty and len(srcTypes) > 1:
-            emislocs.drop(emislocs[emislocs[source_type]=='B'].index, inplace = True)
-            emislocs = emislocs.append(blRows, ignore_index=True)
+        try:
 
-        # Determine the utm zone to use for this facility. Also get the hemisphere (N or S).
-        facutmzonenum, hemi = UTM.zone2use(emislocs)
-        facutmzonestr = str(facutmzonenum) + hemi
-
-                
-        # Compute lat/lon of any user supplied UTM coordinates
-        emislocs[[lat, lon]] = emislocs.apply(lambda row: UTM.utm2ll(row[lat],row[lon],row[utmzone]) 
-                               if row['location_type']=='U' else [row[lat],row[lon]], result_type="expand", axis=1)
-
-        # Next compute UTM coordinates using the common zone
-        emislocs[[utmn, utme]] = emislocs.apply(lambda row: UTM.ll2utm_alt(row[lat],row[lon],facutmzonenum,hemi)
-                               , result_type="expand", axis=1)
-
-        # Compute lat/lon of any x2 and y2 coordinates that were supplied as UTM
-        emislocs[['lat_y2', 'lon_x2']] = emislocs.apply(lambda row: UTM.utm2ll(row["y2"],row["x2"],row["utmzone"]) 
-                          if row['location_type']=='U' else [row["y2"],row["x2"]], result_type="expand", axis=1)
-
-        # Compute UTM coordinates of lat_x2 and lon_y2 using the common zone
-        emislocs[['utmn_y2', 'utme_x2']] = emislocs.apply(lambda row: UTM.ll2utm_alt(row["lat_y2"],row["lon_x2"],facutmzonenum,hemi)
-                          , result_type="expand", axis=1)
-
-        
-        #%%---------- HAP Emissions --------------------------------------
-        hapemis = self.model.hapemis.dataframe.loc[self.model.hapemis.dataframe[fac_id] == facid]
-
-
-        #%%---------- Optional Buoyant Line Parameters -----------------------------------------
-
-        if hasattr(self.model.multibuoy, "dataframe"):
-
-            buoyant_df = self.model.multibuoy.dataframe.loc[ self.model.multibuoy.dataframe[fac_id] == facid].copy()
-            buoyant_df.reset_index(drop=True, inplace=True)
-
-        else:
-            # No buoyant line sources. Empty dataframe.
-            buoyant_df = None
-
-        #%%---------- Optional Polygon Vertex File ----------------------------------------- 
-
-
-        if hasattr(self.model.multipoly, "dataframe"):
-
-            polyver_df = self.model.multipoly.dataframe.loc[self.model.multipoly.dataframe[fac_id] == facid].copy()
-
-            if polyver_df.empty == False:
-                            
-                # Create utmn and utme columns. Fill with any provided utm coordinates otherwise fill with 0.
-                polyver_df[[utmn, utme]] = polyver_df.apply(lambda row: self.copyUTMColumns(row[lat],row[lon])
-                                         if row['location_type']=='U' else [0, 0],
-                                         result_type="expand", axis=1)
-
-                # Compute lat/lon of any user supplied UTM coordinates
-                polyver_df[[lat, lon]] = polyver_df.apply(lambda row: UTM.utm2ll(row[lat],row[lon],row[utmzone]) 
+            #%%---------- Facility Options --------------------------------------
+            self.model.facops = self.model.faclist.dataframe.loc[self.model.faclist.dataframe[fac_id] == facid]
+    
+            op_maxdist = self.model.facops[max_dist].iloc[0]
+            op_modeldist = self.model.facops[model_dist].iloc[0]
+            op_circles = self.model.facops[circles].iloc[0]
+            op_radial = int(self.model.facops[radial].iloc[0])
+            op_overlap = self.model.facops[overlap_dist].iloc[0]
+    
+            self.fac_center = self.model.facops[fac_center].iloc[0]
+            self.ring_distances = self.model.facops['ring_distances'].iloc[0]
+    
+            #%%---------- Emissions Locations --------------------------------------
+            emislocs = self.model.emisloc.dataframe.loc[self.model.emisloc.dataframe[fac_id] == facid]
+    
+            
+            # If there is a bouyant line source with other sources, then it has to come last because of an Aermod v19191 bug.
+            blRows = emislocs[emislocs[source_type]=='B']
+            srcTypes = set(emislocs[source_type])
+            if not blRows.empty and len(srcTypes) > 1:
+                emislocs.drop(emislocs[emislocs[source_type]=='B'].index, inplace = True)
+                emislocs = emislocs.append(blRows, ignore_index=True)
+    
+            # Determine the utm zone to use for this facility. Also get the hemisphere (N or S).
+            facutmzonenum, hemi = UTM.zone2use(emislocs)
+            facutmzonestr = str(facutmzonenum) + hemi
+    
+                    
+            # Compute lat/lon of any user supplied UTM coordinates
+            emislocs[[lat, lon]] = emislocs.apply(lambda row: UTM.utm2ll(row[lat],row[lon],row[utmzone]) 
                                    if row['location_type']=='U' else [row[lat],row[lon]], result_type="expand", axis=1)
     
-                # Next compute UTM coordinates using the common zone
-                polyver_df[[utmn, utme]] = polyver_df.apply(lambda row: UTM.ll2utm_alt(row[lat],row[lon],facutmzonenum,hemi)
-                                   if row['location_type']=='L' else [row[utmn],row[utme]], result_type="expand", axis=1)
+            # Next compute UTM coordinates using the common zone
+            emislocs[[utmn, utme]] = emislocs.apply(lambda row: UTM.ll2utm_alt(row[lat],row[lon],facutmzonenum,hemi)
+                                   , result_type="expand", axis=1)
     
-                # Assign source_type
-                polyver_df[source_type] = "I"
+            # Compute lat/lon of any x2 and y2 coordinates that were supplied as UTM
+            emislocs[['lat_y2', 'lon_x2']] = emislocs.apply(lambda row: UTM.utm2ll(row["y2"],row["x2"],row["utmzone"]) 
+                              if row['location_type']=='U' else [row["y2"],row["x2"]], result_type="expand", axis=1)
+    
+            # Compute UTM coordinates of lat_x2 and lon_y2 using the common zone
+            emislocs[['utmn_y2', 'utme_x2']] = emislocs.apply(lambda row: UTM.ll2utm_alt(row["lat_y2"],row["lon_x2"],facutmzonenum,hemi)
+                              , result_type="expand", axis=1)
+    
             
-        else:
-            # No polygon sources. Empty dataframe.
-            polyver_df = None
-
-        #%%---------- Optional Building Downwash -------------------------------------
-            
-        if hasattr(self.model.bldgdw, "dataframe"):
-
-            bldgdw_df = self.model.bldgdw.dataframe.loc[self.model.bldgdw.dataframe[fac_id] == facid].copy()
-
-        else:
-            bldgdw_df = None
-
-
-
-
-        #%% ------ Optional Particle Data -------------------------------------
-
-        if hasattr(self.model.partdep, "dataframe"):
-
-            partdia_df = self.model.partdep.dataframe.loc[self.model.partdep.dataframe[fac_id] == facid].copy()
-
-        else:
-            partdia_df = None
-
-
-        #%% -- Optional Land Use ----------------------------------------------
-
-        if hasattr(self.model.landuse, "dataframe"):
-            landuse_df = self.model.landuse.dataframe.loc[self.model.landuse.dataframe[fac_id] == facid].copy()
-
-        else:
-            landuse_df = None
-
-
-
-        #%% --- Optional Seasons ---------------------------------------------
-
-        if hasattr(self.model.seasons, "dataframe"):
-            seasons_df = self.model.seasons.dataframe.loc[self.model.seasons.dataframe[fac_id] == facid].copy()
-
-        else:
-            seasons_df = None
-
-
-
-        #%% --- Optional Emissions Variations --------------------------------
-
-        if hasattr(self.model.emisvar, "dataframe"):
-
-            #TODO - what is this for? Can emission variation file be in text format?           
-            if self.model.emisvar.path[-3:] == 'txt':
-                
-                #if linked file set stored file path 
-                emisvar_df = self.model.emisvar.path
+            #%%---------- HAP Emissions --------------------------------------
+            hapemis = self.model.hapemis.dataframe.loc[self.model.hapemis.dataframe[fac_id] == facid]
+    
+    
+            #%%---------- Optional Buoyant Line Parameters -----------------------------------------
+    
+            if hasattr(self.model.multibuoy, "dataframe"):
+    
+                buoyant_df = self.model.multibuoy.dataframe.loc[ self.model.multibuoy.dataframe[fac_id] == facid].copy()
+                buoyant_df.reset_index(drop=True, inplace=True)
+    
+            else:
+                # No buoyant line sources. Empty dataframe.
+                buoyant_df = None
+    
+            #%%---------- Optional Polygon Vertex File ----------------------------------------- 
+    
+    
+            if hasattr(self.model.multipoly, "dataframe"):
+    
+                polyver_df = self.model.multipoly.dataframe.loc[self.model.multipoly.dataframe[fac_id] == facid].copy()
+    
+                if polyver_df.empty == False:
+                                
+                    # Create utmn and utme columns. Fill with any provided utm coordinates otherwise fill with 0.
+                    polyver_df[[utmn, utme]] = polyver_df.apply(lambda row: self.copyUTMColumns(row[lat],row[lon])
+                                             if row['location_type']=='U' else [0, 0],
+                                             result_type="expand", axis=1)
+    
+                    # Compute lat/lon of any user supplied UTM coordinates
+                    polyver_df[[lat, lon]] = polyver_df.apply(lambda row: UTM.utm2ll(row[lat],row[lon],row[utmzone]) 
+                                       if row['location_type']=='U' else [row[lat],row[lon]], result_type="expand", axis=1)
+        
+                    # Next compute UTM coordinates using the common zone
+                    polyver_df[[utmn, utme]] = polyver_df.apply(lambda row: UTM.ll2utm_alt(row[lat],row[lon],facutmzonenum,hemi)
+                                       if row['location_type']=='L' else [row[utmn],row[utme]], result_type="expand", axis=1)
+        
+                    # Assign source_type
+                    polyver_df[source_type] = "I"
                 
             else:
-                emisvar_df = self.model.emisvar.dataframe.loc[self.model.emisvar.dataframe[fac_id] == facid].copy()
-
-        else:
-            emisvar_df = None
-
-
-        #%%-- Gas Params for gas runs -- needs to be incorporated better
-
-        #if hasattr(self.model.gasparams, "dataframe"):
-            #gasparams_df = self.model.gasparams.dataframe
-
-        #else:
-            #gasparams_df = None
-
-        #%%---------- Get Census Block Receptors --------------------------------------
-               
-        # Keep necessary source location columns
-        sourcelocs = emislocs[[fac_id,source_id,source_type,lat,lon,utme,utmn,utmzone
-            ,lengthx,lengthy,angle,"utme_x2","utmn_y2"]].copy()
-
-        # Is there a polygon source at this facility?
-        # If there is, read the vertex DF and append to sourcelocs
-        if any(sourcelocs[source_type] == "I") == True:
-            # remove the I source_type rows from sourcelocs before appending polyver_df to avoid duplicate rows
-            sourcelocs = sourcelocs[sourcelocs.source_type != "I"]
-            sourcelocs = sourcelocs.append(polyver_df)
-            sourcelocs = sourcelocs.fillna({source_type:'', lengthx:0, lengthy:0, angle:0, "utme_x2":0, "utmn_y2":0})
-            sourcelocs = sourcelocs.reset_index(drop=True)
-
-        # Compute the coordinates of the facililty center if not specified in options
-        if (self.fac_center == "" or self.ring_distances == ""):
-            cenx, ceny, cenlon, cenlat, max_srcdist, vertx_a, verty_a = UTM.center(sourcelocs, facutmzonenum, hemi)
-
-        if self.fac_center != "":
-            # Grab the specified center and translate to/from UTM
-            components = self.fac_center.split(',')
-            if components[0] == "L":
-                cenlat = float(components[1])
-                cenlon = float(components[2])
-                ceny, cenx, zone, hemi, epsg = UTM.ll2utm(cenlat, cenlon)
+                # No polygon sources. Empty dataframe.
+                polyver_df = None
+    
+            #%%---------- Optional Building Downwash -------------------------------------
+                
+            if hasattr(self.model.bldgdw, "dataframe"):
+    
+                bldgdw_df = self.model.bldgdw.dataframe.loc[self.model.bldgdw.dataframe[fac_id] == facid].copy()
+    
             else:
-                ceny = int(float(components[1]))
-                cenx = int(float(components[2]))
-
-                zone = components[3].strip()
-                cenlat, cenlon = UTM.utm2ll(ceny, cenx, zone)
-
-        Logger.logMessage("Using facility center [x, y, lat, lon] = [" + str(cenx) + ", " + str(ceny) + ", " +
-                              str(cenlat) + ", " + str(cenlon) + "]")
-        self.model.computedValues['cenlat'] = cenlat
-        self.model.computedValues['cenlon'] = cenlon
-
-        # retrieve blocks
-        maxdist = self.model.facops[max_dist].iloc[0]
-        modeldist = self.model.facops[model_dist].iloc[0]
-        
-        if self.model.altRec_optns.get('altrec', None):
-
-            self.innerblks, self.outerblks = getBlocksFromAltRecs(facid, cenx, ceny, cenlon, cenlat, facutmzonenum,
-                hemi, maxdist, modeldist, sourcelocs, op_overlap, self.model)
-
-        else:
-            
-            self.innerblks, self.outerblks = getblocks(cenx, ceny, cenlon, cenlat, 
-                                                       facutmzonenum, hemi, maxdist, 
-                                                       modeldist, sourcelocs, op_overlap, 
-                                                       self.model)
-
-        if self.innerblks.empty:
-            Logger.logMessage("No discrete receptors within the max distance. Aborting processing for this facility.")
-            raise ValueError("No discrete receptors")
-
-        # Assign to the model
-        self.model.innerblks_df = self.innerblks
-        self.model.outerblks_df = self.outerblks
-        
-
-        #%%---------- Optional User Receptors -----------------------------------------
-
-        # If the user input any user receptors for this facility, then they will be
-        # added into the Inner block receptor dataframe
-
-        if hasattr(self.model.ureceptr, "dataframe"):
-
-            user_recs = self.model.ureceptr.dataframe.loc[self.model.ureceptr.dataframe[fac_id] == facid].copy()
-            
-            if user_recs.empty == False:
-                
-                user_recs.utmzone = user_recs.utmzone.replace('nan', '0N', regex=True)
-    
-                # Create utmn and utme columns. Fill with any provided utm coordinates otherwise fill with 0.
-                user_recs[[utmn, utme]] = user_recs.apply(lambda row: self.copyUTMColumns(row[lat],row[lon])
-                                         if row['location_type']=='U' else [0, 0],
-                                         result_type="expand", axis=1)
-
-                # Compute lat/lon of any user supplied UTM coordinates
-                user_recs[[lat, lon]] = user_recs.apply(lambda row: UTM.utm2ll(row[lat],row[lon],row[utmzone])
-                             if row['location_type']=='U' else [row[lat],row[lon]], result_type="expand", axis=1)
-        
-                # Next compute UTM coordinates using the common zone
-                user_recs[[utmn, utme]] = user_recs.apply(lambda row: UTM.ll2utm_alt(row[lat],row[lon],facutmzonenum,hemi)
-                             if row['location_type']=='L' else [row[utmn],row[utme]], result_type="expand", axis=1)
-        
-                
-                user_recs.reset_index(inplace=True)
+                bldgdw_df = None
     
     
-                # Compute distance and bearing (angle) from the center of the facility
-                user_recs['distance'] = np.sqrt((cenx - user_recs.utme)**2 + (ceny - user_recs.utmn)**2)
-                user_recs['angle'] = user_recs.apply(lambda row: self.bearing(row[utme],row[utmn],cenx,ceny), axis=1)
     
-                # If all user receptor elevations are NaN, then replace with closest block elevation.
-                # If at least one elevation is not NaN, then leave non-NaN alone and replace NaN with 0.
-                # If all hill heights are NaN, then replace with max of closest block hill, closest block elev,
-                # or max user provided elev.
-                maxelev = user_recs[elev].max(axis=0, skipna=True) \
-                    if math.isnan(user_recs[elev].max(axis=0, skipna=True)) == False \
-                    else 0
-                maxhill = user_recs[hill].max(axis=0, skipna=True) \
-                    if math.isnan(user_recs[hill].max(axis=0, skipna=True)) == False \
-                    else 0
-                elev_allnan = user_recs[elev].all(axis=0)
-                hill_allnan = user_recs[hill].all(axis=0)
     
-                if elev_allnan == True or hill_allnan == True:
-                    for index, row in user_recs.iterrows():
-                        elev_close, hill_close = self.urec_elevs(row[utme], row[utmn],
-                                                                 self.innerblks, self.outerblks)
-                        if elev_allnan == True:
-                            user_recs.loc[index, elev] = elev_close
-                        if hill_allnan == True:
-                            user_recs.loc[index, hill] = max([maxelev, elev_close, hill_close])
+            #%% ------ Optional Particle Data -------------------------------------
     
-                if elev_allnan == False:
-                    # Not all elevs are NaN. Leave non-NaN alone and replace NaN with 0.
-                    user_recs[elev].fillna(0, inplace=True)
+            if hasattr(self.model.partdep, "dataframe"):
     
-                if hill_allnan == False:
-                    # Not all hills are NaN. Leave non-NaN alone and replace NaN with 0.
-                    user_recs[hill].fillna(0, inplace=True)
+                partdia_df = self.model.partdep.dataframe.loc[self.model.partdep.dataframe[fac_id] == facid].copy()
     
-                # determine if the user receptors overlap any emission sources
-                user_recs[overlap] = user_recs.apply(lambda row: self.check_overlap(row[utme],
-                                                                                    row[utmn], sourcelocs, op_overlap), axis=1)
-        
-                # Add columns to make user_recs compatible with innerblks
-                user_recs['urban_pop'] = 0
-                user_recs['population'] = 0
-                if self.model.altRec_optns.get('altrec', None):
-                    user_recs['rec_id'] = 'U_' + user_recs['rec_id']
+            else:
+                partdia_df = None
+    
+    
+            #%% -- Optional Land Use ----------------------------------------------
+    
+            if hasattr(self.model.landuse, "dataframe"):
+                landuse_df = self.model.landuse.dataframe.loc[self.model.landuse.dataframe[fac_id] == facid].copy()
+    
+            else:
+                landuse_df = None
+    
+    
+    
+            #%% --- Optional Seasons ---------------------------------------------
+    
+            if hasattr(self.model.seasons, "dataframe"):
+                seasons_df = self.model.seasons.dataframe.loc[self.model.seasons.dataframe[fac_id] == facid].copy()
+    
+            else:
+                seasons_df = None
+    
+    
+    
+            #%% --- Optional Emissions Variations --------------------------------
+    
+            if hasattr(self.model.emisvar, "dataframe"):
+    
+                #TODO - what is this for? Can emission variation file be in text format?           
+                if self.model.emisvar.path[-3:] == 'txt':
+                    
+                    #if linked file set stored file path 
+                    emisvar_df = self.model.emisvar.path
+                    
                 else:
-                    user_recs['fips'] = 'U0000'
-                    user_recs['idmarplot'] = 'U0000U' + user_recs['rec_id']
-                  
-                # Check for any user receptors that are already in the census data
-                dups = pd.merge(self.innerblks, user_recs, how='inner', on=[utme, utmn])
-                if dups.empty == False:
-                    # Some user receptors are already in the census. Remove these from the user receptor list.
-                    user_recs = user_recs[~user_recs.set_index([utme, utmn]).index.isin(dups.set_index([utme, utmn]).index)].copy()
-                
-                    msg = 'The following user receptors have coordinates that are already in the Census data. They ' + \
-                            ' will be removed from the user receptor list. ' + str(dups['rec_id_y'].tolist())
-                    Logger.logMessage(msg)
-                
-                # Put into model
-                self.model.userrecs_df = user_recs
+                    emisvar_df = self.model.emisvar.dataframe.loc[self.model.emisvar.dataframe[fac_id] == facid].copy()
     
-                # Append user_recs to innerblks
-                self.innerblks = self.innerblks.append(user_recs, ignore_index=True)
-
-
-        # >= 3 rings, must be > 0 && <= 50000, and monotonically increasing
-
-        #%%----- Polar receptors ----------
-
-        # Compute the first polar ring distance ......
-        if self.ring_distances != "":
-            distances = self.ring_distances.split(',')
-            self.model.computedValues['firstring'] = float(distances[0])
-            polar_dist = [float(x) for x in distances]
-            Logger.logMessage("Using defined rings: " + str(polar_dist)[1:-1] )
-        else:
-            # First find the farthest distance to any source.
-            maxsrcd = 0
-            for i in range(0, len(vertx_a)):
-                dist_cen = math.sqrt((vertx_a[i] - cenx)**2 + (verty_a[i] - ceny)**2)
-                maxsrcd = max(maxsrcd, dist_cen)
-
-            # If user first ring is > 100m, then use it, else first ring is maxsrcd + overlap.
-            if self.model.facops[ring1].iloc[0] <= 100:
-                ring1a = max(maxsrcd+op_overlap, 100)
-                ring1b = min(ring1a, op_maxdist)
-                firstring = normal_round(max(ring1b, 100))
             else:
-                firstring = self.model.facops[ring1].iloc[0]
-
-            # Store first ring in computedValues
-            self.model.computedValues['firstring'] = firstring
-
-            polar_dist = []
-            polar_dist.append(firstring)
-
-
-            # Make sure modeling distance is not less than first ring distance
-            if self.model.facops[model_dist].iloc[0] < firstring:
-                emessage = "Error! Modeling distance is less than first ring."
-                Logger.logMessage(emessage)
-                raise Exception("Modeling distance is less than first ring")
-
-            #.... Compute the rest of the polar ring distances (logarithmically spaced) .......
-
-            if op_modeldist < op_maxdist:
-                # first handle ring distances inside the modeling distance
-                k = 1
-                if op_modeldist <= polar_dist[0]:
-                    N_in = 0
-                    N_out = op_circles
-                    D_st2 = polar_dist[0]
+                emisvar_df = None
+    
+    
+            #%%-- Gas Params for gas runs -- needs to be incorporated better
+    
+            #if hasattr(self.model.gasparams, "dataframe"):
+                #gasparams_df = self.model.gasparams.dataframe
+    
+            #else:
+                #gasparams_df = None
+    
+            #%%---------- Get Census Block Receptors --------------------------------------
+                   
+            # Keep necessary source location columns
+            sourcelocs = emislocs[[fac_id,source_id,source_type,lat,lon,utme,utmn,utmzone
+                ,lengthx,lengthy,angle,"utme_x2","utmn_y2"]].copy()
+    
+            # Is there a polygon source at this facility?
+            # If there is, read the vertex DF and append to sourcelocs
+            if any(sourcelocs[source_type] == "I") == True:
+                # remove the I source_type rows from sourcelocs before appending polyver_df to avoid duplicate rows
+                sourcelocs = sourcelocs[sourcelocs.source_type != "I"]
+                sourcelocs = sourcelocs.append(polyver_df)
+                sourcelocs = sourcelocs.fillna({source_type:'', lengthx:0, lengthy:0, angle:0, "utme_x2":0, "utmn_y2":0})
+                sourcelocs = sourcelocs.reset_index(drop=True)
+    
+            # Compute the coordinates of the facililty center if not specified in options
+            if (self.fac_center == "" or self.ring_distances == ""):
+                cenx, ceny, cenlon, cenlat, max_srcdist, vertx_a, verty_a = UTM.center(sourcelocs, facutmzonenum, hemi)
+    
+            if self.fac_center != "":
+                # Grab the specified center and translate to/from UTM
+                components = self.fac_center.split(',')
+                if components[0] == "L":
+                    cenlat = float(components[1])
+                    cenlon = float(components[2])
+                    ceny, cenx, zone, hemi, epsg = UTM.ll2utm(cenlat, cenlon)
                 else:
-                    N_in = normal_round(math.log(op_modeldist/polar_dist[0])/math.log(op_maxdist/polar_dist[0]) * (op_circles - 2))
+                    ceny = int(float(components[1]))
+                    cenx = int(float(components[2]))
+    
+                    zone = components[3].strip()
+                    cenlat, cenlon = UTM.utm2ll(ceny, cenx, zone)
+    
+            Logger.logMessage("Using facility center [x, y, lat, lon] = [" + str(cenx) + ", " + str(ceny) + ", " +
+                                  str(cenlat) + ", " + str(cenlon) + "]")
+            self.model.computedValues['cenlat'] = cenlat
+            self.model.computedValues['cenlon'] = cenlon
+    
+            # retrieve blocks
+            maxdist = self.model.facops[max_dist].iloc[0]
+            modeldist = self.model.facops[model_dist].iloc[0]
+            
+            if self.model.altRec_optns.get('altrec', None):
+    
+                self.innerblks, self.outerblks = getBlocksFromAltRecs(facid, cenx, ceny, cenlon, cenlat, facutmzonenum,
+                    hemi, maxdist, modeldist, sourcelocs, op_overlap, self.model)
+    
+            else:
+                
+                self.innerblks, self.outerblks = getblocks(cenx, ceny, cenlon, cenlat, 
+                                                           facutmzonenum, hemi, maxdist, 
+                                                           modeldist, sourcelocs, op_overlap, 
+                                                           self.model)
+    
+            if self.innerblks.empty:
+                Logger.logMessage("No discrete receptors within the max distance. Aborting processing for this facility.")
+                raise ValueError("No discrete receptors")
+    
+            # Assign to the model
+            self.model.innerblks_df = self.innerblks
+            self.model.outerblks_df = self.outerblks
+            
+    
+            #%%---------- Optional User Receptors -----------------------------------------
+    
+            # If the user input any user receptors for this facility, then they will be
+            # added into the Inner block receptor dataframe
+            
+            if hasattr(self.model.ureceptr, "dataframe"):
+    
+                user_recs = self.model.ureceptr.dataframe.loc[self.model.ureceptr.dataframe[fac_id] == facid].copy()
+                
+                if user_recs.empty == False:
+                    
+                    user_recs.utmzone = user_recs.utmzone.replace('nan', '0N', regex=True)
+        
+                    # Create utmn and utme columns. Fill with any provided utm coordinates otherwise fill with 0.
+                    user_recs[[utmn, utme]] = user_recs.apply(lambda row: self.copyUTMColumns(row[lat],row[lon])
+                                             if row['location_type']=='U' else [0, 0],
+                                             result_type="expand", axis=1)
+    
+                    # Compute lat/lon of any user supplied UTM coordinates
+                    user_recs[[lat, lon]] = user_recs.apply(lambda row: UTM.utm2ll(row[lat],row[lon],row[utmzone])
+                                 if row['location_type']=='U' else [row[lat],row[lon]], result_type="expand", axis=1)
+            
+                    # Next compute UTM coordinates using the common zone
+                    user_recs[[utmn, utme]] = user_recs.apply(lambda row: UTM.ll2utm_alt(row[lat],row[lon],facutmzonenum,hemi)
+                                 if row['location_type']=='L' else [row[utmn],row[utme]], result_type="expand", axis=1)
+            
+                    
+                    user_recs.reset_index(inplace=True)
+        
+        
+                    # Compute distance and bearing (angle) from the center of the facility
+                    user_recs['distance'] = np.sqrt((cenx - user_recs.utme)**2 + (ceny - user_recs.utmn)**2)
+                    user_recs['angle'] = user_recs.apply(lambda row: self.bearing(row[utme],row[utmn],cenx,ceny), axis=1)
+        
+                    # If all user receptor elevations are NaN, then replace with closest block elevation.
+                    # If at least one elevation is not NaN, then leave non-NaN alone and replace NaN with 0.
+                    # If all hill heights are NaN, then replace with max of closest block hill, closest block elev,
+                    # or max user provided elev.
+                    maxelev = user_recs[elev].max(axis=0, skipna=True) \
+                        if math.isnan(user_recs[elev].max(axis=0, skipna=True)) == False \
+                        else 0
+                    maxhill = user_recs[hill].max(axis=0, skipna=True) \
+                        if math.isnan(user_recs[hill].max(axis=0, skipna=True)) == False \
+                        else 0
+                    elev_allnan = user_recs[elev].all(axis=0)
+                    hill_allnan = user_recs[hill].all(axis=0)
+        
+                    if elev_allnan == True or hill_allnan == True:
+                        for index, row in user_recs.iterrows():
+                            elev_close, hill_close = self.urec_elevs(row[utme], row[utmn],
+                                                                     self.innerblks, self.outerblks)
+                            if elev_allnan == True:
+                                user_recs.loc[index, elev] = elev_close
+                            if hill_allnan == True:
+                                user_recs.loc[index, hill] = max([maxelev, elev_close, hill_close])
+        
+                    if elev_allnan == False:
+                        # Not all elevs are NaN. Leave non-NaN alone and replace NaN with 0.
+                        user_recs[elev].fillna(0, inplace=True)
+        
+                    if hill_allnan == False:
+                        # Not all hills are NaN. Leave non-NaN alone and replace NaN with 0.
+                        user_recs[hill].fillna(0, inplace=True)
+        
+                    # determine if the user receptors overlap any emission sources
+                    user_recs[overlap] = user_recs.apply(lambda row: self.check_overlap(row[utme],
+                                                                                        row[utmn], sourcelocs, op_overlap), axis=1)
+            
+                    # Add columns to make user_recs compatible with innerblks
+                    user_recs['urban_pop'] = 0
+                    user_recs['population'] = 0
+                    user_recs['utmz'] = facutmzonenum
+                    if self.model.altRec_optns.get('altrec', None):
+                        user_recs['rec_id'] = 'U_' + user_recs['rec_id']
+                    else:
+                        user_recs['fips'] = 'U0000'
+                        user_recs['blockid'] = 'U0000U' + user_recs['rec_id']
+                      
+                    # Check for any user receptors that are already in the census data
+                    dups = pd.merge(self.innerblks, user_recs, how='inner', on=[utme, utmn])
+                    if dups.empty == False:
+                        # Some user receptors are already in the census. Remove these from the user receptor list.
+                        user_recs = user_recs[~user_recs.set_index([utme, utmn]).index.isin(dups.set_index([utme, utmn]).index)].copy()
+                    
+                        msg = 'The following user receptors have coordinates that are already in the Census data. They ' + \
+                                ' will be removed from the user receptor list. ' + str(dups['rec_id_y'].tolist())
+                        Logger.logMessage(msg)
+                    
+                    # Put into model
+                    self.model.userrecs_df = user_recs
+                    
+                    # Drop some columns that are not needed in the inner blocks DF
+                    user_recs.drop(columns=['index','fac_id','location_type','utmzone','rec_id'],
+                                   inplace=True)
+        
+                    # Append user_recs to innerblks
+                    self.innerblks = self.innerblks.append(user_recs, ignore_index=True)
+                                            
+    
+            # >= 3 rings, must be > 0 && <= 50000, and monotonically increasing
+    
+            #%%----- Polar receptors ----------
+                
+            # Compute the first polar ring distance ......
+            if self.ring_distances != "":
+                distances = self.ring_distances.split(',')
+                self.model.computedValues['firstring'] = float(distances[0])
+                polar_dist = [float(x) for x in distances]
+                Logger.logMessage("Using defined rings: " + str(polar_dist)[1:-1] )
+            else:
+                # First find the farthest distance to any source.
+                maxsrcd = 0
+                for i in range(0, len(vertx_a)):
+                    dist_cen = math.sqrt((vertx_a[i] - cenx)**2 + (verty_a[i] - ceny)**2)
+                    maxsrcd = max(maxsrcd, dist_cen)
+    
+                # If user first ring is > 100m, then use it, else first ring is maxsrcd + overlap.
+                if self.model.facops[ring1].iloc[0] <= 100:
+                    ring1a = max(maxsrcd+op_overlap, 100)
+                    ring1b = min(ring1a, op_maxdist)
+                    firstring = normal_round(max(ring1b, 100))
+                else:
+                    firstring = self.model.facops[ring1].iloc[0]
+    
+                # Store first ring in computedValues
+                self.model.computedValues['firstring'] = firstring
+    
+                polar_dist = []
+                polar_dist.append(firstring)
+    
+    
+                # Make sure modeling distance is not less than first ring distance
+                if self.model.facops[model_dist].iloc[0] < firstring:
+                    emessage = "Error! Modeling distance is less than first ring."
+                    Logger.logMessage(emessage)
+                    raise Exception("Modeling distance is less than first ring")
+    
+                #.... Compute the rest of the polar ring distances (logarithmically spaced) .......
+    
+                if op_modeldist < op_maxdist:
+                    # first handle ring distances inside the modeling distance
+                    k = 1
+                    if op_modeldist <= polar_dist[0]:
+                        N_in = 0
+                        N_out = op_circles
+                        D_st2 = polar_dist[0]
+                    else:
+                        N_in = normal_round(math.log(op_modeldist/polar_dist[0])/math.log(op_maxdist/polar_dist[0]) * (op_circles - 2))
+                        while k < N_in:
+                            next_dist = round(polar_dist[k-1] * ((op_modeldist/polar_dist[0])**(1/N_in)), -1)
+                            polar_dist.append(next_dist)
+                            k = k + 1
+                        # set a ring at the modeling distance
+                        next_dist = op_modeldist
+                        polar_dist.append(next_dist)
+                        k = k + 1
+                        N_out = op_circles - 1 - N_in
+                        D_st2 = op_modeldist
+                    # next, handle ring distances outside the modeling distance
+                    while k < op_circles - 1:
+                        next_dist = round(polar_dist[k-1] * ((op_maxdist/D_st2)**(1/N_out)), -2)
+                        polar_dist.append(next_dist)
+                        k = k + 1
+                    # set the last ring distance to the domain distance
+                    polar_dist.append(op_maxdist)
+                else:
+                    # model distance = domain distance
+                    k = 1
+                    N_in = normal_round(math.log(op_modeldist/polar_dist[0])/math.log(op_maxdist/polar_dist[0]) * (op_circles - 1))
                     while k < N_in:
                         next_dist = round(polar_dist[k-1] * ((op_modeldist/polar_dist[0])**(1/N_in)), -1)
                         polar_dist.append(next_dist)
                         k = k + 1
-                    # set a ring at the modeling distance
-                    next_dist = op_modeldist
-                    polar_dist.append(next_dist)
-                    k = k + 1
-                    N_out = op_circles - 1 - N_in
-                    D_st2 = op_modeldist
-                # next, handle ring distances outside the modeling distance
-                while k < op_circles - 1:
-                    next_dist = round(polar_dist[k-1] * ((op_maxdist/D_st2)**(1/N_out)), -2)
-                    polar_dist.append(next_dist)
-                    k = k + 1
-                # set the last ring distance to the domain distance
-                polar_dist.append(op_maxdist)
-            else:
-                # model distance = domain distance
-                k = 1
-                N_in = normal_round(math.log(op_modeldist/polar_dist[0])/math.log(op_maxdist/polar_dist[0]) * (op_circles - 1))
-                while k < N_in:
-                    next_dist = round(polar_dist[k-1] * ((op_modeldist/polar_dist[0])**(1/N_in)), -1)
-                    polar_dist.append(next_dist)
-                    k = k + 1
-                # set the last ring distance to the domain distance
-                polar_dist.append(op_maxdist)
-
-        # setup list of polar angles
-        start = 0.
-        stop = 360. - (360./op_radial)
-        polar_angl = np.linspace(start,stop,op_radial).tolist()
-
-        # create distance and angle lists of length (number rings * number angles)
-        polar_dist2 = [i for i in polar_dist for j in polar_angl]
-        polar_angl2 = [j for i in polar_dist for j in polar_angl]
-
-        # create lists of polar utm coordinates and IDs of same length
-        polar_id = ["polgrid1"] * (len(polar_dist) * len(polar_angl))
-        polar_utme = [normal_round(cenx + polardist * math.sin(math.radians(pa))) for polardist in polar_dist for pa in polar_angl]
-        polar_utmn = [normal_round(ceny + polardist * math.cos(math.radians(pa))) for polardist in polar_dist for pa in polar_angl]
-        polar_utmz = [facutmzonenum] * (len(polar_dist) * len(polar_angl))
-
-
-        # sector and ring lists
-        polar_sect = []
-        for a in range(0, len(polar_angl2)):
-            sectnum = int((a % op_radial) + 1)
-            polar_sect.append(sectnum)         
-        polar_ring = []
-        remring = polar_dist2[0]
-        ringcount = 1
-        for i in range(len(polar_dist2)):
-            if polar_dist2[i] == remring:
-                polar_ring.append(ringcount)
-            else:
-                remring = polar_dist2[i]
-                ringcount = ringcount + 1
-                polar_ring.append(ringcount)
-        
-        # construct the polar dataframe from the lists
-        dfitems = [("id",polar_id), ("distance",polar_dist2), (angle,polar_angl2), (utme,polar_utme),
-                   (utmn,polar_utmn), ("utmz",polar_utmz), 
-                   ("sector",polar_sect), ("ring",polar_ring)]
-        polar_df = pd.DataFrame.from_dict(dict(dfitems))
-
-       
-        # compute polar lat/lon
-        polar_df[[lat, lon]] = polar_df.apply(lambda row: UTM.utm2ll(row[utmn],row[utme],facutmzonestr), 
-                                              result_type="expand", axis=1)
-
-        
-        # define the index of polar_df as concatenation of sector and ring
-        polar_idx = polar_df.apply(lambda row: self.define_polar_idx(row[sector], row[ring]), axis=1)
-        polar_df.set_index(polar_idx, inplace=True)
-
-        # determine if polar receptors overlap any emission sources
-        polar_df[overlap] = polar_df.apply(lambda row: self.check_overlap(row[utme], row[utmn], sourcelocs, op_overlap), axis=1)
-
-        # set rec_type of polar receptors
-        polar_df[rec_type] = 'PG'
-        
-        #%%----- Add sector and ring to inner and outer receptors ----------
-
-        # assign sector and ring number (integers) to each inner receptor and compute fractional sector (s)
-        # and ring_loc (log weighted) numbers
-        if self.innerblks.empty == False:
-            self.innerblks[sector], self.innerblks["s"], self.innerblks[ring], self.innerblks["ring_loc"] = \
-                 zip(*self.innerblks.apply(lambda row: self.calc_ring_sector(polar_dist,row[distance],row[angle],op_radial), axis=1))
-        else:
-            self.innerblks[sector], self.innerblks["s"], self.innerblks[ring], self.innerblks["ring_loc"] = None, None, None, None
+                    # set the last ring distance to the domain distance
+                    polar_dist.append(op_maxdist)
+    
+            # setup list of polar angles
+            start = 0.
+            stop = 360. - (360./op_radial)
+            polar_angl = np.linspace(start,stop,op_radial).tolist()
+    
+            # create distance and angle lists of length (number rings * number angles)
+            polar_dist2 = [i for i in polar_dist for j in polar_angl]
+            polar_angl2 = [j for i in polar_dist for j in polar_angl]
+    
+            # create lists of polar utm coordinates and IDs of same length
+            polar_id = ["polgrid1"] * (len(polar_dist) * len(polar_angl))
+            polar_utme = [normal_round(cenx + polardist * math.sin(math.radians(pa))) for polardist in polar_dist for pa in polar_angl]
+            polar_utmn = [normal_round(ceny + polardist * math.cos(math.radians(pa))) for polardist in polar_dist for pa in polar_angl]
+            polar_utmz = [facutmzonenum] * (len(polar_dist) * len(polar_angl))
+    
+    
+            # sector and ring lists
+            polar_sect = []
+            for a in range(0, len(polar_angl2)):
+                sectnum = int((a % op_radial) + 1)
+                polar_sect.append(sectnum)         
+            polar_ring = []
+            remring = polar_dist2[0]
+            ringcount = 1
+            for i in range(len(polar_dist2)):
+                if polar_dist2[i] == remring:
+                    polar_ring.append(ringcount)
+                else:
+                    remring = polar_dist2[i]
+                    ringcount = ringcount + 1
+                    polar_ring.append(ringcount)
+                                
+            # construct the polar dataframe from the lists
+            dfitems = [("id",polar_id), ("distance",polar_dist2), (angle,polar_angl2), (utme,polar_utme),
+                       (utmn,polar_utmn), ("utmz",polar_utmz), 
+                       ("sector",polar_sect), ("ring",polar_ring)]
+            polar_df = pd.DataFrame.from_dict(dict(dfitems))
+    
+           
+            # compute polar lat/lon
+            polar_df[[lat, lon]] = polar_df.apply(lambda row: UTM.utm2ll(row[utmn],row[utme],facutmzonestr), 
+                                                  result_type="expand", axis=1)
+    
             
-        # assign sector and ring number (integers) to each outer receptor and compute fractional sector (s)
-        # and ring_loc (log weighted) numbers
-        if not self.outerblks.empty:
-            self.outerblks[sector], self.outerblks["s"], self.outerblks[ring], self.outerblks["ring_loc"] = \
-                 zip(*self.outerblks.apply(lambda row: self.calc_ring_sector(polar_dist,row[distance],row[angle],op_radial), axis=1))
+            # define the index of polar_df as concatenation of sector and ring
+            polar_idx = polar_df.apply(lambda row: self.define_polar_idx(row[sector], row[ring]), axis=1)
+            polar_df.set_index(polar_idx, inplace=True)
+    
+            # determine if polar receptors overlap any emission sources
+            polar_df[overlap] = polar_df.apply(lambda row: self.check_overlap(row[utme], row[utmn], sourcelocs, op_overlap), axis=1)
+    
+            # set rec_type of polar receptors
+            polar_df[rec_type] = 'PG'
 
-        
-        #%%------ Elevations and hill height ---------
+            
+            #%%----- Add sector and ring to inner and outer receptors ----------
+    
+            # assign sector and ring number (integers) to each inner receptor and compute fractional sector (s)
+            # and ring_loc (log weighted) numbers
+            if self.innerblks.empty == False:
+                self.innerblks[sector], self.innerblks["s"], self.innerblks[ring], self.innerblks["ring_loc"] = \
+                     zip(*self.innerblks.apply(lambda row: self.calc_ring_sector(polar_dist,row[distance],row[angle],op_radial), axis=1))
+            else:
+                self.innerblks[sector], self.innerblks["s"], self.innerblks[ring], self.innerblks["ring_loc"] = None, None, None, None
+                
+            # assign sector and ring number (integers) to each outer receptor and compute fractional sector (s)
+            # and ring_loc (log weighted) numbers
+            if not self.outerblks.empty:
+                self.outerblks[sector], self.outerblks["s"], self.outerblks[ring], self.outerblks["ring_loc"] = \
+                     zip(*self.outerblks.apply(lambda row: self.calc_ring_sector(polar_dist,row[distance],row[angle],op_radial), axis=1))
+    
+            
+            #%%------ Elevations and hill height ---------
+ 
+            # if the facility will use elevations, assign them to emission sources and polar receptors        
+            if self.model.facops[elev].iloc[0].upper() == "Y":
+                polar_df[elev], polar_df[hill], polar_df['avgelev'] = zip(*polar_df.apply(lambda row: 
+                            self.assign_polar_elev_step1(row,self.innerblks,self.outerblks,maxdist), axis=1))
 
-        # if the facility will use elevations, assign them to emission sources and polar receptors        
-        if self.model.facops[elev].iloc[0].upper() == "Y":
-            polar_df[elev], polar_df[hill], polar_df['avgelev'] = zip(*polar_df.apply(lambda row: 
-                        self.assign_polar_elev_step1(row,self.innerblks,self.outerblks,maxdist), axis=1))
-            # If user did not supply any source elevations, compute them. Otherwise, empty
-            # source elevations will be taken as 0.
-            if emislocs[elev].max() == 0 and emislocs[elev].min() == 0:
-                emislocs[elev] = self.compute_emisloc_elev(polar_df,op_circles)
-            # if polar receptor still has missing elevation, fill it in
-            polar_df[elev], polar_df[hill], polar_df['avgelev'] = zip(*polar_df.apply(lambda row: 
-                        self.assign_polar_elev_step2(row,self.innerblks,self.outerblks,emislocs), axis=1))
-        else:
-            polar_df[elev] = 0
-            polar_df[hill] = 0
-            emislocs[elev] = 0
-            emislocs[hill] = 0
+                 # If user did not supply any source elevations, compute them. Otherwise, empty
+                # source elevations will be taken as 0.
+                if emislocs[elev].max() == 0 and emislocs[elev].min() == 0:
+                    emislocs[elev] = self.compute_emisloc_elev(polar_df,op_circles)
+                # if polar receptor still has missing elevation, fill it in
+                polar_df[elev], polar_df[hill], polar_df['avgelev'] = zip(*polar_df.apply(lambda row: 
+                            self.assign_polar_elev_step2(row,self.innerblks,self.outerblks,emislocs), axis=1))
+            else:
+                polar_df[elev] = 0
+                polar_df[hill] = 0
+                emislocs[elev] = 0
+                emislocs[hill] = 0
+    
+            # Assign the polar grid data frame to the model
+            self.model.polargrid = polar_df
+                
+            
+            #%% Compile the Aermod runstream file
+ 
+            runstream = Runstream(self.model.facops, emislocs, hapemis, buoyant_df,
+                                  polyver_df, bldgdw_df, partdia_df, landuse_df,
+                                  seasons_df, emisvar_df, self.model)
+            runstream.build_co(runPhase, self.innerblks, self.outerblks)
+            runstream.build_so(runPhase)
+            runstream.build_re(self.innerblks, cenx, ceny, polar_df)
+            metfile, distanceToMet = runstream.build_me(cenlat, cenlon)
+            self.model.computedValues['metfile'] = metfile
+            self.model.computedValues['distance'] = distanceToMet
+    
+            runstream.build_ou()
+            
+            print("Runstream is built")
+    
+            return runstream
+            #no return statement since it will just need to build the file
+            #return rs.Runstream(self.model.facops, emislocs, hapemis, cenlat, cenlon, cenx, ceny, self.innerblks, user_recs, buoyant_df, polyver_df, polar_df, bldgdw_df, partdia_df, landuse_df, seasons_df, gasparams_df)
 
-        # Assign the polar grid data frame to the model
-        self.model.polargrid = polar_df
-
-        
-        #%% this is where runstream file will be compiled
-        #new logic to be
-
-        runstream = Runstream(self.model.facops, emislocs, hapemis, buoyant_df,
-                              polyver_df, bldgdw_df, partdia_df, landuse_df,
-                              seasons_df, emisvar_df, self.model)
-        runstream.build_co(runPhase, self.innerblks, self.outerblks)
-        runstream.build_so(runPhase)
-        runstream.build_re(self.innerblks, cenx, ceny, polar_df)
-        metfile, distanceToMet = runstream.build_me(cenlat, cenlon)
-        self.model.computedValues['metfile'] = metfile
-        self.model.computedValues['distance'] = distanceToMet
-
-        runstream.build_ou()
-
-        return runstream
-        #no return statement since it will just need to build the file
-        #return rs.Runstream(self.model.facops, emislocs, hapemis, cenlat, cenlon, cenx, ceny, self.innerblks, user_recs, buoyant_df, polyver_df, polar_df, bldgdw_df, partdia_df, landuse_df, seasons_df, gasparams_df)
-
+        except Exception as ex:
+            
+            fullStackInfo = traceback.format_exc()
+            message = "An error occurred while running the FacilityPrep module:\n" + fullStackInfo
+            print(message)
+            Logger.logMessage(message)
+            
+            runstream = None
+            return runstream
+            
     
     
     #%% Calculate ring and sector of block receptors
@@ -570,43 +591,29 @@ class FacilityPrep():
     #%% Assign elevation and hill height to polar receptors
     def assign_polar_elev_step1(self, polar_row, innblks, outblks, maxdist):
 
-        sector1 = polar_row[sector]
-        ring1 = polar_row[ring]
-
-        # subset the inner and outer block dataframes to sector, ring
-        innblks_sub = innblks.loc[(innblks[sector] == sector1) & (innblks[ring] == ring1)]
-        if not outblks.empty:
-            outblks_sub = outblks.loc[(outblks[sector] == sector1) & (outblks[ring] == ring1)]
-
-        # initialize variables
-        r_nearelev = -999
-        r_maxelev = -999
-        r_hill = -999
-        r_pop = 0
-        r_nblk = 0
-        r_avgelev = 0
-        r_popelev = 0
-        d_test = 0
-        d_nearelev = 99999
-
-        # look at inner block subset
-        for index, row in innblks_sub.iterrows():
-            if row[elev] > r_maxelev:
-                r_maxelev = row[elev]
-                r_hill = row[hill]
-            r_avgelev = r_avgelev + row[elev]
-            r_popelev = r_popelev + row[elev] * row[population]
-            r_nblk = r_nblk + 1
-            r_pop = r_pop + row[population]
-            d_test = math.sqrt(row[distance]**2 + polar_row[distance]**2 - 2*row[distance]*polar_row[distance]*math.cos(math.radians(row[angle]-polar_row[angle])))
-            if d_test <= d_nearelev:
-                d_nearelev = d_test
-                r_nearelev = row[elev]
-
-
-        # look at outer block subset
-        if not outblks.empty:
-            for index, row in outblks_sub.iterrows():
+        try:
+            
+            sector1 = polar_row[sector]
+            ring1 = polar_row[ring]
+                
+            # subset the inner and outer block dataframes to sector, ring
+            innblks_sub = innblks.loc[(innblks[sector] == sector1) & (innblks[ring] == ring1)]
+            if not outblks.empty:
+                outblks_sub = outblks.loc[(outblks[sector] == sector1) & (outblks[ring] == ring1)]
+    
+            # initialize variables
+            r_nearelev = -999
+            r_maxelev = -999
+            r_hill = -999
+            r_pop = 0
+            r_nblk = 0
+            r_avgelev = 0
+            r_popelev = 0
+            d_test = 0
+            d_nearelev = 99999
+            
+            # look at inner block subset
+            for index, row in innblks_sub.iterrows():
                 if row[elev] > r_maxelev:
                     r_maxelev = row[elev]
                     r_hill = row[hill]
@@ -617,22 +624,45 @@ class FacilityPrep():
                 d_test = math.sqrt(row[distance]**2 + polar_row[distance]**2 - 2*row[distance]*polar_row[distance]*math.cos(math.radians(row[angle]-polar_row[angle])))
                 if d_test <= d_nearelev:
                     d_nearelev = d_test
-                    r_nearelev = row[elev]
+                    r_nearelev = row[elev]               
+    
+            # look at outer block subset
+            if not outblks.empty:
+                for index, row in outblks_sub.iterrows():
+                    if row[elev] > r_maxelev:
+                        r_maxelev = row[elev]
+                        r_hill = row[hill]
+                    r_avgelev = r_avgelev + row[elev]
+                    r_popelev = r_popelev + row[elev] * row[population]
+                    r_nblk = r_nblk + 1
+                    r_pop = r_pop + row[population]
+                    d_test = math.sqrt(row[distance]**2 + polar_row[distance]**2 - 2*row[distance]*polar_row[distance]*math.cos(math.radians(row[angle]-polar_row[angle])))
+                    if d_test <= d_nearelev:
+                        d_nearelev = d_test
+                        r_nearelev = row[elev]    
+    
+            # compute average and population elevations
+            if r_nblk > 0:
+                r_avgelev = r_avgelev/r_nblk
+            else:
+                r_avgelev = -999
+    
+            if r_pop > 0:
+                r_popelev = r_popelev/r_pop
+            else:
+                r_popelev = -999
+    
+            # Note: the max elevation is returned as the elevation for this polar receptor
+            return normal_round(r_maxelev), normal_round(r_hill), normal_round(r_avgelev)
+        
+        except Exception as ex:
+            
+            fullStackInfo=''.join(traceback.format_exception(
+                ex, value=ex, tb=ex.__traceback__))
+            message = "An error occurred in assign_polar_elev_step1:\n" + fullStackInfo
+            print(message)
+            Logger.logMessage(message)
 
-
-        # compute average and population elevations
-        if r_nblk > 0:
-            r_avgelev = r_avgelev/r_nblk
-        else:
-            r_avgelev = -999
-
-        if r_pop > 0:
-            r_popelev = r_popelev/r_pop
-        else:
-            r_popelev = -999
-
-        # Note: the max elevation is returned as the elevation for this polar receptor
-        return normal_round(r_maxelev), normal_round(r_hill), normal_round(r_avgelev)
 
     #%% Assign elevation and hill height to polar receptors that still have missing elevations
     def assign_polar_elev_step2(self, polar_row, innblks, outblks, emislocs):

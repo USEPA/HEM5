@@ -4,10 +4,10 @@ from com.sca.hem4.support.UTM import *
 from com.sca.hem4.model.Model import *
 from com.sca.hem4.log.Logger import Logger
 import sys
+import polars as pl
 
 rec_id = 'rec_id';
 fips = 'fips';
-idmarplot = 'idmarplot';
 population = 'population';
 moved = 'moved';
 urban_pop = 'urban_pop';
@@ -201,8 +201,8 @@ def in_box(modelblks, sourcelocs, modeldist, maxdist, overlap_dist, model):
         if len(indist) > 0:
             # Append to innerblks and shrink outerblks
             innerblks = innerblks.append(indist).reset_index(drop=True)
-            innerblks = innerblks[~innerblks[idmarplot].duplicated()]
-            outerblks = outerblks[~outerblks[idmarplot].isin(innerblks[idmarplot])].copy()
+            innerblks = innerblks[~innerblks['blockid'].duplicated()]
+            outerblks = outerblks[~outerblks['blockid'].isin(innerblks['blockid'])].copy()
 
 #            #Do any of these inner or outer blocks overlap this source?
 #            innerblks.loc[innerblks['overlap'] != 'Y', 'overlap'] = np.where(np.sqrt(np.double((innerblks[utme]-src_x)**2 +
@@ -229,8 +229,8 @@ def in_box(modelblks, sourcelocs, modeldist, maxdist, overlap_dist, model):
             if len(indist) > 0:
                 # Append to innerblks and shrink outerblks
                 innerblks = innerblks.append(indist).reset_index(drop=True)
-                innerblks = innerblks[~innerblks[idmarplot].duplicated()]
-                outerblks = outerblks[~outerblks[idmarplot].isin(innerblks[idmarplot])]
+                innerblks = innerblks[~innerblks['blockid'].duplicated()]
+                outerblks = outerblks[~outerblks['blockid'].isin(innerblks['blockid'])]
             
             if outerblks.empty:
                 # Break for loop if no more outer blocks
@@ -246,13 +246,13 @@ def in_box(modelblks, sourcelocs, modeldist, maxdist, overlap_dist, model):
             # If this polygon is a census tract (e.g. NATA application), then any outer receptor within tract will be
             # considered an inner receptor. Do not perform this check for the user receptor only application.
             if not model.altRec_optns["altrec"]:
-                outerblks.loc[:, "tract"] = outerblks[idmarplot].str[1:11]
+                outerblks.loc[:, "tract"] = outerblks['blockid'].str[1:11]
                 polyvertices.loc[:, "tract"] = polyvertices[fac_id].str[0:10]
                 intract = pd.merge(outerblks, polyvertices, how='inner', on='tract')
                 if len(intract) > 0:
                     innerblks = innerblks.append(intract).reset_index(drop=True)
-                    innerblks = innerblks[~innerblks[idmarplot].duplicated()]
-                    outerblks = outerblks[~outerblks[idmarplot].isin(innerblks[idmarplot])]
+                    innerblks = innerblks[~innerblks['blockid'].duplicated()]
+                    outerblks = outerblks[~outerblks['blockid'].isin(innerblks['blockid'])]
             
             # Are any blocks within the modeldist of any polygon side?
             # Process each source_id
@@ -267,8 +267,8 @@ def in_box(modelblks, sourcelocs, modeldist, maxdist, overlap_dist, model):
                         polyblks = outerblks.query('nearpoly == True')
                         if len(polyblks) > 0:
                             innerblks = innerblks.append(polyblks).reset_index(drop=True)
-                            innerblks = innerblks[~innerblks[idmarplot].duplicated()]
-                            outerblks = outerblks[~outerblks[idmarplot].isin(innerblks[idmarplot])]
+                            innerblks = innerblks[~innerblks['blockid'].duplicated()]
+                            outerblks = outerblks[~outerblks['blockid'].isin(innerblks['blockid'])]
                     if outerblks.empty:
                         # Break for loop if no more outer blocks
                         break
@@ -396,54 +396,26 @@ def getblocks(cenx, ceny, cenlon, cenlat, utmzone, hemi, maxdist, modeldist, sou
         maxdist_deg = 20000*39.36/36/2000/60
     else:
         maxdist_deg = maxdist*39.36/36/2000/60
-    
-    #load census key into data frame
-    dtype_dict = '{"ELEV_MAX":float,"FILE_NAME":object,"FIPS":object,"LAT_MAX":float,"LAT_MIN":float,"LON_MAX":float,"LON_MIN":float,"MIN_REC":int,"NO":int,"YEAR":int}'
-    census_key = read_json_file("census/census_key.json", dtype_dict)
-    census_key.columns = [x.lower() for x in census_key.columns]
 
+    # Subset the national census blocks to blocks within one lat/lon of the facility center.
+    # This creates a smaller dataframe that is more efficient.
+    censusblks = model.census.dataframe.filter(
+        (pl.col('lat') <= cenlat+1) & (pl.col('lat') >= cenlat-1) 
+        & (pl.col('lon') <= cenlon+1) & (pl.col('lon') >= cenlon-1)).collect().to_pandas()
 
-    # "inzone" represents counties within the max distance modeling radius
-    # create selection for "inzone" and find where true in census_key dataframe
-    census_key["inzone"] = census_key.apply(lambda row: cntyinzone(row["lat_min"], row["lon_min"], row["lat_max"], row["lon_max"], cenlat, cenlon, maxdist_deg), axis=1)
-    cntyinzone_df = census_key.query('inzone == True')
-    
-    censusfile2use = {}    
-    
-    # Find all blocks within the intersecting counties that intersect the modeling zone. Store them in modelblks.
-    frames = []
-
-    for index, row in cntyinzone_df.iterrows():
-        
-        state = "census/" + row['file_name'] + ".json"
-        # Query state census file
-        if state in censusfile2use:
-            censusfile2use[state].append(str(row[fips]))
-        else:
-            censusfile2use[state] = [str(row[fips])]
-       
-    for state, FIPS in censusfile2use.items():
-        locations = FIPS
-        dtype_dict = '{"REC_NO":int, "FIPS":object, "IDMARPLOT":object, "POPULATION":int, "LAT":float, "LON":float, "ELEV":float, "HILL":float, "URBAN_POP":int}'
-        state_pd = read_json_file(state, dtype_dict)        
-        state_pd.columns = [x.lower() for x in state_pd.columns]
-        state_pd.rename(inplace=True, index=str, columns={'rec_no' : 'rec_id'})
-        check = state_pd[state_pd[fips].isin(locations)]
-        frames.append(check)
-
-    # If no blocks within max distance, then this facility cannot be modeled; skip it.
-    if len(frames) == 0:
+    if len(censusblks) == 0:
         Logger.logMessage("There are no discrete receptors within the max distance of this facility. " +
                           "Aborting processing of this facility.")
         raise ValueError("No discrete receptors selected within max distance")
-            
 
-    #combine all frames df's
-    censusblks = pd.concat(frames)
-
-    #compute distance from the center of the facility to each block
+    # Compute a distance (in meters) between each block and the facility center
     blkcoors = np.array(tuple(zip(censusblks.lon, censusblks.lat)))
     censusblks[distance] = haversineDistance(blkcoors, cenlon, cenlat)
+    
+    # # Using the national census DF, compute the distance from the facility center to each block
+    # censusblks = model.census.dataframe.copy()
+    # blkcoors = np.array(tuple(zip(censusblks.lon, censusblks.lat)))
+    # censusblks[distance] = haversineDistance(blkcoors, cenlon, cenlat)
 
     # If the user has not selected Urban or Rural dispersion, then compute default
     # by taking all blocks within 3km of facility and compute the population density.
@@ -461,7 +433,7 @@ def getblocks(cenx, ceny, cenlon, cenlat, utmzone, hemi, maxdist, modeldist, sou
 
     #subset the censusblks dataframe to blocks that are within the max distance of the facility 
     modelblks = censusblks.query('distance <= @maxdist').copy()
-
+    
     # Check again. If no blocks within max distance, then this facility cannot be modeled; skip it.
     if len(modelblks) == 0:
         Logger.logMessage("There are no discrete receptors within the max distance of this facility. " +
@@ -475,9 +447,9 @@ def getblocks(cenx, ceny, cenlon, cenlat, utmzone, hemi, maxdist, modeldist, sou
         Logger.logMessage(emessage)
         raise Exception(emessage)
         
-    modelblksduplicates = modelblks[modelblks.duplicated(['idmarplot'])]
+    modelblksduplicates = modelblks[modelblks.duplicated(['blockid'])]
     if len(modelblksduplicates) > 0:
-        emessage = "Error! Census blocks contain duplicate idmarplot values."
+        emessage = "Error! Census blocks contain duplicate block IDs."
         Logger.logMessage(emessage)
         raise Exception(emessage)
 
@@ -494,9 +466,9 @@ def getblocks(cenx, ceny, cenlon, cenlat, utmzone, hemi, maxdist, modeldist, sou
     # Compute the bearing (angle) from the facility center to each modeling block
     modelblks[angle] = modelblks.apply(lambda row: bearing(row[utme],row[utmn],cenx,ceny), axis=1)
       
-    #coerce hill and elevation into floats
-    modelblks[hill] = pd.to_numeric(modelblks[hill], errors='coerce').fillna(0)
-    modelblks[elev] = pd.to_numeric(modelblks[elev], errors='coerce').fillna(0)
+    # #coerce hill and elevation into floats
+    # modelblks[hill] = pd.to_numeric(modelblks[hill], errors='coerce').fillna(0)
+    # modelblks[elev] = pd.to_numeric(modelblks[elev], errors='coerce').fillna(0)
     
     
     # Split modelblks into inner and outer block receptors

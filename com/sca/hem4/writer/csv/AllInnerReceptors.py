@@ -63,7 +63,7 @@ class AllInnerReceptors(CsvWriter, InputFile):
         """
         Compute source and pollutant specific air concentrations at inner receptors.
         """
-
+        
         # Units conversion factor
         self.cf = 2000*0.4536/3600/8760
 
@@ -100,8 +100,7 @@ class AllInnerReceptors(CsvWriter, InputFile):
 
         dlist = []
         col_list = self.getColumns()
-
-
+        
         # process inner concs one source_id at a time
         for x in srcids:
             innerplot_onesrcid = innerplot_df[self.plotcols[self.rtype]].loc[innerplot_df[source_id] == x]
@@ -119,8 +118,7 @@ class AllInnerReceptors(CsvWriter, InputFile):
                         self.innblkCache[key] = record
                     
                     d_fips = record[fips].values[0]
-                    d_idmarplot = record[idmarplot].values[0]
-                    d_block = d_idmarplot[-10:]
+                    d_block = record['blockid'].values[0]
                     d_lat = record[lat].values[0]
                     d_lon = record[lon].values[0]
                     d_sourceid = row1.source_id

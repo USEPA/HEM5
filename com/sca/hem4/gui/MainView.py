@@ -48,7 +48,7 @@ class MainView(tk.Frame):
         self.analyze.place(in_=self.container, relx=0.3, relwidth=0.7, relheight=1)
         self.analyze.lower()
 
-        # instantiate analyze outputs
+        # instantiate EJ module
         self.ej = EJ(self)
         self.ej.place(in_=self.container, relx=0.3, relwidth=0.7, relheight=1)
         self.ej.lower()

@@ -178,7 +178,7 @@ class AcuteChemicalMax(ExcelWriter, InputFile):
                 acute_df.at[index,fips] = self.model.innerblks_df.loc[(self.model.innerblks_df[lon] == row[lon]) & 
                                                (self.model.innerblks_df[lat] == row[lat]), fips].values[0]
                 acute_df.at[index,block] = self.model.innerblks_df[(self.model.innerblks_df[lon] == row[lon]) & 
-                                               (self.model.innerblks_df[lat] == row[lat])][idmarplot].values[0][-10:]
+                                               (self.model.innerblks_df[lat] == row[lat])]['blockid'].values[0]
                 acute_df.at[index,rec_type] = self.model.innerblks_df.loc[(self.model.innerblks_df[lon] == row[lon]) & 
                                                (self.model.innerblks_df[lat] == row[lat]), rec_type].values[0]
             else:
@@ -199,7 +199,7 @@ class AcuteChemicalMax(ExcelWriter, InputFile):
                 acute_df.at[index,fips] = self.model.outerblks_df.loc[(self.model.outerblks_df[lon] == row[lon]) & 
                                                (self.model.outerblks_df[lat] == row[lat]), fips].values[0]
                 acute_df.at[index,block] = self.model.outerblks_df[(self.model.outerblks_df[lon] == row[lon]) & 
-                                               (self.model.outerblks_df[lat] == row[lat])][idmarplot].values[0][-10:]
+                                               (self.model.outerblks_df[lat] == row[lat])]['blockid'].values[0]
                 acute_df.at[index,rec_type] = self.model.outerblks_df.loc[(self.model.outerblks_df[lon] == row[lon]) & 
                                                (self.model.outerblks_df[lat] == row[lat]), rec_type].values[0]
         
