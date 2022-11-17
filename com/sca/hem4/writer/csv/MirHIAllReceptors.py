@@ -76,8 +76,6 @@ class MirHIAllReceptors(CsvWriter, InputFile):
                 # Remove rows where population is zero
                 bsc_df = bsc_df[bsc_df['population'] != 0]
                 bsc_df['fac_count'] = 1
-                
-                # Compute the distance (m) between each block and the facility center
                 blkcoors = np.array(tuple(zip(bsc_df.lon, bsc_df.lat)))                
                 bsc_df[distance] = haversineDistance(blkcoors, center_lon, center_lat)
 

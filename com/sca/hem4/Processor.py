@@ -2,6 +2,7 @@ import os
 import shutil
 import threading
 from datetime import datetime
+import pdb
 
 import pandas as pd
 
@@ -13,13 +14,10 @@ from com.sca.hem4.writer.excel.FacilityCancerRiskExp import FacilityCancerRiskEx
 from com.sca.hem4.writer.excel.FacilityTOSHIExp import FacilityTOSHIExp
 from com.sca.hem4.writer.kml.KMLWriter import KMLWriter
 from com.sca.hem4.inputsfolder.InputsPackager import InputsPackager
-from com.sca.hem4.upload.FileUploader import FileUploader
 
 import traceback
 from collections import defaultdict
 import uuid
-import time
-import sys
 
 from tkinter import messagebox
 
@@ -49,23 +47,8 @@ class Processor():
           
         except BaseException as ex:
             print(ex)
-            
-        
-        # Load the national census data into a polars lazyframe for future querying
-        self.uploader = FileUploader(self.model)
-        success = self.uploader.uploadLibrary("census")
-        if not success:
-            messagebox.showinfo('Error', "Invalid Census file. Check log for details.")
-            return success
 
-        # # Load the national census data into a data frame
-        # self.uploader = FileUploader(self.model)
-        # success = self.uploader.uploadLibrary("census")
-        # if not success:
-        #     messagebox.showinfo('Error', "Invalid Census file. Check log for details.")
-        #     return success
-
-        
+       
         Logger.logMessage("RUN GROUP: " + self.model.group_name)
         
 
@@ -102,6 +85,7 @@ class Processor():
                 fac_list.append(facid)
                 num = 1
     
+    #        Logger.logMessage("The facility ids being modeled: , False)
             Logger.logMessage("The facility ids being modeled: " + ", ".join(fac_list))
     
             success = False
@@ -121,8 +105,10 @@ class Processor():
 #                    Logger.logMessage("Aborting processing...")
                     success = False
                     return success
-                                
                 
+                
+                
+                #save version of this gui as is? constantly overwrite it once each facility is done?
                 Logger.logMessage("Running facility " + str(num) + " of " + str(len(fac_list)))
                 
                 success = False
@@ -135,7 +121,8 @@ class Processor():
                 except BaseException as ex:
 
                     self.exception = ex
-                    fullStackInfo = traceback.format_exc()
+                    fullStackInfo=''.join(traceback.format_exception(
+                        etype=type(ex), value=ex, tb=ex.__traceback__))
     
                     message = "An error occurred while running a facility:\n" + fullStackInfo
                     print(message)
@@ -223,7 +210,12 @@ class Processor():
 
                 #reset model options aftr facility
                 self.model.model_optns = defaultdict()
-                                
+                
+#                try:  
+#                    self.model.save.remove_folder()
+#                except:
+#                    pass
+                
                 
          # move the log file to the run dir and re-initialize
         Logger.archiveLog(self.model.rootoutput)

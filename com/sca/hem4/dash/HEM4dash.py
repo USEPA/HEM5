@@ -5,9 +5,9 @@ Created on Wed Feb 26 07:07:56 2020
 @author: MMORRIS
 """
 import dash
-from dash import dash_table
-from dash import dcc
-from dash import html 
+import dash_table
+import dash_core_components as dcc
+import dash_html_components as html 
 import plotly.graph_objects as go 
 import subprocess, webbrowser
 from threading import Timer

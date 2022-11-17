@@ -126,7 +126,8 @@ class Temporal(CsvWriter, InputFile):
                         self.innblkCache[key] = record
 
                     d_fips = record[fips].values[0]
-                    d_block = record['blockid'].values[0]
+                    d_idmarplot = record[idmarplot].values[0]
+                    d_block = d_idmarplot[-10:]
                     d_lat = record[lat].values[0]
                     d_lon = record[lon].values[0]
                     d_pollutant = row2.pollutant
@@ -181,7 +182,7 @@ class Temporal(CsvWriter, InputFile):
         dlist = []
 
         # outer blocks
-        outblks = self.model.outerblks_df[[fips, 'blockid', lat, lon, elev, 'distance', 'angle', population, overlap,
+        outblks = self.model.outerblks_df[[fips, idmarplot, lat, lon, elev, 'distance', 'angle', population, overlap,
                's', 'ring_loc']].copy()
         
         # polar receptors
@@ -193,7 +194,7 @@ class Temporal(CsvWriter, InputFile):
         d_list = []
         for index, row in outblks.iterrows():
             d_fips = row[fips]
-            d_block = row['blockid']
+            d_block = row[idmarplot][5:]
             d_lat = row[lat]
             d_lon = row[lon]
             d_population = row[population]
@@ -275,7 +276,8 @@ class Temporal(CsvWriter, InputFile):
                         self.outblkCache[key] = record
 
                     d_fips = record[fips].values[0]
-                    d_block = record['blockid'].values[0]
+                    d_idmarplot = record[idmarplot].values[0]
+                    d_block = d_idmarplot[-10:]
                     d_lat = record[lat].values[0]
                     d_lon = record[lon].values[0]
                     d_pollutant = row2.pollutant
