@@ -1,6 +1,8 @@
 import re
 import operator
 import math
+import numpy as np
+import pandas as pd
 
 from pandas import Series
 
@@ -233,7 +235,7 @@ class AllOuterReceptorsNonCensus(CsvWriter, InputFile):
                                                        * outer_polconcs_p['part_frac'] * self.cf
                         outer_polconcs_v['conc'] = outer_polconcs_v['intconc'] * outer_polconcs_v['emis_tpy'] \
                                                        * ( 1 - outer_polconcs_v['part_frac']) * self.cf
-                        outer_polconcs = outer_polconcs_p.append(outer_polconcs_v, ignore_index=True)
+                        outer_polconcs = pd.concat([outer_polconcs_p, outer_polconcs_v], ignore_index=True)
          
                     self.dataframe = outer_polconcs[col_list]
                     self.data = self.dataframe.values
@@ -265,7 +267,7 @@ class AllOuterReceptorsNonCensus(CsvWriter, InputFile):
                                                            * outer_polconcs_p['part_frac'] * self.cf
                             outer_polconcs_v['conc'] = outer_polconcs_v['intconc'] * outer_polconcs_v['emis_tpy'] \
                                                            * ( 1 - outer_polconcs_v['part_frac']) * self.cf
-                            outer_polconcs = outer_polconcs_p.append(outer_polconcs_v, ignore_index=True)
+                            outer_polconcs = pd.concat([outer_polconcs_p, outer_polconcs_v], ignore_index=True)
     
                         self.dataframe = outer_polconcs[col_list]
                         self.data = self.dataframe.values
@@ -286,7 +288,7 @@ class AllOuterReceptorsNonCensus(CsvWriter, InputFile):
                                                        * outer_polconcs_p['part_frac'] * self.cf
                         outer_polconcs_v['conc'] = outer_polconcs_v['intconc'] * outer_polconcs_v['emis_tpy'] \
                                                        * ( 1 - outer_polconcs_v['part_frac']) * self.cf
-                        outer_polconcs = outer_polconcs_p.append(outer_polconcs_v, ignore_index=True)
+                        outer_polconcs = pd.concat([outer_polconcs_p, outer_polconcs_v], ignore_index=True)
     
                     self.dataframe = outer_polconcs[col_list]
                     self.data = self.dataframe.values
@@ -429,7 +431,7 @@ class AllOuterReceptorsNonCensus(CsvWriter, InputFile):
                                                        * ( 1 - outer_polconcs_v['part_frac']) * self.cf
                         outer_polconcs_v['aconc'] = outer_polconcs_v['intaconc'] * outer_polconcs_v['emis_tpy'] \
                                                        * ( 1 - outer_polconcs_v['part_frac']) * self.cf
-                        outer_polconcs = outer_polconcs_p.append(outer_polconcs_v, ignore_index=True)
+                        outer_polconcs = pd.concat([outer_polconcs_p, outer_polconcs_v], ignore_index=True)
     
                     self.dataframe = outer_polconcs[col_list]
                     self.data = self.dataframe.values
@@ -466,7 +468,7 @@ class AllOuterReceptorsNonCensus(CsvWriter, InputFile):
                                                            * ( 1 - outer_polconcs_v['part_frac']) * self.cf
                             outer_polconcs_v['aconc'] = outer_polconcs_v['intaconc'] * outer_polconcs_v['emis_tpy'] \
                                                            * ( 1 - outer_polconcs_v['part_frac']) * self.cf
-                            outer_polconcs = outer_polconcs_p.append(outer_polconcs_v, ignore_index=True)
+                            outer_polconcs = pd.concat([outer_polconcs_p, outer_polconcs_v], ignore_index=True)
     
                         self.dataframe = outer_polconcs[col_list]
                         self.data = self.dataframe.values
@@ -493,7 +495,7 @@ class AllOuterReceptorsNonCensus(CsvWriter, InputFile):
                                                        * ( 1 - outer_polconcs_v['part_frac']) * self.cf
                         outer_polconcs_v['aconc'] = outer_polconcs_v['intaconc'] * outer_polconcs_v['emis_tpy'] \
                                                        * ( 1 - outer_polconcs_v['part_frac']) * self.cf
-                        outer_polconcs = outer_polconcs_p.append(outer_polconcs_v, ignore_index=True)
+                        outer_polconcs = pd.concat([outer_polconcs_p, outer_polconcs_v], ignore_index=True)
     
                     self.dataframe = outer_polconcs[col_list]
                     self.data = self.dataframe.values
@@ -537,26 +539,21 @@ class AllOuterReceptorsNonCensus(CsvWriter, InputFile):
     def interpolate(self, conc_s1r1, conc_s1r2, conc_s2r1, conc_s2r2, s, ring_loc):
         # Interpolate 4 concentrations to the point defined by (s, ring_loc)
         
-        # initialize the output array
-        ic = np.zeros(len(conc_s1r1), dtype=float)
+        R_s12 = np.where((conc_s1r1>0) & (conc_s1r2>0)
+                         ,
+                         np.exp((np.log(conc_s1r1) * (ring_loc.astype(int)+1-ring_loc)) +
+                                    (np.log(conc_s1r2) * (ring_loc-ring_loc.astype(int))))
+                         ,
+                         np.maximum(conc_s1r1, conc_s1r2))
         
-        for i in np.arange(len(conc_s1r1)):
-            
-            if conc_s1r1[i] == 0 or conc_s1r2[i] == 0:
-                R_s12 = max(conc_s1r1[i], conc_s1r2[i])
-            else:
-                Lnr_s12 = ((math.log(conc_s1r1[i]) * (int(ring_loc[i])+1-ring_loc[i])) +
-                           (math.log(conc_s1r2[i]) * (ring_loc[i]-int(ring_loc[i]))))
-                R_s12 = math.exp(Lnr_s12)
-    
-            if conc_s2r1[i] == 0 or conc_s2r2[i] == 0:
-                R_s34 = max(conc_s2r1[i], conc_s2r2[i])
-            else:
-                Lnr_s34 = ((math.log(conc_s2r1[i]) * (int(ring_loc[i])+1-ring_loc[i])) +
-                           (math.log(conc_s2r2[i]) * (ring_loc[i]-int(ring_loc[i]))))
-                R_s34 = math.exp(Lnr_s34)
-    
-            ic[i] = R_s12*(int(s[i])+1-s[i]) + R_s34*(s[i]-int(s[i]))
+        R_s34 = np.where((conc_s2r1>0) & (conc_s2r2>0)
+                         ,
+                         np.exp((np.log(conc_s2r1) * (ring_loc.astype(int)+1-ring_loc)) +
+                                    (np.log(conc_s2r2) * (ring_loc-ring_loc.astype(int))))
+                         ,
+                         np.maximum(conc_s2r1, conc_s2r2))
+        
+        ic = R_s12*(s.astype(int)+1-s) + R_s34*(s-s.astype(int))
         
         return ic
 
@@ -920,7 +917,7 @@ class AllOuterReceptorsNonCensus(CsvWriter, InputFile):
             
             if self.outerAgg is None:
                 self.outerAgg = pd.DataFrame(columns=blksumm_cols)
-            self.outerAgg = self.outerAgg.append(tempagg, sort=False)
+            self.outerAgg = pd.concat([self.outerAgg, tempagg], sort=False)
 
 
             #----------- Keep track of maximum risk and HI ---------------------------------------

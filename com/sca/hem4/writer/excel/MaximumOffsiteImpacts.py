@@ -6,6 +6,7 @@ from math import log10, floor
 
 from com.sca.hem4.writer.csv.RingSummaryChronic import *
 from com.sca.hem4.writer.excel.ExcelWriter import ExcelWriter
+import pandas as pd
 
 
 class MaximumOffsiteImpacts(ExcelWriter):
@@ -54,7 +55,7 @@ class MaximumOffsiteImpacts(ExcelWriter):
             innrisk[angle] = None
 
         # append ring risk to inner risk to make one risk df
-        allrisk = innrisk.append(ring_risk, sort=True).reset_index(drop=True).infer_objects().fillna('')
+        allrisk = pd.concat([innrisk, ring_risk], sort=True).reset_index(drop=True).infer_objects().fillna('')
 
         # find max offsite receptor info for mir and all 14 HIs
         moilist = []

@@ -14,6 +14,7 @@ from com.sca.hem4.support.NormalRounding import *
 import sys
 import math
 import traceback
+import pandas as pd
 
 distance = 'distance';
 angle = 'angle';
@@ -53,7 +54,7 @@ class FacilityPrep():
             srcTypes = set(emislocs[source_type])
             if not blRows.empty and len(srcTypes) > 1:
                 emislocs.drop(emislocs[emislocs[source_type]=='B'].index, inplace = True)
-                emislocs = emislocs.append(blRows, ignore_index=True)
+                emislocs = pd.concat([emislocs, blRows], ignore_index=True)
     
             # Determine the utm zone to use for this facility. Also get the hemisphere (N or S).
             facutmzonenum, hemi = UTM.zone2use(emislocs)
@@ -199,7 +200,7 @@ class FacilityPrep():
             if any(sourcelocs[source_type] == "I") == True:
                 # remove the I source_type rows from sourcelocs before appending polyver_df to avoid duplicate rows
                 sourcelocs = sourcelocs[sourcelocs.source_type != "I"]
-                sourcelocs = sourcelocs.append(polyver_df)
+                sourcelocs = pd.concat([sourcelocs, polyver_df])
                 sourcelocs = sourcelocs.fillna({source_type:'', lengthx:0, lengthy:0, angle:0, "utme_x2":0, "utmn_y2":0})
                 sourcelocs = sourcelocs.reset_index(drop=True)
     
@@ -347,7 +348,7 @@ class FacilityPrep():
                                    inplace=True)
         
                     # Append user_recs to innerblks
-                    self.innerblks = self.innerblks.append(user_recs, ignore_index=True)
+                    self.innerblks = pd.concat([self.innerblks, user_recs], ignore_index=True)
                                             
     
             # >= 3 rings, must be > 0 && <= 50000, and monotonically increasing

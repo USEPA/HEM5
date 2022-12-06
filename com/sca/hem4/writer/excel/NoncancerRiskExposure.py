@@ -1,8 +1,10 @@
+import math
 from math import log10, floor
-from pandas import DataFrame
+import pandas as pd
 from com.sca.hem4.writer.csv.BlockSummaryChronic import *
 from com.sca.hem4.writer.excel.ExcelWriter import ExcelWriter
 from com.sca.hem4.FacilityPrep import *
+import numpy as np
 
 class NoncancerRiskExposure(ExcelWriter):
     """
@@ -16,6 +18,7 @@ class NoncancerRiskExposure(ExcelWriter):
         self.block_summary_chronic_df = block_summary_chronic_df
 
     def round_to_sigfig(self, x, sig=1):
+        
         if x == 0:
             return 0;
 
@@ -43,12 +46,17 @@ class NoncancerRiskExposure(ExcelWriter):
             values = ["Greater than " + str(level)]
 
             for toshi in toshis:
+                if df[toshi].sum() == 0:
+                    values.append(0)
+                    continue
+                # df['hi_1sig'] = self.round_to_sigfig(df[toshi].to_numpy())
+                # indexed = df[df['hi_1sig'] > level]
                 indexed = df[df.apply(lambda x: (self.round_to_sigfig(x[toshi])) > level, axis=1)]
                 values.append(0 if indexed.empty else indexed[population].agg('sum'))
 
             populations.append(values)
 
-        df = DataFrame(populations, columns=[level, hi_resp, hi_live, hi_neur, hi_deve, hi_repr, hi_kidn, hi_ocul,
+        df = pd.DataFrame(populations, columns=[level, hi_resp, hi_live, hi_neur, hi_deve, hi_repr, hi_kidn, hi_ocul,
                                              hi_endo, hi_hema, hi_immu, hi_skel, hi_sple, hi_thyr, hi_whol])
 
         self.dataframe = df

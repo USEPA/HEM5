@@ -3,6 +3,7 @@ from com.sca.hem4.upload.InputFile import InputFile
 from com.sca.hem4.writer.csv.AllOuterReceptors import *
 from com.sca.hem4.writer.csv.CsvWriter import CsvWriter
 from com.sca.hem4.FacilityPrep import *
+import pandas as pd
 
 blk_type = 'blk_type';
 
@@ -88,7 +89,8 @@ class BlockSummaryChronic(CsvWriter, InputFile):
 
         # append the inner and outer values and write
         if self.outerAgg is not None:
-            self.dataframe = inneragg.append(self.outerAgg, ignore_index = True).sort_values(by=[fips, block])
+            self.dataframe = pd.concat([inneragg, self.outerAgg], ignore_index=True).sort_values(by=[fips, block])
+            
         else:
             self.dataframe = inneragg
             
