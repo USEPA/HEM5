@@ -174,26 +174,31 @@ class Process_outputs():
                                                        on=[utme, utmn])   
 
         
-        # Combine ring summary chronic and block summary chronic dfs into one and assign a receptor type
+        # Construct a DF of total risk by lat and lon for all receptors. Do this by combining the block summary 
+        # chronic and ring summary chronic DFs into one DF.
+        
+        # First, organize the ring summary chronic DF
         ring_columns = [lat, lon, mir, hi_resp, hi_live, hi_neur, hi_deve, hi_repr, hi_kidn, hi_ocul, 
                       hi_endo, hi_hema, hi_immu, hi_skel, hi_sple, hi_thyr, hi_whol, overlap]
-
         ring_risk = ring_summary_chronic_df[ring_columns].copy()
         ring_risk[rec_type] = 'PG'
         ring_risk['blk_type'] = 'PG'
 
-        # Block and population are needed in non-altrec runs to ensure schools and monitors are not the MIR
+        # Second, define the columns that are needed. Block and populatoin is needed to determine the mir.
         if not altrec:
+            # census data used
             block_columns = ring_columns + [rec_type, 'blk_type', block, population]
             ring_risk[block] = ''
             ring_risk[population] = 0
         else:
+            # alternate receptors used
             block_columns = ring_columns + [rec_type, 'blk_type', rec_id]
             ring_risk[rec_id] = ''
             
-        
+        # Subset the block summary chronic DF that has rec_type
         block_risk = blksummary_w_rectype[block_columns]
         
+        # Final DF of risk by lat and lon for all receptors
         self.model.risk_by_latlon = ring_risk.append(block_risk).reset_index(drop=True).infer_objects()
 
         if self.abort.is_set():

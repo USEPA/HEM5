@@ -18,6 +18,7 @@ distance = 'distance';
 angle = 'angle';
 sector = 'sector';
 ring = 'ring';
+rec_type = 'rec_type';
 
 ##REFORMATTED TO MOVE THE DATA FRAME CREATION TO THE GUI
 class FacilityPrep():
@@ -316,22 +317,47 @@ class FacilityPrep():
                 user_recs[overlap] = user_recs.apply(lambda row: self.check_overlap(row[utme],
                                                                                     row[utmn], sourcelocs, op_overlap), axis=1)
         
-                # Add columns to make user_recs compatible with innerblks
+                # Add columns to make user receptors compatible with innerblks
                 user_recs['urban_pop'] = 0
                 user_recs['population'] = 0
-                if self.model.altRec_optns.get('altrec', None):
-                    user_recs['rec_id'] = 'U_' + user_recs['rec_id']
-                else:
-                    user_recs['fips'] = 'U0000'
-                    user_recs['idmarplot'] = 'U0000U' + user_recs['rec_id']
+                if not self.model.altRec_optns.get('altrec', None):
+                    # using census data
+                    user_recs.loc[:, 'fips'] = '00000'
+                    user_recs.loc[:,'idmarplot'] = user_recs['rec_id']
+                
+#                if self.model.altRec_optns.get('altrec', None):
+#                    for index, row in user_recs.iterrows():
+#                        # For populated user receptors, add a "U" to the receptor id
+#                        if row[rec_type] == 'P':
+#                            user_recs.loc[index, 'rec_id'] = 'U_' + user_recs['rec_id']
+#                        else:
+#                            user_recs.loc[index, 'rec_id'] = user_recs['rec_id']
+#                else:
+#                    user_recs.loc[:, 'fips'] = '00000'
+#                    for index, row in user_recs.iterrows():
+#                        # For populated user receptors, add a "U" to the receptor id
+#                        if row[rec_type] == 'P':
+#                            user_recs['idmarplot'] = '00000U' + user_recs['rec_id']
+#                        else:
+#                            user_recs['idmarplot'] = user_recs['rec_id']
                   
-                # Check for any user receptors that are already in the census data
+                # Check for any user receptors that are already in the census data based on coordinates
                 dups = pd.merge(self.innerblks, user_recs, how='inner', on=[utme, utmn])
                 if dups.empty == False:
                     # Some user receptors are already in the census. Remove these from the user receptor list.
                     user_recs = user_recs[~user_recs.set_index([utme, utmn]).index.isin(dups.set_index([utme, utmn]).index)].copy()
                 
                     msg = 'The following user receptors have coordinates that are already in the Census data. They ' + \
+                            ' will be removed from the user receptor list. ' + str(dups['rec_id_y'].tolist())
+                    Logger.logMessage(msg)
+
+                # Check for any user receptors that are already in the census data based on idmarplot
+                dups = pd.merge(self.innerblks, user_recs, how='inner', on=['idmarplot'])
+                if dups.empty == False:
+                    # Some user receptors are already in the census. Remove these from the user receptor list.
+                    user_recs = user_recs[~user_recs.set_index(['idmarplot']).index.isin(dups.set_index(['idmarplot']).index)].copy()
+                
+                    msg = 'The following user receptors have IDs that are already in the Census data. They ' + \
                             ' will be removed from the user receptor list. ' + str(dups['rec_id_y'].tolist())
                     Logger.logMessage(msg)
                 

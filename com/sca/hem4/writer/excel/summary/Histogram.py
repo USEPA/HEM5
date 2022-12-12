@@ -38,6 +38,9 @@ class Histogram(ExcelWriter, AltRecAwareSummary):
                 BlockSummaryChronic(targetDir=targetDir, facilityId=facilityId)
 
             bsc_df = blockSummaryChronic.createDataframe()
+            
+            # rec_type is needed for mir determination
+            
 
             bsc_df.sort_values(by=[mir], ascending=False, inplace=True)
             foundMax = False

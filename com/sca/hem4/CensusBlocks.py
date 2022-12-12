@@ -4,6 +4,7 @@ from com.sca.hem4.support.UTM import *
 from com.sca.hem4.model.Model import *
 from com.sca.hem4.log.Logger import Logger
 import sys
+import numpy as np
 
 rec_id = 'rec_id';
 fips = 'fips';
@@ -507,15 +508,24 @@ def getblocks(cenx, ceny, cenlon, cenlat, utmzone, hemi, maxdist, modeldist, sou
     innerblks[utmn] = innerblks[utmn].astype(np.float64)
     innerblks[utmz] = innerblks[utmz].astype(int)
     innerblks[population] = pd.to_numeric(innerblks[population], errors='coerce').astype(int)
-    innerblks[rec_type] = 'C'
-
+    
+    # Assign a receptor type of C if census, P if census user receptor, S if school, and M if monitor
+    innerblks[rec_type]=np.where(innerblks['blockid'].str.contains('M'),'M',
+                          np.where(innerblks['blockid'].str.contains('S'),'S',
+                          np.where(innerblks['blockid'].str.contains('U'),'P','C')))
+    
+    
     if not outerblks.empty:
         # For outer blocks, convert utme, utmn, utmz, and population to appropriate numeric types
         outerblks[utme] = outerblks[utme].astype(np.float64)
         outerblks[utmn] = outerblks[utmn].astype(np.float64)
         outerblks[utmz] = outerblks[utmz].astype(int)
         outerblks[population] = pd.to_numeric(outerblks[population], errors='coerce').astype(int)
-        outerblks[rec_type] = 'C'
+
+        # Assign a receptor type of C if census, P if census user receptor, S if school, and M if monitor
+        outerblks[rec_type]=np.where(outerblks['blockid'].str.contains('M'),'M',
+                            np.where(outerblks['blockid'].str.contains('S'),'S',
+                            np.where(outerblks['blockid'].str.contains('U'),'P','C')))
     
     return innerblks, outerblks
 

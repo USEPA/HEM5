@@ -3,6 +3,7 @@ from com.sca.hem4.upload.InputFile import InputFile
 from com.sca.hem4.writer.csv.AllOuterReceptors import *
 from com.sca.hem4.writer.csv.CsvWriter import CsvWriter
 from com.sca.hem4.FacilityPrep import *
+import pandas as pd
 
 blk_type = 'blk_type';
 
@@ -37,12 +38,14 @@ class BlockSummaryChronic(CsvWriter, InputFile):
         return ['Latitude', 'Longitude', 'Overlap', 'Elevation (m)', 'FIPs', 'Block', 'X', 'Y', 'Hill',
                 'Population', 'MIR', 'Respiratory HI', 'Liver HI', 'Neurological HI', 'Developmental HI',
                 'Reproductive HI', 'Kidney HI', 'Ocular HI', 'Endocrine HI', 'Hematological HI',
-                'Immunological HI', 'Skeletal HI', 'Spleen HI', 'Thyroid HI', 'Whole body HI', 'Discrete/Interpolated Block']
+                'Immunological HI', 'Skeletal HI', 'Spleen HI', 'Thyroid HI', 'Whole body HI', 
+                'Discrete/Interpolated Block', 'Receptor Type']
 
     def getColumns(self):
         return [lat, lon, overlap, elev, fips, block, utme, utmn, hill, population,
                 mir, hi_resp, hi_live, hi_neur, hi_deve, hi_repr, hi_kidn, hi_ocul,
-                hi_endo, hi_hema, hi_immu, hi_skel, hi_sple, hi_thyr, hi_whol, blk_type]
+                hi_endo, hi_hema, hi_immu, hi_skel, hi_sple, hi_thyr, hi_whol, blk_type,
+                rec_type]
 
     def generateOutputs(self):
         """
@@ -86,11 +89,19 @@ class BlockSummaryChronic(CsvWriter, InputFile):
             self.outerAgg[blk_type] = "I"
 
 
-        # append the inner and outer values and write
+        # append the inner and outer dataframes
         if self.outerAgg is not None:
             self.dataframe = inneragg.append(self.outerAgg, ignore_index = True).sort_values(by=[fips, block])
         else:
             self.dataframe = inneragg
+
+        # Assign rec_type to block summary chronic DF from the inner and outer census DFs.
+        if not self.model.outerblks_df.empty:
+            allrectype = pd.concat([self.model.innerblks_df[[utme,utmn,rec_type]], 
+                                 self.model.outerblks_df[[utme,utmn,rec_type]]], ignore_index=True)
+        else:
+            allrectype = self.model.innerblks_df[[utme,utmn,rec_type]]
+        self.dataframe = pd.merge(self.dataframe, allrectype, how="left", on=[utme, utmn])   
             
         self.data = self.dataframe.values
         yield self.dataframe
