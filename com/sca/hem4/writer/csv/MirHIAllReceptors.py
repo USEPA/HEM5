@@ -33,12 +33,12 @@ class MirHIAllReceptors(CsvWriter, InputFile):
     def getHeader(self):
         return ['FIPS', 'Block', 'Lon', 'Lat', 'Population', 'MIR', 'MIR (rounded)', hi_resp, hi_live,
                 hi_neur, hi_deve, hi_repr, hi_kidn, hi_ocul, hi_endo, hi_hema, hi_immu, hi_skel, hi_sple,
-                hi_thyr, hi_whol, 'Facility count', 'Distance']
+                hi_thyr, hi_whol, 'Facility count', 'Distance', 'Receptor Type']
 
     def getColumns(self):
         return [fips, block, lon, lat, population, mir, 'mir_rounded', hi_resp, hi_live,
                 hi_neur, hi_deve, hi_repr, hi_kidn, hi_ocul, hi_endo, hi_hema, hi_immu, hi_skel, hi_sple,
-                hi_thyr, hi_whol, 'fac_count', distance]
+                hi_thyr, hi_whol, 'fac_count', distance, rec_type]
 
     def generateOutputs(self):
 
@@ -92,8 +92,8 @@ class MirHIAllReceptors(CsvWriter, InputFile):
 
         columns = [fips, block, lon, lat, population, mir, hi_resp, hi_live,
                    hi_neur, hi_deve, hi_repr, hi_kidn, hi_ocul, hi_endo, hi_hema, hi_immu, hi_skel, hi_sple,
-                   hi_thyr, hi_whol, 'fac_count', distance]
-
+                   hi_thyr, hi_whol, 'fac_count', distance, rec_type]
+        
         if self.altrec == 'N':
 
             aggs = {lat:'first', lon:'first', overlap:'first', elev:'first', utme:'first', blk_type:'first',
