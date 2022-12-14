@@ -88,20 +88,19 @@ class SourceTypeRiskHistogram(ExcelWriter, AltRecAwareSummary):
             allinner2_df[source_id] = allinner2_df[source_id].apply(lambda x: x[self.codePosition:self.codePosition+self.codeLength])
                          
             # Aggregate risk, grouped by FIPS/block (or receptor id if we're using alternates) and source
-            aggs = {lat:'first', lon:'first', population:'first', 'risk':'sum'}                
+            aggs = {lat:'first', lon:'first', population:'first', rec_type:'first', 'risk':'sum'}                
             byCols = [rec_id, source_id] if altrec=='Y' else [fips, block, source_id]
             inner_summed = allinner2_df.groupby(by=byCols, as_index=False).agg(aggs).reset_index(drop=True)
             
-            # Drop records that (are not user receptors AND have population = 0). Do not do this for altrec.      
+            # Keep receptors with population > 0 OR user receptors. Do not do this for altrec.      
             if altrec == 'N':
-                inner_summed.drop(inner_summed[(inner_summed.population == 0) &
-                                               (~inner_summed.block.str.contains('U', case=False))].index,
-                                               inplace=True)
-                        
-            # Append to sector block risk DF
-            sector_blkrisk = sector_blkrisk.append(inner_summed)
-
+                inner_summed = inner_summed.loc[(inner_summed[population] > 0) | (inner_summed[rec_type] == 'P')]
+#                inner_summed.drop(inner_summed[(inner_summed.population == 0) &
+#                                               (~inner_summed.block.str.contains('U', case=False))].index,
+#                                               inplace=True)
+#                        
             # Aggregate risk by block and source
+            sector_blkrisk = sector_blkrisk.append(inner_summed)
             sector_summed = sector_blkrisk.groupby(by=byCols, as_index=False).agg(aggs).reset_index(drop=True)
 
 
@@ -131,17 +130,19 @@ class SourceTypeRiskHistogram(ExcelWriter, AltRecAwareSummary):
                     allouter2_df[source_id] = allouter2_df[source_id].apply(lambda x: x[self.codePosition:self.codePosition+self.codeLength])
         
                     # Aggregate risk, grouped by FIPS/block (or receptor id if we're using alternates) and source
-                    aggs = {lat:'first', lon:'first', population:'first', 'risk':'sum'}                
+                    aggs = {lat:'first', lon:'first', population:'first', rec_type:'first', 'risk':'sum'}                
                     byCols = [rec_id, source_id] if altrec=='Y' else [fips, block, source_id]
                     outer_summed = allouter2_df.groupby(by=byCols, as_index=False).agg(aggs).reset_index(drop=True)
     
-                    # Drop records that (are not user receptors AND have population = 0). Do not do this for altrec.
+                    # Keep receptors with population > 0 OR user receptors. Do not do this for altrec.      
                     if altrec == 'N':
-                        outer_summed.drop(outer_summed[(outer_summed.population == 0) & ("U" not in outer_summed.block)].index,
-                                         inplace=True)
-    
-                    # Append to sector block risk DF
-                    sector_blkrisk = sector_blkrisk.append(outer_summed)
+                        outer_summed = outer_summed.loc[(outer_summed[population] > 0) | 
+                                        (outer_summed[rec_type] == 'P')]
+#                        outer_summed.drop(outer_summed[(outer_summed.population == 0) & ("U" not in outer_summed.block)].index,
+#                                         inplace=True)
+#    
+#                    # Append to sector block risk DF
+#                    sector_blkrisk = sector_blkrisk.append(outer_summed)
     
                     # Aggregate risk by block and source
                     sector_summed = sector_blkrisk.groupby(by=byCols, as_index=False).agg(aggs).reset_index(drop=True)

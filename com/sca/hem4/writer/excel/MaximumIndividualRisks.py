@@ -267,7 +267,7 @@ class MaximumIndividualRisks(ExcelWriter, InputFile):
         """
         Find the receptor with the max cancer risk and record info about that receptor.
         Algorithm is:
-            1) Find max risk from populated receptors (inner or outer, but no school or monitor)
+            1) Find max risk from populated receptor or user receptor
             2) If this receptor is not overlapped, use it
             3) If it is overlapped, find max from all receptors where overlap is N (no school or monitor)
             4) Get information about this receptor

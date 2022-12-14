@@ -510,9 +510,9 @@ def getblocks(cenx, ceny, cenlon, cenlat, utmzone, hemi, maxdist, modeldist, sou
     innerblks[population] = pd.to_numeric(innerblks[population], errors='coerce').astype(int)
     
     # Assign a receptor type of C if census, P if census user receptor, S if school, and M if monitor
-    innerblks[rec_type]=np.where(innerblks['blockid'].str.contains('M'),'M',
-                          np.where(innerblks['blockid'].str.contains('S'),'S',
-                          np.where(innerblks['blockid'].str.contains('U'),'P','C')))
+    innerblks[rec_type]=np.where(innerblks['idmarplot'].str.contains('M'),'M',
+                          np.where(innerblks['idmarplot'].str.contains('S'),'S',
+                          np.where(innerblks['idmarplot'].str.contains('U'),'P','C')))
     
     
     if not outerblks.empty:
@@ -523,9 +523,9 @@ def getblocks(cenx, ceny, cenlon, cenlat, utmzone, hemi, maxdist, modeldist, sou
         outerblks[population] = pd.to_numeric(outerblks[population], errors='coerce').astype(int)
 
         # Assign a receptor type of C if census, P if census user receptor, S if school, and M if monitor
-        outerblks[rec_type]=np.where(outerblks['blockid'].str.contains('M'),'M',
-                            np.where(outerblks['blockid'].str.contains('S'),'S',
-                            np.where(outerblks['blockid'].str.contains('U'),'P','C')))
+        outerblks[rec_type]=np.where(outerblks['idmarplot'].str.contains('M'),'M',
+                            np.where(outerblks['idmarplot'].str.contains('S'),'S',
+                            np.where(outerblks['idmarplot'].str.contains('U'),'P','C')))
     
     return innerblks, outerblks
 

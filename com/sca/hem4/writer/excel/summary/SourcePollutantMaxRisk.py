@@ -7,7 +7,7 @@ import pandas as pd
 from com.sca.hem4.log import Logger
 from com.sca.hem4.upload.DoseResponse import DoseResponse, ure, rfc
 from com.sca.hem4.writer.csv.AllInnerReceptors import AllInnerReceptors, block, fips, lat, lon, pollutant, overlap, \
-    conc, fac_id, source_id, population
+    conc, fac_id, source_id, population, rec_type
 from com.sca.hem4.writer.csv.AllInnerReceptorsNonCensus import AllInnerReceptorsNonCensus
 from com.sca.hem4.writer.csv.AllOuterReceptors import AllOuterReceptors, mir
 from com.sca.hem4.writer.csv.AllOuterReceptorsNonCensus import AllOuterReceptorsNonCensus
@@ -48,7 +48,7 @@ class SourcePollutantMaxRisk(ExcelWriter):
         Logger.log("Creating " + self.name + " report...", None, False)
 
         print(datetime.datetime.now())
-
+        
         # The first step is to load the risk breakdown output for each facility so that we
         # can recover the risk for each pollutant.
         filename = self.categoryName + "_facility_max_risk_and_hi.xlsx"
@@ -62,6 +62,7 @@ class SourcePollutantMaxRisk(ExcelWriter):
             maxRiskAndHI_df = facilityMaxRiskAndHI_df.loc[facilityMaxRiskAndHI_df['Facil_id'] == facilityId]
 
             try:
+                                
                 targetDir = self.categoryFolder + "/" + facilityId
 
                 # Determine if this facility was run with acute or not
@@ -70,15 +71,18 @@ class SourcePollutantMaxRisk(ExcelWriter):
                 acute_yn = inputops_df['acute_yn'].iloc[0]
 
                 # Open the inner file and create df                
-                allinner = AllInnerReceptorsNonCensus(targetDir=targetDir, facilityId=facilityId, acuteyn=acute_yn) if self.altrec \
+                allinner = AllInnerReceptorsNonCensus(targetDir=targetDir, facilityId=facilityId, acuteyn=acute_yn) if self.altrec=='Y' \
                         else AllInnerReceptors(targetDir=targetDir, facilityId=facilityId, acuteyn=acute_yn)
                 allinner_df = allinner.createDataframe()
 
-                # Don't consider schools and monitors (if using census data)
-                if not self.altrec:
-                    allinner_df = allinner_df.loc[(~allinner_df[block].str.contains('S')) &
-                                                  (~allinner_df[block].str.contains('M')) &
+                # Only consider populated or user receptors with no overlap (if using census data)
+                if self.altrec == 'N':
+                    allinner_df = allinner_df.loc[((allinner_df[population] > 0) | 
+                                                  (allinner_df[rec_type] == 'P')) &
                                                   (allinner_df[overlap] == 'N')]
+#                    allinner_df = allinner_df.loc[(~allinner_df[block].str.contains('S')) &
+#                                                  (~allinner_df[block].str.contains('M')) &
+#                                                  (allinner_df[overlap] == 'N')]
 
                 allinner_df[[mir, 'hq']] = allinner_df.apply(lambda row: self.calculateRisks(row[pollutant], row[conc]), axis=1)
                 allinner_df = allinner_df.loc[(allinner_df[mir] + allinner_df['hq'] > 0)]
@@ -103,14 +107,14 @@ class SourcePollutantMaxRisk(ExcelWriter):
                         listOuter.append(entry)
 
                 for f in listOuter:
-                    allouter = AllOuterReceptorsNonCensus(targetDir=targetDir, acuteyn=acute_yn, filenameOverride=f) if self.altrec \
+                    allouter = AllOuterReceptorsNonCensus(targetDir=targetDir, acuteyn=acute_yn, filenameOverride=f) if self.altrec=='Y' \
                             else AllOuterReceptors(targetDir=targetDir, acuteyn=acute_yn, filenameOverride=f)
                     allouter_df = allouter.createDataframe()
 
                     if not allouter_df.empty:
 
                         # Don't consider schools and monitors (if using census data)
-                        if not self.altrec:
+                        if self.altrec == 'N':
                             allouter_df = allouter_df.loc[(~allouter_df[block].str.contains('S')) &
                                                           (~allouter_df[block].str.contains('M')) &
                                                           (allouter_df[overlap] == 'N')]

@@ -40,23 +40,27 @@ class MaxRisk(ExcelWriter, AltRecAwareSummary):
 
         blocksummary_df.drop_duplicates(inplace=True)
         blocksummary_df.reset_index(drop=True, inplace=True)
-        
-        
+                
         if self.altrec == 'N':
                         
             # Census data
             
-            # Pull out user receptors
-            user_df = blocksummary_df[blocksummary_df[block].str.contains('U', case=False)]
-
-            # Drop records with population = 0       
-            blocksummary_df.drop(blocksummary_df[blocksummary_df.population == 0].index,
-                                                 inplace=True)
+            # Only keep receptors where pop > 0 or user receptors
+            blocksummary_df = blocksummary_df.loc[(blocksummary_df[population] > 0) |
+                                                  (blocksummary_df[rec_type] == 'P')]
             
-            # Append any user receptors
-            blocksummary_df = blocksummary_df.append(user_df)
+#            # Pull out user receptors
+#            user_df = blocksummary_df[blocksummary_df[block].str.contains('U', case=False)]
+#
+#            # Drop records with population = 0       
+#            blocksummary_df.drop(blocksummary_df[blocksummary_df.population == 0].index,
+#                                                 inplace=True)
+#            
+#            # Append any user receptors
+#            blocksummary_df = blocksummary_df.append(user_df)
     
             aggs = {lat:'first', lon:'first', overlap:'first', elev:'first', utme:'first', blk_type:'first',
+                    rec_type:'first',
                     utmn:'first', hill:'first', fips:'first', block:'first', population:'first',
                     mir:'sum', hi_resp:'sum', hi_live:'sum', hi_neur:'sum', hi_deve:'sum',
                     hi_repr:'sum', hi_kidn:'sum', hi_ocul:'sum', hi_endo:'sum', hi_hema:'sum',

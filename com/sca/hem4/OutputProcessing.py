@@ -164,14 +164,14 @@ class Process_outputs():
             return
 
         
-        # Assign rec_type to block summary chronic from the inner and outer census DFs.
-        if not self.model.outerblks_df.empty:
-            allrectype = pd.concat([self.model.innerblks_df[[utme,utmn,rec_type]], 
-                                 self.model.outerblks_df[[utme,utmn,rec_type]]], ignore_index=True)
-        else:
-            allrectype = self.model.innerblks_df[[utme,utmn,rec_type]]
-        blksummary_w_rectype = pd.merge(self.model.block_summary_chronic_df, allrectype, how="left",
-                                                       on=[utme, utmn])   
+#        # Assign rec_type to block summary chronic from the inner and outer census DFs.
+#        if not self.model.outerblks_df.empty:
+#            allrectype = pd.concat([self.model.innerblks_df[[utme,utmn,rec_type]], 
+#                                 self.model.outerblks_df[[utme,utmn,rec_type]]], ignore_index=True)
+#        else:
+#            allrectype = self.model.innerblks_df[[utme,utmn,rec_type]]
+#        blksummary_w_rectype = pd.merge(self.model.block_summary_chronic_df, allrectype, how="left",
+#                                                       on=[utme, utmn])   
 
         
         # Construct a DF of total risk by lat and lon for all receptors. Do this by combining the block summary 
@@ -195,8 +195,8 @@ class Process_outputs():
             block_columns = ring_columns + [rec_type, 'blk_type', rec_id]
             ring_risk[rec_id] = ''
             
-        # Subset the block summary chronic DF that has rec_type
-        block_risk = blksummary_w_rectype[block_columns]
+        # Subset the block summary chronic DF to needed columns
+        block_risk = self.model.block_summary_chronic_df[block_columns]
         
         # Final DF of risk by lat and lon for all receptors
         self.model.risk_by_latlon = ring_risk.append(block_risk).reset_index(drop=True).infer_objects()

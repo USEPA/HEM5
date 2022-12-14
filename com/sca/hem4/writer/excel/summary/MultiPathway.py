@@ -107,9 +107,11 @@ class MultiPathway(ExcelWriter):
             allinner = AllInnerReceptors(targetDir=targetDir, facilityId=facilityId, acuteyn=acute_yn)
             allinner_df = allinner.createDataframe()
 
-            # Only keep records that have non-zero population or represent non-overlapped user receptors
-            allinner_df = allinner_df.loc[((allinner_df[block].str.contains('U')) | (allinner_df[population] > 0)) &
+            # Only keep populated or user receptors that are not overlapped
+            allinner_df = allinner_df.loc[((allinner_df[population] > 0) | (allinner_df[rec_type] == 'P')) &
                                           (allinner_df[overlap] == 'N')]
+#            allinner_df = allinner_df.loc[((allinner_df[block].str.contains('U')) | (allinner_df[population] > 0)) &
+#                                          (allinner_df[overlap] == 'N')]
 
             # group by and sum by fips, block, population, lat, lon, pollutant
             allinner_df = allinner_df.groupby(by=[fips, block, population, lat, lon, pollutant], as_index=False) \
@@ -144,9 +146,12 @@ class MultiPathway(ExcelWriter):
                     
                     anyOuters = "Y"
                     
-                    # Only keep records that have non-zero population or represent non-overlapped user receptors
-                    allouter_df = allouter_df.loc[((allouter_df[block].str.contains('U')) | (allouter_df[population] > 0)) &
+                    # Only keep populated or user receptors that are not overlapped
+                    allouter_df = allouter_df.loc[((allouter_df[population] > 0) | (allouter_df[rec_type] == 'P')) &
                                                   (allouter_df[overlap] == 'N')]
+#                    # Only keep records that have non-zero population or represent non-overlapped user receptors
+#                    allouter_df = allouter_df.loc[((allouter_df[block].str.contains('U')) | (allouter_df[population] > 0)) &
+#                                                  (allouter_df[overlap] == 'N')]
     
                     allouter_df = allouter_df.groupby(by=[fips, block, population, lat, lon, pollutant], as_index=False) \
                         .sum().reset_index(drop=True)

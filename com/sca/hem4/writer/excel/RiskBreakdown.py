@@ -92,7 +92,7 @@ class RiskBreakdown(ExcelWriter, InputFile):
                 # If max cancer or noncancer is > 0, compute source/pollutant breakdown values, otherwise set breakdown to 0
                 if row[value] > 0:
     
-                    # Get source and pollutant specific concs. Depends on receptor type.
+                    # Get source and pollutant specific concs. Depends on block type.
                     if "discrete" in row[notes].lower():
                         concdata = self.model.all_inner_receptors_df[[lat,lon,source_id,pollutant,emis_type,conc]] \
                             [(self.model.all_inner_receptors_df[lat]==row[lat]) &
@@ -102,7 +102,7 @@ class RiskBreakdown(ExcelWriter, InputFile):
                             [(self.model.all_polar_receptors_df[lat]==row[lat]) &
                              (self.model.all_polar_receptors_df[lon]==row[lon])]
                     else:
-                        # Receptor type is interpolated
+                        # Block type is interpolated
     
                         # Get a list of the all_outer_receptor files (could be more than one)
                         listOuter = []
@@ -115,7 +115,7 @@ class RiskBreakdown(ExcelWriter, InputFile):
                         # Search each outer receptor file for the lat/lon in row
                         foundit = False
                         for f in listOuter:
-                            allouter = AllOuterReceptorsNonCensus(targetDir=self.targetDir, acuteyn=self.acute_yn, filenameOverride=f) if self.altrec \
+                            allouter = AllOuterReceptorsNonCensus(targetDir=self.targetDir, acuteyn=self.acute_yn, filenameOverride=f) if self.altrec=='Y' \
                                 else AllOuterReceptors(targetDir=self.targetDir, acuteyn=self.acute_yn, filenameOverride=f)
                             outconcs = allouter.createDataframe()
     

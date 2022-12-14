@@ -38,6 +38,7 @@ avg_time = 'avg_time';
 source_id = 'source_id';
 num_yrs = 'num_yrs';
 net_id = 'net_id';
+rec_type = 'rec_type';
 
 
 class AllOuterReceptors(CsvWriter, InputFile):
@@ -69,7 +70,7 @@ class AllOuterReceptors(CsvWriter, InputFile):
             return
 
 
-        self.outerblocks = self.model.outerblks_df[[lat, lon, utme, utmn, hill]]
+        self.outerblocks = self.model.outerblks_df[[lat, lon, utme, utmn, hill, rec_type]]
         self.outerAgg = None
         self.outerInc = None
 
@@ -117,18 +118,20 @@ class AllOuterReceptors(CsvWriter, InputFile):
         if self.acute_yn == 'N':
             return ['FIPs', 'Block', 'Latitude', 'Longitude', 'Source ID', 'Emission type', 'Pollutant',
                     'Conc (µg/m3)', 'Elevation (m)',
-                    'Population', 'Overlap']
+                    'Population', 'Overlap', 'Receptor Type']
         else:
             return ['FIPs', 'Block', 'Latitude', 'Longitude', 'Source ID', 'Emission type', 'Pollutant',
                     'Conc (µg/m3)', 'Acute Conc (µg/m3)', 'Elevation (m)',
-                    'Population', 'Overlap']
+                    'Population', 'Overlap', 'Receptor Type']
             
 
     def getColumns(self):
         if self.acute_yn == 'N':
-            return [fips, block, lat, lon, source_id, 'emis_type', pollutant, conc, elev, population, overlap]
+            return [fips, block, lat, lon, source_id, 'emis_type', pollutant, conc, elev, population
+                    , overlap, rec_type]
         else:
-            return [fips, block, lat, lon, source_id, 'emis_type', pollutant, conc, aconc, elev, population, overlap]
+            return [fips, block, lat, lon, source_id, 'emis_type', pollutant, conc, aconc
+                    , elev, population, overlap, rec_type]
             
     def generateOutputs(self):
         """
@@ -170,7 +173,7 @@ class AllOuterReceptors(CsvWriter, InputFile):
                 #subset outer blocks DF to needed columns and sort by increasing distance
                 outerblks_subset = self.model.outerblks_df[[fips, idmarplot, lat, lon, elev,
                                                             'distance', 'angle', population, overlap,
-                                                            's', 'ring_loc']].copy()
+                                                            's', 'ring_loc', 'rec_type']].copy()
                 outerblks_subset['block'] = outerblks_subset['idmarplot'].str[5:]
                 outerblks_subset.sort_values(by=['distance'], axis=0, inplace=True)
            
@@ -225,7 +228,7 @@ class AllOuterReceptors(CsvWriter, InputFile):
                 #   Apply emissions to interpolated outer concs and write
                 
                 outerconcs = outer4interp[['fips', 'block', 'lat', 'lon', 'elev', 'population', 'overlap',
-                                        'emis_type', 'source_id']]
+                                        'emis_type', 'source_id', 'rec_type']]
                 outerconcs['intconc'] = a_intconc
                 
                 num_rows_outer_recs = outerblks_subset.shape[0]
@@ -317,7 +320,9 @@ class AllOuterReceptors(CsvWriter, InputFile):
                 
                 
             else:
-                        
+                
+                # Acute
+                
                 #extract Chronic polar concs from the Chronic plotfile and round the utm coordinates
                 polarcplot_df = self.plot_df.query("net_id == 'POLGRID1'").copy()
                 polarcplot_df.utme = polarcplot_df.utme.round()
@@ -347,7 +352,7 @@ class AllOuterReceptors(CsvWriter, InputFile):
                 #subset outer blocks DF to needed columns and sort by increasing distance
                 outerblks_subset = self.model.outerblks_df[[fips, idmarplot, lat, lon, elev,
                                                             'distance', 'angle', population, overlap,
-                                                            's', 'ring_loc']].copy()
+                                                            's', 'ring_loc', 'rec_type']].copy()
                 outerblks_subset['block'] = outerblks_subset['idmarplot'].str[5:]
                 outerblks_subset.sort_values(by=['distance'], axis=0, inplace=True)
     
@@ -415,7 +420,7 @@ class AllOuterReceptors(CsvWriter, InputFile):
                 #   Apply emissions to interpolated outer concs and write
                 
                 outerconcs = outer4interp[['fips', 'block', 'lat', 'lon', 'elev', 'population', 'overlap',
-                                        'emis_type', 'source_id']]
+                                        'emis_type', 'source_id', 'rec_type']]
                 outerconcs['intcconc'] = a_intcconc
                 outerconcs['intaconc'] = a_intaconc
                 

@@ -97,6 +97,7 @@ class MirHIAllReceptors(CsvWriter, InputFile):
         if self.altrec == 'N':
 
             aggs = {lat:'first', lon:'first', overlap:'first', elev:'first', utme:'first', blk_type:'first',
+                    rec_type:'first',
                     utmn:'first', hill:'first', fips:'first', block:'first', population:'first',
                     mir:'sum', hi_resp:'sum', hi_live:'sum', hi_neur:'sum', hi_deve:'sum',
                     hi_repr:'sum', hi_kidn:'sum', hi_ocul:'sum', hi_endo:'sum', hi_hema:'sum',
@@ -123,9 +124,12 @@ class MirHIAllReceptors(CsvWriter, InputFile):
         # Re-order columns
         risk_summed = risk_summed[self.getColumns()]
 
-        # Weed out blocks that correspond to schools, monitors, etc.
-        risk_summed = risk_summed.loc[(~risk_summed[block].str.contains('S')) & (~risk_summed[block].str.contains('M'))]
+#        # Weed out blocks that correspond to schools, monitors, etc.
+#        risk_summed = risk_summed.loc[(~risk_summed[block].str.contains('S')) & (~risk_summed[block].str.contains('M'))]
 
+        # Only keep census or user receptors
+        risk_summed = risk_summed.loc[(risk_summed[rec_type]=='C') | (risk_summed[rec_type]=='P')]
+        
         # dataframe to array
         self.dataframe = risk_summed
         self.data = self.dataframe.values

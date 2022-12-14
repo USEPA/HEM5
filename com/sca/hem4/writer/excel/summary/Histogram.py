@@ -38,15 +38,12 @@ class Histogram(ExcelWriter, AltRecAwareSummary):
                 BlockSummaryChronic(targetDir=targetDir, facilityId=facilityId)
 
             bsc_df = blockSummaryChronic.createDataframe()
-            
-            # rec_type is needed for mir determination
-            
 
             bsc_df.sort_values(by=[mir], ascending=False, inplace=True)
             foundMax = False
             for index, row in bsc_df.iterrows():
 
-                if not foundMax and (row[population] > 0 or 'U' in row[block]):
+                if not foundMax and (row[population] > 0 or row[rec_type] == 'P'):
                     foundMax = True
                     rounded = self.round_to_sigfig(row[mir])
 
@@ -67,20 +64,17 @@ class Histogram(ExcelWriter, AltRecAwareSummary):
         blocksummary_df.reset_index(inplace=True, drop=True)
         
         
-#        blocksummary_all0 = blocksummary_df[blocksummary_df.population == 0]
-#        blocksummary_no0 = blocksummary_df.drop(blocksummary_df[blocksummary_df.population == 0].index, inplace=False)
-        
-        
         if self.altrec == 'N':
 
             # Census
             
-            # Drop records that (are not user receptors AND have population = 0)
+            # Drop records that are not user receptors AND have population = 0
             blocksummary_df.drop(blocksummary_df[(blocksummary_df.population == 0) & 
-                                                 (~blocksummary_df.block.str.contains('U', case=False))].index,
+                                                 (blocksummary_df[rec_type] != 'P')].index,
                                                  inplace=True)
             
             aggs = {lat:'first', lon:'first', overlap:'first', elev:'first', utme:'first', blk_type:'first',
+                    rec_type:'first',
                     utmn:'first', hill:'first', fips:'first', block:'first', population:'first',
                     mir:'sum', hi_resp:'sum', hi_live:'sum', hi_neur:'sum', hi_deve:'sum',
                     hi_repr:'sum', hi_kidn:'sum', hi_ocul:'sum', hi_endo:'sum', hi_hema:'sum',

@@ -95,7 +95,7 @@ class BlockSummaryChronic(CsvWriter, InputFile):
         else:
             self.dataframe = inneragg
 
-        # Assign rec_type to block summary chronic DF from the inner and outer census DFs.
+        # Assign receptor type to block summary chronic DF from the inner and outer census DFs.
         if not self.model.outerblks_df.empty:
             allrectype = pd.concat([self.model.innerblks_df[[utme,utmn,rec_type]], 
                                  self.model.outerblks_df[[utme,utmn,rec_type]]], ignore_index=True)
@@ -165,7 +165,7 @@ class BlockSummaryChronic(CsvWriter, InputFile):
         # Type setting for CSV reading
         self.numericColumns = [lat, lon, elev, utme, utmn, population, hill, mir, hi_resp, hi_live, hi_neur, hi_deve,
                                hi_repr, hi_kidn, hi_ocul, hi_endo, hi_hema, hi_immu, hi_skel, hi_sple, hi_thyr, hi_whol]
-        self.strColumns = [fips, block, overlap, blk_type]
+        self.strColumns = [fips, block, overlap, blk_type, rec_type]
         
         df = self.readFromPathCsv(self.getColumns())
         return df.fillna("")
