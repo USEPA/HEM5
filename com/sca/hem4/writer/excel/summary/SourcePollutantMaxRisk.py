@@ -113,11 +113,14 @@ class SourcePollutantMaxRisk(ExcelWriter):
 
                     if not allouter_df.empty:
 
-                        # Don't consider schools and monitors (if using census data)
+                        # Only consider populated or user receptors with no overlap (if using census data)
                         if self.altrec == 'N':
-                            allouter_df = allouter_df.loc[(~allouter_df[block].str.contains('S')) &
-                                                          (~allouter_df[block].str.contains('M')) &
+                            allouter_df = allouter_df.loc[((allouter_df[population] > 0) | 
+                                                          (allouter_df[rec_type] == 'P')) &
                                                           (allouter_df[overlap] == 'N')]
+#                            allouter_df = allouter_df.loc[(~allouter_df[block].str.contains('S')) &
+#                                                          (~allouter_df[block].str.contains('M')) &
+#                                                          (allouter_df[overlap] == 'N')]
 
                         # Using apply with self.calculateRisks() takes way too long for the outer receptors, so instead
                         # we perform vector operations. Note the use of a reciprocal for the RFC value to avoid

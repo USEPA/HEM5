@@ -75,7 +75,7 @@ class BlockSummaryChronicNonCensus(CsvWriter, InputFile):
 
         inneragg = innermerged.groupby([lat, lon]).agg(aggs)[newcolumns]
 
-        # add a receptor type column to note if discrete or interpolated. D => discrete, I => interpolated
+        # Add a column to indicate type of census block. D => discrete, I => interpolated
         inneragg[blk_type] = "D"
         if self.outerAgg is not None:
             self.outerAgg[blk_type] = "I"
@@ -85,7 +85,16 @@ class BlockSummaryChronicNonCensus(CsvWriter, InputFile):
             self.dataframe = inneragg.append(self.outerAgg, ignore_index = True).sort_values(by=[rec_id])
         else:
             self.dataframe = inneragg
-            
+    
+        # Assign receptor type to block summary chronic DF from the inner and outer census DFs.
+        if not self.model.outerblks_df.empty:
+            allrectype = pd.concat([self.model.innerblks_df[[utme,utmn,rec_type]], 
+                                 self.model.outerblks_df[[utme,utmn,rec_type]]], ignore_index=True)
+        else:
+            allrectype = self.model.innerblks_df[[utme,utmn,rec_type]]
+        self.dataframe = pd.merge(self.dataframe, allrectype, how="left", on=[utme, utmn])   
+
+        
         self.data = self.dataframe.values
         yield self.dataframe
 
