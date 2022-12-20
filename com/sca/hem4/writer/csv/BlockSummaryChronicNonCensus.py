@@ -35,12 +35,14 @@ class BlockSummaryChronicNonCensus(CsvWriter, InputFile):
         return ['Latitude', 'Longitude', 'Overlap', 'Elevation (m)', 'Receptor ID', 'X', 'Y', 'Hill',
                 'Population', 'MIR', 'Respiratory HI', 'Liver HI', 'Neurological HI', 'Developmental HI',
                 'Reproductive HI', 'Kidney HI', 'Ocular HI', 'Endocrine HI', 'Hematological HI',
-                'Immunological HI', 'Skeletal HI', 'Spleen HI', 'Thyroid HI', 'Whole body HI', 'Discrete/Interpolated Receptor']
+                'Immunological HI', 'Skeletal HI', 'Spleen HI', 'Thyroid HI', 'Whole body HI', 
+                'Discrete/Interpolated Receptor', 'Receptor Type']
 
     def getColumns(self):
         return [lat, lon, overlap, elev, rec_id, utme, utmn, hill, population,
                 mir, hi_resp, hi_live, hi_neur, hi_deve, hi_repr, hi_kidn, hi_ocul,
-                hi_endo, hi_hema, hi_immu, hi_skel, hi_sple, hi_thyr, hi_whol, blk_type]
+                hi_endo, hi_hema, hi_immu, hi_skel, hi_sple, hi_thyr, hi_whol, 
+                blk_type, rec_type]
 
     def generateOutputs(self):
         """
@@ -158,7 +160,7 @@ class BlockSummaryChronicNonCensus(CsvWriter, InputFile):
         # Type setting for CSV reading
         self.numericColumns = [lat, lon, elev, utme, utmn, population, hill, mir, hi_resp, hi_live, hi_neur, hi_deve,
                                hi_repr, hi_kidn, hi_ocul, hi_endo, hi_hema, hi_immu, hi_skel, hi_sple, hi_thyr, hi_whol]
-        self.strColumns = [rec_id, overlap, blk_type]
+        self.strColumns = [rec_id, overlap, blk_type, rec_type]
 
         df = self.readFromPathCsv(self.getColumns())
         return df.fillna("")

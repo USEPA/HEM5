@@ -40,20 +40,22 @@ class AllInnerReceptorsNonCensus(CsvWriter, InputFile):
         if self.acute_yn == 'Y':
             return ['Receptor ID', 'Latitude', 'Longitude', 'Source ID', 'Emission type', 'Pollutant',
                     'Conc (µg/m3)', 'Acute Conc (µg/m3)', 'Elevation (m)',
-                    'Dry deposition (g/m2/yr)', 'Wet deposition (g/m2/yr)', 'Population', 'Overlap']
+                    'Dry deposition (g/m2/yr)', 'Wet deposition (g/m2/yr)', 'Population', 'Overlap',
+                    'Receptor Type']
         else:
             return ['Receptor ID', 'Latitude', 'Longitude', 'Source ID', 'Emission type', 'Pollutant',
                     'Conc (µg/m3)', 'Elevation (m)',
-                    'Dry deposition (g/m2/yr)', 'Wet deposition (g/m2/yr)', 'Population', 'Overlap']
+                    'Dry deposition (g/m2/yr)', 'Wet deposition (g/m2/yr)', 'Population', 'Overlap',
+                    'Receptor Type']
             
 
     def getColumns(self):
         if self.acute_yn == 'N':
             return [rec_id, lat, lon, source_id, emis_type, pollutant, conc,
-                    elev, drydep, wetdep, population, overlap]
+                    elev, drydep, wetdep, population, overlap, rec_type]
         else:
             return [rec_id, lat, lon, source_id, emis_type, pollutant, conc, aconc,
-                    elev, drydep, wetdep, population, overlap]
+                    elev, drydep, wetdep, population, overlap, rec_type]
 
 
     def generateOutputs(self):
@@ -112,6 +114,7 @@ class AllInnerReceptorsNonCensus(CsvWriter, InputFile):
                         record = self.model.innerblks_df.loc[(self.model.innerblks_df[utme] == row1[1]) & (self.model.innerblks_df[utmn] == row1[2])]
                         self.innerBlocksCache[key] = record
 
+                    d_rectype = record[rec_type].values[0]
                     d_recid = record[rec_id].values[0]
                     d_lat = record[lat].values[0]
                     d_lon = record[lon].values[0]
@@ -141,10 +144,10 @@ class AllInnerReceptorsNonCensus(CsvWriter, InputFile):
                     
                     if self.acute_yn == 'N':
                         datalist = [d_recid, d_lat, d_lon, d_sourceid, d_emistype, d_pollutant, d_conc,
-                                    d_elev, d_drydep, d_wetdep, d_population, d_overlap]
+                                    d_elev, d_drydep, d_wetdep, d_population, d_overlap, d_rectype]
                     else:
                         datalist = [d_recid, d_lat, d_lon, d_sourceid, d_emistype, d_pollutant, d_conc,
-                                    d_aconc, d_elev, d_drydep, d_wetdep, d_population, d_overlap]
+                                    d_aconc, d_elev, d_drydep, d_wetdep, d_population, d_overlap, d_rectype]
                         
                     dlist.append(dict(zip(col_list, datalist)))
 
@@ -163,7 +166,7 @@ class AllInnerReceptorsNonCensus(CsvWriter, InputFile):
         else:
             self.numericColumns = [lat, lon, conc, aconc, elev, drydep, wetdep, population]
 
-        self.strColumns = [rec_id, source_id, emis_type, pollutant, overlap]
+        self.strColumns = [rec_id, source_id, emis_type, pollutant, overlap, rec_type]
 
         df = self.readFromPathCsv(self.getColumns())
         return df.fillna("")        

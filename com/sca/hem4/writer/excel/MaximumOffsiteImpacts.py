@@ -11,7 +11,7 @@ from com.sca.hem4.writer.excel.ExcelWriter import ExcelWriter
 class MaximumOffsiteImpacts(ExcelWriter):
     """
     Provides the maximum cancer risk and all 14 TOSHIs at any receptor, either a populated (census block, user defined)
-    or an unpopulated (polar grid) receptor, as well as additional receptor information.
+    or an unpopulated (polar grid, school, monitor, boundary) receptor, as well as additional receptor information.
     """
 
     def __init__(self, targetDir, facilityId, model, plot_df, ring_summary_chronic_df, inner_recep_risk_df):
@@ -34,8 +34,13 @@ class MaximumOffsiteImpacts(ExcelWriter):
         """
         
         # dictionary of receptor types and notes
-        rectype_dict = {"PG":"Polar grid", "D":"Census block", "I":"Census block"}
-        notes_dict = {"PG":"Polar", "D":"Discrete", "I":"Interpolated"}
+        rectype_dict = {"PG":"Polar Grid", "C":"Census block", "P":"User", "M":"Monitor", 
+                        "S":"School", "B":"Boundary"}
+        notes_dict = {"PG":"Polar", "C":"Census", "P":"Populated User Receptor", "M":"Monitor Receptor",
+                      "S":"School Receptor", "B":"Boundary Receptor"}
+
+#        rectype_dict = {"PG":"Polar grid", "D":"Census block", "I":"Census block"}
+#        notes_dict = {"PG":"Polar", "D":"Discrete", "I":"Interpolated"}
 
         ring_risk = self.ring_summary_chronic_df.copy()
         inner_risk = self.inner_recep_risk_df.copy()
@@ -83,12 +88,14 @@ class MaximumOffsiteImpacts(ExcelWriter):
                 moi_utmn = float(allrisk[utmn].loc[io_idx])
                 moi_lat = float(allrisk[lat].loc[io_idx])
                 moi_lon = float(allrisk[lon].loc[io_idx])
-                if "U" not in moi_block:
-                    moi_rectype = rectype_dict[allrisk[blk_type].loc[io_idx]]
-                    moi_notes = notes_dict[allrisk[blk_type].loc[io_idx]]
-                else:
-                    moi_rectype = "User receptor"
-                    moi_notes = "Discrete"
+                moi_rectype = rectype_dict[allrisk[rec_type].loc[io_idx]]
+                moi_notes = notes_dict[allrisk[rec_type].loc[io_idx]]
+#                if "U" not in moi_block:
+#                    moi_rectype = rectype_dict[allrisk[blk_type].loc[io_idx]]
+#                    moi_notes = notes_dict[allrisk[blk_type].loc[io_idx]]
+#                else:
+#                    moi_rectype = "User receptor"
+#                    moi_notes = "Discrete"
             else:
                 moi_value_rnd = 0
                 moi_value_sci = 0

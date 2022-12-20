@@ -105,7 +105,7 @@ class Process_outputs():
         # reference census data fields like FIPs and block number.
         altrec = self.model.altRec_optns.get("altrec", None)
         altrec_nopop = self.model.altRec_optns.get("altrec_nopop", None)
-
+        
         #----------- create All_Inner_Receptor output file -----------------
         all_inner_receptors = AllInnerReceptorsNonCensus(self.outdir, self.facid, self.model, self.plot_df, self.acute_yn) if altrec \
                         else AllInnerReceptors(self.outdir, self.facid, self.model, self.plot_df, self.acute_yn)

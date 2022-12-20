@@ -35,15 +35,19 @@ class MaximumOffsiteImpactsNonCensus(ExcelWriter):
         """
 
         # dictionary of receptor types and notes
-        rectype_dict = {"PG":"Polar grid", "D":"Census block", "I":"Census block"}
-        notes_dict = {"PG":"Polar", "D":"Discrete", "I":"Interpolated"}
+        rectype_dict = {"PG":"Polar Grid", "P":"Alternate Receptor/User", "M":"Monitor", 
+                        "S":"School", "B":"Boundary"}
+        notes_dict = {"PG":"Polar", "P":"Alternate Receptor or Populated User Receptor", 
+                      "M":"Monitor Receptor", "S":"School Receptor", "B":"Boundary Receptor"}
+#        rectype_dict = {"PG":"Polar grid", "D":"Census block", "I":"Census block"}
+#        notes_dict = {"PG":"Polar", "D":"Discrete", "I":"Interpolated"}
 
         ring_risk = self.ring_summary_chronic_df.copy()
         inner_risk = self.inner_recep_risk_df.copy()
 
-        # add population and recype columns into ring risk df
+        # add population and rec_type columns into ring risk df
         ring_risk[population] = 0
-        ring_risk[blk_type] = "PG"
+        ring_risk[rec_type] = "PG"
 
         # add distance and angle from the inner blocks df to the inner risk df
         innrisk = pd.merge(inner_risk, self.model.innerblks_df[[lat, lon, distance, angle]],
@@ -51,7 +55,7 @@ class MaximumOffsiteImpactsNonCensus(ExcelWriter):
 
         # append ring risk to inner risk to make one risk df
         allrisk = innrisk.append(ring_risk, sort=True).reset_index(drop=True).infer_objects().fillna('')
-
+        
         # find max offsite receptor info for mir and all 14 HIs
         moilist = []
         parmdict = {'mir':'Cancer risk', 'hi_resp':'Respiratory HI', 'hi_live':'Liver HI', 'hi_neur':'Neurological HI',
@@ -78,12 +82,14 @@ class MaximumOffsiteImpactsNonCensus(ExcelWriter):
                 moi_utmn = float(allrisk[utmn].loc[io_idx])
                 moi_lat = float(allrisk[lat].loc[io_idx])
                 moi_lon = float(allrisk[lon].loc[io_idx])
-                if "U" not in moi_recid:
-                    moi_rectype = rectype_dict[allrisk[blk_type].loc[io_idx]]
-                    moi_notes = notes_dict[allrisk[blk_type].loc[io_idx]]
-                else:
-                    moi_rectype = "User receptor"
-                    moi_notes = "Discrete"
+                moi_rectype = rectype_dict[allrisk[rec_type].loc[io_idx]]
+                moi_notes = notes_dict[allrisk[rec_type].loc[io_idx]]
+#                if "U" not in moi_recid:
+#                    moi_rectype = rectype_dict[allrisk[blk_type].loc[io_idx]]
+#                    moi_notes = notes_dict[allrisk[blk_type].loc[io_idx]]
+#                else:
+#                    moi_rectype = "User receptor"
+#                    moi_notes = "Discrete"
             else:
                 moi_value_rnd = 0
                 moi_value_sci = 0

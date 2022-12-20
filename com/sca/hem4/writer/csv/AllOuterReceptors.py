@@ -1049,7 +1049,7 @@ class AllOuterReceptors(CsvWriter, InputFile):
         else:
            self.numericColumns = [lat, lon, conc, aconc, elev, population]
             
-        self.strColumns = [fips, block, source_id, 'emis_type', pollutant, overlap]
+        self.strColumns = [fips, block, source_id, 'emis_type', pollutant, overlap, rec_type]
 
         colnames = self.getColumns()
         self.skiprows = 1

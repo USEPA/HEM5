@@ -352,14 +352,16 @@ class FacilityPrep():
                     Logger.logMessage(msg)
 
                 # Check for any user receptors that are already in the census data based on idmarplot
-                dups = pd.merge(self.innerblks, user_recs, how='inner', on=['idmarplot'])
-                if dups.empty == False:
-                    # Some user receptors are already in the census. Remove these from the user receptor list.
-                    user_recs = user_recs[~user_recs.set_index(['idmarplot']).index.isin(dups.set_index(['idmarplot']).index)].copy()
-                
-                    msg = 'The following user receptors have IDs that are already in the Census data. They ' + \
-                            ' will be removed from the user receptor list. ' + str(dups['rec_id_y'].tolist())
-                    Logger.logMessage(msg)
+                # Only do this when using Census data
+                if not self.model.altRec_optns.get('altrec', None):
+                    dups = pd.merge(self.innerblks, user_recs, how='inner', on=['idmarplot'])
+                    if dups.empty == False:
+                        # Some user receptors are already in the census. Remove these from the user receptor list.
+                        user_recs = user_recs[~user_recs.set_index(['idmarplot']).index.isin(dups.set_index(['idmarplot']).index)].copy()
+                    
+                        msg = 'The following user receptors have IDs that are already in the Census data. They ' + \
+                                ' will be removed from the user receptor list. ' + str(dups['rec_id_y'].tolist())
+                        Logger.logMessage(msg)
                 
                 # Put into model
                 self.model.userrecs_df = user_recs

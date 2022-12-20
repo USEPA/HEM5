@@ -115,7 +115,7 @@ class UserReceptors(DependentInputFile):
                                       "in the User Receptors List.")
                     return None
 
-            valid = ['P', 'B', 'M']
+            valid = ['P', 'B', 'M', 'S']
             if row[rec_type] not in valid:
                 Logger.logMessage("Facility " + facility + ": Receptor type value " + str(row[rec_type]) + " invalid " +
                                   "in the User Receptors List.")

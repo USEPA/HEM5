@@ -99,13 +99,16 @@ class AllOuterReceptorsNonCensus(CsvWriter, InputFile):
 
     def getHeader(self):
         return ['Receptor ID', 'Latitude', 'Longitude', 'Source ID', 'Emission type', 'Pollutant',
-                'Conc (µg/m3)', 'Acute Conc (µg/m3)', 'Elevation (m)', 'Population', 'Overlap']
+                'Conc (µg/m3)', 'Acute Conc (µg/m3)', 'Elevation (m)', 'Population', 'Overlap',
+                'Receptor Type']
 
     def getColumns(self):
         if self.acute_yn == 'N':
-            return [rec_id, lat, lon, source_id, emis_type, pollutant, conc, elev, population, overlap]
+            return [rec_id, lat, lon, source_id, emis_type, pollutant, conc, elev, population, overlap,
+                    rec_type]
         else:
-            return [rec_id, lat, lon, source_id, emis_type, pollutant, conc, aconc, elev, population, overlap]
+            return [rec_id, lat, lon, source_id, emis_type, pollutant, conc, aconc, elev, population, overlap,
+                    rec_type]
             
 
     def generateOutputs(self):
@@ -148,7 +151,7 @@ class AllOuterReceptorsNonCensus(CsvWriter, InputFile):
                 #subset outer blocks DF to needed columns and sort by increasing distance
                 outerblks_subset = self.model.outerblks_df[[rec_id, lat, lon, elev,
                                                             'distance', 'angle', population, overlap,
-                                                            's', 'ring_loc']].copy()
+                                                            's', 'ring_loc', 'rec_type']].copy()
                 outerblks_subset.sort_values(by=['distance'], axis=0, inplace=True)
            
                 # Define sector/ring of 4 surrounding polar receptors of each outer receptor
@@ -202,7 +205,7 @@ class AllOuterReceptorsNonCensus(CsvWriter, InputFile):
                 #   Apply emissions to interpolated outer concs and write
                 
                 outerconcs = outer4interp[['rec_id', 'lat', 'lon', 'elev', 'population', 'overlap',
-                                        'emis_type', 'source_id']]
+                                        'emis_type', 'source_id', 'rec_type']]
                 outerconcs['intconc'] = a_intconc
                 
                 num_rows_outer_recs = outerblks_subset.shape[0]
@@ -294,6 +297,8 @@ class AllOuterReceptorsNonCensus(CsvWriter, InputFile):
                 
                 
             else:
+                
+                # Acute
                         
                 #extract Chronic polar concs from the Chronic plotfile and round the utm coordinates
                 polarcplot_df = self.plot_df.query("net_id == 'POLGRID1'").copy()
@@ -324,7 +329,7 @@ class AllOuterReceptorsNonCensus(CsvWriter, InputFile):
                 #subset outer blocks DF to needed columns and sort by increasing distance
                 outerblks_subset = self.model.outerblks_df[[rec_id, lat, lon, elev,
                                                             'distance', 'angle', population, overlap,
-                                                            's', 'ring_loc']].copy()
+                                                            's', 'ring_loc', 'rec_type']].copy()
                 outerblks_subset.sort_values(by=['distance'], axis=0, inplace=True)
     
     
@@ -391,7 +396,7 @@ class AllOuterReceptorsNonCensus(CsvWriter, InputFile):
                 #   Apply emissions to interpolated outer concs and write
                 
                 outerconcs = outer4interp[['rec_id', 'lat', 'lon', 'elev', 'population', 'overlap',
-                                        'emis_type', 'source_id']]
+                                        'emis_type', 'source_id', 'rec_type']]
                 outerconcs['intcconc'] = a_intcconc
                 outerconcs['intaconc'] = a_intaconc
                 
@@ -992,7 +997,7 @@ class AllOuterReceptorsNonCensus(CsvWriter, InputFile):
         else:
             self.numericColumns = [lat, lon, conc, aconc, elev, population]
 
-        self.strColumns = [rec_id, source_id, emis_type, pollutant, overlap]
+        self.strColumns = [rec_id, source_id, emis_type, pollutant, overlap, rec_type]
 
         df = self.readFromPathCsv(self.getColumns())
         return df.fillna("")
