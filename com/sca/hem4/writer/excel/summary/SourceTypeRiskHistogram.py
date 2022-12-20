@@ -141,8 +141,8 @@ class SourceTypeRiskHistogram(ExcelWriter, AltRecAwareSummary):
 #                        outer_summed.drop(outer_summed[(outer_summed.population == 0) & ("U" not in outer_summed.block)].index,
 #                                         inplace=True)
 #    
-#                    # Append to sector block risk DF
-#                    sector_blkrisk = sector_blkrisk.append(outer_summed)
+                    # Append to sector block risk DF
+                    sector_blkrisk = sector_blkrisk.append(outer_summed)
     
                     # Aggregate risk by block and source
                     sector_summed = sector_blkrisk.groupby(by=byCols, as_index=False).agg(aggs).reset_index(drop=True)

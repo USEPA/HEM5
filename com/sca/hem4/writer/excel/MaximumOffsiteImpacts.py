@@ -45,9 +45,10 @@ class MaximumOffsiteImpacts(ExcelWriter):
         ring_risk = self.ring_summary_chronic_df.copy()
         inner_risk = self.inner_recep_risk_df.copy()
 
-        # add population and recype columns into ring risk df
+        # add population and rec_type columns into ring risk df
         ring_risk[population] = 0
         ring_risk[blk_type] = "PG"
+        ring_risk[rec_type] = "PG"
 
         # add distance and angle from the inner blocks df to the inner risk df
         if self.model.innerblks_df.empty == False:
@@ -60,7 +61,7 @@ class MaximumOffsiteImpacts(ExcelWriter):
 
         # append ring risk to inner risk to make one risk df
         allrisk = innrisk.append(ring_risk, sort=True).reset_index(drop=True).infer_objects().fillna('')
-
+        
         # find max offsite receptor info for mir and all 14 HIs
         moilist = []
         parmdict = {'mir':'Cancer risk', 'hi_resp':'Respiratory HI', 'hi_live':'Liver HI', 'hi_neur':'Neurological HI',

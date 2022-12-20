@@ -110,6 +110,7 @@ class MirHIAllReceptors(CsvWriter, InputFile):
         else:
 
             aggs = {lat:'first', lon:'first', overlap:'first', elev:'first', utme:'first', blk_type:'first',
+                    rec_type:'first',
                     utmn:'first', hill:'first', rec_id: 'first', population:'first',
                     mir:'sum', hi_resp:'sum', hi_live:'sum', hi_neur:'sum', hi_deve:'sum',
                     hi_repr:'sum', hi_kidn:'sum', hi_ocul:'sum', hi_endo:'sum', hi_hema:'sum',
@@ -161,7 +162,7 @@ class MirHIAllReceptors(CsvWriter, InputFile):
         self.numericColumns = [lat, lon, mir, 'mir_rounded', population, hi_resp, hi_live,
                                hi_neur, hi_deve, hi_repr, hi_kidn, hi_ocul, hi_endo, hi_hema, hi_immu, hi_skel, hi_sple,
                                hi_thyr, hi_whol, 'fac_count', distance]
-        self.strColumns = [fips, block]
+        self.strColumns = [fips, block, rec_type]
         df = self.readFromPathCsv(self.getColumns())
         return df.fillna("")
 

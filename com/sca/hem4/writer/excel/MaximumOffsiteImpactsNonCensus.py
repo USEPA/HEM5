@@ -55,7 +55,7 @@ class MaximumOffsiteImpactsNonCensus(ExcelWriter):
 
         # append ring risk to inner risk to make one risk df
         allrisk = innrisk.append(ring_risk, sort=True).reset_index(drop=True).infer_objects().fillna('')
-        
+         
         # find max offsite receptor info for mir and all 14 HIs
         moilist = []
         parmdict = {'mir':'Cancer risk', 'hi_resp':'Respiratory HI', 'hi_live':'Liver HI', 'hi_neur':'Neurological HI',
