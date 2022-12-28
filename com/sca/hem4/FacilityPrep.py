@@ -323,7 +323,7 @@ class FacilityPrep():
                 if not self.model.altRec_optns.get('altrec', None):
                     # using census data
                     user_recs.loc[:, 'fips'] = '00000'
-                    user_recs.loc[:,'idmarplot'] = user_recs['rec_id']
+                    user_recs.loc[:,'idmarplot'] = user_recs['rec_id'].str.zfill(15)
                 
 #                if self.model.altRec_optns.get('altrec', None):
 #                    for index, row in user_recs.iterrows():
