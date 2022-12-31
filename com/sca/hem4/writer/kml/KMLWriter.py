@@ -226,13 +226,13 @@ class KMLWriter():
                                  row['rfc'], row[his[1]]), axis=1)
 
         # Create a dataframe of inner receptor risk by receptor and pollutant
-        innersum = model.all_inner_receptors_df.groupby(['fips', 'block', 'lat', 'lon', 'pollutant'],
+        innersum = model.all_inner_receptors_df.groupby(['fips', 'block', 'lat', 'lon', 'rec_type', 'pollutant'],
                                                         as_index=False)[['conc']].sum()
         if not innersum.empty:
             innermerge1  = innersum.merge(model.haplib.dataframe, on='pollutant')[['fips','block'
-                                         ,'lat','lon','pollutant','conc','ure','rfc']]
+                                         ,'lat','lon','pollutant','conc','ure','rfc','rec_type']]
             innermerge2  = innermerge1.merge(model.organs.dataframe, on='pollutant', how='left')[['fips','block',
-                                         'lat','lon','pollutant','conc','ure','rfc','resp',
+                                         'lat','lon','pollutant','conc','ure','rfc','rec_type','resp',
                                          'liver','neuro','dev','reprod','kidney','ocular',
                                          'endoc','hemato','immune','skeletal','spleen',
                                          'thyroid','wholebod']]
@@ -354,7 +354,8 @@ class KMLWriter():
         if not innersum.empty:
         
             #-------------- User receptor cancer risk -------------------------------------
-            urec_df = innermerge2.loc[innermerge2['block'].str.upper().str.contains('U')]
+            urec_df = innermerge2.loc[(innermerge2['block'].str.upper().str.contains('U')) |
+                                        (innermerge2['rec_type']=='P')]
             if not urec_df.empty:
                 urcr_folder = kml.Folder(ns=self.ns, name="User receptor cancer risk")
                 urcr_folder.isopen = 0
@@ -485,8 +486,9 @@ class KMLWriter():
             ir_folder = kml.Folder(ns=self.ns, name="Census block cancer risk")
             ir_folder.isopen = 0
             
-            # Exclude user receptors
-            cblks = innermerge2.loc[~innermerge2['block'].str.upper().str.contains('U')]
+            # Only use Census blocks (exclude user receptors)
+            cblks = innermerge2.loc[innermerge2['rec_type']=='C']
+#            cblks = innermerge2.loc[~innermerge2['block'].str.upper().str.contains('U')]
             for loc, group in cblks.groupby(["lat","lon"]):
                 slat = loc[0]
                 slon = loc[1]
