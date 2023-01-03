@@ -355,7 +355,10 @@ class KMLWriter():
         
             #-------------- User receptor cancer risk -------------------------------------
             urec_df = innermerge2.loc[(innermerge2['block'].str.upper().str.contains('U')) |
-                                        (innermerge2['rec_type']=='P')]
+                                        (innermerge2['rec_type']=='P') |
+                                        (innermerge2['rec_type']=='S') |
+                                        (innermerge2['rec_type']=='M') |
+                                        (innermerge2['rec_type']=='B')]
             if not urec_df.empty:
                 urcr_folder = kml.Folder(ns=self.ns, name="User receptor cancer risk")
                 urcr_folder.isopen = 0
