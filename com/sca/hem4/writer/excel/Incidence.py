@@ -9,6 +9,7 @@ from com.sca.hem4.upload.InputFile import InputFile
 from com.sca.hem4.writer.csv.AllInnerReceptors import emis_type
 from com.sca.hem4.writer.excel.ExcelWriter import ExcelWriter
 from com.sca.hem4.model.Model import *
+import pandas as pd
 
 inc = 'inc';
 inc_rnd = 'inc_rnd';
@@ -57,7 +58,7 @@ class Incidence(ExcelWriter, InputFile):
             inner_inc[inc] = None
 
         # append inner_inc and outer_inc, and re-sum by source_id and pollutant
-        all_inc = inner_inc.append(self.outerInc, ignore_index=True).groupby(
+        all_inc = pd.concat([inner_inc, self.outerInc], ignore_index=True).groupby(
             [source_id, pollutant, emis_type], as_index=False)[[inc]].sum()
 
         # sum incidence by pollutant
@@ -76,7 +77,7 @@ class Incidence(ExcelWriter, InputFile):
         all_inc = all_inc[all_inc['inc'] != 0]
 
         # combine all, poll, sourceid, and emistype incidence dfs into one and store in data
-        combined_inc = emistype_inc.append([all_inc, poll_inc, sourceid_inc], ignore_index=True)
+        combined_inc = pd.concat([emistype_inc, all_inc, poll_inc, sourceid_inc], ignore_index=True)
         combined_inc = combined_inc[[source_id, pollutant, emis_type, inc]]
 
         # compute a rounded incidence value

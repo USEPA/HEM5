@@ -10,6 +10,7 @@ from com.sca.hem4.support.UTM import *
 from com.sca.hem4.FacilityPrep import *
 import traceback
 from com.sca.hem4.writer.excel.summary.AltRecAwareSummary import AltRecAwareSummary
+import pandas as pd
 
 site_type = 'site_type';
 conc_rnd = 'conc_rnd';
@@ -170,7 +171,7 @@ class RiskBreakdown(ExcelWriter, InputFile):
                 temp_df = bkdndata[columns]
     
                 # append to riskbkdn_df
-                riskbkdn_df = riskbkdn_df.append(temp_df, ignore_index=True)
+                riskbkdn_df = pd.concat([riskbkdn_df, temp_df], ignore_index=True)
     
     
                 # ----------- Next, breakdown max offsite risk for this parameter ---------------
@@ -250,10 +251,9 @@ class RiskBreakdown(ExcelWriter, InputFile):
                 temp_df = bkdndata[columns]
     
                 # append to riskbkdn_df
-                riskbkdn_df = riskbkdn_df.append(temp_df, ignore_index=True)
+                riskbkdn_df = pd.concat([riskbkdn_df, temp_df], ignore_index=True)
     
-            #TODO
-            # Change dtype of conc. This will be done upstream later.
+            # Change dtype of conc
             riskbkdn_df[conc] = pd.to_numeric(riskbkdn_df[conc])
             
             
@@ -293,9 +293,7 @@ class RiskBreakdown(ExcelWriter, InputFile):
             alltot[conc_rnd] = alltot[conc].apply(lambda x: round(x, -int(math.floor(math.log10(abs(x))))) if x > 0 else 0)
     
             # Append aggregates
-            riskbkdn_df = riskbkdn_df.append(srctot, ignore_index=True)
-            riskbkdn_df = riskbkdn_df.append(polltot, ignore_index=True)
-            riskbkdn_df = riskbkdn_df.append(alltot, ignore_index=True)
+            riskbkdn_df = pd.concat([riskbkdn_df,srctot,polltot,alltot], ignore_index=True)
             
             # Sort rows
             riskbkdn_df.sort_values([parameter, site_type, source_id, value],

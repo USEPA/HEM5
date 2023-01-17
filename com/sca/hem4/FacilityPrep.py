@@ -13,6 +13,11 @@ from com.sca.hem4.upload.FacilityList import *
 from com.sca.hem4.support.NormalRounding import *
 import sys
 import math
+<<<<<<< HEAD
+=======
+import traceback
+import pandas as pd
+>>>>>>> feature-single_census
 
 distance = 'distance';
 angle = 'angle';
@@ -53,6 +58,7 @@ class FacilityPrep():
             emislocs.drop(emislocs[emislocs[source_type]=='B'].index, inplace = True)
             emislocs = emislocs.append(blRows, ignore_index=True)
 
+<<<<<<< HEAD
         # Determine the utm zone to use for this facility. Also get the hemisphere (N or S).
         facutmzonenum, hemi = UTM.zone2use(emislocs)
         facutmzonestr = str(facutmzonenum) + hemi
@@ -106,6 +112,38 @@ class FacilityPrep():
 
                 # Compute lat/lon of any user supplied UTM coordinates
                 polyver_df[[lat, lon]] = polyver_df.apply(lambda row: UTM.utm2ll(row[lat],row[lon],row[utmzone]) 
+=======
+            #%%---------- Facility Options --------------------------------------
+            self.model.facops = self.model.faclist.dataframe.loc[self.model.faclist.dataframe[fac_id] == facid]
+    
+            op_maxdist = self.model.facops[max_dist].iloc[0]
+            op_modeldist = self.model.facops[model_dist].iloc[0]
+            op_circles = self.model.facops[circles].iloc[0]
+            op_radial = int(self.model.facops[radial].iloc[0])
+            op_overlap = self.model.facops[overlap_dist].iloc[0]
+    
+            self.fac_center = self.model.facops[fac_center].iloc[0]
+            self.ring_distances = self.model.facops['ring_distances'].iloc[0]
+    
+            #%%---------- Emissions Locations --------------------------------------
+            emislocs = self.model.emisloc.dataframe.loc[self.model.emisloc.dataframe[fac_id] == facid]
+    
+            
+            # If there is a bouyant line source with other sources, then it has to come last because of an Aermod v19191 bug.
+            blRows = emislocs[emislocs[source_type]=='B']
+            srcTypes = set(emislocs[source_type])
+            if not blRows.empty and len(srcTypes) > 1:
+                emislocs.drop(emislocs[emislocs[source_type]=='B'].index, inplace = True)
+                emislocs = pd.concat([emislocs, blRows], ignore_index=True)
+    
+            # Determine the utm zone to use for this facility. Also get the hemisphere (N or S).
+            facutmzonenum, hemi = UTM.zone2use(emislocs)
+            facutmzonestr = str(facutmzonenum) + hemi
+    
+                    
+            # Compute lat/lon of any user supplied UTM coordinates
+            emislocs[[lat, lon]] = emislocs.apply(lambda row: UTM.utm2ll(row[lat],row[lon],row[utmzone]) 
+>>>>>>> feature-single_census
                                    if row['location_type']=='U' else [row[lat],row[lon]], result_type="expand", axis=1)
     
                 # Next compute UTM coordinates using the common zone
@@ -186,32 +224,55 @@ class FacilityPrep():
         #else:
             #gasparams_df = None
 
-        #%%---------- Get Census Block Receptors --------------------------------------
-               
-        # Keep necessary source location columns
-        sourcelocs = emislocs[[fac_id,source_id,source_type,lat,lon,utme,utmn,utmzone
-            ,lengthx,lengthy,angle,"utme_x2","utmn_y2"]].copy()
-
-        # Is there a polygon source at this facility?
-        # If there is, read the vertex DF and append to sourcelocs
-        if any(sourcelocs[source_type] == "I") == True:
-            # remove the I source_type rows from sourcelocs before appending polyver_df to avoid duplicate rows
-            sourcelocs = sourcelocs[sourcelocs.source_type != "I"]
-            sourcelocs = sourcelocs.append(polyver_df)
-            sourcelocs = sourcelocs.fillna({source_type:'', lengthx:0, lengthy:0, angle:0, "utme_x2":0, "utmn_y2":0})
-            sourcelocs = sourcelocs.reset_index(drop=True)
-
-        # Compute the coordinates of the facililty center if not specified in options
-        if (self.fac_center == "" or self.ring_distances == ""):
-            cenx, ceny, cenlon, cenlat, max_srcdist, vertx_a, verty_a = UTM.center(sourcelocs, facutmzonenum, hemi)
-
-        if self.fac_center != "":
-            # Grab the specified center and translate to/from UTM
-            components = self.fac_center.split(',')
-            if components[0] == "L":
-                cenlat = float(components[1])
-                cenlon = float(components[2])
-                ceny, cenx, zone, hemi, epsg = UTM.ll2utm(cenlat, cenlon)
+        
+        
+            #%%---------- Get Census Block Receptors --------------------------------------
+                   
+            # Keep necessary source location columns
+            sourcelocs = emislocs[[fac_id,source_id,source_type,lat,lon,utme,utmn,utmzone
+                ,lengthx,lengthy,angle,"utme_x2","utmn_y2"]].copy()
+    
+            # Is there a polygon source at this facility?
+            # If there is, read the vertex DF and append to sourcelocs
+            if any(sourcelocs[source_type] == "I") == True:
+                # remove the I source_type rows from sourcelocs before appending polyver_df to avoid duplicate rows
+                sourcelocs = sourcelocs[sourcelocs.source_type != "I"]
+                sourcelocs = pd.concat([sourcelocs, polyver_df])
+                sourcelocs = sourcelocs.fillna({source_type:'', lengthx:0, lengthy:0, angle:0, "utme_x2":0, "utmn_y2":0})
+                sourcelocs = sourcelocs.reset_index(drop=True)
+    
+            # Compute the coordinates of the facililty center if not specified in options
+            if (self.fac_center == "" or self.ring_distances == ""):
+                cenx, ceny, cenlon, cenlat, max_srcdist, vertx_a, verty_a = UTM.center(sourcelocs, facutmzonenum, hemi)
+    
+            if self.fac_center != "":
+                # Grab the specified center and translate to/from UTM
+                components = self.fac_center.split(',')
+                if components[0] == "L":
+                    cenlat = float(components[1])
+                    cenlon = float(components[2])
+                    ceny, cenx, zone, hemi, epsg = UTM.ll2utm(cenlat, cenlon)
+                else:
+                    ceny = int(float(components[1]))
+                    cenx = int(float(components[2]))
+    
+                    zone = components[3].strip()
+                    cenlat, cenlon = UTM.utm2ll(ceny, cenx, zone)
+    
+            Logger.logMessage("Using facility center [x, y, lat, lon] = [" + str(cenx) + ", " + str(ceny) + ", " +
+                                  str(cenlat) + ", " + str(cenlon) + "]")
+            self.model.computedValues['cenlat'] = cenlat
+            self.model.computedValues['cenlon'] = cenlon
+    
+            # retrieve blocks
+            maxdist = self.model.facops[max_dist].iloc[0]
+            modeldist = self.model.facops[model_dist].iloc[0]
+            
+            if self.model.altRec_optns.get('altrec', None):
+    
+                self.innerblks, self.outerblks = getBlocksFromAltRecs(facid, cenx, ceny, cenlon, cenlat, facutmzonenum,
+                    hemi, maxdist, modeldist, sourcelocs, op_overlap, self.model)
+    
             else:
                 ceny = int(float(components[1]))
                 cenx = int(float(components[2]))
@@ -362,17 +423,23 @@ class FacilityPrep():
                         msg = 'The following user receptors have IDs that are already in the Census data. They ' + \
                                 ' will be removed from the user receptor list. ' + str(dups['rec_id_y'].tolist())
                         Logger.logMessage(msg)
-                
-                # Put into model
-                self.model.userrecs_df = user_recs
-    
-                # Append user_recs to innerblks
-                self.innerblks = self.innerblks.append(user_recs, ignore_index=True)
+                    
+                    # Put into model
+                    self.model.userrecs_df = user_recs
+                    
+                    # Drop some columns that are not needed in the inner blocks DF
+                    user_recs.drop(columns=['index','fac_id','location_type','utmzone','rec_id'],
+                                   inplace=True)
+        
+                    # Append user_recs to innerblks
+                    self.innerblks = pd.concat([self.innerblks, user_recs], ignore_index=True)
+                                            
+       
 
-
-        # >= 3 rings, must be > 0 && <= 50000, and monotonically increasing
 
         #%%----- Polar receptors ----------
+
+        # >= 3 rings, must be > 0 && <= 50000, and monotonically increasing
 
         # Compute the first polar ring distance ......
         if self.ring_distances != "":

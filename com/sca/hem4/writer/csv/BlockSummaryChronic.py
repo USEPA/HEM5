@@ -91,7 +91,8 @@ class BlockSummaryChronic(CsvWriter, InputFile):
 
         # append the inner and outer dataframes
         if self.outerAgg is not None:
-            self.dataframe = inneragg.append(self.outerAgg, ignore_index = True).sort_values(by=[fips, block])
+            self.dataframe = pd.concat([inneragg, self.outerAgg], ignore_index=True).sort_values(by=[fips, block])
+            
         else:
             self.dataframe = inneragg
 

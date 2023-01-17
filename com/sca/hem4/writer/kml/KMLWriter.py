@@ -1476,7 +1476,7 @@ class KMLWriter():
                 # remove the I source_type rows from emislocs before appending polyver to avoid duplicate rows
                 emislocs = emislocs[emislocs.source_type != "I"]
                 # Append polyver to emislocs
-                emislocs = emislocs.append(polyver)
+                emislocs = pd.concat([emislocs, polyver])
 
             # If facility has a buoyant line source, get the line width
             if any(emislocs.source_type == "B") == True:
@@ -1583,10 +1583,11 @@ class KMLWriter():
                 
                 # Remove the area/volume rows from emislocs and append the area/volume vertices list
                 emislocs = emislocs[(emislocs.source_type != "A") & (emislocs.source_type != "V")]
-                emislocs = emislocs.append(pd.DataFrame(new_rows, columns=emislocs.columns)).reset_index()
+                newrows_df = pd.DataFrame(new_rows, columns=emislocs.columns)
+                emislocs = pd.concat([emislocs, newrows_df]).reset_index()
                             
             # Append to source_map
-            source_map = source_map.append(emislocs)
+            source_map = pd.concat([source_map, emislocs])
 
         return source_map
 
@@ -1611,7 +1612,7 @@ class KMLWriter():
             # remove the I source_type rows from emislocs before appending polyver to avoid duplicate rows
             emislocs = emislocs[emislocs.source_type != "I"]
             # Append polyver to emislocs
-            emislocs = emislocs.append(polyver)
+            emislocs = pd.concat([emislocs, polyver])
 
         # If facility has a buoyant line source, get the line width
         if any(emislocs.source_type == "B") == True:
@@ -1647,7 +1648,7 @@ class KMLWriter():
                           , result_type="expand", axis=1)
 
         # Append to source_map
-        fac_source_map = fac_source_map.append(emislocs)
+        fac_source_map = pd.concat([fac_source_map, emislocs])
 
         return fac_source_map
     
