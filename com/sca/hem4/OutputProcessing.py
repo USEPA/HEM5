@@ -35,7 +35,6 @@ from com.sca.hem4.model.Model import *
 from com.sca.hem4.writer.excel.FacilityCancerRiskExp import FacilityCancerRiskExp
 from com.sca.hem4.writer.excel.FacilityTOSHIExp import FacilityTOSHIExp
 import traceback
-import pandas as pd
 
 
 class Process_outputs():
@@ -75,7 +74,7 @@ class Process_outputs():
         
 
     def process(self):
-                
+        
         if self.abort.is_set():
             Logger.logMessage("Terminating output processing...")
             return
@@ -152,7 +151,6 @@ class Process_outputs():
             return
         
         #----------- create Block_Summary_Chronic data -----------------
-        
         block_summary_chronic = BlockSummaryChronicNonCensus(targetDir=self.outdir, facilityId=self.facid,
                  model=self.model, plot_df=self.plot_df, outerAgg=all_outer_receptors.outerAgg) if altrec else \
             BlockSummaryChronic(self.outdir, self.facid, self.model, self.plot_df, all_outer_receptors.outerAgg)
@@ -160,11 +158,11 @@ class Process_outputs():
         for batch in generator:
             self.model.block_summary_chronic_df = block_summary_chronic.dataframe
         Logger.logMessage("Completed BlockSummaryChronic output")
-        
+
         if self.abort.is_set():
             Logger.logMessage("Terminating output processing...")
             return
-        
+
         
 #        # Assign rec_type to block summary chronic from the inner and outer census DFs.
 #        if not self.model.outerblks_df.empty:
@@ -200,22 +198,14 @@ class Process_outputs():
         # Subset the block summary chronic DF to needed columns
         block_risk = self.model.block_summary_chronic_df[block_columns]
         
-<<<<<<< HEAD
         # Final DF of risk by lat and lon for all receptors
         self.model.risk_by_latlon = ring_risk.append(block_risk).reset_index(drop=True).infer_objects()
 
-=======
-        block_risk = blksummary_w_rectype[block_columns]
-        
-        self.model.risk_by_latlon = pd.concat([ring_risk, block_risk]).reset_index(drop=True).infer_objects()
-        
->>>>>>> feature-single_census
         if self.abort.is_set():
             Logger.logMessage("Terminating output processing...")
             return
 
         #----------- create noncancer risk exposure output file -----------------
-        
         noncancer_risk_exposure = NoncancerRiskExposure(self.outdir, self.facid, self.model, self.plot_df, self.model.block_summary_chronic_df)
         noncancer_risk_exposure.write()
         Logger.logMessage("Completed NoncancerRiskExposure output")
@@ -225,11 +215,10 @@ class Process_outputs():
             return
 
         #----------- create cancer risk exposure output file -----------------
-        
         cancer_risk_exposure = CancerRiskExposure(self.outdir, self.facid, self.model, self.plot_df, self.model.block_summary_chronic_df)
         cancer_risk_exposure.write()
         Logger.logMessage("Completed CancerRiskExposure output")
-        
+
         if self.abort.is_set():
             Logger.logMessage("Terminating output processing...")
             return
