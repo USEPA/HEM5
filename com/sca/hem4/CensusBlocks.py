@@ -176,7 +176,7 @@ def rotatedbox(xt, yt, box_x, box_y, len_x, len_y, angle, fringe, overlap_dist):
 #%%    
 
 def in_box(modelblks, sourcelocs, modeldist, maxdist, overlap_dist, model):
-    
+
     ## This function determines if a block within modelblks is within a fringe of any source ##
     
     outerblks = modelblks.copy()
@@ -184,12 +184,11 @@ def in_box(modelblks, sourcelocs, modeldist, maxdist, overlap_dist, model):
     outerblks['overlap'] = 'N'
 
     # Create empty inner blocks data frame
-    # colnames = list(modelblks.columns)
-    # innerblks = pd.DataFrame([], columns=colnames)
+    colnames = list(modelblks.columns)
+    innerblks = pd.DataFrame([], columns=colnames)
     
-    inner_list = []
-    
-    #...... Find blocks within modeldist of point sources.........        
+    #...... Find blocks within modeldist of point sources.........
+        
     ptsources = sourcelocs.query("source_type in ('P','C','H','V','N','B')")
     for index, row in ptsources.iterrows():
         src_x = row[utme]
@@ -199,14 +198,22 @@ def in_box(modelblks, sourcelocs, modeldist, maxdist, overlap_dist, model):
         # Determine overlap
         indist['overlap'] = np.where(np.sqrt(np.double((indist[utme]-src_x)**2 +
                                        (indist[utmn]-src_y)**2)) <= overlap_dist, "Y", "N")
-              
+      
         if len(indist) > 0:
-            # Export indist DF to a list of dicts, append to inner_list, and shrink outerblks
-            inner_list.extend(indist.to_dict('records'))
-            outerblks = outerblks[~outerblks['blockid'].isin(indist['blockid'])].copy()
+            # Append to innerblks and shrink outerblks
+            innerblks = innerblks.append(indist).reset_index(drop=True)
+            innerblks = innerblks[~innerblks[idmarplot].duplicated()]
+            outerblks = outerblks[~outerblks[idmarplot].isin(innerblks[idmarplot])].copy()
 
+#            #Do any of these inner or outer blocks overlap this source?
+#            innerblks.loc[innerblks['overlap'] != 'Y', 'overlap'] = np.where(np.sqrt(np.double((innerblks[utme]-src_x)**2 +
+#                                           (innerblks[utmn]-src_y)**2)) <= overlap_dist, "Y", "N")
+#            if not outerblks.empty:
+#                outerblks.loc[outerblks['overlap'] != 'Y', 'overlap'] = np.where(np.sqrt(np.double((outerblks[utme]-src_x)**2 +
+#                                               (outerblks[utmn]-src_y)**2)) <= overlap_dist, "Y", "N")
 
     #....... Find blocks within modeldist of area sources ..........
+
     if not outerblks.empty:
                 
         areasources = sourcelocs.query("source_type in ('A')")
@@ -221,29 +228,32 @@ def in_box(modelblks, sourcelocs, modeldist, maxdist, overlap_dist, model):
                      row1[utmn], box_x, box_y, len_x, len_y, angle_val, fringe, overlap_dist), axis=1))
             indist = outerblks.query('inbox == True')
             if len(indist) > 0:
-                # Export indist DF to a list of dicts, append to inner_list, and shrink outerblks
-                inner_list.extend(indist.to_dict('records'))
-                outerblks = outerblks[~outerblks['blockid'].isin(indist['blockid'])]
+                # Append to innerblks and shrink outerblks
+                innerblks = innerblks.append(indist).reset_index(drop=True)
+                innerblks = innerblks[~innerblks[idmarplot].duplicated()]
+                outerblks = outerblks[~outerblks[idmarplot].isin(innerblks[idmarplot])]
             
             if outerblks.empty:
                 # Break for loop if no more outer blocks
                 break
                   
 
-    #....... If there are polygon sources, find blocks within modeldist of any polygon side ..........   
+    #....... If there are polygon sources, find blocks within modeldist of any polygon side ..........
+    
     if not outerblks.empty:
         polyvertices = sourcelocs.query("source_type in ('I')")
         if len(polyvertices) > 1:
                 
             # If this polygon is a census tract (e.g. NATA application), then any outer receptor within tract will be
-            # considered an inner receptor. Do not perform this check for Alternate Receptors.
+            # considered an inner receptor. Do not perform this check for the user receptor only application.
             if not model.altRec_optns["altrec"]:
                 outerblks.loc[:, "tract"] = outerblks[idmarplot].str[1:11]
                 polyvertices.loc[:, "tract"] = polyvertices[fac_id].str[0:10]
                 intract = pd.merge(outerblks, polyvertices, how='inner', on='tract')
                 if len(intract) > 0:
-                    inner_list.extend(intract.to_dict('records'))
-                    outerblks = outerblks[~outerblks['blockid'].isin(intract['blockid'])]
+                    innerblks = innerblks.append(intract).reset_index(drop=True)
+                    innerblks = innerblks[~innerblks[idmarplot].duplicated()]
+                    outerblks = outerblks[~outerblks[idmarplot].isin(innerblks[idmarplot])]
             
             # Are any blocks within the modeldist of any polygon side?
             # Process each source_id
@@ -257,15 +267,13 @@ def in_box(modelblks, sourcelocs, modeldist, maxdist, overlap_dist, model):
                              np.array([row[utme],row[utmn]]), modeldist), axis=1))
                         polyblks = outerblks.query('nearpoly == True')
                         if len(polyblks) > 0:
-                            inner_list.extend(polyblks.to_dict('records'))
-                            outerblks = outerblks[~outerblks['blockid'].isin(polyblks['blockid'])]
+                            innerblks = innerblks.append(polyblks).reset_index(drop=True)
+                            innerblks = innerblks[~innerblks[idmarplot].duplicated()]
+                            outerblks = outerblks[~outerblks[idmarplot].isin(innerblks[idmarplot])]
                     if outerblks.empty:
                         # Break for loop if no more outer blocks
                         break
-                    
-    # Create innerblks DF from inner_list and remove duplicate block ids
-    innerblks = pd.DataFrame.from_records(inner_list)
-    innerblks = innerblks[~innerblks['blockid'].duplicated()]
+
         
     return innerblks, outerblks
 
@@ -280,12 +288,11 @@ def in_box_NonCensus(modelblks, sourcelocs, modeldist, maxdist, overlap_dist, mo
     outerblks['overlap'] = 'N'
 
     # Create empty inner blocks data frame
-    # colnames = list(modelblks.columns)
-    # innerblks = pd.DataFrame([], columns=colnames)
+    colnames = list(modelblks.columns)
+    innerblks = pd.DataFrame([], columns=colnames)
     
-    inner_list = []
-    
-    #...... Find blocks within modeldist of point sources.........       
+    #...... Find blocks within modeldist of point sources.........
+        
     ptsources = sourcelocs.query("source_type in ('P','C','H','V','N','B')")
     for index, row in ptsources.iterrows():
         src_x = row[utme]
@@ -297,13 +304,20 @@ def in_box_NonCensus(modelblks, sourcelocs, modeldist, maxdist, overlap_dist, mo
                                        (indist[utmn]-src_y)**2)) <= overlap_dist, "Y", "N")
       
         if len(indist) > 0:
-            # Export indist DF to a list of dicts, append to inner_list, and shrink outerblks
-            inner_list.extend(indist.to_dict('records'))
-            # innerblks = innerblks.append(indist).reset_index(drop=True)
-            # innerblks = innerblks[~innerblks[rec_id].duplicated()]
-            outerblks = outerblks[~outerblks[rec_id].isin(indist[rec_id])].copy()
+            # Append to innerblks and shrink outerblks
+            innerblks = innerblks.append(indist).reset_index(drop=True)
+            innerblks = innerblks[~innerblks[rec_id].duplicated()]
+            outerblks = outerblks[~outerblks[rec_id].isin(innerblks[rec_id])].copy()
+
+#            #Do any of these inner or outer blocks overlap this source?
+#            innerblks.loc[innerblks['overlap'] != 'Y', 'overlap'] = np.where(np.sqrt(np.double((innerblks[utme]-src_x)**2 +
+#                                           (innerblks[utmn]-src_y)**2)) <= overlap_dist, "Y", "N")
+#            if not outerblks.empty:
+#                outerblks.loc[outerblks['overlap'] != 'Y', 'overlap'] = np.where(np.sqrt(np.double((outerblks[utme]-src_x)**2 +
+#                                               (outerblks[utmn]-src_y)**2)) <= overlap_dist, "Y", "N")
 
     #....... Find blocks within modeldist of area sources ..........
+
     if not outerblks.empty:
                 
         areasources = sourcelocs.query("source_type in ('A')")
@@ -318,11 +332,10 @@ def in_box_NonCensus(modelblks, sourcelocs, modeldist, maxdist, overlap_dist, mo
                      row1[utmn], box_x, box_y, len_x, len_y, angle_val, fringe, overlap_dist), axis=1))
             indist = outerblks.query('inbox == True')
             if len(indist) > 0:
-                # Export indist DF to a list of dicts, append to inner_list, and shrink outerblks
-                inner_list.extend(indist.to_dict('records'))
-                # innerblks = innerblks.append(indist).reset_index(drop=True)
-                # innerblks = innerblks[~innerblks[rec_id].duplicated()]
-                outerblks = outerblks[~outerblks[rec_id].isin(indist[rec_id])]
+                # Append to innerblks and shrink outerblks
+                innerblks = innerblks.append(indist).reset_index(drop=True)
+                innerblks = innerblks[~innerblks[rec_id].duplicated()]
+                outerblks = outerblks[~outerblks[rec_id].isin(innerblks[rec_id])]
             
             if outerblks.empty:
                 # Break for loop if no more outer blocks
@@ -347,17 +360,13 @@ def in_box_NonCensus(modelblks, sourcelocs, modeldist, maxdist, overlap_dist, mo
                              np.array([row[utme],row[utmn]]), modeldist), axis=1))
                         polyblks = outerblks.query('nearpoly == True')
                         if len(polyblks) > 0:
-                            inner_list.extend(polyblks.to_dict('records'))
-                            # innerblks = innerblks.append(polyblks).reset_index(drop=True)
-                            # innerblks = innerblks[~innerblks[rec_id].duplicated()]
-                            outerblks = outerblks[~outerblks[rec_id].isin(polyblks[rec_id])]
+                            innerblks = innerblks.append(polyblks).reset_index(drop=True)
+                            innerblks = innerblks[~innerblks[rec_id].duplicated()]
+                            outerblks = outerblks[~outerblks[rec_id].isin(innerblks[rec_id])]
                     if outerblks.empty:
                         # Break for loop if no more outer blocks
                         break
 
-    # Create innerblks DF from inner_list and remove duplicate block ids
-    innerblks = pd.DataFrame.from_records(inner_list)
-    innerblks = innerblks[~innerblks['blockid'].duplicated()]
         
     return innerblks, outerblks
 
