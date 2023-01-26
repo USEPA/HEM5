@@ -42,7 +42,7 @@ class SourceTypeRiskHistogram(ExcelWriter, AltRecAwareSummary):
                 hours,multiplier,hivalu,dep,depl,pdep,pdepl,vdep,vdepl,elev,
                 user_rcpt,bldg_dw,fastall,emis_var,annual,period_start,period_end]
         faclist = pd.read_excel(faclistFile, skiprows=1, names=cols, dtype=str)
-        faclist[acute] = faclist[acute].replace('nan', 'N')
+        faclist[acute].fillna('N', inplace=True)
 
         # Create a list to hold the values for each bucket
         maximum = []
@@ -59,8 +59,7 @@ class SourceTypeRiskHistogram(ExcelWriter, AltRecAwareSummary):
         
         # Initialize set of source id's
         allsrcids = set()
-        
-        
+                
         for facilityId in self.facilityIds:
                         
             targetDir = self.categoryFolder + "/" + facilityId
