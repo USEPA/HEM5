@@ -6,6 +6,8 @@ from abc import ABC
 from abc import abstractmethod
 import pandas as pd
 from tkinter import messagebox
+import polars as pl
+import numpy as np
 
 
 from com.sca.hem4.log.Logger import Logger
@@ -144,6 +146,30 @@ class InputFile(ABC):
                 else:
                     return validated
 
+
+    # Read values in from a source .csv file using the polars library and use Lazy
+    # evaluation. A lazyframe is created for future querying.
+    def readFromPathCsvPolars(self):
+        with open(self.path, "rb") as f:
+                        
+            try:
+                
+                plf = pl.scan_csv(f.name, dtypes=self.datatypes)
+                                
+            except BaseException as e:
+                
+                plf = None
+                Logger.logMessage(str(e))
+                
+            else:
+                
+                if plf is None:
+                    return None
+                else:
+                    return plf
+                
+                
+                
     # This method is being applied to every cell to guard against values which
     # have only whitespace.
     def convertEmptyToNaN(self, x):
