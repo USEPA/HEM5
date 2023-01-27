@@ -219,7 +219,7 @@ class Analyze(Page):
             fileDir = os.path.dirname(os.path.realpath('__file__'))
             stdout_file = os.path.join(fileDir, 'output/hem4.log')
             sys.stdout = open(stdout_file, 'w')
-
+            
             # Run the dash app
             dirname = tk.filedialog.askdirectory()
             dashapp = HEM4dash(dirname)
@@ -259,11 +259,10 @@ class Analyze(Page):
                 # Reset stdout to original state
             sys.stdout = orig_stdout
 
-        except BaseException as ex:
-            self.exception = ex
-            fullStackInfo=''.join(traceback.format_exception(
-                etype=type(ex), value=ex, tb=ex.__traceback__))
-            message = "An error occurred while trying to run the EJ dash app:\n" + fullStackInfo
+        except Exception as ex:
+            fullStackInfo = traceback.format_exc()
+            message = ("An error occurred while trying to run the EJ dash app:\n" 
+                       + fullStackInfo)
             Logger.logMessage(message)
 
 
