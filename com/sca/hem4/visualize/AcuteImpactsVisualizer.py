@@ -12,7 +12,7 @@ import geopandas as gp
 from fiona import _shim, schema
 from shapely.geometry import Point
 from bokeh.io import curdoc
-from bokeh.tile_providers import STAMEN_TONER_LABELS
+from bokeh.tile_providers import STAMEN_TONER_LABELS, get_provider
 from bokeh.models import WMTSTileSource, LabelSet, ColumnDataSource, HoverTool, \
     WheelZoomTool, ZoomInTool, ZoomOutTool, PanTool, ResetTool, SaveTool
 from bokeh.models.widgets import Panel, Tabs
@@ -150,7 +150,8 @@ class AcuteImpactsVisualizer():
 
             p.toolbar.active_scroll = p.select_one(WheelZoomTool)
             p.add_tile(ESRI_tile)
-            p.add_tile(STAMEN_TONER_LABELS)
+            tile_provider = get_provider(STAMEN_TONER_LABELS)
+            p.add_tile(tile_provider)
 
             p.circle('x', 'y', color = 'yellow', size = 7, source=source)
             p.xaxis.visible = False
