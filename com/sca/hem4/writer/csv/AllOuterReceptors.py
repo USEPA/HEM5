@@ -171,10 +171,10 @@ class AllOuterReceptors(CsvWriter, InputFile):
                     #TODO stop this facility
     
                 #subset outer blocks DF to needed columns and sort by increasing distance
-                outerblks_subset = self.model.outerblks_df[[fips, idmarplot, lat, lon, elev,
+                outerblks_subset = self.model.outerblks_df[[fips, 'blockid', lat, lon, elev,
                                                             'distance', 'angle', population, overlap,
                                                             's', 'ring_loc', 'rec_type']].copy()
-                outerblks_subset['block'] = outerblks_subset['idmarplot'].str[5:]
+                outerblks_subset['block'] = outerblks_subset['blockid'].str[5:]
                 outerblks_subset.sort_values(by=['distance'], axis=0, inplace=True)
            
                 # Define sector/ring of 4 surrounding polar receptors of each outer receptor
@@ -351,10 +351,10 @@ class AllOuterReceptors(CsvWriter, InputFile):
                     #TODO stop this facility
         
                 #subset outer blocks DF to needed columns and sort by increasing distance
-                outerblks_subset = self.model.outerblks_df[[fips, idmarplot, lat, lon, elev,
+                outerblks_subset = self.model.outerblks_df[[fips, 'blockid', lat, lon, elev,
                                                             'distance', 'angle', population, overlap,
                                                             's', 'ring_loc', 'rec_type']].copy()
-                outerblks_subset['block'] = outerblks_subset['idmarplot'].str[5:]
+                outerblks_subset['block'] = outerblks_subset['blockid'].str[5:]
                 outerblks_subset.sort_values(by=['distance'], axis=0, inplace=True)
     
     

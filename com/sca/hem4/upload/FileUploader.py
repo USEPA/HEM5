@@ -42,9 +42,13 @@ class FileUploader():
             uploaded = GasParams()
             self.model.gasparams = uploaded
         elif filetype == "census":
-            # This uses a lazyframe
+            # This uses a lazyframe and cannot use empty parameter
             uploaded = Census()
             self.model.census = uploaded
+            if uploaded is None:
+                return False
+            else:
+                return True
             
         return False if uploaded.dataframe.empty is True else True
 

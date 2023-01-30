@@ -9,7 +9,7 @@ import polars as pl
 
 rec_id = 'rec_id';
 fips = 'fips';
-idmarplot = 'idmarplot';
+blockid = 'blockid';
 population = 'population';
 moved = 'moved';
 urban_pop = 'urban_pop';
@@ -203,8 +203,8 @@ def in_box(modelblks, sourcelocs, modeldist, maxdist, overlap_dist, model):
         if len(indist) > 0:
             # Append to innerblks and shrink outerblks
             innerblks = innerblks.append(indist).reset_index(drop=True)
-            innerblks = innerblks[~innerblks[idmarplot].duplicated()]
-            outerblks = outerblks[~outerblks[idmarplot].isin(innerblks[idmarplot])].copy()
+            innerblks = innerblks[~innerblks[blockid].duplicated()]
+            outerblks = outerblks[~outerblks[blockid].isin(innerblks[blockid])].copy()
 
 #            #Do any of these inner or outer blocks overlap this source?
 #            innerblks.loc[innerblks['overlap'] != 'Y', 'overlap'] = np.where(np.sqrt(np.double((innerblks[utme]-src_x)**2 +
@@ -231,8 +231,8 @@ def in_box(modelblks, sourcelocs, modeldist, maxdist, overlap_dist, model):
             if len(indist) > 0:
                 # Append to innerblks and shrink outerblks
                 innerblks = innerblks.append(indist).reset_index(drop=True)
-                innerblks = innerblks[~innerblks[idmarplot].duplicated()]
-                outerblks = outerblks[~outerblks[idmarplot].isin(innerblks[idmarplot])]
+                innerblks = innerblks[~innerblks[blockid].duplicated()]
+                outerblks = outerblks[~outerblks[blockid].isin(innerblks[blockid])]
             
             if outerblks.empty:
                 # Break for loop if no more outer blocks
@@ -248,13 +248,13 @@ def in_box(modelblks, sourcelocs, modeldist, maxdist, overlap_dist, model):
             # If this polygon is a census tract (e.g. NATA application), then any outer receptor within tract will be
             # considered an inner receptor. Do not perform this check for the user receptor only application.
             if not model.altRec_optns["altrec"]:
-                outerblks.loc[:, "tract"] = outerblks[idmarplot].str[1:11]
+                outerblks.loc[:, "tract"] = outerblks[blockid].str[1:11]
                 polyvertices.loc[:, "tract"] = polyvertices[fac_id].str[0:10]
                 intract = pd.merge(outerblks, polyvertices, how='inner', on='tract')
                 if len(intract) > 0:
                     innerblks = innerblks.append(intract).reset_index(drop=True)
-                    innerblks = innerblks[~innerblks[idmarplot].duplicated()]
-                    outerblks = outerblks[~outerblks[idmarplot].isin(innerblks[idmarplot])]
+                    innerblks = innerblks[~innerblks[blockid].duplicated()]
+                    outerblks = outerblks[~outerblks[blockid].isin(innerblks[blockid])]
             
             # Are any blocks within the modeldist of any polygon side?
             # Process each source_id
@@ -269,8 +269,8 @@ def in_box(modelblks, sourcelocs, modeldist, maxdist, overlap_dist, model):
                         polyblks = outerblks.query('nearpoly == True')
                         if len(polyblks) > 0:
                             innerblks = innerblks.append(polyblks).reset_index(drop=True)
-                            innerblks = innerblks[~innerblks[idmarplot].duplicated()]
-                            outerblks = outerblks[~outerblks[idmarplot].isin(innerblks[idmarplot])]
+                            innerblks = innerblks[~innerblks[blockid].duplicated()]
+                            outerblks = outerblks[~outerblks[blockid].isin(innerblks[blockid])]
                     if outerblks.empty:
                         # Break for loop if no more outer blocks
                         break
@@ -445,9 +445,9 @@ def getblocks(cenx, ceny, cenlon, cenlat, utmzone, hemi, maxdist, modeldist, sou
         Logger.logMessage(emessage)
         raise Exception(emessage)
         
-    modelblksduplicates = modelblks[modelblks.duplicated(['idmarplot'])]
+    modelblksduplicates = modelblks[modelblks.duplicated(['blockid'])]
     if len(modelblksduplicates) > 0:
-        emessage = "Error! Census blocks contain duplicate idmarplot values."
+        emessage = "Error! Census blocks contain duplicate blockID values."
         Logger.logMessage(emessage)
         raise Exception(emessage)
 
@@ -479,9 +479,9 @@ def getblocks(cenx, ceny, cenlon, cenlat, utmzone, hemi, maxdist, modeldist, sou
     innerblks[population] = pd.to_numeric(innerblks[population], errors='coerce').astype(int)
     
     # Assign a receptor type of C if census, P if census user receptor, S if school, and M if monitor
-    innerblks[rec_type]=np.where(innerblks['idmarplot'].str.contains('M'),'M',
-                          np.where(innerblks['idmarplot'].str.contains('S'),'S',
-                          np.where(innerblks['idmarplot'].str.contains('U'),'P','C')))
+    innerblks[rec_type]=np.where(innerblks['blockid'].str.contains('M'),'M',
+                          np.where(innerblks['blockid'].str.contains('S'),'S',
+                          np.where(innerblks['blockid'].str.contains('U'),'P','C')))
     
     
     if not outerblks.empty:
@@ -492,9 +492,9 @@ def getblocks(cenx, ceny, cenlon, cenlat, utmzone, hemi, maxdist, modeldist, sou
         outerblks[population] = pd.to_numeric(outerblks[population], errors='coerce').astype(int)
 
         # Assign a receptor type of C if census, P if census user receptor, S if school, and M if monitor
-        outerblks[rec_type]=np.where(outerblks['idmarplot'].str.contains('M'),'M',
-                            np.where(outerblks['idmarplot'].str.contains('S'),'S',
-                            np.where(outerblks['idmarplot'].str.contains('U'),'P','C')))
+        outerblks[rec_type]=np.where(outerblks['blockid'].str.contains('M'),'M',
+                            np.where(outerblks['blockid'].str.contains('S'),'S',
+                            np.where(outerblks['blockid'].str.contains('U'),'P','C')))
     
     return innerblks, outerblks
 

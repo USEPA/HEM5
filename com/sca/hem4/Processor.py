@@ -2,7 +2,6 @@ import os
 import shutil
 import threading
 from datetime import datetime
-import pdb
 
 import pandas as pd
 
@@ -48,7 +47,6 @@ class Processor():
           
         except BaseException as ex:
             print(ex)
-
 
         # Load the national census data into a polars lazyframe for future querying
         self.uploader = FileUploader(self.model)
