@@ -2,7 +2,6 @@ import os
 import shutil
 import threading
 from datetime import datetime
-import pdb
 
 import pandas as pd
 
@@ -14,6 +13,7 @@ from com.sca.hem4.writer.excel.FacilityCancerRiskExp import FacilityCancerRiskEx
 from com.sca.hem4.writer.excel.FacilityTOSHIExp import FacilityTOSHIExp
 from com.sca.hem4.writer.kml.KMLWriter import KMLWriter
 from com.sca.hem4.inputsfolder.InputsPackager import InputsPackager
+from com.sca.hem4.upload.FileUploader import FileUploader
 
 import traceback
 from collections import defaultdict
@@ -47,6 +47,13 @@ class Processor():
           
         except BaseException as ex:
             print(ex)
+
+        # Load the national census data into a polars lazyframe for future querying
+        self.uploader = FileUploader(self.model)
+        success = self.uploader.uploadLibrary("census")
+        if not success:
+            messagebox.showinfo('Error', "Invalid Census file. Check log for details.")
+            return success
 
        
         Logger.logMessage("RUN GROUP: " + self.model.group_name)

@@ -66,7 +66,7 @@ class MaximumIndividualRisks(ExcelWriter, InputFile):
                 mr_elev = self.model.innerblks_df[(self.model.innerblks_df[lon] == mr_lon) & (self.model.innerblks_df[lat] == mr_lat)][elev].values[0]
                 mr_hill = self.model.innerblks_df[(self.model.innerblks_df[lon] == mr_lon) & (self.model.innerblks_df[lat] == mr_lat)][hill].values[0]
                 mr_fips = self.model.innerblks_df[(self.model.innerblks_df[lon] == mr_lon) & (self.model.innerblks_df[lat] == mr_lat)][fips].values[0]
-                mr_block = self.model.innerblks_df[(self.model.innerblks_df[lon] == mr_lon) & (self.model.innerblks_df[lat] == mr_lat)][idmarplot].values[0][-10:]
+                mr_block = self.model.innerblks_df[(self.model.innerblks_df[lon] == mr_lon) & (self.model.innerblks_df[lat] == mr_lat)]['blockid'].values[0][-10:]
                 mr_utme = self.model.innerblks_df[(self.model.innerblks_df[lon] == mr_lon) & (self.model.innerblks_df[lat] == mr_lat)][utme].values[0]
                 mr_utmn = self.model.innerblks_df[(self.model.innerblks_df[lon] == mr_lon) & (self.model.innerblks_df[lat] == mr_lat)][utmn].values[0]
 #                if 'U' in self.model.risk_by_latlon['block'].loc[io_idx]:
@@ -82,7 +82,7 @@ class MaximumIndividualRisks(ExcelWriter, InputFile):
                 mr_elev = self.model.outerblks_df[(self.model.outerblks_df[lon] == mr_lon) & (self.model.outerblks_df[lat] == mr_lat)][elev].values[0]
                 mr_hill = self.model.outerblks_df[(self.model.outerblks_df[lon] == mr_lon) & (self.model.outerblks_df[lat] == mr_lat)][hill].values[0]
                 mr_fips = self.model.outerblks_df[(self.model.outerblks_df[lon] == mr_lon) & (self.model.outerblks_df[lat] == mr_lat)][fips].values[0]
-                mr_block = self.model.outerblks_df[(self.model.outerblks_df[lon] == mr_lon) & (self.model.outerblks_df[lat] == mr_lat)][idmarplot].values[0][-10:]
+                mr_block = self.model.outerblks_df[(self.model.outerblks_df[lon] == mr_lon) & (self.model.outerblks_df[lat] == mr_lat)]['blockid'].values[0][-10:]
                 mr_utme = self.model.outerblks_df[(self.model.outerblks_df[lon] == mr_lon) & (self.model.outerblks_df[lat] == mr_lat)][utme].values[0]
                 mr_utmn = self.model.outerblks_df[(self.model.outerblks_df[lon] == mr_lon) & (self.model.outerblks_df[lat] == mr_lat)][utmn].values[0]
                 mr_rectype = "Census block"
@@ -121,7 +121,7 @@ class MaximumIndividualRisks(ExcelWriter, InputFile):
                 mr_elev = self.model.outerblks_df[(self.model.outerblks_df[lon] == mr_lon) & (self.model.outerblks_df[lat] == mr_lat)][elev].values[0]
                 mr_hill = self.model.outerblks_df[(self.model.outerblks_df[lon] == mr_lon) & (self.model.outerblks_df[lat] == mr_lat)][hill].values[0]
                 mr_fips = self.model.outerblks_df[(self.model.outerblks_df[lon] == mr_lon) & (self.model.outerblks_df[lat] == mr_lat)][fips].values[0]
-                mr_block = self.model.outerblks_df[(self.model.outerblks_df[lon] == mr_lon) & (self.model.outerblks_df[lat] == mr_lat)][idmarplot].values[0][-10:]
+                mr_block = self.model.outerblks_df[(self.model.outerblks_df[lon] == mr_lon) & (self.model.outerblks_df[lat] == mr_lat)]['blockid'].values[0][-10:]
                 mr_utme = self.model.outerblks_df[(self.model.outerblks_df[lon] == mr_lon) & (self.model.outerblks_df[lat] == mr_lat)][utme].values[0]
                 mr_utmn = self.model.outerblks_df[(self.model.outerblks_df[lon] == mr_lon) & (self.model.outerblks_df[lat] == mr_lat)][utmn].values[0]
                 mr_rectype = "Census block"
@@ -133,7 +133,7 @@ class MaximumIndividualRisks(ExcelWriter, InputFile):
                 mr_elev = self.model.innerblks_df[(self.model.innerblks_df[lon] == mr_lon) & (self.model.innerblks_df[lat] == mr_lat)][elev].values[0]
                 mr_hill = self.model.innerblks_df[(self.model.innerblks_df[lon] == mr_lon) & (self.model.innerblks_df[lat] == mr_lat)][hill].values[0]
                 mr_fips = self.model.innerblks_df[(self.model.innerblks_df[lon] == mr_lon) & (self.model.innerblks_df[lat] == mr_lat)][fips].values[0]
-                mr_block = self.model.innerblks_df[(self.model.innerblks_df[lon] == mr_lon) & (self.model.innerblks_df[lat] == mr_lat)][idmarplot].values[0][-10:]
+                mr_block = self.model.innerblks_df[(self.model.innerblks_df[lon] == mr_lon) & (self.model.innerblks_df[lat] == mr_lat)]['blockid'].values[0][-10:]
                 mr_utme = self.model.innerblks_df[(self.model.innerblks_df[lon] == mr_lon) & (self.model.innerblks_df[lat] == mr_lat)][utme].values[0]
                 mr_utmn = self.model.innerblks_df[(self.model.innerblks_df[lon] == mr_lon) & (self.model.innerblks_df[lat] == mr_lat)][utmn].values[0]
 #                if 'U' in self.model.risk_by_latlon['block'].loc[iop_idx]:
@@ -296,7 +296,7 @@ class MaximumIndividualRisks(ExcelWriter, InputFile):
                     mr_elev = self.model.innerblks_df[(self.model.innerblks_df[lon] == mr_lon) & (self.model.innerblks_df[lat] == mr_lat)][elev].values[0]
                     mr_hill = self.model.innerblks_df[(self.model.innerblks_df[lon] == mr_lon) & (self.model.innerblks_df[lat] == mr_lat)][hill].values[0]
                     mr_fips = self.model.innerblks_df[(self.model.innerblks_df[lon] == mr_lon) & (self.model.innerblks_df[lat] == mr_lat)][fips].values[0]
-                    mr_block = self.model.innerblks_df[(self.model.innerblks_df[lon] == mr_lon) & (self.model.innerblks_df[lat] == mr_lat)][idmarplot].values[0][-10:]
+                    mr_block = self.model.innerblks_df[(self.model.innerblks_df[lon] == mr_lon) & (self.model.innerblks_df[lat] == mr_lat)]['blockid'].values[0][-10:]
                     mr_utme = self.model.innerblks_df[(self.model.innerblks_df[lon] == mr_lon) & (self.model.innerblks_df[lat] == mr_lat)][utme].values[0]
                     mr_utmn = self.model.innerblks_df[(self.model.innerblks_df[lon] == mr_lon) & (self.model.innerblks_df[lat] == mr_lat)][utmn].values[0]
 #                    if 'U' in self.model.risk_by_latlon['block'].loc[io_idx]:
@@ -312,7 +312,7 @@ class MaximumIndividualRisks(ExcelWriter, InputFile):
                     mr_elev = self.model.outerblks_df[(self.model.outerblks_df[lon] == mr_lon) & (self.model.outerblks_df[lat] == mr_lat)][elev].values[0]
                     mr_hill = self.model.outerblks_df[(self.model.outerblks_df[lon] == mr_lon) & (self.model.outerblks_df[lat] == mr_lat)][hill].values[0]
                     mr_fips = self.model.outerblks_df[(self.model.outerblks_df[lon] == mr_lon) & (self.model.outerblks_df[lat] == mr_lat)][fips].values[0]
-                    mr_block = self.model.outerblks_df[(self.model.outerblks_df[lon] == mr_lon) & (self.model.outerblks_df[lat] == mr_lat)][idmarplot].values[0][-10:]
+                    mr_block = self.model.outerblks_df[(self.model.outerblks_df[lon] == mr_lon) & (self.model.outerblks_df[lat] == mr_lat)]['blockid'].values[0][-10:]
                     mr_utme = self.model.outerblks_df[(self.model.outerblks_df[lon] == mr_lon) & (self.model.outerblks_df[lat] == mr_lat)][utme].values[0]
                     mr_utmn = self.model.outerblks_df[(self.model.outerblks_df[lon] == mr_lon) & (self.model.outerblks_df[lat] == mr_lat)][utmn].values[0]
 #                    if 'U' in self.model.risk_by_latlon['block'].loc[io_idx]:
@@ -354,7 +354,7 @@ class MaximumIndividualRisks(ExcelWriter, InputFile):
                     mr_elev = self.model.outerblks_df[(self.model.outerblks_df[lon] == mr_lon) & (self.model.outerblks_df[lat] == mr_lat)][elev].values[0]
                     mr_hill = self.model.outerblks_df[(self.model.outerblks_df[lon] == mr_lon) & (self.model.outerblks_df[lat] == mr_lat)][hill].values[0]
                     mr_fips = self.model.outerblks_df[(self.model.outerblks_df[lon] == mr_lon) & (self.model.outerblks_df[lat] == mr_lat)][fips].values[0]
-                    mr_block = self.model.outerblks_df[(self.model.outerblks_df[lon] == mr_lon) & (self.model.outerblks_df[lat] == mr_lat)][idmarplot].values[0][-10:]
+                    mr_block = self.model.outerblks_df[(self.model.outerblks_df[lon] == mr_lon) & (self.model.outerblks_df[lat] == mr_lat)]['blockid'].values[0][-10:]
                     mr_utme = self.model.outerblks_df[(self.model.outerblks_df[lon] == mr_lon) & (self.model.outerblks_df[lat] == mr_lat)][utme].values[0]
                     mr_utmn = self.model.outerblks_df[(self.model.outerblks_df[lon] == mr_lon) & (self.model.outerblks_df[lat] == mr_lat)][utmn].values[0]
 #                    if 'U' in self.model.risk_by_latlon['block'].loc[io_idx]:
@@ -370,7 +370,7 @@ class MaximumIndividualRisks(ExcelWriter, InputFile):
                     mr_elev = self.model.innerblks_df[(self.model.innerblks_df[lon] == mr_lon) & (self.model.innerblks_df[lat] == mr_lat)][elev].values[0]
                     mr_hill = self.model.innerblks_df[(self.model.innerblks_df[lon] == mr_lon) & (self.model.innerblks_df[lat] == mr_lat)][hill].values[0]
                     mr_fips = self.model.innerblks_df[(self.model.innerblks_df[lon] == mr_lon) & (self.model.innerblks_df[lat] == mr_lat)][fips].values[0]
-                    mr_block = self.model.innerblks_df[(self.model.innerblks_df[lon] == mr_lon) & (self.model.innerblks_df[lat] == mr_lat)][idmarplot].values[0][-10:]
+                    mr_block = self.model.innerblks_df[(self.model.innerblks_df[lon] == mr_lon) & (self.model.innerblks_df[lat] == mr_lat)]['blockid'].values[0][-10:]
                     mr_utme = self.model.innerblks_df[(self.model.innerblks_df[lon] == mr_lon) & (self.model.innerblks_df[lat] == mr_lat)][utme].values[0]
                     mr_utmn = self.model.innerblks_df[(self.model.innerblks_df[lon] == mr_lon) & (self.model.innerblks_df[lat] == mr_lat)][utmn].values[0]
 #                    if 'U' in self.model.risk_by_latlon['block'].loc[io_idx]:

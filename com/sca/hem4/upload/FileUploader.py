@@ -19,6 +19,7 @@ from com.sca.hem4.upload.LandUse import LandUse
 from com.sca.hem4.upload.Seasons import Seasons
 from com.sca.hem4.upload.GasParams import GasParams
 from com.sca.hem4.upload.EmisVar import EmisVar
+from com.sca.hem4.upload.Census import Census
 
 
 class FileUploader():
@@ -40,7 +41,15 @@ class FileUploader():
         elif filetype == "gas params":
             uploaded = GasParams()
             self.model.gasparams = uploaded
-
+        elif filetype == "census":
+            # This uses a lazyframe and cannot use empty parameter
+            uploaded = Census()
+            self.model.census = uploaded
+            if uploaded is None:
+                return False
+            else:
+                return True
+            
         return False if uploaded.dataframe.empty is True else True
 
     def upload(self, filetype, path):

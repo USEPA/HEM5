@@ -13,6 +13,7 @@ from com.sca.hem4.upload.FacilityList import *
 from com.sca.hem4.support.NormalRounding import *
 import sys
 import math
+import traceback
 
 distance = 'distance';
 angle = 'angle';
@@ -228,18 +229,28 @@ class FacilityPrep():
         maxdist = self.model.facops[max_dist].iloc[0]
         modeldist = self.model.facops[model_dist].iloc[0]
         
-        if self.model.altRec_optns.get('altrec', None):
-
-            self.innerblks, self.outerblks = getBlocksFromAltRecs(facid, cenx, ceny, cenlon, cenlat, facutmzonenum,
-                hemi, maxdist, modeldist, sourcelocs, op_overlap, self.model)
-
-        else:
+        try:
             
-            self.innerblks, self.outerblks = getblocks(cenx, ceny, cenlon, cenlat, 
-                                                       facutmzonenum, hemi, maxdist, 
-                                                       modeldist, sourcelocs, op_overlap, 
-                                                       self.model)
+            if self.model.altRec_optns.get('altrec', None):
+    
+                self.innerblks, self.outerblks = getBlocksFromAltRecs(facid, cenx, ceny, cenlon, cenlat, facutmzonenum,
+                    hemi, maxdist, modeldist, sourcelocs, op_overlap, self.model)
+    
+            else:
+                
+                self.innerblks, self.outerblks = getblocks(cenx, ceny, cenlon, cenlat, 
+                                                           facutmzonenum, hemi, maxdist, 
+                                                           modeldist, sourcelocs, op_overlap, 
+                                                           self.model)
 
+        except BaseException as ex:
+            
+            fullStackInfo = traceback.format_exc()
+            message = ("An error occurred while trying to get census block:\n" 
+                       + fullStackInfo)
+            Logger.logMessage(message)
+            
+            
         if self.innerblks.empty:
             Logger.logMessage("No discrete receptors within the max distance. Aborting processing for this facility.")
             raise ValueError("No discrete receptors")
@@ -253,7 +264,6 @@ class FacilityPrep():
 
         # If the user input any user receptors for this facility, then they will be
         # added into the Inner block receptor dataframe
-
         if hasattr(self.model.ureceptr, "dataframe"):
 
             user_recs = self.model.ureceptr.dataframe.loc[self.model.ureceptr.dataframe[fac_id] == facid].copy()
@@ -323,7 +333,7 @@ class FacilityPrep():
                 if not self.model.altRec_optns.get('altrec', None):
                     # using census data
                     user_recs.loc[:, 'fips'] = '00000'
-                    user_recs.loc[:,'idmarplot'] = user_recs['rec_id'].str.zfill(15)
+                    user_recs.loc[:,'blockid'] = user_recs['rec_id'].str.zfill(15)
                 
 #                if self.model.altRec_optns.get('altrec', None):
 #                    for index, row in user_recs.iterrows():
@@ -351,13 +361,13 @@ class FacilityPrep():
                             ' will be removed from the user receptor list. ' + str(dups['rec_id_y'].tolist())
                     Logger.logMessage(msg)
 
-                # Check for any user receptors that are already in the census data based on idmarplot
+                # Check for any user receptors that are already in the census data based on blockid
                 # Only do this when using Census data
                 if not self.model.altRec_optns.get('altrec', None):
-                    dups = pd.merge(self.innerblks, user_recs, how='inner', on=['idmarplot'])
+                    dups = pd.merge(self.innerblks, user_recs, how='inner', on=['blockid'])
                     if dups.empty == False:
                         # Some user receptors are already in the census. Remove these from the user receptor list.
-                        user_recs = user_recs[~user_recs.set_index(['idmarplot']).index.isin(dups.set_index(['idmarplot']).index)].copy()
+                        user_recs = user_recs[~user_recs.set_index(['blockid']).index.isin(dups.set_index(['blockid']).index)].copy()
                     
                         msg = 'The following user receptors have IDs that are already in the Census data. They ' + \
                                 ' will be removed from the user receptor list. ' + str(dups['rec_id_y'].tolist())

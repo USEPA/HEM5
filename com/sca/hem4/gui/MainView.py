@@ -13,6 +13,8 @@ from com.sca.hem4.gui.Start import Start
 from com.sca.hem4.gui.Summary import Summary
 from com.sca.hem4.gui.EJ import EJ
 
+from com.sca.hem4.log.Logger import Logger
+
 class MainView(tk.Frame):
     def __init__(self, master, *args, **kwargs):
         tk.Frame.__init__(self, master=master, *args, **kwargs)
@@ -336,9 +338,11 @@ class MainView(tk.Frame):
 
             hem.quit_app()
             if hem.aborted == True:
+                Logger.close(True)
                 self.home.destroy()
 
         else:
+            Logger.close(True)
             self.home.destroy()
             
         

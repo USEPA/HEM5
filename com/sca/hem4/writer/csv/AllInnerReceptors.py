@@ -122,8 +122,8 @@ class AllInnerReceptors(CsvWriter, InputFile):
                     
                     d_rectype = record[rec_type].values[0]
                     d_fips = record[fips].values[0]
-                    d_idmarplot = record[idmarplot].values[0]
-                    d_block = d_idmarplot[-10:]
+                    d_blockid = record['blockid'].values[0]
+                    d_block = d_blockid[-10:]
                     d_lat = record[lat].values[0]
                     d_lon = record[lon].values[0]
                     d_sourceid = row1.source_id
