@@ -240,10 +240,10 @@ class EJdash():
                         temp[newcol] = (temp[col] * temp['Total Pop'])
                     else:
                         temp[newcol] = 0
-                        
+
+                                
                 for i, row in temp.iterrows():
-#                    if pd.isna(row[3]):
-                    if row[3] == 'nan':
+                    if pd.isna(row[3]) == True:
                         # Store the facility id in the DF
                         temp.iat[i,3] = temp.iat[i-1,3]
                     
@@ -261,14 +261,14 @@ class EJdash():
                     count_age25up = age25pop[age25pop_key]
                     temp.loc[i, 'Over 25 Without a High School Diploma Pop'] = \
                                 temp.loc[i, 'Over 25 Without a High School Diploma'] * count_age25up
-
                 
                 # Convert the decimal fractions to percents for the demo groups        
                 for col in demogroups:
                     temp[col] = 100 * temp[col]
                 
                 maindf = maindf.append(temp, ignore_index = True)
-         
+        
+        
         ##### The app layout 
         app.layout = html.Div([
             
