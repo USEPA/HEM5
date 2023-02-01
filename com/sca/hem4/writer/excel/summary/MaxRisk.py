@@ -36,7 +36,7 @@ class MaxRisk(ExcelWriter, AltRecAwareSummary):
                     BlockSummaryChronic(targetDir=targetDir, facilityId=facilityId)
     
                 bsc_df = blockSummaryChronic.createDataframe()
-                blocksummary_df = blocksummary_df.append(bsc_df)
+                blocksummary_df = pd.concat([blocksummary_df, bsc_df])
 
         blocksummary_df.drop_duplicates(inplace=True)
         blocksummary_df.reset_index(drop=True, inplace=True)

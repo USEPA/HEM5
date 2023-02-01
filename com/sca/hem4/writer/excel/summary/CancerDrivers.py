@@ -43,7 +43,7 @@ class CancerDrivers(ExcelWriter, AltRecAwareSummary):
             risks_df = risks_df.loc[risks_df[parameter] == 'Cancer risk']
             bkdn_df[mir] = risks_df[value].iloc[0]
 
-            allrisk_df = allrisk_df.append(bkdn_df)
+            allrisk_df = pd.concat([allrisk_df, bkdn_df])
 
         allrisk_df.drop_duplicates().reset_index(drop=True)
         allrisk_nodups_df = pd.DataFrame(allrisk_df, columns=[fac_id, mir, pollutant, value, source_id])

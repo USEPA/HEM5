@@ -108,7 +108,7 @@ class MaxConcentrationLocator(ExcelWriter, AltRecAwareSummary):
                                                           (allouter_df[pollutant].str.contains("(?i)" + self.pollutant)) &
                                                           (allouter_df[overlap] == 'N')]
     
-                            allouter_combined = allouter_combined.append(allouter_df)
+                            allouter_combined = pd.concat([allouter_combined, allouter_df])
     
                     print(str(len(allouter_combined)) + " outer rows.")
                     outer_summed = allouter_combined.groupby(by=[fips, block, lat, lon, pollutant], as_index=False) \
@@ -139,7 +139,7 @@ class MaxConcentrationLocator(ExcelWriter, AltRecAwareSummary):
         
                         winning_row[fac_id] = facilityId
                         winning_row['type'] = winning_type
-                        max_concentrations = max_concentrations.append(winning_row)
+                        max_concentrations = pd.concat([max_concentrations, winning_row])
 
                     self.dataframe = pd.DataFrame(data=max_concentrations, columns=self.getColumns())
                     self.data = self.dataframe.values
@@ -210,7 +210,7 @@ class MaxConcentrationLocator(ExcelWriter, AltRecAwareSummary):
                                                           (allouter_df[pollutant].str.contains("(?i)" + self.pollutant)) &
                                                           (allouter_df[overlap] == 'N')]
     
-                            allouter_combined = allouter_combined.append(allouter_df)
+                            allouter_combined = pd.concat([allouter_combined, allouter_df])
     
                     print(str(len(allouter_combined)) + " outer rows.")
                     outer_summed = allouter_combined.groupby(by=[rec_id, lat, lon, pollutant], as_index=False) \
@@ -241,7 +241,7 @@ class MaxConcentrationLocator(ExcelWriter, AltRecAwareSummary):
         
                         winning_row[fac_id] = facilityId
                         winning_row['type'] = winning_type
-                        max_concentrations = max_concentrations.append(winning_row)
+                        max_concentrations = pd.concat([max_concentrations, winning_row])
         
                     self.dataframe = pd.DataFrame(data=max_concentrations, columns=self.getColumns())
                     self.data = self.dataframe.values

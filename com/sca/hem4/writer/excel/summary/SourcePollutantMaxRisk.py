@@ -143,7 +143,7 @@ class SourcePollutantMaxRisk(ExcelWriter):
                         outer_summed = allouter_df.groupby(by=byCols, as_index=False).agg(aggs).reset_index(drop=True)
                         outer_summed['incidence'] = inner_summed[mir] * inner_summed[population] / 70
 
-                        allouter_combined = allouter_combined.append(outer_summed)
+                        allouter_combined = pd.concat([allouter_combined, outer_summed])
 
             except BaseException as e:
                 print("Error gathering output information: " + repr(e))
@@ -161,7 +161,7 @@ class SourcePollutantMaxRisk(ExcelWriter):
                 grouped_df['fac_incidence'] = maxRiskAndHI_df['incidence'].iloc[0]
                 self.find_max_hi_risk_and_type(grouped_df, maxRiskAndHI_df)
 
-            final_df = final_df.append(grouped_df)
+            final_df = pd.concat([final_df, grouped_df])
 
         self.dataframe = pd.DataFrame(data=final_df, columns=self.getColumns())
         self.data = self.dataframe.values

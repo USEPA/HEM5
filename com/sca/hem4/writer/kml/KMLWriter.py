@@ -1474,7 +1474,7 @@ class KMLWriter():
                 # Assign source_type
                 polyver["source_type"] = "I"
                 # remove the I source_type rows from emislocs before appending polyver to avoid duplicate rows
-                emislocs = emislocs[emislocs.source_type != "I"]
+                emislocs = emislocs[emislocs.source_type != "I"].copy()
                 # Append polyver to emislocs
                 emislocs = pd.concat([emislocs, polyver])
 

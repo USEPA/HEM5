@@ -64,7 +64,7 @@ class AcuteImpacts(ExcelWriter, InputFile, AltRecAwareSummary):
 
                 acute_df[fac_id] = facilityId
 
-                allAcute_df = allAcute_df.append(acute_df)
+                allAcute_df = pd.concat([allAcute_df, acute_df])
                 if not allAcute_df.empty:
                     anyAcute = "Y"
                     

@@ -52,7 +52,7 @@ class MaxOffsiteConcentration(ExcelWriter):
                 allpolar_df[rec_type] = 'P'
                 allpolar_df[fac_id] = facilityId
 
-                all_df = all_df.append(allpolar_df)
+                all_df = pd.concat([all_df, allpolar_df])
 
             # Inner recs
             allinner = AllInnerReceptors(targetDir=targetDir, facilityId=facilityId, acuteyn=acute_yn)
@@ -70,7 +70,7 @@ class MaxOffsiteConcentration(ExcelWriter):
 
                 allinner_df[rec_type] = allinner_df.apply(lambda row: MaxOffsiteConcentration.add_rec_type(row), axis=1)
                 allinner_df[fac_id] = facilityId
-                all_df = all_df.append(allinner_df)
+                all_df = pd.concat([all_df, allinner_df])
 
             # Outer recs
             listOuter = []
@@ -98,7 +98,7 @@ class MaxOffsiteConcentration(ExcelWriter):
                         allouter_df[fac_id] = facilityId
                         allouter_df[rec_type] = allouter_df.apply(lambda row: MaxOffsiteConcentration.add_rec_type(row), axis=1)
 
-                        all_df = all_df.append(allouter_df)
+                        all_df = pd.concat([all_df, allouter_df])
 
         # Group by pollutant and then find the max
         max_conc_df = all_df.groupby(by=[fac_id, pollutant], as_index=False).max().reset_index(drop=True)

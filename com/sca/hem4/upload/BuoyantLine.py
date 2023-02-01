@@ -96,7 +96,7 @@ class BuoyantLine(DependentInputFile):
         # Make sure all source IDs in the buoyant parameter file are listed as buoyant line
         # sources in the Emission Location file.
         el_srcs = self.emisloc_df[self.emisloc_df['source_type']=='B'][[fac_id, source_id]]
-        blp_srcs = df[[fac_id, source_id]]
+        blp_srcs = df[[fac_id, source_id]].copy()
         if len(blp_srcs) > 0:
             el_srcs['facsrc'] = el_srcs[fac_id] + el_srcs[source_id]
             blp_srcs['facsrc'] = blp_srcs[fac_id] + blp_srcs[source_id]

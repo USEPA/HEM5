@@ -199,7 +199,8 @@ class Process_outputs():
         block_risk = self.model.block_summary_chronic_df[block_columns]
         
         # Final DF of risk by lat and lon for all receptors
-        self.model.risk_by_latlon = ring_risk.append(block_risk).reset_index(drop=True).infer_objects()
+        self.model.risk_by_latlon = (pd.concat([ring_risk, block_risk])
+                                     .reset_index(drop=True).infer_objects())
 
         if self.abort.is_set():
             Logger.logMessage("Terminating output processing...")

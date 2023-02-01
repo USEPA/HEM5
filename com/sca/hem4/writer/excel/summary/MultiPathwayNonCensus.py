@@ -157,10 +157,10 @@ class MultiPathwayNonCensus(ExcelWriter):
     
                     outer_summed = alloutermerged_df.groupby(by=[rec_id, population, lat, lon, designation], as_index=False) \
                         .sum().reset_index(drop=True)
-                    allouter_summed = allouter_summed.append(outer_summed)
+                    allouter_summed = pd.concat([allouter_summed, outer_summed])
             
             if anyOuters == "Y":
-                riskblocks_df = inner_summed.append(allouter_summed)
+                riskblocks_df = pd.concat([inner_summed, allouter_summed])
             else:
                 riskblocks_df = inner_summed
 

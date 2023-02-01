@@ -32,7 +32,7 @@ class IncidenceDrivers(ExcelWriter):
 
             incidence_df[fac_id] = facilityId
 
-            allinc_df = allinc_df.append(incidence_df)
+            allinc_df = pd.concat([allinc_df, incidence_df])
 
         allinc_df.drop_duplicates().reset_index(drop=True)
 

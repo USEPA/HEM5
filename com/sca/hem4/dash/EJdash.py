@@ -10,9 +10,9 @@ from tkinter import messagebox
 import plotly
 import plotly.express as px
 import dash
-import dash_table
-import dash_core_components as dcc
-import dash_html_components as html
+from dash import dash_table
+from dash import dcc
+from dash import html
 import plotly.graph_objects as go
 from dash.dependencies import Input, Output
 from flask import request
@@ -205,7 +205,7 @@ class EJdash():
                                  )
             compdata = temp.loc[temp['Average'].isin(['Nationwide', 'State', 'County'])]
             compdata['Distance'] = scen.Distance
-            compdf = compdf.append(compdata)
+            compdf = pd.concat([compdf, compdata])
         
         compdf.drop_duplicates(inplace = True)
         
@@ -266,7 +266,7 @@ class EJdash():
                 for col in demogroups:
                     temp[col] = 100 * temp[col]
                 
-                maindf = maindf.append(temp, ignore_index = True)
+                maindf = pd.concat([maindf, temp], ignore_index = True)
         
         
         ##### The app layout 
@@ -779,7 +779,7 @@ class EJdash():
                             tabletemp.at[counter, group] = cellval
             
                         counter += 1    
-                    tabledf = tabledf.append(tabletemp, ignore_index = True)
+                    tabledf = pd.concat([tabledf, tabletemp], ignore_index = True)
                 
                 if radval == 'num':
                     prefix = 'Number'

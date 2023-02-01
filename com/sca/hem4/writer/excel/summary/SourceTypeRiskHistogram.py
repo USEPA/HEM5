@@ -99,7 +99,7 @@ class SourceTypeRiskHistogram(ExcelWriter, AltRecAwareSummary):
 #                                               inplace=True)
 #                        
             # Aggregate risk by block and source
-            sector_blkrisk = sector_blkrisk.append(inner_summed)
+            sector_blkrisk = pd.concat([sector_blkrisk, inner_summed])
             sector_summed = sector_blkrisk.groupby(by=byCols, as_index=False).agg(aggs).reset_index(drop=True)
 
 
@@ -141,7 +141,7 @@ class SourceTypeRiskHistogram(ExcelWriter, AltRecAwareSummary):
 #                                         inplace=True)
 #    
                     # Append to sector block risk DF
-                    sector_blkrisk = sector_blkrisk.append(outer_summed)
+                    sector_blkrisk = pd.concat([sector_blkrisk, outer_summed])
     
                     # Aggregate risk by block and source
                     sector_summed = sector_blkrisk.groupby(by=byCols, as_index=False).agg(aggs).reset_index(drop=True)

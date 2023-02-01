@@ -132,7 +132,7 @@ class Polyvertex(DependentInputFile):
         # ... check for unassigned polyvertex sources ...
                 
         # unique list of fac/sources in the polygon vertex file
-        polyfilesrcs = df[[fac_id, source_id]]
+        polyfilesrcs = df[[fac_id, source_id]].copy()
         polyfilesrcs['facsrc'] = polyfilesrcs[fac_id] + ", " + polyfilesrcs[source_id]
         check_poly_assignment = set(polyfilesrcs['facsrc'])
         
