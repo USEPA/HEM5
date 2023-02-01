@@ -421,7 +421,7 @@ class AllOuterReceptors(CsvWriter, InputFile):
                 #   Apply emissions to interpolated outer concs and write
                 
                 outerconcs = outer4interp[['fips', 'block', 'lat', 'lon', 'elev', 'population', 'overlap',
-                                        'emis_type', 'source_id', 'rec_type']]
+                                        'emis_type', 'source_id', 'rec_type']].copy()
                 outerconcs['intcconc'] = a_intcconc
                 outerconcs['intaconc'] = a_intaconc
                 

@@ -52,7 +52,7 @@ class HazardIndexDrivers(ExcelWriter, AltRecAwareSummary):
             risks_df.rename(index=str, columns={value: "total"}, inplace=True)
             bkdn_df = bkdn_df.merge(risks_df, on=[parameter], how='inner')
 
-            allrisk_df = allrisk_df.append(bkdn_df)
+            allrisk_df = pd.concat([allrisk_df, bkdn_df])
 
         allrisk_df.drop_duplicates().reset_index(drop=True)
         allrisk_nodups_df = pd.DataFrame(allrisk_df, columns=[fac_id, parameter, "total", source_id, pollutant, value])

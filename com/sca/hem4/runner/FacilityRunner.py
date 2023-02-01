@@ -159,7 +159,7 @@ class FacilityRunner():
                     plot_df['emis_type'] = 'P'
                     V_df = plot_df.copy()
                     V_df['emis_type'] = 'V'
-                    plot_df = plot_df.append(V_df, ignore_index=True)
+                    plot_df = pd.concat([plot_df, V_df], ignore_index=True)
                     
                 else:
                     plot_df['emis_type'] = phases['phase']
@@ -178,7 +178,7 @@ class FacilityRunner():
                         aplot_df['emis_type'] = 'P'
                         V_df = aplot_df.copy()
                         V_df['emis_type'] = 'V'
-                        aplot_df = aplot_df.append(V_df, ignore_index=True)
+                        aplot_df = pd.concat([aplot_df, V_df], ignore_index=True)
                         
                     else:
                         aplot_df['emis_type'] = phases['phase']
@@ -267,7 +267,7 @@ class FacilityRunner():
                     temp_df['emis_type'] = r['phase']
 
                     # Append temp_df to plot_df
-                    plot_df = plot_df.append(temp_df, ignore_index=True)
+                    plot_df = pd.concat([plot_df, temp_df], ignore_index=True)
 
                     
                     # If acute run, put the maxhour plot file into a dataframe
@@ -280,7 +280,7 @@ class FacilityRunner():
                             apfile = open(fac_folder + 'maxhour.plt', "r")
                         tempmax_df = self.readmaxf(apfile, runtype)
                         tempmax_df['emis_type'] = r['phase']
-                        aplot_df = aplot_df.append(tempmax_df, ignore_index=True)
+                        aplot_df = pd.concat([aplot_df, tempmax_df], ignore_index=True)
                     
             
             # Determine the runtype for a double run

@@ -194,7 +194,7 @@ class InputFile(ABC):
                 return df
 
     def get_column_types(self):
-        floatTypes = {col: pd.np.float64 for col in self.numericColumns}
+        floatTypes = {col: np.float64 for col in self.numericColumns}
 
         dtypes = {col: str for col in self.strColumns}
 

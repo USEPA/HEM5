@@ -242,7 +242,7 @@ class RiskBreakdown(ExcelWriter, InputFile):
     
                 # set the remaining columns in bkdndata
                 bkdndata[ure], bkdndata[rfc] = zip(*bkdndata.apply(lambda row:
-                                                                   self.getRiskParms(row[pollutant])[0:2], axis=1))
+                                               self.getRiskParms(row[pollutant])[0:2], axis=1))
                 bkdndata[site_type] = "Max offsite impact"
                 bkdndata[parameter] = row[parameter]
                 bkdndata[conc_rnd] = bkdndata[conc].apply(lambda x: round(x, -int(math.floor(math.log10(abs(x))))) if x > 0 else 0)
@@ -262,7 +262,7 @@ class RiskBreakdown(ExcelWriter, InputFile):
             # Sum Value by site_type, parameter, and pollutant to get Total by pollutant
             riskbkdn_df[value] = pd.to_numeric(riskbkdn_df[value], errors='coerce')
             srctot = riskbkdn_df.groupby([site_type, parameter, pollutant, ure, rfc],
-                                         as_index=False)[value, conc, emis_tpy].sum()
+                                         as_index=False)[[value, conc, emis_tpy]].sum()
             srctot[source_id] = "Total by pollutant all sources"
             srctot[emis_type] = "NA"
             srctot[ure] = 0.0
@@ -273,7 +273,7 @@ class RiskBreakdown(ExcelWriter, InputFile):
     
             # Sum Value by site_type, parameter, and source_id to get Total by source_id
             polltot = riskbkdn_df.groupby([site_type, parameter, source_id],
-                                          as_index=False)[value, conc, emis_tpy].sum()
+                                          as_index=False)[[value, conc, emis_tpy]].sum()
             polltot[pollutant] = "All modeled pollutants"
             polltot[emis_type] = "NA"
             polltot[ure] = 0.0
@@ -283,7 +283,7 @@ class RiskBreakdown(ExcelWriter, InputFile):
     
             # Sum Value by site_type and parameter to get Total by parameter
             alltot = riskbkdn_df.groupby([site_type, parameter],
-                                          as_index=False)[value, conc, emis_tpy].sum()
+                                          as_index=False)[[value, conc, emis_tpy]].sum()
             alltot[source_id] = "Total"
             alltot[pollutant] = "All pollutants all sources"
             alltot[emis_type] = "NA"

@@ -194,15 +194,15 @@ def in_box(modelblks, sourcelocs, modeldist, maxdist, overlap_dist, model):
     for index, row in ptsources.iterrows():
         src_x = row[utme]
         src_y = row[utmn]
-        indist = outerblks.query('sqrt((@src_x - utme)**2 + (@src_y - utmn)**2) <= @modeldist')
+        indist = outerblks.query('sqrt((@src_x - utme)**2 + (@src_y - utmn)**2) <= @modeldist').copy()
 
         # Determine overlap
         indist['overlap'] = np.where(np.sqrt(np.double((indist[utme]-src_x)**2 +
-                                       (indist[utmn]-src_y)**2)) <= overlap_dist, "Y", "N")
+                                    (indist[utmn]-src_y)**2)) <= overlap_dist, "Y", "N")
       
         if len(indist) > 0:
             # Append to innerblks and shrink outerblks
-            innerblks = innerblks.append(indist).reset_index(drop=True)
+            innerblks = pd.concat([innerblks, indist]).reset_index(drop=True)
             innerblks = innerblks[~innerblks[blockid].duplicated()]
             outerblks = outerblks[~outerblks[blockid].isin(innerblks[blockid])].copy()
 
@@ -230,7 +230,7 @@ def in_box(modelblks, sourcelocs, modeldist, maxdist, overlap_dist, model):
             indist = outerblks.query('inbox == True')
             if len(indist) > 0:
                 # Append to innerblks and shrink outerblks
-                innerblks = innerblks.append(indist).reset_index(drop=True)
+                innerblks = pd.concat([innerblks, indist]).reset_index(drop=True)
                 innerblks = innerblks[~innerblks[blockid].duplicated()]
                 outerblks = outerblks[~outerblks[blockid].isin(innerblks[blockid])]
             
@@ -242,7 +242,7 @@ def in_box(modelblks, sourcelocs, modeldist, maxdist, overlap_dist, model):
     #....... If there are polygon sources, find blocks within modeldist of any polygon side ..........
     
     if not outerblks.empty:
-        polyvertices = sourcelocs.query("source_type in ('I')")
+        polyvertices = sourcelocs.query("source_type in ('I')").copy()
         if len(polyvertices) > 1:
                 
             # If this polygon is a census tract (e.g. NATA application), then any outer receptor within tract will be
@@ -268,7 +268,7 @@ def in_box(modelblks, sourcelocs, modeldist, maxdist, overlap_dist, model):
                              np.array([row[utme],row[utmn]]), modeldist), axis=1))
                         polyblks = outerblks.query('nearpoly == True')
                         if len(polyblks) > 0:
-                            innerblks = innerblks.append(polyblks).reset_index(drop=True)
+                            innerblks = pd.concat([innerblks, polyblks]).reset_index(drop=True)
                             innerblks = innerblks[~innerblks[blockid].duplicated()]
                             outerblks = outerblks[~outerblks[blockid].isin(innerblks[blockid])]
                     if outerblks.empty:

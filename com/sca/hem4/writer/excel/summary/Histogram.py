@@ -58,7 +58,7 @@ class Histogram(ExcelWriter, AltRecAwareSummary):
                     if rounded >= 1e-3:
                         counts[4][1] = counts[4][1] + 1
 
-            blocksummary_df = blocksummary_df.append(bsc_df)
+            blocksummary_df = pd.concat([blocksummary_df, bsc_df])
 
 
         blocksummary_df.reset_index(inplace=True, drop=True)

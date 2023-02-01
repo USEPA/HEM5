@@ -81,7 +81,7 @@ class MirHIAllReceptors(CsvWriter, InputFile):
 
                 maxdist = self.radius
                 bsc_df = bsc_df.query('distance <= @maxdist').copy()
-                blocksummary_df = blocksummary_df.append(bsc_df)
+                blocksummary_df = pd.concat([blocksummary_df, bsc_df])
 
             except BaseException as e:
                 print("Error gathering output information: " + repr(e))

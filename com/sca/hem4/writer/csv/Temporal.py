@@ -311,7 +311,7 @@ class Temporal(CsvWriter, InputFile):
 
         outerconc_df = pd.DataFrame(dlist, columns=col_list)
 
-        self.dataframe = innerconc_df.append(outerconc_df)
+        self.dataframe = pd.concat([innerconc_df, outerconc_df])
         self.data = self.dataframe.values
         yield self.dataframe
 
