@@ -234,7 +234,7 @@ class Analyze(Page):
         except BaseException as ex:
             self.exception = ex
             fullStackInfo=''.join(traceback.format_exception(
-                etype=type(ex), value=ex, tb=ex.__traceback__))
+                ex, value=ex, tb=ex.__traceback__))
             message = "An error occurred while trying to run the HEM4dash app:\n" + fullStackInfo
             Logger.logMessage(message)
 
@@ -260,9 +260,10 @@ class Analyze(Page):
             sys.stdout = orig_stdout
 
         except Exception as ex:
-            fullStackInfo = traceback.format_exc()
-            message = ("An error occurred while trying to run the EJ dash app:\n" 
-                       + fullStackInfo)
+            self.exception = ex
+            fullStackInfo=''.join(traceback.format_exception(
+                ex, value=ex, tb=ex.__traceback__))
+            message = "An error occurred while trying to run the EJdash app:\n" + fullStackInfo
             Logger.logMessage(message)
 
 

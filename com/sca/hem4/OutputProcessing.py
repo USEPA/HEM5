@@ -149,6 +149,7 @@ class Process_outputs():
         if self.abort.is_set():
             Logger.logMessage("Terminating output processing...")
             return
+
         
         #----------- create Block_Summary_Chronic data -----------------
         block_summary_chronic = BlockSummaryChronicNonCensus(targetDir=self.outdir, facilityId=self.facid,

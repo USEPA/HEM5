@@ -6,6 +6,7 @@ from com.sca.hem4.log.Logger import Logger
 import sys
 import numpy as np
 import polars as pl
+from com.sca.hem4.support.IntRoundHalfUpArray import round_half_up
 
 rec_id = 'rec_id';
 fips = 'fips';
@@ -41,7 +42,9 @@ def haversineDistance(blkcoors, faclon, faclat):
     a = np.sin(dlat/2)**2 + np.cos(blkcoors_rad[:,1]) * np.cos(faclat_rad) * np.sin(dlon/2)**2
     c = 2 * np.arcsin(np.sqrt(a)) 
     r = 6371 # Radius of earth in kilometers. Use 3956 for miles. Determines return value units.
-    return c * r * 1000       
+    dist = c * r * 1000
+    intdist = round_half_up(dist)
+    return intdist
 
 def simpleUTMDistance(blkcoors, cenx, ceny):
     """
@@ -58,11 +61,11 @@ def simpleUTMDistance(blkcoors, cenx, ceny):
 def bearing(utme, utmn, cenx, ceny):
     if utmn > ceny:
         if utme > cenx:
-            angle = math.degrees(math.atan((utme-cenx)/(utmn-ceny)))
+            angle = round(math.degrees(math.atan((utme-cenx)/(utmn-ceny))), 1)
         else:
-            angle = 360 + math.degrees(math.atan((utme-cenx)/(utmn-ceny)))
+            angle = round(360 + math.degrees(math.atan((utme-cenx)/(utmn-ceny))), 1)
     elif utmn < ceny:
-        angle = 180 + math.degrees(math.atan((utme-cenx)/(utmn-ceny)))
+        angle = round(180 + math.degrees(math.atan((utme-cenx)/(utmn-ceny))), 1)
     else:
         if utme >= cenx:
             angle = 90
@@ -409,7 +412,11 @@ def getblocks(cenx, ceny, cenlon, cenlat, utmzone, hemi, maxdist, modeldist, sou
         Logger.logMessage("There are no discrete receptors within the max distance of this facility. " +
                           "Aborting processing of this facility.")
         raise ValueError("No discrete receptors selected within max distance")
-
+    
+    # Round elevation and hill height to integers in the census DF
+    censusblks[elev] = round_half_up(censusblks[elev])
+    censusblks[hill] = round_half_up(censusblks[hill])
+    
     # Compute a distance (in meters) between each block and the facility center
     blkcoors = np.array(tuple(zip(censusblks.lon, censusblks.lat)))
     censusblks[distance] = haversineDistance(blkcoors, cenlon, cenlat)
