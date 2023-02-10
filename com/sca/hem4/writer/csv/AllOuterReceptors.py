@@ -114,6 +114,10 @@ class AllOuterReceptors(CsvWriter, InputFile):
                         'ocular','endoc','hemato','immune','skeletal','spleen','thyroid','wholebod']]
                         .values.tolist())
 
+        # List of HI target organ endpoints
+        self.hi_list = [hi_resp, hi_live, hi_neur, hi_deve, hi_repr, hi_kidn, hi_ocul,
+                        hi_endo, hi_hema, hi_immu, hi_skel, hi_sple, hi_thyr, hi_whol]
+        
     def getHeader(self):
         if self.acute_yn == 'N':
             return ['FIPs', 'Block', 'Latitude', 'Longitude', 'Source ID', 'Emission type', 'Pollutant',
@@ -145,7 +149,7 @@ class AllOuterReceptors(CsvWriter, InputFile):
     
             # Runtype (with or without deposition) determines what columns are in the aermod plotfile.
             self.rtype = self.model.model_optns['runtype']
-    
+                        
             # Was acute run? If not, this is chronic only.
             if self.acute_yn == 'N':
                             
@@ -160,16 +164,16 @@ class AllOuterReceptors(CsvWriter, InputFile):
                 # of source_id + sector + ring
                 self.polarconcs = pd.merge(polarplot_df, self.model.polargrid[['utme', 'utmn', 'sector', 'ring']], 
                                      how='inner', on=['utme', 'utmn'])
-                self.polarconcs['newindex'] = self.polarconcs['source_id'] \
-                                                + 's' + self.polarconcs['sector'].apply(str) \
-                                                + 'r' + self.polarconcs['ring'].apply(str)
-                self.polarconcs.set_index(['newindex'], inplace=True)
+                # self.polarconcs['newindex'] = self.polarconcs['source_id'] \
+                #                                 + 's' + self.polarconcs['sector'].apply(str) \
+                #                                 + 'r' + self.polarconcs['ring'].apply(str)
+                # self.polarconcs.set_index(['newindex'], inplace=True)
                 
                 # QA - make sure merge retained all rows
                 if self.polarconcs.shape[0] != polarplot_df.shape[0]:
-                    print("Error! self.polarconcs has wrong number of rows in AllOuterReceptors")
-                    #TODO stop this facility
-    
+                    raise ValueError(""""Error! self.polarconcs has wrong number 
+                                     of rows in AllOuterReceptors""")
+                   
                 #subset outer blocks DF to needed columns and sort by increasing distance
                 outerblks_subset = self.model.outerblks_df[[fips, 'blockid', lat, lon, elev,
                                                             'distance', 'angle', population, overlap,
@@ -215,22 +219,27 @@ class AllOuterReceptors(CsvWriter, InputFile):
                 outer4interp['result_s1r2'] = cs1r2['result_s1r2']
                 outer4interp['result_s2r1'] = cs2r1['result_s2r1']
                 outer4interp['result_s2r2'] = cs2r2['result_s2r2']
-    
+                 
                 # Interpolate polar Aermod concs to each outer receptor; store results in arrays
-                a_ccs1r1 = outer4interp['result_s1r1'].values
-                a_ccs1r2 = outer4interp['result_s1r2'].values
-                a_ccs2r1 = outer4interp['result_s2r1'].values
-                a_ccs2r2 = outer4interp['result_s2r2'].values
-                a_sectfrac = outer4interp['s'].values
-                a_ringfrac = outer4interp['ring_loc'].values
-                a_intconc = self.interpolate(a_ccs1r1, a_ccs1r2, a_ccs2r1, a_ccs2r2, a_sectfrac, a_ringfrac)
-    
-                #   Apply emissions to interpolated outer concs and write
-                
+                toInterp_df = outer4interp[['fips','block','source_id','emis_type','result_s1r1'
+                                            ,'result_s1r2','result_s2r1','result_s2r2'
+                                            ,'s','ring_loc']].copy()
+                toInterp_df.rename({'result_s1r1':'conc_s1r1','result_s1r2':'conc_s1r2'
+                                    ,'result_s2r1':'conc_s2r1','result_s2r2':'conc_s2r2'}
+                                   ,axis=1, inplace=True)
+                interpolated_df = self.interpolate(toInterp_df)
                 outerconcs = outer4interp[['fips', 'block', 'lat', 'lon', 'elev', 'population', 'overlap',
                                         'emis_type', 'source_id', 'rec_type']].copy()
-                outerconcs.loc[:, 'intconc'] = a_intconc
+                outerconcs = pd.merge(outerconcs, interpolated_df[['fips','block','source_id','emis_type','intconc']]
+                                      , on=['fips','block','source_id','emis_type'], how='inner')
+
+                # QA - make sure merge retained all rows
+                if outerconcs.shape[0] != interpolated_df.shape[0]:
+                    raise ValueError(""""Error! outerconcs has wrong number of 
+                                     rows in AllOuterReceptors""")
                 
+    
+                #   Apply emissions to interpolated outer concs and write
                 num_rows_outer_recs = outerblks_subset.shape[0]
                 num_polls_in_hapemis = self.model.runstream_hapemis[pollutant].nunique()
                 num_rows_hapemis = self.model.runstream_hapemis.shape[0]
@@ -253,8 +262,8 @@ class AllOuterReceptors(CsvWriter, InputFile):
                         outer_polconcs['conc'] = outer_polconcs['intconc'] * outer_polconcs['emis_tpy'] * self.cf
     
                     else:
-                        outer_polconcs_p = outer_polconcs[outer_polconcs['emis_type']=='P']
-                        outer_polconcs_v = outer_polconcs[outer_polconcs['emis_type']=='V']
+                        outer_polconcs_p = outer_polconcs[outer_polconcs['emis_type']=='P'].copy()
+                        outer_polconcs_v = outer_polconcs[outer_polconcs['emis_type']=='V'].copy()
                         outer_polconcs_p['conc'] = outer_polconcs_p['intconc'] * outer_polconcs_p['emis_tpy'] \
                                                        * outer_polconcs_p['part_frac'] * self.cf
                         outer_polconcs_v['conc'] = outer_polconcs_v['intconc'] * outer_polconcs_v['emis_tpy'] \
@@ -340,15 +349,15 @@ class AllOuterReceptors(CsvWriter, InputFile):
                 # of source_id + sector + ring
                 self.polarconcs = pd.merge(polarplot_df, self.model.polargrid[['utme', 'utmn', 'sector', 'ring']], 
                                      how='inner', on=['utme', 'utmn'])
-                self.polarconcs['newindex'] = self.polarconcs['source_id'] \
-                                                + 's' + self.polarconcs['sector'].apply(str) \
-                                                + 'r' + self.polarconcs['ring'].apply(str)
-                self.polarconcs.set_index(['newindex'], inplace=True)
+                # self.polarconcs['newindex'] = self.polarconcs['source_id'] \
+                #                                 + 's' + self.polarconcs['sector'].apply(str) \
+                #                                 + 'r' + self.polarconcs['ring'].apply(str)
+                # self.polarconcs.set_index(['newindex'], inplace=True)
                 
                 # QA - make sure merge retained all rows
                 if self.polarconcs.shape[0] != polarplot_df.shape[0]:
-                    print("Error! self.polarconcs has wrong number of rows in AllOuterReceptors")
-                    #TODO stop this facility
+                    raise ValueError(""""Error! self.polarconcs has wrong number 
+                                     of rows in AllOuterReceptors""")
         
                 #subset outer blocks DF to needed columns and sort by increasing distance
                 outerblks_subset = self.model.outerblks_df[[fips, 'blockid', lat, lon, elev,
@@ -400,31 +409,44 @@ class AllOuterReceptors(CsvWriter, InputFile):
                 outer4interp['aresult_s2r1'] = cs2r1['aresult_s2r1']
                 outer4interp['aresult_s2r2'] = cs2r2['aresult_s2r2']
             
-                #   Interpolate polar Aermod concs to each outer receptor; store results in arrays
-                
-                # Chronic
-                a_ccs1r1 = outer4interp['result_s1r1'].values
-                a_ccs1r2 = outer4interp['result_s1r2'].values
-                a_ccs2r1 = outer4interp['result_s2r1'].values
-                a_ccs2r2 = outer4interp['result_s2r2'].values
-                a_sectfrac = outer4interp['s'].values
-                a_ringfrac = outer4interp['ring_loc'].values
-                a_intcconc = self.interpolate(a_ccs1r1, a_ccs1r2, a_ccs2r1, a_ccs2r2, a_sectfrac, a_ringfrac)
-                
-                # Acute
-                a_acs1r1 = outer4interp['aresult_s1r1'].values
-                a_acs1r2 = outer4interp['aresult_s1r2'].values
-                a_acs2r1 = outer4interp['aresult_s2r1'].values
-                a_acs2r2 = outer4interp['aresult_s2r2'].values
-                a_intaconc = self.interpolate(a_acs1r1, a_acs1r2, a_acs2r1, a_acs2r2, a_sectfrac, a_ringfrac)
-                
-                #   Apply emissions to interpolated outer concs and write
-                
+                #.... Interpolate polar Aermod concs to each outer receptor ......
+                                
+                # first do chronic conc
+                toInterp_df = outer4interp[['fips','block','source_id','result_s1r1','result_s1r2'
+                                    ,'result_s2r1','result_s2r2','s','ring_loc']].copy()
+                toInterp_df.rename({'result_s1r1':'conc_s1r1','result_s1r2':'conc_s1r2'
+                                    ,'result_s2r1':'conc_s2r1','result_s2r2':'conc_s2r2'}
+                                   ,axis=1, inplace=True)
+                interpolated_df = self.interpolate(toInterp_df)
                 outerconcs = outer4interp[['fips', 'block', 'lat', 'lon', 'elev', 'population', 'overlap',
                                         'emis_type', 'source_id', 'rec_type']].copy()
-                outerconcs['intcconc'] = a_intcconc
-                outerconcs['intaconc'] = a_intaconc
+                outerconcs = pd.merge(outerconcs, interpolated_df[['fips','block','source_id','intconc']]
+                                      , on=['fips','block','source_id'], how='inner')
+                outerconcs.rename({'intconc':'intcconc'}, axis=1, inplace=True)
+                # QA - make sure merge retained all rows
+                if outerconcs.shape[0] != interpolated_df.shape[0]:
+                    raise ValueError("""Error! Chronic outerconcs has wrong number 
+                                     of rows for Acute in AllOuterReceptors""")
+                    #TODO stop this facility
                 
+                # next do acute conc
+                toInterp_df = outer4interp[['fips','block','source_id','aresult_s1r1','aresult_s1r2'
+                                    ,'aresult_s2r1','aresult_s2r2','s','ring_loc']].copy()
+                toInterp_df.rename({'aresult_s1r1':'conc_s1r1','aresult_s1r2':'conc_s1r2'
+                                    ,'aresult_s2r1':'conc_s2r1','aresult_s2r2':'conc_s2r2'}
+                                   ,axis=1, inplace=True)
+                interpolated_df = self.interpolate(toInterp_df)
+                outerconcs = pd.merge(outerconcs, interpolated_df[['fips','block','source_id','intconc']]
+                                      , on=['fips','block','source_id'], how='inner')
+                outerconcs.rename({'intconc':'intaconc'}, axis=1, inplace=True)
+                # QA - make sure merge retained all rows
+                if outerconcs.shape[0] != interpolated_df.shape[0]:
+                    raise ValueError("""Error! Acute outerconcs has wrong number 
+                                     of rows for Acute in AllOuterReceptors""")
+                
+                
+                #   Apply emissions to interpolated outer concs and write
+                                
                 num_rows_outer_recs = outerblks_subset.shape[0]
                 num_polls_in_hapemis = self.model.runstream_hapemis[pollutant].nunique()
                 num_rows_hapemis = self.model.runstream_hapemis.shape[0]
@@ -432,8 +454,7 @@ class AllOuterReceptors(CsvWriter, InputFile):
                 num_srcids = len(srcids)
          
                 col_list = self.getColumns()
-     
-           
+              
                 # Write no more than 10,000,000 rows to a given CSV output file
                                 
                 if num_rows_output <= self.batchSize:
@@ -564,26 +585,68 @@ class AllOuterReceptors(CsvWriter, InputFile):
     
 
 
-    def interpolate(self, conc_s1r1, conc_s1r2, conc_s2r1, conc_s2r2, s, ring_loc):
+    def interpolate(self, interpDF):
         # Interpolate 4 concentrations to the point defined by (s, ring_loc)
         
-        R_s12 = np.where((conc_s1r1>0) & (conc_s1r2>0)
-                         ,
-                         np.exp((np.log(conc_s1r1) * (ring_loc.astype(int)+1-ring_loc)) +
-                                    (np.log(conc_s1r2) * (ring_loc-ring_loc.astype(int))))
-                         ,
-                         np.maximum(conc_s1r1, conc_s1r2))
+        nozeros_df = interpDF[(interpDF['conc_s1r1'] > 0) & (interpDF['conc_s1r2'] > 0)
+                              & (interpDF['conc_s2r1'] > 0) & (interpDF['conc_s2r2'] > 0)].copy()
         
-        R_s34 = np.where((conc_s2r1>0) & (conc_s2r2>0)
-                         ,
-                         np.exp((np.log(conc_s2r1) * (ring_loc.astype(int)+1-ring_loc)) +
-                                    (np.log(conc_s2r2) * (ring_loc-ring_loc.astype(int))))
-                         ,
-                         np.maximum(conc_s2r1, conc_s2r2))
+        temp_df = pd.merge(interpDF, nozeros_df, on=["fips", "block", "source_id"]
+                           , how="outer", indicator=True, suffixes=["","_remove"])        
+        somezeros_df = temp_df.loc[temp_df["_merge"] == "left_only"].drop("_merge", axis=1)
+        somezeros_df.drop([i for i in somezeros_df.columns if '_remove' in i],
+               axis=1, inplace=True)
         
-        ic = R_s12*(s.astype(int)+1-s) + R_s34*(s-s.astype(int))
+
+        # Interpolate outer blocks where all 4 polars are non-zero        
+        conc_s1r1 = nozeros_df['conc_s1r1'].to_numpy()
+        conc_s1r2 = nozeros_df['conc_s1r2'].to_numpy()
+        conc_s2r1 = nozeros_df['conc_s2r1'].to_numpy()
+        conc_s2r2 = nozeros_df['conc_s2r2'].to_numpy()
+        ring_loc = nozeros_df['ring_loc'].to_numpy()
+        s = nozeros_df['s'].to_numpy()
+        
+        R_s12 = np.exp((np.log(conc_s1r1) * (ring_loc.astype(int)+1-ring_loc)) +
+                       (np.log(conc_s1r2) * (ring_loc-ring_loc.astype(int))))
+        
+        R_s34 = np.exp((np.log(conc_s2r1) * (ring_loc.astype(int)+1-ring_loc)) +
+                       (np.log(conc_s2r2) * (ring_loc-ring_loc.astype(int))))
+        
+        ic_array = R_s12*(s.astype(int)+1-s) + R_s34*(s-s.astype(int))
+        
+        nozeros_df['intconc'] = ic_array
+
+        # Interpolate outer blocks where at least one of the 4 polars is zero
+        
+        # Find max of s1r1,s1r2 and s2r1,s2r2
+        somezeros_df['R_s12'] = somezeros_df[['conc_s1r1','conc_s1r2']].max(axis=1)
+        somezeros_df['R_s34'] = somezeros_df[['conc_s2r1','conc_s2r2']].max(axis=1)
+        
+        # In order to vectorize operations, split somezeros_df into two DFs
+        zeroRs12 = somezeros_df[((somezeros_df['conc_s1r1']==0) | (somezeros_df['conc_s1r2']==0))
+                                & ((somezeros_df['conc_s2r1']>0) & (somezeros_df['conc_s2r2']>0))].copy()
+        zeroRs34 = somezeros_df[((somezeros_df['conc_s1r1']>0) | (somezeros_df['conc_s1r2']>0))
+                                & ((somezeros_df['conc_s2r1']==0) | (somezeros_df['conc_s2r2']==0))].copy()
+        
+
+        zeroRs12['R_s34'] = np.exp((np.log(zeroRs12['conc_s2r1']) * 
+                            (np.int64(zeroRs12['ring_loc'])+1-zeroRs12['ring_loc'])) +
+                            (np.log(zeroRs12['conc_s2r2']) * 
+                            (zeroRs12['ring_loc']-np.int64(zeroRs12['ring_loc']))))
+
+        zeroRs34['R_s12'] = np.exp((np.log(zeroRs34['conc_s1r1']) * 
+                            (np.int64(zeroRs34['ring_loc'])+1-zeroRs34['ring_loc'])) +
+                            (np.log(zeroRs34['conc_s1r2']) * 
+                            (zeroRs34['ring_loc']-np.int64(zeroRs34['ring_loc']))))
+        
+        somezeros_df = pd.concat([zeroRs12, zeroRs34])
+        somezeros_df['intconc'] = (somezeros_df['R_s12']*(np.int64(somezeros_df['s'])+1-somezeros_df['s']) 
+                                  + somezeros_df['R_s34']*(somezeros_df['s']-np.int64(somezeros_df['s'])))
+        somezeros_df.drop(['R_s12','R_s34'], axis=1, inplace=True)
                 
-        return ic
+        conc_df = pd.concat([nozeros_df, somezeros_df], ignore_index=True)
+        
+        return conc_df
 
 
     def compute_s1s2r1r2(self, ar_s, ar_r):
@@ -620,7 +683,7 @@ class AllOuterReceptors(CsvWriter, InputFile):
         
         # Skip if no data in this batch
         if data.size > 0:
-                       
+                        
             # DF of outer receptor concs
             outer_concs = pd.DataFrame(data, columns=self.columns)
             
@@ -632,7 +695,7 @@ class AllOuterReceptors(CsvWriter, InputFile):
             if len(outer_concs.index) != len(outer_concs1.index):
                 emessage = "Error! Incorrect merging of outer blocks with outer_concs in AllOuterReceptors."
                 Logger.logMessage(emessage)
-                raise Exception(emessage)
+                raise ValueError(emessage)
                         
             # Merge ure and inverted rfc
             outer_concs2 = pd.merge(outer_concs1, self.haplib_df[['pollutant', 'ure', 'invrfc']],
@@ -642,7 +705,7 @@ class AllOuterReceptors(CsvWriter, InputFile):
             if len(outer_concs.index) != len(outer_concs2.index):
                 emessage = "Error! Incorrect merging of haplib with outer_concs1 in AllOuterReceptors."
                 Logger.logMessage(emessage)
-                raise Exception(emessage)
+                raise ValueError(emessage)
                 
             # Merge target organ list
             outer_concs3 = pd.merge(outer_concs2, self.organs_df[['pollutant', 'organ_list']],
@@ -652,7 +715,7 @@ class AllOuterReceptors(CsvWriter, InputFile):
             if len(outer_concs.index) != len(outer_concs3.index):
                 emessage = "Error! Incorrect merging of target organs with outer_concs2 in AllOuterReceptors."
                 Logger.logMessage(emessage)
-                raise Exception(emessage)
+                raise ValueError(emessage)
 
             
             chk4null = outer_concs3[outer_concs3['organ_list'].isnull()]
@@ -661,345 +724,43 @@ class AllOuterReceptors(CsvWriter, InputFile):
                 outer_concs3['organ_list'] = outer_concs3['organ_list'].apply(
                         lambda x: x if isinstance(x, list) else [0,0,0,0,0,0,0,0,0,0,0,0,0,0])
 
-            # Sort by lat/lon
-            outer_concs3.sort_values(by=[lat, lon], inplace=True)
 
+            # Compute risk
+            outer_concs3[mir] = outer_concs3['conc'] * outer_concs3['ure']
             
-            # List of all lat/lons from outer_concs3. Not unique because of pollutant/source/emis_type.
-            latlon_alllist = outer_concs3[[lat, lon]].values
-            # List of unique lat/lons
-            latlon_uniqlist = [list(item) for item in set(tuple(row) for row in latlon_alllist)]
-            # Sort list of lists by lat/lon so it will link correctly with outer_concs3
-            latlon_uniqlist.sort(key=operator.itemgetter(0,1))
-            
-            # Compute the number of unique groups of lat/lons
-            # Also compute the number rows there are for each unique group in outer_concs3 (accounts for pollutant/source/emis_type)
-            nouter = len(outer_concs3.index)
-            ngroups = len(latlon_uniqlist)
-            grouplen = int(nouter / ngroups)
+            # Compute all 14 HI's
+            for i in range(14):
+                hiname = self.hi_list[i]
+                organval = np.array(list(zip(*outer_concs3['organ_list']))[i])
+                outer_concs3[hiname] = self.calculateHI(outer_concs3['conc'].values, 
+                                        outer_concs3['invrfc'].values, organval)
 
-            
-            # Sum cancer risk by lat/lon group
-            a_mir = self.calculateMir(outer_concs3['conc'].values, outer_concs3['ure'].values)
-            sumMir = []
-            for x in range(ngroups):
-                idxstart = x * grouplen
-                idxend = idxstart + grouplen
-                s = 0
-                for y in range(idxstart, idxend):
-                    s = s + a_mir[y]
-                sumMir.append(s)
-                
-            
-            # Calculate resp HI
-            organval = np.array(list(zip(*outer_concs3['organ_list']))[0])
-            if np.sum(organval) == 0:
-                sumResp = [0] * ngroups
-            else:
-                a_resp = self.calculateHI(outer_concs3['conc'].values, outer_concs3['invrfc'].values, 
-                                          organval)
-                sumResp = []
-                for x in range(ngroups):
-                    idxstart = x * grouplen
-                    idxend = idxstart + grouplen
-                    s = 0
-                    for y in range(idxstart, idxend):
-                        s = s + a_resp[y]
-                    sumResp.append(s)
-
-            # Calculate liver HI
-            organval = np.array(list(zip(*outer_concs3['organ_list']))[1])
-            if np.sum(organval) == 0:
-                sumLive = [0] * ngroups
-            else:
-                a_live = self.calculateHI(outer_concs3['conc'].values, outer_concs3['invrfc'].values, 
-                                          organval)
-                sumLive = []
-                for x in range(ngroups):
-                    idxstart = x * grouplen
-                    idxend = idxstart + grouplen
-                    s = 0
-                    for y in range(idxstart, idxend):
-                        s = s + a_live[y]
-                    sumLive.append(s)
-
-            # Calculate neuro HI
-            organval = np.array(list(zip(*outer_concs3['organ_list']))[2])
-            if np.sum(organval) == 0:
-                sumNeur = [0] * ngroups
-            else:
-                a_neur = self.calculateHI(outer_concs3['conc'].values, outer_concs3['invrfc'].values, 
-                                          organval)
-                sumNeur = []
-                for x in range(ngroups):
-                    idxstart = x * grouplen
-                    idxend = idxstart + grouplen
-                    s = 0
-                    for y in range(idxstart, idxend):
-                        s = s + a_neur[y]
-                    sumNeur.append(s)
-
-            # Calculate dev HI
-            organval = np.array(list(zip(*outer_concs3['organ_list']))[3])
-            if np.sum(organval) == 0:
-                sumDeve = [0] * ngroups
-            else:
-                a_deve = self.calculateHI(outer_concs3['conc'].values, outer_concs3['invrfc'].values, 
-                                          organval)
-                sumDeve = []
-                for x in range(ngroups):
-                    idxstart = x * grouplen
-                    idxend = idxstart + grouplen
-                    s = 0
-                    for y in range(idxstart, idxend):
-                        s = s + a_deve[y]
-                    sumDeve.append(s)
-
-            # Calculate reprod HI
-            organval = np.array(list(zip(*outer_concs3['organ_list']))[4])
-            if np.sum(organval) == 0:
-                sumRepr = [0] * ngroups
-            else:
-                a_repr = self.calculateHI(outer_concs3['conc'].values, outer_concs3['invrfc'].values, 
-                                          organval)
-                sumRepr = []
-                for x in range(ngroups):
-                    idxstart = x * grouplen
-                    idxend = idxstart + grouplen
-                    s = 0
-                    for y in range(idxstart, idxend):
-                        s = s + a_repr[y]
-                    sumRepr.append(s)
-
-            # Calculate kidney HI
-            organval = np.array(list(zip(*outer_concs3['organ_list']))[5])
-            if np.sum(organval) == 0:
-                sumKidn = [0] * ngroups
-            else:
-                a_kidn = self.calculateHI(outer_concs3['conc'].values, outer_concs3['invrfc'].values, 
-                                          organval)
-                sumKidn = []
-                for x in range(ngroups):
-                    idxstart = x * grouplen
-                    idxend = idxstart + grouplen
-                    s = 0
-                    for y in range(idxstart, idxend):
-                        s = s + a_kidn[y]
-                    sumKidn.append(s)
-
-            # Calculate ocular HI
-            organval = np.array(list(zip(*outer_concs3['organ_list']))[6])
-            if np.sum(organval) == 0:
-                sumOcul = [0] * ngroups
-            else:
-                a_ocul = self.calculateHI(outer_concs3['conc'].values, outer_concs3['invrfc'].values, 
-                                          organval)
-                sumOcul = []
-                for x in range(ngroups):
-                    idxstart = x * grouplen
-                    idxend = idxstart + grouplen
-                    s = 0
-                    for y in range(idxstart, idxend):
-                        s = s + a_ocul[y]
-                    sumOcul.append(s)
-
-            # Calculate endoc HI
-            organval = np.array(list(zip(*outer_concs3['organ_list']))[7])
-            if np.sum(organval) == 0:
-                sumEndo = [0] * ngroups
-            else:
-                a_endo = self.calculateHI(outer_concs3['conc'].values, outer_concs3['invrfc'].values, 
-                                          organval)
-                sumEndo = []
-                for x in range(ngroups):
-                    idxstart = x * grouplen
-                    idxend = idxstart + grouplen
-                    s = 0
-                    for y in range(idxstart, idxend):
-                        s = s + a_endo[y]
-                    sumEndo.append(s)
-
-            # Calculate hemato HI
-            organval = np.array(list(zip(*outer_concs3['organ_list']))[8])
-            if np.sum(organval) == 0:
-                sumHema = [0] * ngroups
-            else:
-                a_hema = self.calculateHI(outer_concs3['conc'].values, outer_concs3['invrfc'].values, 
-                                          organval)
-                sumHema = []
-                for x in range(ngroups):
-                    idxstart = x * grouplen
-                    idxend = idxstart + grouplen
-                    s = 0
-                    for y in range(idxstart, idxend):
-                        s = s + a_hema[y]
-                    sumHema.append(s)
-
-            # Calculate immune HI
-            organval = np.array(list(zip(*outer_concs3['organ_list']))[9])
-            if np.sum(organval) == 0:
-                sumImmu = [0] * ngroups
-            else:
-                a_immu = self.calculateHI(outer_concs3['conc'].values, outer_concs3['invrfc'].values, 
-                                          organval)
-                sumImmu = []
-                for x in range(ngroups):
-                    idxstart = x * grouplen
-                    idxend = idxstart + grouplen
-                    s = 0
-                    for y in range(idxstart, idxend):
-                        s = s + a_immu[y]
-                    sumImmu.append(s)
-
-            # Calculate skeletal HI
-            organval = np.array(list(zip(*outer_concs3['organ_list']))[10])
-            if np.sum(organval) == 0:
-                sumSkel = [0] * ngroups
-            else:
-                a_skel = self.calculateHI(outer_concs3['conc'].values, outer_concs3['invrfc'].values, 
-                                          organval)
-                sumSkel = []
-                for x in range(ngroups):
-                    idxstart = x * grouplen
-                    idxend = idxstart + grouplen
-                    s = 0
-                    for y in range(idxstart, idxend):
-                        s = s + a_skel[y]
-                    sumSkel.append(s)
-
-            # Calculate spleen HI
-            organval = np.array(list(zip(*outer_concs3['organ_list']))[11])
-            if np.sum(organval) == 0:
-                sumSple = [0] * ngroups
-            else:
-                a_sple = self.calculateHI(outer_concs3['conc'].values, outer_concs3['invrfc'].values, 
-                                          organval)
-                sumSple = []
-                for x in range(ngroups):
-                    idxstart = x * grouplen
-                    idxend = idxstart + grouplen
-                    s = 0
-                    for y in range(idxstart, idxend):
-                        s = s + a_sple[y]
-                    sumSple.append(s)
-
-            # Calculate thyroid HI
-            organval = np.array(list(zip(*outer_concs3['organ_list']))[12])
-            if np.sum(organval) == 0:
-                sumThyr = [0] * ngroups
-            else:
-                a_thyr = self.calculateHI(outer_concs3['conc'].values, outer_concs3['invrfc'].values, 
-                                          organval)
-                sumThyr = []
-                for x in range(ngroups):
-                    idxstart = x * grouplen
-                    idxend = idxstart + grouplen
-                    s = 0
-                    for y in range(idxstart, idxend):
-                        s = s + a_thyr[y]
-                    sumThyr.append(s)
-
-            # Calculate whole body HI
-            organval = np.array(list(zip(*outer_concs3['organ_list']))[13])
-            if np.sum(organval) == 0:
-                sumWhol = [0] * ngroups
-            else:
-                a_whol = self.calculateHI(outer_concs3['conc'].values, outer_concs3['invrfc'].values, 
-                                          organval)
-                sumWhol = []
-                for x in range(ngroups):
-                    idxstart = x * grouplen
-                    idxend = idxstart + grouplen
-                    s = 0
-                    for y in range(idxstart, idxend):
-                        s = s + a_whol[y]
-                    sumWhol.append(s)
-                        
-
-            #----------- Build Outer receptor DF risks by lat/lon for later use in BlockSummaryChronic ----------------
-            
-            tempagg0 = pd.DataFrame(latlon_uniqlist, columns=[lat, lon])
-            uniqcoors = outer_concs3[[lat, lon, overlap, elev, fips, block, utme, utmn, hill, population]].drop_duplicates()
-            
-            tempagg = pd.merge(tempagg0, uniqcoors, on=[lat,lon])
-            tempagg[mir] = sumMir
-            tempagg[hi_resp] = sumResp
-            tempagg[hi_live] = sumLive
-            tempagg[hi_neur] = sumNeur
-            tempagg[hi_deve] = sumDeve
-            tempagg[hi_repr] = sumRepr
-            tempagg[hi_kidn] = sumKidn
-            tempagg[hi_ocul] = sumOcul
-            tempagg[hi_endo] = sumEndo
-            tempagg[hi_hema] = sumHema
-            tempagg[hi_immu] = sumImmu
-            tempagg[hi_skel] = sumSkel
-            tempagg[hi_sple] = sumSple
-            tempagg[hi_thyr] = sumThyr
-            tempagg[hi_whol] = sumWhol
-                        
+            # Sum risk and HI to blocks
             blksumm_cols = [lat, lon, overlap, elev, fips, block, utme, utmn, hill, population,
                             mir, hi_resp, hi_live, hi_neur, hi_deve, hi_repr, hi_kidn, hi_ocul,
                             hi_endo, hi_hema, hi_immu, hi_skel, hi_sple, hi_thyr, hi_whol]
-
-
+            aggs = {lat:'first', lon:'first', overlap:'first', elev:'first', fips:'first', block:'first',
+                    utme:'first', utmn:'first', hill:'first',population:'first',
+                    mir:'sum', hi_resp:'sum', hi_live:'sum', hi_neur:'sum', hi_deve:'sum',
+                    hi_repr:'sum', hi_kidn:'sum', hi_ocul:'sum', hi_endo:'sum', hi_hema:'sum',
+                    hi_immu:'sum', hi_skel:'sum', hi_sple:'sum', hi_thyr:'sum', hi_whol:'sum'}
             
-            if self.outerAgg is None:
-                self.outerAgg = pd.DataFrame(columns=blksumm_cols)
-            self.outerAgg = pd.concat([self.outerAgg, tempagg], sort=False)
+            self.outerAgg = outer_concs3.groupby([lat, lon]).agg(aggs)[blksumm_cols]
 
-
-            #----------- Keep track of maximum risk and HI ---------------------------------------
-
-            # Find max mir and each max HI for Outer receptors in this box. Update the max_riskhi and
-            # max_riskhi_bkdn dictionaries.
-                        
-            for iparm in self.riskhi_parms:
-                idx = tempagg[iparm].idxmax()
-                if tempagg[iparm].loc[idx] > self.max_riskhi[iparm][2]:
-                    # Update the  max_riskhi dictionary
-                    maxlat = tempagg[lat].loc[idx]
-                    maxlon = tempagg[lon].loc[idx]
-                    self.max_riskhi[iparm] = [maxlat, maxlon, tempagg[iparm].loc[idx]]
-                    # Update the max_riskhi_bkdn dictionary
-                    parmvalue = tempagg[iparm].loc[idx]
-                    batch_receptors_max = outer_concs3[(outer_concs3[lat]==maxlat) & (outer_concs3[lon]==maxlon)]
-                    for index, row in batch_receptors_max.iterrows():
-                        self.max_riskhi_bkdn[(iparm, row[source_id], row[pollutant], row['emis_type'])] = \
-                            [maxlat, maxlon, parmvalue]
 
 
             #--------------- Keep track of incidence -----------------------------------------
             
             # Compute incidence for each Outer rececptor and then sum incidence by source_id/pollutant/emis_type
+            outer_concs3['inc'] = outer_concs3[mir] * outer_concs3[population]/70
+            inc_cols = [source_id, pollutant, 'emis_type', 'inc']
+            aggs = {source_id:'first', pollutant:'first','emis_type':'first','inc':'sum'}
+            incsumm = outer_concs3.groupby([source_id, pollutant, 'emis_type']).agg(aggs)[inc_cols]
             
-            outer_concs3.sort_values(by=[source_id, pollutant, 'emis_type'], inplace=True)
-            a_mirbysrc = self.calculateMir(outer_concs3['conc'].values, outer_concs3['ure'].values)
-            
-            groups = outer_concs3[[source_id, pollutant, 'emis_type']].values
-            unique_groups = [list(item) for item in set(tuple(row) for row in groups)]
-            # sort unique_groups by source_id, pollutant, and emis_type
-            unique_groups.sort(key=operator.itemgetter(0,1,2))
-            ngroups = len(unique_groups)
-            grouplen = int(nouter / ngroups)
-            
-            a_inc = a_mirbysrc * outer_concs3[population].values /70
-            sumInc = []
-            for x in range(ngroups):
-                idxstart = x * grouplen
-                idxend = idxstart + grouplen
-                s = 0
-                for y in range(idxstart, idxend):
-                    s = s + a_inc[y]
-                sumInc.append(s)
-                
-            batchInc = pd.DataFrame(unique_groups, columns=[source_id, pollutant, 'emis_type'])
-            batchInc['inc'] = sumInc
-
             # Update the outerInc incidence dictionary
-            for incdx, incrow in batchInc.iterrows():
-                self.outerInc[(incrow[source_id], incrow[pollutant], incrow['emis_type'])] = \
-                    self.outerInc[(incrow[source_id], incrow[pollutant], incrow['emis_type'])] + incrow['inc']
+            for index, row in incsumm.iterrows():
+                self.outerInc[(row[source_id], row[pollutant], row['emis_type'])] = \
+                    self.outerInc[(row[source_id], row[pollutant], row['emis_type'])] + row['inc']
 
 
     def calculateMir(self, conc, ure):

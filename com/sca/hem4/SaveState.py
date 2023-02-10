@@ -38,7 +38,7 @@ class SaveState():
 
             exception = ex
             fullStackInfo=''.join(traceback.format_exception(
-                etype=type(ex), value=ex, tb=ex.__traceback__))
+                ex, value=ex, tb=ex.__traceback__))
 
             message = "An error occurred while running a facility:\n" + fullStackInfo
             Logger.logMessage(message)

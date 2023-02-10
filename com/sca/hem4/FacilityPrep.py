@@ -32,7 +32,7 @@ class FacilityPrep():
     def createRunstream(self, facid, runPhase):
 
         #%%---------- Facility Options --------------------------------------
-        self.model.facops = self.model.faclist.dataframe.loc[self.model.faclist.dataframe[fac_id] == facid]
+        self.model.facops = self.model.faclist.dataframe.loc[self.model.faclist.dataframe[fac_id] == facid].copy()
 
         op_maxdist = self.model.facops[max_dist].iloc[0]
         op_modeldist = self.model.facops[model_dist].iloc[0]
@@ -44,7 +44,7 @@ class FacilityPrep():
         self.ring_distances = self.model.facops['ring_distances'].iloc[0]
 
         #%%---------- Emissions Locations --------------------------------------
-        emislocs = self.model.emisloc.dataframe.loc[self.model.emisloc.dataframe[fac_id] == facid]
+        emislocs = self.model.emisloc.dataframe.loc[self.model.emisloc.dataframe[fac_id] == facid].copy()
 
         
         # If there is a bouyant line source with other sources, then it has to come last because of an Aermod v19191 bug.
@@ -335,21 +335,6 @@ class FacilityPrep():
                     user_recs.loc[:, 'fips'] = '00000'
                     user_recs.loc[:,'blockid'] = user_recs['rec_id'].str.zfill(15)
                 
-#                if self.model.altRec_optns.get('altrec', None):
-#                    for index, row in user_recs.iterrows():
-#                        # For populated user receptors, add a "U" to the receptor id
-#                        if row[rec_type] == 'P':
-#                            user_recs.loc[index, 'rec_id'] = 'U_' + user_recs['rec_id']
-#                        else:
-#                            user_recs.loc[index, 'rec_id'] = user_recs['rec_id']
-#                else:
-#                    user_recs.loc[:, 'fips'] = '00000'
-#                    for index, row in user_recs.iterrows():
-#                        # For populated user receptors, add a "U" to the receptor id
-#                        if row[rec_type] == 'P':
-#                            user_recs['idmarplot'] = '00000U' + user_recs['rec_id']
-#                        else:
-#                            user_recs['idmarplot'] = user_recs['rec_id']
                   
                 # Check for any user receptors that are already in the census data based on coordinates
                 dups = pd.merge(self.innerblks, user_recs, how='inner', on=[utme, utmn])
@@ -457,6 +442,10 @@ class FacilityPrep():
                 # set the last ring distance to the domain distance
                 polar_dist.append(op_maxdist)
 
+            # set computed polar distances to integers
+            polar_dist = [int(item) for item in polar_dist]
+
+
         # setup list of polar angles
         start = 0.
         stop = 360. - (360./op_radial)
@@ -495,7 +484,7 @@ class FacilityPrep():
                    ("sector",polar_sect), ("ring",polar_ring)]
         polar_df = pd.DataFrame.from_dict(dict(dfitems))
 
-       
+                
         # compute polar lat/lon
         polar_df[[lat, lon]] = polar_df.apply(lambda row: UTM.utm2ll(row[utmn],row[utme],facutmzonestr), 
                                               result_type="expand", axis=1)
@@ -552,7 +541,6 @@ class FacilityPrep():
 
         
         #%% this is where runstream file will be compiled
-        #new logic to be
 
         runstream = Runstream(self.model.facops, emislocs, hapemis, buoyant_df,
                               polyver_df, bldgdw_df, partdia_df, landuse_df,
@@ -567,8 +555,6 @@ class FacilityPrep():
         runstream.build_ou()
 
         return runstream
-        #no return statement since it will just need to build the file
-        #return rs.Runstream(self.model.facops, emislocs, hapemis, cenlat, cenlon, cenx, ceny, self.innerblks, user_recs, buoyant_df, polyver_df, polar_df, bldgdw_df, partdia_df, landuse_df, seasons_df, gasparams_df)
 
     
     

@@ -72,7 +72,7 @@ class Processor():
         except BaseException as ex:
                 self.exception = ex
                 fullStackInfo=''.join(traceback.format_exception(
-                    etype=type(ex), value=ex, tb=ex.__traceback__))
+                    ex, value=ex, tb=ex.__traceback__))
                 message = "An error occurred while trying to create the KML file of all facilities:\n" + fullStackInfo
                 print(message)
                 Logger.logMessage(message)
@@ -129,13 +129,14 @@ class Processor():
 
                     self.exception = ex
                     fullStackInfo=''.join(traceback.format_exception(
-                        etype=type(ex), value=ex, tb=ex.__traceback__))
+                        ex, value=ex, tb=ex.__traceback__))
     
-                    message = "An error occurred while running a facility:\n" + fullStackInfo
+                    message = "An error occurred while running a facility and facility was skipped:\n" + fullStackInfo
                     print(message)
                     Logger.logMessage(message)
                     
                     self.skipped.append(facid)
+                    num += 1
                     continue
 
                     ## if the try is successful this is where we would update the 

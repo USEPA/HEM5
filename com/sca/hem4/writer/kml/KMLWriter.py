@@ -1463,7 +1463,7 @@ class KMLWriter():
         for row in faclist:
 
             # Emission location info for one facility. Keep certain columns.
-            emislocs = model.emisloc.dataframe.loc[model.emisloc.dataframe.fac_id == row]
+            emislocs = model.emisloc.dataframe.loc[model.emisloc.dataframe.fac_id == row].copy()
             [["fac_id","source_id","source_type","lon","lat","utmzone","x2","y2",
               "location_type","lengthx","lengthy","angle"]]
             
