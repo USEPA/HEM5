@@ -23,3 +23,5 @@ com/sca/hem4/*.spec
 **/__pycache__/*.pyc
 .spyproject/
 envs/
+*.spec
+*.yml

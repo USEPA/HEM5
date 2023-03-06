@@ -71,10 +71,8 @@ class Processor():
 
         except BaseException as ex:
                 self.exception = ex
-                fullStackInfo=''.join(traceback.format_exception(
-                    ex, value=ex, tb=ex.__traceback__))
+                fullStackInfo=traceback.format_exc()
                 message = "An error occurred while trying to create the KML file of all facilities:\n" + fullStackInfo
-                print(message)
                 Logger.logMessage(message)
            
         else:
@@ -94,7 +92,7 @@ class Processor():
     
     #        Logger.logMessage("The facility ids being modeled: , False)
             Logger.logMessage("The facility ids being modeled: " + ", ".join(fac_list))
-    
+                
             success = False
     
             # Create output files with headers for any source-category outputs that will be appended
@@ -128,11 +126,8 @@ class Processor():
                 except BaseException as ex:
 
                     self.exception = ex
-                    fullStackInfo=''.join(traceback.format_exception(
-                        ex, value=ex, tb=ex.__traceback__))
-    
+                    fullStackInfo=traceback.format_exc()   
                     message = "An error occurred while running a facility and facility was skipped:\n" + fullStackInfo
-                    print(message)
                     Logger.logMessage(message)
                     
                     self.skipped.append(facid)

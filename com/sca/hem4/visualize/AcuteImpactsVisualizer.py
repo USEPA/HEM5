@@ -9,13 +9,13 @@ import warnings
 
 import pandas as pd
 import geopandas as gp
-from fiona import _shim, schema
+# from fiona import _shim, schema
 from shapely.geometry import Point
 from bokeh.io import curdoc
 from bokeh.tile_providers import STAMEN_TONER_LABELS, get_provider
 from bokeh.models import WMTSTileSource, LabelSet, ColumnDataSource, HoverTool, \
     WheelZoomTool, ZoomInTool, ZoomOutTool, PanTool, ResetTool, SaveTool
-from bokeh.models.widgets import Panel, Tabs
+from bokeh.models.layouts import TabPanel, Tabs
 from bokeh.plotting import figure, save
 
 from com.sca.hem4.support.Directory import Directory
@@ -175,7 +175,7 @@ class AcuteImpactsVisualizer():
             
             mapName = '%s%s%s%s%s' %(self.sourceDir, '/Acute Maps/', Fac+'_', HAP+'_', refType+'.html')
             save(p, filename = mapName)
-            tab = Panel(child=p, title=HAP.title() + " (" + refType +")")
+            tab = TabPanel(child=p, title=HAP.title() + " (" + refType +")")
             tablist.append(tab)
 
         tabs = Tabs(tabs=tablist)
