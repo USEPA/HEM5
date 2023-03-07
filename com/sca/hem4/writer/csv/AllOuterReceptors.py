@@ -616,16 +616,19 @@ class AllOuterReceptors(CsvWriter, InputFile):
         
         nozeros_df['intconc'] = ic_array
 
-        # Interpolate outer blocks where at least one of the 4 polars is zero
+        #---Interpolate outer blocks where at least one of the 4 polars is zero ---
         
-        # Find max of s1r1,s1r2 and s2r1,s2r2
+        # Find max of s1r1,s1r2 and s2r1,s2r2. These are used for 0 cases.
         somezeros_df['R_s12'] = somezeros_df[['conc_s1r1','conc_s1r2']].max(axis=1)
         somezeros_df['R_s34'] = somezeros_df[['conc_s2r1','conc_s2r2']].max(axis=1)
         
+        
         # In order to vectorize operations, split somezeros_df into two DFs
+        # zeroRs12 => s1r1=0 or s1r2=0 so R_s12 is max of s1r1, s1r2
+        # zeroRs34 => s2r1=0 or s2r2=0 so R_s34 is max of s2r1, s2r2
         zeroRs12 = somezeros_df[((somezeros_df['conc_s1r1']==0) | (somezeros_df['conc_s1r2']==0))
                                 & ((somezeros_df['conc_s2r1']>0) & (somezeros_df['conc_s2r2']>0))].copy()
-        zeroRs34 = somezeros_df[((somezeros_df['conc_s1r1']>0) | (somezeros_df['conc_s1r2']>0))
+        zeroRs34 = somezeros_df[((somezeros_df['conc_s1r1']>0) & (somezeros_df['conc_s1r2']>0))
                                 & ((somezeros_df['conc_s2r1']==0) | (somezeros_df['conc_s2r2']==0))].copy()
         
 

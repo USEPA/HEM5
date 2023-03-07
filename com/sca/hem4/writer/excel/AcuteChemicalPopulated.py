@@ -128,7 +128,7 @@ class AcuteChemicalPopulated(ExcelWriter, InputFile):
                 for entry in listDirfiles:
                     if fnmatch.fnmatch(entry, pattern):
                         listOuter.append(entry)
-                
+                 
                 # Loop over each pollutant and outer receptor file and see if max acute conc
                 # is larger than the stored value
                 for f in listOuter:
