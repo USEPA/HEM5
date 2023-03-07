@@ -15,7 +15,9 @@ from bokeh.io import curdoc
 from bokeh.tile_providers import STAMEN_TONER_LABELS, get_provider
 from bokeh.models import WMTSTileSource, LabelSet, ColumnDataSource, HoverTool, \
     WheelZoomTool, ZoomInTool, ZoomOutTool, PanTool, ResetTool, SaveTool
-from bokeh.models.layouts import TabPanel, Tabs
+# from bokeh.models.layouts import TabPanel, Tabs
+from bokeh.models import TabPanel, Tabs
+
 from bokeh.plotting import figure, save
 
 from com.sca.hem4.support.Directory import Directory
@@ -144,7 +146,7 @@ class AcuteImpactsVisualizer():
             tools = [ZoomInTool(), ZoomOutTool(), PanTool(),\
                        WheelZoomTool(), ResetTool(), HoverTool(tooltips=tooltips)]
             
-            p = figure(plot_width=800, plot_height=600, tools = tools,\
+            p = figure(width=800, height=600, tools = tools,\
                        x_range=(avg_x-3000, avg_x+3000), y_range=(avg_y-3000, avg_y+3000),\
                        title=title)
 
