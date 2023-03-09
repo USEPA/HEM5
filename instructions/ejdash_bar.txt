@@ -8,8 +8,9 @@
 * Children 17 years of age and under
 * Adults 18 to 64 years of age
 * Adults 65 years of age and over
-* Adults without a high school diploma
-* People living below the poverty level
+* No high school diploma
+* Below poverty level
+* Below twice poverty level
 * Linguistically isolated people
 
 >###### *Statistics on total population, race, ethnicity, age, education level, low household income, poverty status and linguistic isolation are obtained from the Census [American Community Survey (ACS)](https://www.census.gov/programs-surveys/acs) 5-year averages for 2016-2020.*

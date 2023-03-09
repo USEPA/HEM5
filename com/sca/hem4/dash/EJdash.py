@@ -164,8 +164,8 @@ class EJdash():
             
         rungroup = file_list[0].split('_EJ-Summary_')[0]
         demogroups = ['People of Color', 'African American','Native American', 'Other and Multiracial', 'Hispanic or Latino',
-                      'Age 0-17', 'Age 18-64', 'Age >=65','Below the Poverty Level', 
-                      'Below Two Times the Poverty Level', 'Over 25 Without a High School Diploma',
+                      'Age 0-17', 'Age 18-64', 'Age >=65','Below Poverty Level', 
+                      'Below Twice Poverty Level', 'No High School Diploma',
                       'Linguistically Isolated']
         
         ### Go through the files (and sheets within files) to get all the scenarios run in the Demographic Assessment module
@@ -195,8 +195,8 @@ class EJdash():
         ### Create a dataframe of the national, state, and county averages
         compnames = ['Average', 'Total Pop', 'People of Color', 'African American','Native American',
                      'Other and Multiracial', 'Hispanic or Latino','Age 0-17', 'Age 18-64', 'Age >=65',
-                     'Below the Poverty Level', 'Below Two Times the Poverty Level',
-                     'Over 25 Without a High School Diploma','Linguistically Isolated']
+                     'Below Poverty Level', 'Below Twice Poverty Level',
+                     'No High School Diploma','Linguistically Isolated']
         compdf = pd.DataFrame()
         
         for scen in scenarios.itertuples():
@@ -212,8 +212,8 @@ class EJdash():
         ### Create a dataframe of the facility data  
         mainnames = ['Facility', 'RiskorProx', 'Total Pop', 'People of Color', 'African American','Native American',
                      'Other and Multiracial', 'Hispanic or Latino','Age 0-17', 'Age 18-64', 'Age >=65',
-                     'Below the Poverty Level', 'Below Two Times the Poverty Level',
-                     'Over 25 Without a High School Diploma','Linguistically Isolated']        
+                     'Below Poverty Level', 'Below Twice Poverty Level',
+                     'No High School Diploma','Linguistically Isolated']        
         maindf = pd.DataFrame()
         noprox = scenarios[~scenarios['Risk_Level'].isin(['Proximity Only'])]
         
@@ -236,7 +236,7 @@ class EJdash():
                 ## Note: over 25 without a HS diploma uses count of people over age 25, not total pop
                 for col in demogroups:
                     newcol = col + ' Pop'
-                    if col != 'Over 25 Without a High School Diploma':
+                    if col != 'No High School Diploma':
                         temp[newcol] = (temp[col] * temp['Total Pop'])
                     else:
                         temp[newcol] = 0
@@ -259,8 +259,8 @@ class EJdash():
                     else:
                         age25pop_key = temp.iloc[i,3] + '_' + temp.iloc[i,0].lower() + '_' + temp.iloc[i,1] + '_' + rlevel + '_risk'                        
                     count_age25up = age25pop[age25pop_key]
-                    temp.loc[i, 'Over 25 Without a High School Diploma Pop'] = \
-                                temp.loc[i, 'Over 25 Without a High School Diploma'] * count_age25up
+                    temp.loc[i, 'No High School Diploma Pop'] = \
+                                temp.loc[i, 'No High School Diploma'] * count_age25up
                 
                 # Convert the decimal fractions to percents for the demo groups        
                 for col in demogroups:
@@ -814,9 +814,9 @@ class EJdash():
                                 {"name": [grphead, 'Age 0-17'], "id": 'Age 0-17'},
                                 {"name": [grphead, 'Age 18-64'], "id": 'Age 18-64'},
                                 {"name": [grphead, 'Age >=65'], "id": 'Age >=65'},
-                                {"name": [grphead, 'Below the Poverty Level'], "id": 'Below the Poverty Level'},
-                                {"name": [grphead, 'Below Two Times the Poverty Level'], "id": 'Below Two Times the Poverty Level'},
-                                {"name": [grphead, 'Over 25 Without a High School Diploma',], "id": 'Over 25 Without a High School Diploma',},
+                                {"name": [grphead, 'Below Poverty Level'], "id": 'Below Poverty Level'},
+                                {"name": [grphead, 'Below Twice Poverty Level'], "id": 'Below Twice Poverty Level'},
+                                {"name": [grphead, 'No High School Diploma',], "id": 'No High School Diploma',},
                                 {"name": [grphead, 'Linguistically Isolated'], "id": 'Linguistically Isolated'}
                                 
                         ],
