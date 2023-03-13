@@ -4,10 +4,20 @@ Created on Wed Feb 26 07:07:56 2020
 
 @author: MMORRIS
 """
+# import dash
+# import dash_table
+# import dash_core_components as dcc
+# import dash_bootstrap_components as dbc
+# import dash_html_components as html
 import dash
-from dash import dash_table
-from dash import dcc
-from dash import html 
+import dash_table
+from dash import Dash, html, Input, Output, State, no_update, dcc
+from dash_extensions.javascript import assign, arrow_function
+from dash_extensions.enrich import callback_context
+import dash_bootstrap_components as dbc
+import dash_leaflet as dl
+import dash_leaflet.express as dlx
+
 import plotly.graph_objects as go 
 import subprocess, webbrowser
 from threading import Timer
@@ -20,9 +30,29 @@ from tkinter import messagebox
 
 from flask import request
 from concurrent.futures import ThreadPoolExecutor
-from dash.dependencies import Input, Output
+# from dash.dependencies import Input, Output
 import time
 
+# Imports needed specifically for making contour maps
+from com.sca.hem4.dash.hem_contours_tab import make_contours, make_alert, riskfig
+from com.sca.hem4.dash.hem_leaflet import get_basemaps
+import matplotlib.pyplot as plt
+import geojsoncontour
+import json
+import geopandas as gp
+from scipy.interpolate import griddata
+from sigfig import round as roundsf
+import io
+import base64
+
+dbc_stylesheets = [dbc.themes.MORPH]
+
+bases = get_basemaps()    
+ct_esri = bases[0]
+ct_dark = bases[1]
+ct_light = bases[2]
+ct_openstreet = bases[3]
+ct_roads = bases[4]
 
 
 class HEM4dash():
@@ -68,9 +98,9 @@ class HEM4dash():
         # Directory is correct. Continue...            
             
         ## Rather than using the external css, could use local "assets" dir that has the css file
-        external_stylesheets = ['https://codepen.io/chriddyp/pen/bWLwgP.css']
+        # external_stylesheets = ['https://codepen.io/chriddyp/pen/bWLwgP.css']
         
-        app = dash.Dash(__name__, external_stylesheets=external_stylesheets)
+        app = dash.Dash(__name__, external_stylesheets=dbc_stylesheets)
         app.title = 'HEM4 Summary Results: ' + self.SCname
                 
         mapbox_access_token = 'pk.eyJ1IjoiYnJ1enp5IiwiYSI6ImNrOTE5YmwzdDBhMXYzbW8yMjY4aWJ3eHQifQ.5tNjnlK2Y8b-U1kvfPP8FA'
@@ -403,6 +433,27 @@ class HEM4dash():
             # for column in cols2format_E  +  cols2format_f:
             #     df_dashtable[column] = df_dashtable[column].map(lambda x: '{:.6f}'.format(x))
             
+            # These added for the contour map tab
+            metrics = ['MIR', 'Respiratory HI', 'Liver HI', 'Neurological HI',
+            'Developmental HI', 'Reproductive HI', 'Kidney HI', 'Ocular HI',
+            'Endocrine HI', 'Hematological HI', 'Immunological HI', 'Skeletal HI',
+            'Spleen HI', 'Thyroid HI', 'Whole body HI']
+
+            coloramps = ['viridis', 'magma', 'cividis', 'rainbow', 'gist_earth','terrain','jet', 'turbo',
+                         'ocean', 'tab10',
+                         'Blues', 'Greens', 'Oranges', 'Reds',
+                         'viridis_r', 'magma_r', 'cividis_r', 'rainbow_r', 'gist_earth_r','terrain_r','jet_r', 'turbo_r',
+                         'ocean_r', 'tab10_r',
+                         'Blues_r', 'Greens_r', 'Oranges_r', 'Reds_r']
+
+            draw_hoverfac = assign("""function(feature, latlng){
+                const square = L.icon({iconUrl: `/assets/greensquare.png`, iconSize: [10, 10]});
+                
+                return L.marker(latlng, {icon: square});
+                }""")
+                
+            ##
+            
             
             app.layout = html.Div([
 
@@ -422,91 +473,101 @@ class HEM4dash():
             dcc.Tabs([
                     
                 dcc.Tab(label="Facility Map", children=[
+                    
                         
                         ###########  Start Map Dropdowns  ##########
-
-                        html.Div([
-                                
-                                html.H6("Metric to Display"),
-                                  dcc.Dropdown(id='metdrop',
-                                               
-                                              options=[{"label": i, "value": i} for i in mapmets],
-                                              multi=False,
-                                              clearable=False,
-                                              value = 'MIR (in a million)',
-                                              placeholder="Select a Metric",
-                                              ),
-                                
-                                html.H6("Linear or Log Scale"),
-                                  dcc.Dropdown(id='scaledrop',
-                                               
-                                              options=[{"label": 'Linear', "value": 'linear'},
-                                                       {"label": 'Log', "value": 'log'}
-                                                       ],
-                                              multi=False,
-                                              clearable=False,
-                                              value = 'linear',
-                                              placeholder="Linear or Log Scale",
-                                              ),
-                                
-                                                
-                                html.H6("Basemap"),
-                                  dcc.Dropdown(id='basemapdrop',
-                                               
-                                              options=[{"label": 'Light', "value": 'carto-positron'},
-                                                       {"label": 'Dark', "value": 'carto-darkmatter'},
-                                                       {"label": 'Satellite', "value": 'satellite-streets'},
-                                                       {"label": 'Streets', "value": 'open-street-map'}
-                                                       ],
-                                              multi=False,
-                                              clearable=False,
-                                              value = 'carto-positron',
-                                              placeholder="Select a Basemap",
-                                              ),
-                          
-                                html.H6("Color Ramp"),  
-                                  dcc.Dropdown(id='rampdrop',
-                                               
-                                              options=[{"label": 'Blue to Red', "value": px.colors.sequential.Bluered},
-                                                       {"label": 'Blue to Yellow', "value": px.colors.sequential.Cividis},
-                                                       {"label": 'Purple to Yellow', "value": px.colors.sequential.Viridis},
-                                                       {"label": 'Blue Scale', "value": px.colors.sequential.Blues},
-                                                       {"label": 'Green Scale', "value": px.colors.sequential.Greens},
-                                                       {"label": 'Red Scale', "value": px.colors.sequential.Reds}],
-                                              multi=False,
-                                              clearable=False,
-                                              value = px.colors.sequential.Viridis,
-                                              placeholder="Select a Color Ramp",
-                                              ),
-                                               
-                                html.H6("Dot Size"),  
-                                  dcc.Dropdown(id='sizedrop',
-                                               
-                                              options=[{"label": i, "value": i} for i in range(5,16)],
-                                              multi=False,
-                                              clearable=False,
-                                              value = 6,
-                                              placeholder="Select a Dot Size",
-                                              ),
-                        ], className = 'two columns'),
-                                               
-                        html.Div([
-                              
-                                html.Div([
-                                    dcc.Graph(id = 'map', style={"height": 800}, config = {
-                                            'modeBarButtonsToRemove': ['lasso2d', 'select2d', 'hoverCompareCartesian', 'hoverClosestCartesian'],
-                                            'toImageButtonOptions': {
-                                                    'format': 'jpeg', # one of png, svg, jpeg, webp
-                                                    'filename': 'Facility Map',
-                                                    'scale': 1}
-                                              }),
-                                ], className='ten columns'),
+                    dbc.Row([
+                        
+                        dbc.Col([
+                                                        
+                            html.H6("Metric to Display"),
+                              dcc.Dropdown(id='metdrop',
+                                           
+                                          options=[{"label": i, "value": i} for i in mapmets],
+                                          multi=False,
+                                          clearable=False,
+                                          value = 'MIR (in a million)',
+                                          placeholder="Select a Metric",
+                                          ),
+                            
+                            html.H6("Linear or Log Scale"),
+                              dcc.Dropdown(id='scaledrop',
+                                           
+                                          options=[{"label": 'Linear', "value": 'linear'},
+                                                   {"label": 'Log', "value": 'log'}
+                                                   ],
+                                          multi=False,
+                                          clearable=False,
+                                          value = 'linear',
+                                          placeholder="Linear or Log Scale",
+                                          ),
+                            
+                                            
+                            html.H6("Basemap"),
+                              dcc.Dropdown(id='basemapdrop',
+                                           
+                                          options=[{"label": 'Light', "value": 'carto-positron'},
+                                                   {"label": 'Dark', "value": 'carto-darkmatter'},
+                                                   {"label": 'Satellite', "value": 'satellite-streets'},
+                                                   {"label": 'Streets', "value": 'open-street-map'}
+                                                   ],
+                                          multi=False,
+                                          clearable=False,
+                                          value = 'carto-positron',
+                                          placeholder="Select a Basemap",
+                                          ),
+                      
+                            html.H6("Color Ramp"),  
+                              dcc.Dropdown(id='rampdrop',
+                                           
+                                          options=[{"label": 'Blue to Red', "value": px.colors.sequential.Bluered},
+                                                   {"label": 'Blue to Yellow', "value": px.colors.sequential.Cividis},
+                                                   {"label": 'Purple to Yellow', "value": px.colors.sequential.Viridis},
+                                                   {"label": 'Blue Scale', "value": px.colors.sequential.Blues},
+                                                   {"label": 'Green Scale', "value": px.colors.sequential.Greens},
+                                                   {"label": 'Red Scale', "value": px.colors.sequential.Reds}],
+                                          multi=False,
+                                          clearable=False,
+                                          value = px.colors.sequential.Viridis,
+                                          placeholder="Select a Color Ramp",
+                                          ),
+                                           
+                            html.H6("Dot Size"),  
+                              dcc.Dropdown(id='sizedrop',
+                                           
+                                          options=[{"label": i, "value": i} for i in range(5,16)],
+                                          multi=False,
+                                          clearable=False,
+                                          value = 6,
+                                          placeholder="Select a Dot Size",
+                                          ),
+                        ], width = 2),
+                        
+                        
+                        dbc.Col([
+                                                        
+                            dcc.Graph(id = 'map', style={"height": 800}, config = {
+                                    'modeBarButtonsToRemove': ['lasso2d', 'select2d', 'hoverCompareCartesian', 'hoverClosestCartesian'],
+                                    'toImageButtonOptions': {
+                                            'format': 'jpeg', # one of png, svg, jpeg, webp
+                                            'filename': 'Facility Map',
+                                            'scale': 1}
+                                      }),
+                        ], width = 9)
+                                   
                         
                                         
-                        ], className = 'row'),                       
+                    ])                   
                     
                     
-                ]),    
+                ]),
+                
+                dcc.Tab(label = "Contour Maps", children = [
+                    
+                    make_contours()
+                    
+                    
+                    ]),
 
                 dcc.Tab(label="Cancer Incidence",children=[
                     
@@ -697,6 +758,383 @@ class HEM4dash():
 #            def check_status(value):
 #                self.shutdown()
 #                return 'Shutting down server'
+
+
+# Callbacks for the contours tab
+            @app.callback(
+                       Output('ctab-metric-alert-div', 'children'),
+                       Output('ctab-themap', 'children'),
+                       Output('ctab-map-title', 'children'),
+                       Output('ctab-themap', 'zoom'),
+                       Output('ctab-themap', 'center'),
+                      
+                      Input('ctab-store-metricdata', 'data'),
+                      Input('ctab-metricdrop','value'),
+                      Input('ctab-classinput', 'value'),
+                      Input('ctab-opacdrop', 'value'),
+                      Input('ctab-classesdrop', 'value'),
+                      Input('ctab-rampdrop', 'value'),
+                      Input('ctab-sigfigdrop', 'value'),
+                      Input('ctab-store-facid', 'data'),
+                      Input('ctab-upload-data', 'filename')
+                     
+                      )
+
+            def interp_contour(metdata, metric, usercls, opac, numclass, ramp, digz, facname, filelist):
+                
+                print(metric,usercls,opac,numclass,ramp,digz,facname,filelist)
+                
+                if metdata is None:
+                    return no_update, no_update, no_update, no_update, no_update
+                else:
+                    ctx = callback_context
+                    comp_id = ctx.triggered[0]['prop_id'].split('.')[0]
+                    print('COMP ID IS ',comp_id)
+                    
+                                        
+                    # columns = ['RecID', 'Latitude', 'Longitude', 'Distance (m)', metric]
+                    print(metric, opac,numclass,ramp)
+                       
+                    dfpl = pd.DataFrame(metdata)
+                            
+                    if dfpl[metric].max() == 0:
+                        alert = make_alert('There are no nonzero values for this metric')
+                        return alert, no_update, no_update, no_update, no_update
+                    else:
+                        if metric == 'MIR':
+                            maptitle = html.H4(f'Facility {facname} - Lifetime Cancer Risk (in a million)')
+                        else:
+                            maptitle = html.H4(f'Facility {facname} - {metric}')            
+                        gdf = gp.GeoDataFrame(
+                            dfpl, geometry=gp.points_from_xy(dfpl.Longitude, dfpl.Latitude), crs="EPSG:4326")
+                        
+                        if metric == 'MIR':
+                            gdf['tooltip'] = '<b>Receptor ID: </b>' + gdf['RecID'] + '<br><b>Cancer Risk (in a million): </b>' + gdf[metric].apply(lambda x: f'{riskfig(x, digz)}').astype(str)
+                        else:
+                            gdf['tooltip'] = '<b>Receptor ID: </b>' + gdf['RecID'] + f'<br><b>{metric}: </b>' + gdf[metric].apply(lambda x: f'{riskfig(x, digz)}').astype(str)
+                        
+                       
+                                  
+                        pointjson = json.loads(gdf.to_json())
+                        pointbuf = dlx.geojson_to_geobuf(pointjson)
+                        
+                        
+                        # Use the max receptor to center the map
+                        max_x = dfpl.loc[dfpl[metric].idxmax()]
+                        avglat = max_x['Latitude'] 
+                        avglon = max_x['Longitude']
+                                    
+                        # 
+                        halfgrid_m = 20000
+                        res_m = 10
+                        halfgrid = halfgrid_m/111133
+                        res = res_m/111133
+                        numcells = round(halfgrid*2/res)
+                                            
+                        gdfBounds = gdf.bounds
+                        
+                    
+                        ''' Create the meshgrid to which to interpolate
+                        '''
+                        x_coord = np.linspace(avglon - halfgrid, avglon + halfgrid, numcells)
+                        y_coord = np.linspace(avglat - halfgrid, avglat + halfgrid, numcells)
+                        x_grid, y_grid = np.meshgrid(x_coord, y_coord)
+                                
+                        ''' Use scipy griddata interpolation on the meshgrid
+                        '''
+                        scigrid = griddata((gdfBounds.minx.to_numpy(), gdfBounds.miny.to_numpy()), gdf[metric].to_numpy(),
+                                            (x_grid, y_grid), method = 'linear', rescale=True)
+                        
+                        blockf = [True for i in filelist if 'block' in i]
+                        if blockf[0] == True and len(blockf) == 1:
+                            datamin = gdf[metric].min()
+                        else:
+                            datamin = scigrid.min()
+                        datamax = gdf[metric].max()
+                        
+                        # Go thru user class break list, accept only numbers and values within data range
+                        finuserlist = []
+                        if usercls is None:
+                            lowend = datamin
+                            highend = datamax
+                            # levels = np.linspace(lowend, highend, numclass+1).tolist()
+                            levels = np.logspace(np.log10(lowend), np.log10(highend), numclass+1).tolist()
+                        else:
+                            templist = usercls.split(sep=',')
+                            for item in templist:
+                                try:
+                                    if float(item) >= 0:
+                                        finuserlist.append(float(item))
+                                except:
+                                    pass
+                            
+                            for item in finuserlist:
+                                if item > datamax or item < datamin:
+                                    finuserlist.remove(item)
+                            finuserlist = sorted(list(set(finuserlist)))
+                                          
+                        
+                            if len(finuserlist) <= 1 or finuserlist[0] > datamax or finuserlist[-1] < datamin or comp_id == 'ctab-classesdrop':
+                                lowend = datamin
+                                highend = datamax
+                                # levels = np.linspace(lowend, highend, numclass+1).tolist()
+                                levels = np.logspace(np.log10(lowend), np.log10(highend), numclass+1).tolist()
+                            else:
+                                if finuserlist[0] < datamin:
+                                    lowend = datamin
+                                    finuserlist[0] = lowend
+                                else:
+                                    lowend = finuserlist[0]
+                                    
+                                if finuserlist[-1] > datamax:
+                                    highend = datamax
+                                    finuserlist[-1] = highend
+                                else:
+                                    highend = finuserlist[-1]
+                                
+                                levels = finuserlist
+                        
+                    
+                        '''  matplotlib to convert scigrid to filled contours
+                        '''
+                        fig = plt.figure()        
+                        ax = fig.add_subplot(111)
+                        gridcontour = ax.contourf(x_coord, y_coord, scigrid, levels=levels, cmap=ramp, norm='log')
+                    
+                        '''
+                        '''
+                    
+                        cont_json = geojsoncontour.contourf_to_geojson(
+                            contourf=gridcontour,
+                            ndigits=5,
+                            unit='',
+                            min_angle_deg = .00001
+                        )
+                        
+                        
+                        loadcont=json.loads(cont_json)
+                        contgdf=gp.GeoDataFrame.from_features(loadcont)
+                        contgdf['fakenums'] = levels[1:]
+                        classes = contgdf.fakenums.to_list()
+                        contgdf['fakenums'] = contgdf['fakenums']*1.05
+                        contgdf.set_crs('epsg:4326')
+                        print(contgdf.head())
+                        gdfJSON = contgdf.to_json()
+                                    
+                        
+                        polydata = json.loads(gdfJSON)
+                        colorscale = contgdf.fill.to_list()
+                        style=dict(weight=1, opacity=1, color='white', fillOpacity=opac)
+                        esri, dark, light, openstreet, roads = get_basemaps()
+                                    
+                        ctg=[]
+                                   
+                        for i, val in enumerate(classes):
+                            
+                            if i == 0:
+                                ctg.append(f'<b>{riskfig(lowend, digz)} - {riskfig(val, digz)}</b>')
+                            else:
+                                levbot = classes[i-1]
+                                ctg.append(f'<b>{riskfig(levbot, digz)} - {riskfig(val, digz)}</b>')
+                                    
+                        hideout=dict(colorscale=colorscale, classes=classes, style=style, colorProp='fakenums')
+                        
+                        style_handle = assign("""function(feature, context){
+                            const {classes, colorscale, style, colorProp} = context.props.hideout;  // get props from hideout
+                            const value = feature.properties[colorProp];  // get value the determines the color
+                            for (let i = 0; i < classes.length; ++i) {
+                                if (value > classes[i]) {
+                                    style.fillColor = colorscale[i];  // set the fill color according to the class
+                                }
+                            }
+                            return style;
+                        }""")
+                        
+                        contmap = [
+                            
+                                dl.MeasureControl(position="topleft", primaryLengthUnit="meters", primaryAreaUnit="hectares",
+                                                             activeColor="#214097", completedColor="#972158"),
+                            
+                                dl.LayersControl([ct_esri, ct_dark, ct_light, ct_openstreet] +
+                                                 
+                                                  [dl.Overlay(
+                                                            
+                                                            dl.LayerGroup(
+                                                            dl.GeoJSON(id = 'ctab-recepts', format="geobuf",
+                                                                       data=pointbuf,
+                                                                       cluster=True,
+                                                                       superClusterOptions=dict(radius=100, maxZoom = 13),
+                                                                       options = dict(pointToLayer=draw_hoverfac),
+                                                                        # options = dict(pointToLayer=draw_hoverfac, onEachFeature=draw_arrow),
+                                                                      ),
+                                                            ),
+                                                            name = 'Receptors', checked = False
+                                                            
+                                                            ),
+                                                      
+                                                
+                                                 
+                                                     dl.Overlay(
+                                                         
+                                                         
+                                                            dl.LayerGroup(
+                                                            dl.GeoJSON(id = 'ctab-contours', format="geojson",
+                                                                       data=polydata,
+                                                                       options=dict(style=style_handle),
+                                                                       zoomToBounds = False,
+                                                                       hideout=hideout,
+                                                                       ),
+                                                            ),
+                                                            name = 'Contours', checked = True
+                                                            
+                                                            ),
+                                                     
+                                                     # roads
+                                                                                     
+                                                 ]
+                                                 
+                                                 ),
+                                                 
+                                
+                                dl.express.categorical_colorbar(id='thecolorbar', categories= ctg, colorscale= colorscale, width=30,  height = 30*len(levels), opacity = opac,
+                                                                    position="bottomleft", style = dict(title = metric, title_color= 'black',
+                                                                                                        background = 'white', opacity = .9))
+                            ]
+                        
+                        # return polydata, hideout, ctg, colorscale, opac
+                        
+                        if comp_id in ['ctab-opacdrop','ctab-rampdrop', 'ctab-sigfigdrop', 'ctab-classinput']:
+                            center = no_update
+                            zoom = no_update
+                        else:
+                            center = [avglat,avglon]
+                            zoom = 14
+                        
+                        return no_update, contmap, maptitle, zoom, center
+
+
+            # This callback takes the csv file(s) loaded by user and creates a dataframe
+            @app.callback(Output('ctab-store-rawdata', 'data'),
+                          Output('ctab-upload-alert-div', 'children'),
+                          Output('ctab-store-facid', 'data'),
+                                                      
+                          Input('ctab-upload-data', 'filename'),
+                          Input('ctab-upload-data', 'contents'),
+                         )
+
+            def store_rawdata(filelist, contents):
+                
+                if filelist is None:
+                    alert = no_update
+                    data = no_update
+                    facname = no_update
+                                    
+                else:
+                    # print(filelist)
+                    # print('list length is ', len(filelist))
+                    if len(filelist) > 2:
+                        alert = make_alert("Only load 1 or 2 files")
+                        data = no_update
+                        facname = no_update
+                                                
+                    else:
+                        goodnames = []
+                        goodcontents = []
+                        for i, name in enumerate(filelist):
+                            if 'ring_summary_chronic.csv' in name or 'block_summary_chronic.csv' in name:
+                                facname = name.split('_')[0]
+                                goodnames.append(name)
+                                goodcontents.append(contents[i])
+                            else:
+                                facname = no_update
+                        # print('Sublist is ', goodnames)
+                        
+                        if len(goodnames) == 0:
+                            alert = make_alert("No ring or block csv files selected")
+                            data = no_update
+                            facname = no_update
+                            
+                        elif len(goodnames) == 2 and (goodnames[0].split('_')[0] != goodnames[1].split('_')[0]):
+                            alert = make_alert("Facility names for the files don't match")
+                            data = no_update
+                            facname = no_update
+                                    
+                        else:
+                            dflist =[]
+                            for i, item in enumerate(goodnames):
+                                # currfile = goodnames[i]
+                                currcontent = goodcontents[i]
+                                content_type, content_string = currcontent.split(',')
+                                decoded = base64.b64decode(content_string)
+                                dtype={"FIPs": str, "Block": str}
+                                currdf = pd.read_csv(io.StringIO(decoded.decode('utf-8')), dtype = dtype)
+                                currdf.rename(columns={'Distance (m)': 'dist', 'Angle (from north)': 'angle'}, inplace=True)
+                                
+                                if 'angle' in currdf.columns:
+                                    currdf['RecID'] = currdf.dist.astype(str).str.cat(currdf.angle.astype(str), sep='ang')
+                                else:
+                                    currdf['RecID'] = currdf.FIPs.astype(str).str.cat(currdf.Block.astype(str))
+                                
+                                tempdf = currdf.copy()
+                                tempdf['MIR'] = tempdf['MIR']*1000000
+                                
+                                # Limit the number of block receptors (don't need so many and so far out)
+                                if 'block_summary_chronic.csv' in item:
+                                    midlat = (tempdf['Latitude'].max() + tempdf['Latitude'].min())/2
+                                    midlon = (tempdf['Longitude'].max() + tempdf['Longitude'].min())/2
+                                    delta = .1
+                                    finaldf = tempdf[tempdf['Latitude'].between(midlat-delta, midlat+delta) & tempdf['Longitude'].between(midlon-delta, midlon+delta)]
+                                else:
+                                    finaldf = tempdf.copy()
+                                                 
+                                dflist.append(finaldf)
+                               
+                                
+                            alldfs = pd.concat(dflist)
+                                                
+                            alert=no_update
+                            data = alldfs.to_dict('records')
+                            
+                            print(alldfs.head())
+                                            
+                    return data, alert, facname
+                
+                
+            # Take the df of the concatenated raw data and trim down the columns to chosen metric
+                
+            @app.callback(Output('ctab-store-metricdata', 'data'),
+                                                      
+                          Input('ctab-store-rawdata', 'data'),
+                          Input('ctab-metricdrop', 'value')
+                      )
+
+            def send_metdata(indata, metric):
+                if indata is None:
+                    return no_update
+                else:
+                    ctx = callback_context
+                    comp_id = ctx.triggered[0]['prop_id'].split('.')[0]
+                    if comp_id is None or comp_id not in ['ctab-store-rawdata', 'ctab-metricdrop']:
+                        return no_update
+                    else:
+                        dff = pd.DataFrame(indata)
+                        dff = dff[['RecID', 'Latitude', 'Longitude', metric]]
+                                   
+                        outdata = dff.to_dict('records')
+                        return outdata
+              
+            @app.callback(
+                    Output("ctab-offcanvas0", "is_open"),
+
+                    Input("ctab-open-offcanvas0", "n_clicks"),
+                    State("ctab-offcanvas0", "is_open")
+                    )
+
+
+            def toggle_offcanvas0(n1, is_open):
+                if n1:
+                    return not is_open
+                return is_open    
 
                 
             return app
