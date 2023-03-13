@@ -846,7 +846,7 @@ class HEM4dash():
                                             (x_grid, y_grid), method = 'linear', rescale=True)
                         
                         blockf = [True for i in filelist if 'block' in i]
-                        if blockf[0] == True and len(blockf) == 1:
+                        if blockf and blockf[0] == True and len(blockf) == 1:
                             datamin = gdf[metric].min()
                         else:
                             datamin = scigrid.min()
