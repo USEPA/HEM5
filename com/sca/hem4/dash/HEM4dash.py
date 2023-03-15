@@ -34,7 +34,6 @@ from concurrent.futures import ThreadPoolExecutor
 import time
 
 # Imports needed specifically for making contour maps
-from com.sca.hem4.dash.hem_contours_tab import make_contours, make_alert, riskfig
 from com.sca.hem4.dash.hem_leaflet import get_basemaps
 import matplotlib.pyplot as plt
 import geojsoncontour
@@ -60,6 +59,26 @@ class HEM4dash():
     def __init__(self, dirtouse):
         self.dir = dirtouse
         self.SCname = self.dir.split('/')[-1]
+
+
+    def make_alert(self, string):
+        if string is None:
+            return no_update
+        else:        
+            alert = dbc.Alert(                
+                string,
+                color = 'danger',
+                dismissable=True,
+                is_open=True,
+                duration=5000
+            )
+            
+            return alert
+        
+    def riskfig(self, numb, digz):
+        numtype = float if numb < 1 else int
+        return roundsf(numb,sigfigs = digz, output_type = numtype)
+
 
     def buildApp(self):
         
@@ -451,8 +470,28 @@ class HEM4dash():
                 
                 return L.marker(latlng, {icon: square});
                 }""")
-                
-            ##
+
+            draw_arrow = assign("""
+            function(feature, layer, context){
+                const map = context.myRef.current.leafletElement._map;
+                L.polylineDecorator(layer, {
+                      patterns: [
+                          {symbol: L.Symbol.arrowHead({pixelSize: 15, pathOptions: {fillOpacity: 1, weight: 2}})}
+                      ]
+                }).addTo(map);}
+            """)
+
+            style_handle = assign("""function(feature, context){
+                const {classes, colorscale, style, colorProp} = context.props.hideout;  // get props from hideout
+                const value = feature.properties[colorProp];  // get value the determines the color
+                for (let i = 0; i < classes.length; ++i) {
+                    if (value > classes[i]) {
+                        style.fillColor = colorscale[i];  // set the fill color according to the class
+                    }
+                }
+                return style;
+            }""")
+                            
             
             
             app.layout = html.Div([
@@ -564,9 +603,169 @@ class HEM4dash():
                 
                 dcc.Tab(label = "Contour Maps", children = [
                     
-                    make_contours()
+                    html.Div([
                     
+                    dbc.Container([
+                        
+                            dcc.Store(id='ctab-store-rawdata'),
+                            dcc.Store(id='ctab-store-metricdata'),
+                            dcc.Store(id='ctab-store-facid'),
+                                    
+                            dbc.Row([
+                                
+                                dbc.Col([
+                                    dcc.Loading([
+                                        
+                                        html.Div([
+                                            html.H4('Select files to create contours')
+                                            ], id='ctab-map-title')
+                                        
+                                        ], type = 'default')
+                                   
+                                        
+                                    ], width={'size':8, 'offset':2})
+                                
+                                ]),
                     
+                            dbc.Row([
+                                
+                                dbc.Col([
+                                    
+                                    dcc.Upload(['Select File(s)'],
+                                        
+                                                id='ctab-upload-data',
+                                                multiple = True,
+                                                accept = '.csv',
+                                                style={
+                                                   
+                                                    'width': '100%',
+                                                    'height': '60px',
+                                                    'lineHeight': '60px',
+                                                    'borderWidth': '2px',
+                                                    'borderStyle': 'dashed',
+                                                    'borderRadius': '5px',
+                                                    'textAlign': 'center'
+                                                }),
+                                    
+                                    html.Div(id='ctab-upload-alert-div'),
+                                                                           
+                                    dbc.Tooltip(                        
+                                        [html.P('Select ring summary and/or block summary files'),
+                                        html.P('Found in C:\HEMX.Y\output\<your model run group>\<facility ID>')],
+                                        target='ctab-upload-data',
+                                        class_name="fw-bold"
+                                    ),
+                                    
+                                    html.Br(),
+                                    html.Label(["Risk metric"]),
+                                    dcc.Dropdown(id='ctab-metricdrop',
+                                                  options=[{"label": i, "value": i} for i in metrics],
+                                                  multi=False,
+                                                  clearable=False,
+                                                  value = 'MIR',
+                                                  placeholder="Select a Metric",
+                                                  ),
+                                    html.Div(id='ctab-metric-alert-div'),
+                                                    
+                                    html.Hr(),
+                                    html.Label(["Number of classes"]),
+                                                        
+                                    dcc.Slider(2, 10, 1,
+                                                value=5,
+                                                id='ctab-classesdrop'
+                                                ),
+                                                        
+                                    dbc.Tooltip(                        
+                                        [html.P('This will use the low and high values of your data, with this number of classes')],
+                                        target='ctab-classesdrop',
+                                        class_name="fw-bold"
+                                    ),
+                                    
+                                    html.H6('OR', style={'textAlign': 'center', 'color': '#7FDBFF', 'font-weight' : 'bold'}),
+                                    html.Label(["Input list of class breaks"]),
+                                    html.Datalist(id="ctab-userlist", children=[
+                                        html.Option(value= '100, 200, 300, 400, 500, 600, 700, 800, 900, 1000'),
+                                        html.Option(value='10, 20, 40, 60, 80, 100'),
+                                        html.Option(value='100, 200, 500, 1300, 3000'),
+                                        html.Option(value='.1, .2, .5, 1, 2, 5, 10'),
+                                        html.Option(value='.1, .3, 1, 3, 10'),
+                                        ]),
+                                    dcc.Input(id='ctab-classinput', type = 'text', list = 'ctab-userlist', debounce = True),                    
+                                    dbc.Tooltip(                        
+                                        [html.P('If you input your own class breaks (comma-separated list),\
+                                                the number of classes above will be ignored'),
+                                          html.P('Press enter after you input', style={'font-weight':'bold', 'font-style':'italic' })],
+                                        target='ctab-classinput',
+                                        class_name="fw-bold"
+                                    ),
+                                    
+                                    html.Hr(),
+                                    html.Label(["Color ramp"]),
+                                    dcc.Dropdown(id='ctab-rampdrop',
+                                                  options=[{"label": i, "value": i} for i in coloramps],
+                                                  multi=False,
+                                                  clearable=False,
+                                                  value = 'viridis',
+                                                  placeholder="Select Color Ramp",
+                                                  ),
+                                                        
+                                    html.Hr(),
+                                    html.Label(["Opacity"]),
+                                    dcc.Slider(.1, 1, .1,
+                                                value=.8,
+                                                marks=None,
+                                                id='ctab-opacdrop'
+                                                ),
+                                    
+                                    html.Hr(),
+                                    html.Label(["Significant figures displayed"]),
+                                    dcc.RadioItems([1,2,3], 1, id='ctab-sigfigdrop', labelStyle={'display': 'inline-block', 'margin-right': '20px'}),
+                                                        
+                                                        
+                                    html.Hr(),
+                                    html.Div([
+                                        
+                                        dbc.Button("Download Data\n", id="ctab-open-offcanvas0",
+                                                    className="mx-auto", outline=True, color="primary", n_clicks=0)
+                                        ], style={'display': 'flex', 'flex-direction': 'column', 'justify-content': 'center'}),
+                                    
+                                    dbc.Offcanvas(
+                                                        
+                                                    dbc.Row([
+                
+                                                            dbc.Col([
+                                                                    html.Label(["Download contours as shapefile"]),
+                                                                    
+                                                                    html.Label(["Download receptor data as csv file"]),
+                                                                    
+                                                                                                                                                                
+                                                                    ], width = 12, className="opacity-100"),
+                                                            
+                                                                    
+                                                    ], className="opacity-100"),    
+                                                    
+                                                    id="ctab-offcanvas0",
+                                                    is_open=False,
+                                                ),
+                                                                
+                                    ], width = 2),
+                    
+                                
+                                dbc.Col([
+                                                                                                
+                                        dl.Map(id = 'ctab-themap', center = [39., -97.3],
+                                                zoom=5, children=[
+                                                    dl.LayersControl([ct_esri, ct_dark, ct_light, ct_openstreet])
+                                                    ]),
+                                                                                
+                                        ], width=10)
+                                                         
+                            ], className="h-100")
+                            
+                        ], fluid=True, style={"height": "90vh"})
+                                                
+                    ], style={'width': '100%', 'height': '100vh', 'margin': "auto", "display": "block"}),
+                                                
                     ]),
 
                 dcc.Tab(label="Cancer Incidence",children=[
@@ -779,26 +978,18 @@ class HEM4dash():
                       Input('ctab-upload-data', 'filename')
                      
                       )
-
+            
             def interp_contour(metdata, metric, usercls, opac, numclass, ramp, digz, facname, filelist):
-                
-                print(metric,usercls,opac,numclass,ramp,digz,facname,filelist)
-                
+                        
                 if metdata is None:
                     return no_update, no_update, no_update, no_update, no_update
                 else:
                     ctx = callback_context
                     comp_id = ctx.triggered[0]['prop_id'].split('.')[0]
-                    print('COMP ID IS ',comp_id)
-                    
-                                        
-                    # columns = ['RecID', 'Latitude', 'Longitude', 'Distance (m)', metric]
-                    print(metric, opac,numclass,ramp)
-                       
                     dfpl = pd.DataFrame(metdata)
                             
                     if dfpl[metric].max() == 0:
-                        alert = make_alert('There are no nonzero values for this metric')
+                        alert = self.make_alert('There are no nonzero values for this metric')
                         return alert, no_update, no_update, no_update, no_update
                     else:
                         if metric == 'MIR':
@@ -809,9 +1000,9 @@ class HEM4dash():
                             dfpl, geometry=gp.points_from_xy(dfpl.Longitude, dfpl.Latitude), crs="EPSG:4326")
                         
                         if metric == 'MIR':
-                            gdf['tooltip'] = '<b>Receptor ID: </b>' + gdf['RecID'] + '<br><b>Cancer Risk (in a million): </b>' + gdf[metric].apply(lambda x: f'{riskfig(x, digz)}').astype(str)
+                            gdf['tooltip'] = '<b>Receptor ID: </b>' + gdf['RecID'] + '<br><b>Cancer Risk (in a million): </b>' + gdf[metric].apply(lambda x: f'{self.riskfig(x, digz)}').astype(str)
                         else:
-                            gdf['tooltip'] = '<b>Receptor ID: </b>' + gdf['RecID'] + f'<br><b>{metric}: </b>' + gdf[metric].apply(lambda x: f'{riskfig(x, digz)}').astype(str)
+                            gdf['tooltip'] = '<b>Receptor ID: </b>' + gdf['RecID'] + f'<br><b>{metric}: </b>' + gdf[metric].apply(lambda x: f'{self.riskfig(x, digz)}').astype(str)
                         
                        
                                   
@@ -846,7 +1037,8 @@ class HEM4dash():
                                             (x_grid, y_grid), method = 'linear', rescale=True)
                         
                         blockf = [True for i in filelist if 'block' in i]
-                        if blockf[0] == True and len(blockf) == 1:
+                                        
+                        if blockf and blockf[0] == True and len(blockf) == 1:
                             datamin = gdf[metric].min()
                         else:
                             datamin = scigrid.min()
@@ -918,37 +1110,30 @@ class HEM4dash():
                         classes = contgdf.fakenums.to_list()
                         contgdf['fakenums'] = contgdf['fakenums']*1.05
                         contgdf.set_crs('epsg:4326')
-                        print(contgdf.head())
                         gdfJSON = contgdf.to_json()
                                     
                         
                         polydata = json.loads(gdfJSON)
                         colorscale = contgdf.fill.to_list()
                         style=dict(weight=1, opacity=1, color='white', fillOpacity=opac)
-                        esri, dark, light, openstreet, roads = get_basemaps()
                                     
                         ctg=[]
                                    
                         for i, val in enumerate(classes):
                             
                             if i == 0:
-                                ctg.append(f'<b>{riskfig(lowend, digz)} - {riskfig(val, digz)}</b>')
+                                ctg.append(f'<b>{self.riskfig(lowend, digz)} - {self.riskfig(val, digz)}</b>')
                             else:
                                 levbot = classes[i-1]
-                                ctg.append(f'<b>{riskfig(levbot, digz)} - {riskfig(val, digz)}</b>')
+                                ctg.append(f'<b>{self.riskfig(levbot, digz)} - {self.riskfig(val, digz)}</b>')
                                     
                         hideout=dict(colorscale=colorscale, classes=classes, style=style, colorProp='fakenums')
-                        
-                        style_handle = assign("""function(feature, context){
-                            const {classes, colorscale, style, colorProp} = context.props.hideout;  // get props from hideout
-                            const value = feature.properties[colorProp];  // get value the determines the color
-                            for (let i = 0; i < classes.length; ++i) {
-                                if (value > classes[i]) {
-                                    style.fillColor = colorscale[i];  // set the fill color according to the class
-                                }
-                            }
-                            return style;
-                        }""")
+            
+            
+                        cont_layer = dl.GeoJSON(id = 'ctab-recepts', format="geobuf",
+                                                data=pointbuf,
+                                                options = dict(pointToLayer=draw_hoverfac),
+                                                )
                         
                         contmap = [
                             
@@ -989,7 +1174,7 @@ class HEM4dash():
                                                             
                                                             ),
                                                      
-                                                     # roads
+                                                     ct_roads
                                                                                      
                                                  ]
                                                  
@@ -1021,19 +1206,17 @@ class HEM4dash():
                           Input('ctab-upload-data', 'filename'),
                           Input('ctab-upload-data', 'contents'),
                          )
-
+            
             def store_rawdata(filelist, contents):
-                
+                                
                 if filelist is None:
                     alert = no_update
                     data = no_update
                     facname = no_update
                                     
                 else:
-                    # print(filelist)
-                    # print('list length is ', len(filelist))
                     if len(filelist) > 2:
-                        alert = make_alert("Only load 1 or 2 files")
+                        alert = self.make_alert("Only load 1 or 2 files")
                         data = no_update
                         facname = no_update
                                                 
@@ -1047,15 +1230,14 @@ class HEM4dash():
                                 goodcontents.append(contents[i])
                             else:
                                 facname = no_update
-                        # print('Sublist is ', goodnames)
                         
                         if len(goodnames) == 0:
-                            alert = make_alert("No ring or block csv files selected")
+                            alert = self.make_alert("No ring or block csv files selected")
                             data = no_update
                             facname = no_update
                             
                         elif len(goodnames) == 2 and (goodnames[0].split('_')[0] != goodnames[1].split('_')[0]):
-                            alert = make_alert("Facility names for the files don't match")
+                            alert =self.make_alert("Facility names for the files don't match")
                             data = no_update
                             facname = no_update
                                     
@@ -1094,20 +1276,16 @@ class HEM4dash():
                                                 
                             alert=no_update
                             data = alldfs.to_dict('records')
-                            
-                            print(alldfs.head())
                                             
                     return data, alert, facname
                 
                 
-            # Take the df of the concatenated raw data and trim down the columns to chosen metric
-                
+            # Take the df of the concatenated raw data and trim down the columns to chosen metric               
             @app.callback(Output('ctab-store-metricdata', 'data'),
                                                       
                           Input('ctab-store-rawdata', 'data'),
                           Input('ctab-metricdrop', 'value')
-                      )
-
+                      )            
             def send_metdata(indata, metric):
                 if indata is None:
                     return no_update
@@ -1122,15 +1300,14 @@ class HEM4dash():
                                    
                         outdata = dff.to_dict('records')
                         return outdata
-              
+
+                
             @app.callback(
                     Output("ctab-offcanvas0", "is_open"),
 
                     Input("ctab-open-offcanvas0", "n_clicks"),
                     State("ctab-offcanvas0", "is_open")
                     )
-
-
             def toggle_offcanvas0(n1, is_open):
                 if n1:
                     return not is_open
