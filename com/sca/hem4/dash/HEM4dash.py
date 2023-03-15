@@ -1037,7 +1037,6 @@ class HEM4dash():
                                             (x_grid, y_grid), method = 'linear', rescale=True)
                         
                         blockf = [True for i in filelist if 'block' in i]
-                                        
                         if blockf and blockf[0] == True and len(blockf) == 1:
                             datamin = gdf[metric].min()
                         else:
@@ -1186,7 +1185,6 @@ class HEM4dash():
                                                                                                         background = 'white', opacity = .9))
                             ]
                         
-                        # return polydata, hideout, ctg, colorscale, opac
                         
                         if comp_id in ['ctab-opacdrop','ctab-rampdrop', 'ctab-sigfigdrop', 'ctab-classinput']:
                             center = no_update
