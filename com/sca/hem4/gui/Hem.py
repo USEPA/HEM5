@@ -348,7 +348,7 @@ class Hem(Page):
                 self.model.facids = self.model.faclist.dataframe['fac_id']
 
                 # Update the UI
-                [self.nav.log.scr.insert(tk.INSERT, msg) for msg in self.model.faclist.log]
+                [self.nav.log.scr.insert(tk.END, msg) for msg in self.model.faclist.log]
                 #            container.configure(bg='light green')
                 self.faclbl.set('')
                 self.faclbl.set(fullpath.split("\\")[-1])
@@ -397,7 +397,7 @@ class Hem(Page):
                 if self.model.hapemis.dataframe.empty == False:
 
                     # Update the UI
-                    [self.nav.log.scr.insert(tk.INSERT, msg) for msg in self.model.hapemis.log]
+                    [self.nav.log.scr.insert(tk.END, msg) for msg in self.model.hapemis.log]
 
                     self.haplbl.set('')
                     self.haplbl.set(fullpath.split("\\")[-1])
@@ -441,7 +441,7 @@ class Hem(Page):
                         self.reset_inputs('emisloc')
 
                         # Update the UI
-                        [self.nav.log.scr.insert(tk.INSERT, msg) for msg in self.model.emisloc.log]
+                        [self.nav.log.scr.insert(tk.END, msg) for msg in self.model.emisloc.log]
 
                         self.emislbl.set('')
                         self.emislbl.set(fullpath.split("\\")[-1])
@@ -538,7 +538,7 @@ class Hem(Page):
 
                 self.model.model_optns['ureceptr'] = True
                 # Update the UI
-                [self.nav.log.scr.insert(tk.INSERT, msg) for msg in self.model.ureceptr.log]
+                [self.nav.log.scr.insert(tk.END, msg) for msg in self.model.ureceptr.log]
                 #            container.configure(bg='light green')
 
                 self.optional.urlbl.set('')
@@ -1108,8 +1108,8 @@ class Hem(Page):
         print('after_callback got', message)
         if message is not None:
             self.nav.log.scr.configure(state='normal')
-            self.nav.log.scr.insert(tk.INSERT, message)
-            self.nav.log.scr.insert(tk.INSERT, "\n")
+            self.nav.log.scr.insert(tk.END, message)
+            self.nav.log.scr.insert(tk.END, "\n")
             self.nav.log.scr.configure(state='disabled')
             self.nav.log.after(25, self.after_callback)
 

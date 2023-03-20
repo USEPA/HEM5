@@ -101,7 +101,7 @@ class DepositionDepletion(Page):
             if self.model.partdep.dataframe.empty == False:
 
                 # Update the UI
-                [self.nav.nav.log.scr.insert(tk.INSERT, msg) for msg in self.model.partdep.log]
+                [self.nav.nav.log.scr.insert(tk.END, msg) for msg in self.model.partdep.log]
                 #            container.configure(bg='light green')
 
                 self.partlbl.set('')
@@ -125,7 +125,7 @@ class DepositionDepletion(Page):
 
 
                 # Update the UI
-                [self.nav.nav.log.scr.insert(tk.INSERT, msg) for msg in self.model.landuse.log]
+                [self.nav.nav.log.scr.insert(tk.END, msg) for msg in self.model.landuse.log]
                 #            container.configure(bg='light green')
 
                 self.landlbl.set('')
@@ -149,7 +149,7 @@ class DepositionDepletion(Page):
 
 
                 # Update the UI
-                [self.nav.nav.log.scr.insert(tk.INSERT, msg) for msg in self.model.seasons.log]
+                [self.nav.nav.log.scr.insert(tk.END, msg) for msg in self.model.seasons.log]
                 #            container.configure(bg='light green')
 
                 self.seasonlbl.set('')

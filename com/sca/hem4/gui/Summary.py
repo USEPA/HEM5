@@ -465,8 +465,8 @@ class Summary(Page):
             # write to log
             self.logfile.write(str(datetime.now()) + ":    " + running_message + "\n")
             self.nav.log.scr.configure(state='normal')
-            self.nav.log.scr.insert(tk.INSERT, running_message)
-            self.nav.log.scr.insert(tk.INSERT, "\n")
+            self.nav.log.scr.insert(tk.END, running_message)
+            self.nav.log.scr.insert(tk.END, "\n")
             self.nav.log.scr.configure(state='disabled')
 
             self.titleLabel.configure(image=self.nav.greenIcon)
@@ -477,8 +477,8 @@ class Summary(Page):
                 report_message = "Creating " + reportName + " report."
 
                 self.nav.log.scr.configure(state='normal')
-                self.nav.log.scr.insert(tk.INSERT, report_message)
-                self.nav.log.scr.insert(tk.INSERT, "\n")
+                self.nav.log.scr.insert(tk.END, report_message)
+                self.nav.log.scr.insert(tk.END, "\n")
                 self.nav.log.scr.configure(state='disabled')
 
                 self.logfile.write(str(datetime.now()) + ":    " + report_message + "\n")
@@ -489,16 +489,16 @@ class Summary(Page):
                 if summaryMgr.status:
                     report_complete = reportName +  " complete."
                     self.nav.log.scr.configure(state='normal')
-                    self.nav.log.scr.insert(tk.INSERT, report_complete)
-                    self.nav.log.scr.insert(tk.INSERT, "\n")
+                    self.nav.log.scr.insert(tk.END, report_complete)
+                    self.nav.log.scr.insert(tk.END, "\n")
                     self.nav.log.scr.configure(state='disabled')
                     self.logfile.write(str(datetime.now()) + ":    " + report_complete + "\n")
                 else:
                     break
 
             self.nav.log.scr.configure(state='normal')
-            self.nav.log.scr.insert(tk.INSERT, "Risk Summary Reports Finished.")
-            self.nav.log.scr.insert(tk.INSERT, "\n")
+            self.nav.log.scr.insert(tk.END, "Risk Summary Reports Finished.")
+            self.nav.log.scr.insert(tk.END, "\n")
             self.nav.log.scr.configure(state='disabled')
             self.logfile.write(str(datetime.now()) + ":    " + "Risk Summary Reports Finished." + "\n")
 
