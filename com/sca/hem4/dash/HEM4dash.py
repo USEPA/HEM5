@@ -504,9 +504,9 @@ class HEM4dash():
 #                dcc.Input(id="input2", type="hidden"),
                 
                 html.Div([
-                        html.Hr(),    
-                        html.H1("HEM4 Summary Results for " + self.SCname + " Model Run", style={'text-align':'center', 'font-weight': 'bold'}),
-                        html.Hr(),
+                        # html.Hr(),    
+                        html.H2("HEM4 Summary Results for " + self.SCname + " Model Run", style={'text-align':'center', 'font-weight': 'bold'}),
+                        # html.Hr(),
                         ]),
             
             dcc.Tabs([
@@ -822,7 +822,7 @@ class HEM4dash():
                
             ]),
             
-            dcc.Tab(label="Acute Screening Estimates",children=[
+            dcc.Tab(label="Acute Screen",children=[
                     
                 html.Div([
                     html.Hr(),
@@ -833,7 +833,7 @@ class HEM4dash():
             
             ]),
             
-            dcc.Tab(label="Chronic Risk Summary Table",children=[
+            dcc.Tab(label="Summary Table",children=[
                     
                  html.Div([
                     html.Hr(),
@@ -1127,13 +1127,7 @@ class HEM4dash():
                                 ctg.append(f'<b>{self.riskfig(levbot, digz)} - {self.riskfig(val, digz)}</b>')
                                     
                         hideout=dict(colorscale=colorscale, classes=classes, style=style, colorProp='fakenums')
-            
-            
-                        cont_layer = dl.GeoJSON(id = 'ctab-recepts', format="geobuf",
-                                                data=pointbuf,
-                                                options = dict(pointToLayer=draw_hoverfac),
-                                                )
-                        
+                                                
                         contmap = [
                             
                                 dl.MeasureControl(position="topleft", primaryLengthUnit="meters", primaryAreaUnit="hectares",
@@ -1141,7 +1135,9 @@ class HEM4dash():
                             
                                 dl.LayersControl([ct_esri, ct_dark, ct_light, ct_openstreet] +
                                                  
-                                                  [dl.Overlay(
+                                                  [
+                                                      
+                                                     dl.Overlay(
                                                             
                                                             dl.LayerGroup(
                                                             dl.GeoJSON(id = 'ctab-recepts', format="geobuf",
@@ -1258,10 +1254,23 @@ class HEM4dash():
                                 tempdf = currdf.copy()
                                 tempdf['MIR'] = tempdf['MIR']*1000000
                                 
-                                # Limit the number of block receptors (don't need so many and so far out)
+                                # Limit the number of block receptors (don't need so many nor so far out)
                                 if 'block_summary_chronic.csv' in item:
-                                    midlat = (tempdf['Latitude'].max() + tempdf['Latitude'].min())/2
-                                    midlon = (tempdf['Longitude'].max() + tempdf['Longitude'].min())/2
+                                                                        
+                                    try:
+                                        for metric in metrics:
+                                            if tempdf[metric].max() == 0:
+                                                pass
+                                            else:
+                                                maxid = tempdf[metric].idxmax()
+                                                midlat = tempdf.loc[maxid, 'Latitude']
+                                                midlon = tempdf.loc[maxid, 'Longitude']
+                                                break
+                                    
+                                    except:
+                                        midlat = (tempdf['Latitude'].max() + tempdf['Latitude'].min())/2
+                                        midlon = (tempdf['Longitude'].max() + tempdf['Longitude'].min())/2
+                                    
                                     delta = .1
                                     finaldf = tempdf[tempdf['Latitude'].between(midlat-delta, midlat+delta) & tempdf['Longitude'].between(midlon-delta, midlon+delta)]
                                 else:
