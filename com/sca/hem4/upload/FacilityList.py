@@ -1,6 +1,8 @@
 import time
 from datetime import datetime
 from math import isnan
+import pandas as pd
+import numpy as np
 
 from com.sca.hem4.log import Logger
 from com.sca.hem4.model.Model import *
@@ -38,6 +40,10 @@ emis_var = 'emis_var'
 annual = 'annual'
 period_start = 'period_start'
 period_end = 'period_end'
+flagpole = 'flagpole'
+flagYN = 'flagYN'
+flagdef = 'flagdef'
+
 class FacilityList(InputFile):
     
     def __init__(self, path, metlib):
@@ -54,12 +60,12 @@ class FacilityList(InputFile):
                                ring1,urban_pop,hivalu]
         self.strColumns = [fac_id,met_station,rural_urban,acute,elev,dep,depl,pdep,pdepl,
                            vdep,vdepl,user_rcpt,bldg_dw,fastall,fac_center,ring_distances,emis_var,
-                           annual,period_start,period_end]
+                           annual,period_start,period_end,flagpole]
 
         faclist_df = self.readFromPath(
             (fac_id,met_station,rural_urban,urban_pop,max_dist,model_dist,radial,circles,overlap_dist, ring1,
              fac_center,ring_distances, acute,
-             hours,multiplier,hivalu,dep,depl,pdep,pdepl,vdep,vdepl,elev,
+             hours,multiplier,hivalu,dep,depl,pdep,pdepl,vdep,vdepl,elev,flagpole,
              user_rcpt,bldg_dw,fastall,emis_var,annual,period_start,period_end)
         )
         self.dataframe = faclist_df
@@ -78,7 +84,8 @@ class FacilityList(InputFile):
                                       user_rcpt:{"nan":"N"}, bldg_dw:{"nan":"N"},
                                       fastall:{"nan":"N"}, acute:{"nan":"N"}, fac_center:{"nan":""},
                                       'ring_distances':{"nan":""}, emis_var:{"nan":"N"}, annual:{"nan":"Y"},
-                                      period_start:{"nan":""}, period_end:{"nan":""}}, inplace=True)
+                                      period_start:{"nan":""}, period_end:{"nan":""},
+                                      flagpole:{"nan":"N"}}, inplace=True)
 
         cleaned = cleaned.reset_index(drop = True)
 
@@ -95,6 +102,15 @@ class FacilityList(InputFile):
         cleaned[emis_var] = cleaned[emis_var].str.upper()
         cleaned[annual] = cleaned[annual].str.upper()
         cleaned[elev] = cleaned[elev].str.upper()
+                
+        # divide flagpole into Y/N part and default height
+        cleaned[[flagYN, flagdef]] = cleaned[flagpole].str.split(",", expand=True)
+        cleaned[flagdef] = cleaned[flagdef].replace({None:'0'})
+        cleaned[flagdef] = pd.to_numeric(cleaned[flagdef], errors='coerce')
+        cleaned[flagdef] = cleaned[flagdef].replace(np.nan, 0, regex=True)
+        cleaned[flagdef] = cleaned[flagdef].round()
+        cleaned[flagdef] = cleaned[flagdef].astype(int)
+        cleaned[flagYN] = cleaned[flagYN].str.upper()
 
         return cleaned
 
@@ -294,11 +310,14 @@ class FacilityList(InputFile):
                 Logger.logMessage("Facility " + facility + ": Invalid value for pdepl. Defaulting to 'NO'.")
                 row[pdepl] = 'NO'
 
-            # elev, user_rcpt, bldg_dw, fastall, emis_var
+            # elev, flagYN, user_rcpt, bldg_dw, fastall, emis_var
             valid = ['Y', 'N']
             if row[elev] not in valid:
                 Logger.logMessage("Facility " + facility + ": Invalid value for elev. Defaulting to 'Y'.")
                 row[elev] = 'Y'
+            if row[flagYN] not in valid:
+                Logger.logMessage("Facility " + facility + ": Invalid value for flagpole. Defaulting to 'N'.")
+                row[flagYN] = 'N'
             if row[user_rcpt] not in valid:
                 Logger.logMessage("Facility " + facility + ": Invalid value for user_rcpt. Defaulting to 'N'.")
                 row[user_rcpt] = 'N'

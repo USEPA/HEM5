@@ -20,6 +20,7 @@ net_id = 'net_id';
 angle = 'angle';
 concdate = 'concdate';
 rank = 'rank';
+flag_hgt = 'flag_hgt';
 
 class Model():
 
