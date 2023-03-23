@@ -334,8 +334,7 @@ class FacilityPrep():
                     # using census data
                     user_recs.loc[:, 'fips'] = '00000'
                     user_recs.loc[:,'blockid'] = user_recs['rec_id'].str.zfill(15)
-                
-                  
+                                 
                 # Check for any user receptors that are already in the census data based on coordinates
                 dups = pd.merge(self.innerblks, user_recs, how='inner', on=[utme, utmn])
                 if dups.empty == False:
@@ -343,7 +342,7 @@ class FacilityPrep():
                     user_recs = user_recs[~user_recs.set_index([utme, utmn]).index.isin(dups.set_index([utme, utmn]).index)].copy()
                 
                     msg = 'The following user receptors have coordinates that are already in the Census data. They ' + \
-                            ' will be removed from the user receptor list. ' + str(dups['rec_id_y'].tolist())
+                            ' will be removed from the user receptor list. ' + str(dups['rec_id'].tolist())
                     Logger.logMessage(msg)
 
                 # Check for any user receptors that are already in the census data based on blockid
@@ -355,12 +354,12 @@ class FacilityPrep():
                         user_recs = user_recs[~user_recs.set_index(['blockid']).index.isin(dups.set_index(['blockid']).index)].copy()
                     
                         msg = 'The following user receptors have IDs that are already in the Census data. They ' + \
-                                ' will be removed from the user receptor list. ' + str(dups['rec_id_y'].tolist())
+                                ' will be removed from the user receptor list. ' + str(dups['rec_id'].tolist())
                         Logger.logMessage(msg)
                 
                 # Put into model
                 self.model.userrecs_df = user_recs
-    
+                    
                 # Append user_recs to innerblks
                 self.innerblks = pd.concat([self.innerblks, user_recs], ignore_index=True)
 

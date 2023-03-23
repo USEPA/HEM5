@@ -87,8 +87,7 @@ class FacilityRunner():
                 
             runtype = self.set_runtype(depoYN, depotype)
             self.model.model_optns['runtype'] = runtype
-            
-            
+                        
             #run aermod
             self.run(fac_folder)
 

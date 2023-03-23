@@ -8,6 +8,7 @@ import pandas as pd
 
 rec_type = 'rec_type';
 rec_id = 'rec_id';
+flag_hgt = 'flag_hgt';
 
 class UserReceptors(DependentInputFile):
 
@@ -18,21 +19,23 @@ class UserReceptors(DependentInputFile):
     def createDataframe(self):
         
         # Specify dtypes for all fields
-        self.numericColumns = [lon, lat, elev, hill]
+        self.numericColumns = [lon, lat, elev, hill, flag_hgt]
         self.strColumns = [fac_id,location_type, utmzone, rec_type, rec_id]
 
         if self.csvFormat:
             ureceptor_df = self.readFromPathCsv(
-                (fac_id, location_type, lon, lat, utmzone, elev, rec_type, rec_id, hill))
+                (fac_id, location_type, lon, lat, utmzone, elev, rec_type, rec_id, hill, flag_hgt))
         else:
             ureceptor_df = self.readFromPath(
-                (fac_id, location_type, lon, lat, utmzone, elev, rec_type, rec_id, hill))
+                (fac_id, location_type, lon, lat, utmzone, elev, rec_type, rec_id, hill, flag_hgt))
 
         self.dataframe = ureceptor_df
 
     def clean(self, df):
         cleaned = df
         cleaned.replace(to_replace={fac_id:{"nan":""}}, inplace=True)
+        cleaned.replace(to_replace={flag_hgt:{"nan":0}}, inplace=True)
+        cleaned[flag_hgt] = cleaned[flag_hgt].round().astype(int)
         cleaned = cleaned.reset_index(drop = True)
 
         # upper case of selected fields
@@ -62,14 +65,6 @@ class UserReceptors(DependentInputFile):
             for d in duplicates:
                 Logger.logMessage(d)
             return None
-
-#        invalidchar_df = df[(df[rec_type]=='P') & ((df[rec_id].str.contains('S')) | (df[rec_id].str.contains('M')))]
-#        if len(invalidchar_df) > 0:
-#            Logger.logMessage("At least one User Receptor of type P contains an 'S' or 'M' in its ID. These letters "
-#                              "cannot be used in the ID of a populated user receptor. Please adjust the ID.")
-#            messagebox.showinfo("Invalid User Receptor ID", "At least one User Receptor of type P contains an 'S' or 'M' in its ID. These letters "
-#                              "cannot be used in the ID of a populated user receptor. Please adjust the ID.")
-#            return None
         
         for index, row in df.iterrows():
 
@@ -87,6 +82,7 @@ class UserReceptors(DependentInputFile):
                 messagebox.showinfo("Lon value out of range", "Facility " + facility + ": lon value " + str(row[lon]) + " out of range " +
                                   "in the User Receptors List.")
                 return None
+            
             if row[lat] > maxlat or row[lat] < minlat or math.isnan(row[lat]):
                 Logger.logMessage("Facility " + facility + ": lat value " + str(row[lat]) + " out of range " +
                                   "in the User Receptors List.")
@@ -94,6 +90,13 @@ class UserReceptors(DependentInputFile):
                                   "in the User Receptors List.")
                 return None
 
+            if row[flag_hgt] < 0:
+                Logger.logMessage("Facility " + facility + ": flagpole height value " + str(row[flag_hgt]) + " cannot be negative " +
+                                  "in the User Receptors List.")
+                messagebox.showinfo("Flagpole height value is negative", "Facility " + facility + ": flagpole height value " + str(row[flag_hgt]) + " cannot be negative " +
+                                  "in the User Receptors List.")
+                return None
+                
             if loc_type == 'U':
                 zone = row[utmzone]
                 if zone.endswith('N') or zone.endswith('S'):
