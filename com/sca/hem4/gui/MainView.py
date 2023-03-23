@@ -14,9 +14,11 @@ from com.sca.hem4.gui.Summary import Summary
 from com.sca.hem4.gui.EJ import EJ
 
 from com.sca.hem4.log.Logger import Logger
+import traceback
 
 class MainView(tk.Frame):
     def __init__(self, master, *args, **kwargs):
+        master.report_callback_exception = self.report_callback_exception
         tk.Frame.__init__(self, master=master, *args, **kwargs)
 
         # set mainframe background color
@@ -344,5 +346,11 @@ class MainView(tk.Frame):
         else:
             Logger.close(True)
             self.home.destroy()
-            
-        
+
+    def report_callback_exception(self, *args):
+        err = traceback.format_exception(*args)
+        Logger.logMessage(''.join(err))
+        tk.messagebox.showerror('Exception', "Oops! Something went wrong. Please check the logs for more information.")
+
+# but this works too
+# tk.Tk.report_callback_exception = show_error
