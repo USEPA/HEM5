@@ -102,8 +102,13 @@ class FacilityList(InputFile):
         cleaned[emis_var] = cleaned[emis_var].str.upper()
         cleaned[annual] = cleaned[annual].str.upper()
         cleaned[elev] = cleaned[elev].str.upper()
-                
-        # divide flagpole into Y/N part and default height
+ 
+               
+        # Divide flagpole into Y/N part and default height part
+        # First make sure all flagpole values contain a comma and height value
+        mask = (cleaned[flagpole].str.contains(','))
+        cleaned.loc[~mask, flagpole] = df[flagpole].astype(str) + ',0'
+
         cleaned[[flagYN, flagdef]] = cleaned[flagpole].str.split(",", expand=True)
         cleaned[flagdef] = cleaned[flagdef].replace({None:'0'})
         cleaned[flagdef] = pd.to_numeric(cleaned[flagdef], errors='coerce')

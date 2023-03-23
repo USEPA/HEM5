@@ -153,8 +153,6 @@ class Runstream():
         self.inp_f.write(co3)
         self.inp_f.write(co4)
         
-        #determine alternate receptor status
-        altrec = self.model.altRec_optns.get("altrec", None)
         
         # Determine urban/rural dispersion setting
         if self.facoptn_df['rural_urban'].values[0] == 'U':
@@ -781,12 +779,17 @@ class Runstream():
         
         """
         self.polar_df = polar_df
-
         
-        # Add default flagpole height to polar DF and discrete DF if needed
+        # If flagpole used, add default flagpole height to polar DF and discrete DF
+        # and create a list of flagpole heights.
         if self.flagpole == 'Y':
             self.polar_df[flag_hgt] = self.flaghgt
-            discrecs_df[flag_hgt] = discrecs_df[flag_hgt].replace({np.nan:self.flaghgt})
+            if flag_hgt not in discrecs_df.columns:
+                discrecs_df[flag_hgt] = self.flaghgt
+            else:
+                # replace nan flag height in discrete DF, user receptors may have flag heights
+                discrecs_df[flag_hgt] = discrecs_df[flag_hgt].replace({np.nan:self.flaghgt})
+            recf = list(discrecs_df[flag_hgt][:]) # flagpole height
             
         newline = "\n"
         
@@ -799,7 +802,6 @@ class Runstream():
         recy = list(discrecs_df[utmn][:])
         rece = list(discrecs_df[elev][:]) # Elevations
         rech = list(discrecs_df[hill][:]) # Hill height
-        recf = list(discrecs_df[flag_hgt][:]) # flagpole height
 
         for i in np.arange(len(recx)):
             if self.eleva == "Y":
@@ -811,7 +813,7 @@ class Runstream():
                     redec = ("RE DISCCART  " + str("{:.0f}".format(recx[i])) + " " + str("{:.0f}".format(recy[i])) + 
                              " " + str(normal_round(rece[i])) + " " + 
                              str(normal_round(rech[i])) + " " +
-                             str(recf[i]) + "\n")                    
+                             str(normal_round(recf[i])) + "\n")                    
             else:
                 if self.flagpole == "N":
                     redec = ("RE DISCCART  " + str("{:.0f}".format(recx[i])) + " " + 
@@ -819,7 +821,7 @@ class Runstream():
                 else:
                     redec = ("RE DISCCART  " + str("{:.0f}".format(recx[i])) + " " + 
                             str("{:.0f}".format(recy[i])) + " " +
-                            str(recf[i]) + "\n")
+                            normal_round(str(recf[i])) + "\n")
             self.inp_f.write(redec)
 
             

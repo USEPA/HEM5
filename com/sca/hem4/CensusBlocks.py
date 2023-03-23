@@ -528,7 +528,7 @@ def getBlocksFromAltRecs(facid, cenx, ceny, cenlon, cenlat, utmZone, hemi, maxdi
     # Compute distance from the center of the facility to each alternate receptor
     reccoors = np.array(tuple(zip(altrecs.lon, altrecs.lat)))
     altrecs[distance] = haversineDistance(reccoors, cenlon, cenlat)
-
+    
     #subset the altrecs dataframe to blocks that are within the max distance of the facility
     modelblks = altrecs.query('distance <= @maxdist')
 
