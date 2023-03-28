@@ -172,6 +172,32 @@ class InputFile(ABC):
                     return None
                 else:
                     return plf
+
+
+    # Read values in from a source .csv file using the polars library and use Lazy
+    # evaluation. A lazyframe is created for future querying.
+    def readFromPathCsvPolarsDF(self):
+        with open(self.path, "rb") as f:
+                        
+            try:
+                
+                plf = pl.scan_csv(f.name, with_column_names=(lambda cols: self.colnames), dtypes=self.datatypes)
+                df = plf.collect()
+                                
+            except BaseException as e:
+                
+                df = None
+                Logger.logMessage(str(e))
+                
+            else:
+
+                cleaned = self.clean(df)
+                validated = self.validate(cleaned)
+                
+                if validated is None:
+                    return None
+                else:
+                    return validated
                 
                 
                 

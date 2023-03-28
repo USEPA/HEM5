@@ -6,6 +6,7 @@ from com.sca.hem4.upload.FacilityList import *
 
 from tkinter import messagebox
 import math
+import polars as pl
 
 
 rec_type = 'rec_type';
@@ -19,22 +20,32 @@ class AltReceptors(InputFile):
     def createDataframe(self):
         
         # Specify dtypes for all fields
-        self.numericColumns = [lon, lat, elev, hill, population]
-        self.strColumns = [location_type, utmzone, rec_type, rec_id]
+        # self.numericColumns = [lon, lat, elev, hill, population]
+        # self.strColumns = [location_type, utmzone, rec_type, rec_id]
+        self.colnames = [rec_id, rec_type, location_type, lon, lat
+                          , utmzone, elev, hill, population]
+        self.datatypes = {rec_id:pl.Utf8, rec_type:pl.Utf8, location_type:pl.Utf8
+                          , lon:pl.Float64, lat:pl.Float64
+                          , utmzone:pl.Int64, elev:pl.Float64, hill:pl.Float64
+                          , population:pl.Int64}
+                
+        altreceptor_df = self.readFromPathCsvPolarsDF()
 
-        altreceptor_df = self.readFromPathCsv(
-                (rec_id, rec_type, location_type, lon, lat, utmzone, elev, hill, population))
-
-        self.dataframe = altreceptor_df
-
+        # Note: this is a Polars dataframe
+        self.dataframe = altreceptor_df.collect()
+        
     def clean(self, df):
         cleaned = df
-        cleaned.replace(to_replace={rec_id:{"nan":""}}, inplace=True)
-        cleaned = cleaned.reset_index(drop = True)
+        cleaned.select([pl.exclude(rec_id), pl.col(rec_id).fill_null('')])
+        cleaned.select([pl.exclude(location_type), pl.col(location_type).str.to_uppercase()])
+        cleaned.select([pl.exclude(rec_type), pl.col(rec_type).str.to_uppercase()])
+        
+        # cleaned.replace(to_replace={rec_id:{"nan":""}}, inplace=True)
+        # cleaned = cleaned.reset_index(drop = True)
 
         # upper case of selected fields
-        cleaned[location_type] = cleaned[location_type].str.upper()
-        cleaned[rec_type] = cleaned[rec_type].str.upper()
+        # cleaned[location_type] = cleaned[location_type].str.upper()
+        # cleaned[rec_type] = cleaned[rec_type].str.upper()
 
         return cleaned
 

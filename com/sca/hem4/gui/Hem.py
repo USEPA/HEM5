@@ -556,7 +556,8 @@ class Hem(Page):
 
             self.uploader.upload("alt receptors", fullpath)
 
-            if self.model.altreceptr.dataframe.empty == False:
+            # if self.model.altreceptr.dataframe.empty == False:
+            if self.model.altreceptr.dataframe is not None:
                 self.model.altRec_optns["path"] = fullpath
                 self.model.altRec_optns["altrec"] = True
 
