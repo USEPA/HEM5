@@ -44,15 +44,6 @@ from sigfig import round as roundsf
 import io
 import base64
 
-dbc_stylesheets = [dbc.themes.MORPH]
-
-bases = get_basemaps()    
-ct_esri = bases[0]
-ct_dark = bases[1]
-ct_light = bases[2]
-ct_openstreet = bases[3]
-ct_roads = bases[4]
-
 
 class HEM4dash():
     
@@ -118,8 +109,18 @@ class HEM4dash():
             
         ## Rather than using the external css, could use local "assets" dir that has the css file
         # external_stylesheets = ['https://codepen.io/chriddyp/pen/bWLwgP.css']
+        dbc_stylesheets = [dbc.themes.MORPH]
+        chroma = "https://cdnjs.cloudflare.com/ajax/libs/chroma-js/2.1.0/chroma.min.js"  # js lib used for colors
+
+        bases = get_basemaps()    
+        ct_esri = bases[0]
+        ct_dark = bases[1]
+        ct_light = bases[2]
+        ct_openstreet = bases[3]
+        ct_places = bases[4]
+        ct_roads = bases[5]        
         
-        app = dash.Dash(__name__, external_stylesheets=dbc_stylesheets)
+        app = dash.Dash(__name__, external_stylesheets=dbc_stylesheets, external_scripts=[chroma])
         app.title = 'HEM4 Summary Results: ' + self.SCname
                 
         mapbox_access_token = 'pk.eyJ1IjoiYnJ1enp5IiwiYSI6ImNrOTE5YmwzdDBhMXYzbW8yMjY4aWJ3eHQifQ.5tNjnlK2Y8b-U1kvfPP8FA'
@@ -1169,7 +1170,7 @@ class HEM4dash():
                                                             
                                                             ),
                                                      
-                                                     ct_roads
+                                                     ct_roads, ct_places
                                                                                      
                                                  ]
                                                  
