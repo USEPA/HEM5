@@ -36,17 +36,17 @@ def get_basemaps():
                                name = 'Light', checked = False)
     openstreet = dl.BaseLayer(dl.TileLayer(url='https://tile.openstreetmap.org/{z}/{x}/{y}.png',
                                attribution = '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'), name='OpenStreetMap')
-    # roads =  dl.Overlay(dl.TileLayer(url = 'https://tigerweb.geo.census.gov/arcgis/rest/services/TIGERweb/Transportation/MapServer/tile/{z}/{y}/{x}',
-    #                                  attribution = 'U.S. Census Bureau'),
-    #               name = 'Roads')
-    roads =  dl.Overlay(dl.TileLayer(url = 'https://{s}.basemaps.cartocdn.com/light_only_labels/{z}/{x}/{y}{r}.png',
+    roads =  dl.Overlay(dl.TileLayer(url = 'https://tigerweb.geo.census.gov/arcgis/rest/services/TIGERweb/Transportation/MapServer/tile/{z}/{y}/{x}',
+                                      attribution = 'U.S. Census Bureau'),
+                  name = 'Roads')
+    places =  dl.Overlay(dl.TileLayer(url = 'https://{s}.basemaps.cartocdn.com/light_only_labels/{z}/{x}/{y}{r}.png',
                                       attribution = '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors &copy; <a href="https://carto.com/attributions">CARTO</a>'),
-                  name = 'Roads/Places')
+                  name = 'Places/Roads')
     # roads =  dl.Overlay(dl.TileLayer(url = 'https://stamen-tiles-{s}.a.ssl.fastly.net/terrain-labels/{z}/{x}/{y}{r}.{ext}',
-    #                                  attribution = 'Map tiles by <a href="http://stamen.com">Stamen Design</a>, <a href="http://creativecommons.org/licenses/by/3.0">CC BY 3.0</a> &mdash; Map data &copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'),
-    #               name = 'Roads/Places')
+    #                                   attribution = 'Map tiles by <a href="http://stamen.com">Stamen Design</a>, <a href="http://creativecommons.org/licenses/by/3.0">CC BY 3.0</a> &mdash; Map data &copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'),
+    #               name = 'Roads')
     
-    return esri, dark, light, openstreet, roads
+    return esri, dark, light, openstreet, places, roads
 
 
     
