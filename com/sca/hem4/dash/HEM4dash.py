@@ -165,6 +165,10 @@ class HEM4dash():
         mapmets = ['MIR (in a million)', 'Respiratory HI', 'Liver HI','Neurological HI','Developmental HI',
                    'Reproductive HI', 'Kidney HI', 'Ocular HI', 'Endocrine HI', 'Hematological HI',
                    'Immunological HI','Skeletal HI', 'Spleen HI', 'Thyroid HI']
+        # Define center coordinates of facilities and find their count
+        cenlat = (df_max_can['Facility Center Lat'].max() + df_max_can['Facility Center Lat'].min())/2
+        cenlon = (df_max_can['Facility Center Lon'].max() + df_max_can['Facility Center Lon'].min())/2
+        center = [cenlat, cenlon]
         numFacs = df_max_can['Facility'].count()
         
         try:
@@ -466,7 +470,7 @@ class HEM4dash():
                          'ocean_r', 'tab10_r',
                          'Blues_r', 'Greens_r', 'Oranges_r', 'Reds_r']
 
-            draw_hoverfac = assign("""function(feature, latlng){
+            draw_recepts = assign("""function(feature, latlng){
                 const square = L.icon({iconUrl: `/assets/greensquare.png`, iconSize: [10, 10]});
                 
                 return L.marker(latlng, {icon: square});
@@ -482,7 +486,7 @@ class HEM4dash():
                 }).addTo(map);}
             """)
 
-            style_handle = assign("""function(feature, context){
+            cont_style = assign("""function(feature, context){
                 const {classes, colorscale, style, colorProp} = context.props.hideout;  // get props from hideout
                 const value = feature.properties[colorProp];  // get value the determines the color
                 for (let i = 0; i < classes.length; ++i) {
@@ -891,8 +895,8 @@ class HEM4dash():
                 dff = df_dashtable 
 #                dff['logmetric'] = np.log10(dff['MIR (in a million)'])
                 
-                cenlat = dff['Facility Center Lat'].mean()
-                cenlon = dff['Facility Center Lon'].mean()
+                # cenlat = dff['Facility Center Lat'].mean()
+                # cenlon = dff['Facility Center Lon'].mean()
                 zoom = 4
                 
                 if scale == 'log':
@@ -1145,8 +1149,8 @@ class HEM4dash():
                                                                        data=pointbuf,
                                                                        cluster=True,
                                                                        superClusterOptions=dict(radius=100, maxZoom = 13),
-                                                                       options = dict(pointToLayer=draw_hoverfac),
-                                                                        # options = dict(pointToLayer=draw_hoverfac, onEachFeature=draw_arrow),
+                                                                       options = dict(pointToLayer=draw_recepts),
+                                                                        # options = dict(pointToLayer=draw_recepts, onEachFeature=draw_arrow),
                                                                       ),
                                                             ),
                                                             name = 'Receptors', checked = False
@@ -1161,7 +1165,7 @@ class HEM4dash():
                                                             dl.LayerGroup(
                                                             dl.GeoJSON(id = 'ctab-contours', format="geojson",
                                                                        data=polydata,
-                                                                       options=dict(style=style_handle),
+                                                                       options=dict(style=cont_style),
                                                                        zoomToBounds = False,
                                                                        hideout=hideout,
                                                                        ),
