@@ -12,7 +12,7 @@ Created on Wed Feb 26 07:07:56 2020
 import dash
 import dash_table
 from dash import Dash, html, Input, Output, State, no_update, dcc
-from dash_extensions.javascript import assign, arrow_function
+from dash_extensions.javascript import assign, arrow_function, Namespace
 from dash_extensions.enrich import callback_context
 import dash_bootstrap_components as dbc
 import dash_leaflet as dl
@@ -111,7 +111,7 @@ class HEM4dash():
         # external_stylesheets = ['https://codepen.io/chriddyp/pen/bWLwgP.css']
         dbc_stylesheets = [dbc.themes.MORPH]
         chroma = "https://cdnjs.cloudflare.com/ajax/libs/chroma-js/2.1.0/chroma.min.js"  # js lib used for colors
-
+        
         bases = get_basemaps()    
         ct_esri = bases[0]
         ct_dark = bases[1]
@@ -457,47 +457,35 @@ class HEM4dash():
             # for column in cols2format_E  +  cols2format_f:
             #     df_dashtable[column] = df_dashtable[column].map(lambda x: '{:.6f}'.format(x))
             
-            # These added for the contour map tab
+            # These are for the facility map tab
+            facs_mapmets = ['MIR (in a million)', 'Respiratory HI', 'Liver HI', 'Neurological HI',
+            'Developmental HI', 'Reproductive HI', 'Kidney HI', 'Ocular HI',
+            'Endocrine HI', 'Hematological HI', 'Immunological HI', 'Skeletal HI',
+            'Spleen HI', 'Thyroid HI', 'Whole body HI']
+
+            blue_scale = ['lightblue', 'darkblue']
+            green_scale = ['lightgreen', 'darkgreen']
+            red_scale = ["#fff5f0","#fee0d2","#fcbba1","#fc9272","#fb6a4a","#ef3b2c","#cb181d","#a50f15","#67000d"]    
+            blue_to_red = ['blue', 'red']
+            purple_to_yellow = ['purple', 'yellow']
+
+            facramps = {'Blue to Red': blue_to_red, 'Purple to Yellow': purple_to_yellow,
+                      'Green Scale': green_scale, 
+                      'Blue Scale' : blue_scale}
+            
+            # These are for the contour map tab
             metrics = ['MIR', 'Respiratory HI', 'Liver HI', 'Neurological HI',
             'Developmental HI', 'Reproductive HI', 'Kidney HI', 'Ocular HI',
             'Endocrine HI', 'Hematological HI', 'Immunological HI', 'Skeletal HI',
             'Spleen HI', 'Thyroid HI', 'Whole body HI']
 
             coloramps = ['viridis', 'magma', 'cividis', 'rainbow', 'gist_earth','terrain','jet', 'turbo',
-                         'ocean', 'tab10',
-                         'Blues', 'Greens', 'Oranges', 'Reds',
-                         'viridis_r', 'magma_r', 'cividis_r', 'rainbow_r', 'gist_earth_r','terrain_r','jet_r', 'turbo_r',
-                         'ocean_r', 'tab10_r',
-                         'Blues_r', 'Greens_r', 'Oranges_r', 'Reds_r']
-
-            draw_recepts = assign("""function(feature, latlng){
-                const square = L.icon({iconUrl: `/assets/greensquare.png`, iconSize: [10, 10]});
-                
-                return L.marker(latlng, {icon: square});
-                }""")
-
-            draw_arrow = assign("""
-            function(feature, layer, context){
-                const map = context.myRef.current.leafletElement._map;
-                L.polylineDecorator(layer, {
-                      patterns: [
-                          {symbol: L.Symbol.arrowHead({pixelSize: 15, pathOptions: {fillOpacity: 1, weight: 2}})}
-                      ]
-                }).addTo(map);}
-            """)
-
-            cont_style = assign("""function(feature, context){
-                const {classes, colorscale, style, colorProp} = context.props.hideout;  // get props from hideout
-                const value = feature.properties[colorProp];  // get value the determines the color
-                for (let i = 0; i < classes.length; ++i) {
-                    if (value > classes[i]) {
-                        style.fillColor = colorscale[i];  // set the fill color according to the class
-                    }
-                }
-                return style;
-            }""")
-                            
-            
+                          'ocean', 'tab10',
+                          'Blues', 'Greens', 'Oranges', 'Reds',
+                          'viridis_r', 'magma_r', 'cividis_r', 'rainbow_r', 'gist_earth_r','terrain_r','jet_r', 'turbo_r',
+                          'ocean_r', 'tab10_r',
+                          'Blues_r', 'Greens_r', 'Oranges_r', 'Reds_r']
+        
             
             app.layout = html.Div([
 
@@ -899,6 +887,15 @@ class HEM4dash():
                 # cenlon = dff['Facility Center Lon'].mean()
                 zoom = 4
                 
+                # draw_facs = assign("""function(feature, latlng, context){
+                #     const {min, max, colorscale, circleOptions, colorProp} = context.props.hideout;
+                #     const csc = chroma.scale(colorscale).domain([min, max]);  // chroma lib to construct colorscale
+                #     circleOptions.fillColor = csc(feature.properties[colorProp]);  // set color based on color prop.
+                #     return L.circleMarker(latlng, circleOptions);  // sender a simple circle marker.
+                # }""")
+                
+                draw_facs = Namespace('HEM_leaflet_functions', 'facs')('draw_facilities')
+                
                 if scale == 'log':
                     prefix = '1E '
                     color = np.log10(dff[metric])
@@ -1130,7 +1127,10 @@ class HEM4dash():
                             else:
                                 levbot = classes[i-1]
                                 ctg.append(f'<b>{self.riskfig(levbot, digz)} - {self.riskfig(val, digz)}</b>')
-                                    
+                                                
+                        draw_recepts = Namespace('HEM_leaflet_functions', 'contour')('draw_receptors')
+                        cont_style = Namespace('HEM_leaflet_functions', 'contour')('draw_contours')
+                        
                         hideout=dict(colorscale=colorscale, classes=classes, style=style, colorProp='fakenums')
                                                 
                         contmap = [
