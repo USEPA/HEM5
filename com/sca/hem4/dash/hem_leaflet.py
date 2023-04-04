@@ -38,7 +38,7 @@ def get_basemaps():
                                attribution = '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'), name='OpenStreetMap')
     roads =  dl.Overlay(dl.TileLayer(url = 'https://tigerweb.geo.census.gov/arcgis/rest/services/TIGERweb/Transportation/MapServer/tile/{z}/{y}/{x}',
                                       attribution = 'U.S. Census Bureau'),
-                  name = 'Roads')
+                  name = 'US Roads')
     places =  dl.Overlay(dl.TileLayer(url = 'https://{s}.basemaps.cartocdn.com/light_only_labels/{z}/{x}/{y}{r}.png',
                                       attribution = '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors &copy; <a href="https://carto.com/attributions">CARTO</a>'),
                   name = 'Places/Roads')

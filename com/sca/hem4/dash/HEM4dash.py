@@ -110,8 +110,9 @@ class HEM4dash():
         ## Rather than using the external css, could use local "assets" dir that has the css file
         # external_stylesheets = ['https://codepen.io/chriddyp/pen/bWLwgP.css']
         dbc_stylesheets = [dbc.themes.MORPH]
-        chroma = "https://cdnjs.cloudflare.com/ajax/libs/chroma-js/2.1.0/chroma.min.js"  # js lib used for colors
         
+        chroma = "https://cdnjs.cloudflare.com/ajax/libs/chroma-js/2.1.0/chroma.min.js"  # js lib used for colors
+               
         bases = get_basemaps()    
         ct_esri = bases[0]
         ct_dark = bases[1]
@@ -123,9 +124,6 @@ class HEM4dash():
         app = dash.Dash(__name__, external_stylesheets=dbc_stylesheets, external_scripts=[chroma])
         app.title = 'HEM4 Summary Results: ' + self.SCname
                 
-        mapbox_access_token = 'pk.eyJ1IjoiYnJ1enp5IiwiYSI6ImNrOTE5YmwzdDBhMXYzbW8yMjY4aWJ3eHQifQ.5tNjnlK2Y8b-U1kvfPP8FA'
-        px.set_mapbox_access_token(mapbox_access_token)
-        
         # Create dataframe of max risks
         fname = self.SCname + "_facility_max_risk_and_hi.xlsx"
         max_rsk_hi = os.path.join(self.dir, fname)
@@ -162,9 +160,9 @@ class HEM4dash():
                'Met Station', 'Distance to Met Station (km)', 'Facility Center Lat', 'Facility Center Lon',
                'Rural or Urban']
         MaxRisk = df_max_can['MIR (in a million)'].max()
-        mapmets = ['MIR (in a million)', 'Respiratory HI', 'Liver HI','Neurological HI','Developmental HI',
-                   'Reproductive HI', 'Kidney HI', 'Ocular HI', 'Endocrine HI', 'Hematological HI',
-                   'Immunological HI','Skeletal HI', 'Spleen HI', 'Thyroid HI']
+        # mapmets = ['MIR (in a million)', 'Respiratory HI', 'Liver HI','Neurological HI','Developmental HI',
+        #            'Reproductive HI', 'Kidney HI', 'Ocular HI', 'Endocrine HI', 'Hematological HI',
+        #            'Immunological HI','Skeletal HI', 'Spleen HI', 'Thyroid HI']
         # Define center coordinates of facilities and find their count
         cenlat = (df_max_can['Facility Center Lat'].max() + df_max_can['Facility Center Lat'].min())/2
         cenlon = (df_max_can['Facility Center Lon'].max() + df_max_can['Facility Center Lon'].min())/2
@@ -513,64 +511,32 @@ class HEM4dash():
                         dbc.Col([
                                                         
                             html.H6("Metric to Display"),
-                              dcc.Dropdown(id='metdrop',
+                              dcc.Dropdown(id='facs_metdrop',
                                            
-                                          options=[{"label": i, "value": i} for i in mapmets],
+                                          options=[{"label": i, "value": i} for i in facs_mapmets],
                                           multi=False,
                                           clearable=False,
                                           value = 'MIR (in a million)',
                                           placeholder="Select a Metric",
                                           ),
-                            
-                            html.H6("Linear or Log Scale"),
-                              dcc.Dropdown(id='scaledrop',
-                                           
-                                          options=[{"label": 'Linear', "value": 'linear'},
-                                                   {"label": 'Log', "value": 'log'}
-                                                   ],
-                                          multi=False,
-                                          clearable=False,
-                                          value = 'linear',
-                                          placeholder="Linear or Log Scale",
-                                          ),
-                            
-                                            
-                            html.H6("Basemap"),
-                              dcc.Dropdown(id='basemapdrop',
-                                           
-                                          options=[{"label": 'Light', "value": 'carto-positron'},
-                                                   {"label": 'Dark', "value": 'carto-darkmatter'},
-                                                   {"label": 'Satellite', "value": 'satellite-streets'},
-                                                   {"label": 'Streets', "value": 'open-street-map'}
-                                                   ],
-                                          multi=False,
-                                          clearable=False,
-                                          value = 'carto-positron',
-                                          placeholder="Select a Basemap",
-                                          ),
-                      
+                                                  
                             html.H6("Color Ramp"),  
-                              dcc.Dropdown(id='rampdrop',
+                              dcc.Dropdown(id='facs_rampdrop',
                                            
-                                          options=[{"label": 'Blue to Red', "value": px.colors.sequential.Bluered},
-                                                   {"label": 'Blue to Yellow', "value": px.colors.sequential.Cividis},
-                                                   {"label": 'Purple to Yellow', "value": px.colors.sequential.Viridis},
-                                                   {"label": 'Blue Scale', "value": px.colors.sequential.Blues},
-                                                   {"label": 'Green Scale', "value": px.colors.sequential.Greens},
-                                                   {"label": 'Red Scale', "value": px.colors.sequential.Reds}],
+                                          options=[{"label": key, "value": value} for (key,value) in facramps.items()],
                                           multi=False,
                                           clearable=False,
-                                          value = px.colors.sequential.Viridis,
+                                          value = blue_scale,
                                           placeholder="Select a Color Ramp",
                                           ),
                                            
                             html.H6("Dot Size"),  
-                              dcc.Dropdown(id='sizedrop',
+                              dcc.Dropdown(id='facs_sizedrop',
                                            
-                                          options=[{"label": i, "value": i} for i in range(5,16)],
+                                          options=[{"label": i, "value": i} for i in range(3,16)],
                                           multi=False,
                                           clearable=False,
-                                          value = 6,
+                                          value = 5,
                                           placeholder="Select a Dot Size",
                                           ),
                         ], width = 2),
@@ -578,20 +544,41 @@ class HEM4dash():
                         
                         dbc.Col([
                                                         
-                            dcc.Graph(id = 'map', style={"height": 800}, config = {
-                                    'modeBarButtonsToRemove': ['lasso2d', 'select2d', 'hoverCompareCartesian', 'hoverClosestCartesian'],
-                                    'toImageButtonOptions': {
-                                            'format': 'jpeg', # one of png, svg, jpeg, webp
-                                            'filename': 'Facility Map',
-                                            'scale': 1}
-                                      }),
-                        ], width = 9)
-                                   
-                        
+                            html.H5(id='facs-map-title'),
+                            
+                            dl.Map(id="tab1-map", center=[39.8283, -97], zoom = 4, minZoom = 3,
+                                    children = [                                    
                                         
+                                         dl.LayersControl([ct_esri, ct_dark, ct_light, ct_openstreet] +                                                                
+                                                                                        
+                                                 [ct_roads, ct_places,
+                                                    
+                                                     dl.Overlay(
+                                                     dl.GeoJSON(                                                                                              
+                                                         id='facs_layer',
+                                                         format='geobuf',                                           
+                                                         # hoverStyle=arrow_function(dict(weight=5, color='#666'))
+                                                         ),
+                                                     name = 'Facilities', checked = True
+                                                     ),
+                                                    
+                                                    
+                                                 
+                                                   ]
+                                                
+                                                 ),
+                                                                                        
+                                                 dl.Colorbar(id='facs_colorbar', position="bottomleft", width=20, height=150, nTicks=3, style=dict(background='white')),
+                                                
+                                                 dl.MeasureControl(position="topleft", primaryLengthUnit="kilometers", primaryAreaUnit="hectares", activeColor="#214097", completedColor="#972158"),
+                                    ],                                                                                                           
+                                                         
+                                    style={'width': '1200px', 'height': '600px'}
+                                    )
+                        ], width = 9)
+                                                           
                     ])                   
-                    
-                    
+                                    
                 ]),
                 
                 dcc.Tab(label = "Contour Maps", children = [
@@ -609,9 +596,7 @@ class HEM4dash():
                                 dbc.Col([
                                     dcc.Loading([
                                         
-                                        html.Div([
-                                            html.H4('Select files to create contours')
-                                            ], id='ctab-map-title')
+                                        html.H5('Select files to create contours', id='ctab-map-title')
                                         
                                         ], type = 'default')
                                    
@@ -871,84 +856,77 @@ class HEM4dash():
                 
             ])
             
-            @app.callback(Output('map', 'figure'),
-                     [Input('basemapdrop', 'value'),
-                      Input('rampdrop', 'value'),
-                      Input('scaledrop', 'value'),
-                      Input('sizedrop', 'value'),
-                      Input('metdrop', 'value')
-                      ])  
-            def makemap (basemap, ramp, scale, dotsize, metric):
+            # Callback for the facility map
+            @app.callback(Output('facs_layer', 'data'),
+                          Output('facs_layer', 'hideout'),
+                          Output('facs_layer', 'options'),
+                          
+                        Output('facs_colorbar', 'colorscale'),
+                        Output('facs_colorbar', 'min'),
+                        Output('facs_colorbar', 'max'),
+                        Output('facs_colorbar', 'tickText'),
+                      
+                      Output('facs-map-title', 'children'),
+                                                                                   
+                      Input('facs_metdrop', 'value'),
+                      Input('facs_rampdrop', 'value'),
+                      Input('facs_sizedrop', 'value'),
+                      )
+                      
+            def make_fac_map (metric, ramp, size):
                 
-                dff = df_dashtable 
-#                dff['logmetric'] = np.log10(dff['MIR (in a million)'])
-                
-                # cenlat = dff['Facility Center Lat'].mean()
-                # cenlon = dff['Facility Center Lon'].mean()
-                zoom = 4
-                
-                # draw_facs = assign("""function(feature, latlng, context){
-                #     const {min, max, colorscale, circleOptions, colorProp} = context.props.hideout;
-                #     const csc = chroma.scale(colorscale).domain([min, max]);  // chroma lib to construct colorscale
-                #     circleOptions.fillColor = csc(feature.properties[colorProp]);  // set color based on color prop.
-                #     return L.circleMarker(latlng, circleOptions);  // sender a simple circle marker.
-                # }""")
-                
-                draw_facs = Namespace('HEM_leaflet_functions', 'facs')('draw_facilities')
-                
-                if scale == 'log':
-                    prefix = '1E '
-                    color = np.log10(dff[metric])
+                facs_gdf = gp.GeoDataFrame(df_max_can, geometry=gp.points_from_xy(df_max_can['Facility Center Lon'], df_max_can['Facility Center Lat']))
+                facs_gdf[f'Log {metric}'] = np.log10(facs_gdf[metric].replace(0, np.nan)) 
+                facs_gdf['tooltip']= '<b>Facility: </b>' + facs_gdf['Facility'] + '<br><b>Cancer Risk (in a million): </b>' + facs_gdf['MIR (in a million)'].apply(lambda x: f'{self.riskfig(x, 1)}').astype(str)
+                facs_geojson = json.loads(facs_gdf.to_json())
+                facs_buf = dlx.geojson_to_geobuf(facs_geojson)
                     
-                else:
-                    prefix = ''
-                    color = metric
+                color_prop = f'Log {metric}'
+                colorscale = ramp
                     
-#                hoverdata = ["Facility: {} <br>MIR (in a million): {} <br>MIR Block: {} <br>Max TOSHI: {} <br>Max TOSHI Organ: {}".format(i,j,k,l,m)\
-#                     for i,j,k,l,m in zip(dff['Facility'], dff['MIR (in a million)'], dff['MIR Block'],\
-#                                          dff['Max TOSHI'], dff['Max TOSHI Organ'])]
-                hoverdata={
-                        'MIR (in a million)':':.1e',
-                        'MIR Block': True,
-                        'Max TOSHI':':.1e',
-                        'Max TOSHI Organ': True,
-#                        'Respiratory HI':':.1e',
-#                        'Liver HI':':.1e',
-#                        'Neurological HI':':.1e',
-#                        'Developmental HI':':.1e',
-#                        'Reproductive HI':':.1e',
-#                        'Kidney HI':':.1e',
-#                        'Ocular HI':':.1e',
-#                        'Endocrine HI':':.1e',
-#                        'Hematological HI':':.1e',
-#                        'Immunological HI':':.1e',
-#                        'Skeletal HI':':.1e',
-#                        'Spleen HI':':.1e',
-#                        'Thyroid HI':':.1e',
-                        'Cancer Incidence': ':.1e',
-                        'Met Station': True,
-                        'Distance to Met Station (km)': ':0f',
-                        'Facility Center Lat':':.7f',
-                        'Facility Center Lon':':.7f',
-#                        'Rural or Urban'
+                vmin = facs_gdf[color_prop].min()
+                vmin_lin = 10**vmin
+                tick1 = int(self.riskfig(vmin_lin,1)) if vmin_lin >= 1 else self.riskfig(vmin_lin,1)
+                vmax = facs_gdf[color_prop].max()
+                vmid = (vmax+vmin)/2
+                vmax_lin = 10**vmax            
+                vmid_lin = 10**vmid            
+                tick2 = int(self.riskfig(vmid_lin,1)) if vmid_lin >= 1 else self.riskfig(vmid_lin,1)
+                tick3 = int(self.riskfig(vmax_lin,1)) if vmax_lin >= 1 else self.riskfig(vmax_lin,1)
+                tickText=[str(tick1), str(tick2), str(tick3)]
+                                    
+                maptitle = f'Facility Map ({numFacs} facilities) - {metric}'
+                draw_facs = Namespace('HEM_leaflet_functions', 'facs')('draw_facilities')                             
+                cont_hideout=dict(min=vmin, max=vmax, colorscale=colorscale, circleOptions=dict(fillOpacity=1, stroke=False, radius=size), colorProp=color_prop)
+                cont_options = dict(pointToLayer=draw_facs)
+                
+                # mapkids = [dl.LayersControl([ct_esri, ct_dark, ct_light, ct_openstreet] +                                                    
+                                                          
+                #         [ct_roads, ct_places,
+                         
+                #          dl.Overlay(
+                #              dl.GeoJSON(                                                                                               
+                #                  id='facs_layer',
+                #                  format='geobuf',
+                #                  data = facs_buf,                                            
+                #                  zoomToBounds = False,
+                #                  options = dict(pointToLayer=draw_facs),
+                #                  hideout=cont_hideout
+                #                  ),
+                #              name = 'Facilities', checked = True
+                #              ),
+                         
+                #           ]
                         
-                }
+                #         ),                            
+                                                                   
+                #         dl.Colorbar(id='facs_colorbar', position="bottomleft", width=20,
+                #                     height=150, style=dict(background='white'),
+                #                     min=vmin, max=vmax, colorscale=ramp, nTicks=3, tickText=tickText),
+                        
+                #         dl.MeasureControl(position="topleft", primaryLengthUnit="kilometers", primaryAreaUnit="hectares", activeColor="#214097", completedColor="#972158")]
                 
-#                if scale == 'log':
-#                    hoverdata['color'] = False
-                           
-                fig = px.scatter_mapbox(dff, lat = 'Facility Center Lat', lon = 'Facility Center Lon', color = color,
-                                        mapbox_style = basemap, color_continuous_scale=ramp, opacity = 1, zoom = zoom,
-                                        center = dict(lat = cenlat, lon = cenlon),
-                                        hover_name = 'Facility',
-                                        hover_data = hoverdata                           
-                                        )
-                fig.update_traces(marker=dict(size=dotsize))
-                fig.update_layout(title = f'<b>Facility Map ({numFacs} facilities) - {metric}</b>',
-                                  title_font=dict(size = 22, color = 'black'), uirevision = 'foo',
-                                  )
-                fig.update_coloraxes(colorbar_tickprefix= prefix, colorbar_title = metric)
-                return fig
+                return facs_buf, cont_hideout, cont_options, colorscale, vmin, vmax, tickText, maptitle
 
 # Mark commented these out
 #            @app.callback(
