@@ -29,14 +29,12 @@ class AltReceptors(InputFile):
                           , utmzone:pl.Int64, elev:pl.Float64, hill:pl.Float64
                           , population:pl.Int64}
                 
-        altreceptor_df = self.readFromPathCsvPolarsDF()
+        self.dataframe = self.readFromPathCsvPolarsDF()
 
-        # Note: this is a Polars dataframe
-        self.dataframe = altreceptor_df.collect()
         
     def clean(self, df):
         cleaned = df
-        cleaned.select([pl.exclude(rec_id), pl.col(rec_id).fill_null('')])
+        # cleaned.select([pl.exclude(rec_id), pl.col(rec_id).fill_null('')])
         cleaned.select([pl.exclude(location_type), pl.col(location_type).str.to_uppercase()])
         cleaned.select([pl.exclude(rec_type), pl.col(rec_type).str.to_uppercase()])
         
@@ -53,29 +51,96 @@ class AltReceptors(InputFile):
         # ----------------------------------------------------------------------------------
         # Strict: Invalid values in these columns will cause the upload to fail immediately.
         # ----------------------------------------------------------------------------------
-        if len(df.loc[(df[rec_id] == '')]) > 0:
+        if df.select(pl.col(rec_id).is_null().sum())[0, rec_id] > 0:
             Logger.logMessage("One or more Receptor IDs are missing in the Alternate User Receptors List.")
             messagebox.showinfo("Missing Receptor IDs", "One or more Receptor IDs are missing in the Alternate User Receptors List.")
             return None
 
-        if len(df.loc[(df[location_type] != 'L') & (df[location_type] != 'U')]) > 0:
+        if len(df.filter((pl.col(location_type) != 'L') & (pl.col(location_type) != 'U'))) > 0 :
             Logger.logMessage("One or more receptors are missing a Location Type in the Alternate User Receptors List.")
             messagebox.showinfo("Missing Location Type", "One or more receptors are missing a Location Type in the Alternate User Receptors List.")
             return None
-
-        duplicates = self.duplicates(df, [rec_id, lon, lat])
-        if len(duplicates) > 0:
+        
+        # Check for duplicate receptors
+        uniqcols = df.select(pl.col([rec_id, lat, lon]))
+        uniq = uniqcols.filter(pl.lit(~uniqcols.is_duplicated()))
+        if uniq.shape[0] != df.shape[0]:
             Logger.logMessage("One or more records are duplicated in the Alternate User Receptors List (key=rec_id, lon, lat):")
             messagebox.showinfo("Duplicates", "One or more records are duplicated in the Alternate User Receptors List (key=rec_id, lon, lat):")
-            for d in duplicates:
-                Logger.logMessage(d)
             return None
 
-        if len(df.loc[(df[population].isnull()) & (df[rec_type] == 'P')]) > 0:
+        # Check for missing population values
+        if len(df.filter((pl.col(population).isnull()) & (pl.col(rec_type) == 'P'))) > 0 :
+        # if len(df.loc[(df[population].isnull()) & (df[rec_type] == 'P')]) > 0:
             Logger.logMessage("Some 'P' receptors are missing population values in Alternate User Receptor List.")
             messagebox.showinfo("Missing Population Values", "Some 'P' receptors are missing population values in Alternate User Receptor List.")
             return None
 
+
+        #------ Check that coordinates make sense ----------------
+        
+        # check lat/lons
+        latlon_rows = df.filter(pl.col(loc_type)=='L')
+        if len(latlon_rows) > 0:
+            maxlon = 180
+            minlon = -180
+            maxlat = 85
+            minlat = -80
+            outlier_lon = latlon_rows.filter((pl.col(lon)<minlon) | (pl.col(lon)>maxlon) 
+                                       | (pl.col(lon).isnull()))
+            outlier_lat = latlon_rows.filter((pl.col(lat)<minlat) | (pl.col(lat)>maxlat) 
+                                       | (pl.col(lat).isnull()))
+            if len(outlier_lon) > 0:
+                Logger.logMessage("There are longitudes in the Alternate Receptors file "
+                                  + "that are < -180 or > 180. Please correct these values.")
+                messagebox.showinfo("There are longitudes in the Alternate Receptors file "
+                                  + "that are < -180 or > 180. Please correct these values.")
+                return None
+
+            if len(outlier_lat) > 0:
+                Logger.logMessage("There are latitudes in the Alternate Receptors file "
+                                  + "that are < -80 or > 85. Please correct these values.")
+                messagebox.showinfo("There are longitudes in the Alternate Receptors file "
+                                  + "that are < -80 or > 85. Please correct these values.")
+                return None
+                
+        # check UTM coordinates
+        utm_rows = df.filter(pl.col(loc_type)=='U')
+        if len(utm_rows) > 0:
+            maxlon = 850000
+            minlon = 160000
+            maxlat = 10000000
+            minlat = 0
+            outlier_utme = utm_rows.filter((pl.col(lon)<minlon) | (pl.col(lon)>maxlon) 
+                                       | (pl.col(lon).isnull()))
+            outlier_utmn = utm_rows.filter((pl.col(lat)<minlat) | (pl.col(lat)>maxlat) 
+                                       | (pl.col(lat).isnull()))
+
+            if len(outlier_utme) > 0:
+                Logger.logMessage("There are UTM Easting coordinates in the Alternate Receptors file "
+                                  + "that are < 0 or > 1000000. Please correct these values.")
+                messagebox.showinfo("There are UTM Easting coordinates in the Alternate Receptors file "
+                                  + "that are < 0 or > 1000000. Please correct these values.")
+                return None
+
+            if len(outlier_utmn) > 0:
+                Logger.logMessage("There are UTM Northing coordinates in the Alternate Receptors file "
+                                  + "that are < 160000 or > 850000. Please correct these values.")
+                messagebox.showinfo("There are UTM Northing coordinates in the Alternate Receptors file "
+                                  + "that are < 160000 or > 850000. Please correct these values.")
+                return None
+
+            utm_rows = utm_rows.with_columns(pl.col(utmzone).str.slice(-1).alias('zone'))
+            try:
+                utm_rows = utm_rows.with_column(pl.col('zone').cast(pl.Int64, strict=False))
+            except ValueError as v:
+                Logger.logMessage("Alternate Receptors file contains malformed UTM zone. "
+                                  + "Please correct.")
+                messagebox.showinfo("Alternate Receptors file contains malformed UTM zone. "
+                                  + "Please correct.")
+                return None
+                
+        
         for index, row in df.iterrows():
 
             receptor = row[rec_id]
