@@ -4,11 +4,7 @@ Created on Wed Feb 26 07:07:56 2020
 
 @author: MMORRIS
 """
-# import dash
-# import dash_table
-# import dash_core_components as dcc
-# import dash_bootstrap_components as dbc
-# import dash_html_components as html
+
 import dash
 import dash_table
 from dash import Dash, html, Input, Output, State, no_update, dcc
@@ -30,7 +26,6 @@ from tkinter import messagebox
 
 from flask import request
 from concurrent.futures import ThreadPoolExecutor
-# from dash.dependencies import Input, Output
 import time
 
 # Imports needed specifically for making contour maps
@@ -119,7 +114,12 @@ class HEM4dash():
         ct_light = bases[2]
         ct_openstreet = bases[3]
         ct_places = bases[4]
-        ct_roads = bases[5]        
+        ct_roads = bases[5]
+        
+        # Create geobuf of state boundaries for facility map
+        with open('assets/states_lines.geojson') as f:
+            statejson = json.load(f)
+        statebuf = dlx.geojson_to_geobuf(statejson)
         
         app = dash.Dash(__name__, external_stylesheets=dbc_stylesheets, external_scripts=[chroma])
         app.title = 'HEM4 Summary Results: ' + self.SCname
@@ -461,14 +461,20 @@ class HEM4dash():
             'Endocrine HI', 'Hematological HI', 'Immunological HI', 'Skeletal HI',
             'Spleen HI', 'Thyroid HI', 'Whole body HI']
 
-            blue_scale = ['lightblue', 'darkblue']
-            green_scale = ['lightgreen', 'darkgreen']
-            red_scale = ["#fff5f0","#fee0d2","#fcbba1","#fc9272","#fb6a4a","#ef3b2c","#cb181d","#a50f15","#67000d"]    
+            blue_scale = ["#eff3ff", "#bdd7e7", "#6baed6", "#3182bd", "#08519c"]
+            green_scale = ["#edf8e9", "#bae4b3", "#74c476", "#31a354", "#006d2c"]
+            red_scale = ['#ffc4ae', '#f9816c', '#ec5244', '#c23d33', '#7b4238']
+            orange_scale = ['#ffed85', '#fbaf52', '#f6711f', '#c33910', '#910000']
+              
             blue_to_red = ['blue', 'red']
+            blue_to_red = ["#ec8787", "#f9cbb3", "#fff0d0", "#b7d5d7", "#70b6ba"]
+            blue_to_yellow = ['#253494', '#2c7fb8', '#41b6c4', '#a1dab4', '#ffffcc']
+            yellow_to_blue = ["#ffffcc", "#a1dab4", "#41b6c4", "#2c7fb8", "#253494"]
             purple_to_yellow = ['purple', 'yellow']
 
-            facramps = {'Blue to Red': blue_to_red, 'Purple to Yellow': purple_to_yellow,
-                      'Green Scale': green_scale, 
+            facramps = {'Blue to Red': blue_to_red, 'Blue to Yellow': blue_to_yellow, 'Yellow to Blue': yellow_to_blue,
+                        'Purple to Yellow': purple_to_yellow,
+                      'Green Scale': green_scale, 'Orange Scale': orange_scale,'Red Scale': red_scale,
                       'Blue Scale' : blue_scale}
             
             # These are for the contour map tab
@@ -523,10 +529,10 @@ class HEM4dash():
                             html.H6("Color Ramp"),  
                               dcc.Dropdown(id='facs_rampdrop',
                                            
-                                          options=[{"label": key, "value": value} for (key,value) in facramps.items()],
+                                          options=[{"label": key, "value": key} for (key,value) in facramps.items()],
                                           multi=False,
                                           clearable=False,
-                                          value = blue_scale,
+                                          value = 'Purple to Yellow',
                                           placeholder="Select a Color Ramp",
                                           ),
                                            
@@ -546,27 +552,40 @@ class HEM4dash():
                                                         
                             html.H5(id='facs-map-title'),
                             
-                            dl.Map(id="tab1-map", center=[39.8283, -97], zoom = 4, minZoom = 3,
+                            dl.Map(id="tab1-map", center=[39.8283, -97], zoom = 4, minZoom = 3, zoomSnap = .3,
                                     children = [                                    
                                         
                                          dl.LayersControl([ct_esri, ct_dark, ct_light, ct_openstreet] +                                                                
                                                                                         
-                                                 [ct_roads, ct_places,
-                                                    
-                                                     dl.Overlay(
-                                                     dl.GeoJSON(                                                                                              
-                                                         id='facs_layer',
-                                                         format='geobuf',                                           
-                                                         # hoverStyle=arrow_function(dict(weight=5, color='#666'))
-                                                         ),
-                                                     name = 'Facilities', checked = True
-                                                     ),
+                                                 [
+                                                     
+                                                ct_roads, ct_places,
+                                               
+                                                dl.Overlay(
+                                                dl.GeoJSON(                                                                                              
+                                                    id='facs_layer',
+                                                    format='geobuf',                                           
+                                                    # hoverStyle=arrow_function(dict(weight=5, color='#666'))
+                                                    ),
+                                                name = 'Facilities', checked = True
+                                                ),
+                                                
+                                                dl.Overlay(
+                                                    dl.GeoJSON(id = 'statesid', format="geobuf",
+                                                                   data=statebuf,
+                                                                   # hoverStyle=arrow_function(dict(weight=1.5, fillColor = 'rgb(0,0,0,0)')),
+                                                                   zoomToBoundsOnClick=False,
+                                                                  options = dict(weight = .4, fillColor = 'rgb(0,0,0,0)', color = 'beige'),
+                                                                   zoomToBounds = False
+                                                                   ),
+                                               name = 'US States', checked = True
+                                               ),
                                                     
                                                     
                                                  
-                                                   ]
+                                                ]
                                                 
-                                                 ),
+                                         ),
                                                                                         
                                                  dl.Colorbar(id='facs_colorbar', position="bottomleft", width=20, height=150, nTicks=3, style=dict(background='white')),
                                                 
@@ -598,8 +617,7 @@ class HEM4dash():
                                         
                                         html.H5('Select files to create contours', id='ctab-map-title')
                                         
-                                        ], type = 'default')
-                                   
+                                        ], type = 'default')                                   
                                         
                                     ], width={'size':8, 'offset':2})
                                 
@@ -731,7 +749,7 @@ class HEM4dash():
                                 
                                 dbc.Col([
                                                                                                 
-                                        dl.Map(id = 'ctab-themap', center = [39., -97.3],
+                                        dl.Map(id = 'ctab-themap', center = [39., -97.3], zoomSnap = .3,
                                                 zoom=5, children=[
                                                     dl.LayersControl([ct_esri, ct_dark, ct_light, ct_openstreet])
                                                     ]),
@@ -882,7 +900,7 @@ class HEM4dash():
                 facs_buf = dlx.geojson_to_geobuf(facs_geojson)
                     
                 color_prop = f'Log {metric}'
-                colorscale = ramp
+                colorscale = facramps[ramp]
                     
                 vmin = facs_gdf[color_prop].min()
                 vmin_lin = 10**vmin
@@ -898,33 +916,7 @@ class HEM4dash():
                 maptitle = f'Facility Map ({numFacs} facilities) - {metric}'
                 draw_facs = Namespace('HEM_leaflet_functions', 'facs')('draw_facilities')                             
                 cont_hideout=dict(min=vmin, max=vmax, colorscale=colorscale, circleOptions=dict(fillOpacity=1, stroke=False, radius=size), colorProp=color_prop)
-                cont_options = dict(pointToLayer=draw_facs)
-                
-                # mapkids = [dl.LayersControl([ct_esri, ct_dark, ct_light, ct_openstreet] +                                                    
-                                                          
-                #         [ct_roads, ct_places,
-                         
-                #          dl.Overlay(
-                #              dl.GeoJSON(                                                                                               
-                #                  id='facs_layer',
-                #                  format='geobuf',
-                #                  data = facs_buf,                                            
-                #                  zoomToBounds = False,
-                #                  options = dict(pointToLayer=draw_facs),
-                #                  hideout=cont_hideout
-                #                  ),
-                #              name = 'Facilities', checked = True
-                #              ),
-                         
-                #           ]
-                        
-                #         ),                            
-                                                                   
-                #         dl.Colorbar(id='facs_colorbar', position="bottomleft", width=20,
-                #                     height=150, style=dict(background='white'),
-                #                     min=vmin, max=vmax, colorscale=ramp, nTicks=3, tickText=tickText),
-                        
-                #         dl.MeasureControl(position="topleft", primaryLengthUnit="kilometers", primaryAreaUnit="hectares", activeColor="#214097", completedColor="#972158")]
+                cont_options = dict(pointToLayer=draw_facs)               
                 
                 return facs_buf, cont_hideout, cont_options, colorscale, vmin, vmax, tickText, maptitle
 
