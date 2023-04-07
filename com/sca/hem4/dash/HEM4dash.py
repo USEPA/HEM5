@@ -461,21 +461,22 @@ class HEM4dash():
             'Endocrine HI', 'Hematological HI', 'Immunological HI', 'Skeletal HI',
             'Spleen HI', 'Thyroid HI', 'Whole body HI']
 
-            blue_scale = ["#eff3ff", "#bdd7e7", "#6baed6", "#3182bd", "#08519c"]
-            green_scale = ["#edf8e9", "#bae4b3", "#74c476", "#31a354", "#006d2c"]
-            red_scale = ['#ffc4ae', '#f9816c', '#ec5244', '#c23d33', '#7b4238']
-            orange_scale = ['#ffed85', '#fbaf52', '#f6711f', '#c33910', '#910000']
-              
-            blue_to_red = ['blue', 'red']
-            blue_to_red = ["#ec8787", "#f9cbb3", "#fff0d0", "#b7d5d7", "#70b6ba"]
-            blue_to_yellow = ['#253494', '#2c7fb8', '#41b6c4', '#a1dab4', '#ffffcc']
-            yellow_to_blue = ["#ffffcc", "#a1dab4", "#41b6c4", "#2c7fb8", "#253494"]
+            blue_scale = ['#bce6f9', '#74bbed', '#4d96ce', '#48799d', '#404d54']
+            green_scale = ['#cbf6d9', '#64d2a2', '#33b581', '#368165', '#39544c']
+            red_scale = ['#fee5d9', '#fcae91', '#fb6a4a', '#de2d26', '#a50f15']
+            orange_scale = ['#ffa200', '#ff6e00', '#c85700', '#914505', '#582c0e']
+            blue_to_red = ['#2b83ba', '#abdda4', '#ffffbf', '#fdae61', '#d7191c']
+            red_to_blue = ["#d7191c", "#fdae61", "#ffffbf", "#abdda4", "#2b83ba"]
+            blue_to_yellow =["#3a4d6b", "#3d6da2", "#799a96", "#ccbe6a", "#ffec99"]
+            yellow_to_blue = ['#ffec99', '#ccbe6a', '#799a96', '#3d6da2', '#3a4d6b']
             purple_to_yellow = ['purple', 'yellow']
+            yellow_to_purple = ['yellow', 'purple']
 
-            facramps = {'Blue to Red': blue_to_red, 'Blue to Yellow': blue_to_yellow, 'Yellow to Blue': yellow_to_blue,
-                        'Purple to Yellow': purple_to_yellow,
-                      'Green Scale': green_scale, 'Orange Scale': orange_scale,'Red Scale': red_scale,
-                      'Blue Scale' : blue_scale}
+            facramps = {'Purple to Yellow': purple_to_yellow, 'Yellow to Purple': yellow_to_purple,
+                        'Blue to Yellow': blue_to_yellow, 'Yellow to Blue': yellow_to_blue,
+                        'Blue to Red': blue_to_red, 'Red to Blue': red_to_blue,  
+                        'Green Scale': green_scale, 'Orange Scale': orange_scale,'Red Scale': red_scale,
+                        'Blue Scale' : blue_scale}
             
             # These are for the contour map tab
             metrics = ['MIR', 'Respiratory HI', 'Liver HI', 'Neurological HI',
@@ -895,7 +896,11 @@ class HEM4dash():
                 
                 facs_gdf = gp.GeoDataFrame(df_max_can, geometry=gp.points_from_xy(df_max_can['Facility Center Lon'], df_max_can['Facility Center Lat']))
                 facs_gdf[f'Log {metric}'] = np.log10(facs_gdf[metric].replace(0, np.nan)) 
-                facs_gdf['tooltip']= '<b>Facility: </b>' + facs_gdf['Facility'] + '<br><b>Cancer Risk (in a million): </b>' + facs_gdf['MIR (in a million)'].apply(lambda x: f'{self.riskfig(x, 1)}').astype(str)
+                facs_gdf['tooltip']= '<b>Facility: </b>' + facs_gdf['Facility'] + \
+                    f'<br><b>{metric}: </b>' + facs_gdf[f'{metric}'].apply(lambda x: f'{self.riskfig(x, 1)}').astype(str) + \
+                    '<br><b>Max NonCancer TOSHI: </b>' + facs_gdf['Max TOSHI'].apply(lambda x: f'{self.riskfig(x, 1)}').astype(str) + \
+                    '<br><b>Max NonCancer TOSHI Type: </b>' + facs_gdf['Max TOSHI Organ']
+                    #'<br><b>Cancer Risk (in a million): </b>' + facs_gdf['MIR (in a million)'].apply(lambda x: f'{self.riskfig(x, 1)}').astype(str) + \
                 facs_geojson = json.loads(facs_gdf.to_json())
                 facs_buf = dlx.geojson_to_geobuf(facs_geojson)
                     
@@ -964,20 +969,16 @@ class HEM4dash():
                         alert = self.make_alert('There are no nonzero values for this metric')
                         return alert, no_update, no_update, no_update, no_update
                     else:
-                        if metric == 'MIR':
-                            maptitle = html.H4(f'Facility {facname} - Lifetime Cancer Risk (in a million)')
-                        else:
-                            maptitle = html.H4(f'Facility {facname} - {metric}')            
                         gdf = gp.GeoDataFrame(
                             dfpl, geometry=gp.points_from_xy(dfpl.Longitude, dfpl.Latitude), crs="EPSG:4326")
                         
                         if metric == 'MIR':
+                            maptitle = html.H4(f'Facility {facname} - Lifetime Cancer Risk (in a million)')
                             gdf['tooltip'] = '<b>Receptor ID: </b>' + gdf['RecID'] + '<br><b>Cancer Risk (in a million): </b>' + gdf[metric].apply(lambda x: f'{self.riskfig(x, digz)}').astype(str)
                         else:
                             gdf['tooltip'] = '<b>Receptor ID: </b>' + gdf['RecID'] + f'<br><b>{metric}: </b>' + gdf[metric].apply(lambda x: f'{self.riskfig(x, digz)}').astype(str)
-                        
-                       
-                                  
+                            maptitle = html.H4(f'Facility {facname} - {metric}')
+                                                         
                         pointjson = json.loads(gdf.to_json())
                         pointbuf = dlx.geojson_to_geobuf(pointjson)
                         
@@ -1118,9 +1119,9 @@ class HEM4dash():
                                                             dl.GeoJSON(id = 'ctab-recepts', format="geobuf",
                                                                        data=pointbuf,
                                                                        cluster=True,
-                                                                       superClusterOptions=dict(radius=100, maxZoom = 13),
+                                                                       superClusterOptions=dict(radius=100, maxZoom = 12),
                                                                        options = dict(pointToLayer=draw_recepts),
-                                                                        # options = dict(pointToLayer=draw_recepts, onEachFeature=draw_arrow),
+                                                                       # options = dict(pointToLayer=draw_recepts, onEachFeature=draw_arrow),
                                                                       ),
                                                             ),
                                                             name = 'Receptors', checked = False
