@@ -107,15 +107,9 @@ class HEM4dash():
         dbc_stylesheets = [dbc.themes.MORPH]
         
         chroma = "https://cdnjs.cloudflare.com/ajax/libs/chroma-js/2.1.0/chroma.min.js"  # js lib used for colors
-               
-        bases = get_basemaps()    
-        ct_esri = bases[0]
-        ct_dark = bases[1]
-        ct_light = bases[2]
-        ct_openstreet = bases[3]
-        ct_places = bases[4]
-        ct_roads = bases[5]
         
+        ct_esri, ct_dark, ct_light, ct_openstreet, ct_places, ct_roads = get_basemaps() # get basemaps and other layers
+                
         # Create geobuf of state boundaries for facility map
         with open('assets/states_lines.geojson') as f:
             statejson = json.load(f)
@@ -511,13 +505,18 @@ class HEM4dash():
                     
                 dcc.Tab(label="Facility Map", children=[
                     
+                    html.Div([
+                    
+                    dbc.Container([
+                    
                         
                         ###########  Start Map Dropdowns  ##########
                     dbc.Row([
                         
                         dbc.Col([
-                                                        
-                            html.H6("Metric to Display"),
+                            
+                            html.Hr(),
+                            html.H6("Risk metric"),
                               dcc.Dropdown(id='facs_metdrop',
                                            
                                           options=[{"label": i, "value": i} for i in facs_mapmets],
@@ -526,8 +525,9 @@ class HEM4dash():
                                           value = 'MIR (in a million)',
                                           placeholder="Select a Metric",
                                           ),
-                                                  
-                            html.H6("Color Ramp"),  
+                            
+                            html.Hr(),
+                            html.H6("Color ramp"),  
                               dcc.Dropdown(id='facs_rampdrop',
                                            
                                           options=[{"label": key, "value": key} for (key,value) in facramps.items()],
@@ -536,8 +536,9 @@ class HEM4dash():
                                           value = 'Purple to Yellow',
                                           placeholder="Select a Color Ramp",
                                           ),
-                                           
-                            html.H6("Dot Size"),  
+                            
+                            html.Hr(),
+                            html.H6("Dot size"),  
                               dcc.Dropdown(id='facs_sizedrop',
                                            
                                           options=[{"label": i, "value": i} for i in range(3,16)],
@@ -597,7 +598,11 @@ class HEM4dash():
                                     )
                         ], width = 9)
                                                            
-                    ])                   
+                    ])
+                    
+                    ], fluid=True, style={"height": "90vh"})
+                                            
+                ], style={'width': '100%', 'height': '100vh', 'margin': "auto", "display": "block"}),
                                     
                 ]),
                 
@@ -757,7 +762,7 @@ class HEM4dash():
                                                                                 
                                         ], width=10)
                                                          
-                            ], className="h-100")
+                            ], className="h-75")
                             
                         ], fluid=True, style={"height": "90vh"})
                                                 
@@ -880,17 +885,17 @@ class HEM4dash():
                           Output('facs_layer', 'hideout'),
                           Output('facs_layer', 'options'),
                           
-                        Output('facs_colorbar', 'colorscale'),
-                        Output('facs_colorbar', 'min'),
-                        Output('facs_colorbar', 'max'),
-                        Output('facs_colorbar', 'tickText'),
-                      
-                      Output('facs-map-title', 'children'),
-                                                                                   
-                      Input('facs_metdrop', 'value'),
-                      Input('facs_rampdrop', 'value'),
-                      Input('facs_sizedrop', 'value'),
-                      )
+                          Output('facs_colorbar', 'colorscale'),
+                          Output('facs_colorbar', 'min'),
+                          Output('facs_colorbar', 'max'),
+                          Output('facs_colorbar', 'tickText'),
+                                                
+                          Output('facs-map-title', 'children'),
+                                                                                       
+                          Input('facs_metdrop', 'value'),
+                          Input('facs_rampdrop', 'value'),
+                          Input('facs_sizedrop', 'value'),
+                          )
                       
             def make_fac_map (metric, ramp, size):
                 
@@ -978,6 +983,11 @@ class HEM4dash():
                         else:
                             gdf['tooltip'] = '<b>Receptor ID: </b>' + gdf['RecID'] + f'<br><b>{metric}: </b>' + gdf[metric].apply(lambda x: f'{self.riskfig(x, digz)}').astype(str)
                             maptitle = html.H4(f'Facility {facname} - {metric}')
+                            
+                        polar_recpts = gdf[gdf['RecID'].apply(lambda x: 'ang' in x)]
+                        polar_recpts['Distance (m)'] = [x.split('ang')[0] for x in polar_recpts['RecID']]
+                        polar_recpts['Angle (deg)'] = [x.split('ang')[1] for x in polar_recpts['RecID']]
+                        block_recpts = gdf[gdf['RecID'].apply(lambda x: 'ang' not in x)]
                                                          
                         pointjson = json.loads(gdf.to_json())
                         pointbuf = dlx.geojson_to_geobuf(pointjson)
@@ -1078,9 +1088,9 @@ class HEM4dash():
                         
                         loadcont=json.loads(cont_json)
                         contgdf=gp.GeoDataFrame.from_features(loadcont)
-                        contgdf['fakenums'] = levels[1:]
-                        classes = contgdf.fakenums.to_list()
-                        contgdf['fakenums'] = contgdf['fakenums']*1.05
+                        contgdf['assgnvals'] = levels[1:]
+                        classes = contgdf.assgnvals.to_list()
+                        contgdf['assgnvals'] = contgdf['assgnvals']*1.05
                         contgdf.set_crs('epsg:4326')
                         gdfJSON = contgdf.to_json()
                                     
@@ -1102,7 +1112,7 @@ class HEM4dash():
                         draw_recepts = Namespace('HEM_leaflet_functions', 'contour')('draw_receptors')
                         cont_style = Namespace('HEM_leaflet_functions', 'contour')('draw_contours')
                         
-                        hideout=dict(colorscale=colorscale, classes=classes, style=style, colorProp='fakenums')
+                        hideout=dict(colorscale=colorscale, classes=classes, style=style, colorProp='assgnvals')
                                                 
                         contmap = [
                             
@@ -1119,7 +1129,7 @@ class HEM4dash():
                                                             dl.GeoJSON(id = 'ctab-recepts', format="geobuf",
                                                                        data=pointbuf,
                                                                        cluster=True,
-                                                                       superClusterOptions=dict(radius=100, maxZoom = 12),
+                                                                       superClusterOptions=dict(radius=100, maxZoom = 13),
                                                                        options = dict(pointToLayer=draw_recepts),
                                                                        # options = dict(pointToLayer=draw_recepts, onEachFeature=draw_arrow),
                                                                       ),

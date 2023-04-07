@@ -1,4 +1,3 @@
-
 window.HEM_leaflet_functions = Object.assign({}, window.HEM_leaflet_functions, {
 	facs:{
 		draw_facilities: function(feature, latlng, context)
