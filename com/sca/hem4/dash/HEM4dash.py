@@ -106,15 +106,13 @@ class HEM4dash():
         # external_stylesheets = ['https://codepen.io/chriddyp/pen/bWLwgP.css']
         dbc_stylesheets = [dbc.themes.MORPH]
         
+        # External scripts
         chroma = "https://cdnjs.cloudflare.com/ajax/libs/chroma-js/2.1.0/chroma.min.js"  # js lib used for colors
+        # jsFuncs = "assets/HEM_leaflet_functions.js"
         
         ct_esri, ct_dark, ct_light, ct_openstreet, ct_places, ct_roads = get_basemaps() # get basemaps and other layers
                 
-        # Create geobuf of state boundaries for facility map
-        with open('assets/states_lines.geojson') as f:
-            statejson = json.load(f)
-        statebuf = dlx.geojson_to_geobuf(statejson)
-        
+                
         app = dash.Dash(__name__, external_stylesheets=dbc_stylesheets, external_scripts=[chroma])
         app.title = 'HEM4 Summary Results: ' + self.SCname
                 
@@ -456,6 +454,7 @@ class HEM4dash():
             'Spleen HI', 'Thyroid HI', 'Whole body HI']
 
             blue_scale = ['#bce6f9', '#74bbed', '#4d96ce', '#48799d', '#404d54']
+            blue_scale = ['aliceblue', 'darkblue']
             green_scale = ['#cbf6d9', '#64d2a2', '#33b581', '#368165', '#39544c']
             red_scale = ['#fee5d9', '#fcae91', '#fb6a4a', '#de2d26', '#a50f15']
             orange_scale = ['#ffa200', '#ff6e00', '#c85700', '#914505', '#582c0e']
@@ -471,6 +470,11 @@ class HEM4dash():
                         'Blue to Red': blue_to_red, 'Red to Blue': red_to_blue,  
                         'Green Scale': green_scale, 'Orange Scale': orange_scale,'Red Scale': red_scale,
                         'Blue Scale' : blue_scale}
+            
+            # Create geobuf of state boundaries for facility map
+            with open('assets/states_lines.geojson') as f:
+                statejson = json.load(f)
+            statebuf = dlx.geojson_to_geobuf(statejson)
             
             # These are for the contour map tab
             metrics = ['MIR', 'Respiratory HI', 'Liver HI', 'Neurological HI',
@@ -755,7 +759,7 @@ class HEM4dash():
                                 
                                 dbc.Col([
                                                                                                 
-                                        dl.Map(id = 'ctab-themap', center = [39., -97.3], zoomSnap = .3,
+                                        dl.Map(id = 'ctab-themap', center = [39., -97.3], minZoom = 3, zoomSnap = .3,
                                                 zoom=5, children=[
                                                     dl.LayersControl([ct_esri, ct_dark, ct_light, ct_openstreet])
                                                     ]),
@@ -884,7 +888,7 @@ class HEM4dash():
             @app.callback(Output('facs_layer', 'data'),
                           Output('facs_layer', 'hideout'),
                           Output('facs_layer', 'options'),
-                          
+                                                    
                           Output('facs_colorbar', 'colorscale'),
                           Output('facs_colorbar', 'min'),
                           Output('facs_colorbar', 'max'),
@@ -908,7 +912,8 @@ class HEM4dash():
                     #'<br><b>Cancer Risk (in a million): </b>' + facs_gdf['MIR (in a million)'].apply(lambda x: f'{self.riskfig(x, 1)}').astype(str) + \
                 facs_geojson = json.loads(facs_gdf.to_json())
                 facs_buf = dlx.geojson_to_geobuf(facs_geojson)
-                    
+                
+                                    
                 color_prop = f'Log {metric}'
                 colorscale = facramps[ramp]
                     
@@ -924,11 +929,12 @@ class HEM4dash():
                 tickText=[str(tick1), str(tick2), str(tick3)]
                                     
                 maptitle = f'Facility Map ({numFacs} facilities) - {metric}'
-                draw_facs = Namespace('HEM_leaflet_functions', 'facs')('draw_facilities')                             
-                cont_hideout=dict(min=vmin, max=vmax, colorscale=colorscale, circleOptions=dict(fillOpacity=1, stroke=False, radius=size), colorProp=color_prop)
-                cont_options = dict(pointToLayer=draw_facs)               
+                draw_facs = Namespace('HEM_leaflet_functions', 'facs')('draw_facilities') 
+                # draw_facs = Namespace(jsFuncs, 'facs')('draw_facilities')                            
+                fac_hideout=dict(min=vmin, max=vmax, colorscale=colorscale, circleOptions=dict(fillOpacity=1, stroke=False, radius=size), colorProp=color_prop)
+                fac_options = dict(pointToLayer=draw_facs)               
                 
-                return facs_buf, cont_hideout, cont_options, colorscale, vmin, vmax, tickText, maptitle
+                return facs_buf, fac_hideout, fac_options, colorscale, vmin, vmax, tickText, maptitle
 
 # Mark commented these out
 #            @app.callback(
@@ -983,15 +989,26 @@ class HEM4dash():
                         else:
                             gdf['tooltip'] = '<b>Receptor ID: </b>' + gdf['RecID'] + f'<br><b>{metric}: </b>' + gdf[metric].apply(lambda x: f'{self.riskfig(x, digz)}').astype(str)
                             maptitle = html.H4(f'Facility {facname} - {metric}')
-                            
+                        
+                        # Create separate layers for polar and block receptors
                         polar_recpts = gdf[gdf['RecID'].apply(lambda x: 'ang' in x)]
                         polar_recpts['Distance (m)'] = [x.split('ang')[0] for x in polar_recpts['RecID']]
                         polar_recpts['Angle (deg)'] = [x.split('ang')[1] for x in polar_recpts['RecID']]
                         block_recpts = gdf[gdf['RecID'].apply(lambda x: 'ang' not in x)]
-                                                         
-                        pointjson = json.loads(gdf.to_json())
-                        pointbuf = dlx.geojson_to_geobuf(pointjson)
                         
+                        if polar_recpts is not None and len(polar_recpts) != 0:
+                            polarjson = json.loads(polar_recpts.to_json())
+                            polarbuf = dlx.geojson_to_geobuf(polarjson)
+                            
+                        else:
+                            polarbuf = None
+                            
+                        if block_recpts is not None and len(block_recpts) != 0:
+                            blockjson = json.loads(block_recpts.to_json())
+                            blockbuf = dlx.geojson_to_geobuf(blockjson)
+                                                        
+                        else:
+                            blockbuf = None                       
                         
                         # Use the max receptor to center the map
                         max_x = dfpl.loc[dfpl[metric].idxmax()]
@@ -1109,10 +1126,16 @@ class HEM4dash():
                                 levbot = classes[i-1]
                                 ctg.append(f'<b>{self.riskfig(levbot, digz)} - {self.riskfig(val, digz)}</b>')
                                                 
-                        draw_recepts = Namespace('HEM_leaflet_functions', 'contour')('draw_receptors')
-                        cont_style = Namespace('HEM_leaflet_functions', 'contour')('draw_contours')
                         
-                        hideout=dict(colorscale=colorscale, classes=classes, style=style, colorProp='assgnvals')
+                        # cont_style = Namespace(jsFuncs, 'contour')('draw_contours')
+                        # draw_blocks = Namespace(jsFuncs, 'contour')('draw_block_receptors')
+                        # draw_polars = Namespace(jsFuncs, 'contour')('draw_polar_receptors')
+                        cont_style = Namespace('HEM_leaflet_functions', 'contour')('draw_contours')
+                        draw_blocks = Namespace('HEM_leaflet_functions', 'contour')('draw_block_receptors')
+                        draw_polars = Namespace('HEM_leaflet_functions', 'contour')('draw_polar_receptors2')
+                        # draw_cluster = Namespace('HEM_leaflet_functions', 'contour')('draw_cluster')
+                        
+                        cont_hideout=dict(colorscale=colorscale, classes=classes, style=style, colorProp='assgnvals')
                                                 
                         contmap = [
                             
@@ -1122,21 +1145,35 @@ class HEM4dash():
                                 dl.LayersControl([ct_esri, ct_dark, ct_light, ct_openstreet] +
                                                  
                                                   [
-                                                      
-                                                     dl.Overlay(
+                                                                                                            
+                                                      dl.Overlay(
                                                             
-                                                            dl.LayerGroup(
-                                                            dl.GeoJSON(id = 'ctab-recepts', format="geobuf",
-                                                                       data=pointbuf,
-                                                                       cluster=True,
-                                                                       superClusterOptions=dict(radius=100, maxZoom = 13),
-                                                                       options = dict(pointToLayer=draw_recepts),
-                                                                       # options = dict(pointToLayer=draw_recepts, onEachFeature=draw_arrow),
-                                                                      ),
-                                                            ),
-                                                            name = 'Receptors', checked = False
+                                                             dl.LayerGroup(
+                                                             dl.GeoJSON(id = 'ctab-blocks', format="geobuf",
+                                                                        data=blockbuf,
+                                                                        # cluster=True, 
+                                                                        # zoomToBoundsOnClick=True,
+                                                                        # superClusterOptions = dict(radius=100),                                                                    
+                                                                        options = dict(pointToLayer=draw_blocks),
+                                                                        # options = dict(pointToLayer=draw_recepts, onEachFeature=draw_arrow),
+                                                                       ),
+                                                             ),
+                                                             name = 'Block/User Receptors', checked = False
                                                             
-                                                            ),
+                                                        ),
+                                                     
+                                                      dl.Overlay(
+                                                            
+                                                             dl.LayerGroup(
+                                                             dl.GeoJSON(id = 'ctab-polars', format="geobuf",
+                                                                        data=polarbuf,
+                                                                        options = dict(pointToLayer=draw_polars),
+                                                                        # options = dict(pointToLayer=draw_recepts, onEachFeature=draw_arrow),
+                                                                       ),
+                                                             ),
+                                                             name = 'Polar Receptors', checked = False
+                                                            
+                                                        ),
                                                       
                                                 
                                                  
@@ -1148,12 +1185,12 @@ class HEM4dash():
                                                                        data=polydata,
                                                                        options=dict(style=cont_style),
                                                                        zoomToBounds = False,
-                                                                       hideout=hideout,
+                                                                       hideout=cont_hideout,
                                                                        ),
                                                             ),
                                                             name = 'Contours', checked = True
                                                             
-                                                            ),
+                                                        ),
                                                      
                                                      ct_roads, ct_places
                                                                                      
