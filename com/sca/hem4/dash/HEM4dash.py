@@ -110,8 +110,7 @@ class HEM4dash():
         chroma = "https://cdnjs.cloudflare.com/ajax/libs/chroma-js/2.1.0/chroma.min.js"  # js lib used for colors
         # jsFuncs = "assets/HEM_leaflet_functions.js"
         
-        ct_esri, ct_dark, ct_light, ct_openstreet, ct_places, ct_roads = get_basemaps() # get basemaps and other layers
-                
+        ct_esri, ct_dark, ct_light, ct_openstreet, ct_places, ct_roads = get_basemaps() # get basemaps and other layers                
                 
         app = dash.Dash(__name__, external_stylesheets=dbc_stylesheets, external_scripts=[chroma])
         app.title = 'HEM4 Summary Results: ' + self.SCname
@@ -155,6 +154,7 @@ class HEM4dash():
         # mapmets = ['MIR (in a million)', 'Respiratory HI', 'Liver HI','Neurological HI','Developmental HI',
         #            'Reproductive HI', 'Kidney HI', 'Ocular HI', 'Endocrine HI', 'Hematological HI',
         #            'Immunological HI','Skeletal HI', 'Spleen HI', 'Thyroid HI']
+        
         # Define center coordinates of facilities and find their count
         cenlat = (df_max_can['Facility Center Lat'].max() + df_max_can['Facility Center Lat'].min())/2
         cenlon = (df_max_can['Facility Center Lon'].max() + df_max_can['Facility Center Lon'].min())/2
@@ -454,7 +454,7 @@ class HEM4dash():
             'Spleen HI', 'Thyroid HI', 'Whole body HI']
 
             blue_scale = ['#bce6f9', '#74bbed', '#4d96ce', '#48799d', '#404d54']
-            blue_scale = ['aliceblue', 'darkblue']
+            # blue_scale = ['aliceblue', 'darkblue']
             green_scale = ['#cbf6d9', '#64d2a2', '#33b581', '#368165', '#39544c']
             red_scale = ['#fee5d9', '#fcae91', '#fb6a4a', '#de2d26', '#a50f15']
             orange_scale = ['#ffa200', '#ff6e00', '#c85700', '#914505', '#582c0e']
@@ -662,7 +662,7 @@ class HEM4dash():
                                         class_name="fw-bold"
                                     ),
                                     
-                                    html.Br(),
+                                    # html.Br(),
                                     html.Label(["Risk metric"]),
                                     dcc.Dropdown(id='ctab-metricdrop',
                                                   options=[{"label": i, "value": i} for i in metrics],
@@ -715,7 +715,7 @@ class HEM4dash():
                                                   placeholder="Select Color Ramp",
                                                   ),
                                                         
-                                    html.Hr(),
+                                    # html.Hr(),
                                     html.Label(["Opacity"]),
                                     dcc.Slider(.1, 1, .1,
                                                 value=.8,
@@ -723,7 +723,7 @@ class HEM4dash():
                                                 id='ctab-opacdrop'
                                                 ),
                                     
-                                    html.Hr(),
+                                    # html.Hr(),
                                     html.Label(["Significant figures displayed"]),
                                     dcc.RadioItems([1,2,3], 1, id='ctab-sigfigdrop', labelStyle={'display': 'inline-block', 'margin-right': '20px'}),
                                                         
@@ -761,12 +761,13 @@ class HEM4dash():
                                                                                                 
                                         dl.Map(id = 'ctab-themap', center = [39., -97.3], minZoom = 3, zoomSnap = .3,
                                                 zoom=5, children=[
-                                                    dl.LayersControl([ct_esri, ct_dark, ct_light, ct_openstreet])
-                                                    ]),
+                                                    dl.LayersControl([ct_esri, ct_dark, ct_light, ct_openstreet],)
+                                                    ],
+                                                style={'width': '1200px', 'height': '600px'}),
                                                                                 
                                         ], width=10)
                                                          
-                            ], className="h-75")
+                            ])
                             
                         ], fluid=True, style={"height": "90vh"})
                                                 
