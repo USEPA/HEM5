@@ -138,7 +138,7 @@ class InputChecker():
         
         for option in optional_list:
             
-            if option is 'user_rcpt':
+            if option == 'user_rcpt':
                 
                 
                 
@@ -175,7 +175,7 @@ class InputChecker():
                         result['reset'] = 'user_rcpt'
                         return result
 
-            elif option is 'bouyant':
+            elif option == 'bouyant':
                 
                 try:
                     
@@ -214,7 +214,7 @@ class InputChecker():
                         # set ureceptr model option to TRUE
                         self.model.model_optns['ureceptr'] = True
 
-            elif option is 'polyvertex':
+            elif option == 'polyvertex':
                 
                 try: 
                     print("checked polyvertex")
@@ -271,7 +271,7 @@ class InputChecker():
                             result['result'] =  logMsg9c
                             return result
             
-            elif option is 'downwash':
+            elif option == 'downwash':
             
                 try:
                     print("checked downwash")
@@ -327,7 +327,7 @@ class InputChecker():
                             result['result'] =  logMsg14c
                             return result
             
-            elif option is 'particle':
+            elif option == 'particle':
 
                 try:
                     
@@ -380,7 +380,7 @@ class InputChecker():
                             result['result'] =  logMsg10c
                             return result
 
-            elif option is 'vapor':
+            elif option == 'vapor':
                 
                 try:
                     
@@ -446,7 +446,7 @@ class InputChecker():
                             
                             return result
             
-            elif option is 'both':
+            elif option == 'both':
 
                 vdepo = self.model.faclist.dataframe['vdep'].fillna("").tolist()[0]                       # Vapor Deposition
                 pdepo = self.model.faclist.dataframe['pdep'].fillna("").tolist()[0]                       # Particle Deposition
