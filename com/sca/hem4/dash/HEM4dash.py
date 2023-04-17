@@ -6,7 +6,7 @@ Created on Wed Feb 26 07:07:56 2020
 """
 
 import dash
-import dash_table
+from dash import dash_table
 from dash import Dash, html, Input, Output, State, no_update, dcc
 from dash_extensions.javascript import assign, arrow_function, Namespace
 from dash_extensions.enrich import callback_context
@@ -38,6 +38,7 @@ from scipy.interpolate import griddata
 from sigfig import round as roundsf
 import io
 import base64
+import sys
 
 
 class HEM4dash():
@@ -46,6 +47,16 @@ class HEM4dash():
         self.dir = dirtouse
         self.SCname = self.dir.split('/')[-1]
 
+    def resource_path(self, relative_path):
+        # get absolute path to resource
+        try:
+            # PyInstaller creates a temp folder and stores path in _MEIPASS
+            base_path = sys._MEIPASS
+        except Exception:
+            cd = os.path.abspath(".")
+            base_path = os.path.join(cd, 'com\\sca\\hem4\\dash')
+                
+        return os.path.join(base_path, relative_path)
 
     def make_alert(self, string):
         if string is None:
@@ -111,7 +122,8 @@ class HEM4dash():
                 
         ct_esri, ct_dark, ct_light, ct_openstreet, ct_places, ct_roads = get_basemaps() # get basemaps and other layers                
                 
-        app = dash.Dash(__name__, external_stylesheets=dbc_stylesheets, external_scripts=[chroma])
+        app = dash.Dash(__name__, external_stylesheets=dbc_stylesheets, 
+                        external_scripts=[chroma], assets_folder=self.resource_path('assets'))
         app.title = 'HEM4 Summary Results: ' + self.SCname
                 
         # Create dataframe of max risks
