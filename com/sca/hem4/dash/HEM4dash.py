@@ -108,8 +108,7 @@ class HEM4dash():
         
         # External scripts
         chroma = "https://cdnjs.cloudflare.com/ajax/libs/chroma-js/2.1.0/chroma.min.js"  # js lib used for colors
-        # jsFuncs = "assets/HEM_leaflet_functions.js"
-        
+                
         ct_esri, ct_dark, ct_light, ct_openstreet, ct_places, ct_roads = get_basemaps() # get basemaps and other layers                
                 
         app = dash.Dash(__name__, external_stylesheets=dbc_stylesheets, external_scripts=[chroma])
@@ -931,7 +930,6 @@ class HEM4dash():
                                     
                 maptitle = f'Facility Map ({numFacs} facilities) - {metric}'
                 draw_facs = Namespace('HEM_leaflet_functions', 'facs')('draw_facilities') 
-                # draw_facs = Namespace(jsFuncs, 'facs')('draw_facilities')                            
                 fac_hideout=dict(min=vmin, max=vmax, colorscale=colorscale, circleOptions=dict(fillOpacity=1, stroke=False, radius=size), colorProp=color_prop)
                 fac_options = dict(pointToLayer=draw_facs)               
                 
@@ -986,18 +984,25 @@ class HEM4dash():
                         
                         if metric == 'MIR':
                             maptitle = html.H4(f'Facility {facname} - Lifetime Cancer Risk (in a million)')
-                            gdf['tooltip'] = '<b>Receptor ID: </b>' + gdf['RecID'] + '<br><b>Cancer Risk (in a million): </b>' + gdf[metric].apply(lambda x: f'{self.riskfig(x, digz)}').astype(str)
                         else:
-                            gdf['tooltip'] = '<b>Receptor ID: </b>' + gdf['RecID'] + f'<br><b>{metric}: </b>' + gdf[metric].apply(lambda x: f'{self.riskfig(x, digz)}').astype(str)
                             maptitle = html.H4(f'Facility {facname} - {metric}')
                         
                         # Create separate layers for polar and block receptors
                         polar_recpts = gdf[gdf['RecID'].apply(lambda x: 'ang' in x)]
-                        polar_recpts['Distance (m)'] = [x.split('ang')[0] for x in polar_recpts['RecID']]
-                        polar_recpts['Angle (deg)'] = [x.split('ang')[1] for x in polar_recpts['RecID']]
                         block_recpts = gdf[gdf['RecID'].apply(lambda x: 'ang' not in x)]
-                        
+                                                
                         if polar_recpts is not None and len(polar_recpts) != 0:
+                            polar_recpts['Distance (m)'] = [x.split('ang')[0] for x in polar_recpts['RecID']]
+                            polar_recpts['Angle (deg)'] = [x.split('ang')[1] for x in polar_recpts['RecID']]
+                            if metric == 'MIR':
+                                polar_recpts['tooltip'] = '<b>Polar Receptor</b>' +  '<br><b>Distance (m): </b>' + polar_recpts['Distance (m)'] \
+                                    + '<br><b>Angle (deg): </b>' + polar_recpts['Angle (deg)'] + '<br><b>Cancer Risk (in a million): </b>'\
+                                    + polar_recpts[metric].apply(lambda x: f'{self.riskfig(x, digz)}').astype(str)
+                            else:
+                                polar_recpts['tooltip'] = '<b>Polar Receptor</b>' +  '<br><b>Distance (m): </b>' + polar_recpts['Distance (m)'] \
+                                    + '<br><b>Angle (deg): </b>' + polar_recpts['Angle (deg)'] + f'<br><b>{metric}: </b>'\
+                                    + polar_recpts[metric].apply(lambda x: f'{self.riskfig(x, digz)}').astype(str)
+                                                        
                             polarjson = json.loads(polar_recpts.to_json())
                             polarbuf = dlx.geojson_to_geobuf(polarjson)
                             
@@ -1005,6 +1010,13 @@ class HEM4dash():
                             polarbuf = None
                             
                         if block_recpts is not None and len(block_recpts) != 0:
+                            if metric == 'MIR':
+                                block_recpts['tooltip'] = '<b>Block/User Receptor</b>' + '<br><b>Receptor ID: </b>' + block_recpts['RecID'] \
+                                    + '<br><b>Cancer Risk (in a million): </b>' + block_recpts[metric].apply(lambda x: f'{self.riskfig(x, digz)}').astype(str)
+                            else:
+                                block_recpts['tooltip'] = '<b>Block/User Receptor</b>' + '<br><b>Receptor ID: </b>' + block_recpts['RecID'] \
+                                    + f'<br><b>{metric}: </b>' + block_recpts[metric].apply(lambda x: f'{self.riskfig(x, digz)}').astype(str)
+                                                        
                             blockjson = json.loads(block_recpts.to_json())
                             blockbuf = dlx.geojson_to_geobuf(blockjson)
                                                         
@@ -1128,11 +1140,8 @@ class HEM4dash():
                                 ctg.append(f'<b>{self.riskfig(levbot, digz)} - {self.riskfig(val, digz)}</b>')
                                                 
                         
-                        # cont_style = Namespace(jsFuncs, 'contour')('draw_contours')
-                        # draw_blocks = Namespace(jsFuncs, 'contour')('draw_block_receptors')
-                        # draw_polars = Namespace(jsFuncs, 'contour')('draw_polar_receptors')
                         cont_style = Namespace('HEM_leaflet_functions', 'contour')('draw_contours')
-                        draw_blocks = Namespace('HEM_leaflet_functions', 'contour')('draw_block_receptors')
+                        draw_blocks = Namespace('HEM_leaflet_functions', 'contour')('draw_block_receptors2')
                         draw_polars = Namespace('HEM_leaflet_functions', 'contour')('draw_polar_receptors2')
                         # draw_cluster = Namespace('HEM_leaflet_functions', 'contour')('draw_cluster')
                         
@@ -1145,7 +1154,7 @@ class HEM4dash():
                             
                                 dl.LayersControl([ct_esri, ct_dark, ct_light, ct_openstreet] +
                                                  
-                                                  [
+                                                  [ct_roads, ct_places,
                                                                                                             
                                                       dl.Overlay(
                                                             
@@ -1153,7 +1162,6 @@ class HEM4dash():
                                                              dl.GeoJSON(id = 'ctab-blocks', format="geobuf",
                                                                         data=blockbuf,
                                                                         # cluster=True, 
-                                                                        # zoomToBoundsOnClick=True,
                                                                         # superClusterOptions = dict(radius=100),                                                                    
                                                                         options = dict(pointToLayer=draw_blocks),
                                                                         # options = dict(pointToLayer=draw_recepts, onEachFeature=draw_arrow),
@@ -1175,8 +1183,6 @@ class HEM4dash():
                                                              name = 'Polar Receptors', checked = False
                                                             
                                                         ),
-                                                      
-                                                
                                                  
                                                      dl.Overlay(
                                                          
@@ -1193,7 +1199,7 @@ class HEM4dash():
                                                             
                                                         ),
                                                      
-                                                     ct_roads, ct_places
+                                                     # ct_roads, ct_places
                                                                                      
                                                  ]
                                                  

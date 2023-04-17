@@ -21,6 +21,19 @@ window.HEM_leaflet_functions = Object.assign({}, window.HEM_leaflet_functions, {
 				return L.marker(latlng, {icon: square});
 			},
 			
+        draw_block_receptors2: function(feature, latlng)
+			{
+				circleOptions = {
+    				fillColor: '#9fc5e8',
+    				color: '#0014a8',
+    				fillOpacity: 1,
+    				radius: 5,
+    				stroke: true,
+    				weight: 2,
+    				};
+                return L.circleMarker(latlng, circleOptions);  // sender a simple circle marker
+			},
+			
         draw_polar_receptors: function(feature, latlng)
 			{
 				const dot = L.icon({iconUrl: `/assets/orangecircle.png`, iconSize: [10, 10]});
