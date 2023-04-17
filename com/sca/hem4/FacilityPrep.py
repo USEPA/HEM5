@@ -572,18 +572,24 @@ class FacilityPrep():
             sector_int = num_sectors
 
         # Compute fractional, log weighted ring value that will be used for interpolation. 
-        # loop through ring distances in pairs of previous and current.
-        ring_loc = 1
-        previous = ring_distances[0]
-        i = 0
-        for ring in ring_distances[1:]:
-            i = i + 1
-            current = ring
-            #if block is between rings, then interpolate distance and exit loop
-            if block_distance >= previous and block_distance < current:
-                ring_loc = i + (np.log(block_distance) - np.log(previous)) / (np.log(current) - np.log(previous))
-                break
-            previous = ring
+        # loop through ring distances in pairs of previous and current. Special case
+        # if block is located on the last ring.
+        numrings = len(ring_distances)
+        if block_distance != ring_distances[numrings-1]:
+            ring_loc = 1
+            previous = ring_distances[0]
+            i = 0
+            for ring in ring_distances[1:]:
+                i = i + 1
+                current = ring
+                #if block is between rings, then interpolate distance and exit loop
+                if block_distance >= previous and block_distance < current:
+                    ring_loc = i + (np.log(block_distance) - np.log(previous)) / (np.log(current) - np.log(previous))
+                    break
+                previous = ring
+        else:
+            ring_loc = numrings - 1
+
 
         # Compute integer ring number that will be used for assigning elevations to polar receptors
         ring_int = int(ring_loc + 0.5)
