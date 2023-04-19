@@ -175,7 +175,7 @@ class InputFile(ABC):
 
 
     # Read values in from a source .csv file using the polars library and use Lazy
-    # evaluation. A lazyframe is created for future querying.
+    # evaluation. This version executes the query and returns a polars dataframe.
     def readFromPathCsvPolarsDF(self):
         with open(self.path, "rb") as f:
                         

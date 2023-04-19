@@ -52,28 +52,28 @@ class AltReceptors(InputFile):
         # Strict: Invalid values in these columns will cause the upload to fail immediately.
         # ----------------------------------------------------------------------------------
         if df.select(pl.col(rec_id).is_null().sum())[0, rec_id] > 0:
-            Logger.logMessage("One or more Receptor IDs are missing in the Alternate User Receptors List.")
-            messagebox.showinfo("Missing Receptor IDs", "One or more Receptor IDs are missing in the Alternate User Receptors List.")
+            Logger.logMessage("One or more Receptor IDs are missing in the Alternate Receptors List.")
+            messagebox.showinfo("Missing Receptor IDs", "One or more Receptor IDs are missing in the Alternate Receptors List.")
             return None
 
         if len(df.filter((pl.col(location_type) != 'L') & (pl.col(location_type) != 'U'))) > 0 :
-            Logger.logMessage("One or more receptors are missing a Location Type in the Alternate User Receptors List.")
-            messagebox.showinfo("Missing Location Type", "One or more receptors are missing a Location Type in the Alternate User Receptors List.")
+            Logger.logMessage("One or more receptors have an invalid Location Type in the Alternate Receptors List. Valid types are L or U.")
+            messagebox.showinfo("Invalid Location Type", "One or more receptors are have an invalid Location Type in the Alternate Receptors List. Valid types are L or U.")
             return None
         
         # Check for duplicate receptors
-        uniqcols = df.select(pl.col([rec_id, lat, lon]))
+        uniqcols = df.select(pl.col([lat, lon]))
         uniq = uniqcols.filter(pl.lit(~uniqcols.is_duplicated()))
         if uniq.shape[0] != df.shape[0]:
-            Logger.logMessage("One or more records are duplicated in the Alternate User Receptors List (key=rec_id, lon, lat):")
-            messagebox.showinfo("Duplicates", "One or more records are duplicated in the Alternate User Receptors List (key=rec_id, lon, lat):")
+            Logger.logMessage("One or more records are duplicated in the Alternate Receptors List (key=lon, lat):")
+            messagebox.showinfo("Duplicates", "One or more records are duplicated in the Alternate Receptors List (key=lon, lat):")
             return None
 
         # Check for missing population values
         if len(df.filter((pl.col(population).is_null()) & (pl.col(rec_type) == 'P'))) > 0 :
         # if len(df.loc[(df[population].isnull()) & (df[rec_type] == 'P')]) > 0:
-            Logger.logMessage("Some 'P' receptors are missing population values in Alternate User Receptor List.")
-            messagebox.showinfo("Missing Population Values", "Some 'P' receptors are missing population values in Alternate User Receptor List.")
+            Logger.logMessage("Some 'P' receptors are missing population values in Alternate Receptor List.")
+            messagebox.showinfo("Missing Population Values", "Some 'P' receptors are missing population values in Alternate Receptor List.")
             return None
 
 

@@ -179,7 +179,7 @@ class Runstream():
         # If flagpole height is needed, create the FLAGPOLE card
         self.flagpole = self.facoptn_df['flagYN'].values[0]
         self.flaghgt = self.facoptn_df['flagdef'].values[0]
-        
+                
         if self.flagpole == 'Y':
             if self.facoptn_df['flagdef'].values[0] == 0:
                 flagopt = 'CO FLAGPOLE \n'
@@ -813,7 +813,7 @@ class Runstream():
                     redec = ("RE DISCCART  " + str("{:.0f}".format(recx[i])) + " " + str("{:.0f}".format(recy[i])) + 
                              " " + str(normal_round(rece[i])) + " " + 
                              str(normal_round(rech[i])) + " " +
-                             str(normal_round(recf[i])) + "\n")                    
+                             str(recf[i]) + "\n")                    
             else:
                 if self.flagpole == "N":
                     redec = ("RE DISCCART  " + str("{:.0f}".format(recx[i])) + " " + 
@@ -821,7 +821,7 @@ class Runstream():
                 else:
                     redec = ("RE DISCCART  " + str("{:.0f}".format(recx[i])) + " " + 
                             str("{:.0f}".format(recy[i])) + " " +
-                            normal_round(str(recf[i])) + "\n")
+                            str(recf[i]) + "\n")
             self.inp_f.write(redec)
 
             

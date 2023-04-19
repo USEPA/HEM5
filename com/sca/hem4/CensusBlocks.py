@@ -445,7 +445,7 @@ def getblocks(cenx, ceny, cenlon, cenlat, utmzone, hemi, maxdist, modeldist, sou
                           "Aborting processing of this facility.")
         raise ValueError("No discrete receptors selected within max distance")
         
-    # Confirm the dataframe does not contain duplicates
+    # Confirm the dataframe does not contain duplicate coordinates
     modelblksduplicates = modelblks[modelblks.duplicated(['lat', 'lon'])]
     if len(modelblksduplicates) > 0:
         emessage = "Error! Census blocks contain duplicate lat/long values."
@@ -511,11 +511,13 @@ def getblocks(cenx, ceny, cenlon, cenlat, utmzone, hemi, maxdist, modeldist, sou
 def getBlocksFromAltRecs(facid, cenx, ceny, cenlon, cenlat, utmZone, hemi, maxdist, modeldist
                          , sourcelocs, overlap_dist, model):
     
-    # convert max outer ring distance from meters to degrees latitude
-    maxdist_deg = maxdist*39.36/36/2000/60
-    
-    altrecs = model.altreceptr.dataframe.copy()
+    # Subset the Alternate Rececptors to receptors within one lat/lon of the facility center.
+    # This creates a smaller dataframe that is more efficient.
 
+    altrecs = model.altreceptr.dataframe.filter(
+        (pl.col('lat') <= cenlat+1) & (pl.col('lat') >= cenlat-1) 
+        & (pl.col('lon') <= cenlon+1) & (pl.col('lon') >= cenlon-1)).to_pandas()
+    
     # If any population values are missing, we cannot create an Incidence report
     model.altRec_optns['altrec_nopop'] = altrecs.isnull().any()[population]
     altrecs[population] = pd.to_numeric(altrecs[population], errors='coerce').fillna(0)
@@ -563,8 +565,6 @@ def getBlocksFromAltRecs(facid, cenx, ceny, cenlon, cenlat, utmZone, hemi, maxdi
             
     # Split modelblks into inner and outer block receptors
     innerblks, outerblks = in_box_NonCensus(modelblks, sourcelocs, modeldist, maxdist, overlap_dist, model)
-
-#        Logger.log("OUTERBLOCKS", outerblks, False)
 
     # convert utme, utmn, utmz, and population to appropriate numeric types
     innerblks[utme] = innerblks[utme].astype(np.float64)
