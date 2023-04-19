@@ -85,7 +85,7 @@ class BlockSummaryChronicNonCensus(CsvWriter, InputFile):
 
         # append the inner and outer values and write
         if self.outerAgg is not None:
-            self.dataframe = pd.concat([inneragg, self.outerAgg], ignore_index=True).sort_values(by=[fips, block])
+            self.dataframe = pd.concat([inneragg, self.outerAgg], ignore_index=True).sort_values(by=[rec_id])
         else:
             self.dataframe = inneragg
     
