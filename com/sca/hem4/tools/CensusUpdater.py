@@ -67,27 +67,33 @@ class CensusUpdater():
                 # Also create the FIPs column
                 additions_df.loc[:,"blockid"] = additions_df["blockid"].str.pad(width=15, fillchar="0", side="right")
                 additions_df.loc[:,"fips"] = additions_df["blockid"].str[:5]
-                self.generateAdditions(additions_df)
-
+                returnmsg = self.generateAdditions(additions_df)
+                if returnmsg is not None:
+                    Logger.LogMessage(returnmsg)
+                    return
+                
             # All updates are done. Make sure no duplicate lat/lons have been created.
             dups = self.lookForDupLatLon(self.census_df)
             if type(dups) is not type(None):
                 dupslist = dups.values.tolist()
                 dups2print = '\n'.join(', '.join(sub) for sub in dupslist)
-                Logger.logMessage("\nAfter the updates were applied, duplicate lat/lons " +
+                errmsg = ("\nAfter the updates were applied, duplicate lat/lons " +
                                   "now occur in the updated census data. Please correct " +
                                   "the update file and rerun this tool. Duplicates are: \n" +
                                   dups2print)
+                Logger.logMessage(errmsg)
                 return
             
             # Write updated file
             self.writeCensusFile(self.census_df)
             Logger.logMessage("Finished making census changes. Revised census file " +
                               "is located in the census folder and filename contains the extension '-updated'")
+            return
 
         except BaseException as e:
             fullStackInfo = traceback.format_exc()
             Logger.logMessage("Error running the Census Updater: " + fullStackInfo)
+            return
 
 
     def generateAdditions(self, additions):
@@ -99,22 +105,24 @@ class CensusUpdater():
             # Make sure Block IDs of the added receptors are not already present in the census data
             intersection = pd.merge(self.census_df, additions, how='inner', on=['blockid'])
             if not intersection.empty:
-                Logger.logMessage("Aborting user receptor additions because some user supplied block IDs" +
-                        " are already present in the census file. Duplicates Block IDs are: ")
-                Logger.logMessage(intersection['blockid'].values)
-                return
+                dupslist = intersection['blockid'].values.tolist()
+                dups2print = '\n'.join(', '.join(sub) for sub in dupslist)
+                errmsg = ("\nAborting user receptor additions because some user supplied block IDs" +
+                        " are already present in the census file. Duplicates Block IDs are: \n" +
+                        dups2print)                
+                return errmsg
 
             # Append all additions to the census DF
             self.census_df = pd.concat([self.census_df, additions], ignore_index=True)
             self.census_df = self.census_df.sort_values(by=['fips', 'blockid'])
             
             Logger.logMessage("Finished adding user receptors to the census file.")
-            return
+            return None
 
         except BaseException as e:
             fullStackInfo = traceback.format_exc()
             Logger.logMessage("Error adding user receptors to the census file: " + fullStackInfo)
-
+            return fullStackInfo
 
     def writeCensusFile(self, census_df):
         """
