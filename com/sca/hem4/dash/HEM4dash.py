@@ -1084,9 +1084,9 @@ class HEM4dash():
                                 except:
                                     pass
                             
-                            for item in finuserlist:
-                                if item > datamax or item < datamin:
-                                    finuserlist.remove(item)
+                            #for item in finuserlist:
+                                #if item > datamax or item < datamin:
+                                    #finuserlist.remove(item)
                             finuserlist = sorted(list(set(finuserlist)))
                                           
                         
