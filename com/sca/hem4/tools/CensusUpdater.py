@@ -69,17 +69,20 @@ class CensusUpdater():
                 additions_df.loc[:,"fips"] = additions_df["blockid"].str[:5]
                 returnmsg = self.generateAdditions(additions_df)
                 if returnmsg is not None:
-                    Logger.LogMessage(returnmsg)
+                    Logger.logMessage(returnmsg)
                     return
                 
             # All updates are done. Make sure no duplicate lat/lons have been created.
-            dups = self.lookForDupLatLon(self.census_df)
+            all_latlons = self.census_df[['lat', 'lon']]
+            all_latlons = all_latlons.apply(pd.to_numeric)
+            dups = self.lookForDupLatLon(all_latlons)
             if type(dups) is not type(None):
+                dups = dups.astype(str)
                 dupslist = dups.values.tolist()
                 dups2print = '\n'.join(', '.join(sub) for sub in dupslist)
                 errmsg = ("\nAfter the updates were applied, duplicate lat/lons " +
                                   "now occur in the updated census data. Please correct " +
-                                  "the update file and rerun this tool. Duplicates are: \n" +
+                                  "the update file and rerun this tool. Duplicates lat/lons are: \n" +
                                   dups2print)
                 Logger.logMessage(errmsg)
                 return
@@ -106,7 +109,7 @@ class CensusUpdater():
             intersection = pd.merge(self.census_df, additions, how='inner', on=['blockid'])
             if not intersection.empty:
                 dupslist = intersection['blockid'].values.tolist()
-                dups2print = '\n'.join(', '.join(sub) for sub in dupslist)
+                dups2print = '\n'.join(dupslist)
                 errmsg = ("\nAborting user receptor additions because some user supplied block IDs" +
                         " are already present in the census file. Duplicates Block IDs are: \n" +
                         dups2print)                
@@ -178,12 +181,6 @@ class CensusUpdater():
                       df[['population', 'elev', 'hill', 'urban_pop']].fillna(value=0)
             return df
 
-    # def readAdditionsFromPath(self, filepath):
-    #     colnames = ["change", "facid", "category", "blockid", "lat", "lon", 
-    #                 "population", "elev", "hill", "urban_pop"]
-    #     with open(filepath, "rb") as f:
-    #         df = pd.read_excel(f, skiprows=0, names=colnames, dtype=str, na_values=[''], keep_default_na=False)
-    #         return df
 
     def readCensusFromPath(self, filepath):
         # datatypes = {'fips':pl.Utf8, 'blockid':pl.Utf8, 'population':pl.Int64, 
