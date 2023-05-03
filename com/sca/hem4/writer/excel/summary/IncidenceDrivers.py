@@ -36,7 +36,7 @@ class IncidenceDrivers(ExcelWriter):
 
         allinc_df.drop_duplicates().reset_index(drop=True)
 
-        summed = allinc_df.groupby([pollutant], as_index=False)[inc].sum()
+        summed = allinc_df.groupby(pollutant, as_index=False)[inc].sum()
 
         # Sort by incidence descending, and then pollutant name ascending
         summed.sort_values(by=[inc, pollutant], ascending=[False, True], inplace=True)
@@ -45,7 +45,9 @@ class IncidenceDrivers(ExcelWriter):
         summed[inc_contrib] = summed.apply(
             lambda x: str(round(100*(x[inc] / totalIncidence), 2)) + "%" if totalIncidence > 0 else "0.00%", axis=1)
 
-        summed = summed.append({pollutant : 'Total incidence', inc : totalIncidence, inc_contrib : '100%'}, ignore_index=True)
+        totinc_dict = {pollutant : 'Total incidence', inc : totalIncidence, inc_contrib : '100%'}
+        totinc_df = pd.DataFrame(totinc_dict, index=[0])
+        summed = pd.concat([summed, totinc_df], ignore_index=True)
 
         # Put final df into array
         self.dataframe = summed

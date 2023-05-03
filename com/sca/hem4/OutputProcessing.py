@@ -119,9 +119,9 @@ class Process_outputs():
 
         
         # ----------- create All_Outer_Receptor output file -----------------
-        all_outer_receptors = AllOuterReceptorsNonCensus(self.outdir, self.facid, self.model, self.plot_df, self.acute_yn) if altrec \
-                        else AllOuterReceptors(self.outdir, self.facid, self.model, self.plot_df, self.acute_yn)
         if not self.model.outerblks_df.empty:
+            all_outer_receptors = AllOuterReceptorsNonCensus(self.outdir, self.facid, self.model, self.plot_df, self.acute_yn) if altrec \
+                            else AllOuterReceptors(self.outdir, self.facid, self.model, self.plot_df, self.acute_yn)
             all_outer_receptors.write(generateOnly=self.generateOnly)
             self.model.all_outer_receptors_df = all_outer_receptors.dataframe
             Logger.logMessage("Completed AllOuterReceptors output")
@@ -152,9 +152,15 @@ class Process_outputs():
 
         
         #----------- create Block_Summary_Chronic data -----------------
-        block_summary_chronic = BlockSummaryChronicNonCensus(targetDir=self.outdir, facilityId=self.facid,
-                 model=self.model, plot_df=self.plot_df, outerAgg=all_outer_receptors.outerAgg) if altrec else \
-            BlockSummaryChronic(self.outdir, self.facid, self.model, self.plot_df, all_outer_receptors.outerAgg)
+        if not self.model.outerblks_df.empty:
+            block_summary_chronic = BlockSummaryChronicNonCensus(targetDir=self.outdir, facilityId=self.facid,
+                     model=self.model, plot_df=self.plot_df, outerAgg=all_outer_receptors.outerAgg) if altrec else \
+                BlockSummaryChronic(self.outdir, self.facid, self.model, self.plot_df, all_outer_receptors.outerAgg)
+        else:
+            block_summary_chronic = BlockSummaryChronicNonCensus(targetDir=self.outdir, facilityId=self.facid,
+                     model=self.model, plot_df=self.plot_df) if altrec else \
+                BlockSummaryChronic(self.outdir, self.facid, self.model, self.plot_df)
+            
         generator = block_summary_chronic.generateOutputs()
         for batch in generator:
             self.model.block_summary_chronic_df = block_summary_chronic.dataframe
@@ -165,15 +171,6 @@ class Process_outputs():
             return
 
         
-#        # Assign rec_type to block summary chronic from the inner and outer census DFs.
-#        if not self.model.outerblks_df.empty:
-#            allrectype = pd.concat([self.model.innerblks_df[[utme,utmn,rec_type]], 
-#                                 self.model.outerblks_df[[utme,utmn,rec_type]]], ignore_index=True)
-#        else:
-#            allrectype = self.model.innerblks_df[[utme,utmn,rec_type]]
-#        blksummary_w_rectype = pd.merge(self.model.block_summary_chronic_df, allrectype, how="left",
-#                                                       on=[utme, utmn])   
-
         
         # Construct a DF of total risk by lat and lon for all receptors. Do this by combining the block summary 
         # chronic and ring summary chronic DFs into one DF.
@@ -266,12 +263,16 @@ class Process_outputs():
 
         #----------- create Incidence output file ------------------------
         if not altrec_nopop:
-            outerInc_list = []
-            for key in all_outer_receptors.outerInc.keys():
-                insert_list = [key[0], key[1], key[2], all_outer_receptors.outerInc[key]]
-                outerInc_list.append(insert_list)
-            outerInc_df = pd.DataFrame(outerInc_list, columns=[source_id, pollutant, emis_type, inc])
-            incidence= Incidence(self.outdir, self.facid, self.model, self.plot_df, outerInc_df)
+            if not self.model.outerblks_df.empty:
+                outerInc_list = []
+                for key in all_outer_receptors.outerInc.keys():
+                    insert_list = [key[0], key[1], key[2], all_outer_receptors.outerInc[key]]
+                    outerInc_list.append(insert_list)
+                outerInc_df = pd.DataFrame(outerInc_list, columns=[source_id, pollutant, emis_type, inc])
+                incidence= Incidence(self.outdir, self.facid, self.model, self.plot_df, outerInc_df)
+            else:
+                incidence= Incidence(self.outdir, self.facid, self.model, self.plot_df)
+                
             incidence.write()
             Logger.logMessage("Completed Incidence output")
 

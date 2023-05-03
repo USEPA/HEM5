@@ -78,7 +78,7 @@ class MultiPathway(ExcelWriter):
             rbkdn_df = riskBkdn_df.merge(pollutantCrosswalk_df, left_on=[pollutant], right_on=[pollutant_name], how="left")
             rbkdn_df[designation] = rbkdn_df[designation].fillna('POL')
 
-            rbkdn_df = rbkdn_df.groupby(designation).sum().reset_index()
+            rbkdn_df = rbkdn_df.groupby(designation).sum(numeric_only=True).reset_index()
 
             maxRiskAndHI_df = facilityMaxRiskAndHI_df.loc[facilityMaxRiskAndHI_df['Facil_id'] == facilityId]
             maxIndivRisks_df = maxIndivRisks_df.loc[maxIndivRisks_df[parameter] == 'Cancer risk']
@@ -115,7 +115,7 @@ class MultiPathway(ExcelWriter):
 
             # group by and sum by fips, block, population, lat, lon, pollutant
             allinner_df = allinner_df.groupby(by=[fips, block, population, lat, lon, pollutant], as_index=False) \
-                .sum().reset_index(drop=True)
+                .sum(numeric_only=True).reset_index(drop=True)
 
             # compute risk with immediate above result
             allinner_df['risk'] = allinner_df.apply(lambda x: self.calculateRisk(x[pollutant], x[conc]), axis=1)
@@ -126,7 +126,7 @@ class MultiPathway(ExcelWriter):
 
             # Aggregate concentration, grouped by FIPS/block
             inner_summed = allinnermerged_df.groupby(by=[fips, block, population, lat, lon, designation], as_index=False)\
-                .sum().reset_index(drop=True)
+                .sum(numeric_only=True).reset_index(drop=True)
 
             # Steps k-n
             allouter_summed = pd.DataFrame()
