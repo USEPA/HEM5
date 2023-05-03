@@ -110,6 +110,12 @@ class Census(Page):
             self.home.newrunLabel.bind("<Button-1>", partial(self.disabled_message))
             self.home.iconLabel.bind("<Button-1>", partial(self.disabled_message))
             
+            # Make Log window active
+            self.home.hem.lift()
+            self.fix_config(self.home.liLabel, self.home.logLabel, self.home.current_button)
+            self.lift_page(self.home.liLabel, self.home.logLabel, self.home.log, self.home.current_button)
+
+                     
             executor = ThreadPoolExecutor(max_workers=1)
     
             future = executor.submit(self.censusupdater.generateChanges, self.censusUpdatePath)
@@ -146,3 +152,25 @@ class Census(Page):
         else:
             self.censusUpdatePath = fullpath
             self.folder_select['text'] = fullpath.split("\\")[-1]
+
+
+    def lift_page(self, widget1, widget2, page, previous):
+        """
+        Function lifts page and changes button color to active,
+        changes previous button color
+        """
+        try:
+            widget1.configure(bg=self.tab_color)
+            widget2.configure(bg=self.tab_color)
+
+            if len(self.home.current_button) > 0:
+
+                for i in self.home.current_button:
+                    i.configure(bg=self.main_color)
+
+            page.lift()
+            self.home.current_button = [widget1, widget2]
+            
+        except Exception as e:
+
+            print(e)
