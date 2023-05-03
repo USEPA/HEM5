@@ -1014,9 +1014,7 @@ class Hem(Page):
                 os.makedirs(self.model.rootoutput)
 
                 try:
-                    print('the processor function')
                     self.process()
-
 
                 except BaseException as ex:
 
@@ -1027,7 +1025,6 @@ class Hem(Page):
         Function creates thread for running HEM4 concurrently with tkinter GUI
         """
         executor = ThreadPoolExecutor(max_workers=1)
-        print('created executor')
 
         self.running = True
         self.disable_buttons()
@@ -1049,7 +1046,6 @@ class Hem(Page):
             self.back.destroy()
 
         self.processor = Processor(self, self.model, Event())
-        print('about to send to future')
         future = executor.submit(self.processor.process)
         future.add_done_callback(self.processing_finish)
 

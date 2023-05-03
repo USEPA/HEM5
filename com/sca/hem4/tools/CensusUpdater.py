@@ -26,6 +26,7 @@ class CensusUpdater():
 
         try:
 
+            Logger.logMessage("Reading the Census file...")
             self.census_df = self.readCensusFromPath(self.censusFilepath)
             self.changeset_df = self.readChangesFromPath(changesetFilepath)
             
@@ -89,7 +90,7 @@ class CensusUpdater():
             
             # Write updated file
             self.writeCensusFile(self.census_df)
-            Logger.logMessage("Finished making census changes. Revised census file " +
+            Logger.logMessage("\nFinished making census changes. Revised census file " +
                               "is located in the census folder and filename contains the extension '-updated'")
             return
 
