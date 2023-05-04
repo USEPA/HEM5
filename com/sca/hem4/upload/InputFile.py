@@ -55,7 +55,7 @@ class InputFile(ABC):
                 df = pd.read_excel(f, skiprows=self.skiprows, names=colnames, dtype=str, na_values=[''], keep_default_na=False)
 
         except FileNotFoundError as e:
-            messagebox.showinfo("Error", "A directory or file appears to be missing.\nPlease check your HEM4 output folder\nand try again.")
+            messagebox.showinfo("Error", "The file "+self.path+" is missing.\nPlease check your HEM4 output folder\nand try again.")
             dataframe = pd.DataFrame()
             return dataframe
 
