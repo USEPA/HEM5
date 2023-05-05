@@ -9,6 +9,7 @@ import os
 import sys
 from concurrent.futures import ThreadPoolExecutor
 from com.sca.hem4.dash.HEM4dash import HEM4dash
+from com.sca.hem4.dash.contours import contours
 from com.sca.hem4.dash.EJdash import EJdash
 from threading import Timer
 import traceback
@@ -23,6 +24,7 @@ class Analyze(Page):
         Page.__init__(self, *args, **kwargs)
         
         self.hem4dashport = 8030
+        self.contourport = 8040
         self.ejport = 8050
 
         meta_container = tk.Frame(self, bg=TAB_COLOR, bd=2)
@@ -74,7 +76,7 @@ class Analyze(Page):
 
         self.add_instructions(self.s2, self.s2)
 
-        title2 = tk.Label(self.s3, text="HEM4 OUTPUTS", font=SUBTITLE_FONT, fg=MAIN_COLOR, bg=TAB_COLOR)
+        title2 = tk.Label(self.s3, text="RISK OUTPUTS FOR TOTAL POPULATION", font=SUBTITLE_FONT, fg=MAIN_COLOR, bg=TAB_COLOR)
         title2.grid(row=1, column=3, padx=40, pady=10)
 
         fu = PIL.Image.open('images\icons8-import-48.png').resize((30,30))
@@ -124,7 +126,7 @@ class Analyze(Page):
         self.dashLabel.image = dashicon # keep a reference!
         self.dashLabel.grid(row=1, column=0, padx=(80,10))
 
-        self.button_dash = tk.Label(self.s6, text="View summary graphical outputs in web browser",
+        self.button_dash = tk.Label(self.s6, text="View summary graphical outputs for run group",
                                     font=TEXT_FONT, bg=TAB_COLOR)
         self.button_dash.grid(row=1, column=1)
 
@@ -136,6 +138,27 @@ class Analyze(Page):
         self.dashLabel.bind("<Leave>", lambda x: self.remove_config(self.button_dash, self.dashLabel, self.s6, TAB_COLOR, x))
         self.dashLabel.bind("<Button-1>", partial(self.dash_button))
 
+        # Contours button
+        ci = PIL.Image.open('images\icons8-map-48.png').resize((30,30))
+        cicon = self.add_margin(ci, 5, 0, 5, 0)
+        contouricon = ImageTk.PhotoImage(cicon)
+        self.contourLabel = tk.Label(self.s7, image=contouricon, bg=TAB_COLOR)
+        self.contourLabel.image = contouricon # keep a reference!
+        self.contourLabel.grid(row=1, column=0, padx=(80,10))
+
+        self.button_contour = tk.Label(self.s7, text="Create contours of facility-specific risk results",
+                                    font=TEXT_FONT, bg=TAB_COLOR)
+        self.button_contour.grid(row=1, column=1)
+
+        self.button_contour.bind("<Enter>", lambda x: self.color_config(self.button_contour, self.contourLabel, self.s7, HIGHLIGHT_COLOR, x))
+        self.button_contour.bind("<Leave>", lambda x: self.remove_config(self.button_contour, self.contourLabel, self.s7, TAB_COLOR, x))
+        self.button_contour.bind("<Button-1>", partial(self.contour_button))
+
+        self.contourLabel.bind("<Enter>", lambda x: self.color_config(self.button_contour, self.contourLabel, self.s7, HIGHLIGHT_COLOR, x))
+        self.contourLabel.bind("<Leave>", lambda x: self.remove_config(self.button_contour, self.contourLabel, self.s7, TAB_COLOR, x))
+        self.contourLabel.bind("<Button-1>", partial(self.contour_button))
+        
+        
         title3 = tk.Label(self.s8, text="DEMOGRAPHIC ASSESSMENT OUTPUTS", font=SUBTITLE_FONT, fg=MAIN_COLOR, bg=TAB_COLOR)
         title3.grid(row=1, column=3, padx=40, pady=10)
 
@@ -146,7 +169,7 @@ class Analyze(Page):
         self.ejdashLabel.image = ejdashicon # keep a reference!
         self.ejdashLabel.grid(row=1, column=0, padx=(80,10))
 
-        self.button_ejdash = tk.Label(self.s9, text="View demographic assessment outputs in web browser",
+        self.button_ejdash = tk.Label(self.s9, text="View demographic assessment outputs for run group",
                                     font=TEXT_FONT, bg=TAB_COLOR)
         self.button_ejdash.grid(row=1, column=1)
 
@@ -203,6 +226,13 @@ class Analyze(Page):
         future = executor.submit(self.runDash)
         self.instruction_instance.set(" ")
 
+    def contour_button(self, event):
+
+        # Start a new thread for contour map
+        executor = ThreadPoolExecutor(max_workers=1)
+        future = executor.submit(self.runContour)
+        self.instruction_instance.set(" ")
+
     def ejdash_button(self, event):
 
         # Start a new thread for dash
@@ -239,6 +269,33 @@ class Analyze(Page):
             Logger.logMessage(message)
 
 
+    def runContour(self,  arguments=None):
+        try:
+            self.contourport += 1
+            # Redirect stdout
+            orig_stdout = sys.stdout
+            fileDir = os.path.dirname(os.path.realpath('__file__'))
+            stdout_file = os.path.join(fileDir, 'output/hem4.log')
+            sys.stdout = open(stdout_file, 'w')
+            
+            # Run the contour app
+            contourapp = contours()
+            appobj = contourapp.buildApp()
+            if appobj != None:
+                Timer(1, self.open_contourbrowser).start()
+                appobj.run_server(debug= False, port=self.contourport)
+
+                # Reset stdout to original state
+            sys.stdout = orig_stdout
+
+        except BaseException as ex:
+            self.exception = ex
+            fullStackInfo=''.join(traceback.format_exception(
+                ex, value=ex, tb=ex.__traceback__))
+            message = "An error occurred while trying to run the Contour app:\n" + fullStackInfo
+            Logger.logMessage(message)
+            
+
     def runEJdash(self,  arguments=None):
         try:
             self.ejport += 1
@@ -269,6 +326,10 @@ class Analyze(Page):
 
     def open_browser(self):
         hoststring = 'http://localhost:' + str(self.hem4dashport) + '/'
+        webbrowser.open_new(hoststring)
+
+    def open_contourbrowser(self):
+        hoststring = 'http://localhost:' + str(self.contourport) + '/'
         webbrowser.open_new(hoststring)
 
     def open_ejbrowser(self):
@@ -558,6 +619,13 @@ class Analyze(Page):
         elif self.ejdashLabel in [widget1, widget2]:
             if self.instruction_instance.get() == " ":
                 self.browse_inst("instructions/ejdash_browse.txt")
+
+            else:
+                self.instruction_instance.set(" ")
+
+        elif self.contourLabel in [widget1, widget2]:
+            if self.instruction_instance.get() == " ":
+                self.browse_inst("instructions/contour_browse.txt")
 
             else:
                 self.instruction_instance.set(" ")
