@@ -27,13 +27,13 @@ def get_basemaps():
     #                            name = 'Dark', checked = True)
     dark = dl.BaseLayer(dl.TileLayer(url='https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png',
                                      attribution = '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors &copy; <a href="https://carto.com/attributions">CARTO</a>'),
-                                     name = 'Dark', checked = True)
+                                     name = 'Dark', checked = False)
     # light = dl.BaseLayer(dl.TileLayer(url = 'https://tiles.stadiamaps.com/tiles/alidade_smooth/{z}/{x}/{y}{r}.png',
     #                      attribution = '&copy; <a href="https://stadiamaps.com/">Stadia Maps</a>, &copy; <a href="https://openmaptiles.org/">OpenMapTiles</a> &copy; <a href="http://openstreetmap.org">OpenStreetMap</a> contributors'),
     #                            name = 'Light', checked = False)
     light = dl.BaseLayer(dl.TileLayer(url = 'https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png',
                          attribution = '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors &copy; <a href="https://carto.com/attributions">CARTO</a>'),
-                               name = 'Light', checked = False)
+                               name = 'Light', checked = True)
     openstreet = dl.BaseLayer(dl.TileLayer(url='https://tile.openstreetmap.org/{z}/{x}/{y}.png',
                                attribution = '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'), name='OpenStreetMap')
     roads =  dl.Overlay(dl.TileLayer(url = 'https://tigerweb.geo.census.gov/arcgis/rest/services/TIGERweb/Transportation/MapServer/tile/{z}/{y}/{x}',

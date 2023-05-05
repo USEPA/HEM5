@@ -106,15 +106,16 @@ class contours():
         app.layout = html.Div([
 
             
-            html.Div([
-                    # html.Hr(),    
-                    html.H2("HEM4 Contour Maps", style={'text-align':'center', 'font-weight': 'bold'}),
-                    # html.Hr(),
-                    ]),
+            # html.Div([
+                html.H2("HEM Risk Contour Maps", style={'text-align':'center', 'font-weight': 'bold'}),
+                # ]),
+            
+            html.Div(style={'border-top': '2px solid #264d73'}),
+            html.Hr(),
         
-        dcc.Tabs([
+        # dcc.Tabs([
                                 
-            dcc.Tab(label = "Contour Maps", children = [
+        #     dcc.Tab(label = "Contour Maps", children = [
                 
                 html.Div([
                 
@@ -141,7 +142,10 @@ class contours():
                             
                             dbc.Col([
                                 
-                                dcc.Upload(['Select File(s)'],
+                                # html.Button('Upload File', id='upload-button'),
+                                # dcc.Upload(id='ctab-upload-data', children=html.Div(['Drag and drop or click to select a file']))
+                                
+                                dcc.Upload(['Select Facility File(s)'],
                                     
                                             id='ctab-upload-data',
                                             multiple = True,
@@ -151,18 +155,24 @@ class contours():
                                                 'width': '100%',
                                                 'height': '60px',
                                                 'lineHeight': '60px',
+                                                'backgroundColor': '#0275d8',
+                                                'color': '#FFFFFF',
                                                 'borderWidth': '2px',
-                                                'borderStyle': 'dashed',
+                                                'borderStyle': 'solid',
                                                 'borderRadius': '5px',
-                                                'textAlign': 'center'
+                                                'textAlign': 'center',
+                                                'cursor': 'pointer'
                                             }),
-                                
+                                                                
                                 html.Div(id='ctab-upload-alert-div'),
                                                                        
                                 dbc.Tooltip(                        
-                                    [html.P('Select ring summary and/or block summary files'),
-                                    html.P('Found in C:\HEMX.Y\output\<your model run group>\<facility ID>')],
+                                    [html.P('Select ring summary and/or block summary files (both are recommended)'),
+                                    html.P('Found in your HEM output dir\<your model run group>\<facility ID> folder')],
                                     target='ctab-upload-data',
+                                    style={'backgroundColor': '#FFFFFF',
+                                           'opacity': '1.0',
+                                           'borderRadius': '4px'},
                                     class_name="fw-bold"
                                 ),
                                 
@@ -188,6 +198,9 @@ class contours():
                                 dbc.Tooltip(                        
                                     [html.P('This will use the low and high values of your data, with this number of classes')],
                                     target='ctab-classesdrop',
+                                    style={'backgroundColor': '#FFFFFF',
+                                           'opacity': '1.0',
+                                           'borderRadius': '4px'},
                                     class_name="fw-bold"
                                 ),
                                 
@@ -206,6 +219,9 @@ class contours():
                                             the number of classes above will be ignored'),
                                       html.P('Press enter after you input', style={'font-weight':'bold', 'font-style':'italic' })],
                                     target='ctab-classinput',
+                                    style={'backgroundColor': '#FFFFFF',
+                                           'opacity': '1.0',
+                                           'borderRadius': '4px'},
                                     class_name="fw-bold"
                                 ),
                                 
@@ -277,11 +293,11 @@ class contours():
                                             
                 ], style={'width': '100%', 'height': '100vh', 'margin': "auto", "display": "block"}),
                                             
-                ]),
+        #         ]),
         
     
         
-        ]),
+        # ]),
             
         ])
             
