@@ -87,10 +87,11 @@ class contours():
         ct_esri, ct_dark, ct_light, ct_openstreet, ct_places, ct_roads = get_basemaps() # get basemaps and other layers                
 
         # These are for the contour map tab
-        metrics = ['MIR', 'Respiratory HI', 'Liver HI', 'Neurological HI',
-                    'Developmental HI', 'Reproductive HI', 'Kidney HI', 'Ocular HI',
-                    'Endocrine HI', 'Hematological HI', 'Immunological HI', 'Skeletal HI',
-                    'Spleen HI', 'Thyroid HI', 'Whole body HI']
+        metrics = {'Cancer Risk (in a million)':'MIR', 'Respiratory HI':'Respiratory HI', 'Liver HI':'Liver HI',
+                   'Neurological HI':'Neurological HI', 'Developmental HI':'Developmental HI',
+                   'Reproductive HI':'Reproductive HI', 'Kidney HI':'Kidney HI', 'Ocular HI':'Ocular HI',
+                    'Endocrine HI':'Endocrine HI', 'Hematological HI':'Hematological HI', 'Immunological HI':'Immunological HI',
+                    'Skeletal HI':'Skeletal HI', 'Spleen HI':'Spleen HI', 'Thyroid HI':'Thyroid HI', 'Whole body HI':'Whole body HI'}
 
         coloramps = ['viridis', 'magma', 'cividis', 'rainbow', 'gist_earth','terrain','jet', 'turbo',
                       'ocean', 'tab10',
@@ -102,21 +103,55 @@ class contours():
         app = dash.Dash(__name__, external_stylesheets=dbc_stylesheets, 
                         external_scripts=[chroma], assets_folder=self.resource_path('assets'))
         app.title = 'HEM Contour Maps'
+        
+        modal = html.Div(
+            [
+                dbc.Button("About the Contours", id="modalbutton", n_clicks=0),
+                dbc.Modal(
+                    [
+                        dbc.ModalHeader(dbc.ModalTitle("About the Contours")),
+                        dbc.ModalBody(
+                            dcc.Markdown('''
+                                           
+#### The contours are generated using the griddata (linear) method of the [SciPy](https://scipy.org/) Python library
+#### The contours are better when there are more input data, so it is recommended to use both the polar and block summary output files
+#### Because the interest is usually near the facility, and to allow quick creation of contours, we limit the size of the area included in the contours
+                                        
+                                            
+                                        ''')
+                                        ),                        
+                    ],
+                    id="modal",
+                    is_open=False,
+                ),
+            ]
+        )
                     
         app.layout = html.Div([
-
+                                                               
+            dbc.Navbar(
+                dbc.Container(
+                    [
+                        dbc.Row([
+                                                      
+                            dbc.Col(dbc.NavbarBrand("HEM Risk Contour Maps", className="ml-auto mr-auto",
+                                                    style={"text-align": "center", 'font-weight': 'bold'})),
+                            
+                                ],
+                            
+                            align="center",
+                            className="g-0",
+                            ),                        
+                        
+                        modal,
+                        
+                    ]
+                ),
+                # color="primary",
+                # dark=True,
+            ),
             
-            # html.Div([
-                html.H2("HEM Risk Contour Maps", style={'text-align':'center', 'font-weight': 'bold'}),
-                # ]),
-            
-            html.Div(style={'border-top': '2px solid #264d73'}),
-            html.Hr(),
-        
-        # dcc.Tabs([
-                                
-        #     dcc.Tab(label = "Contour Maps", children = [
-                
+                           
                 html.Div([
                 
                 dbc.Container([
@@ -179,7 +214,7 @@ class contours():
                                 # html.Br(),
                                 html.Label(["Risk metric"]),
                                 dcc.Dropdown(id='ctab-metricdrop',
-                                              options=[{"label": i, "value": i} for i in metrics],
+                                              options=[{"label": key, "value": value} for key, value in metrics.items()],
                                               multi=False,
                                               clearable=False,
                                               value = 'MIR',
@@ -217,7 +252,7 @@ class contours():
                                 dbc.Tooltip(                        
                                     [html.P('If you input your own class breaks (comma-separated list),\
                                             the number of classes above will be ignored'),
-                                      html.P('Press enter after you input', style={'font-weight':'bold', 'font-style':'italic' })],
+                                      html.P('Press enter after you input', style={'font-weight':'bold', 'font-style':'italic', 'color':'red'})],
                                     target='ctab-classinput',
                                     style={'backgroundColor': '#FFFFFF',
                                            'opacity': '1.0',
@@ -280,7 +315,7 @@ class contours():
                             dbc.Col([
                                                                                             
                                     dl.Map(id = 'ctab-themap', center = [39., -97.3], minZoom = 3, zoomSnap = .3,
-                                            zoom=5, children=[
+                                            zoom=4, children=[
                                                 dl.LayersControl([ct_esri, ct_dark, ct_light, ct_openstreet],)
                                                 ],
                                             style={'width': '1200px', 'height': '600px'}),
@@ -293,12 +328,7 @@ class contours():
                                             
                 ], style={'width': '100%', 'height': '100vh', 'margin': "auto", "display": "block"}),
                                             
-        #         ]),
-        
-    
-        
-        # ]),
-            
+                   
         ])
             
 
@@ -646,7 +676,7 @@ class contours():
                             if 'block_summary_chronic.csv' in item:
                                                                     
                                 try:
-                                    for metric in metrics:
+                                    for metric in metrics.values():
                                         if tempdf[metric].max() == 0:
                                             pass
                                         else:
@@ -697,7 +727,7 @@ class contours():
                     return outdata
 
             
-        @app.callback(
+        @app.callback(            
                 Output("ctab-offcanvas0", "is_open"),
 
                 Input("ctab-open-offcanvas0", "n_clicks"),
@@ -709,8 +739,21 @@ class contours():
             return is_open    
 
             
-        return app
+           
+    
+        @app.callback(            
+                Output("modal", "is_open"),
+                Input("modalbutton", "n_clicks"),
+                State("modal", "is_open")
+                )
+        def toggle_modal(n1, is_open):
+            if n1:
+                return not is_open
+            return is_open
         
+        
+        return app
+
  
 
     def shutdown(self):
