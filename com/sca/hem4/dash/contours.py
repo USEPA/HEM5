@@ -113,9 +113,9 @@ class contours():
                         dbc.ModalBody(
                             dcc.Markdown('''
                                            
-#### The contours are generated using the griddata (linear) method of the [SciPy](https://scipy.org/) Python library
-#### The contours are better when there are more input data, so it is recommended to use both the polar and block summary output files
-#### Because the interest is usually near the facility, and to allow quick creation of contours, we limit the size of the area included in the contours
+##### The contours are generated using the griddata (linear) interpolation method of the [SciPy](https://scipy.org/) Python library. There is inherent uncertainty involved in any interpolation.
+##### The contours are better when there are more input data, so it is recommended to use both the polar and block summary output files
+##### Because the interest is usually near the facility, and to allow quick creation of contours, we limit the size of the area included in the contours
                                         
                                             
                                         ''')
@@ -376,8 +376,8 @@ class contours():
                         maptitle = html.H4(f'Facility {facname} - {metric}')
                     
                     # Create separate layers for polar and block receptors
-                    polar_recpts = gdf[gdf['RecID'].apply(lambda x: 'ang' in x)]
-                    block_recpts = gdf[gdf['RecID'].apply(lambda x: 'ang' not in x)]
+                    polar_recpts = gdf[gdf['RecID'].apply(lambda x: 'ang' in x)].copy()
+                    block_recpts = gdf[gdf['RecID'].apply(lambda x: 'ang' not in x)].copy()
                                             
                     if polar_recpts is not None and len(polar_recpts) != 0:
                         polar_recpts['Distance (m)'] = [x.split('ang')[0] for x in polar_recpts['RecID']]
@@ -437,6 +437,7 @@ class contours():
                     scigrid = griddata((gdfBounds.minx.to_numpy(), gdfBounds.miny.to_numpy()), gdf[metric].to_numpy(),
                                         (x_grid, y_grid), method = 'linear', rescale=True)
                     
+                    # Set datamin based on the grid rather than entire dataset which extends past the grid
                     blockf = [True for i in filelist if 'block' in i]
                     if blockf and blockf[0] == True and len(blockf) == 1:
                         datamin = gdf[metric].min()
@@ -460,9 +461,12 @@ class contours():
                             except:
                                 pass
                         
-                        #for item in finuserlist:
-                            #if item > datamax or item < datamin:
-                                #finuserlist.remove(item)
+                        for i, item in enumerate(finuserlist):
+                            if item > datamax:
+                                finuserlist[i] = datamax
+                            if item < datamin:
+                                finuserlist[i] = datamin
+                                
                         finuserlist = sorted(list(set(finuserlist)))
                                       
                     
@@ -485,8 +489,8 @@ class contours():
                                 highend = finuserlist[-1]
                             
                             levels = finuserlist
-                    
-                
+                         
+                                    
                     '''  matplotlib to convert scigrid to filled contours
                     '''
                     fig = plt.figure()        
@@ -621,7 +625,7 @@ class contours():
         
         def store_rawdata(filelist, contents):
                             
-            if filelist is None:
+            if filelist is None or contents is None:
                 alert = no_update
                 data = no_update
                 facname = no_update
@@ -721,9 +725,9 @@ class contours():
                     return no_update
                 else:
                     dff = pd.DataFrame(indata)
-                    dff = dff[['RecID', 'Latitude', 'Longitude', metric]]
+                    dff2 = dff.loc[:,['RecID', 'Latitude', 'Longitude', metric]]
                                
-                    outdata = dff.to_dict('records')
+                    outdata = dff2.to_dict('records')
                     return outdata
 
             
