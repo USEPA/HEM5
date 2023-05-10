@@ -1,0 +1,1 @@
+This opens your web browser where you will be asked for two facility-specific output files from which cancer and noncancer risk contours surrounding that facility will be displayed graphically.

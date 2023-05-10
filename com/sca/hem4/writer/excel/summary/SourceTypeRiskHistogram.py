@@ -65,7 +65,7 @@ class SourceTypeRiskHistogram(ExcelWriter, AltRecAwareSummary):
             targetDir = self.categoryFolder + "/" + facilityId
 
             altrec = self.determineAltRec(self.categoryFolder)
-            
+
             acute_yn = faclist[faclist['fac_id']==facilityId]['acute'].iloc[0]
             allinner = AllInnerReceptorsNonCensus(targetDir=targetDir, facilityId=facilityId, acuteyn=acute_yn) if altrec=='Y' else \
                 AllInnerReceptors(targetDir=targetDir, facilityId=facilityId, acuteyn=acute_yn)
