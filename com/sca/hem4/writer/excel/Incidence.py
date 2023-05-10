@@ -57,9 +57,13 @@ class Incidence(ExcelWriter, InputFile):
             inner_inc = allinner_df
             inner_inc[inc] = None
 
-        # append inner_inc and outer_inc, and re-sum by source_id and pollutant
-        all_inc = pd.concat([inner_inc, self.outerInc], ignore_index=True).groupby(
-            [source_id, pollutant, emis_type], as_index=False)[[inc]].sum()
+        # If outer is not None, then append inner_inc and outer_inc, and re-sum by source_id and pollutant
+        if self.outerInc is not None:
+            all_inc = pd.concat([inner_inc, self.outerInc], ignore_index=True).groupby(
+                [source_id, pollutant, emis_type], as_index=False)[[inc]].sum()
+        else:
+            all_inc = inner_inc.groupby(
+                [source_id, pollutant, emis_type], as_index=False)[[inc]].sum()
 
         # sum incidence by pollutant
         poll_inc = all_inc.groupby([pollutant, emis_type], as_index=False)[[inc]].sum()

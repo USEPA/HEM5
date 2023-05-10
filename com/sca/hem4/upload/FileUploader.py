@@ -66,6 +66,10 @@ class FileUploader():
         elif filetype == "alt receptors":
             uploaded = AltReceptors(path)
             self.model.altreceptr = uploaded
+            if uploaded is None:
+                return False
+            else:
+                return True
 
         return False if uploaded.dataframe.empty is True else True
 

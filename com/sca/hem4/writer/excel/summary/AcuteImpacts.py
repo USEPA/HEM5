@@ -2,6 +2,7 @@ from com.sca.hem4.writer.excel.AcuteChemicalMax import AcuteChemicalMax
 from com.sca.hem4.writer.excel.AcuteChemicalMaxNonCensus import AcuteChemicalMaxNonCensus
 from com.sca.hem4.writer.excel.RiskBreakdown import *
 from com.sca.hem4.writer.excel.summary.AltRecAwareSummary import AltRecAwareSummary
+import os
 
 hq_rel = 'hq_rel'
 hq_aegl1 = 'hq_aegl1'
@@ -59,7 +60,9 @@ class AcuteImpacts(ExcelWriter, InputFile, AltRecAwareSummary):
             acute = AcuteChemicalMaxNonCensus(targetDir=targetDir, facilityId=facilityId) if self.altrec == 'Y' else \
                 AcuteChemicalMax(targetDir=targetDir, facilityId=facilityId)
 
-            try:
+            # Does this facility have acute results?
+            if os.path.isfile(acute.filename):
+
                 acute_df = acute.createDataframe()
 
                 acute_df[fac_id] = facilityId
@@ -68,7 +71,7 @@ class AcuteImpacts(ExcelWriter, InputFile, AltRecAwareSummary):
                 if not allAcute_df.empty:
                     anyAcute = "Y"
                     
-            except FileNotFoundError as e:
+            else:
                 Logger.logMessage("Skipped facility " + facilityId + ". Couldn't find acute information.")
 
         if anyAcute == "Y":

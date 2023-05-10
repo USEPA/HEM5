@@ -49,60 +49,65 @@ class InputFile(ABC):
     # and then convert columns which have been specified as numeric to a float64. That way, all empty
     # values in the resultant dataframe become NaN values. All values will either be strings or float64s.
     def readFromPath(self, colnames):
-        with open(self.path, "rb") as f:
-            
-            try:
+        try:
+            with open(self.path, "rb") as f:
+
                 df = pd.read_excel(f, skiprows=self.skiprows, names=colnames, dtype=str, na_values=[''], keep_default_na=False)
-            
-            except BaseException as e:
 
-                if isinstance(e, ValueError):
+        except FileNotFoundError as e:
+            messagebox.showinfo("Error", "The file "+self.path+" is missing.\nPlease check your HEM4 output folder\nand try again.")
+            dataframe = pd.DataFrame()
+            return dataframe
 
-                    msg = e.args[0]
-                    if msg.startswith("Length mismatch"):
-                        # i.e. 'Length mismatch: Expected axis has 5 elements, new values have 31 elements'
-                        p = re.compile("Expected axis has (.*) elements, new values have (.*) elements")
-                        result = p.search(msg)
-                        custom_msg = "Length Mismatch: Input file has " + result.group(1) + " columns, but should have " +\
-                            result.group(2) + " columns. Please make sure you have selected the correct file or file version."
-                        messagebox.showinfo("Error uploading input file", custom_msg)
-                        
-                        dataframe = pd.DataFrame()
-                        return dataframe
-                    
-                    else:
-                        messagebox.showinfo("Error uploading input file ", str(e) + " Please make sure you have selected the correct file or file version.")
-                        
-                        dataframe = pd.DataFrame()
-                        return dataframe
-                else:
-                    messagebox.showinfo("Error uploading input file", str(e) + " Please make sure you have selected the correct file or file version.")
-                    
+        except BaseException as e:
+
+            if isinstance(e, ValueError):
+
+                msg = e.args[0]
+                if msg.startswith("Length mismatch"):
+                    # i.e. 'Length mismatch: Expected axis has 5 elements, new values have 31 elements'
+                    p = re.compile("Expected axis has (.*) elements, new values have (.*) elements")
+                    result = p.search(msg)
+                    custom_msg = "Length Mismatch: Input file has " + result.group(1) + " columns, but should have " +\
+                        result.group(2) + " columns. Please make sure you have selected the correct file or file version."
+                    messagebox.showinfo("Error uploading input file", custom_msg)
+
                     dataframe = pd.DataFrame()
                     return dataframe
 
+                else:
+                    messagebox.showinfo("Error uploading input file ", str(e) + " Please make sure you have selected the correct file or file version.")
+
+                    dataframe = pd.DataFrame()
+                    return dataframe
             else:
-                df = df.astype(str).applymap(self.convertEmptyToNaN)
+                messagebox.showinfo("Error uploading input file", str(e) + " Please make sure you have selected the correct file or file version.")
 
-                # Verify no type errors
-                numeric_only = df.copy()
-                numeric_only[self.numericColumns] = numeric_only[self.numericColumns].applymap(InputFile.is_numeric)
-                if not numeric_only.equals(df):
-                    messagebox.showinfo("Error uploading input file", "Some non-numeric values were found in numeric columns in this data set: " +
-                                      os.path.basename(self.path))
-                    dataframe = pd.DataFrame()
-                    return dataframe
+                dataframe = pd.DataFrame()
+                return dataframe
 
-                types = self.get_column_types()
-                df = df.astype(dtype=types)
+        else:
+            df = df.astype(str).applymap(self.convertEmptyToNaN)
 
-                cleaned = self.clean(df)
-                validated = self.validate(cleaned)
-                
-                if validated is None:
-                    return pd.DataFrame()
-                else:
-                    return validated
+            # Verify no type errors
+            numeric_only = df.copy()
+            numeric_only[self.numericColumns] = numeric_only[self.numericColumns].applymap(InputFile.is_numeric)
+            if not numeric_only.equals(df):
+                messagebox.showinfo("Error uploading input file", "Some non-numeric values were found in numeric columns in this data set: " +
+                                  os.path.basename(self.path))
+                dataframe = pd.DataFrame()
+                return dataframe
+
+            types = self.get_column_types()
+            df = df.astype(dtype=types)
+
+            cleaned = self.clean(df)
+            validated = self.validate(cleaned)
+
+            if validated is None:
+                return pd.DataFrame()
+            else:
+                return validated
 
     # Read values in from a source .csv file. Note that we initially read everything in as a string,
     # and then convert columns which have been specified as numeric to a float64. That way, all empty
@@ -167,6 +172,32 @@ class InputFile(ABC):
                     return None
                 else:
                     return plf
+
+
+    # Read values in from a source .csv file using the polars library and use Lazy
+    # evaluation. This version executes the query and returns a polars dataframe.
+    def readFromPathCsvPolarsDF(self):
+        with open(self.path, "rb") as f:
+                        
+            try:
+                
+                plf = pl.scan_csv(f.name, with_column_names=(lambda cols: self.colnames), dtypes=self.datatypes)
+                df = plf.collect()
+                                
+            except BaseException as e:
+                
+                df = None
+                Logger.logMessage(str(e))
+                
+            else:
+
+                cleaned = self.clean(df)
+                validated = self.validate(cleaned)
+                
+                if validated is None:
+                    return None
+                else:
+                    return validated
                 
                 
                 

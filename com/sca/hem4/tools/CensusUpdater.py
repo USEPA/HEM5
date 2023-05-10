@@ -1,212 +1,198 @@
-import datetime
-import json
+import csv
+import glob
+import os
 
 import pandas as pd
+import polars as pl
+from decimal import *
+import numpy as np
+
 from com.sca.hem4.log.Logger import Logger
+import traceback
+
 
 class CensusUpdater():
 
     def __init__(self):
 
         self.previousValue = None
-        self.pathToCensusFiles = 'census'
+        self.censusFilepath = os.path.join('census', 'Census2020.csv')
 
-        self.stateCodeMap = {
-            '01':'AL','05':'AR','04':'AZ','06':'CA','08':'CO','09':'CT','11':'DC','10':'DE','12':'FL','13':'GA',
-            '19':'IA','16':'ID','17':'IL','18':'IN','20':'KS','21':'KY','22':'LA','25':'MA','24':'MD','23':'ME',
-            '26':'MI','27':'MN','29':'MO','28':'MS','30':'MT','37':'NC','38':'ND','31':'NE','33':'NH','34':'NJ',
-            '35':'NM','32':'NV','36':'NY','39':'OH','40':'OK','41':'OR','42':'PA','44':'RI','45':'SC','46':'SD',
-            '47':'TN','48':'TX','49':'UT','51':'VA','50':'VT','53':'WA','55':'WI','54':'WV','56':'WY','02':'AK',
-            '15':'HI','72':'PR','78':'VI'}
 
-    def migrate(self):
+    def generateChanges(self, changesetFilepath):
+        """
+        Function to Move, Delete, or Zero a census block or Add a new block
+        """
 
-        for state in self.stateCodeMap.values():
-
-            Logger.logMessage("Opening " + state + " for migration...")
-            pathToFile = r'census\Blks_' + state + '.json'
-
-            with open(pathToFile, "r") as read_file:
-                data = json.load(read_file)
-
-                replaced = [self.migrateRecord(x) for x in data]
-
-            # Open the file again and re-write it using the updated json.
-            with open(pathToFile, "w") as write_file:
-                json.dump(replaced, write_file, indent=4)
-
-    def update(self, changesetFilepath):
         try:
+
+            Logger.logMessage("Reading the Census file...")
+            self.census_df = self.readCensusFromPath(self.censusFilepath)
+            self.changeset_df = self.readChangesFromPath(changesetFilepath)
             
-            changeset_df = self.readFromPath(changesetFilepath)
+            # Separate the changeset DF into a DF of additions and a DF of changes
+            additions_df = self.changeset_df[self.changeset_df['change'].str.upper() == 'ADD'].copy()
+            changes_df = self.changeset_df[self.changeset_df['change'].str.upper() != 'ADD'].copy()
+                        
+            # Iterrate over the changes DF and make all updates
+            if len(changes_df) > 0:
+                for index,row in changes_df.iterrows():
+    
+                    blockid = row["blockid"]
+                    operation = row["change"].strip().upper()
+    
+                    # find the row in the census data containing the block to be changed
+                    census_row_df = self.census_df.loc[self.census_df['blockid'] == blockid]
+                    if len(census_row_df) == 0:
+                        Logger.logMessage("Could not find block " + blockid + " in the census file.")
+                        continue
+                    else:
+                        census_row = census_row_df.iloc[0,:]
+                        census_idx = census_row_df.index.values[0]
+                        
+                    if operation == "DELETE":
+                        Logger.logMessage("Deleting block " + blockid)
+                        self.census_df = self.census_df.drop(census_idx)
+                        continue
+    
+                    # Mutate for 'MOVE' and 'ZERO' operations
+                    replaced = self.mutate(census_row, operation, row)
+                    self.census_df.loc[census_idx] = replaced
+                
+            # If there are additions, then incoporate them.
+            if len(additions_df) > 0:
+                
+                additions_df.drop(['change', 'facid', 'category'], axis=1, inplace=True)
+                
+                # If necessary, fill Block ID column to 15 with trailing zeros
+                # Also create the FIPs column
+                additions_df.loc[:,"blockid"] = additions_df["blockid"].str.pad(width=15, fillchar="0", side="right")
+                additions_df.loc[:,"fips"] = additions_df["blockid"].str[:5]
+                returnmsg = self.generateAdditions(additions_df)
+                if returnmsg is not None:
+                    Logger.logMessage(returnmsg)
+                    return
+                
+            # All updates are done. Make sure no duplicate lat/lons have been created.
+            all_latlons = self.census_df[['lat', 'lon']]
+            all_latlons = all_latlons.apply(pd.to_numeric)
+            dups = self.lookForDupLatLon(all_latlons)
+            if type(dups) is not type(None):
+                dups = dups.astype(str)
+                dupslist = dups.values.tolist()
+                dups2print = '\n'.join(', '.join(sub) for sub in dupslist)
+                errmsg = ("\nAfter the updates were applied, duplicate lat/lons " +
+                                  "now occur in the updated census data. Please correct " +
+                                  "the update file and rerun this tool. Duplicates lat/lons are: \n" +
+                                  dups2print)
+                Logger.logMessage(errmsg)
+                return
+            
+            # Write updated file
+            self.writeCensusFile(self.census_df)
+            Logger.logMessage("\nFinished making census changes. Revised census file " +
+                              "is located in the census folder and filename contains the extension '-updated'")
+            return
 
-            # Add two columns for posterity
-            changeset_df['lastModified'] = None
-            changeset_df['previous'] = None
-
-            for index, row in changeset_df.iterrows():
-
-                self.previousValue = ""
-
-                blockid = row["blockid"]
-                operation = row["change"].strip().upper()
-
-                # Get the two-letter state abbreviation and construct the census file name.
-                state = self.getStateForCode(blockid[0:2])
-                Logger.logMessage("Opening " + state + " for updates...")
-                pathToFile = self.pathToCensusFiles + '\\Blks_' + state + '.json'
-
-                if operation == "DELETE":
-                    Logger.logMessage("Deleting block " + row["blockid"])
-
-
-                with open(pathToFile, "r") as read_file:
-                    data = json.load(read_file)
-
-                    # This is the crucial part! We are doing a list comprehension that is based on
-                    # both a filter and a conditional. The filter is the last part - deletes won't
-                    # make it into the resulting list at all. Moves and zeros will be handled by
-                    # the mutate function. Any blockid that is not the one we care about will pass
-                    # through unchanged.
-                    replaced = [self.mutate(x, operation, row)
-                        if x['IDMARPLOT']==blockid
-                        else x for x in data if x['IDMARPLOT']!=blockid or (operation == 'MOVE' or operation == 'ZERO')]
-
-                # Open the file again and re-write it using the updated json.
-                with open(pathToFile, "w") as write_file:
-                    json.dump(replaced, write_file, indent=4)
-
-                # Update the changeset row
-                row["lastModified"] = str(datetime.datetime.now())
-                if operation == 'DELETE':
-                    row["previous"] = row["blockid"]
-                else:
-                    row["previous"] = "Block id not found" if self.previousValue == "" else self.previousValue
-
-            # Write out the updated changeset
-            changeset_df.fillna("")
-            changeset_df.to_excel(changesetFilepath, index=False)
-
-            # Update the index
-            self.updateIndex()
-
-            Logger.logMessage("Census update complete!")
         except BaseException as e:
-            Logger.logMessage("Error running census update: " + str(e))
-
-    def updateIndex(self):
-        # Update the census key file...build an index in-memory, and then use it
-        # to create the file
-        Logger.logMessage("Updating census key...")
-
-        index = {}
-        for key, value in self.stateCodeMap.items():
-            pathToFile = self.pathToCensusFiles + '\\Blks_' + value + '.json'
-            Logger.logMessage(pathToFile)
-            with open(pathToFile, "r") as read_file:
-                stateBlocks = json.load(read_file)
-                minRec = 1
-                for block in stateBlocks:
-                    fips = block["FIPS"]
-
-                    if not fips in index:
-                        index[fips] = []
-                        index[fips+"STATE"] = 'Blks_' + value
-                        index[fips+"MIN_REC"] = minRec
-
-                    index[fips].append(block)
-
-                    minRec+= 1
-
-        indexRecords = []
-        pathToIndexFile = self.pathToCensusFiles + '\\Census_key.json'
-        with open(pathToIndexFile, "w") as index_file:
-            for key, value in index.items():
-                if "STATE" in key or "MIN_REC" in key:
-                    continue
-
-                state = index[key+"STATE"]
-                minRec = index[key+"MIN_REC"]
-                indexRecords.append(self.index(state, minRec, key, value))
-
-            indexRecords = sorted(indexRecords, key=lambda record: record['FIPS'])
-            json.dump(indexRecords, index_file, indent=4)
+            fullStackInfo = traceback.format_exc()
+            Logger.logMessage("Error running the Census Updater: " + fullStackInfo)
+            return
 
 
-    """
-    Produces a record like this, given a list of blocks with the same FIPS number:
-    {
-        "FIPS": "01001",
-        "MIN_REC": 1,
-        "NO": 1159,
-        "FILE_NAME": "Blks_AL",
-        "LAT_MIN": 32.3616781,
-        "LAT_MAX": 32.7075255,
-        "LON_MIN": -86.91804,
-        "LON_MAX": -86.4122427,
-        "ELEV_MAX": 208,
-        "YEAR": "1"
-    }
-    """
-    def index(self, filename, minRec, fips, blocks):
-        minLat = None
-        maxLat = None
-        minLon = None
-        maxLon = None
-        maxElev = None
+    def generateAdditions(self, additions):
+        """
+        Function to add receptors to the census file.
+        """
+        
+        try:            
+            # Make sure Block IDs of the added receptors are not already present in the census data
+            intersection = pd.merge(self.census_df, additions, how='inner', on=['blockid'])
+            if not intersection.empty:
+                dupslist = intersection['blockid'].values.tolist()
+                dups2print = '\n'.join(dupslist)
+                errmsg = ("\nAborting user receptor additions because some user supplied block IDs" +
+                        " are already present in the census file. Duplicates Block IDs are: \n" +
+                        dups2print)                
+                return errmsg
 
-        for block in blocks:
-            if block["LAT"] is None or block["LON"] is None or block["ELEV"] is None:
-                continue
+            # Append all additions to the census DF
+            self.census_df = pd.concat([self.census_df, additions], ignore_index=True)
+            self.census_df = self.census_df.sort_values(by=['fips', 'blockid'])
+            
+            Logger.logMessage("Finished adding user receptors to the census file.")
+            return None
 
-            minLat = block["LAT"] if minLat is None else min(block["LAT"], minLat)
-            maxLat = block["LAT"] if maxLat is None else max(block["LAT"], maxLat)
-            minLon = block["LON"] if minLon is None else min(block["LON"], minLon)
-            maxLon = block["LON"] if maxLon is None else max(block["LON"], maxLon)
-            maxElev = block["ELEV"] if maxElev is None else max(block["ELEV"], maxElev)
+        except BaseException as e:
+            fullStackInfo = traceback.format_exc()
+            Logger.logMessage("Error adding user receptors to the census file: " + fullStackInfo)
+            return fullStackInfo
 
-        return {"FIPS" : fips, "MIN_REC" : minRec, "NO" : len(blocks), "FILE_NAME" : filename,
-                "LAT_MIN" : minLat, "LAT_MAX" : maxLat, "LON_MIN" : minLon, "LON_MAX" : maxLon,
-                "ELEV_MAX" : int(round(maxElev)), "YEAR" : "1",}
+    def writeCensusFile(self, census_df):
+        """
+        Write out the US census df to a new CSV file. Take note that all data
+        was read in as dtype String and is maintained that way to preserve the
+        format of the original data.
+        """
+        
+        updatedFilepath = self.censusFilepath.replace(".csv", "-updated.csv")
+        
+        Logger.logMessage("Writing updated Census file...")
+        
+        # Put quotation marks around FIPs and Block ID columns for csv compatability
+        census_df.update('"' + census_df[['fips','blockid']] + '"')
+        headerlist = ['"fips"','"blockid"','"population"','"lat"','"lon"','"elev"',
+                      '"hill"','"urban_pop"']
+        census_df.to_csv(updatedFilepath, header=headerlist, mode="w", index=False, 
+                         chunksize=1000, quoting=csv.QUOTE_NONE, quotechar='"')
 
-    def migrateRecord(self, record):
-        record.pop('MOVED', None)
-
-        id = record['IDMARPLOT']
-        population = record['POPULATION']
-
-        if population is None:
-            print("Found null population for block id " + record['IDMARPLOT'])
-            record['POPULATION'] = 0
-
-        if len(id) > 15 and id.startswith('0'):
-            record['IDMARPLOT'] = id[1:]
-            print("Chopped leading zero: " + id)
-        elif 'U' in id and len(id.rpartition("U")[0]) > 5:
-            print("Chopped leading zero: " + id)
-            record['IDMARPLOT'] = id[1:]
-
-        return record
 
     def mutate(self, record, operation, row):
         if operation == 'MOVE':
-            Logger.logMessage("Moving block " + record["IDMARPLOT"] + " to [" + str(row['lat']) + "," + str(row['lon']) + "]")
-            self.previousValue = "[" + str(record['LAT']) + "," + str(record['LON']) + "]"
-            record['LAT'] = float(row['lat'])
-            record['LON'] = float(row['lon'])
-            record['MOVED'] = 'Y'
+            Logger.logMessage("Moving block " + record["blockid"] + " to [" + str(row['lat']) + "," + str(row['lon']) + "]")
+            record['lat'] = row['lat']
+            record['lon'] = row['lon']
         elif operation == 'ZERO':
-            Logger.logMessage("Zeroing population for block " + record["IDMARPLOT"])
-            self.previousValue = str(record['POPULATION'])
-            record['POPULATION'] = 0
+            Logger.logMessage("Zeroing population for block " + record["blockid"])
+            record['population'] = '0'
 
         return record
 
-    def readFromPath(self, filepath):
-        colnames = ["facid", "category", "blockid", "lat", "lon", "change"]
+
+    def lookForDupLatLon(self, df):
+        # Look for duplicate lat/lons in the census dataframe                
+        latlondups = df[df.duplicated(['lat', 'lon'])][['lat', 'lon']]
+        if not latlondups.empty:
+            return latlondups
+        else:
+            return None
+ 
+        
+    def readChangesFromPath(self, filepath):
+        colnames = ["change", "facid", "category", "blockid", "lat", "lon", 
+                    "population", "elev", "hill", "urban_pop"]
+        dtypes = {"change":str, "facid":str, "category":str, "blockid":str, 
+                  "lat":np.float64, "lon":np.float64, "population":"Int64", 
+                  "elev":np.float64, "hill":np.float64, "urban_pop":"Int64"}
+
         with open(filepath, "rb") as f:
-            df = pd.read_excel(f, skiprows=0, names=colnames, dtype=str, na_values=[''], keep_default_na=False)
+            df = pd.read_excel(f, skiprows=0, names=colnames, dtype=dtypes, 
+                               na_values=[''], keep_default_na=False)
+            df[['population', 'elev', 'hill', 'urban_pop']] = \
+                      df[['population', 'elev', 'hill', 'urban_pop']].fillna(value=0)
             return df
 
-    def getStateForCode(self, code):
-        return self.stateCodeMap[code]
+
+    def readCensusFromPath(self, filepath):
+        # datatypes = {'fips':pl.Utf8, 'blockid':pl.Utf8, 'population':pl.Int64, 
+        #                   'lat':pl.Float64, 'lon':pl.Float64, 'elev':pl.Float64, 
+        #                   'hill':pl.Float64, 'urban_pop':pl.Int64}
+        datatypes = {'fips':pl.Utf8, 'blockid':pl.Utf8, 'population':pl.Utf8, 
+                          'lat':pl.Utf8, 'lon':pl.Utf8, 'elev':pl.Utf8, 
+                          'hill':pl.Utf8, 'urban_pop':pl.Utf8}
+        with open(filepath, "rb") as f:
+            plf = pl.scan_csv(f.name, has_header=True, dtypes=datatypes, null_values=[''])
+            df = plf.collect().to_pandas()
+            return df
+
+

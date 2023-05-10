@@ -100,6 +100,7 @@ class EJ(Page):
                                       text="Select output folder", font=SMALL_TEXT_FONT, bg=self.tab_color, anchor="w")
         self.step1_instructions.grid(pady=10, padx=10, row=1, column=2)
         self.fileLabel.bind("<Button-1>", partial(self.browse, self.step1_instructions))
+
         self.step1_instructions.bind("<Button-1>", partial(self.browse, self.step1_instructions))
 
         # Second step - choose category name and prefix

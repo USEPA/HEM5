@@ -153,8 +153,6 @@ class Runstream():
         self.inp_f.write(co3)
         self.inp_f.write(co4)
         
-        #determine alternate receptor status
-        altrec = self.model.altRec_optns.get("altrec", None)
         
         # Determine urban/rural dispersion setting
         if self.facoptn_df['rural_urban'].values[0] == 'U':
@@ -177,6 +175,17 @@ class Runstream():
         #set urban in model options
         self.model.model_optns['urban'] = self.urban
 
+
+        # If flagpole height is needed, create the FLAGPOLE card
+        self.flagpole = self.facoptn_df['flagYN'].values[0]
+        self.flaghgt = self.facoptn_df['flagdef'].values[0]
+                
+        if self.flagpole == 'Y':
+            if self.facoptn_df['flagdef'].values[0] == 0:
+                flagopt = 'CO FLAGPOLE \n'
+            else:
+                flagopt = 'CO FLAGPOLE ' + str(self.facoptn_df['flagdef'].values[0]) + '\n'
+            self.inp_f.write(flagopt)
                     
         # Landuse Options for Deposition
         if phase['phase'] == 'V':
@@ -770,11 +779,22 @@ class Runstream():
         
         """
         self.polar_df = polar_df
+        
+        # If flagpole used, add default flagpole height to polar DF and discrete DF
+        # and create a list of flagpole heights.
+        if self.flagpole == 'Y':
+            self.polar_df[flag_hgt] = self.flaghgt
+            if flag_hgt not in discrecs_df.columns:
+                discrecs_df[flag_hgt] = self.flaghgt
+            else:
+                # replace nan flag height in discrete DF, user receptors may have flag heights
+                discrecs_df[flag_hgt] = discrecs_df[flag_hgt].replace({np.nan:self.flaghgt})
+            recf = list(discrecs_df[flag_hgt][:]) # flagpole height
+            
         newline = "\n"
         
         res = "RE STARTING  " + "\n"
         self.inp_f.write(res)
- 
 
     ## Discrete Receptors
 
@@ -785,11 +805,23 @@ class Runstream():
 
         for i in np.arange(len(recx)):
             if self.eleva == "Y":
-                redec = ("RE DISCCART  " + str("{:.0f}".format(recx[i])) + " " + str("{:.0f}".format(recy[i])) + 
-                         " " + str(normal_round(rece[i])) + " " + 
-                         str(normal_round(rech[i])) + "\n")
+                if self.flagpole == "N":
+                    redec = ("RE DISCCART  " + str("{:.0f}".format(recx[i])) + " " + str("{:.0f}".format(recy[i])) + 
+                             " " + str(normal_round(rece[i])) + " " + 
+                             str(normal_round(rech[i])) + "\n")
+                else:
+                    redec = ("RE DISCCART  " + str("{:.0f}".format(recx[i])) + " " + str("{:.0f}".format(recy[i])) + 
+                             " " + str(normal_round(rece[i])) + " " + 
+                             str(normal_round(rech[i])) + " " +
+                             str(recf[i]) + "\n")                    
             else:
-                redec = "RE DISCCART  " + str("{:.0f}".format(recx[i])) + " " + str("{:.0f}".format(recy[i])) + "\n"
+                if self.flagpole == "N":
+                    redec = ("RE DISCCART  " + str("{:.0f}".format(recx[i])) + " " + 
+                            str("{:.0f}".format(recy[i])) + "\n")
+                else:
+                    redec = ("RE DISCCART  " + str("{:.0f}".format(recx[i])) + " " + 
+                            str("{:.0f}".format(recy[i])) + " " +
+                            str(recf[i]) + "\n")
             self.inp_f.write(redec)
 
             
@@ -829,20 +861,17 @@ class Runstream():
             for i in range(1, num_sectors+1):
                 indexStr = "S" + str(i) + "R1"
                 repelev0 = ("RE GRIDPOLR polgrid1 ELEV " + 
-                            str(self.polar_df["angle"].loc[indexStr]) + " ")
-                
+                            str(self.polar_df["angle"].loc[indexStr]) + " ")                
                 self.inp_f.write(repelev0)
                 
                 for j in range(1, num_rings+1):
                     indexStr = "S" + str(i) + "R" + str(j)
                     repelev1 = str(self.polar_df["elev"].loc[indexStr]) + " "
                     self.inp_f.write(repelev1)
-
                 self.inp_f.write(newline)
 
                 rephill0 = ("RE GRIDPOLR polgrid1 HILL " + 
-                            str(self.polar_df["angle"].loc[indexStr]) + " ")
-                
+                            str(self.polar_df["angle"].loc[indexStr]) + " ")                
                 self.inp_f.write(rephill0)
                 
                 for j in range(1, num_rings+1):
@@ -850,6 +879,21 @@ class Runstream():
                     rephill1 = str(self.polar_df["hill"].loc[indexStr]) + " "
                     self.inp_f.write(rephill1)
                 self.inp_f.write(newline)
+
+        #add flagpole height if user selected it
+        if self.flagpole == "Y":
+            for i in range(1, num_sectors+1):
+                indexStr = "S" + str(i) + "R1"
+                repflag0 = ("RE GRIDPOLR polgrid1 FLAG " + 
+                            str(self.polar_df["angle"].loc[indexStr]) + " ")                
+                self.inp_f.write(repflag0)
+                
+                for j in range(1, num_rings+1):
+                    indexStr = "S" + str(i) + "R" + str(j)
+                    repflag1 = str(self.polar_df["flag_hgt"].loc[indexStr]) + " "
+                    self.inp_f.write(repflag1)
+                self.inp_f.write(newline)
+
         
         repe = "RE GRIDPOLR polgrid1 END" + "\n"
         self.inp_f.write(repe)

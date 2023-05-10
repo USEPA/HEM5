@@ -334,8 +334,7 @@ class FacilityPrep():
                     # using census data
                     user_recs.loc[:, 'fips'] = '00000'
                     user_recs.loc[:,'blockid'] = user_recs['rec_id'].str.zfill(15)
-                
-                  
+                                 
                 # Check for any user receptors that are already in the census data based on coordinates
                 dups = pd.merge(self.innerblks, user_recs, how='inner', on=[utme, utmn])
                 if dups.empty == False:
@@ -343,7 +342,7 @@ class FacilityPrep():
                     user_recs = user_recs[~user_recs.set_index([utme, utmn]).index.isin(dups.set_index([utme, utmn]).index)].copy()
                 
                     msg = 'The following user receptors have coordinates that are already in the Census data. They ' + \
-                            ' will be removed from the user receptor list. ' + str(dups['rec_id_y'].tolist())
+                            ' will be removed from the user receptor list. ' + str(dups['rec_id'].tolist())
                     Logger.logMessage(msg)
 
                 # Check for any user receptors that are already in the census data based on blockid
@@ -355,12 +354,12 @@ class FacilityPrep():
                         user_recs = user_recs[~user_recs.set_index(['blockid']).index.isin(dups.set_index(['blockid']).index)].copy()
                     
                         msg = 'The following user receptors have IDs that are already in the Census data. They ' + \
-                                ' will be removed from the user receptor list. ' + str(dups['rec_id_y'].tolist())
+                                ' will be removed from the user receptor list. ' + str(dups['rec_id'].tolist())
                         Logger.logMessage(msg)
                 
                 # Put into model
                 self.model.userrecs_df = user_recs
-    
+                    
                 # Append user_recs to innerblks
                 self.innerblks = pd.concat([self.innerblks, user_recs], ignore_index=True)
 
@@ -573,18 +572,24 @@ class FacilityPrep():
             sector_int = num_sectors
 
         # Compute fractional, log weighted ring value that will be used for interpolation. 
-        # loop through ring distances in pairs of previous and current.
-        ring_loc = 1
-        previous = ring_distances[0]
-        i = 0
-        for ring in ring_distances[1:]:
-            i = i + 1
-            current = ring
-            #if block is between rings, then interpolate distance and exit loop
-            if block_distance >= previous and block_distance < current:
-                ring_loc = i + (np.log(block_distance) - np.log(previous)) / (np.log(current) - np.log(previous))
-                break
-            previous = ring
+        # loop through ring distances in pairs of previous and current. Special case
+        # if block is located on the last ring.
+        numrings = len(ring_distances)
+        if block_distance != ring_distances[numrings-1]:
+            ring_loc = 1
+            previous = ring_distances[0]
+            i = 0
+            for ring in ring_distances[1:]:
+                i = i + 1
+                current = ring
+                #if block is between rings, then interpolate distance and exit loop
+                if block_distance >= previous and block_distance < current:
+                    ring_loc = i + (np.log(block_distance) - np.log(previous)) / (np.log(current) - np.log(previous))
+                    break
+                previous = ring
+        else:
+            ring_loc = numrings - 1
+
 
         # Compute integer ring number that will be used for assigning elevations to polar receptors
         ring_int = int(ring_loc + 0.5)

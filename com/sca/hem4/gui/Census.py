@@ -39,7 +39,7 @@ class Census(Page):
         self.titleLabel.image = self.titleicon # keep a reference!
         self.titleLabel.grid(row=1, column=0, padx=10, pady=10)
 
-        title2 = tk.Label(self.s1, text="REVISE CENSUS", font=TITLE_FONT, fg=MAIN_COLOR, bg=self.tab_color)
+        title2 = tk.Label(self.s1, text="UPDATE CENSUS", font=TITLE_FONT, fg=MAIN_COLOR, bg=self.tab_color)
         title2.grid(row=1, column=1, padx=10, sticky='W', pady=10)
 
         fu = PIL.Image.open('images\icons8-folder-48.png').resize((30,30))
@@ -67,7 +67,7 @@ class Census(Page):
         self.rileLabel.image = self.rileicon # keep a reference!
         self.rileLabel.grid(row=0, column=1, padx=10, sticky='E')
 
-        self.run_button = tk.Label(self.s4, text="Revise", font=TEXT_FONT, bg=self.tab_color)
+        self.run_button = tk.Label(self.s4, text="Update", font=TEXT_FONT, bg=self.tab_color)
         self.run_button.grid(row=0, column=2, padx=5, pady=10, sticky='E')
 
         self.run_button.bind("<Enter>", partial(self.color_config, self.run_button, self.rileLabel, self.s4, 'light grey'))
@@ -88,7 +88,7 @@ class Census(Page):
             self.censusUpdatePath
 
         except AttributeError:
-            messagebox.showinfo("Update file not selected", "Please use the 'Select a census update file' button before using the Revise button")
+            messagebox.showinfo("Update file not selected", "Please use the 'Select a census update file' button before using the UPDATE button")
             return
 
         else:
@@ -110,9 +110,15 @@ class Census(Page):
             self.home.newrunLabel.bind("<Button-1>", partial(self.disabled_message))
             self.home.iconLabel.bind("<Button-1>", partial(self.disabled_message))
             
+            # Make Log window active
+            self.home.hem.lift()
+            self.fix_config(self.home.liLabel, self.home.logLabel, self.home.current_button)
+            self.lift_page(self.home.liLabel, self.home.logLabel, self.home.log, self.home.current_button)
+
+                     
             executor = ThreadPoolExecutor(max_workers=1)
     
-            future = executor.submit(self.censusupdater.update, self.censusUpdatePath)
+            future = executor.submit(self.censusupdater.generateChanges, self.censusUpdatePath)
             future.add_done_callback(self.finish_census_update)
 
 
@@ -146,3 +152,25 @@ class Census(Page):
         else:
             self.censusUpdatePath = fullpath
             self.folder_select['text'] = fullpath.split("\\")[-1]
+
+
+    def lift_page(self, widget1, widget2, page, previous):
+        """
+        Function lifts page and changes button color to active,
+        changes previous button color
+        """
+        try:
+            widget1.configure(bg=self.tab_color)
+            widget2.configure(bg=self.tab_color)
+
+            if len(self.home.current_button) > 0:
+
+                for i in self.home.current_button:
+                    i.configure(bg=self.main_color)
+
+            page.lift()
+            self.home.current_button = [widget1, widget2]
+            
+        except Exception as e:
+
+            print(e)

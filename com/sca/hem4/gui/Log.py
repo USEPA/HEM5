@@ -16,7 +16,12 @@ class Log(Page):
 
         # Adding a Textbox Entry widget
         self.scr = scrolledtext.ScrolledText(container, wrap=tk.WORD, width=1000, height=1000, font=TEXT_FONT)
-        self.scr.configure(cursor='none')
+        self.scr.configure(state="disabled")
+        # make sure the widget gets focus when clicked
+        # on, to enable highlighting and copying to the
+        # clipboard.
+        self.scr.bind("<1>", lambda event: self.scr.focus_set())
+
         self.scr.pack(expand=1, fill="both")
         self.scr.bind("<Button-1>", self.interfere)
 

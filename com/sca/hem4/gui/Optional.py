@@ -117,7 +117,7 @@ class Optional(Page):
             if self.model.multipoly.dataframe.empty == False:
 
                 # Update the UI
-                [self.nav.nav.log.scr.insert(tk.INSERT, msg) for msg in self.model.multipoly.log]
+                [self.nav.nav.log.scr.insert(tk.END, msg) for msg in self.model.multipoly.log]
                 #            container.configure(bg='light green')
 
                 self.polylbl.set('')
@@ -144,7 +144,7 @@ class Optional(Page):
 
 
                 # Update the UI
-                [self.nav.nav.log.scr.insert(tk.INSERT, msg) for msg in self.model.multibuoy.log]
+                [self.nav.nav.log.scr.insert(tk.END, msg) for msg in self.model.multibuoy.log]
                 #            container.configure(bg='light green')
 
                 self.buoylbl.set('')
@@ -170,7 +170,7 @@ class Optional(Page):
             if self.model.bldgdw.dataframe.empty == False:
 
                 # Update the UI
-                [self.nav.nav.log.scr.insert(tk.INSERT, msg) for msg in self.model.bldgdw.log]
+                [self.nav.nav.log.scr.insert(tk.END, msg) for msg in self.model.bldgdw.log]
                 #            container.configure(bg='light green')
 
                 self.bldgdwlbl.set('')
@@ -198,7 +198,7 @@ class Optional(Page):
 
                 self.model.model_optns['ureceptr'] = True
                 # Update the UI
-                [self.nav.nav.log.scr.insert(tk.INSERT, msg) for msg in self.model.ureceptr.log]
+                [self.nav.nav.log.scr.insert(tk.END, msg) for msg in self.model.ureceptr.log]
 
                 self.urlbl.set('')
                 self.urlbl.set(fullpath.split("\\")[-1])

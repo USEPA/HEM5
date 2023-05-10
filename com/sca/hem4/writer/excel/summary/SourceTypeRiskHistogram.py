@@ -39,7 +39,7 @@ class SourceTypeRiskHistogram(ExcelWriter, AltRecAwareSummary):
         faclistFile = os.path.join(self.categoryFolder, "inputs/faclist.xlsx")
         cols = [fac_id,met_station,rural_urban,urban_pop,max_dist,model_dist,radial,circles,overlap_dist, ring1,
                 fac_center,ring_distances, acute,
-                hours,multiplier,hivalu,dep,depl,pdep,pdepl,vdep,vdepl,elev,
+                hours,multiplier,hivalu,dep,depl,pdep,pdepl,vdep,vdepl,elev,flagpole,
                 user_rcpt,bldg_dw,fastall,emis_var,annual,period_start,period_end]
         faclist = pd.read_excel(faclistFile, skiprows=1, names=cols, dtype=str)
         faclist[acute].fillna('N', inplace=True)
@@ -65,7 +65,7 @@ class SourceTypeRiskHistogram(ExcelWriter, AltRecAwareSummary):
             targetDir = self.categoryFolder + "/" + facilityId
 
             altrec = self.determineAltRec(self.categoryFolder)
-                        
+
             acute_yn = faclist[faclist['fac_id']==facilityId]['acute'].iloc[0]
             allinner = AllInnerReceptorsNonCensus(targetDir=targetDir, facilityId=facilityId, acuteyn=acute_yn) if altrec=='Y' else \
                 AllInnerReceptors(targetDir=targetDir, facilityId=facilityId, acuteyn=acute_yn)

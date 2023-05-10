@@ -63,7 +63,7 @@ class KMLWriter():
         document.append_style(self.getCenterStyle())
         
         # Iterate over srcmap DF to get facility id, source ids, source type and location parameters
-        for facid, group in srcmap.groupby(["fac_id"]):
+        for facid, group in srcmap.groupby("fac_id"):
             
             # Subset srcmap to this facility
             sub_map = srcmap.loc[srcmap.fac_id==facid]
@@ -362,7 +362,7 @@ class KMLWriter():
             if not urec_df.empty:
                 urcr_folder = kml.Folder(ns=self.ns, name="User receptor cancer risk")
                 urcr_folder.isopen = 0
-                for block, group in urec_df.groupby(["block"]):
+                for block, group in urec_df.groupby("block"):
                     ublock = group.iloc[0]['block']
                     ulat = group.iloc[0]['lat']
                     ulon = group.iloc[0]['lon']
@@ -421,7 +421,7 @@ class KMLWriter():
                                 
                 urt_folder = kml.Folder(ns=self.ns, name="User receptor TOSHI")
                 urt_folder.isopen = 0
-                for block, group in urec_df.groupby(["block"]):
+                for block, group in urec_df.groupby("block"):
                     ublock = group.iloc[0]['block']
                     ulat = group.iloc[0]['lat']
                     ulon = group.iloc[0]['lon']
@@ -932,7 +932,7 @@ class KMLWriter():
             if not urec_df.empty:
                 urcr_folder = kml.Folder(ns=self.ns, name="User receptor cancer risk")
                 urcr_folder.isopen = 0
-                for block, group in urec_df.groupby(['rec_id']):
+                for block, group in urec_df.groupby('rec_id'):
                     uid = group.iloc[0]['rec_id']
                     ulat = group.iloc[0]['lat']
                     ulon = group.iloc[0]['lon']
@@ -990,8 +990,7 @@ class KMLWriter():
             if not urec_df.empty:
                 urt_folder = kml.Folder(ns=self.ns, name="User receptor TOSHI")
                 urt_folder.isopen = 0
-                for block, group in urec_df.groupby(['rec_id']):
-                    uid = group.iloc[0]['rec_id']
+                for block, group in urec_df.groupby('rec_id'):
                     ulat = group.iloc[0]['lat']
                     ulon = group.iloc[0]['lon']
     
