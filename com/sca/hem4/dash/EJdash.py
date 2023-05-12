@@ -10,9 +10,7 @@ from tkinter import messagebox
 import plotly
 import plotly.express as px
 import dash
-from dash import dash_table
-from dash import dcc
-from dash import html
+from dash import dash_table, dcc, html, no_update
 import plotly.graph_objects as go
 from dash.dependencies import Input, Output
 from flask import request
@@ -190,8 +188,12 @@ class EJdash():
                     scenarios.loc[scen_ind, 'Filename'] = fname
                     scen_ind +=1
         
-        metrics = scenarios['Metric'].unique()
         
+        scenarios['scen_label'] = scenarios['Metric'].map(display_mets) + ' -- ' + scenarios['Risk_Level'] + ' -- Out to ' + scenarios['Distance'] + ' km'
+        scenarios_sort = scenarios.sort_values(by='scen_label').copy()
+        
+        metrics = scenarios['Metric'].unique()
+                
         ### Create a dataframe of the national, state, and county averages
         compnames = ['Average', 'Total Pop', 'People of Color', 'African American','Native American',
                      'Other and Multiracial', 'Hispanic or Latino','Age 0-17', 'Age 18-64', 'Age >=65',
@@ -272,8 +274,12 @@ class EJdash():
         ##### The app layout 
         app.layout = html.Div([
             
+                # dcc.Store(id='metricdropstore'),    
+                # dcc.Store(id='distdropstore'),
+                # dcc.Store(id='leveldropstore'),
+            
                 html.Div([
-                        html.H1("Demographic Assessment for HEM4 Run Group " + rungroup, style={'text-align':'center', 'font-weight': 'bold'}),
+                        html.H2("Demographic Assessment for HEM Run Group " + rungroup, style={'text-align':'center', 'font-weight': 'bold'}),
                         ], className = 'row'),
             
                 dcc.Tabs([
@@ -284,34 +290,47 @@ class EJdash():
                                 
                                 html.Div([
                                     
-                                    html.Div([html.H6("Risk Metric"),
-                                             dcc.Dropdown(id='riskdrop',
-                                                          options=[{"label": display_mets[i], "value": i} for i in metrics],
+                                    html.Div([html.H6("Scenario"),
+                                             dcc.Dropdown(id='scendrop',
+                                                          options=[{"label": i, "value": i} for i in scenarios_sort['scen_label']],
 #                                                          options=[{"label": v, "value": k} for k,v in display_mets],
                                                           multi=False,
                                                           clearable=False,
-                                                          value = scenarios.loc[0, 'Metric'],
-                                                          placeholder="Select a Metric",
+                                                          value = scenarios_sort.at[0,'scen_label'],
+                                                          placeholder="Select a Scenario",
                                                           ),
-                                            ], className = 'two columns'),
-                                             
-                                    html.Div([html.H6("Distance (km)"),
-                                              dcc.Dropdown(id='distdrop',             
-                                                          multi=False,
-                                                          clearable=False,
-                                                          value = scenarios.loc[0, 'Distance'],
-                                                          placeholder="Select a Distance (km)",
-                                                          ),
-                                            ], className = 'two columns'),
+                                            ], className = 'four columns'),
                                     
-                                    html.Div([html.H6("Risk/HI Level"),
-                                              dcc.Dropdown(id='leveldrop',
-                                                          multi=False,
-                                                          clearable=False,
-                                                          value = scenarios.loc[0, 'Risk_Level'],
-                                                          placeholder="Select a Risk or HI Level",
-                                                          ),
-                                            ], className = 'two columns'),
+#                                     html.Div([html.H6("Risk Metric"),
+#                                              dcc.Dropdown(id='riskdrop',
+#                                                           options=[{"label": display_mets[i], "value": i} for i in metrics],
+# #                                                          options=[{"label": v, "value": k} for k,v in display_mets],
+#                                                           multi=False,
+#                                                           clearable=False,
+#                                                           value = metrics[0],
+#                                                           placeholder="Select a Metric",
+#                                                           ),
+#                                             ], className = 'two columns'),
+                                             
+#                                     html.Div([html.H6("Distance (km)"),
+#                                               dcc.Dropdown(id='distdrop',
+#                                                            options=[],
+#                                                           multi=False,
+#                                                           clearable=False,
+#                                                           # value = scenarios.loc[0, 'Distance'],
+#                                                           placeholder="Select a Distance (km)",
+#                                                           ),
+#                                             ], className = 'two columns'),
+                                    
+#                                     html.Div([html.H6("Risk/HI Level"),
+#                                               dcc.Dropdown(id='leveldrop',
+#                                                            options=[],
+#                                                           multi=False,
+#                                                           # clearable=False,
+#                                                           # value = scenarios.loc[0, 'Risk_Level'],
+#                                                           placeholder="Select a Risk or HI Level",
+#                                                           ),
+#                                             ], className = 'two columns'),
                                                            
                                     html.Div([html.H6("Demographic Group"),
                                               dcc.Dropdown(id='demodrop',
@@ -517,49 +536,68 @@ class EJdash():
  
         ##############################
         ##  Callbacks
-        ##############################                          
+        ##############################  
+                               
                           
-        ### Callback for the Distance Dropdown                  
-        @app.callback(Output('distdrop', 'options'),
-                      [Input('riskdrop', 'value'),
-                       Input('leveldrop', 'value')]
-                       )
-        def distlist(metric, level):
-            if None in [metric, level]:
-                pass
-            else:
-                shortlist = scenarios.loc[scenarios['Metric'] == metric]['Distance'].unique()
-                options = [{"label": i, "value": i} for i in shortlist]
-        
-                return options                 
+        # ### Callback for the Distance Dropdown                  
+        # @app.callback(Output('distdrop', 'options'),
+        #               # Output('distdrop', 'value'),
+        #               [Input('riskdrop', 'value')],
+        #                # Input('leveldrop', 'value')]
+        #                )
+        # def distlist(metric):
+        #     # if level is None:
+        #     #     shortdf = scenarios.loc[(scenarios['Metric'] == metric)]
+        #     # else:
+        #     #     shortdf = scenarios.loc[(scenarios['Metric'] == metric) & (scenarios['Risk_Level'] == level)]
+        #     shortdf = scenarios.loc[(scenarios['Metric'] == metric)]
+        #     shortlist = shortdf['Distance'].unique()
+        #     dist_options = [{"label": i, "value": i} for i in shortlist]
+        #     # dist_default = shortdf.at[0, 'Distance']
+        #     # breakpoint()
+    
+        #     return dist_options#, dist_default              
                           
-        ### Callback for the Risk Level Dropdown                  
-        @app.callback(Output('leveldrop', 'options'),
-                      [Input('riskdrop', 'value'),
-                       Input('distdrop', 'value')]
-                       )
-        def levellist(metric, distance):
-            if None in [metric, distance]:
-                pass
-            else:
-                shortlist = scenarios.loc[(scenarios['Distance'] == distance) & (scenarios['Metric'] == metric)]['Risk_Level'].unique()
-                options = [{"label": i, "value": i} for i in shortlist]
-        
-                return options                   
+        # ### Callback for the Risk Level Dropdown                  
+        # @app.callback(Output('leveldrop', 'options'),
+        #               # Output('leveldrop', 'value'),
+        #               [Input('riskdrop', 'value'),
+        #                Input('distdrop', 'value')]
+        #                )
+        # def levellist(metric, distance):
+        #     if distance is None:
+        #         return None                
+        #     else:
+        #         shortdf = scenarios.loc[(scenarios['Metric'] == metric) & (scenarios['Distance'] == distance)]
+        #         shortlist = shortdf['Risk_Level'].unique()
+        #         level_options = [{"label": i, "value": i} for i in shortlist]
+        #         # breakpoint()
+        #         return level_options#, level_default
+                
+        #     # level_default = shortdf.at[0, 'Risk_Level']
+        #     # breakpoint()
+            
+            
         
         ### Callback for the Bar Chart
         @app.callback(Output('barchart', 'figure'),
-                     [Input('riskdrop', 'value'),
-                      Input('distdrop', 'value'),
-                      Input('leveldrop', 'value'),
+                     [Input('scendrop', 'value'),
+                    # Input('riskdrop', 'value'),
+                    #   Input('distdrop', 'value'),
+                    #   Input('leveldrop', 'value'),
                       Input('demodrop', 'value'),
                       Input('barhtdrop', 'value'),
                       Input('sortdrop', 'value')
                      ])
-        def makebar (risk, distance, level, group,barht, sort):
-            if None in (risk,distance,level,group):
-                pass
+        def makebar (scen, group,barht, sort):
+            if None in [scen, group]:
+                return no_update
             else:
+                scenrow = scenarios_sort.loc[scenarios_sort['scen_label'] == scen]
+                risk = scenrow.iat[0,0]
+                distance = scenrow.iat[0,1]
+                level = scenrow.iat[0,2]
+                
                 if level == 'Proximity Only':
                     dff = maindf.loc[(maindf['Metric'] == risk) & (maindf['Distance'] == distance) & (maindf['RiskorProx'] == 'Proximity')]
                     dff = dff.drop_duplicates(subset=['Distance','Facility'], keep='first')
@@ -587,7 +625,7 @@ class EJdash():
                 
                 ### Set chart title based on user choice of proximity or risk        
                 if level == 'Proximity Only':
-                    title = '<b>Demographics for ' + display_mets[risk] + ' for Radius ' + distance + ' km (Proximity Only)</b>'
+                    title = '<b>Demographics for Radius ' + distance + ' km (Proximity Only)</b>'
                     
                 else:
                     title = '<b>Demographics for ' + display_mets[risk] + ' for Radius ' + distance + ' km (' + level +')</b>'
@@ -611,7 +649,7 @@ class EJdash():
                 
                 hoverdata = {group: ':.1f',
                              group +' Pop': ':0f'}
-                                
+                # breakpoint()                
                 fig = px.bar(dff, x='Facility', y=yaxis, height=800, width=1500, text = text,opacity=.7, hover_data=hoverdata)
                 fig.update_yaxes(type = type, title_text=ytitle, title_font=dict(size = 16, color = 'black'), automargin=True)
                 fig.update_xaxes(title_text='<b>Facility</b>', title_font=dict(size = 16, color = 'black'), automargin=True, tickangle=40,
