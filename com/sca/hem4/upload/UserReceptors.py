@@ -34,7 +34,7 @@ class UserReceptors(DependentInputFile):
     def clean(self, df):
         cleaned = df
         cleaned.replace(to_replace={fac_id:{"nan":""}}, inplace=True)
-        cleaned.replace(to_replace={flag_hgt:{"nan":0}}, inplace=True)
+        cleaned[flag_hgt].fillna(0, inplace=True)
         cleaned[flag_hgt] = cleaned[flag_hgt].round().astype(int)
         cleaned = cleaned.reset_index(drop = True)
 
