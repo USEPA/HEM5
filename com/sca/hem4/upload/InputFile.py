@@ -155,49 +155,41 @@ class InputFile(ABC):
     # Read values in from a source .csv file using the polars library and use Lazy
     # evaluation. A lazyframe is created for future querying.
     def readFromPathCsvPolars(self):
-        with open(self.path, "rb") as f:
-                        
-            try:
-                
+        try:
+            with open(self.path, "rb") as f:
                 plf = pl.scan_csv(f.name, dtypes=self.datatypes)
-                                
-            except BaseException as e:
-                
-                plf = None
-                Logger.logMessage(str(e))
-                
-            else:
-                
-                if plf is None:
-                    return None
-                else:
-                    return plf
 
+        except BaseException as e:
+            plf = None
+            Logger.logMessage(str(e))
+
+        else:
+            if plf is None:
+                return None
+            else:
+                return plf
 
     # Read values in from a source .csv file using the polars library and use Lazy
     # evaluation. This version executes the query and returns a polars dataframe.
     def readFromPathCsvPolarsDF(self):
-        with open(self.path, "rb") as f:
-                        
-            try:
-                
+        try:
+            with open(self.path, "rb") as f:
                 plf = pl.scan_csv(f.name, with_column_names=(lambda cols: self.colnames), dtypes=self.datatypes)
                 df = plf.collect()
                                 
-            except BaseException as e:
-                
-                df = None
-                Logger.logMessage(str(e))
-                
-            else:
+        except BaseException as e:
 
-                cleaned = self.clean(df)
-                validated = self.validate(cleaned)
-                
-                if validated is None:
-                    return None
-                else:
-                    return validated
+            df = None
+            Logger.logMessage(str(e))
+
+        else:
+            cleaned = self.clean(df)
+            validated = self.validate(cleaned)
+
+            if validated is None:
+                return None
+            else:
+                return validated
                 
                 
                 
