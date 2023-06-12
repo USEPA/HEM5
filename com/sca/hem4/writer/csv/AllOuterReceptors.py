@@ -332,7 +332,7 @@ class AllOuterReceptors(CsvWriter, InputFile):
             else:
                 
                 # Acute
-                
+                                
                 #extract Chronic polar concs from the Chronic plotfile and round the utm coordinates
                 polarcplot_df = self.plot_df.query("net_id == 'POLGRID1'").copy()
                 polarcplot_df.utme = polarcplot_df.utme.round()
@@ -428,8 +428,10 @@ class AllOuterReceptors(CsvWriter, InputFile):
                     raise ValueError("""Error! Chronic outerconcs has wrong number 
                                      of rows for Acute in AllOuterReceptors""")
                     #TODO stop this facility
-                
+
+               
                 # next do acute conc
+                
                 toInterp_df = outer4interp[['fips','block','source_id','aresult_s1r1','aresult_s1r2'
                                     ,'aresult_s2r1','aresult_s2r2','s','ring_loc']].copy()
                 toInterp_df.rename({'aresult_s1r1':'conc_s1r1','aresult_s1r2':'conc_s1r2'
@@ -440,7 +442,7 @@ class AllOuterReceptors(CsvWriter, InputFile):
                                       , on=['fips','block','source_id'], how='inner')
                 outerconcs.rename({'intconc':'intaconc'}, axis=1, inplace=True)
                 # QA - make sure merge retained all rows
-                if outerconcs.shape[0] != interpolated_df.shape[0]:
+                if outerconcs.shape[0] != toInterp_df.shape[0]:
                     raise ValueError("""Error! Acute outerconcs has wrong number 
                                      of rows for Acute in AllOuterReceptors""")
                 
@@ -587,18 +589,20 @@ class AllOuterReceptors(CsvWriter, InputFile):
 
     def interpolate(self, interpDF):
         # Interpolate 4 concentrations to the point defined by (s, ring_loc)
-        
+         
         nozeros_df = interpDF[(interpDF['conc_s1r1'] > 0) & (interpDF['conc_s1r2'] > 0)
                               & (interpDF['conc_s2r1'] > 0) & (interpDF['conc_s2r2'] > 0)].copy()
-        
-        temp_df = pd.merge(interpDF, nozeros_df, on=["fips", "block", "source_id"]
-                           , how="outer", indicator=True, suffixes=["","_remove"])        
-        somezeros_df = temp_df.loc[temp_df["_merge"] == "left_only"].drop("_merge", axis=1)
-        somezeros_df.drop([i for i in somezeros_df.columns if '_remove' in i],
-               axis=1, inplace=True)
-        
 
-        # Interpolate outer blocks where all 4 polars are non-zero        
+        # Identify rows in interpDF where at least one polar conc is 0, but not all 4
+        somezeros_df = interpDF[ ~interpDF.index.isin(nozeros_df.index) ]
+         
+        # Ensure that nozeros and somezeros sum to interpDF
+        if interpDF.shape[0] != nozeros_df.shape[0] + somezeros_df.shape[0]:
+            raise ValueError("""Error! nozeros and somezeros dataframes do not 
+                             sum to interpDF dataframe in AllOuterReceptors""")
+
+         
+        #--- Interpolate outer blocks where all 4 polars are non-zero ---      
         conc_s1r1 = nozeros_df['conc_s1r1'].to_numpy()
         conc_s1r2 = nozeros_df['conc_s1r2'].to_numpy()
         conc_s2r1 = nozeros_df['conc_s2r1'].to_numpy()
@@ -616,38 +620,48 @@ class AllOuterReceptors(CsvWriter, InputFile):
         
         nozeros_df['intconc'] = ic_array
 
-        #---Interpolate outer blocks where at least one of the 4 polars is zero ---
-        
-        # Find max of s1r1,s1r2 and s2r1,s2r2. These are used for 0 cases.
-        somezeros_df['R_s12'] = somezeros_df[['conc_s1r1','conc_s1r2']].max(axis=1)
-        somezeros_df['R_s34'] = somezeros_df[['conc_s2r1','conc_s2r2']].max(axis=1)
-        
-        
-        # In order to vectorize operations, split somezeros_df into two DFs
-        # zeroRs12 => s1r1=0 or s1r2=0 so R_s12 is max of s1r1, s1r2
-        # zeroRs34 => s2r1=0 or s2r2=0 so R_s34 is max of s2r1, s2r2
-        zeroRs12 = somezeros_df[((somezeros_df['conc_s1r1']==0) | (somezeros_df['conc_s1r2']==0))
-                                & ((somezeros_df['conc_s2r1']>0) & (somezeros_df['conc_s2r2']>0))].copy()
-        zeroRs34 = somezeros_df[((somezeros_df['conc_s1r1']>0) & (somezeros_df['conc_s1r2']>0))
-                                & ((somezeros_df['conc_s2r1']==0) | (somezeros_df['conc_s2r2']==0))].copy()
-        
 
-        zeroRs12['R_s34'] = np.exp((np.log(zeroRs12['conc_s2r1']) * 
-                            (np.int64(zeroRs12['ring_loc'])+1-zeroRs12['ring_loc'])) +
-                            (np.log(zeroRs12['conc_s2r2']) * 
-                            (zeroRs12['ring_loc']-np.int64(zeroRs12['ring_loc']))))
-
-        zeroRs34['R_s12'] = np.exp((np.log(zeroRs34['conc_s1r1']) * 
-                            (np.int64(zeroRs34['ring_loc'])+1-zeroRs34['ring_loc'])) +
-                            (np.log(zeroRs34['conc_s1r2']) * 
-                            (zeroRs34['ring_loc']-np.int64(zeroRs34['ring_loc']))))
-        
-        somezeros_df = pd.concat([zeroRs12, zeroRs34])
-        somezeros_df['intconc'] = (somezeros_df['R_s12']*(np.int64(somezeros_df['s'])+1-somezeros_df['s']) 
-                                  + somezeros_df['R_s34']*(somezeros_df['s']-np.int64(somezeros_df['s'])))
-        somezeros_df.drop(['R_s12','R_s34'], axis=1, inplace=True)
-                
-        conc_df = pd.concat([nozeros_df, somezeros_df], ignore_index=True)
+        if somezeros_df.shape[0] == 0:
+            
+            conc_df = nozeros_df.copy()
+            
+        else:
+            
+            #---Interpolate outer blocks where at least one of the 4 polars is zero ---
+            
+            # Find max of s1r1,s1r2 and s2r1,s2r2. These are used for 0 cases.
+            somezeros_df['R_s12'] = somezeros_df[['conc_s1r1','conc_s1r2']].max(axis=1)
+            somezeros_df['R_s34'] = somezeros_df[['conc_s2r1','conc_s2r2']].max(axis=1)
+            
+            
+            # In order to vectorize operations, split somezeros_df into three DFs
+            # zeroS1 => s1r1=0 or s1r2=0 so R_s12 is max of s1r1, s1r2
+            # zeroS2 => s2r1=0 or s2r2=0 so R_s34 is max of s2r1, s2r2
+            # zeroS12 => s1r1=0 or s1r2=0 AND s2r1=0 or s2r2=0, R_s12=max(s1r1,s1r2) R_s34=max(s2r1,s2r2)
+            zeroS1 = somezeros_df[((somezeros_df['conc_s1r1']==0) | (somezeros_df['conc_s1r2']==0))
+                                    & ((somezeros_df['conc_s2r1']>0) & (somezeros_df['conc_s2r2']>0))].copy()
+            zeroS2 = somezeros_df[((somezeros_df['conc_s1r1']>0) & (somezeros_df['conc_s1r2']>0))
+                                    & ((somezeros_df['conc_s2r1']==0) | (somezeros_df['conc_s2r2']==0))].copy()
+            zeroS12 = somezeros_df[(somezeros_df[['conc_s1r1','conc_s1r2']].min(axis=1) == 0) & 
+                                   (somezeros_df[['conc_s2r1','conc_s2r2']].min(axis=1)==0)]
+            
+    
+            zeroS1['R_s34'] = np.exp((np.log(zeroS1['conc_s2r1']) * 
+                                (np.int64(zeroS1['ring_loc'])+1-zeroS1['ring_loc'])) +
+                                (np.log(zeroS1['conc_s2r2']) * 
+                                (zeroS1['ring_loc']-np.int64(zeroS1['ring_loc']))))
+    
+            zeroS2['R_s12'] = np.exp((np.log(zeroS2['conc_s1r1']) * 
+                                (np.int64(zeroS2['ring_loc'])+1-zeroS2['ring_loc'])) +
+                                (np.log(zeroS2['conc_s1r2']) * 
+                                (zeroS2['ring_loc']-np.int64(zeroS2['ring_loc']))))
+            
+            somezeros2_df = pd.concat([zeroS1, zeroS2, zeroS12])
+            somezeros2_df['intconc'] = (somezeros2_df['R_s12']*(np.int64(somezeros2_df['s'])+1-somezeros2_df['s']) 
+                                      + somezeros2_df['R_s34']*(somezeros2_df['s']-np.int64(somezeros2_df['s'])))
+            somezeros2_df.drop(['R_s12','R_s34'], axis=1, inplace=True)
+                    
+            conc_df = pd.concat([nozeros_df, somezeros2_df], ignore_index=True)
         
         return conc_df
 
