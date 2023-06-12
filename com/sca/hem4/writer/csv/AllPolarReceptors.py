@@ -79,7 +79,7 @@ class AllPolarReceptors(CsvWriter, InputFile):
                     
         #extract Chronic polar concs from the Chronic plotfile
         polarcplot_df = self.plot_df.query("net_id == 'POLGRID1'").copy()
-
+        
         # If acute was run for this facility, extract polar concs from Acute plotfile and join to
         # chronic polar concs, otherwise, add column of 0's for acute result
         if self.acute_yn == 'Y':
