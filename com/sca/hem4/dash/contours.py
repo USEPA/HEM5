@@ -119,7 +119,7 @@ class contours():
 ##### The contour interpolation is more accurate when more input data are used, so it is recommended to select both the ring summary\
     and block summary chronic output files.
 ##### To expedite loading, the contoured area is limited to no more than 20km from the location of maximum impact, where the risks are the highest.\
-    The boundary of the contoured area could be rectangular, circular, or irregular above depending on the size of your modeling domain \
+    The boundary of the contoured area could be rectangular, circular, or irregular depending on the size of your modeling domain \
         and whether your inputs are block or polar receptor data.                                        
                                             
                                         ''')
