@@ -114,9 +114,11 @@ class contours():
                         dbc.ModalBody(
                             dcc.Markdown('''
                                            
-##### The contours are generated using the griddata (linear) interpolation method of the [SciPy](https://scipy.org/) Python library. There is inherent uncertainty involved in any interpolation.
-##### The contour interpolation is more accurate when more input data are used, so it is recommended to select both the ring summary and block summary chronic output files.
-##### Because the interest is usually near the facility, and to allow quick creation of contours, we limit the size of the area included in the contours
+##### The contours are generated using the griddata (linear) interpolation method of the [SciPy](https://scipy.org/) Python library.\
+    There is inherent uncertainty involved in any interpolation.
+##### The contour interpolation is more accurate when more input data are used, so it is recommended to select both the ring summary\
+    and block summary chronic output files.
+##### To expedite loading, the contoured area is limited to no more than 20km from the location of maximum impact, where the risks are the highest.
                                         
                                             
                                         ''')
@@ -320,6 +322,19 @@ class contours():
                                                 dl.LayersControl([ct_esri, ct_dark, ct_light, ct_openstreet],)
                                                 ],
                                             style={'width': '1200px', 'height': '600px'}),
+                                    html.Div(style={
+                                        'fontFamily': 'Arial, sans-serif',
+                                        'fontSize': '12px',
+                                        'fontWeight': 'bold',
+                                        # 'color': 'black',
+                                        'textAlign': 'left'
+                                    },
+                                        children=[
+                                            html.P('* To expedite loading, the contoured area is limited to no more than 20km\
+                                                   from the location of maximum impact.', style={'marginBottom': '1px'}),
+                                            html.P('** Census block receptors are included out to 10km from the location of maximum impact.'),
+                                        ]
+                                    )
                                                                             
                                     ], width=10)
                                                      
@@ -399,6 +414,7 @@ class contours():
                         polarbuf = None
                         
                     if block_recpts is not None and len(block_recpts) != 0:
+                                                
                         if metric == 'MIR':
                             block_recpts['tooltip'] = '<b>Block/User Receptor</b>' + '<br><b>Receptor ID: </b>' + block_recpts['RecID'] \
                                 + '<br><b>Cancer Risk (in a million): </b>' + block_recpts[metric].apply(lambda x: f'{self.riskfig(x, digz)}').astype(str)
@@ -418,18 +434,15 @@ class contours():
                     avglon = max_x['Longitude']
                                 
                     # Limit the size of the area to contour
-                    breadth = abs(dfpl['Latitude'].max() - dfpl['Latitude'].min())*111133/1000
-                    if breadth > 20:
-                        cont_radius = 20
+                    span = abs(dfpl['Latitude'].max() - dfpl['Latitude'].min())*111133/1000
+                    if gdf['RecID'].str.contains('ang').any():
+                        if span > 40:
+                            cont_radius = 20
+                        else:
+                            cont_radius = round(span/sqrt(8))
                     else:
-                        cont_radius = round(breadth)
-                    # halfgrid_m = 20000
-                    # res_m = 10
-                    # halfgrid = halfgrid_m/111133
-                    # res = res_m/111133
-                    # numcells = round(halfgrid*2/res)
-                    
-                    # grab_radius = 20 # only get blocks within 10km of center
+                        cont_radius = round(span/2)
+                                                                               
                     numcells = round(cont_radius*2*1000/10)
                     r_earth = 6371
                     fac_center = [avglon, avglat]
@@ -438,8 +451,7 @@ class contours():
                     lat1 = fac_center[1]  - (cont_radius / r_earth) * (180 / pi)
                     lon1 = fac_center[0] - (cont_radius / r_earth) * (180 / pi) / cos(np.deg2rad(fac_center[1]))
                                         
-                    gdfBounds = gdf.bounds
-                    
+                    gdfBounds = gdf.bounds                    
                 
                     ''' Create the meshgrid to which to interpolate
                     '''
@@ -452,16 +464,9 @@ class contours():
                     scigrid = griddata((gdfBounds.minx.to_numpy(), gdfBounds.miny.to_numpy()), gdf[metric].to_numpy(),
                                         (x_grid, y_grid), method = 'linear', rescale=True)
                                         
-                    # Set datamin based on the grid rather than entire dataset which extends past the grid
-                    blockf = [True for i in filelist if 'block' in i]
-                    # breakpoint()
-                    # if blockf and blockf[0] == True and len(blockf) == 1:
-                    try:
-                        datamin = scigrid.min()
-                    except:
-                        datamin = gdf[metric].min()
-                    # datamin =  scigrid.min()   
-                    datamax = gdf[metric].max()
+                    minmaxgdf = gdf.loc[gdf['Latitude'].between(lat1, lat2) & gdf['Longitude'].between(lon1, lon2)]
+                    datamin = minmaxgdf[metric].min()
+                    datamax = minmaxgdf[metric].max()
                     # breakpoint()
                     
                     # Go thru user class break list, accept only numbers and values within data range
@@ -711,8 +716,7 @@ class contours():
                                 except:
                                     midlat = (tempdf['Latitude'].max() + tempdf['Latitude'].min())/2
                                     midlon = (tempdf['Longitude'].max() + tempdf['Longitude'].min())/2
-                                
-                                
+                                    
                                 grab_radius = 10 # only get blocks within 10km of center
                                 r_earth = 6371
                                 fac_center = [midlon, midlat]
@@ -720,11 +724,9 @@ class contours():
                                 lon2 = fac_center[0] + (grab_radius / r_earth) * (180 / pi) / cos(np.deg2rad(fac_center[1]))
                                 lat1 = fac_center[1]  - (grab_radius / r_earth) * (180 / pi)
                                 lon1 = fac_center[0] - (grab_radius / r_earth) * (180 / pi) / cos(np.deg2rad(fac_center[1]))
-                                finaldf = tempdf[tempdf['Latitude'].between(lat1, lat2) & tempdf['Longitude'].between(lon1, lon2)]
-                            else:
-                                finaldf = tempdf.copy()
+                                tempdf = tempdf.loc[tempdf['Latitude'].between(lat1, lat2) & tempdf['Longitude'].between(lon1, lon2)].copy()
                                              
-                            dflist.append(finaldf)
+                            dflist.append(tempdf)
                            
                             
                         alldfs = pd.concat(dflist)
