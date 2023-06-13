@@ -6,7 +6,7 @@ import pandas as pd
 
 class Logger:
     """
-    Used to log messages (with optional data) in the HEM4 log file as well as
+    Used to log messages (with optional data) in the HEM log file as well as
     the UI component that displays messages to the user.
     
     """
@@ -20,20 +20,20 @@ class Logger:
             os.makedirs(outdir)
 
         fileDir = os.path.dirname(os.path.realpath('__file__'))
-        filename = os.path.join(fileDir, 'output/hem4.log')
+        filename = os.path.join(fileDir, 'output/hem.log')
 
         if os.path.isfile(filename):
              os.remove(filename)
 
         Logger.logfile = open(filename, 'w')
 
-        Logger.logMessage("HEM4 Logging Initialized. See output subfolder for the log of your HEM4 run.\n")
+        Logger.logMessage("HEM Logging Initialized. See output subfolder for the log of your HEM run.\n")
 
     @staticmethod
     def archiveLog(run_dir, filename_override=None):
         Logger.close(True)
         fileDir = os.path.dirname(os.path.realpath('__file__'))
-        filename = os.path.join(fileDir, 'output/hem4.log')
+        filename = os.path.join(fileDir, 'output/hem.log')
         if os.path.isfile(filename):
             destination = os.path.join(run_dir, filename_override) if filename_override is not None else run_dir
             shutil.move(filename, destination)
@@ -43,8 +43,8 @@ class Logger:
         Logger.close(True)
 
         fileDir = os.path.dirname(os.path.realpath('__file__'))
-        current_filename = os.path.join(fileDir, 'output/hem4.log')
-        rundir_filename = os.path.join(fileDir, runDir + '/hem4.log')
+        current_filename = os.path.join(fileDir, 'output/hem.log')
+        rundir_filename = os.path.join(fileDir, runDir + '/hem.log')
 
         logfile = open(current_filename, 'r')
         runlogfile = open(rundir_filename, 'a')

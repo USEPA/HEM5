@@ -109,7 +109,7 @@ class HAPEmissions(InputFile):
             fix_pollutants = messagebox.askyesno("Missing Pollutants in Dose "+
                                                  "Response Library", "The "+
                                                  "following pollutants were "+
-                                                 "not found in HEM4's Dose "+
+                                                 "not found in HEM's Dose "+
                                                  "Response Library: " +
                                                  ', '.join(missing_pollutants) +
                                                  ".\n Would you like to amend "+

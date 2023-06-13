@@ -49,7 +49,7 @@ class DoseResponse(InputFile):
             for d in duplicates:
                 Logger.logMessage(d)
 
-            Logger.logMessage("Please remove the duplicate records and restart HEM4.")
+            Logger.logMessage("Please remove the duplicate records and restart HEM.")
             return None
         else:
             return df

@@ -37,7 +37,7 @@ class MainView(tk.Frame):
         self.log.place(in_=self.container, relx=0.3, relwidth=0.7, relheight=1)
         self.log.lower()
 
-        # instantiate hem4 start page
+        # instantiate hem start page
         self.hem = Hem(self)
         self.hem.place(in_=self.container, relx=0.3, relwidth=0.7, relheight=1)
         self.hem.lower()
@@ -62,9 +62,9 @@ class MainView(tk.Frame):
         self.options.lower()
 
 
-        #------------------- HEM4 nav button ----------------------------------------
+        #------------------- HEM nav button ----------------------------------------
         
-        self.newrunLabel= tk.Label(self, text="RUN HEM4", font=TAB_FONT, bg=MAIN_COLOR, height=2, pady=2, anchor="w")
+        self.newrunLabel= tk.Label(self, text="RUN HEM", font=TAB_FONT, bg=MAIN_COLOR, height=2, pady=2, anchor="w")
         self.newrunLabel.place(in_=self.container, relwidth=0.2, relx=0.1, rely=0.07)
 
         # add run icon with margin for highlight
@@ -222,9 +222,9 @@ class MainView(tk.Frame):
 
 
 
-        #------------------------ HEM4 Users Guide nav button ----------------------------
+        #------------------------ HEM Users Guide nav button ----------------------------
         
-        ugLabel= tk.Label(self, text="HEM4 USER GUIDE", font=TAB_FONT, bg=MAIN_COLOR, height=2, anchor="w")
+        ugLabel= tk.Label(self, text="HEM USER GUIDE", font=TAB_FONT, bg=MAIN_COLOR, height=2, anchor="w")
         ugLabel.place(in_=self.container, relwidth=0.2, rely=0.63, relx=0.1)
 
         # add run icon with margin for highlight

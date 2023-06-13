@@ -45,7 +45,7 @@ class TargetOrganEndpoints(InputFile):
             for d in duplicates:
                 Logger.logMessage(d)
 
-            Logger.logMessage("Please remove the duplicate records and restart HEM4.")
+            Logger.logMessage("Please remove the duplicate records and restart HEM.")
             return None
         else:
             # Verify that no non-cancer causing pollutants are missing
@@ -59,7 +59,7 @@ class TargetOrganEndpoints(InputFile):
                 diff = pollutants - organ_pollutants
                 for d in diff:
                     Logger.logMessage(d)
-                Logger.logMessage("Please augment the Target Organs file with these pollutants and restart HEM4.")
+                Logger.logMessage("Please augment the Target Organs file with these pollutants and restart HEM.")
                 return None
 
             return df

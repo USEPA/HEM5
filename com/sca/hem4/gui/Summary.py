@@ -321,14 +321,14 @@ class Summary(Page):
         self.reports_ready = False
 
         # set log file to append to in folder
-        logpath = self.fullpath +"/hem4.log"
+        logpath = self.fullpath +"/hem.log"
 
         # open log
         self.logfile = open(logpath, 'a')
         now = str(datetime.now())
 
         # Figure out which facilities will be included in the report.
-        # Facilities listed in the facility_max_risk_and_hi HEM4 output will be used
+        # Facilities listed in the facility_max_risk_and_hi HEM output will be used
         # and the modeling group name is taken from the first part of the filename.
         try:
             skeleton = os.path.join(self.fullpath, '*facility_max_risk_and_hi.xl*')

@@ -26,7 +26,7 @@ def on_closing(hem):
 if __name__ == "__main__":
     root = tk.Tk()
     w, h = root.winfo_screenwidth(), root.winfo_screenheight()
-    root.tk.call('wm', 'iconphoto', root._w, tk.PhotoImage(file='images/HEM4.png'))
+    root.tk.call('wm', 'iconphoto', root._w, tk.PhotoImage(file='images/HEM_arial.png'))
     root.title("")
 
     main = MainView(root)
