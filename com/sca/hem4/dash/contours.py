@@ -118,8 +118,9 @@ class contours():
     There is inherent uncertainty involved in any interpolation.
 ##### The contour interpolation is more accurate when more input data are used, so it is recommended to select both the ring summary\
     and block summary chronic output files.
-##### To expedite loading, the contoured area is limited to no more than 20km from the location of maximum impact, where the risks are the highest.
-                                        
+##### To expedite loading, the contoured area is limited to no more than 20km from the location of maximum impact, where the risks are the highest.\
+    The boundary of the contoured area could be rectangular, circular, or irregular above depending on the size of your modeling domain \
+        and whether your inputs are block or polar receptor data.                                        
                                             
                                         ''')
                                         ),                        
@@ -439,7 +440,8 @@ class contours():
                         if span > 40:
                             cont_radius = 20
                         else:
-                            cont_radius = round(span/sqrt(8))
+                            cont_radius = round(span/2)
+                            # cont_radius = round(span/sqrt(8))
                     else:
                         cont_radius = round(span/2)
                                                                                
