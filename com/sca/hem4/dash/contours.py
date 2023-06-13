@@ -19,6 +19,7 @@ import subprocess, webbrowser
 from threading import Timer
 import pandas as pd
 import numpy as np
+from numpy import sin, cos, arcsin, pi, sqrt
 import plotly.express as px
 import plotly
 import os
@@ -114,7 +115,7 @@ class contours():
                             dcc.Markdown('''
                                            
 ##### The contours are generated using the griddata (linear) interpolation method of the [SciPy](https://scipy.org/) Python library. There is inherent uncertainty involved in any interpolation.
-##### The contours are better when there are more input data, so it is recommended to use both the polar and block summary output files
+##### The contour interpolation is more accurate when more input data are used, so it is recommended to select both the ring summary and block summary chronic output files.
 ##### Because the interest is usually near the facility, and to allow quick creation of contours, we limit the size of the area included in the contours
                                         
                                             
@@ -416,34 +417,52 @@ class contours():
                     avglat = max_x['Latitude'] 
                     avglon = max_x['Longitude']
                                 
-                    # 
-                    halfgrid_m = 20000
-                    res_m = 10
-                    halfgrid = halfgrid_m/111133
-                    res = res_m/111133
-                    numcells = round(halfgrid*2/res)
+                    # Limit the size of the area to contour
+                    breadth = abs(dfpl['Latitude'].max() - dfpl['Latitude'].min())*111133/1000
+                    if breadth > 20:
+                        cont_radius = 20
+                    else:
+                        cont_radius = round(breadth)
+                    # halfgrid_m = 20000
+                    # res_m = 10
+                    # halfgrid = halfgrid_m/111133
+                    # res = res_m/111133
+                    # numcells = round(halfgrid*2/res)
+                    
+                    # grab_radius = 20 # only get blocks within 10km of center
+                    numcells = round(cont_radius*2*1000/10)
+                    r_earth = 6371
+                    fac_center = [avglon, avglat]
+                    lat2 = fac_center[1]  + (cont_radius / r_earth) * (180 / pi)
+                    lon2 = fac_center[0] + (cont_radius / r_earth) * (180 / pi) / cos(np.deg2rad(fac_center[1]))
+                    lat1 = fac_center[1]  - (cont_radius / r_earth) * (180 / pi)
+                    lon1 = fac_center[0] - (cont_radius / r_earth) * (180 / pi) / cos(np.deg2rad(fac_center[1]))
                                         
                     gdfBounds = gdf.bounds
                     
                 
                     ''' Create the meshgrid to which to interpolate
                     '''
-                    x_coord = np.linspace(avglon - halfgrid, avglon + halfgrid, numcells)
-                    y_coord = np.linspace(avglat - halfgrid, avglat + halfgrid, numcells)
+                    x_coord = np.linspace(lon1, lon2, numcells)
+                    y_coord = np.linspace(lat1, lat2, numcells)
                     x_grid, y_grid = np.meshgrid(x_coord, y_coord)
                             
                     ''' Use scipy griddata interpolation on the meshgrid
                     '''
                     scigrid = griddata((gdfBounds.minx.to_numpy(), gdfBounds.miny.to_numpy()), gdf[metric].to_numpy(),
                                         (x_grid, y_grid), method = 'linear', rescale=True)
-                    
+                                        
                     # Set datamin based on the grid rather than entire dataset which extends past the grid
                     blockf = [True for i in filelist if 'block' in i]
-                    if blockf and blockf[0] == True and len(blockf) == 1:
-                        datamin = gdf[metric].min()
-                    else:
+                    # breakpoint()
+                    # if blockf and blockf[0] == True and len(blockf) == 1:
+                    try:
                         datamin = scigrid.min()
+                    except:
+                        datamin = gdf[metric].min()
+                    # datamin =  scigrid.min()   
                     datamax = gdf[metric].max()
+                    # breakpoint()
                     
                     # Go thru user class break list, accept only numbers and values within data range
                     finuserlist = []
@@ -693,8 +712,15 @@ class contours():
                                     midlat = (tempdf['Latitude'].max() + tempdf['Latitude'].min())/2
                                     midlon = (tempdf['Longitude'].max() + tempdf['Longitude'].min())/2
                                 
-                                delta = .1
-                                finaldf = tempdf[tempdf['Latitude'].between(midlat-delta, midlat+delta) & tempdf['Longitude'].between(midlon-delta, midlon+delta)]
+                                
+                                grab_radius = 10 # only get blocks within 10km of center
+                                r_earth = 6371
+                                fac_center = [midlon, midlat]
+                                lat2 = fac_center[1]  + (grab_radius / r_earth) * (180 / pi)
+                                lon2 = fac_center[0] + (grab_radius / r_earth) * (180 / pi) / cos(np.deg2rad(fac_center[1]))
+                                lat1 = fac_center[1]  - (grab_radius / r_earth) * (180 / pi)
+                                lon1 = fac_center[0] - (grab_radius / r_earth) * (180 / pi) / cos(np.deg2rad(fac_center[1]))
+                                finaldf = tempdf[tempdf['Latitude'].between(lat1, lat2) & tempdf['Longitude'].between(lon1, lon2)]
                             else:
                                 finaldf = tempdf.copy()
                                              
