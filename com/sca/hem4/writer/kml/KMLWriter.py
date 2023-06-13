@@ -45,7 +45,7 @@ class KMLWriter():
         # Define kml object
         kml_source_loc = kml.KML()
 
-        document = kml.Document(ns=self.ns, id='emisloc', name='srcmap', description='Exported from HEM4')
+        document = kml.Document(ns=self.ns, id='emisloc', name='srcmap', description='Exported from HEM')
         document.isopen = 1
 
         # Schema
@@ -372,7 +372,7 @@ class KMLWriter():
                     
                     description = "<div align='center'><B>User Receptor</B> <br />" + \
                                   "<B> ID: " + ublock + "</B> <br /> \n" + \
-                                  "<B> HEM4 Estimated Cancer Risk (in a million) </B> <br /> \n" + \
+                                  "<B> HEM Estimated Cancer Risk (in a million) </B> <br /> \n" + \
                                   "    " + "Total = " + str(urrnd) + "<br /><br /> \n"
                     if urrnd > 0:
                         description += "    " + "<U> Top Pollutants Contributing to Total Cancer Risk </U> <br /> \n"
@@ -439,7 +439,7 @@ class KMLWriter():
                     
                     description = "<div align='center'><B> User Receptor</B> <br /> \n" + \
                                   "    " + "<B> ID: " + ublock + "</B> <br /> \n" + \
-                                  "    " + "<B> HEM4 Estimated Maximum TOSHI (" + maxtoshi + ") </B> <br /> \n" + \
+                                  "    " + "<B> HEM Estimated Maximum TOSHI (" + maxtoshi + ") </B> <br /> \n" + \
                                   "    " + "Total = " + str(maxtoshival) + "<br /><br /> \n"
                                   
                     if maxtoshival > 0:
@@ -502,7 +502,7 @@ class KMLWriter():
     
                 description = "<div align='center'><B> Census Block Receptor</B> <br /> \n" + \
                               "    " + "<B> Block: " + str(group.iloc[0]['block']) + "</B> <br /> \n" + \
-                              "    " + "<B> HEM4 Estimated Cancer Risk (in a million) </B> <br /> \n" + \
+                              "    " + "<B> HEM Estimated Cancer Risk (in a million) </B> <br /> \n" + \
                               "    " + "Total = " + str(cbrnd) + "<br /><br /> \n"
     
                 if cbrnd > 0:
@@ -573,7 +573,7 @@ class KMLWriter():
                             
                 description = "<div align='center'><B> Census Block Receptor</B> <br /> \n" + \
                               "    " + "<B> FIPs: " + sfips + " Block: " + sblock + "</B> <br /> \n" + \
-                              "    " + "<B> HEM4 Estimated Maximum TOSHI (" + maxtoshi + ") </B> <br /> \n" + \
+                              "    " + "<B> HEM Estimated Maximum TOSHI (" + maxtoshi + ") </B> <br /> \n" + \
                               "    " + "Total = " + str(maxtoshival) + "<br /><br /> \n"
     
                 if maxtoshival > 0:
@@ -638,7 +638,7 @@ class KMLWriter():
 
             description = "<div align='center'><B> Polar Receptor</B> <br />" + \
                           "    " + "<B> Distance: " + pg_dist + " Angle: " + pg_angle + "</B> <br /> \n" + \
-                          "    " + "<B> HEM4 Estimated Cancer Risk (in a million) </B> <br /> \n" + \
+                          "    " + "<B> HEM Estimated Cancer Risk (in a million) </B> <br /> \n" + \
                           "    " + "Total = " + str(pgrnd) + "<br /><br /> \n"
 
             if pgrnd > 0:
@@ -707,7 +707,7 @@ class KMLWriter():
 
             description = "<div align='center'><B> Polar Receptor</B> <br /> \n" + \
                           "    " + "<B> Distance: " + pg_dist + " Angle: " + pg_angle + "</B> <br /> \n" + \
-                          "    " + "<B> HEM4 Estimated Max TOSHI (" + maxtoshi + ") </B> <br /> \n" + \
+                          "    " + "<B> HEM Estimated Max TOSHI (" + maxtoshi + ") </B> <br /> \n" + \
                           "    " + "Total = " + str(maxtoshival) + "<br /><br /> \n"
 
             if maxtoshival > 0:
@@ -942,7 +942,7 @@ class KMLWriter():
                     
                     description = "<div align='center'><B>User Receptor</B> <br />" + \
                                   "<B> ID: " + uid + "</B> <br /> \n" + \
-                                  "<B> HEM4 Estimated Cancer Risk (in a million) </B> <br /> \n" + \
+                                  "<B> HEM Estimated Cancer Risk (in a million) </B> <br /> \n" + \
                                   "    " + "Total = " + str(urrnd) + "<br /><br /> \n"
                     if urrnd > 0:
                         description += "    " + "<U> Top Pollutants Contributing to Total Cancer Risk </U> <br /> \n"
@@ -1007,7 +1007,7 @@ class KMLWriter():
                     
                     description = "<div align='center'><B> User Receptor</B> <br /> \n" + \
                                   "    " + "<B> ID: " + uid + "</B> <br /> \n" + \
-                                  "    " + "<B> HEM4 Estimated Maximum TOSHI (" + maxtoshi + ") </B> <br /> \n" + \
+                                  "    " + "<B> HEM Estimated Maximum TOSHI (" + maxtoshi + ") </B> <br /> \n" + \
                                   "    " + "Total = " + str(maxtoshival) + "<br /><br /> \n"
                                   
                     if maxtoshival > 0:
@@ -1069,7 +1069,7 @@ class KMLWriter():
     
                 description = "<div align='center'><B> Inner Receptor</B> <br /> \n" + \
                               "    " + "<B> Receptor ID: " + str(group.iloc[0]['rec_id']) + "</B> <br /> \n" + \
-                              "    " + "<B> HEM4 Estimated Cancer Risk (in a million) </B> <br /> \n" + \
+                              "    " + "<B> HEM Estimated Cancer Risk (in a million) </B> <br /> \n" + \
                               "    " + "Total = " + str(cbrnd) + "<br /><br /> \n"
     
                 if cbrnd > 0:
@@ -1139,7 +1139,7 @@ class KMLWriter():
                             
                 description = "<div align='center'><B> Inner Receptor</B> <br /> \n" + \
                               "    " + "<B> Receptor ID: " + srecid + "</B> <br /> \n" + \
-                              "    " + "<B> HEM4 Estimated Maximum TOSHI (" + maxtoshi + ") </B> <br /> \n" + \
+                              "    " + "<B> HEM Estimated Maximum TOSHI (" + maxtoshi + ") </B> <br /> \n" + \
                               "    " + "Total = " + str(maxtoshival) + "<br /><br /> \n"
     
                 if maxtoshival > 0:
@@ -1204,7 +1204,7 @@ class KMLWriter():
 
             description = "<div align='center'><B> Polar Receptor</B> <br />" + \
                           "    " + "<B> Distance: " + pg_dist + " Angle: " + pg_angle + "</B> <br /> \n" + \
-                          "    " + "<B> HEM4 Estimated Cancer Risk (in a million) </B> <br /> \n" + \
+                          "    " + "<B> HEM Estimated Cancer Risk (in a million) </B> <br /> \n" + \
                           "    " + "Total = " + str(pgrnd) + "<br /><br /> \n"
 
             if pgrnd > 0:
@@ -1273,7 +1273,7 @@ class KMLWriter():
 
             description = "<div align='center'><B> Polar Receptor</B> <br /> \n" + \
                           "    " + "<B> Distance: " + pg_dist + " Angle: " + pg_angle + "</B> <br /> \n" + \
-                          "    " + "<B> HEM4 Estimated Max TOSHI (" + maxtoshi + ") </B> <br /> \n" + \
+                          "    " + "<B> HEM Estimated Max TOSHI (" + maxtoshi + ") </B> <br /> \n" + \
                           "    " + "Total = " + str(maxtoshival) + "<br /><br /> \n"
 
             if maxtoshival > 0:
@@ -1656,7 +1656,7 @@ class KMLWriter():
         Create a KML Document object with preset styles and schema.
         :return: the Document instance
         """
-        document = kml.Document(ns=self.ns, name='srcmap', description='Exported from HEM4')
+        document = kml.Document(ns=self.ns, name='srcmap', description='Exported from HEM')
         document.isopen = 1
 
         # Schema

@@ -1,1 +1,1 @@
-Selecting 'Yes' directs HEM4 to duplicate all DBF formatted output files as CSV formatted files.  This will increase the amount of disk space needed for the HEM4 outputs.  Selecting 'No' will direct HEM4 to not copy DBF formatted output files to CSV formatted files (default).
+Selecting 'Yes' directs HEM to duplicate all DBF formatted output files as CSV formatted files.  This will increase the amount of disk space needed for the HEM outputs.  Selecting 'No' will direct HEM to not copy DBF formatted output files to CSV formatted files (default).

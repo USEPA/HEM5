@@ -41,7 +41,7 @@ import base64
 import sys
 
 
-class HEM4dash():
+class HEMdash():
     
     def __init__(self, dirtouse):
         self.dir = dirtouse
@@ -124,7 +124,7 @@ class HEM4dash():
                 
         app = dash.Dash(__name__, external_stylesheets=dbc_stylesheets, 
                         external_scripts=[chroma], assets_folder=self.resource_path('assets'))
-        app.title = 'HEM4 Summary Results: ' + self.SCname
+        app.title = 'HEM Summary Results: ' + self.SCname
                 
         # Create dataframe of max risks
         fname = self.SCname + "_facility_max_risk_and_hi.xlsx"
@@ -400,7 +400,7 @@ class HEM4dash():
                             'doubleClickDelay': 1000,
                             'toImageButtonOptions': {
                                 'format': 'png', # one of png, svg, jpeg, webp
-                                'filename': 'HEM4 Results ' + self.SCname,
+                                'filename': 'HEM Results ' + self.SCname,
                                 'width': 1100,
                                 'scale': 1 # Multiply title/legend/axis/canvas sizes by this factor
                                 }
@@ -410,7 +410,7 @@ class HEM4dash():
                             'doubleClickDelay': 1000,
                             'toImageButtonOptions': {
                                 'format': 'png', # one of png, svg, jpeg, webp
-                                'filename': 'HEM4 Results ' + self.SCname,
+                                'filename': 'HEM Results ' + self.SCname,
                                 'width': 1100,
                                 'scale': 1 # Multiply title/legend/axis/canvas sizes by this factor
                                 }
@@ -499,7 +499,7 @@ class HEM4dash():
                 
                 html.Div([
                         # html.Hr(),    
-                        html.H2("HEM4 Summary Results for " + self.SCname + " Model Run", style={'text-align':'center', 'font-weight': 'bold'}),
+                        html.H2("HEM Summary Results for " + self.SCname + " Model Run", style={'text-align':'center', 'font-weight': 'bold'}),
                         # html.Hr(),
                         ]),
             

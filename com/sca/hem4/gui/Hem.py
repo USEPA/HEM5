@@ -85,7 +85,7 @@ class Hem(Page):
         self.container.grid(row=0, column=0)
         self.container.grid_rowconfigure(15, weight=1)
 
-        #HEM4 GUI tabs
+        #HEM GUI tabs
         self.optional = Optional(self)
         self.optional.place(in_=meta_container, relheight=1, relwidth=1)
         self.optional.lower()
@@ -125,7 +125,7 @@ class Hem(Page):
         # tab placehodler for nav
         self.current_tab = self.nav
 
-        # highlight place holder for HEM4 upload buttons
+        # highlight place holder for HEM upload buttons
         self.current_highlight = None
 
         # Frames for main inputs
@@ -161,7 +161,7 @@ class Hem(Page):
         self.titleLabel.grid(row=1, column=0, padx=10, pady=10)
 
         self.title = tk.Label(self.s1, font=TITLE_FONT, fg=MAIN_COLOR, bg=self.tab_color,
-                              text="HEM4")
+                              text="HEM")
         self.title.grid(row=1, column=1, sticky="W", pady=10, padx=10)
 
         # Setting up  directions text space
@@ -858,7 +858,7 @@ class Hem(Page):
     def run(self):
         """
         Function passes model class to InputChecker class, then uses returned
-        dictionary to either run HEM4 or display user input error.
+        dictionary to either run HEM or display user input error.
 
         To run each facility, function loops through facility ids and logs
         returned errors and messages to the log tab via the queue method
@@ -982,13 +982,13 @@ class Hem(Page):
         if self.ready == True:
 
             #tell user to check the Progress/Log section
-            override = messagebox.askokcancel("Confirm HEM4 Run", "Clicking 'OK'"+
-                                              " will start HEM4. Check the log tab for" +
+            override = messagebox.askokcancel("Confirm HEM Run", "Clicking 'OK'"+
+                                              " will start HEM. Check the log tab for" +
                                               " updates on your modeling run.")
 
             if override:
                 #                global instruction_instance
-                #                self.instruction_instance.set("HEM4 Running, check the log tab for updates")
+                #                self.instruction_instance.set("HEM Running, check the log tab for updates")
                 self.nav.hem.lift()
                 self.fix_config(self.nav.liLabel, self.nav.logLabel, self.nav.current_button)
 
@@ -996,7 +996,7 @@ class Hem(Page):
 
                 self.nav.iconLabel.configure(image=self.nav.greenIcon)
 
-                Logger.logMessage("\nHEM4 is starting...")
+                Logger.logMessage("\nHEM is starting...")
 
                 #set run name
                 if len(self.group_list.get()) > 0:
@@ -1022,7 +1022,7 @@ class Hem(Page):
 
     def process(self):
         """
-        Function creates thread for running HEM4 concurrently with tkinter GUI
+        Function creates thread for running HEM concurrently with tkinter GUI
         """
         executor = ThreadPoolExecutor(max_workers=1)
 
@@ -1092,7 +1092,7 @@ class Hem(Page):
 
     def after_callback(self):
         """
-        Function listens on thread Running HEM4 for error and completion messages
+        Function listens on thread Running HEM for error and completion messages
         logged via queue method
         """
         try:
@@ -1113,18 +1113,18 @@ class Hem(Page):
     def quit_app(self):
         """
 
-        Function handles quiting HEM4 by closing the window containing
+        Function handles quiting HEM by closing the window containing
         the GUI and exiting all background processes & threads
         """
         if self.running:
-            override = messagebox.askokcancel("Confirm HEM4 Quit", "Are you "+
-                                              "sure? HEM4 is currently running. Clicking 'OK' will stop HEM4.")
+            override = messagebox.askokcancel("Confirm HEM Quit", "Are you "+
+                                              "sure? HEM is currently running. Clicking 'OK' will stop HEM.")
 
             if override:
                 # Abort the thread and wait for it to stop...once it has
                 # completed, it will signal this class to kill the GUI
                 self.nav.iconLabel.configure(image=self.nav.cancelIcon)
-                Logger.logMessage("Stopping HEM4...")
+                Logger.logMessage("Stopping HEM...")
                 self.processor.abortProcessing()
                 self.abortLabel.unbind('<Button-1>')
                 self.abortLabel['text'] = "ABORTING..."
@@ -1133,7 +1133,7 @@ class Hem(Page):
         else:
             # If we're not running, the only thing to do is reset the GUI...
 
-            Logger.logMessage("HEM4 stopped")
+            Logger.logMessage("HEM stopped")
 
     def disable_buttons(self):
 
@@ -1275,7 +1275,7 @@ class Hem(Page):
 
     def reset_inputs(self, inputtype):
         """
-        Resets itenerant HEM4 dependent inputs when a facilities list option file is reuploaded or
+        Resets itenerant HEM dependent inputs when a facilities list option file is reuploaded or
         emissions location is reuploaded. For facilities list option file that is all inputs after it,
         for emissions location file that is all inputs after that input.
         """

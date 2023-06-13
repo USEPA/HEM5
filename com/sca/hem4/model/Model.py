@@ -26,9 +26,9 @@ class Model():
 
     def __init__(self):
         """
-        The model contains all information for all facilties used in HEM4 runs
+        The model contains all information for all facilties used in HEM runs
         
-        The following attributes house HEM4 inputs for ALL facilities: 
+        The following attributes house HEM inputs for ALL facilities: 
        
         faclist - facilities list options file 
         emisloc - emissions location file

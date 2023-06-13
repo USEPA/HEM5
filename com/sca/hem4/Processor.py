@@ -104,8 +104,8 @@ class Processor():
             for facid in fac_list:
                 print(facid)
                 if self.abort.is_set():
-                    Logger.logMessage('HEM4 RUN GROUP: ' + str(self.model.group_name) + ' canceled')
-                    messagebox.showinfo('Run Canceled', 'HEM4 RUN GROUP: ' + str(self.model.group_name) + ' canceled')
+                    Logger.logMessage('HEM RUN GROUP: ' + str(self.model.group_name) + ' canceled')
+                    messagebox.showinfo('Run Canceled', 'HEM RUN GROUP: ' + str(self.model.group_name) + ' canceled')
                     self.nav.abortLabel.destroy()
 #                    Logger.logMessage("Aborting processing...")
                     success = False
@@ -227,32 +227,32 @@ class Processor():
         if self.abort.is_set():
             
             
-            Logger.logMessage('HEM4 RUN GROUP: ' + str(self.model.group_name) + ' canceled')
-            messagebox.showinfo('Run Canceled', 'HEM4 RUN GROUP: ' + str(self.model.group_name) + ' canceled')
+            Logger.logMessage('HEM RUN GROUP: ' + str(self.model.group_name) + ' canceled')
+            messagebox.showinfo('Run Canceled', 'HEM RUN GROUP: ' + str(self.model.group_name) + ' canceled')
             self.nav.abortLabel.destroy()
         
         elif len(self.skipped) == 0:
             
 #            self.model.save.remove_folder()
             
-            Logger.logMessage("HEM4 Modeling Completed. Finished modeling all" +
+            Logger.logMessage("HEM Modeling Completed. Finished modeling all" +
                           " facilities. Check the log tab for error messages."+
                           " Modeling results are located in the Output"+
-                          " subfolder of the HEM4 folder.")
+                          " subfolder of the HEM folder.")
             
-            messagebox.showinfo('Modeling Completed', "HEM4 Modeling Completed. Finished modeling all" +
+            messagebox.showinfo('Modeling Completed', "HEM Modeling Completed. Finished modeling all" +
                           " facilities. Check the log tab for error messages."+
                           " Modeling results are located in the Output"+
-                          " subfolder of the HEM4 folder.")
+                          " subfolder of the HEM folder.")
 
         else:
 
 #            self.model.save.remove_folder()
             
-            Logger.logMessage("HEM4 completed " + str(len(self.completed)) + 
+            Logger.logMessage("HEM completed " + str(len(self.completed)) + 
                               " facilities and skipped " + str(len(self.skipped))+ 
                               " facilities. Modeling not completed for: " + "\n ".join(self.skipped))
-            messagebox.showinfo('Modeling Completed', "HEM4 completed " + str(len(self.completed)) + 
+            messagebox.showinfo('Modeling Completed', "HEM completed " + str(len(self.completed)) + 
                               " facilities and skipped " + str(len(self.skipped))+ 
                               " facilities. Modeling not completed for: " + "\n ".join(self.skipped))
 

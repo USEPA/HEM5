@@ -8,7 +8,7 @@ import numpy as np
 import os
 import sys
 from concurrent.futures import ThreadPoolExecutor
-from com.sca.hem4.dash.HEM4dash import HEM4dash
+from com.sca.hem4.dash.HEMdash import HEMdash
 from com.sca.hem4.dash.contours import contours
 from com.sca.hem4.dash.EJdash import EJdash
 from threading import Timer
@@ -23,7 +23,7 @@ class Analyze(Page):
     def __init__(self, nav, *args, **kwargs):
         Page.__init__(self, *args, **kwargs)
         
-        self.hem4dashport = 8030
+        self.hemdashport = 8030
         self.contourport = 8040
         self.ejport = 8050
 
@@ -243,20 +243,20 @@ class Analyze(Page):
         
     def runDash(self,  arguments=None):
         try:
-            self.hem4dashport += 1
+            self.hemdashport += 1
             # Redirect stdout
             orig_stdout = sys.stdout
             fileDir = os.path.dirname(os.path.realpath('__file__'))
-            stdout_file = os.path.join(fileDir, 'output/hem4.log')
+            stdout_file = os.path.join(fileDir, 'output/hem.log')
             sys.stdout = open(stdout_file, 'w')
             
             # Run the dash app
             dirname = tk.filedialog.askdirectory()
-            dashapp = HEM4dash(dirname)
+            dashapp = HEMdash(dirname)
             appobj = dashapp.buildApp()
             if appobj != None:
                 Timer(1, self.open_browser).start()
-                appobj.run_server(debug= False, port=self.hem4dashport)
+                appobj.run_server(debug= False, port=self.hemdashport)
 
                 # Reset stdout to original state
             sys.stdout = orig_stdout
@@ -265,7 +265,7 @@ class Analyze(Page):
             self.exception = ex
             fullStackInfo=''.join(traceback.format_exception(
                 ex, value=ex, tb=ex.__traceback__))
-            message = "An error occurred while trying to run the HEM4dash app:\n" + fullStackInfo
+            message = "An error occurred while trying to run the HEMdash app:\n" + fullStackInfo
             Logger.logMessage(message)
 
 
@@ -275,7 +275,7 @@ class Analyze(Page):
             # Redirect stdout
             orig_stdout = sys.stdout
             fileDir = os.path.dirname(os.path.realpath('__file__'))
-            stdout_file = os.path.join(fileDir, 'output/hem4.log')
+            stdout_file = os.path.join(fileDir, 'output/hem.log')
             sys.stdout = open(stdout_file, 'w')
             
             # Run the contour app
@@ -302,7 +302,7 @@ class Analyze(Page):
             # Redirect stdout
             orig_stdout = sys.stdout
             fileDir = os.path.dirname(os.path.realpath('__file__'))
-            stdout_file = os.path.join(fileDir, 'output/hem4.log')
+            stdout_file = os.path.join(fileDir, 'output/hem.log')
             sys.stdout = open(stdout_file, 'w')
 
             # Run the dash app
@@ -325,7 +325,7 @@ class Analyze(Page):
 
 
     def open_browser(self):
-        hoststring = 'http://localhost:' + str(self.hem4dashport) + '/'
+        hoststring = 'http://localhost:' + str(self.hemdashport) + '/'
         webbrowser.open_new(hoststring)
 
     def open_contourbrowser(self):

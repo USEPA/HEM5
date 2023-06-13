@@ -51,11 +51,10 @@ class InputFile(ABC):
     def readFromPath(self, colnames):
         try:
             with open(self.path, "rb") as f:
-
                 df = pd.read_excel(f, skiprows=self.skiprows, names=colnames, dtype=str, na_values=[''], keep_default_na=False)
 
         except FileNotFoundError as e:
-            messagebox.showinfo("Error", "The file "+self.path+" is missing.\nPlease check your HEM4 output folder\nand try again.")
+            messagebox.showinfo("Error", "The file "+self.path+" is missing.\nPlease check your HEM output folder\nand try again.")
             dataframe = pd.DataFrame()
             return dataframe
 

@@ -25,7 +25,7 @@ from com.sca.hem4.writer.csv.MirHIAllReceptors import *
 from decimal import ROUND_HALF_UP, Decimal, getcontext
 from com.sca.hem4.writer.excel.summary.AltRecAwareSummary import AltRecAwareSummary
 
-# The GUI portion of the EJ functionality in HEM4. This class manages the various dialogs and options needed
+# The GUI portion of the EJ functionality in HEM. This class manages the various dialogs and options needed
 # to kick off a run of the EJ reporting tool. Its main entry into the code that actually performs the report
 # creation is the EnvironmentalJustice class from the ej package.
 class EJ(Page):
@@ -79,7 +79,7 @@ class EJ(Page):
         title = tk.Label(self.title_frame, text="CREATE DEMOGRAPHIC ASSESSMENT REPORTS", font=TITLE_FONT,
                          fg=MAIN_COLOR, bg=self.tab_color, anchor="w")
         title.grid(row=1, column=1, pady=2, padx=10, sticky="w")
-        subtitle = tk.Label(self.title_frame, text="Note: The Demographic Assessment module may be used with HEM4 runs based on U.S. Census Block receptors only. Demographic results are available out to the smallest radius modeled for any facility in the run group.", 
+        subtitle = tk.Label(self.title_frame, text="Note: The Demographic Assessment module may be used with HEM runs based on U.S. Census Block receptors only. Demographic results are available out to the smallest radius modeled for any facility in the run group.", 
                             font=SMALL_TEXT_FONT, bg=self.tab_color, anchor="w", wraplength=600,
                             justify="left")
         subtitle.grid(row=2, column=1, pady=2, padx=10, sticky="w")
@@ -200,14 +200,14 @@ class EJ(Page):
         altrec = altrecfinder.determineAltRec(self.fullpath)
         if altrec == 'Y':
             messagebox.showinfo('Cannot run Demographic Assessment on this folder',
-                                'The folder selected for a Demographic Assessment contains HEM4 outputs that ' +
+                                'The folder selected for a Demographic Assessment contains HEM outputs that ' +
                                 'use Alternate Receptors. These cannot be used with the Demographic Assessment Tool.')
             return
         
         icon["text"] = self.fullpath.split("/")[-1]
 
         # We have to inspect the input faclist once we know the path in order to determine
-        # the minimum max_dist value that HEM4 used across all facilities during modeling.
+        # the minimum max_dist value that HEM used across all facilities during modeling.
         # This value will be an upper bound on the radius choice in the EJ GUI.
         faclist_path = os.path.join(self.fullpath, "Inputs/faclist.xlsx")
         faclist = FacilityList(faclist_path, metlib=MetLib())
@@ -376,7 +376,7 @@ class EJ(Page):
         self.run_configs = {}
 
         if self.fullpath is None:
-            messagebox.showinfo('Error', "Please select a HEM4 output folder.")
+            messagebox.showinfo('Error', "Please select a HEM output folder.")
             return False
 
         if self.category_name.get_text_value() == '':
@@ -415,7 +415,7 @@ class EJ(Page):
 
             min_max_dist_km = int(self.min_max_dist / 1000)
             if radius_value > min_max_dist_km:
-                messagebox.showinfo('Error', "The selected HEM4 output folder included a facility run at max dist = " +
+                messagebox.showinfo('Error', "The selected HEM output folder included a facility run at max dist = " +
                                     str(min_max_dist_km) + " km. Please ensure all radii are <= this value.")
                 return False
 
@@ -464,7 +464,7 @@ class EJ(Page):
         if options_ok:
 
             existing = len(self.run_configs)
-            Logger.logMessage("Running HEM4 Environmental Justice reporting tool...")
+            Logger.logMessage("Running HEM Environmental Justice reporting tool...")
             Logger.logMessage("Ready to run " + str(existing) + " run combinations.")
 
             self.nav.peopleLabel.configure(image=self.nav.greenIcon)
@@ -491,7 +491,7 @@ class EJ(Page):
                 self.levels_df = levels.dataframe
         except FileNotFoundError:
             messagebox.showinfo("Missing files",
-                                "Unable to find required ACS data. Please check your HEM4 resources folder and " +
+                                "Unable to find required ACS data. Please check your HEM resources folder and " +
                                 "try again.")
             return
 
@@ -644,21 +644,21 @@ class EJ(Page):
         self.reset()
 
     def find_next_log_name(self, directory):
-        logfiles = glob.glob(directory + "/hem4*.log")
+        logfiles = glob.glob(directory + "/hem*.log")
         if len(logfiles) == 0:
-            return "hem4.log"
+            return "hem.log"
 
         logfiles.sort()
         most_recent = logfiles[-1]
         filename_no_extension = os.path.splitext(most_recent)[0]
 
         # Does the filename already have a digit extender?
-        m = re.search(r'hem4_(\d+)$', filename_no_extension)
+        m = re.search(r'hem_(\d+)$', filename_no_extension)
         if m is None:
             return filename_no_extension + "_1.log"
         else:
             part = int(m.group(1)) + 1
-            filename_no_extension = re.sub(r"hem4_\d+$", "hem4_%s" % part, filename_no_extension)
+            filename_no_extension = re.sub(r"hem_\d+$", "hem_%s" % part, filename_no_extension)
             return filename_no_extension + ".log"
 
     # The method that automatically selects TOSHIs to report on based on a heuristic in the risk data.

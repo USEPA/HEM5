@@ -12,7 +12,7 @@ class InputsPackager():
     
     def __init__(self, targetDir, model):
         """
-        The Inputs Packager ensures that all input files used for the HEM4
+        The Inputs Packager ensures that all input files used for the HEM
         run are stored in the Inputs folder which is a subfolder in the
         group output folder.
         
@@ -20,7 +20,7 @@ class InputsPackager():
             1) Check for existence of the Inputs folder.
             2) If Inputs does not exist, then create it. If it does exist
                 then clear it out.
-            3) Copy all HEM4 inputs into the Inputs folder using generic
+            3) Copy all HEM inputs into the Inputs folder using generic
                 filenames (e.g. emisloc, hapemis, faclist) without the 
                 group name.
         """
@@ -47,7 +47,7 @@ class InputsPackager():
                     emessage = "Failed to delete " + file_path + ". Reason: " + e
                     raise Exception(emessage)
         
-        # Copy HEM4 inputs to Inputs folder
+        # Copy HEM inputs to Inputs folder
         haplib_file = self.model.haplib.path
         inputs_haplib_file = os.path.join(self.inputsFolder, "haplib.xlsx")
         shutil.copyfile(haplib_file, inputs_haplib_file)
