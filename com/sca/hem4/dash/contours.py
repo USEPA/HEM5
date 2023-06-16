@@ -19,6 +19,7 @@ import subprocess, webbrowser
 from threading import Timer
 import pandas as pd
 import numpy as np
+from numpy import sin, cos, arcsin, pi, sqrt
 import plotly.express as px
 import plotly
 import os
@@ -113,10 +114,13 @@ class contours():
                         dbc.ModalBody(
                             dcc.Markdown('''
                                            
-##### The contours are generated using the griddata (linear) interpolation method of the [SciPy](https://scipy.org/) Python library. There is inherent uncertainty involved in any interpolation.
-##### The contours are better when there are more input data, so it is recommended to use both the polar and block summary output files
-##### Because the interest is usually near the facility, and to allow quick creation of contours, we limit the size of the area included in the contours
-                                        
+##### The contours are generated using the griddata (linear) interpolation method of the [SciPy](https://scipy.org/) Python library.\
+    There is inherent uncertainty involved in any interpolation.
+##### The contour interpolation is more accurate when more input data are used, so it is recommended to select both the ring summary\
+    and block summary chronic output files.
+##### To expedite loading, the contoured area is limited to no more than 20km from the location of maximum impact, where the risks are the highest.\
+    The boundary of the contoured area could be rectangular, circular, or irregular depending on the size of your modeling domain \
+        and whether your inputs are block or polar receptor data.                                        
                                             
                                         ''')
                                         ),                        
@@ -319,6 +323,19 @@ class contours():
                                                 dl.LayersControl([ct_esri, ct_dark, ct_light, ct_openstreet],)
                                                 ],
                                             style={'width': '1200px', 'height': '600px'}),
+                                    html.Div(style={
+                                        'fontFamily': 'Arial, sans-serif',
+                                        'fontSize': '12px',
+                                        'fontWeight': 'bold',
+                                        # 'color': 'black',
+                                        'textAlign': 'left'
+                                    },
+                                        children=[
+                                            html.P('* To expedite loading, the contoured area is limited to no more than 20km\
+                                                   from the location of maximum impact.', style={'marginBottom': '1px'}),
+                                            html.P('** Census block receptors are included out to 10km from the location of maximum impact.'),
+                                        ]
+                                    )
                                                                             
                                     ], width=10)
                                                      
@@ -398,6 +415,7 @@ class contours():
                         polarbuf = None
                         
                     if block_recpts is not None and len(block_recpts) != 0:
+                                                
                         if metric == 'MIR':
                             block_recpts['tooltip'] = '<b>Block/User Receptor</b>' + '<br><b>Receptor ID: </b>' + block_recpts['RecID'] \
                                 + '<br><b>Cancer Risk (in a million): </b>' + block_recpts[metric].apply(lambda x: f'{self.riskfig(x, digz)}').astype(str)
@@ -416,34 +434,42 @@ class contours():
                     avglat = max_x['Latitude'] 
                     avglon = max_x['Longitude']
                                 
-                    # 
-                    halfgrid_m = 20000
-                    res_m = 10
-                    halfgrid = halfgrid_m/111133
-                    res = res_m/111133
-                    numcells = round(halfgrid*2/res)
+                    # Limit the size of the area to contour
+                    span = abs(dfpl['Latitude'].max() - dfpl['Latitude'].min())*111133/1000
+                    if gdf['RecID'].str.contains('ang').any():
+                        if span > 40:
+                            cont_radius = 20
+                        else:
+                            cont_radius = round(span/2)
+                            # cont_radius = round(span/sqrt(8))
+                    else:
+                        cont_radius = round(span/2)
+                                                                               
+                    numcells = round(cont_radius*2*1000/10)
+                    r_earth = 6371
+                    fac_center = [avglon, avglat]
+                    lat2 = fac_center[1]  + (cont_radius / r_earth) * (180 / pi)
+                    lon2 = fac_center[0] + (cont_radius / r_earth) * (180 / pi) / cos(np.deg2rad(fac_center[1]))
+                    lat1 = fac_center[1]  - (cont_radius / r_earth) * (180 / pi)
+                    lon1 = fac_center[0] - (cont_radius / r_earth) * (180 / pi) / cos(np.deg2rad(fac_center[1]))
                                         
-                    gdfBounds = gdf.bounds
-                    
+                    gdfBounds = gdf.bounds                    
                 
                     ''' Create the meshgrid to which to interpolate
                     '''
-                    x_coord = np.linspace(avglon - halfgrid, avglon + halfgrid, numcells)
-                    y_coord = np.linspace(avglat - halfgrid, avglat + halfgrid, numcells)
+                    x_coord = np.linspace(lon1, lon2, numcells)
+                    y_coord = np.linspace(lat1, lat2, numcells)
                     x_grid, y_grid = np.meshgrid(x_coord, y_coord)
                             
                     ''' Use scipy griddata interpolation on the meshgrid
                     '''
                     scigrid = griddata((gdfBounds.minx.to_numpy(), gdfBounds.miny.to_numpy()), gdf[metric].to_numpy(),
                                         (x_grid, y_grid), method = 'linear', rescale=True)
-                    
-                    # Set datamin based on the grid rather than entire dataset which extends past the grid
-                    blockf = [True for i in filelist if 'block' in i]
-                    if blockf and blockf[0] == True and len(blockf) == 1:
-                        datamin = gdf[metric].min()
-                    else:
-                        datamin = scigrid.min()
-                    datamax = gdf[metric].max()
+                                        
+                    minmaxgdf = gdf.loc[gdf['Latitude'].between(lat1, lat2) & gdf['Longitude'].between(lon1, lon2)]
+                    datamin = minmaxgdf[metric].min()
+                    datamax = minmaxgdf[metric].max()
+                    # breakpoint()
                     
                     # Go thru user class break list, accept only numbers and values within data range
                     finuserlist = []
@@ -692,13 +718,17 @@ class contours():
                                 except:
                                     midlat = (tempdf['Latitude'].max() + tempdf['Latitude'].min())/2
                                     midlon = (tempdf['Longitude'].max() + tempdf['Longitude'].min())/2
-                                
-                                delta = .1
-                                finaldf = tempdf[tempdf['Latitude'].between(midlat-delta, midlat+delta) & tempdf['Longitude'].between(midlon-delta, midlon+delta)]
-                            else:
-                                finaldf = tempdf.copy()
+                                    
+                                grab_radius = 10 # only get blocks within 10km of center
+                                r_earth = 6371
+                                fac_center = [midlon, midlat]
+                                lat2 = fac_center[1]  + (grab_radius / r_earth) * (180 / pi)
+                                lon2 = fac_center[0] + (grab_radius / r_earth) * (180 / pi) / cos(np.deg2rad(fac_center[1]))
+                                lat1 = fac_center[1]  - (grab_radius / r_earth) * (180 / pi)
+                                lon1 = fac_center[0] - (grab_radius / r_earth) * (180 / pi) / cos(np.deg2rad(fac_center[1]))
+                                tempdf = tempdf.loc[tempdf['Latitude'].between(lat1, lat2) & tempdf['Longitude'].between(lon1, lon2)].copy()
                                              
-                            dflist.append(finaldf)
+                            dflist.append(tempdf)
                            
                             
                         alldfs = pd.concat(dflist)
