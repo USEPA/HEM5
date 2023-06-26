@@ -467,10 +467,12 @@ class contours():
                                         (x_grid, y_grid), method = 'linear', rescale=True)
                                         
                     minmaxgdf = gdf.loc[gdf['Latitude'].between(lat1, lat2) & gdf['Longitude'].between(lon1, lon2)]
-                    datamin = minmaxgdf[metric].min()
+                    if gdf['RecID'].str.contains('ang').any():
+                        datamin = scigrid.min()
+                    else:
+                        datamin = minmaxgdf[metric].min()
                     datamax = minmaxgdf[metric].max()
-                    # breakpoint()
-                    
+                                        
                     # Go thru user class break list, accept only numbers and values within data range
                     finuserlist = []
                     if usercls is None:
@@ -690,12 +692,14 @@ class contours():
                             currcontent = goodcontents[i]
                             content_type, content_string = currcontent.split(',')
                             decoded = base64.b64decode(content_string)
-                            dtype={"FIPs": str, "Block": str}
+                            dtype={"FIPs": str, "Block": str, "Receptor ID": str}
                             currdf = pd.read_csv(io.StringIO(decoded.decode('utf-8')), dtype = dtype)
                             currdf.rename(columns={'Distance (m)': 'dist', 'Angle (from north)': 'angle'}, inplace=True)
                             
                             if 'angle' in currdf.columns:
                                 currdf['RecID'] = currdf.dist.astype(str).str.cat(currdf.angle.astype(str), sep='ang')
+                            elif 'Receptor ID' in currdf.columns:
+                                currdf['RecID'] = currdf['Receptor ID']
                             else:
                                 currdf['RecID'] = currdf.FIPs.astype(str).str.cat(currdf.Block.astype(str))
                             
