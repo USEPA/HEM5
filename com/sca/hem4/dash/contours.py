@@ -467,10 +467,11 @@ class contours():
                                         (x_grid, y_grid), method = 'linear', rescale=True)
                                         
                     minmaxgdf = gdf.loc[gdf['Latitude'].between(lat1, lat2) & gdf['Longitude'].between(lon1, lon2)]
-                    if gdf['RecID'].str.contains('ang').any():
-                        datamin = scigrid.min()
-                    else:
+                    if not gdf['RecID'].str.contains('ang').any() or np.isnan(scigrid.min()):
                         datamin = minmaxgdf[metric].min()
+                    else:
+                        datamin = scigrid.min()
+                                            
                     datamax = minmaxgdf[metric].max()
                                         
                     # Go thru user class break list, accept only numbers and values within data range
