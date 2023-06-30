@@ -163,6 +163,7 @@ class contours():
                         dcc.Store(id='ctab-store-rawdata'),
                         dcc.Store(id='ctab-store-metricdata'),
                         dcc.Store(id='ctab-store-facid'),
+                        dcc.Store(id='ctab-store-cont-json'),
                                 
                         dbc.Row([
                             
@@ -299,9 +300,11 @@ class contours():
                                                 dbc.Row([
             
                                                         dbc.Col([
-                                                                html.Label(["Download contours as shapefile"]),
+                                                                # dbc.Button("Download Contour as Shapefile", id="download-shapefile-button", n_clicks=0),
+                                                                # dcc.Download(id="download-cont-shapefile"),
                                                                 
-                                                                html.Label(["Download receptor data as csv file"]),
+                                                                dbc.Button("Download Contour as GeoJSON", id="download-json-button", n_clicks=0),
+                                                                dcc.Download(id="download-cont-geojson")
                                                                 
                                                                                                                                                             
                                                                 ], width = 12, className="opacity-100"),
@@ -358,6 +361,7 @@ class contours():
                    Output('ctab-map-title', 'children'),
                    Output('ctab-themap', 'zoom'),
                    Output('ctab-themap', 'center'),
+                   Output('ctab-store-cont-json', 'data'),
                   
                   Input('ctab-store-metricdata', 'data'),
                   Input('ctab-metricdrop','value'),
@@ -374,7 +378,7 @@ class contours():
         def interp_contour(metdata, metric, usercls, opac, numclass, ramp, digz, facname, filelist):
                     
             if metdata is None:
-                return no_update, no_update, no_update, no_update, no_update
+                return no_update, no_update, no_update, no_update, no_update, no_update
             else:
                 ctx = callback_context
                 comp_id = ctx.triggered[0]['prop_id'].split('.')[0]
@@ -382,7 +386,7 @@ class contours():
                         
                 if dfpl[metric].max() == 0:
                     alert = self.make_alert('There are no nonzero values for this metric')
-                    return alert, no_update, no_update, no_update, no_update
+                    return alert, no_update, no_update, no_update, no_update, no_update
                 else:
                     gdf = gp.GeoDataFrame(
                         dfpl, geometry=gp.points_from_xy(dfpl.Longitude, dfpl.Latitude), crs="EPSG:4326")
@@ -544,8 +548,7 @@ class contours():
                     contgdf['assgnvals'] = contgdf['assgnvals']*1.05
                     contgdf.set_crs('epsg:4326')
                     gdfJSON = contgdf.to_json()
-                                
-                    
+                                        
                     polydata = json.loads(gdfJSON)
                     colorscale = contgdf.fill.to_list()
                     style=dict(weight=1, opacity=1, color='white', fillOpacity=opac)
@@ -640,7 +643,7 @@ class contours():
                         center = [avglat,avglon]
                         zoom = 14
                     
-                    return no_update, contmap, maptitle, zoom, center
+                    return no_update, contmap, maptitle, zoom, center, gdfJSON
 
 
         # This callback takes the csv file(s) loaded by user and creates a dataframe
@@ -650,6 +653,8 @@ class contours():
                                                   
                       Input('ctab-upload-data', 'filename'),
                       Input('ctab-upload-data', 'contents'),
+                      
+                      prevent_initial_call=True,
                      )
         
         def store_rawdata(filelist, contents):
@@ -748,7 +753,9 @@ class contours():
         @app.callback(Output('ctab-store-metricdata', 'data'),
                                                   
                       Input('ctab-store-rawdata', 'data'),
-                      Input('ctab-metricdrop', 'value')
+                      Input('ctab-metricdrop', 'value'),
+                      
+                      prevent_initial_call=True,
                   )            
         def send_metdata(indata, metric):
             if indata is None:
@@ -776,9 +783,6 @@ class contours():
             if n1:
                 return not is_open
             return is_open    
-
-            
-           
     
         @app.callback(            
                 Output("modal", "is_open"),
@@ -790,6 +794,39 @@ class contours():
                 return not is_open
             return is_open
         
+        # Callback to send geojson to dcc download
+        @app.callback(
+                Output("download-cont-geojson", "data"),
+                Input("download-json-button", "n_clicks"),
+                Input('ctab-store-cont-json', 'data'),
+                Input('ctab-store-facid', 'data'),
+                                
+                prevent_initial_call=True,
+            )
+        def send_json(n_clicks, geojson_data, fac):
+            return dict(content=geojson_data, filename=f'{fac}_contours.geojson')
+                        
+        # # Callback to send shapefile to dcc download
+        # @app.callback(
+        #         Output("download-cont-shapefile", "data"),
+        #         Input("download-shapefile-button", "n_clicks"),
+        #         Input('ctab-store-cont-json', 'data'),
+        #         Input('ctab-store-facid', 'data'),
+                                
+        #         prevent_initial_call=True,
+        #     )
+        # def send_shape(n_clicks, geojson_data, fac):
+        #     gdf = gp.read_file(geojson_data)
+        #     shapefile_path = f'{fac}_contours.shp'
+        #     gdf.to_file(shapefile_path, driver="ESRI Shapefile")
+        #     # Read the Shapefile as bytes
+        #     with open(shapefile_path, "rb") as file:
+        #         shapefile_data = file.read()
+                
+        #     os.remove(shapefile_path)
+            
+        #     return dcc.send_bytes(shapefile_data, filename=f'{fac}_shapefile.zip')
+            
         
         return app
 
