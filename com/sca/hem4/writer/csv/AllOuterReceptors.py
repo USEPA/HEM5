@@ -594,7 +594,7 @@ class AllOuterReceptors(CsvWriter, InputFile):
                               & (interpDF['conc_s2r1'] > 0) & (interpDF['conc_s2r2'] > 0)].copy()
 
         # Identify rows in interpDF where at least one polar conc is 0, but not all 4
-        somezeros_df = interpDF[ ~interpDF.index.isin(nozeros_df.index) ]
+        somezeros_df = interpDF[ ~interpDF.index.isin(nozeros_df.index) ].copy()
          
         # Ensure that nozeros and somezeros sum to interpDF
         if interpDF.shape[0] != nozeros_df.shape[0] + somezeros_df.shape[0]:

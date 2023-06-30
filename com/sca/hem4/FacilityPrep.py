@@ -11,7 +11,7 @@ from com.sca.hem4.upload.EmissionsLocations import *
 from com.sca.hem4.upload.HAPEmissions import *
 from com.sca.hem4.upload.FacilityList import *
 from com.sca.hem4.support.NormalRounding import *
-import sys
+from com.sca.hem4.support.ElevHill import ElevHill
 import math
 import traceback
 
@@ -21,7 +21,6 @@ sector = 'sector';
 ring = 'ring';
 rec_type = 'rec_type';
 
-##REFORMATTED TO MOVE THE DATA FRAME CREATION TO THE GUI
 class FacilityPrep():
 
     def __init__(self, model):
@@ -35,6 +34,7 @@ class FacilityPrep():
         self.model.facops = self.model.faclist.dataframe.loc[self.model.faclist.dataframe[fac_id] == facid].copy()
 
         op_maxdist = self.model.facops[max_dist].iloc[0]
+        op_maxdistkm = op_maxdist/1000
         op_modeldist = self.model.facops[model_dist].iloc[0]
         op_circles = self.model.facops[circles].iloc[0]
         op_radial = int(self.model.facops[radial].iloc[0])
@@ -293,35 +293,21 @@ class FacilityPrep():
                 user_recs['distance'] = np.sqrt((cenx - user_recs.utme)**2 + (ceny - user_recs.utmn)**2)
                 user_recs['angle'] = user_recs.apply(lambda row: self.bearing(row[utme],row[utmn],cenx,ceny), axis=1)
     
-                # If all user receptor elevations are NaN, then replace with closest block elevation.
-                # If at least one elevation is not NaN, then leave non-NaN alone and replace NaN with 0.
-                # If all hill heights are NaN, then replace with max of closest block hill, closest block elev,
-                # or max user provided elev.
-                maxelev = user_recs[elev].max(axis=0, skipna=True) \
-                    if math.isnan(user_recs[elev].max(axis=0, skipna=True)) == False \
-                    else 0
-                maxhill = user_recs[hill].max(axis=0, skipna=True) \
-                    if math.isnan(user_recs[hill].max(axis=0, skipna=True)) == False \
-                    else 0
-                elev_allnan = user_recs[elev].all(axis=0)
-                hill_allnan = user_recs[hill].all(axis=0)
-    
-                if elev_allnan == True or hill_allnan == True:
-                    for index, row in user_recs.iterrows():
-                        elev_close, hill_close = self.urec_elevs(row[utme], row[utmn],
-                                                                 self.innerblks, self.outerblks)
-                        if elev_allnan == True:
-                            user_recs.loc[index, elev] = elev_close
-                        if hill_allnan == True:
-                            user_recs.loc[index, hill] = max([maxelev, elev_close, hill_close])
-    
-                if elev_allnan == False:
-                    # Not all elevs are NaN. Leave non-NaN alone and replace NaN with 0.
-                    user_recs[elev].fillna(0, inplace=True)
-    
-                if hill_allnan == False:
-                    # Not all hills are NaN. Leave non-NaN alone and replace NaN with 0.
-                    user_recs[hill].fillna(0, inplace=True)
+                # If facility is being run with elevated terrrain, get elevations
+                # and hill heights if the user did not provide them.
+                if self.model.facops[elev].iloc[0].upper() == "Y":
+                    if user_recs[elev].max() == 0 and user_recs[elev].min() == 0:
+                        message = ("Getting elevations for user receptors... \n")
+                        Logger.logMessage(message)
+                        coords = [(lon, lat) for lon, lat in zip(user_recs[lon], user_recs[lat])]
+                        user_recs[elev] = ElevHill.getElev(coords)
+                    if user_recs[hill].max() == 0 and user_recs[hill].min() == 0:
+                        message = ("Computing hill heights for user receptors... \n")
+                        Logger.logMessage(message)
+                        usercoords_4hill = user_recs.loc[:, [lat, lon, elev]].to_numpy()
+                        min_user_elev = user_recs[elev].min()                   
+                        user_recs[hill] = ElevHill.getHill(usercoords_4hill, op_maxdistkm, cenlon, 
+                                                          cenlat, min_user_elev)
     
                 # determine if the user receptors overlap any emission sources
                 user_recs[overlap] = user_recs.apply(lambda row: self.check_overlap(row[utme],
@@ -363,8 +349,6 @@ class FacilityPrep():
                 # Append user_recs to innerblks
                 self.innerblks = pd.concat([self.innerblks, user_recs], ignore_index=True)
 
-
-        # >= 3 rings, must be > 0 && <= 50000, and monotonically increasing
 
         #%%----- Polar receptors ----------
 
@@ -518,27 +502,49 @@ class FacilityPrep():
         
         #%%------ Elevations and hill height ---------
 
-        # if the facility will use elevations, assign them to emission sources and polar receptors        
+        # If elevated terrain is being modeled, then assign elevations to emission sources 
+        # that need them, and assign elevations and hill heights to polar receptors.
+        
         if self.model.facops[elev].iloc[0].upper() == "Y":
-            polar_df[elev], polar_df[hill], polar_df['avgelev'] = zip(*polar_df.apply(lambda row: 
-                        self.assign_polar_elev_step1(row,self.innerblks,self.outerblks,maxdist), axis=1))
-            # If user did not supply any source elevations, compute them. Otherwise, empty
-            # source elevations will be taken as 0.
+            
+            # Assign elevations to emission sources if not provided by the user
             if emislocs[elev].max() == 0 and emislocs[elev].min() == 0:
-                emislocs[elev] = self.compute_emisloc_elev(polar_df,op_circles)
-            # if polar receptor still has missing elevation, fill it in
-            polar_df[elev], polar_df[hill], polar_df['avgelev'] = zip(*polar_df.apply(lambda row: 
-                        self.assign_polar_elev_step2(row,self.innerblks,self.outerblks,emislocs), axis=1))
+                message = ("Getting elevations for emission sources... \n")
+                Logger.logMessage(message)
+                coords = [(lon, lat) for lon, lat in zip(emislocs[lon], emislocs[lat])]
+                emislocs[elev] = ElevHill.getElev(coords)
+                              
+            # Assign elevations to the polar receptors
+            message = ("Getting elevations for polar receptors... \n")
+            Logger.logMessage(message)
+            coords = [(lon, lat) for lon, lat in zip(polar_df[lon], polar_df[lat])]
+            polar_df[elev] = ElevHill.getElev(coords)
+            
+            # Assign hill heights to the polar receptors
+            message = ("Computing hill heights for polar receptors... \n")
+            Logger.logMessage(message)
+            polarcoords_4hill = polar_df.loc[:, [lat, lon, elev]].to_numpy()
+            min_polar_elev = polar_df[elev].min()
+            polar_df[hill] = ElevHill.getHill(polarcoords_4hill, op_maxdistkm, cenlon, 
+                                              cenlat, min_polar_elev)
+            
+            # Make sure hill heights are equal or greater than corresponding elevations
+            qa_df = polar_df[polar_df[elev] > polar_df[hill]]
+            if len(qa_df) > 0:
+                Logger.logMessage("Some polar elevations are higher than the hill height. Aborting processing for this facility.")
+                raise ValueError("Polar elev higher than hill height")
+
         else:
+            
             polar_df[elev] = 0
             polar_df[hill] = 0
             emislocs[elev] = 0
             emislocs[hill] = 0
 
-        # Assign the polar grid data frame to the model
+        # Put the polar grid data frame into the model
         self.model.polargrid = polar_df
 
-        
+         
         #%% this is where runstream file will be compiled
 
         runstream = Runstream(self.model.facops, emislocs, hapemis, buoyant_df,
@@ -596,158 +602,6 @@ class FacilityPrep():
 
         return sector_int, s, ring_int, ring_loc
 
-    #%% Assign elevation and hill height to polar receptors
-    def assign_polar_elev_step1(self, polar_row, innblks, outblks, maxdist):
-
-        sector1 = polar_row[sector]
-        ring1 = polar_row[ring]
-
-        # subset the inner and outer block dataframes to sector, ring
-        innblks_sub = innblks.loc[(innblks[sector] == sector1) & (innblks[ring] == ring1)]
-        if not outblks.empty:
-            outblks_sub = outblks.loc[(outblks[sector] == sector1) & (outblks[ring] == ring1)]
-
-        # initialize variables
-        r_nearelev = -999
-        r_maxelev = -999
-        r_hill = -999
-        r_pop = 0
-        r_nblk = 0
-        r_avgelev = 0
-        r_popelev = 0
-        d_test = 0
-        d_nearelev = 99999
-
-        # look at inner block subset
-        for index, row in innblks_sub.iterrows():
-            if row[elev] > r_maxelev:
-                r_maxelev = row[elev]
-                r_hill = row[hill]
-            r_avgelev = r_avgelev + row[elev]
-            r_popelev = r_popelev + row[elev] * row[population]
-            r_nblk = r_nblk + 1
-            r_pop = r_pop + row[population]
-            d_test = math.sqrt(row[distance]**2 + polar_row[distance]**2 - 2*row[distance]*polar_row[distance]*math.cos(math.radians(row[angle]-polar_row[angle])))
-            if d_test <= d_nearelev:
-                d_nearelev = d_test
-                r_nearelev = row[elev]
-
-
-        # look at outer block subset
-        if not outblks.empty:
-            for index, row in outblks_sub.iterrows():
-                if row[elev] > r_maxelev:
-                    r_maxelev = row[elev]
-                    r_hill = row[hill]
-                r_avgelev = r_avgelev + row[elev]
-                r_popelev = r_popelev + row[elev] * row[population]
-                r_nblk = r_nblk + 1
-                r_pop = r_pop + row[population]
-                d_test = math.sqrt(row[distance]**2 + polar_row[distance]**2 - 2*row[distance]*polar_row[distance]*math.cos(math.radians(row[angle]-polar_row[angle])))
-                if d_test <= d_nearelev:
-                    d_nearelev = d_test
-                    r_nearelev = row[elev]
-
-
-        # compute average and population elevations
-        if r_nblk > 0:
-            r_avgelev = r_avgelev/r_nblk
-        else:
-            r_avgelev = -999
-
-        if r_pop > 0:
-            r_popelev = r_popelev/r_pop
-        else:
-            r_popelev = -999
-
-        # Note: the max elevation is returned as the elevation for this polar receptor
-        return normal_round(r_maxelev), normal_round(r_hill), normal_round(r_avgelev)
-
-    #%% Assign elevation and hill height to polar receptors that still have missing elevations
-    def assign_polar_elev_step2(self, polar_row, innblks, outblks, emislocs):
-        
-        d_nearelev = 99999
-        d_nearhill = 99999
-        r_maxelev = -88888
-        r_hill = -88888
-
-        if polar_row[elev] == -999:
-
-            #check emission locations
-            emislocs_dist = np.sqrt((emislocs[utme] - polar_row[utme])**2 + (emislocs[utmn] - polar_row[utmn])**2)
-            mindist_index = emislocs_dist.values.argmin()
-            d_test = emislocs_dist.iloc[mindist_index]
-            if d_test <= d_nearelev:
-                d_nearelev = d_test
-                r_nearelev = emislocs[elev].iloc[mindist_index]
-                r_maxelev = r_nearelev
-                r_avgelev = r_nearelev
-                r_popelev = r_nearelev
-
-            # check inner blocks
-            if innblks.empty == False:
-                inner_dist = np.sqrt((innblks[utme] - polar_row[utme])**2 + (innblks[utmn] - polar_row[utmn])**2)
-                mindist_index = inner_dist.values.argmin()
-                d_test = inner_dist.iloc[mindist_index]
-                if d_test <= d_nearelev:
-                    d_nearelev = d_test
-                    r_nearelev = innblks[elev].iloc[mindist_index]
-                    r_maxelev = r_nearelev
-                    r_avgelev = r_nearelev
-                    r_popelev = r_nearelev
-                    r_nearhill = innblks[hill].iloc[mindist_index]
-                    r_hill = r_nearhill
-            
-            # check outer blocks
-            if not outblks.empty:
-                outer_dist = (outblks[utme] - polar_row[utme])**2 + (outblks[utmn] - polar_row[utmn])**2
-                mindist_index = outer_dist.values.argmin()
-                d_test = outer_dist.iloc[mindist_index]
-                if d_test <= d_nearelev:
-                    d_nearelev = d_test
-                    r_nearelev = outblks[elev].iloc[mindist_index]
-                    r_maxelev = r_nearelev
-                    r_avgelev = r_nearelev
-                    r_popelev = r_nearelev
-                    r_nearhill = outblks[hill].iloc[mindist_index]
-                    r_hill = r_nearhill
-
-            r_hill = max(r_hill, r_maxelev)
-            
-        else:
-
-            r_maxelev = polar_row[elev]
-            r_hill = polar_row[hill]
-            r_avgelev = -999
-
-        # Note: the max elevation is returned as the elevation for this polar receptor
-        return normal_round(r_maxelev), normal_round(r_hill), normal_round(r_avgelev)
-
-    #%% Compute the elevation to be used for all emission sources
-    def compute_emisloc_elev(self, polars, num_rings):
-
-        # The average of the average elevations for a ring will be used as the source elevation.
-        # Begin at ring 1 and work outward until a non-zero average is found.
-        
-        D_selev = 0
-        N_selev = 0
-        ringnum = 1
-        while D_selev == 0 and ringnum <= num_rings:
-            polar_sub = polars.loc[polars[ring] == ringnum]
-            for index, row in polar_sub.iterrows():
-                if row['avgelev'] != -999:
-                    D_selev = D_selev + row['avgelev']
-                    N_selev = N_selev + 1
-            ringnum = ringnum + 1
-
-        if N_selev != 0:
-            avgelev = D_selev / N_selev
-        else:
-            Logger.logMessage("Error! No elevation was computed for the emission sources.")
-            #TODO Where should things be directed now?
-            sys.exit()
-                
-        return normal_round(avgelev)
 
     #%% Define polar receptor dataframe index
     def define_polar_idx(self, s, r):
@@ -836,6 +690,8 @@ class FacilityPrep():
 
         return inbox
 
+
+    #%% rount utm coordinates
     def copyUTMColumns(self, utmn, utme):
         round_utmn = round(utmn)
         round_utme = round(utme)
@@ -859,34 +715,3 @@ class FacilityPrep():
         return angle        
 
 
-
-
-
-    #%% Calculate elevation and hill height for user-specified receptors
-    def urec_elevs(self, ur_utme, ur_utmn, innblks, outblks):
-        """
-        ur_utme - User receptor UTM Easting coordinate
-        ur_utmn - User receptor UTM Northing coordinate
-        innblks - Dataframe of inner block receptors
-        outblks - Dataframe of outer block receptors
-        """
-        mindist = 999999
-        
-        # Loop over inner blocks looking for closest one
-        for index, row in innblks.iterrows():
-            temp_dist = np.sqrt((ur_utme - row.utme)**2 + (ur_utmn - row.utmn)**2)
-            if temp_dist < mindist:
-                mindist = temp_dist
-                elev_est = row.elev
-                hill_est = row.hill
-        
-        # Loop over outer blocks to see if any are closer
-        if not outblks.empty:
-            for index, row in outblks.iterrows():
-                temp_dist = np.sqrt((ur_utme - row.utme)**2 + (ur_utmn - row.utmn)**2)
-                if temp_dist < mindist:
-                    mindist = temp_dist
-                    elev_est = row.elev
-                    hill_est = row.hill
-        
-        return elev_est, hill_est

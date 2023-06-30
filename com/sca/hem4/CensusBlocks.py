@@ -235,7 +235,7 @@ def in_box(modelblks, sourcelocs, modeldist, maxdist, overlap_dist, model):
                 # Append to innerblks and shrink outerblks
                 innerblks = pd.concat([innerblks, indist]).reset_index(drop=True)
                 innerblks = innerblks[~innerblks[blockid].duplicated()]
-                outerblks = outerblks[~outerblks[blockid].isin(innerblks[blockid])]
+                outerblks = outerblks[~outerblks[blockid].isin(innerblks[blockid])].copy()
             
             if outerblks.empty:
                 # Break for loop if no more outer blocks
@@ -257,7 +257,7 @@ def in_box(modelblks, sourcelocs, modeldist, maxdist, overlap_dist, model):
                 if len(intract) > 0:
                     innerblks = innerblks.append(intract).reset_index(drop=True)
                     innerblks = innerblks[~innerblks[blockid].duplicated()]
-                    outerblks = outerblks[~outerblks[blockid].isin(innerblks[blockid])]
+                    outerblks = outerblks[~outerblks[blockid].isin(innerblks[blockid])].copy()
             
             # Are any blocks within the modeldist of any polygon side?
             # Process each source_id
