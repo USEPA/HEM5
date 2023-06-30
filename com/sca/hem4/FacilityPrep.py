@@ -12,7 +12,6 @@ from com.sca.hem4.upload.HAPEmissions import *
 from com.sca.hem4.upload.FacilityList import *
 from com.sca.hem4.support.NormalRounding import *
 from com.sca.hem4.support.ElevHill import ElevHill
-import sys
 import math
 import traceback
 
@@ -298,9 +297,13 @@ class FacilityPrep():
                 # and hill heights if the user did not provide them.
                 if self.model.facops[elev].iloc[0].upper() == "Y":
                     if user_recs[elev].max() == 0 and user_recs[elev].min() == 0:
+                        message = ("Getting elevations for user receptors... \n")
+                        Logger.logMessage(message)
                         coords = [(lon, lat) for lon, lat in zip(user_recs[lon], user_recs[lat])]
                         user_recs[elev] = ElevHill.getElev(coords)
                     if user_recs[hill].max() == 0 and user_recs[hill].min() == 0:
+                        message = ("Computing hill heights for user receptors... \n")
+                        Logger.logMessage(message)
                         usercoords_4hill = user_recs.loc[:, [lat, lon, elev]].to_numpy()
                         min_user_elev = user_recs[elev].min()                   
                         user_recs[hill] = ElevHill.getHill(usercoords_4hill, op_maxdistkm, cenlon, 
@@ -504,20 +507,22 @@ class FacilityPrep():
         
         if self.model.facops[elev].iloc[0].upper() == "Y":
             
-            message = ("\n Acquiring elevations... \n")
-            Logger.logMessage(message)
-
-                        
             # Assign elevations to emission sources if not provided by the user
             if emislocs[elev].max() == 0 and emislocs[elev].min() == 0:
+                message = ("Getting elevations for emission sources... \n")
+                Logger.logMessage(message)
                 coords = [(lon, lat) for lon, lat in zip(emislocs[lon], emislocs[lat])]
                 emislocs[elev] = ElevHill.getElev(coords)
                               
             # Assign elevations to the polar receptors
+            message = ("Getting elevations for polar receptors... \n")
+            Logger.logMessage(message)
             coords = [(lon, lat) for lon, lat in zip(polar_df[lon], polar_df[lat])]
             polar_df[elev] = ElevHill.getElev(coords)
             
             # Assign hill heights to the polar receptors
+            message = ("Computing hill heights for polar receptors... \n")
+            Logger.logMessage(message)
             polarcoords_4hill = polar_df.loc[:, [lat, lon, elev]].to_numpy()
             min_polar_elev = polar_df[elev].min()
             polar_df[hill] = ElevHill.getHill(polarcoords_4hill, op_maxdistkm, cenlon, 
