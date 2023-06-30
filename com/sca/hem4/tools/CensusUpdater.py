@@ -184,9 +184,6 @@ class CensusUpdater():
 
 
     def readCensusFromPath(self, filepath):
-        # datatypes = {'fips':pl.Utf8, 'blockid':pl.Utf8, 'population':pl.Int64, 
-        #                   'lat':pl.Float64, 'lon':pl.Float64, 'elev':pl.Float64, 
-        #                   'hill':pl.Float64, 'urban_pop':pl.Int64}
         datatypes = {'fips':pl.Utf8, 'blockid':pl.Utf8, 'population':pl.Utf8, 
                           'lat':pl.Utf8, 'lon':pl.Utf8, 'elev':pl.Utf8, 
                           'hill':pl.Utf8, 'urban_pop':pl.Utf8}

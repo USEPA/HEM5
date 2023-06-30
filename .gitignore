@@ -6,6 +6,7 @@ kml_source_loc.txt
 Inputs
 /output
 /test/output
+/cache
 Admin
 census
 Documentation
