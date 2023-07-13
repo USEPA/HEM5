@@ -32,7 +32,9 @@ class Hem(Page):
         Page.__init__(self, *args, **kwargs)
 
         if getattr(sys, 'frozen', False):
-            os.environ['PROJ_LIB'] = os.path.join(os.path.split(__file__)[0], 'pyproj')
+            pass
+            # os.environ['PROJ_LIB'] = os.path.join(os.path.split(__file__)[0], 'pyproj')
+            # os.environ['PROJ_LIB'] = os.path.join(os.path.split(__file__)[0], 'rasterio', 'proj_data')
         else :
             pass
 

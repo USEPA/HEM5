@@ -516,7 +516,7 @@ def getBlocksFromAltRecs(facid, cenx, ceny, cenlon, cenlat, utmZone, hemi, maxdi
 
     altrecs = model.altreceptr.dataframe.filter(
         (pl.col('lat') <= cenlat+1) & (pl.col('lat') >= cenlat-1) 
-        & (pl.col('lon') <= cenlon+1) & (pl.col('lon') >= cenlon-1)).to_pandas()
+        & (pl.col('lon') <= cenlon+1) & (pl.col('lon') >= cenlon-1)).collect().to_pandas()
     
     # If any population values are missing, we cannot create an Incidence report
     model.altRec_optns['altrec_nopop'] = altrecs.isnull().any()[population]

@@ -29,7 +29,7 @@ class AltReceptors(InputFile):
                           , utmzone:pl.Int64, elev:pl.Float64, hill:pl.Float64
                           , population:pl.Int64}
                 
-        self.dataframe = self.readFromPathCsvPolarsDF()
+        self.dataframe = self.readFromPathCsvPolars(self.colnames)
 
         
     def clean(self, df):

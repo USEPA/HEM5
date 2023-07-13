@@ -320,15 +320,16 @@ class FacilityPrep():
                     # using census data
                     user_recs.loc[:, 'fips'] = '00000'
                     user_recs.loc[:,'blockid'] = user_recs['rec_id'].str.zfill(15)
-                                 
+                                
                 # Check for any user receptors that are already in the census data based on coordinates
-                dups = pd.merge(self.innerblks, user_recs, how='inner', on=[utme, utmn])
+                dups = pd.merge(self.innerblks[[utme, utmn]], user_recs[['rec_id', utme, utmn]], how='inner', on=[utme, utmn])
                 if dups.empty == False:
                     # Some user receptors are already in the census. Remove these from the user receptor list.
                     user_recs = user_recs[~user_recs.set_index([utme, utmn]).index.isin(dups.set_index([utme, utmn]).index)].copy()
                 
-                    msg = 'The following user receptors have coordinates that are already in the Census data. They ' + \
-                            ' will be removed from the user receptor list. ' + str(dups['rec_id'].tolist())
+                    msg = 'The following user receptors have coordinates that are already in the Alternate Receptor data:\n' \
+                        + str(dups['rec_id'].tolist()) + '\n' \
+                        + 'They will be removed from the user receptor list.'
                     Logger.logMessage(msg)
 
                 # Check for any user receptors that are already in the census data based on blockid
@@ -339,8 +340,9 @@ class FacilityPrep():
                         # Some user receptors are already in the census. Remove these from the user receptor list.
                         user_recs = user_recs[~user_recs.set_index(['blockid']).index.isin(dups.set_index(['blockid']).index)].copy()
                     
-                        msg = 'The following user receptors have IDs that are already in the Census data. They ' + \
-                                ' will be removed from the user receptor list. ' + str(dups['rec_id'].tolist())
+                        msg = 'The following user receptors have coordinates that are already in the Census data:\n' \
+                            + str(dups['rec_id'].tolist()) + '\n' \
+                            + 'They will be removed from the user receptor list.'
                         Logger.logMessage(msg)
                 
                 # Put into model
