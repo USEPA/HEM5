@@ -52,7 +52,7 @@ class FacilityList(InputFile):
         InputFile.__init__(self, path)
 
     def createDataframe(self):
-
+        
         self.skiprows = 1
 
         # Specify dtypes for all fields

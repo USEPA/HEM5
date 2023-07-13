@@ -2,17 +2,19 @@ from com.sca.hem4.upload.InputFile import InputFile
 from com.sca.hem4.model.Model import *
 import polars as pl
 import pandas
+import os
 
 
-class Census(InputFile):
+class CensusDF(InputFile):
 
     def __init__(self):
         InputFile.__init__(self, "census/Census2020.csv")
+        self.censusPath = os.path.join("census", "Census2020.csv")
 
     def createDataframe(self):
 
         # Column names
-        self.colnames = ['fips', 'blockid', 'population', 'lat', 'lon', 'elev',
+        colnames = ['fips', 'blockid', 'population', 'lat', 'lon', 'elev',
                     'hill', 'urban_pop']
         
         # Specify dtypes for all fields
@@ -20,12 +22,8 @@ class Census(InputFile):
                           'lat':pl.Float64, 'lon':pl.Float64, 'elev':pl.Float64, 
                           'hill':pl.Float64, 'urban_pop':pl.Int64}
 
-        # Create polars lazyframe of the national census data
-        self.dataframe = self.readFromPathCsvPolars(self.colnames)
+        # Create pandas dataframe
+        df = self.readFromPathCsvPolarsDF(colnames)
         
-        # # Create polars dataframe
-        # pldf = self.readFromPathCsvPolars(colnames)        
-        # pldf = pldf.fill_nan(0)
-
-        # # Cast polars dataframe to pandas
-        # self.dataframe = pldf.to_pandas()
+        self.dataframe = df
+        

@@ -9,6 +9,9 @@ from tkinter.filedialog import askopenfilename
 from concurrent.futures import ThreadPoolExecutor
 from com.sca.hem4.tools.CensusUpdater import CensusUpdater
 from tkinter import messagebox
+from com.sca.hem4.log.Logger import Logger
+from com.sca.hem4.upload.CensusChanges import CensusChanges
+from com.sca.hem4.upload.CensusDF import CensusDF
 
 
 class Census(Page):
@@ -92,6 +95,7 @@ class Census(Page):
             return
 
         else:
+
             # Indicate with green icon that updater is running
             self.titleLabel.configure(image=self.home.greenIcon)
             self.home.gearLabel.configure(image=self.home.greenIcon)
@@ -115,11 +119,41 @@ class Census(Page):
             self.fix_config(self.home.liLabel, self.home.logLabel, self.home.current_button)
             self.lift_page(self.home.liLabel, self.home.logLabel, self.home.log, self.home.current_button)
 
-                     
+            # Instantiate the updater which loads the Census data
+            self.censusupdater = CensusUpdater(self.changeset_df)
+            # Was the Census data uploaded?
+            if self.censusupdater.census_df.empty:
+                self.reset()
+                return
+            
             executor = ThreadPoolExecutor(max_workers=1)
     
-            future = executor.submit(self.censusupdater.generateChanges, self.censusUpdatePath)
+            future = executor.submit(self.censusupdater.generateChanges)
             future.add_done_callback(self.finish_census_update)
+
+    def reset(self):
+
+        # Reenable select folder and run widgets
+        self.folder_select.configure(state='normal')
+        self.folder_select.bind("<Button-1>", partial(self.uploadCensusUpdates))
+        self.fileLabel.configure(state='normal')
+        self.fileLabel.bind("<Button-1>", partial(self.uploadCensusUpdates))
+        self.run_button.configure(state='normal')
+        self.run_button.bind("<Button-1>", self.update_census)
+        self.rileLabel.configure(state='normal')
+        self.rileLabel.bind("<Button-1>", self.update_census)
+        self.folder_select['text'] = "Please select a census update file:"
+        self.titleLabel.configure(image=self.titleicon)
+        self.home.gearLabel.configure(image=self.home.gearLabel.image)
+        
+        #reenable hem4 tab
+        self.home.newrunLabel.bind("<Button-1>", partial(self.home.lift_page, self.home.newrunLabel, self.home.iconLabel, self.home.hem, self.home.current_button))
+        self.home.iconLabel.bind("<Button-1>", partial(self.home.lift_page, self.home.iconLabel, self.home.newrunLabel, self.home.hem, self.home.current_button))
+
+        # Make Census Update window active
+        self.home.hem.lift()
+        self.fix_config(self.home.gearLabel, self.home.optionsLabel, self.home.current_button)
+        self.lift_page(self.home.gearLabel, self.home.optionsLabel, self.home.options, self.home.current_button)
 
 
     def finish_census_update(self, future):
@@ -144,15 +178,22 @@ class Census(Page):
         messagebox.showinfo("Finished", "Census updater has completed.")
         
     def uploadCensusUpdates(self, event):
-        
-        self.censusupdater = CensusUpdater()
+
+        # Get the update file        
         fullpath = self.openFile(askopenfilename())
         if not fullpath:
             return
         else:
+            # try to load the file
             self.censusUpdatePath = fullpath
-            self.folder_select['text'] = fullpath.split("\\")[-1]
-
+            Logger.logMessage("Loading the census change file...")
+            censuschanges = CensusChanges(self.censusUpdatePath)
+            self.changeset_df = censuschanges.dataframe
+            if self.changeset_df.empty:
+                return
+            else:
+                self.folder_select['text'] = fullpath.split("\\")[-1]        
+            
 
     def lift_page(self, widget1, widget2, page, previous):
         """

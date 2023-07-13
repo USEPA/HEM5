@@ -1,34 +1,39 @@
 import csv
-import glob
 import os
 
 import pandas as pd
-import polars as pl
 from decimal import *
-import numpy as np
 
 from com.sca.hem4.log.Logger import Logger
 import traceback
 
+from com.sca.hem4.upload.CensusChanges import CensusChanges
+from com.sca.hem4.upload.CensusDF import CensusDF
+from tkinter import messagebox
+
 
 class CensusUpdater():
 
-    def __init__(self):
+    def __init__(self, changeData):
 
-        self.previousValue = None
-        self.censusFilepath = os.path.join('census', 'Census2020.csv')
+        self.changeset_df = changeData
+        
+        # Get the Census data
+        Logger.logMessage("Loading the Census data...")
+        censusdf = CensusDF()
+        self.censusFilepath = censusdf.censusPath
+        self.census_df = censusdf.dataframe
+        if self.census_df.empty:
+            messagebox.showinfo("Census not uploaded", "The census file, census/Census2020.csv, was not uploaded. Please confirm that it exists.")            
+            return
 
-
-    def generateChanges(self, changesetFilepath):
+        
+    def generateChanges(self):
         """
         Function to Move, Delete, or Zero a census block or Add a new block
         """
 
         try:
-
-            Logger.logMessage("Reading the Census file...")
-            self.census_df = self.readCensusFromPath(self.censusFilepath)
-            self.changeset_df = self.readChangesFromPath(changesetFilepath)
             
             # Separate the changeset DF into a DF of additions and a DF of changes
             additions_df = self.changeset_df[self.changeset_df['change'].str.upper() == 'ADD'].copy()
@@ -87,11 +92,11 @@ class CensusUpdater():
                                   dups2print)
                 Logger.logMessage(errmsg)
                 return
+
+            Logger.logMessage("\nFinished making census changes.")
             
             # Write updated file
             self.writeCensusFile(self.census_df)
-            Logger.logMessage("\nFinished making census changes. Revised census file " +
-                              "is located in the census folder and filename contains the extension '-updated'")
             return
 
         except BaseException as e:
@@ -145,6 +150,8 @@ class CensusUpdater():
                       '"hill"','"urban_pop"']
         census_df.to_csv(updatedFilepath, header=headerlist, mode="w", index=False, 
                          chunksize=1000, quoting=csv.QUOTE_NONE, quotechar='"')
+        Logger.logMessage("\nFinished writing the updated census file. The revised census file " +
+                          "is located in the census folder and filename contains the extension '-updated'")
 
 
     def mutate(self, record, operation, row):
@@ -168,28 +175,28 @@ class CensusUpdater():
             return None
  
         
-    def readChangesFromPath(self, filepath):
-        colnames = ["change", "facid", "category", "blockid", "lat", "lon", 
-                    "population", "elev", "hill", "urban_pop"]
-        dtypes = {"change":str, "facid":str, "category":str, "blockid":str, 
-                  "lat":np.float64, "lon":np.float64, "population":"Int64", 
-                  "elev":np.float64, "hill":np.float64, "urban_pop":"Int64"}
+    # def readChangesFromPath(self):
+    #     # Load the change file into a dataframe
+    #     InputFile.__init__(self, self.changeFile)
 
-        with open(filepath, "rb") as f:
-            df = pd.read_excel(f, skiprows=0, names=colnames, dtype=dtypes, 
-                               na_values=[''], keep_default_na=False)
-            df[['population', 'elev', 'hill', 'urban_pop']] = \
-                      df[['population', 'elev', 'hill', 'urban_pop']].fillna(value=0)
-            return df
+    #     self.numericColumns = ["lat", "lon", "population", "elev", "hill", "urban_pop"]
+    #     self.strColumns = ["change", "facid", "category", "blockid"]
+
+    #     with open(self.changeFile, "rb") as f:
+    #         df = pd.read_excel(f, skiprows=0, names=colnames, dtype=dtypes, 
+    #                            na_values=[''], keep_default_na=False)
+    #         df[['population', 'elev', 'hill', 'urban_pop']] = \
+    #                   df[['population', 'elev', 'hill', 'urban_pop']].fillna(value=0)
+    #         return df
 
 
-    def readCensusFromPath(self, filepath):
-        datatypes = {'fips':pl.Utf8, 'blockid':pl.Utf8, 'population':pl.Utf8, 
-                          'lat':pl.Utf8, 'lon':pl.Utf8, 'elev':pl.Utf8, 
-                          'hill':pl.Utf8, 'urban_pop':pl.Utf8}
-        with open(filepath, "rb") as f:
-            plf = pl.scan_csv(f.name, has_header=True, dtypes=datatypes, null_values=[''])
-            df = plf.collect().to_pandas()
-            return df
+    # def readCensusFromPath(self, filepath):
+    #     datatypes = {'fips':pl.Utf8, 'blockid':pl.Utf8, 'population':pl.Utf8, 
+    #                       'lat':pl.Utf8, 'lon':pl.Utf8, 'elev':pl.Utf8, 
+    #                       'hill':pl.Utf8, 'urban_pop':pl.Utf8}
+    #     with open(filepath, "rb") as f:
+    #         plf = pl.scan_csv(f.name, has_header=True, dtypes=datatypes, null_values=[''])
+    #         df = plf.collect().to_pandas()
+    #         return df
 
 

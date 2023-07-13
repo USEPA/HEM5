@@ -84,8 +84,9 @@ class InputFile(ABC):
 
                 dataframe = pd.DataFrame()
                 return dataframe
-
+        
         else:
+                            
             df = df.astype(str).applymap(self.convertEmptyToNaN)
 
             # Verify no type errors
@@ -153,10 +154,10 @@ class InputFile(ABC):
 
     # Read values in from a source .csv file using the polars library and use Lazy
     # evaluation. A lazyframe is created for future querying.
-    def readFromPathCsvPolars(self):
+    def readFromPathCsvPolars(self, colnames):
         try:
             with open(self.path, "rb") as f:
-                plf = pl.scan_csv(f.name, dtypes=self.datatypes)
+                plf = pl.scan_csv(f.name, dtypes=self.datatypes, with_column_names=lambda cols:colnames)
 
         except BaseException as e:
             plf = None
@@ -170,16 +171,16 @@ class InputFile(ABC):
 
     # Read values in from a source .csv file using the polars library and use Lazy
     # evaluation. This version executes the query and returns a polars dataframe.
-    def readFromPathCsvPolarsDF(self):
+    def readFromPathCsvPolarsDF(self, colnames):
         try:
             with open(self.path, "rb") as f:
-                plf = pl.scan_csv(f.name, with_column_names=(lambda cols: self.colnames), dtypes=self.datatypes)
-                df = plf.collect()
+                plf = pl.scan_csv(f.name, dtypes=self.datatypes, with_column_names=lambda cols:colnames)
+                df = plf.collect().to_pandas()
                                 
         except BaseException as e:
 
-            df = None
             Logger.logMessage(str(e))
+            return pd.DataFrame()
 
         else:
             cleaned = self.clean(df)
