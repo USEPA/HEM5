@@ -16,6 +16,7 @@ from numba import jit
 import gc
 from com.sca.hem4.log.Logger import Logger
 import traceback
+from tkinter import messagebox
 
 
 class ElevHill:
@@ -39,23 +40,31 @@ class ElevHill:
                 
                 try:
                     batch_elev = py3dep.elevation_bycoords(batch, source='tnm')
-                except:
+                except BaseException as e:
+                    messagebox.showinfo("Cannot access USGS server", "Your computer was unable to connect to the USGS server to obtain elevation data." \
+                                        " This HEM run will stop. Please check your Internet connection and restart this run." \
+                                        " (If an Internet connection is not available, you can model without elevations.)" \
+                                        " More detail about this error is available in the log.")
                     fullStackInfo = traceback.format_exc()
-                    Logger.logMessage("Cannot access py3dep elevation_bycoords server." \
-                                      " Aborting processing for this facility." \
-                                      " Error says: \n" + fullStackInfo)
-                    raise ValueError("Elevation server unavailable")
+                    Logger.logMessage("Cannot access the USGS server needed by the py3dep elevation_bycoords function.\n" \
+                                      " Aborting this HEM run.\n" \
+                                      " Detailed error message: \n\n" + fullStackInfo)                        
+                    raise ValueError("USGS elevation server unavailable")
                 else:
                     elevation_data.extend(batch_elev)
         else:
             try:
                 batch_elev = py3dep.elevation_bycoords(coords, source='tnm')
-            except:
+            except BaseException as e:
+                messagebox.showinfo("Cannot access USGS server", "Your computer was unable to connect to the USGS server to obtain elevation data." \
+                                    " This HEM run will stop. Please check your Internet connection and restart this run." \
+                                    " (If an Internet connection is not available, you can model without elevations.)" \
+                                    " More detail about this error is available in the log.")
                 fullStackInfo = traceback.format_exc()
-                Logger.logMessage("Cannot access py3dep elevation_bycoords server." \
-                                  " Aborting processing for this facility." \
-                                  " Error says: \n" + fullStackInfo)
-                raise ValueError("Elevation server unavailable")
+                Logger.logMessage("Cannot access the USGS server needed by the py3dep elevation_bycoords function.\n" \
+                                  " Aborting this HEM run.\n" \
+                                  " Detailed error message: \n\n" + fullStackInfo)                
+                raise ValueError("USGS elevation server unavailable")
             else:
                 elevation_data.append(batch_elev)
 
@@ -163,12 +172,16 @@ class ElevHill:
         geo_box = (lon1, lat1, lon2, lat2)
         try:
             sample_xarray = py3dep.get_dem(geo_box, 90, crs='epsg:4269')
-        except:
+        except BaseException as e:
+            messagebox.showinfo("Cannot access USGS server", "Your computer was unable to connect to the USGS server to obtain elevation data." \
+                                " This HEM run will stop. Please check your Internet connection and restart this run." \
+                                " (If an Internet connection is not available, you can model without elevations.)" \
+                                " More detail about this error is available in the log.")
             fullStackInfo = traceback.format_exc()
-            Logger.logMessage("Cannot access get_dem 90m server." \
-                              " Aborting processing for this facility." \
-                              " Error says: \n" + fullStackInfo)
-            raise ValueError("DEM 90m elevation server unavailable")
+            Logger.logMessage("Cannot access the 90m USGS server needed by the py3dep get_dem function.\n" \
+                              " Aborting this HEM run.\n" \
+                              " Detailed error message: \n\n" + fullStackInfo)                
+            raise ValueError("USGS elevation server unavailable")
         
 
         # Use the max of the 90m grid elevations and the min receptor elevation
@@ -189,12 +202,16 @@ class ElevHill:
         # Get the 30m gridded elevation data
         try:
             elev_xarray = py3dep.get_dem(geo_box, 30, crs='epsg:4269')
-        except:
+        except BaseException as e:
+            messagebox.showinfo("Cannot access USGS server", "Your computer was unable to connect to the USGS server to obtain elevation data." \
+                                " This HEM run will stop. Please check your Internet connection and restart this run." \
+                                " (If an Internet connection is not available, you can model without elevations.)" \
+                                " More detail about this error is available in the log.")
             fullStackInfo = traceback.format_exc()
-            Logger.logMessage("Cannot access get_dem 30m server." \
-                              " Aborting processing for this facility." \
-                              " Error says: \n" + fullStackInfo)
-            raise ValueError("DEM 30m elevation server unavailable")
+            Logger.logMessage("Cannot access the 30m USGS server needed by the py3dep get_dem function.\n" \
+                              " Aborting this HEM run.\n" \
+                              " Detailed error message: \n\n" + fullStackInfo)                
+            raise ValueError("USGS elevation server unavailable")
             
 
         elev_df = elev_xarray.to_dataframe()

@@ -113,7 +113,7 @@ class MaxConcentrationLocator(ExcelWriter, AltRecAwareSummary):
                     print(str(len(allouter_combined)) + " outer rows.")
                     outer_summed = allouter_combined.groupby(by=[fips, block, lat, lon, pollutant], as_index=False) \
                         .sum().reset_index(drop=True)
-
+                    
                     # For each pollutant matched by the search term, find a max concentration among all three dfs and then
                     # the overall max
                     pollutants = list(polar_summed[pollutant].unique())
@@ -139,7 +139,7 @@ class MaxConcentrationLocator(ExcelWriter, AltRecAwareSummary):
         
                         winning_row[fac_id] = facilityId
                         winning_row['type'] = winning_type
-                        max_concentrations = pd.concat([max_concentrations, winning_row])
+                        max_concentrations = pd.concat([max_concentrations, winning_row.to_frame().T])
 
                     self.dataframe = pd.DataFrame(data=max_concentrations, columns=self.getColumns())
                     self.data = self.dataframe.values
@@ -241,7 +241,7 @@ class MaxConcentrationLocator(ExcelWriter, AltRecAwareSummary):
         
                         winning_row[fac_id] = facilityId
                         winning_row['type'] = winning_type
-                        max_concentrations = pd.concat([max_concentrations, winning_row])
+                        max_concentrations = pd.concat([max_concentrations, winning_row.to_frame().T])
         
                     self.dataframe = pd.DataFrame(data=max_concentrations, columns=self.getColumns())
                     self.data = self.dataframe.values

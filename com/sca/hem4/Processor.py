@@ -125,6 +125,11 @@ class Processor():
 
                 except BaseException as ex:
 
+                    # Check for USGS elevation server error which aborts the HEM run
+                    if str(ex) == "USGS elevation server unavailable":
+                        self.abortProcessing()
+                        break
+                        
                     self.exception = ex
                     fullStackInfo=traceback.format_exc()   
                     message = "An error occurred while running a facility and facility was skipped:\n" + fullStackInfo
@@ -230,7 +235,7 @@ class Processor():
             Logger.logMessage('HEM RUN GROUP: ' + str(self.model.group_name) + ' canceled')
             messagebox.showinfo('Run Canceled', 'HEM RUN GROUP: ' + str(self.model.group_name) + ' canceled')
             self.nav.abortLabel.destroy()
-        
+                    
         elif len(self.skipped) == 0:
             
 #            self.model.save.remove_folder()
