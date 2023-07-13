@@ -383,6 +383,7 @@ class contours():
                 ctx = callback_context
                 comp_id = ctx.triggered[0]['prop_id'].split('.')[0]
                 dfpl = pd.DataFrame(metdata)
+                block_max_val = None
                         
                 if dfpl[metric].max() == 0:
                     alert = self.make_alert('There are no nonzero values for this metric')
@@ -426,7 +427,8 @@ class contours():
                         else:
                             block_recpts['tooltip'] = '<b>Block/User Receptor</b>' + '<br><b>Receptor ID: </b>' + block_recpts['RecID'] \
                                 + f'<br><b>{metric}: </b>' + block_recpts[metric].apply(lambda x: f'{self.riskfig(x, digz)}').astype(str)
-                                                    
+                        blockmax_gdf = block_recpts[~block_recpts['RecID'].str.contains('S|M|B')]
+                        block_max_val =  blockmax_gdf[metric].max()  
                         blockjson = json.loads(block_recpts.to_json())
                         blockbuf = dlx.geojson_to_geobuf(blockjson)
                                                     
@@ -471,12 +473,18 @@ class contours():
                                         (x_grid, y_grid), method = 'linear', rescale=True)
                                         
                     minmaxgdf = gdf.loc[gdf['Latitude'].between(lat1, lat2) & gdf['Longitude'].between(lon1, lon2)]
+                    
+                    # use the scigrid min as datamin unless it is nan or only block data exist
                     if not gdf['RecID'].str.contains('ang').any() or np.isnan(scigrid.min()):
                         datamin = minmaxgdf[metric].min()
                     else:
                         datamin = scigrid.min()
-                                            
-                    datamax = minmaxgdf[metric].max()
+                    
+                    # If there is a block file, use its max value as datamax
+                    if block_max_val is not None:
+                        datamax = block_max_val
+                    else:
+                        datamax = minmaxgdf[metric].max()
                                         
                     # Go thru user class break list, accept only numbers and values within data range
                     finuserlist = []
