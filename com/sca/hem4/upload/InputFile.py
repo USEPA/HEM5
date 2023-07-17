@@ -164,10 +164,19 @@ class InputFile(ABC):
             Logger.logMessage(str(e))
 
         else:
-            if plf is None:
+            # if plf is None:
+            #     return None
+            # else:
+            #     return plf
+
+            cleaned = self.clean(plf)
+            validated = self.validate(cleaned)
+    
+            if validated is None:
                 return None
             else:
-                return plf
+                return validated
+
 
     # Read values in from a source .csv file using the polars library and use Lazy
     # evaluation. This version executes the query and returns a polars dataframe.
