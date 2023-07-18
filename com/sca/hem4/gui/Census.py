@@ -186,7 +186,7 @@ class Census(Page):
         else:
             # try to load the file
             self.censusUpdatePath = fullpath
-            Logger.logMessage("Loading the census change file...")
+            Logger.logMessage("/nLoading the census change file...")
             censuschanges = CensusChanges(self.censusUpdatePath)
             self.changeset_df = censuschanges.dataframe
             if self.changeset_df.empty:

@@ -48,12 +48,13 @@ class Processor():
         except BaseException as ex:
             print(ex)
 
-        # Load the national census data into a polars lazyframe for future querying
-        self.uploader = FileUploader(self.model)
-        success = self.uploader.uploadLibrary("census")
-        if not success:
-            messagebox.showinfo('Error', "Invalid Census file. Check log for details.")
-            return success
+        # If using Census data, Load the national census data into a polars lazyframe for future querying
+        if 'altrec' not in self.model.dependencies:
+            self.uploader = FileUploader(self.model)
+            success = self.uploader.uploadLibrary("census")
+            if not success:
+                messagebox.showinfo('Error', "Invalid Census file. Check log for details.")
+                return success
 
        
         Logger.logMessage("RUN GROUP: " + self.model.group_name)
