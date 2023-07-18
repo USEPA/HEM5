@@ -39,7 +39,8 @@ class RiskBreakdown(ExcelWriter, InputFile):
 
         # Record whether or not alternate receptors used
         altrecfinder = AltRecAwareSummary()
-        self.altrec = altrecfinder.determineAltRec(self.targetDir)
+        rungroup_dir = os.path.dirname(os.path.normpath((self.targetDir)))
+        self.altrec = altrecfinder.determineAltRec(rungroup_dir)
 
 
         # Local cache for URE/RFC values
@@ -115,7 +116,7 @@ class RiskBreakdown(ExcelWriter, InputFile):
                         
                         # Search each outer receptor file for the lat/lon in row
                         foundit = False
-                        for f in listOuter:
+                        for f in listOuter:                            
                             allouter = AllOuterReceptorsNonCensus(targetDir=self.targetDir, acuteyn=self.acute_yn, filenameOverride=f) if self.altrec=='Y' \
                                 else AllOuterReceptors(targetDir=self.targetDir, acuteyn=self.acute_yn, filenameOverride=f)
                             outconcs = allouter.createDataframe()
