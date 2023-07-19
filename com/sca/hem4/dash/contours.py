@@ -490,7 +490,7 @@ class contours():
                         datamin = scigrid.min()
                     
                     # If there is a block file, use its max value as datamax
-                    if block_max_val is not None:
+                    if block_max_val is not None and usercls is None:
                         datamax = block_max_val
                     else:
                         datamax = minmaxgdf[metric].max()
