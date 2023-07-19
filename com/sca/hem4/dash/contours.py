@@ -93,6 +93,7 @@ class contours():
                    'Reproductive HI':'Reproductive HI', 'Kidney HI':'Kidney HI', 'Ocular HI':'Ocular HI',
                     'Endocrine HI':'Endocrine HI', 'Hematological HI':'Hematological HI', 'Immunological HI':'Immunological HI',
                     'Skeletal HI':'Skeletal HI', 'Spleen HI':'Spleen HI', 'Thyroid HI':'Thyroid HI', 'Whole body HI':'Whole body HI'}
+        metrics_reversed = {value: key for key, value in metrics.items()}
 
         coloramps = ['viridis', 'magma', 'cividis', 'rainbow', 'gist_earth','terrain','jet', 'turbo',
                       'ocean', 'tab10',
@@ -114,13 +115,20 @@ class contours():
                         dbc.ModalBody(
                             dcc.Markdown('''
                                            
-##### The contours are generated using the griddata (linear) interpolation method of the [SciPy](https://scipy.org/) Python library.\
+> The contours are generated using the griddata (linear) interpolation method of the [SciPy](https://scipy.org/) Python library.\
     There is inherent uncertainty involved in any interpolation.
-##### The contour interpolation is more accurate when more input data are used, so it is recommended to select both the ring summary\
+    
+> The contour interpolation is more accurate when more input data are used, so it is recommended to select both the ring summary\
     and block summary chronic output files.
-##### To expedite loading, the contoured area is limited to no more than 20km from the location of maximum impact, where the risks are the highest.\
+    
+> To expedite loading, the contoured area is limited to no more than 20km from the location of maximum impact, where the risks are the highest.\
     The boundary of the contoured area could be rectangular, circular, or irregular depending on the size of your modeling domain \
-        and whether your inputs are block or polar receptor data.                                        
+        and whether your inputs are block or polar receptor data.
+
+> If your contours are based on both unpopulated receptors (e.g., polars) and populated receptors (e.g., census blocks),\
+    and you are using the automatically generated class breaks, unpopulated areas of higher impact (than predicted for populated receptors)\
+        may appear close to the facility as areas outside the color-coded contours. Note: To include unpopulated areas of higher impact\
+            in the maximum contour, you can use the  “Input list of class breaks” option to enter a class break higher than the populated max impact (but ≤ the unpopulated max impact).                                        
                                             
                                         ''')
                                         ),                        
@@ -336,7 +344,8 @@ class contours():
                                         children=[
                                             html.P('* To expedite loading, the contoured area is limited to no more than 20km\
                                                    from the location of maximum impact.', style={'marginBottom': '1px'}),
-                                            html.P('** Census block receptors are included out to 10km from the location of maximum impact.'),
+                                            html.Div(id='block-footer')
+                                        
                                         ]
                                     )
                                                                             
@@ -834,8 +843,31 @@ class contours():
         #     os.remove(shapefile_path)
             
         #     return dcc.send_bytes(shapefile_data, filename=f'{fac}_shapefile.zip')
-            
         
+        # Callbacks to send the map footer
+        @app.callback(
+                   Output('block-footer', 'children'),
+                                     
+                  Input('ctab-store-metricdata', 'data'),
+                  Input('ctab-metricdrop','value'),
+                  Input('ctab-sigfigdrop', 'value')                                   
+                  ) 
+        
+        def send_footer(metdata, metric, digz):
+            if metdata is None:
+                return no_update
+            else:
+                tempdf = pd.DataFrame(metdata)
+                block_data = tempdf[~tempdf['RecID'].str.contains('S|M|B|ang')]
+                if len(block_data)==0:
+                    return None
+                else:
+                    maxrisk = block_data[metric].max()
+                    maxrisk_sf = self.riskfig(maxrisk, digz)
+                    
+                    return html.P(f'** Census block receptors are included out to 10km from the location of maximum impact.\
+                                  The maximum {metrics_reversed[metric]} for a populated receptor is {maxrisk_sf} based on your input data.')
+                            
         return app
 
  
