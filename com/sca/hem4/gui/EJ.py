@@ -211,9 +211,10 @@ class EJ(Page):
         # This value will be an upper bound on the radius choice in the EJ GUI.
         faclist_path = os.path.join(self.fullpath, "Inputs/faclist.xlsx")
         faclist = FacilityList(faclist_path, metlib=MetLib())
-        faclist.createDataframe()
+        # faclist.createDataframe()
         faclist_df = faclist.dataframe
-        print(str(len(faclist_df)))
+        if faclist_df.empty:
+            return
 
         faclist_df[max_dist] = faclist_df[max_dist].fillna(50000)
 
@@ -530,6 +531,18 @@ class EJ(Page):
         # reports for each facility individually.)
         facilities = Directory.find_facilities(self.fullpath)
 
+        # Are any of the these facilities in the Virgin Islands? If so, show a message
+        # that they will be skipped because there is no ACS data for them.
+        anyVIfacs = maxRiskAndHI_df[(maxRiskAndHI_df['fac_center_latitude'] < 18.412655)
+                        & (maxRiskAndHI_df['fac_center_latitude'] > 17.673976)
+                        & (maxRiskAndHI_df['fac_center_longitude'] < -64.564907)
+                        & (maxRiskAndHI_df['fac_center_longitude'] > -65.085452)]
+        if len(anyVIfacs) > 0:
+            Logger.logMessage("There are some Virgin Islands facilities in this run group. They will be skipped because there is no ACS data for them.")
+            messagebox.showinfo("Virgin Islands Facilities", "There are some Virgin Islands facilities in this run group. They will be skipped because there is no ACS data for them.")
+ 
+        
+        
         # Initialize the class-level data storage for all facility summary workbooks and sheets
         ReportWriter.init_facility_summaries()
         FacilitySummary.init_sheets()
@@ -585,6 +598,15 @@ class EJ(Page):
                     # Use the Block Summary Chronic file instead of the MIR HI All receptors files to obtain risk values
                     blockSummaryChronic = BlockSummaryChronic(targetDir=fac_path, facilityId=facilityId)
                     bsc_df = blockSummaryChronic.createDataframe()
+
+                    # From the Block Summary DF, determine if this facility is in the Virgin Islands.
+                    # If it is, then skip it because there is no ACS data for the Virgin Islands.
+                    if len(bsc_df[bsc_df['fips'].str.startswith('78')]) > 0:
+                        if facilityId not in skipped_list:
+                            skipped_list.append(facilityId)
+                        Logger.logMessage("Skipping facility " + facilityId + " because it is located in the U.S. Virgin Islands and there is no ACS data for it.")
+                        continue 
+                        
 
                     # Filter out zero population blocks
                     bsc_df = bsc_df[bsc_df['population'] != 0]
