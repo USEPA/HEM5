@@ -489,12 +489,24 @@ class contours():
                     else:
                         datamin = scigrid.min()
                     
-                    # If there is a block file, use its max value as datamax
-                    if block_max_val is not None and usercls is None:
-                        datamax = block_max_val
+                    # If there is a block file, use its max value as datamax, unless user has supplied class breaks
+                    if usercls is None:
+                        if block_max_val is not None:
+                            datamax = block_max_val
+                        else:
+                            datamax = minmaxgdf[metric].max()
                     else:
-                        datamax = minmaxgdf[metric].max()
-                                        
+                        if comp_id == 'ctab-classesdrop':
+                            if block_max_val is not None:
+                                datamax = block_max_val
+                            else:
+                                datamax = minmaxgdf[metric].max()
+                        else:
+                            if block_max_val is not None and len(usercls) == 0:
+                                datamax = block_max_val
+                            else:
+                                datamax = minmaxgdf[metric].max()
+                                                                                 
                     # Go thru user class break list, accept only numbers and values within data range
                     finuserlist = []
                     if usercls is None:
@@ -865,7 +877,7 @@ class contours():
                     maxrisk = block_data[metric].max()
                     maxrisk_sf = self.riskfig(maxrisk, digz)
                     
-                    return html.P(f'** Census block receptors are included out to 10km from the location of maximum impact.\
+                    return html.P(f'** Census block/alternate receptors are included out to 10km from the location of maximum impact.\
                                   The maximum {metrics_reversed[metric]} for a populated receptor is {maxrisk_sf} based on your input data.')
                             
         return app
