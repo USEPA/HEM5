@@ -36,7 +36,8 @@ class Hem(Page):
             # os.environ['PROJ_LIB'] = os.path.join(os.path.split(__file__)[0], 'pyproj')
             # os.environ['PROJ_LIB'] = os.path.join(os.path.split(__file__)[0], 'rasterio', 'proj_data')
         else :
-            os.environ["HYRIVER_CACHE_EXPIRE"] = "360"
+            pass
+            # os.environ["HYRIVER_CACHE_EXPIRE"] = "360"
 
         self.nav = nav
 
@@ -134,7 +135,8 @@ class Hem(Page):
         # self.required_inputs = tk.Frame(self, width=600, bg=self.tab_color)
         # self.required_inputs.pack(fill="both", expand=True, side="top")
         self.s1 = tk.Frame(self.container, width=600, height=50, bg=self.tab_color)
-        self.s3 = tk.Frame(self.container, width=600, height=75, pady=5, padx=5, bg=self.tab_color)
+        self.s2 = tk.Frame(self.container, width=600, height=75, pady=5, padx=5, bg=self.tab_color)
+        self.s3 = tk.Frame(self.container, width=600, height=50, pady=5, padx=5, bg=self.tab_color)
         self.s4 = tk.Frame(self.container, width=600, height=50, pady=5, padx=5, bg=self.tab_color)
         self.s5 = tk.Frame(self.container, width=600, height=50, pady=5, padx=5, bg=self.tab_color)
         self.s6 = tk.Frame(self.container, width=600, height=50, pady=5, padx=5, bg=self.tab_color)
@@ -146,7 +148,8 @@ class Hem(Page):
         # grid layout for main inputs
         self.s1.grid(row=1, column=0, columnspan=2, sticky="nsew")
         self.alturep.grid(row=4, column=0, columnspan=2, sticky="nsew")
-        self.s3.grid(row=3, column=0, columnspan=2, sticky="nsew", pady=10)
+        self.s2.grid(row=2, column=0, columnspan=2, sticky="nsew", pady=10)
+        self.s3.grid(row=3, column=0, columnspan=2, sticky="nsew")
         self.s4.grid(row=5, column=0, columnspan=2, sticky="nsew")
         self.s5.grid(row=6, column=0, columnspan=2, sticky="nsew")
         self.s6.grid(row=7, column=0, columnspan=2, sticky="nsew")
@@ -167,7 +170,7 @@ class Hem(Page):
         self.title.grid(row=1, column=1, sticky="W", pady=10, padx=10)
 
         # Setting up  directions text space
-        self.add_instructions(self.s3, self.s3)
+        self.add_instructions(self.s2, self.s2)
 
         # Setting up each file upload space (includes browse button)
         group_label = tk.Label(self.s4, font=TEXT_FONT, bg=self.tab_color,
