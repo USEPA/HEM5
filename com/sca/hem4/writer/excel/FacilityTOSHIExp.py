@@ -62,7 +62,8 @@ class FacilityTOSHIExp(ExcelWriter):
             for index, row in bsc_df.iterrows():
     
                 # Exclude overlapped receptors
-                if row[population] > 0 and row[overlap] == 'N':
+                # if row[population] > 0 and row[overlap] == 'N':
+                if row[population] > 0:
                     
                     # round all 14 HI values to 1 significant figure
                     hi_vals = row[hi_cols].tolist()

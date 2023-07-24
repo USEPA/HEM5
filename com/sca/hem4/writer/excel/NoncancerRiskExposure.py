@@ -34,7 +34,7 @@ class NoncancerRiskExposure(ExcelWriter):
                 'Immunological HI', 'Skeletal HI', 'Spleen HI', 'Thyroid HI', 'Whole body HI']
 
     def generateOutputs(self):
-
+        
         df = self.block_summary_chronic_df.copy()
         levels =[100, 50, 10, 1.0, 0.5, 0.2]
         toshis = [hi_resp, hi_live, hi_neur, hi_deve, hi_repr, hi_kidn, hi_ocul,

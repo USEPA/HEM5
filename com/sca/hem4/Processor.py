@@ -93,7 +93,7 @@ class Processor():
     
     #        Logger.logMessage("The facility ids being modeled: , False)
             Logger.logMessage("The facility ids being modeled: " + ", ".join(fac_list))
-                
+               
             success = False
     
             # Create output files with headers for any source-category outputs that will be appended
@@ -284,11 +284,12 @@ class Processor():
         # Create Facility Max Risk and HI file
         fac_max_risk = FacilityMaxRiskandHI(self.model.rootoutput, None, self.model, None, None)
         fac_max_risk.write()
+
         
         # Create Facility Cancer Risk Exposure file
         fac_canexp = FacilityCancerRiskExp(self.model.rootoutput, None, self.model, None)
         fac_canexp.write()
-        
+                
         # Create Facility TOSHI Exposure file
         fac_hiexp = FacilityTOSHIExp(self.model.rootoutput, None, self.model, None)
         fac_hiexp.write()
