@@ -142,9 +142,10 @@ class Process_outputs():
         #----------- create Ring_Summary_Chronic data -----------------
         ring_summary_chronic = RingSummaryChronic(self.outdir, self.facid, self.model, self.plot_df)
         generator = ring_summary_chronic.generateOutputs()
+
+        # Store in a temporary DF because the ring summary chronic may need to change if there are overlaps
         for batch in generator:
-            ring_summary_chronic_df = ring_summary_chronic.dataframe
-        Logger.logMessage("Completed RingSummaryChronic output")
+            temp_rsc_df = ring_summary_chronic.dataframe
 
         if self.abort.is_set():
             Logger.logMessage("Terminating output processing...")
@@ -160,11 +161,11 @@ class Process_outputs():
             block_summary_chronic = BlockSummaryChronicNonCensus(targetDir=self.outdir, facilityId=self.facid,
                      model=self.model, plot_df=self.plot_df) if altrec else \
                 BlockSummaryChronic(self.outdir, self.facid, self.model, self.plot_df)
-            
+        
+        # Store in a temporary DF because the block summary chronic may need to change if there are overlaps
         generator = block_summary_chronic.generateOutputs()
         for batch in generator:
-            self.model.block_summary_chronic_df = block_summary_chronic.dataframe
-        Logger.logMessage("Completed BlockSummaryChronic output")
+            temp_bsc_df = block_summary_chronic.dataframe
 
         if self.abort.is_set():
             Logger.logMessage("Terminating output processing...")
@@ -178,7 +179,7 @@ class Process_outputs():
         # First, organize the ring summary chronic DF
         ring_columns = [lat, lon, mir, hi_resp, hi_live, hi_neur, hi_deve, hi_repr, hi_kidn, hi_ocul, 
                       hi_endo, hi_hema, hi_immu, hi_skel, hi_sple, hi_thyr, hi_whol, overlap]
-        ring_risk = ring_summary_chronic_df[ring_columns].copy()
+        ring_risk = temp_rsc_df[ring_columns].copy()
         ring_risk[rec_type] = 'PG'
         ring_risk['blk_type'] = 'PG'
 
@@ -194,11 +195,69 @@ class Process_outputs():
             ring_risk[rec_id] = ''
             
         # Subset the block summary chronic DF to needed columns
-        block_risk = self.model.block_summary_chronic_df[block_columns]
+        block_risk = temp_bsc_df[block_columns]
         
-        # Final DF of risk by lat and lon for all receptors
+        # Now create DF of risk by lat and lon for all receptors
         self.model.risk_by_latlon = (pd.concat([ring_risk, block_risk])
                                      .reset_index(drop=True).infer_objects())
+
+        if self.abort.is_set():
+            Logger.logMessage("Terminating output processing...")
+            return
+
+       
+        #----------- create Maximum_Individual_Risk output file ---------------
+        max_indiv_risk = MaximumIndividualRisksNonCensus(self.outdir, self.facid, self.model, self.plot_df) if altrec \
+                else MaximumIndividualRisks(self.outdir, self.facid, self.model, self.plot_df)
+        max_indiv_risk.write()
+        self.model.max_indiv_risk_df = max_indiv_risk.dataframe
+        Logger.logMessage("Completed MaximumIndividualRisks output")
+
+        if self.abort.is_set():
+            Logger.logMessage("Terminating output processing...")
+            return
+        
+        #----------- create Maximum_Offsite_Impacts output file ---------------
+        inner_recep_risk_df = temp_bsc_df[temp_bsc_df["blk_type"] == "D"]
+        max_offsite_impacts = MaximumOffsiteImpactsNonCensus(self.outdir, self.facid, self.model, self.plot_df,
+                                                    temp_rsc_df, inner_recep_risk_df) if altrec else \
+                            MaximumOffsiteImpacts(self.outdir, self.facid, self.model, self.plot_df, 
+                                                  temp_rsc_df, inner_recep_risk_df)
+        max_offsite_impacts.write()
+        Logger.logMessage("Completed MaximumOffsiteImpacts output")
+
+        if self.abort.is_set():
+            Logger.logMessage("Terminating output processing...")
+            return
+
+        #---------------------------------------------------------------------------------
+        # For any rows in ring_summary_chronic and block_summary_chronic where overlap = Y, 
+        # replace mir and HI's with values from max_indiv_risk and write data to csv output.
+        replacement = self.model.max_indiv_risk_df[value].values
+        
+        ringrows = np.where(temp_rsc_df[overlap] == 'Y')[0]
+        if len(ringrows) == 0:
+            # No overlaps
+            ring_summary_chronic_df = temp_rsc_df
+            ring_summary_chronic.write()
+        else:
+            # Some overlaps
+            temp_rsc_df.iloc[ringrows, 7:22] = replacement
+            ring_summary_chronic_df = temp_rsc_df
+            ring_summary_chronic.write(False, ring_summary_chronic_df)
+        Logger.logMessage("Completed RingSummaryChronic output")
+            
+        blockrows = np.where(temp_bsc_df[overlap] == 'Y')[0]
+        if len(blockrows) == 0:
+            # No overlaps
+            self.model.block_summary_chronic_df = temp_bsc_df
+            block_summary_chronic.write()
+        else:
+            temp_bsc_df.iloc[blockrows, 10:25] = replacement
+            self.model.block_summary_chronic_df = temp_bsc_df
+            block_summary_chronic.write(False, self.model.block_summary_chronic_df)
+        Logger.logMessage("Completed BlockSummaryChronic output")
+
 
         if self.abort.is_set():
             Logger.logMessage("Terminating output processing...")
@@ -221,38 +280,6 @@ class Process_outputs():
         if self.abort.is_set():
             Logger.logMessage("Terminating output processing...")
             return
-
-       
-        #----------- create Maximum_Individual_Risk output file ---------------
-        max_indiv_risk = MaximumIndividualRisksNonCensus(self.outdir, self.facid, self.model, self.plot_df) if altrec \
-                else MaximumIndividualRisks(self.outdir, self.facid, self.model, self.plot_df)
-        max_indiv_risk.write()
-        self.model.max_indiv_risk_df = max_indiv_risk.dataframe
-        Logger.logMessage("Completed MaximumIndividualRisks output")
-        
-        #----------- create Maximum_Offsite_Impacts output file ---------------
-        inner_recep_risk_df = self.model.block_summary_chronic_df[self.model.block_summary_chronic_df["blk_type"] == "D"]
-        max_offsite_impacts = MaximumOffsiteImpactsNonCensus(self.outdir, self.facid, self.model, self.plot_df,
-                                                    ring_summary_chronic_df, inner_recep_risk_df) if altrec else \
-            MaximumOffsiteImpacts(self.outdir, self.facid, self.model, self.plot_df, ring_summary_chronic_df, inner_recep_risk_df)
-        max_offsite_impacts.write()
-        Logger.logMessage("Completed MaximumOffsiteImpacts output")
-
-        
-        # For any rows in ring_summary_chronic and block_summary_chronic where overlap = Y, 
-        # replace mir and HI's with values from max_indiv_risk and write data to csv output.
-        replacement = self.model.max_indiv_risk_df[value].values
-        ringrows = np.where(ring_summary_chronic_df[overlap] == 'Y')[0]
-        if len(ringrows) > 0:
-            ring_summary_chronic.data[ringrows, 7:22] = replacement
-        blockrows = np.where(self.model.block_summary_chronic_df[overlap] == 'Y')[0]
-        if len(blockrows) > 0:
-            block_summary_chronic.data[blockrows, 10:25] = replacement
-
-
-        # Now wite the RingSummaryChronic and BlockSummaryChronic outputs
-        ring_summary_chronic.write()
-        block_summary_chronic.write()
         
         
         #----------- create Risk Breakdown output file ------------------------
@@ -260,6 +287,9 @@ class Process_outputs():
         risk_breakdown.write()
         Logger.logMessage("Completed RiskBreakdown output")
 
+        if self.abort.is_set():
+            Logger.logMessage("Terminating output processing...")
+            return
 
         #----------- create Incidence output file ------------------------
         if not altrec_nopop:
@@ -292,6 +322,9 @@ class Process_outputs():
         fac_toshi_exp = FacilityTOSHIExp(self.model.rootoutput, self.facid, self.model, self.plot_df)
         fac_toshi_exp.writeWithoutHeader()
 
+        if self.abort.is_set():
+            Logger.logMessage("Terminating output processing...")
+            return
 
         #=================== Acute processing ==============================================
         
@@ -322,6 +355,11 @@ class Process_outputs():
             acutebkdn.write()
             Logger.logMessage("Completed Acute Breakdown output")
             
+
+
+        if self.abort.is_set():
+            Logger.logMessage("Terminating output processing...")
+            return
 
 
         #create facility kml
