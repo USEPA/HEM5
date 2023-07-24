@@ -282,7 +282,7 @@ class contours():
                                               value = 'viridis',
                                               placeholder="Select Color Ramp",
                                               ),
-                                                    
+                                                                                    
                                 # html.Hr(),
                                 html.Label(["Opacity"]),
                                 dcc.Slider(.1, 1, .1,
@@ -483,18 +483,31 @@ class contours():
                                         
                     minmaxgdf = gdf.loc[gdf['Latitude'].between(lat1, lat2) & gdf['Longitude'].between(lon1, lon2)]
                     
-                    # use the scigrid min as datamin unless it is nan or only block data exist
-                    if not gdf['RecID'].str.contains('ang').any() or np.isnan(scigrid.min()):
+                    # use the scigrid min as datamin unless it is nan
+                    # if not gdf['RecID'].str.contains('ang').any() or np.isnan(scigrid.min()):
+                    if np.isnan(scigrid.min()):
                         datamin = minmaxgdf[metric].min()
                     else:
                         datamin = scigrid.min()
                     
-                    # If there is a block file, use its max value as datamax
-                    if block_max_val is not None:
-                        datamax = block_max_val
+                    # If there is a block file, use its max value as datamax, unless user has supplied class breaks
+                    if usercls is None:
+                        if block_max_val is not None:
+                            datamax = block_max_val
+                        else:
+                            datamax = minmaxgdf[metric].max()
                     else:
-                        datamax = minmaxgdf[metric].max()
-                                        
+                        if comp_id == 'ctab-classesdrop':
+                            if block_max_val is not None:
+                                datamax = block_max_val
+                            else:
+                                datamax = minmaxgdf[metric].max()
+                        else:
+                            if block_max_val is not None and len(usercls) == 0:
+                                datamax = block_max_val
+                            else:
+                                datamax = minmaxgdf[metric].max()
+                                                                                 
                     # Go thru user class break list, accept only numbers and values within data range
                     finuserlist = []
                     if usercls is None:
@@ -539,54 +552,95 @@ class contours():
                                 highend = finuserlist[-1]
                             
                             levels = finuserlist
-                         
-                                    
+                                                        
                     '''  matplotlib to convert scigrid to filled contours
                     '''
                     fig = plt.figure()        
                     ax = fig.add_subplot(111)
                     gridcontour = ax.contourf(x_coord, y_coord, scigrid, levels=levels, cmap=ramp, norm='log')
-                
+                                   
                     '''
                     '''
-                
+                    
+                    # Using geojsoncontour lib to convert contour to geojson
                     cont_json = geojsoncontour.contourf_to_geojson(
                         contourf=gridcontour,
-                        ndigits=5,
+                        # ndigits=5,
                         unit='',
-                        min_angle_deg = .00001
+                        # min_angle_deg = 5
                     )
                     
+                    # # Alternate method to convert contour to geojson
+                    
+                    # # Extract contour paths and levels
+                    # contour_paths = gridcontour.collections
+                    # contour_levels = gridcontour.levels
+                    
+                    # # Convert contour paths to GeoJSON-like format
+                    # geojson_data = {
+                    #     "type": "FeatureCollection",
+                    #     "features": []
+                    # }
+                    
+                    # for i, contour_path in enumerate(contour_paths):
+                    #     level = contour_levels[i]
+                    #     geojson_feature = {
+                    #         "type": "Feature",
+                    #         "properties": {"level": level},
+                    #         "geometry": {
+                    #             "type": "Polygon",
+                    #             "coordinates": [contour_path.get_paths()[0].vertices.tolist()]
+                    #         }
+                    #     }
+                    #     geojson_data["features"].append(geojson_feature)
+                        
+                    # colors = [contour.get_facecolor() for contour in gridcontour.collections]
+                    # hex_codes = [matplotlib.colors.to_hex(color) for color in colors]
+                    
+                    # contgdf = gp.GeoDataFrame.from_features(geojson_data["features"])
+                    # contgdf['fill'] = hex_codes
+                    # # breakpoint()
                     
                     loadcont=json.loads(cont_json)
                     contgdf=gp.GeoDataFrame.from_features(loadcont)
-                    contgdf['assgnvals'] = levels[1:]
-                    classes = contgdf.assgnvals.to_list()
-                    contgdf['assgnvals'] = contgdf['assgnvals']*1.05
-                    contgdf.set_crs('epsg:4326')
-                    gdfJSON = contgdf.to_json()
+                    classes = levels[:-1]
+                    midpts = []
+                    for i, level in enumerate(levels[:-1]):
+                        midpts.append(self.riskfig((levels[i] + levels[i+1])/2, digz+1))
+                    contgdf['midpts'] = midpts
                                         
-                    polydata = json.loads(gdfJSON)
-                    colorscale = contgdf.fill.to_list()
-                    style=dict(weight=1, opacity=1, color='white', fillOpacity=opac)
-                                
-                    ctg=[]
-                               
-                    for i, val in enumerate(classes):
+                    ctg=[]                               
+                    for i, val in enumerate(levels[1:]):
                         
                         if i == 0:
                             ctg.append(f'<b>{self.riskfig(lowend, digz)} - {self.riskfig(val, digz)}</b>')
                         else:
-                            levbot = classes[i-1]
+                            levbot = levels[i]
                             ctg.append(f'<b>{self.riskfig(levbot, digz)} - {self.riskfig(val, digz)}</b>')
-                                            
+                            
+                    titles = []
+                    for i, val in enumerate(levels[1:]):
+                        
+                        if i == 0:
+                            titles.append(f'{self.riskfig(lowend, digz)} - {self.riskfig(val, digz)}')
+                        else:
+                            levbot = levels[i]
+                            titles.append(f'{self.riskfig(levbot, digz)} - {self.riskfig(val, digz)}')
                     
+                    contgdf['title'] = titles
+                    contgdf.set_crs('epsg:4326')
+                    gdfJSON = contgdf.to_json()
+                                                            
+                    polydata = json.loads(gdfJSON)
+                    colorscale = contgdf.fill.to_list()
+                    style=dict(weight=1, opacity=1, color='white', fillOpacity=opac)
+                                        
                     cont_style = Namespace('HEM_leaflet_functions', 'contour')('draw_contours')
                     draw_blocks = Namespace('HEM_leaflet_functions', 'contour')('draw_block_receptors2')
                     draw_polars = Namespace('HEM_leaflet_functions', 'contour')('draw_polar_receptors2')
                     # draw_cluster = Namespace('HEM_leaflet_functions', 'contour')('draw_cluster')
                     
-                    cont_hideout=dict(colorscale=colorscale, classes=classes, style=style, colorProp='assgnvals')
+                    cont_hideout=dict(colorscale=colorscale, classes=classes, style=style, colorProp='midpts')
                                             
                     contmap = [
                         
@@ -865,7 +919,7 @@ class contours():
                     maxrisk = block_data[metric].max()
                     maxrisk_sf = self.riskfig(maxrisk, digz)
                     
-                    return html.P(f'** Census block receptors are included out to 10km from the location of maximum impact.\
+                    return html.P(f'** Census block/alternate receptors are included out to 10km from the location of maximum impact.\
                                   The maximum {metrics_reversed[metric]} for a populated receptor is {maxrisk_sf} based on your input data.')
                             
         return app
