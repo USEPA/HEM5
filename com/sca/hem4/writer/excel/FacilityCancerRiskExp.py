@@ -45,6 +45,8 @@ class FacilityCancerRiskExp(ExcelWriter):
 
     def generateOutputs(self):
         
+        # exp_df = pd.DataFrame()
+        
         if self.model.block_summary_chronic_df is not None:
             
             # facility center lat/lon
@@ -58,7 +60,8 @@ class FacilityCancerRiskExp(ExcelWriter):
     
             for index, row in bsc_df.iterrows():
     
-                if row[population] > 0 and row[overlap] == 'N':
+                # if row[population] > 0 and row[overlap] == 'N':
+                if row[population] > 0:
                     
                     # round cancer risk to 1 significant figure
                     rounded = self.round_to_sigfig(row[mir])

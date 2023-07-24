@@ -10,19 +10,29 @@ class Writer(ABC):
         self.dataframe = None
         self.batchSize = 10000000
 
-    def write(self, generateOnly=False):
+    def write(self, generateOnly=False, otherDF=None):
 
         if not generateOnly:
             self.writeHeader()
 
-        for data in self.generateOutputs():
-            if data is not None:
+        if otherDF is None:
+            
+            for data in self.generateOutputs():
+                if data is not None:
+    
+                    if not generateOnly:
+                        self.appendToFile(data)
+    
+                    self.analyze(data)
 
-                if not generateOnly:
-                    self.appendToFile(data)
-
-                self.analyze(data)
-
+        else:
+            
+            if not generateOnly:
+                self.appendToFile(otherDF)
+                
+            self.analyze(otherDF)
+            
+            
     @abstractmethod
     def writeHeader(self):
         pass
