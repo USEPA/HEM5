@@ -39,7 +39,6 @@ class Processor():
 
     def process(self):
 
-
         try:
             # create Inputs folder
             inputspkgr = InputsPackager(self.model.rootoutput, self.model)

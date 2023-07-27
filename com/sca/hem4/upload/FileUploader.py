@@ -20,6 +20,7 @@ from com.sca.hem4.upload.Seasons import Seasons
 from com.sca.hem4.upload.GasParams import GasParams
 from com.sca.hem4.upload.EmisVar import EmisVar
 from com.sca.hem4.upload.Census import Census
+from com.sca.hem4.upload.UserConcs import UserConcs
 
 
 class FileUploader():
@@ -64,12 +65,16 @@ class FileUploader():
             uploaded = EmissionsLocations(path, self.model.hapemis, self.model.faclist, set(self.model.fac_ids))
             self.model.emisloc = uploaded
         elif filetype == "alt receptors":
+            # uses polars
             uploaded = AltReceptors(path)
             self.model.altreceptr = uploaded
             if uploaded is None:
                 return False
             else:
                 return True
+        elif filetype == "userconcs":
+            uploaded = UserConcs(path)
+            self.model.userconcs = uploaded
 
         return False if uploaded.dataframe.empty is True else True
 

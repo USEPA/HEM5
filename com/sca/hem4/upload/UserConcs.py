@@ -4,7 +4,7 @@ from com.sca.hem4.log import Logger
 
 
 
-class AltReceptors(InputFile):
+class UserConcs(InputFile):
 
     def __init__(self, path):
         InputFile.__init__(self, path)
