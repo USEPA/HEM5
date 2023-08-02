@@ -14,6 +14,7 @@ value_rnd = 'value_rnd';
 value_sci = 'value_sci';
 notes = 'notes';
 blk_type = 'blk_type';
+rec_id = 'rec_id';
 
 class MaximumIndividualRisksUserconcs(ExcelWriter, InputFile):
     """
@@ -23,8 +24,8 @@ class MaximumIndividualRisksUserconcs(ExcelWriter, InputFile):
     This version is used when the user supplies their own concentration file to HEM.
     """
 
-    def __init__(self, targetDir=None, facilityId=None, model=None, plot_df=None, filenameOverride=None,
-                 createDataframe=False):
+    def __init__(self, targetDir=None, facilityId=None, model=None, altrec=False, plot_df=None, 
+                 filenameOverride=None, createDataframe=False):
 
         # Initialization for file reading/writing. If no file name override, use the
         # default construction.
@@ -35,6 +36,7 @@ class MaximumIndividualRisksUserconcs(ExcelWriter, InputFile):
         InputFile.__init__(self, path, createDataframe)
 
         self.filename = path
+        self.altrec = altrec
 
     def nodivby0(self, n, d):
         quotient = np.zeros(len(n))
@@ -46,103 +48,196 @@ class MaximumIndividualRisksUserconcs(ExcelWriter, InputFile):
         return quotient
 
     def calcHI(self, hiname, hivar):
-                
-        mr_parameter = hiname
-        io_idx = self.model.risk_by_latlon[((self.model.risk_by_latlon[population] > 0) |
-                                           (self.model.risk_by_latlon[rec_type] == "P"))][hivar].idxmax()
-        mr_lat = float(self.model.risk_by_latlon[lat].loc[io_idx])
-        mr_lon = float(self.model.risk_by_latlon[lon].loc[io_idx])
-        if self.model.risk_by_latlon[overlap].loc[io_idx] == "N":
-            #not overlapped
-            mr_value = self.model.risk_by_latlon[hivar].loc[io_idx]
-            mr_value_sci = format(mr_value, ".1e")
-            mr_value_rnd = round(mr_value, -int(floor(log10(abs(mr_value))))) if mr_value > 0 else 0
-            if self.model.risk_by_latlon[blk_type].loc[io_idx] == "D":
-                mr_pop = self.model.innerblks_df[(self.model.innerblks_df[lon] == mr_lon) & (self.model.innerblks_df[lat] == mr_lat)][population].values[0]
-                mr_elev = self.model.innerblks_df[(self.model.innerblks_df[lon] == mr_lon) & (self.model.innerblks_df[lat] == mr_lat)][elev].values[0]
-                mr_hill = self.model.innerblks_df[(self.model.innerblks_df[lon] == mr_lon) & (self.model.innerblks_df[lat] == mr_lat)][hill].values[0]
-                mr_fips = self.model.innerblks_df[(self.model.innerblks_df[lon] == mr_lon) & (self.model.innerblks_df[lat] == mr_lat)][fips].values[0]
-                mr_block = self.model.innerblks_df[(self.model.innerblks_df[lon] == mr_lon) & (self.model.innerblks_df[lat] == mr_lat)]['blockid'].values[0][-10:]
-                mr_utme = self.model.innerblks_df[(self.model.innerblks_df[lon] == mr_lon) & (self.model.innerblks_df[lat] == mr_lat)][utme].values[0]
-                mr_utmn = self.model.innerblks_df[(self.model.innerblks_df[lon] == mr_lon) & (self.model.innerblks_df[lat] == mr_lat)][utmn].values[0]
-#                if 'U' in self.model.risk_by_latlon['block'].loc[io_idx]:
-                if self.model.risk_by_latlon.loc[io_idx, rec_type] == "P":
-                    mr_rectype = "User receptor"
+        
+        if self.altrec == False:
+            # census receptors
+            
+            mr_parameter = hiname
+            io_idx = self.model.risk_by_latlon[((self.model.risk_by_latlon[population] > 0) |
+                                               (self.model.risk_by_latlon[rec_type] == "P"))][hivar].idxmax()
+            mr_lat = float(self.model.risk_by_latlon[lat].loc[io_idx])
+            mr_lon = float(self.model.risk_by_latlon[lon].loc[io_idx])
+            if self.model.risk_by_latlon[overlap].loc[io_idx] == "N":
+                #not overlapped
+                mr_value = self.model.risk_by_latlon[hivar].loc[io_idx]
+                mr_value_sci = format(mr_value, ".1e")
+                mr_value_rnd = round(mr_value, -int(floor(log10(abs(mr_value))))) if mr_value > 0 else 0
+                if self.model.risk_by_latlon[blk_type].loc[io_idx] == "D":
+                    mr_pop = self.model.innerblks_df[(self.model.innerblks_df[lon] == mr_lon) & (self.model.innerblks_df[lat] == mr_lat)][population].values[0]
+                    mr_elev = self.model.innerblks_df[(self.model.innerblks_df[lon] == mr_lon) & (self.model.innerblks_df[lat] == mr_lat)][elev].values[0]
+                    mr_hill = self.model.innerblks_df[(self.model.innerblks_df[lon] == mr_lon) & (self.model.innerblks_df[lat] == mr_lat)][hill].values[0]
+                    mr_fips = self.model.innerblks_df[(self.model.innerblks_df[lon] == mr_lon) & (self.model.innerblks_df[lat] == mr_lat)][fips].values[0]
+                    mr_block = self.model.innerblks_df[(self.model.innerblks_df[lon] == mr_lon) & (self.model.innerblks_df[lat] == mr_lat)]['blockid'].values[0][-10:]
+                    mr_utme = self.model.innerblks_df[(self.model.innerblks_df[lon] == mr_lon) & (self.model.innerblks_df[lat] == mr_lat)][utme].values[0]
+                    mr_utmn = self.model.innerblks_df[(self.model.innerblks_df[lon] == mr_lon) & (self.model.innerblks_df[lat] == mr_lat)][utmn].values[0]
+    #                if 'U' in self.model.risk_by_latlon['block'].loc[io_idx]:
+                    if self.model.risk_by_latlon.loc[io_idx, rec_type] == "P":
+                        mr_rectype = "User receptor"
+                    else:
+                        mr_rectype = "Census block"
+                    mr_notes = "Discrete"
                 else:
+                    mr_pop = self.model.outerblks_df[(self.model.outerblks_df[lon] == mr_lon) & (self.model.outerblks_df[lat] == mr_lat)][population].values[0]
+                    mr_elev = self.model.outerblks_df[(self.model.outerblks_df[lon] == mr_lon) & (self.model.outerblks_df[lat] == mr_lat)][elev].values[0]
+                    mr_hill = self.model.outerblks_df[(self.model.outerblks_df[lon] == mr_lon) & (self.model.outerblks_df[lat] == mr_lat)][hill].values[0]
+                    mr_fips = self.model.outerblks_df[(self.model.outerblks_df[lon] == mr_lon) & (self.model.outerblks_df[lat] == mr_lat)][fips].values[0]
+                    mr_block = self.model.outerblks_df[(self.model.outerblks_df[lon] == mr_lon) & (self.model.outerblks_df[lat] == mr_lat)]['blockid'].values[0][-10:]
+                    mr_utme = self.model.outerblks_df[(self.model.outerblks_df[lon] == mr_lon) & (self.model.outerblks_df[lat] == mr_lat)][utme].values[0]
+                    mr_utmn = self.model.outerblks_df[(self.model.outerblks_df[lon] == mr_lon) & (self.model.outerblks_df[lat] == mr_lat)][utmn].values[0]
                     mr_rectype = "Census block"
-                mr_notes = "Discrete"
+                    mr_notes = "Interpolated"
             else:
-                mr_pop = self.model.outerblks_df[(self.model.outerblks_df[lon] == mr_lon) & (self.model.outerblks_df[lat] == mr_lat)][population].values[0]
-                mr_elev = self.model.outerblks_df[(self.model.outerblks_df[lon] == mr_lon) & (self.model.outerblks_df[lat] == mr_lat)][elev].values[0]
-                mr_hill = self.model.outerblks_df[(self.model.outerblks_df[lon] == mr_lon) & (self.model.outerblks_df[lat] == mr_lat)][hill].values[0]
-                mr_fips = self.model.outerblks_df[(self.model.outerblks_df[lon] == mr_lon) & (self.model.outerblks_df[lat] == mr_lat)][fips].values[0]
-                mr_block = self.model.outerblks_df[(self.model.outerblks_df[lon] == mr_lon) & (self.model.outerblks_df[lat] == mr_lat)]['blockid'].values[0][-10:]
-                mr_utme = self.model.outerblks_df[(self.model.outerblks_df[lon] == mr_lon) & (self.model.outerblks_df[lat] == mr_lat)][utme].values[0]
-                mr_utmn = self.model.outerblks_df[(self.model.outerblks_df[lon] == mr_lon) & (self.model.outerblks_df[lat] == mr_lat)][utmn].values[0]
-                mr_rectype = "Census block"
-                mr_notes = "Interpolated"
+                #overlapped
+                iop_idx = self.model.risk_by_latlon[(self.model.risk_by_latlon[overlap] == "N") & 
+                          (self.model.risk_by_latlon[rec_type] != 'S') & 
+                          (self.model.risk_by_latlon[rec_type] != 'M')][hivar].idxmax()
+                mr_lat = float(self.model.risk_by_latlon[lat].loc[iop_idx])
+                mr_lon = float(self.model.risk_by_latlon[lon].loc[iop_idx])
+                mr_value = self.model.risk_by_latlon[hivar].loc[iop_idx]
+                mr_value_sci = format(mr_value, ".1e")
+                # TODO keep 2 significant figures for rounded value
+                #mr_value_rnd = round(mr_value, -int(floor(log10(mr_value))) + 1) if mr_value > 0 else 0
+                mr_value_rnd = round(mr_value, -int(floor(log10(abs(mr_value))))) if mr_value > 0 else 0
+                if self.model.risk_by_latlon[blk_type].loc[iop_idx] == "PG":
+                    mr_pop = 0
+                    mr_elev = self.model.polargrid[(self.model.polargrid[lon] == mr_lon) & (self.model.polargrid[lat] == mr_lat)][elev].values[0]
+                    # hill height, utme, and utmn are not stored in AllPolarReceptors
+                    mr_hill = 0
+                    mr_utme = 0
+                    mr_utmn = 0
+                    mr_fips = ""
+                    mr_block = ""
+                    mr_rectype = "Polar"
+                    mr_notes = "Overlapped source. Using polar receptor."
+                elif self.model.risk_by_latlon[blk_type].loc[iop_idx] == "I":
+                    mr_pop = self.model.outerblks_df[(self.model.outerblks_df[lon] == mr_lon) & (self.model.outerblks_df[lat] == mr_lat)][population].values[0]
+                    mr_elev = self.model.outerblks_df[(self.model.outerblks_df[lon] == mr_lon) & (self.model.outerblks_df[lat] == mr_lat)][elev].values[0]
+                    mr_hill = self.model.outerblks_df[(self.model.outerblks_df[lon] == mr_lon) & (self.model.outerblks_df[lat] == mr_lat)][hill].values[0]
+                    mr_fips = self.model.outerblks_df[(self.model.outerblks_df[lon] == mr_lon) & (self.model.outerblks_df[lat] == mr_lat)][fips].values[0]
+                    mr_block = self.model.outerblks_df[(self.model.outerblks_df[lon] == mr_lon) & (self.model.outerblks_df[lat] == mr_lat)]['blockid'].values[0][-10:]
+                    mr_utme = self.model.outerblks_df[(self.model.outerblks_df[lon] == mr_lon) & (self.model.outerblks_df[lat] == mr_lat)][utme].values[0]
+                    mr_utmn = self.model.outerblks_df[(self.model.outerblks_df[lon] == mr_lon) & (self.model.outerblks_df[lat] == mr_lat)][utmn].values[0]
+                    mr_rectype = "Census block"
+                    mr_notes = "Overlapped source. Using interpolated receptor."
+                else:
+                    mr_pop = self.model.innerblks_df[(self.model.innerblks_df[lon] == mr_lon) & (self.model.innerblks_df[lat] == mr_lat)][population].values[0]
+                    mr_elev = self.model.innerblks_df[(self.model.innerblks_df[lon] == mr_lon) & (self.model.innerblks_df[lat] == mr_lat)][elev].values[0]
+                    mr_hill = self.model.innerblks_df[(self.model.innerblks_df[lon] == mr_lon) & (self.model.innerblks_df[lat] == mr_lat)][hill].values[0]
+                    mr_fips = self.model.innerblks_df[(self.model.innerblks_df[lon] == mr_lon) & (self.model.innerblks_df[lat] == mr_lat)][fips].values[0]
+                    mr_block = self.model.innerblks_df[(self.model.innerblks_df[lon] == mr_lon) & (self.model.innerblks_df[lat] == mr_lat)]['blockid'].values[0][-10:]
+                    mr_utme = self.model.innerblks_df[(self.model.innerblks_df[lon] == mr_lon) & (self.model.innerblks_df[lat] == mr_lat)][utme].values[0]
+                    mr_utmn = self.model.innerblks_df[(self.model.innerblks_df[lon] == mr_lon) & (self.model.innerblks_df[lat] == mr_lat)][utmn].values[0]
+                    if self.model.risk_by_latlon.loc[iop_idx, rec_type] == 'P':
+                        mr_rectype = "User receptor"
+                    else:
+                        mr_rectype = "Census block"
+                    mr_notes = "Overlapped source. Using discrete census or user receptor."
+    
+            return [mr_parameter, mr_value, mr_value_rnd, mr_value_sci, mr_pop, mr_elev,
+                    mr_hill, mr_fips, mr_block, mr_utme, mr_utmn, mr_lat, mr_lon, mr_rectype, mr_notes]
+        
         else:
-            #overlapped
-#            iop_idx = self.model.risk_by_latlon[(self.model.risk_by_latlon[overlap] == "N") & 
-#                            ('S' not in self.model.risk_by_latlon[block]) & ('M' not in self.model.risk_by_latlon[block])][hivar].idxmax()
-            iop_idx = self.model.risk_by_latlon[(self.model.risk_by_latlon[overlap] == "N") & 
-                      (self.model.risk_by_latlon[rec_type] != 'S') & 
-                      (self.model.risk_by_latlon[rec_type] != 'M')][hivar].idxmax()
-            mr_lat = float(self.model.risk_by_latlon[lat].loc[iop_idx])
-            mr_lon = float(self.model.risk_by_latlon[lon].loc[iop_idx])
-            mr_value = self.model.risk_by_latlon[hivar].loc[iop_idx]
-            mr_value_sci = format(mr_value, ".1e")
-            # TODO keep 2 significant figures for rounded value
-            #mr_value_rnd = round(mr_value, -int(floor(log10(mr_value))) + 1) if mr_value > 0 else 0
-            mr_value_rnd = round(mr_value, -int(floor(log10(abs(mr_value))))) if mr_value > 0 else 0
-            if self.model.risk_by_latlon[blk_type].loc[iop_idx] == "PG":
-                mr_pop = 0
-                mr_elev = self.model.polargrid[(self.model.polargrid[lon] == mr_lon) & (self.model.polargrid[lat] == mr_lat)][elev].values[0]
-                # hill height, utme, and utmn are not stored in AllPolarReceptors
-                mr_hill = 0
-                mr_utme = 0
-                mr_utmn = 0
-                mr_fips = ""
-                mr_block = ""
-                mr_rectype = "Polar"
-                mr_notes = "Overlapped source. Using polar receptor."
-            elif self.model.risk_by_latlon[blk_type].loc[iop_idx] == "I":
-                mr_pop = self.model.outerblks_df[(self.model.outerblks_df[lon] == mr_lon) & (self.model.outerblks_df[lat] == mr_lat)][population].values[0]
-                mr_elev = self.model.outerblks_df[(self.model.outerblks_df[lon] == mr_lon) & (self.model.outerblks_df[lat] == mr_lat)][elev].values[0]
-                mr_hill = self.model.outerblks_df[(self.model.outerblks_df[lon] == mr_lon) & (self.model.outerblks_df[lat] == mr_lat)][hill].values[0]
-                mr_fips = self.model.outerblks_df[(self.model.outerblks_df[lon] == mr_lon) & (self.model.outerblks_df[lat] == mr_lat)][fips].values[0]
-                mr_block = self.model.outerblks_df[(self.model.outerblks_df[lon] == mr_lon) & (self.model.outerblks_df[lat] == mr_lat)]['blockid'].values[0][-10:]
-                mr_utme = self.model.outerblks_df[(self.model.outerblks_df[lon] == mr_lon) & (self.model.outerblks_df[lat] == mr_lat)][utme].values[0]
-                mr_utmn = self.model.outerblks_df[(self.model.outerblks_df[lon] == mr_lon) & (self.model.outerblks_df[lat] == mr_lat)][utmn].values[0]
-                mr_rectype = "Census block"
-                mr_notes = "Overlapped source. Using interpolated receptor."
-            else:
-                mr_pop = self.model.innerblks_df[(self.model.innerblks_df[lon] == mr_lon) & (self.model.innerblks_df[lat] == mr_lat)][population].values[0]
-                mr_elev = self.model.innerblks_df[(self.model.innerblks_df[lon] == mr_lon) & (self.model.innerblks_df[lat] == mr_lat)][elev].values[0]
-                mr_hill = self.model.innerblks_df[(self.model.innerblks_df[lon] == mr_lon) & (self.model.innerblks_df[lat] == mr_lat)][hill].values[0]
-                mr_fips = self.model.innerblks_df[(self.model.innerblks_df[lon] == mr_lon) & (self.model.innerblks_df[lat] == mr_lat)][fips].values[0]
-                mr_block = self.model.innerblks_df[(self.model.innerblks_df[lon] == mr_lon) & (self.model.innerblks_df[lat] == mr_lat)]['blockid'].values[0][-10:]
-                mr_utme = self.model.innerblks_df[(self.model.innerblks_df[lon] == mr_lon) & (self.model.innerblks_df[lat] == mr_lat)][utme].values[0]
-                mr_utmn = self.model.innerblks_df[(self.model.innerblks_df[lon] == mr_lon) & (self.model.innerblks_df[lat] == mr_lat)][utmn].values[0]
-#                if 'U' in self.model.risk_by_latlon['block'].loc[iop_idx]:
-                if self.model.risk_by_latlon.loc[iop_idx, rec_type] == 'P':
-                    mr_rectype = "User receptor"
+            # alternate receptors
+            
+            mr_parameter = hiname
+            io_idx = self.model.risk_by_latlon[((self.model.risk_by_latlon[population] > 0) |
+                                               (self.model.risk_by_latlon[rec_type] == "P"))][hivar].idxmax()
+            mr_lat = float(self.model.risk_by_latlon[lat].loc[io_idx])
+            mr_lon = float(self.model.risk_by_latlon[lon].loc[io_idx])
+            if self.model.risk_by_latlon[overlap].loc[io_idx] == "N":
+                #not overlapped
+                mr_value = self.model.risk_by_latlon[hivar].loc[io_idx]
+                mr_value_sci = format(mr_value, ".1e")
+                mr_value_rnd = round(mr_value, -int(floor(log10(abs(mr_value))))) if mr_value > 0 else 0
+                if self.model.risk_by_latlon[blk_type].loc[io_idx] == "D":
+                    mr_pop = self.model.innerblks_df[(self.model.innerblks_df[lon] == mr_lon) & (self.model.innerblks_df[lat] == mr_lat)][population].values[0]
+                    mr_elev = self.model.innerblks_df[(self.model.innerblks_df[lon] == mr_lon) & (self.model.innerblks_df[lat] == mr_lat)][elev].values[0]
+                    mr_hill = self.model.innerblks_df[(self.model.innerblks_df[lon] == mr_lon) & (self.model.innerblks_df[lat] == mr_lat)][hill].values[0]
+                    mr_recid = self.model.innerblks_df[(self.model.innerblks_df[lon] == mr_lon) & (self.model.innerblks_df[lat] == mr_lat)][rec_id].values[0]
+                    mr_utme = self.model.innerblks_df[(self.model.innerblks_df[lon] == mr_lon) & (self.model.innerblks_df[lat] == mr_lat)][utme].values[0]
+                    mr_utmn = self.model.innerblks_df[(self.model.innerblks_df[lon] == mr_lon) & (self.model.innerblks_df[lat] == mr_lat)][utmn].values[0]
+    #                if 'U' in self.model.risk_by_latlon['block'].loc[io_idx]:
+                    if self.model.risk_by_latlon.loc[io_idx, rec_type] == "P":
+                        mr_rectype = "User receptor"
+                    else:
+                        mr_rectype = "Census block"
+                    mr_notes = "Discrete"
                 else:
+                    mr_pop = self.model.outerblks_df[(self.model.outerblks_df[lon] == mr_lon) & (self.model.outerblks_df[lat] == mr_lat)][population].values[0]
+                    mr_elev = self.model.outerblks_df[(self.model.outerblks_df[lon] == mr_lon) & (self.model.outerblks_df[lat] == mr_lat)][elev].values[0]
+                    mr_hill = self.model.outerblks_df[(self.model.outerblks_df[lon] == mr_lon) & (self.model.outerblks_df[lat] == mr_lat)][hill].values[0]
+                    mr_recid = self.model.outerblks_df[(self.model.outerblks_df[lon] == mr_lon) & (self.model.outerblks_df[lat] == mr_lat)][rec_id].values[0]
+                    mr_utme = self.model.outerblks_df[(self.model.outerblks_df[lon] == mr_lon) & (self.model.outerblks_df[lat] == mr_lat)][utme].values[0]
+                    mr_utmn = self.model.outerblks_df[(self.model.outerblks_df[lon] == mr_lon) & (self.model.outerblks_df[lat] == mr_lat)][utmn].values[0]
                     mr_rectype = "Census block"
-                mr_notes = "Overlapped source. Using discrete census or user receptor."
-
-        return [mr_parameter, mr_value, mr_value_rnd, mr_value_sci, mr_pop, mr_elev,
-                mr_hill, mr_fips, mr_block, mr_utme, mr_utmn, mr_lat, mr_lon, mr_rectype, mr_notes]
+                    mr_notes = "Interpolated"
+            else:
+                #overlapped
+                iop_idx = self.model.risk_by_latlon[(self.model.risk_by_latlon[overlap] == "N") & 
+                          (self.model.risk_by_latlon[rec_type] != 'S') & 
+                          (self.model.risk_by_latlon[rec_type] != 'M')][hivar].idxmax()
+                mr_lat = float(self.model.risk_by_latlon[lat].loc[iop_idx])
+                mr_lon = float(self.model.risk_by_latlon[lon].loc[iop_idx])
+                mr_value = self.model.risk_by_latlon[hivar].loc[iop_idx]
+                mr_value_sci = format(mr_value, ".1e")
+                # TODO keep 2 significant figures for rounded value
+                #mr_value_rnd = round(mr_value, -int(floor(log10(mr_value))) + 1) if mr_value > 0 else 0
+                mr_value_rnd = round(mr_value, -int(floor(log10(abs(mr_value))))) if mr_value > 0 else 0
+                if self.model.risk_by_latlon[blk_type].loc[iop_idx] == "PG":
+                    mr_pop = 0
+                    mr_elev = self.model.polargrid[(self.model.polargrid[lon] == mr_lon) & (self.model.polargrid[lat] == mr_lat)][elev].values[0]
+                    # hill height, utme, and utmn are not stored in AllPolarReceptors
+                    mr_hill = 0
+                    mr_utme = 0
+                    mr_utmn = 0
+                    mr_recid = ""
+                    mr_rectype = "Polar"
+                    mr_notes = "Overlapped source. Using polar receptor."
+                elif self.model.risk_by_latlon[blk_type].loc[iop_idx] == "I":
+                    mr_pop = self.model.outerblks_df[(self.model.outerblks_df[lon] == mr_lon) & (self.model.outerblks_df[lat] == mr_lat)][population].values[0]
+                    mr_elev = self.model.outerblks_df[(self.model.outerblks_df[lon] == mr_lon) & (self.model.outerblks_df[lat] == mr_lat)][elev].values[0]
+                    mr_hill = self.model.outerblks_df[(self.model.outerblks_df[lon] == mr_lon) & (self.model.outerblks_df[lat] == mr_lat)][hill].values[0]
+                    mr_recid = self.model.outerblks_df[(self.model.outerblks_df[lon] == mr_lon) & (self.model.outerblks_df[lat] == mr_lat)][rec_id].values[0]
+                    mr_utme = self.model.outerblks_df[(self.model.outerblks_df[lon] == mr_lon) & (self.model.outerblks_df[lat] == mr_lat)][utme].values[0]
+                    mr_utmn = self.model.outerblks_df[(self.model.outerblks_df[lon] == mr_lon) & (self.model.outerblks_df[lat] == mr_lat)][utmn].values[0]
+                    mr_rectype = "Census block"
+                    mr_notes = "Overlapped source. Using interpolated receptor."
+                else:
+                    mr_pop = self.model.innerblks_df[(self.model.innerblks_df[lon] == mr_lon) & (self.model.innerblks_df[lat] == mr_lat)][population].values[0]
+                    mr_elev = self.model.innerblks_df[(self.model.innerblks_df[lon] == mr_lon) & (self.model.innerblks_df[lat] == mr_lat)][elev].values[0]
+                    mr_hill = self.model.innerblks_df[(self.model.innerblks_df[lon] == mr_lon) & (self.model.innerblks_df[lat] == mr_lat)][hill].values[0]
+                    mr_recid = self.model.innerblks_df[(self.model.innerblks_df[lon] == mr_lon) & (self.model.innerblks_df[lat] == mr_lat)][rec_id].values[0]
+                    mr_utme = self.model.innerblks_df[(self.model.innerblks_df[lon] == mr_lon) & (self.model.innerblks_df[lat] == mr_lat)][utme].values[0]
+                    mr_utmn = self.model.innerblks_df[(self.model.innerblks_df[lon] == mr_lon) & (self.model.innerblks_df[lat] == mr_lat)][utmn].values[0]
+                    if self.model.risk_by_latlon.loc[iop_idx, rec_type] == 'P':
+                        mr_rectype = "User receptor"
+                    else:
+                        mr_rectype = "Census block"
+                    mr_notes = "Overlapped source. Using discrete census or user receptor."
+    
+            return [mr_parameter, mr_value, mr_value_rnd, mr_value_sci, mr_pop, mr_elev,
+                    mr_hill, mr_recid, mr_utme, mr_utmn, mr_lat, mr_lon, mr_rectype, mr_notes]            
 
 
     def getHeader(self):
-        return ['Parameter', 'Value', 'Value rounded', 'Value scientific notation', 'Population', 
-                'Elevation (m)', 'Hill height (m)', 'FIPs', 'Block',
-                'UTM easting', 'UTM northing', 'Latitude', 'Longitude', 'Receptor type', 'Notes']
+        if self.altrec == False:
+            return ['Parameter', 'Value', 'Value rounded', 'Value scientific notation', 'Population', 
+                    'Elevation (m)', 'Hill height (m)', 'FIPs', 'Block',
+                    'UTM easting', 'UTM northing', 'Latitude', 'Longitude', 'Receptor type', 'Notes']
+        else:
+            return ['Parameter', 'Value', 'Value rounded', 'Value scientific notation', 'Population', 
+                    'Elevation (m)', 'Hill height (m)', 'Receptor ID',
+                    'UTM easting', 'UTM northing', 'Latitude', 'Longitude', 'Receptor type', 'Notes']
+            
 
     def getColumns(self):
-        return [parameter, value, value_rnd, value_sci, population, elev,
-                hill, fips, block, utme, utmn, lat, lon, rec_type, notes]
+        if self.altrec == False:
+            return [parameter, value, value_rnd, value_sci, population, elev,
+                    hill, fips, block, utme, utmn, lat, lon, rec_type, notes]
+        else:
+            return [parameter, value, value_rnd, value_sci, population, elev,
+                    hill, rec_id, utme, utmn, lat, lon, rec_type, notes]
+            
 
     def generateOutputs(self):
         """
@@ -260,123 +355,226 @@ class MaximumIndividualRisksUserconcs(ExcelWriter, InputFile):
             3) If it is overlapped, find max from all receptors where overlap is N (no school or monitor)
             4) Get information about this receptor
         """
-                
-        mr_parameter = "Cancer risk"
-#        io_idx = self.model.risk_by_latlon[((self.model.risk_by_latlon[rec_type] == "C") |
-#                                           (self.model.risk_by_latlon[rec_type] == "P")) &
-#                                           (self.model.risk_by_latlon['block'].str.contains('S')==False) &
-#                                           (self.model.risk_by_latlon['block'].str.contains('M')==False)][mir].idxmax()
-        io_idx = self.model.risk_by_latlon[((self.model.risk_by_latlon[population] > 0) |
-                                           (self.model.risk_by_latlon[rec_type] == "P"))][mir].idxmax()
-        if self.model.risk_by_latlon[mir].loc[io_idx] > 0:
-            #max risk is > 0, do calculations
-            mr_lat = float(self.model.risk_by_latlon[lat].loc[io_idx])
-            mr_lon = float(self.model.risk_by_latlon[lon].loc[io_idx])
-            if self.model.risk_by_latlon[overlap].loc[io_idx] == "N":
-                #not overlapped
-                mr_value = self.model.risk_by_latlon[mir].loc[io_idx]
-                mr_value_sci = format(mr_value, ".1e")
-                mr_value_rnd = round(mr_value, -int(floor(log10(abs(mr_value))))) if mr_value > 0 else 0
-                if self.model.risk_by_latlon['blk_type'].loc[io_idx] == "D":
-                    mr_pop = self.model.innerblks_df[(self.model.innerblks_df[lon] == mr_lon) & (self.model.innerblks_df[lat] == mr_lat)][population].values[0]
-                    mr_elev = self.model.innerblks_df[(self.model.innerblks_df[lon] == mr_lon) & (self.model.innerblks_df[lat] == mr_lat)][elev].values[0]
-                    mr_hill = self.model.innerblks_df[(self.model.innerblks_df[lon] == mr_lon) & (self.model.innerblks_df[lat] == mr_lat)][hill].values[0]
-                    mr_fips = self.model.innerblks_df[(self.model.innerblks_df[lon] == mr_lon) & (self.model.innerblks_df[lat] == mr_lat)][fips].values[0]
-                    mr_block = self.model.innerblks_df[(self.model.innerblks_df[lon] == mr_lon) & (self.model.innerblks_df[lat] == mr_lat)]['blockid'].values[0][-10:]
-                    mr_utme = self.model.innerblks_df[(self.model.innerblks_df[lon] == mr_lon) & (self.model.innerblks_df[lat] == mr_lat)][utme].values[0]
-                    mr_utmn = self.model.innerblks_df[(self.model.innerblks_df[lon] == mr_lon) & (self.model.innerblks_df[lat] == mr_lat)][utmn].values[0]
-#                    if 'U' in self.model.risk_by_latlon['block'].loc[io_idx]:
-                    if self.model.risk_by_latlon.loc[io_idx, rec_type] == 'P':
-                        mr_rectype = "User receptor"
+        
+        if self.altrec == False:
+            # census receptors
+            
+            mr_parameter = "Cancer risk"
+            io_idx = self.model.risk_by_latlon[((self.model.risk_by_latlon[population] > 0) |
+                                               (self.model.risk_by_latlon[rec_type] == "P"))][mir].idxmax()
+            if self.model.risk_by_latlon[mir].loc[io_idx] > 0:
+                #max risk is > 0, do calculations
+                mr_lat = float(self.model.risk_by_latlon[lat].loc[io_idx])
+                mr_lon = float(self.model.risk_by_latlon[lon].loc[io_idx])
+                if self.model.risk_by_latlon[overlap].loc[io_idx] == "N":
+                    #not overlapped
+                    mr_value = self.model.risk_by_latlon[mir].loc[io_idx]
+                    mr_value_sci = format(mr_value, ".1e")
+                    mr_value_rnd = round(mr_value, -int(floor(log10(abs(mr_value))))) if mr_value > 0 else 0
+                    if self.model.risk_by_latlon['blk_type'].loc[io_idx] == "D":
+                        mr_pop = self.model.innerblks_df[(self.model.innerblks_df[lon] == mr_lon) & (self.model.innerblks_df[lat] == mr_lat)][population].values[0]
+                        mr_elev = self.model.innerblks_df[(self.model.innerblks_df[lon] == mr_lon) & (self.model.innerblks_df[lat] == mr_lat)][elev].values[0]
+                        mr_hill = self.model.innerblks_df[(self.model.innerblks_df[lon] == mr_lon) & (self.model.innerblks_df[lat] == mr_lat)][hill].values[0]
+                        mr_fips = self.model.innerblks_df[(self.model.innerblks_df[lon] == mr_lon) & (self.model.innerblks_df[lat] == mr_lat)][fips].values[0]
+                        mr_block = self.model.innerblks_df[(self.model.innerblks_df[lon] == mr_lon) & (self.model.innerblks_df[lat] == mr_lat)]['blockid'].values[0][-10:]
+                        mr_utme = self.model.innerblks_df[(self.model.innerblks_df[lon] == mr_lon) & (self.model.innerblks_df[lat] == mr_lat)][utme].values[0]
+                        mr_utmn = self.model.innerblks_df[(self.model.innerblks_df[lon] == mr_lon) & (self.model.innerblks_df[lat] == mr_lat)][utmn].values[0]
+    #                    if 'U' in self.model.risk_by_latlon['block'].loc[io_idx]:
+                        if self.model.risk_by_latlon.loc[io_idx, rec_type] == 'P':
+                            mr_rectype = "User receptor"
+                        else:
+                            mr_rectype = "Census block"
+                        mr_notes = "Discrete"
                     else:
-                        mr_rectype = "Census block"
-                    mr_notes = "Discrete"
-                else:
-                    mr_pop = self.model.outerblks_df[(self.model.outerblks_df[lon] == mr_lon) & (self.model.outerblks_df[lat] == mr_lat)][population].values[0]
-                    mr_elev = self.model.outerblks_df[(self.model.outerblks_df[lon] == mr_lon) & (self.model.outerblks_df[lat] == mr_lat)][elev].values[0]
-                    mr_hill = self.model.outerblks_df[(self.model.outerblks_df[lon] == mr_lon) & (self.model.outerblks_df[lat] == mr_lat)][hill].values[0]
-                    mr_fips = self.model.outerblks_df[(self.model.outerblks_df[lon] == mr_lon) & (self.model.outerblks_df[lat] == mr_lat)][fips].values[0]
-                    mr_block = self.model.outerblks_df[(self.model.outerblks_df[lon] == mr_lon) & (self.model.outerblks_df[lat] == mr_lat)]['blockid'].values[0][-10:]
-                    mr_utme = self.model.outerblks_df[(self.model.outerblks_df[lon] == mr_lon) & (self.model.outerblks_df[lat] == mr_lat)][utme].values[0]
-                    mr_utmn = self.model.outerblks_df[(self.model.outerblks_df[lon] == mr_lon) & (self.model.outerblks_df[lat] == mr_lat)][utmn].values[0]
-#                    if 'U' in self.model.risk_by_latlon['block'].loc[io_idx]:
-                    if self.model.risk_by_latlon.loc[io_idx, rec_type] == 'P':
-                        mr_rectype = "User receptor"
+                        mr_pop = self.model.outerblks_df[(self.model.outerblks_df[lon] == mr_lon) & (self.model.outerblks_df[lat] == mr_lat)][population].values[0]
+                        mr_elev = self.model.outerblks_df[(self.model.outerblks_df[lon] == mr_lon) & (self.model.outerblks_df[lat] == mr_lat)][elev].values[0]
+                        mr_hill = self.model.outerblks_df[(self.model.outerblks_df[lon] == mr_lon) & (self.model.outerblks_df[lat] == mr_lat)][hill].values[0]
+                        mr_fips = self.model.outerblks_df[(self.model.outerblks_df[lon] == mr_lon) & (self.model.outerblks_df[lat] == mr_lat)][fips].values[0]
+                        mr_block = self.model.outerblks_df[(self.model.outerblks_df[lon] == mr_lon) & (self.model.outerblks_df[lat] == mr_lat)]['blockid'].values[0][-10:]
+                        mr_utme = self.model.outerblks_df[(self.model.outerblks_df[lon] == mr_lon) & (self.model.outerblks_df[lat] == mr_lat)][utme].values[0]
+                        mr_utmn = self.model.outerblks_df[(self.model.outerblks_df[lon] == mr_lon) & (self.model.outerblks_df[lat] == mr_lat)][utmn].values[0]
+    #                    if 'U' in self.model.risk_by_latlon['block'].loc[io_idx]:
+                        if self.model.risk_by_latlon.loc[io_idx, rec_type] == 'P':
+                            mr_rectype = "User receptor"
+                        else:
+                            mr_rectype = "Census block"
+                        mr_notes = "Interpolated"
+                else:                
+                    #overlapped
+    #                iop_idx = self.model.risk_by_latlon[(self.model.risk_by_latlon[overlap] == "N") & 
+    #                                ('S' not in self.model.risk_by_latlon[block]) & ('M' not in self.model.risk_by_latlon[block])][mir].idxmax()
+                    iop_idx = self.model.risk_by_latlon[(self.model.risk_by_latlon[overlap] == "N") & 
+                            (self.model.risk_by_latlon[rec_type] != 'S') & 
+                            (self.model.risk_by_latlon[rec_type] != 'M')][mir].idxmax()
+                    mr_lat = float(self.model.risk_by_latlon[lat].loc[iop_idx])
+                    mr_lon = float(self.model.risk_by_latlon[lon].loc[iop_idx])
+                    mr_value = self.model.risk_by_latlon[mir].loc[iop_idx]
+                    mr_value_sci = format(mr_value, ".1e")
+                    mr_value_rnd = round(mr_value, -int(floor(log10(abs(mr_value)))))
+    
+                    if self.model.risk_by_latlon[blk_type].loc[iop_idx] == "PG":
+                        mr_pop = 0
+                        mr_elev = self.model.polargrid[(self.model.polargrid[lon] == mr_lon) & (self.model.polargrid[lat] == mr_lat)][elev].values[0]
+                        # hill height, utme, and utmn are not stored in AllPolarReceptors
+                        mr_hill = 0
+                        mr_utme = 0
+                        mr_utmn = 0
+                        mr_fips = ""
+                        mr_block = ""
+                        mr_rectype = "Polar"
+                        mr_notes = "Overlapped source. Using polar receptor."
+                    elif self.model.risk_by_latlon['blk_type'].loc[iop_idx] == "I":
+                        mr_pop = self.model.outerblks_df[(self.model.outerblks_df[lon] == mr_lon) & (self.model.outerblks_df[lat] == mr_lat)][population].values[0]
+                        mr_elev = self.model.outerblks_df[(self.model.outerblks_df[lon] == mr_lon) & (self.model.outerblks_df[lat] == mr_lat)][elev].values[0]
+                        mr_hill = self.model.outerblks_df[(self.model.outerblks_df[lon] == mr_lon) & (self.model.outerblks_df[lat] == mr_lat)][hill].values[0]
+                        mr_fips = self.model.outerblks_df[(self.model.outerblks_df[lon] == mr_lon) & (self.model.outerblks_df[lat] == mr_lat)][fips].values[0]
+                        mr_block = self.model.outerblks_df[(self.model.outerblks_df[lon] == mr_lon) & (self.model.outerblks_df[lat] == mr_lat)]['blockid'].values[0][-10:]
+                        mr_utme = self.model.outerblks_df[(self.model.outerblks_df[lon] == mr_lon) & (self.model.outerblks_df[lat] == mr_lat)][utme].values[0]
+                        mr_utmn = self.model.outerblks_df[(self.model.outerblks_df[lon] == mr_lon) & (self.model.outerblks_df[lat] == mr_lat)][utmn].values[0]
+    #                    if 'U' in self.model.risk_by_latlon['block'].loc[io_idx]:
+                        if self.model.risk_by_latlon.loc[io_idx, rec_type] == 'P':
+                            mr_rectype = "User receptor"
+                        else:
+                            mr_rectype = "Census block"
+                        mr_notes = "Overlapped source. Using interpolated receptor."
                     else:
-                        mr_rectype = "Census block"
-                    mr_notes = "Interpolated"
-            else:                
-                #overlapped
-#                iop_idx = self.model.risk_by_latlon[(self.model.risk_by_latlon[overlap] == "N") & 
-#                                ('S' not in self.model.risk_by_latlon[block]) & ('M' not in self.model.risk_by_latlon[block])][mir].idxmax()
-                iop_idx = self.model.risk_by_latlon[(self.model.risk_by_latlon[overlap] == "N") & 
-                        (self.model.risk_by_latlon[rec_type] != 'S') & 
-                        (self.model.risk_by_latlon[rec_type] != 'M')][mir].idxmax()
-                mr_lat = float(self.model.risk_by_latlon[lat].loc[iop_idx])
-                mr_lon = float(self.model.risk_by_latlon[lon].loc[iop_idx])
-                mr_value = self.model.risk_by_latlon[mir].loc[iop_idx]
-                mr_value_sci = format(mr_value, ".1e")
-                mr_value_rnd = round(mr_value, -int(floor(log10(abs(mr_value)))))
-
-                if self.model.risk_by_latlon[blk_type].loc[iop_idx] == "PG":
-                    mr_pop = 0
-                    mr_elev = self.model.polargrid[(self.model.polargrid[lon] == mr_lon) & (self.model.polargrid[lat] == mr_lat)][elev].values[0]
-                    # hill height, utme, and utmn are not stored in AllPolarReceptors
-                    mr_hill = 0
-                    mr_utme = 0
-                    mr_utmn = 0
-                    mr_fips = ""
-                    mr_block = ""
-                    mr_rectype = "Polar"
-                    mr_notes = "Overlapped source. Using polar receptor."
-                elif self.model.risk_by_latlon['blk_type'].loc[iop_idx] == "I":
-                    mr_pop = self.model.outerblks_df[(self.model.outerblks_df[lon] == mr_lon) & (self.model.outerblks_df[lat] == mr_lat)][population].values[0]
-                    mr_elev = self.model.outerblks_df[(self.model.outerblks_df[lon] == mr_lon) & (self.model.outerblks_df[lat] == mr_lat)][elev].values[0]
-                    mr_hill = self.model.outerblks_df[(self.model.outerblks_df[lon] == mr_lon) & (self.model.outerblks_df[lat] == mr_lat)][hill].values[0]
-                    mr_fips = self.model.outerblks_df[(self.model.outerblks_df[lon] == mr_lon) & (self.model.outerblks_df[lat] == mr_lat)][fips].values[0]
-                    mr_block = self.model.outerblks_df[(self.model.outerblks_df[lon] == mr_lon) & (self.model.outerblks_df[lat] == mr_lat)]['blockid'].values[0][-10:]
-                    mr_utme = self.model.outerblks_df[(self.model.outerblks_df[lon] == mr_lon) & (self.model.outerblks_df[lat] == mr_lat)][utme].values[0]
-                    mr_utmn = self.model.outerblks_df[(self.model.outerblks_df[lon] == mr_lon) & (self.model.outerblks_df[lat] == mr_lat)][utmn].values[0]
-#                    if 'U' in self.model.risk_by_latlon['block'].loc[io_idx]:
-                    if self.model.risk_by_latlon.loc[io_idx, rec_type] == 'P':
-                        mr_rectype = "User receptor"
-                    else:
-                        mr_rectype = "Census block"
-                    mr_notes = "Overlapped source. Using interpolated receptor."
-                else:
-                    mr_pop = self.model.innerblks_df[(self.model.innerblks_df[lon] == mr_lon) & (self.model.innerblks_df[lat] == mr_lat)][population].values[0]
-                    mr_elev = self.model.innerblks_df[(self.model.innerblks_df[lon] == mr_lon) & (self.model.innerblks_df[lat] == mr_lat)][elev].values[0]
-                    mr_hill = self.model.innerblks_df[(self.model.innerblks_df[lon] == mr_lon) & (self.model.innerblks_df[lat] == mr_lat)][hill].values[0]
-                    mr_fips = self.model.innerblks_df[(self.model.innerblks_df[lon] == mr_lon) & (self.model.innerblks_df[lat] == mr_lat)][fips].values[0]
-                    mr_block = self.model.innerblks_df[(self.model.innerblks_df[lon] == mr_lon) & (self.model.innerblks_df[lat] == mr_lat)]['blockid'].values[0][-10:]
-                    mr_utme = self.model.innerblks_df[(self.model.innerblks_df[lon] == mr_lon) & (self.model.innerblks_df[lat] == mr_lat)][utme].values[0]
-                    mr_utmn = self.model.innerblks_df[(self.model.innerblks_df[lon] == mr_lon) & (self.model.innerblks_df[lat] == mr_lat)][utmn].values[0]
-#                    if 'U' in self.model.risk_by_latlon['block'].loc[io_idx]:
-                    if self.model.risk_by_latlon.loc[io_idx, rec_type] == 'P':
-                        mr_rectype = "User receptor"
-                    else:
-                        mr_rectype = "Census block"
-                    mr_notes = "Overlapped source. Using discrete census or user receptor."
+                        mr_pop = self.model.innerblks_df[(self.model.innerblks_df[lon] == mr_lon) & (self.model.innerblks_df[lat] == mr_lat)][population].values[0]
+                        mr_elev = self.model.innerblks_df[(self.model.innerblks_df[lon] == mr_lon) & (self.model.innerblks_df[lat] == mr_lat)][elev].values[0]
+                        mr_hill = self.model.innerblks_df[(self.model.innerblks_df[lon] == mr_lon) & (self.model.innerblks_df[lat] == mr_lat)][hill].values[0]
+                        mr_fips = self.model.innerblks_df[(self.model.innerblks_df[lon] == mr_lon) & (self.model.innerblks_df[lat] == mr_lat)][fips].values[0]
+                        mr_block = self.model.innerblks_df[(self.model.innerblks_df[lon] == mr_lon) & (self.model.innerblks_df[lat] == mr_lat)]['blockid'].values[0][-10:]
+                        mr_utme = self.model.innerblks_df[(self.model.innerblks_df[lon] == mr_lon) & (self.model.innerblks_df[lat] == mr_lat)][utme].values[0]
+                        mr_utmn = self.model.innerblks_df[(self.model.innerblks_df[lon] == mr_lon) & (self.model.innerblks_df[lat] == mr_lat)][utmn].values[0]
+    #                    if 'U' in self.model.risk_by_latlon['block'].loc[io_idx]:
+                        if self.model.risk_by_latlon.loc[io_idx, rec_type] == 'P':
+                            mr_rectype = "User receptor"
+                        else:
+                            mr_rectype = "Census block"
+                        mr_notes = "Overlapped source. Using discrete census or user receptor."
+            else:
+                #max risk is 0, set all variables as empty
+                mr_lat = 0
+                mr_lon = 0
+                mr_value = 0
+                mr_value_rnd = 0
+                mr_value_sci = 0
+                mr_pop = 0
+                mr_elev = 0
+                mr_hill = 0
+                mr_fips = ""
+                mr_block = ""
+                mr_utme = 0
+                mr_utmn = 0
+                mr_rectype = ""
+                mr_notes = ""
+    
+            riskrow = [mr_parameter, mr_value, mr_value_rnd, mr_value_sci, mr_pop, mr_elev,
+                       mr_hill, mr_fips, mr_block, mr_utme, mr_utmn, mr_lat, mr_lon, mr_rectype, mr_notes]
+            maxrisklist.append(riskrow)
+        
         else:
-            #max risk is 0, set all variables as empty
-            mr_lat = 0
-            mr_lon = 0
-            mr_value = 0
-            mr_value_rnd = 0
-            mr_value_sci = 0
-            mr_pop = 0
-            mr_elev = 0
-            mr_hill = 0
-            mr_fips = ""
-            mr_block = ""
-            mr_utme = 0
-            mr_utmn = 0
-            mr_rectype = ""
-            mr_notes = ""
-
-        riskrow = [mr_parameter, mr_value, mr_value_rnd, mr_value_sci, mr_pop, mr_elev,
-                   mr_hill, mr_fips, mr_block, mr_utme, mr_utmn, mr_lat, mr_lon, mr_rectype, mr_notes]
-        maxrisklist.append(riskrow)
+            # alternate receptors
+            
+            mr_parameter = "Cancer risk"
+            io_idx = self.model.risk_by_latlon[((self.model.risk_by_latlon[population] > 0) |
+                                               (self.model.risk_by_latlon[rec_type] == "P"))][mir].idxmax()
+            if self.model.risk_by_latlon[mir].loc[io_idx] > 0:
+                #max risk is > 0, do calculations
+                mr_lat = float(self.model.risk_by_latlon[lat].loc[io_idx])
+                mr_lon = float(self.model.risk_by_latlon[lon].loc[io_idx])
+                if self.model.risk_by_latlon[overlap].loc[io_idx] == "N":
+                    #not overlapped
+                    mr_value = self.model.risk_by_latlon[mir].loc[io_idx]
+                    mr_value_sci = format(mr_value, ".1e")
+                    mr_value_rnd = round(mr_value, -int(floor(log10(abs(mr_value))))) if mr_value > 0 else 0
+                    if self.model.risk_by_latlon['blk_type'].loc[io_idx] == "D":
+                        mr_pop = self.model.innerblks_df[(self.model.innerblks_df[lon] == mr_lon) & (self.model.innerblks_df[lat] == mr_lat)][population].values[0]
+                        mr_elev = self.model.innerblks_df[(self.model.innerblks_df[lon] == mr_lon) & (self.model.innerblks_df[lat] == mr_lat)][elev].values[0]
+                        mr_hill = self.model.innerblks_df[(self.model.innerblks_df[lon] == mr_lon) & (self.model.innerblks_df[lat] == mr_lat)][hill].values[0]
+                        mr_recid = self.model.innerblks_df[(self.model.innerblks_df[lon] == mr_lon) & (self.model.innerblks_df[lat] == mr_lat)][rec_id].values[0]
+                        mr_utme = self.model.innerblks_df[(self.model.innerblks_df[lon] == mr_lon) & (self.model.innerblks_df[lat] == mr_lat)][utme].values[0]
+                        mr_utmn = self.model.innerblks_df[(self.model.innerblks_df[lon] == mr_lon) & (self.model.innerblks_df[lat] == mr_lat)][utmn].values[0]
+                        if self.model.risk_by_latlon.loc[io_idx, rec_type] == 'P':
+                            mr_rectype = "User receptor"
+                        else:
+                            mr_rectype = "Census block"
+                        mr_notes = "Discrete"
+                    else:
+                        mr_pop = self.model.outerblks_df[(self.model.outerblks_df[lon] == mr_lon) & (self.model.outerblks_df[lat] == mr_lat)][population].values[0]
+                        mr_elev = self.model.outerblks_df[(self.model.outerblks_df[lon] == mr_lon) & (self.model.outerblks_df[lat] == mr_lat)][elev].values[0]
+                        mr_hill = self.model.outerblks_df[(self.model.outerblks_df[lon] == mr_lon) & (self.model.outerblks_df[lat] == mr_lat)][hill].values[0]
+                        mr_recid = self.model.outerblks_df[(self.model.outerblks_df[lon] == mr_lon) & (self.model.outerblks_df[lat] == mr_lat)][rec_id].values[0]
+                        mr_utme = self.model.outerblks_df[(self.model.outerblks_df[lon] == mr_lon) & (self.model.outerblks_df[lat] == mr_lat)][utme].values[0]
+                        mr_utmn = self.model.outerblks_df[(self.model.outerblks_df[lon] == mr_lon) & (self.model.outerblks_df[lat] == mr_lat)][utmn].values[0]
+                        if self.model.risk_by_latlon.loc[io_idx, rec_type] == 'P':
+                            mr_rectype = "User receptor"
+                        else:
+                            mr_rectype = "Census block"
+                        mr_notes = "Interpolated"
+                else:                
+                    #overlapped
+                    iop_idx = self.model.risk_by_latlon[(self.model.risk_by_latlon[overlap] == "N") & 
+                            (self.model.risk_by_latlon[rec_type] != 'S') & 
+                            (self.model.risk_by_latlon[rec_type] != 'M')][mir].idxmax()
+                    mr_lat = float(self.model.risk_by_latlon[lat].loc[iop_idx])
+                    mr_lon = float(self.model.risk_by_latlon[lon].loc[iop_idx])
+                    mr_value = self.model.risk_by_latlon[mir].loc[iop_idx]
+                    mr_value_sci = format(mr_value, ".1e")
+                    mr_value_rnd = round(mr_value, -int(floor(log10(abs(mr_value)))))
+    
+                    if self.model.risk_by_latlon[blk_type].loc[iop_idx] == "PG":
+                        mr_pop = 0
+                        mr_elev = self.model.polargrid[(self.model.polargrid[lon] == mr_lon) & (self.model.polargrid[lat] == mr_lat)][elev].values[0]
+                        # hill height, utme, and utmn are not stored in AllPolarReceptors
+                        mr_hill = 0
+                        mr_utme = 0
+                        mr_utmn = 0
+                        mr_recid = ""
+                        mr_rectype = "Polar"
+                        mr_notes = "Overlapped source. Using polar receptor."
+                    elif self.model.risk_by_latlon['blk_type'].loc[iop_idx] == "I":
+                        mr_pop = self.model.outerblks_df[(self.model.outerblks_df[lon] == mr_lon) & (self.model.outerblks_df[lat] == mr_lat)][population].values[0]
+                        mr_elev = self.model.outerblks_df[(self.model.outerblks_df[lon] == mr_lon) & (self.model.outerblks_df[lat] == mr_lat)][elev].values[0]
+                        mr_hill = self.model.outerblks_df[(self.model.outerblks_df[lon] == mr_lon) & (self.model.outerblks_df[lat] == mr_lat)][hill].values[0]
+                        mr_recid = self.model.outerblks_df[(self.model.outerblks_df[lon] == mr_lon) & (self.model.outerblks_df[lat] == mr_lat)][rec_id].values[0]
+                        mr_utme = self.model.outerblks_df[(self.model.outerblks_df[lon] == mr_lon) & (self.model.outerblks_df[lat] == mr_lat)][utme].values[0]
+                        mr_utmn = self.model.outerblks_df[(self.model.outerblks_df[lon] == mr_lon) & (self.model.outerblks_df[lat] == mr_lat)][utmn].values[0]
+                        if self.model.risk_by_latlon.loc[io_idx, rec_type] == 'P':
+                            mr_rectype = "User receptor"
+                        else:
+                            mr_rectype = "Census block"
+                        mr_notes = "Overlapped source. Using interpolated receptor."
+                    else:
+                        mr_pop = self.model.innerblks_df[(self.model.innerblks_df[lon] == mr_lon) & (self.model.innerblks_df[lat] == mr_lat)][population].values[0]
+                        mr_elev = self.model.innerblks_df[(self.model.innerblks_df[lon] == mr_lon) & (self.model.innerblks_df[lat] == mr_lat)][elev].values[0]
+                        mr_hill = self.model.innerblks_df[(self.model.innerblks_df[lon] == mr_lon) & (self.model.innerblks_df[lat] == mr_lat)][hill].values[0]
+                        mr_recid = self.model.innerblks_df[(self.model.innerblks_df[lon] == mr_lon) & (self.model.innerblks_df[lat] == mr_lat)][rec_id].values[0]
+                        mr_utme = self.model.innerblks_df[(self.model.innerblks_df[lon] == mr_lon) & (self.model.innerblks_df[lat] == mr_lat)][utme].values[0]
+                        mr_utmn = self.model.innerblks_df[(self.model.innerblks_df[lon] == mr_lon) & (self.model.innerblks_df[lat] == mr_lat)][utmn].values[0]
+                        if self.model.risk_by_latlon.loc[io_idx, rec_type] == 'P':
+                            mr_rectype = "User receptor"
+                        else:
+                            mr_rectype = "Census block"
+                        mr_notes = "Overlapped source. Using discrete census or user receptor."
+            else:
+                #max risk is 0, set all variables as empty
+                mr_lat = 0
+                mr_lon = 0
+                mr_value = 0
+                mr_value_rnd = 0
+                mr_value_sci = 0
+                mr_pop = 0
+                mr_elev = 0
+                mr_hill = 0
+                mr_recid = ""
+                mr_utme = 0
+                mr_utmn = 0
+                mr_rectype = ""
+                mr_notes = ""
+    
+            riskrow = [mr_parameter, mr_value, mr_value_rnd, mr_value_sci, mr_pop, mr_elev,
+                       mr_hill, mr_recid, mr_utme, mr_utmn, mr_lat, mr_lon, mr_rectype, mr_notes]
+            maxrisklist.append(riskrow)            
 
 
         """
@@ -386,7 +584,7 @@ class MaximumIndividualRisksUserconcs(ExcelWriter, InputFile):
         """
 
         #set a default HI row
-        defhirow = ["", 0, 0, 0, 0, 0, 0, "", "", 0, 0, 0, 0, "", ""]
+        defhirow = ["", 0, 0, 0, 0, 0, 0, "", 0, 0, 0, 0, "", ""]
 
         #iterate over histatus_df to see if a target organ HI exists
         for row in histatus_df.itertuples():
@@ -402,7 +600,7 @@ class MaximumIndividualRisksUserconcs(ExcelWriter, InputFile):
 
 
         columns = self.getColumns()
-
+        
         # Convert maxrisklist list to a dataframe and then output to self.data array
         maxrisk_df = pd.DataFrame(maxrisklist, columns=columns)
 

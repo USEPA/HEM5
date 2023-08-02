@@ -54,7 +54,7 @@ class InputFile(ABC):
                 df = pd.read_excel(f, skiprows=self.skiprows, names=colnames, dtype=str, na_values=[''], keep_default_na=False)
 
         except FileNotFoundError as e:
-            messagebox.showinfo("Error", "The file "+self.path+" is missing.\nPlease check your HEM output folder\nand try again.")
+            messagebox.showinfo("Error", "The file "+self.path+" is missing.\nPlease check your HEM input folder\nand try again.")
             dataframe = pd.DataFrame()
             return dataframe
 
@@ -122,8 +122,28 @@ class InputFile(ABC):
                 df = pd.read_csv(f, skiprows=self.skiprows, names=colnames, dtype=str, na_values=[''], keep_default_na=False)
             
             except BaseException as e:
+
+                if isinstance(e, ValueError):
+    
+                    msg = e.args[0]
+                    if msg.startswith("Length mismatch"):
+                        # i.e. 'Length mismatch: Expected axis has 5 elements, new values have 31 elements'
+                        p = re.compile("Expected axis has (.*) elements, new values have (.*) elements")
+                        result = p.search(msg)
+                        custom_msg = "Length Mismatch: Input file has " + result.group(1) + " columns, but should have " +\
+                            result.group(2) + " columns. Please make sure you have selected the correct file or file version."
+                        messagebox.showinfo("Error uploading input file", custom_msg)
+    
+                        dataframe = pd.DataFrame()
+                        return dataframe
+    
+                    else:
+                        messagebox.showinfo("Error uploading input file ", str(e) + "\n\nPlease make sure you have selected the correct file or file version.")
+    
+                        dataframe = pd.DataFrame()
+                        return dataframe
                 
-                Logger.logMessage(str(e))
+                # Logger.logMessage(str(e))
                 
             else:
                 
@@ -160,8 +180,26 @@ class InputFile(ABC):
                 plf = pl.scan_csv(f.name, dtypes=self.datatypes, with_column_names=lambda cols:colnames)
 
         except BaseException as e:
-            plf = None
-            Logger.logMessage(str(e))
+
+            if isinstance(e, ValueError):
+
+                msg = e.args[0]
+                if msg.startswith("Length mismatch"):
+                    # i.e. 'Length mismatch: Expected axis has 5 elements, new values have 31 elements'
+                    p = re.compile("Expected axis has (.*) elements, new values have (.*) elements")
+                    result = p.search(msg)
+                    custom_msg = "Length Mismatch: Input file has " + result.group(1) + " columns, but should have " +\
+                        result.group(2) + " columns. Please make sure you have selected the correct file or file version."
+                    messagebox.showinfo("Error uploading input file", custom_msg)
+
+                    return None
+
+                else:
+                    messagebox.showinfo("Error uploading input file ", str(e) + "\n\nPlease make sure you have selected the correct file or file version.")
+                    return None
+            
+            messagebox.showinfo("Error uploading input file ", str(e) + "\n\nPlease make sure you have selected the correct file or file version.")
+            return None
 
         else:
             # if plf is None:

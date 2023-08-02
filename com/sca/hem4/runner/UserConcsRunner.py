@@ -11,6 +11,9 @@ from scipy.interpolate import griddata
 from com.sca.hem4.writer.csv.BlockSummaryChronic import BlockSummaryChronic
 from com.sca.hem4.writer.csv.BlockSummaryChronicNonCensus import BlockSummaryChronicNonCensus
 from com.sca.hem4.writer.excel.MaximumIndividualRisksUserconcs import MaximumIndividualRisksUserconcs
+from com.sca.hem4.writer.excel.CancerRiskExposure import CancerRiskExposure
+from com.sca.hem4.writer.excel.NoncancerRiskExposure import NoncancerRiskExposure
+from com.sca.hem4.writer.excel.Incidence import Incidence
 from com.sca.hem4.support.UTM import *
 import numpy as np
 
@@ -36,12 +39,19 @@ class UserConcsRunner():
             self.acuteyn = 'N'
         
         # Either census or alternate receptors are used. Both are stored as lazyframes.
+        # Note that whether census or alternate receptors are used to interpolate to, the
+        # dataframe is called "census".
         if not self.altrec:
             self.census_df = model.census.dataframe
         else:
             self.census_df = model.altreceptr.dataframe
+            # If any alternate receptors are in UTM coordinates, convert to lat/lon
+            ltype = self.census_df.iloc[0]['location_type']
+            if ltype == 'U':
+                [[lat, lon]] = emislocs.apply(lambda row: UTM.utm2ll(row[lat],row[lon],row[utmzone]) 
+                                       if row['location_type']=='U' else [row[lat],row[lon]], result_type="expand", axis=1)
 
-
+                
         # Prepare the output folder
         self.fac_folder =  "output/" + self.model.group_name + "/" + self.facilityId + "/"
 
@@ -53,16 +63,24 @@ class UserConcsRunner():
     
     def interpolate(self):
         
-        ''' Filter user data by pollutant, get block/alternate receptors within extents of user input data,
-            interpolate the input data to the block/alternate receptors for each pollutant
-            
-            NOTE: would need to do this twice if we decide to do acute also
+        ''' 
+        Filter user data by pollutant, get block/alternate receptors within extents of user input data,
+        interpolate the input data to the block/alternate receptors for each pollutant.
+        
+        Note that the user supplied receptors with their concentrations are included in the
+        resulting dataframe. This allows risk to be computed at those receptors.          
         '''
         
         Logger.logMessage('Interpolating user supplied concentrations...')
+
+        if not self.altrec:
+            # If interpolating to census, then rename user conc column "rec_id" to "blockid"
+            # and set a FIPS column.
+            self.userconcs_df.rename(columns={'rec_id': 'blockid'}, inplace=True)
+            self.userconcs_df['fips'] = 'UCONC'
         
         self.polls = list(self.userconcs_df['pollutant'].unique())
-        pollframes = []
+        pollframes = [self.userconcs_df]
         for poll in self.polls:
             tempuser_df = self.userconcs_df.loc[self.userconcs_df['pollutant'] == poll]
             minlat = tempuser_df['lat'].min()
@@ -76,21 +94,24 @@ class UserConcsRunner():
             
             x = tempuser_df['lon'].values
             y = tempuser_df['lat'].values
-            z = tempuser_df['cconc'].values
-                    
+            zc = tempuser_df['cconc'].values
+            za = tempuser_df['aconc'].values
+
             xi = census_filt['lon'].values
             yi = census_filt['lat'].values
             
-            zi = griddata((x, y), z, (xi, yi), method='linear') # Using griddata
+            zic = griddata((x, y), zc, (xi, yi), method='linear')
+            zia = griddata((x, y), za, (xi, yi), method='linear') 
                         
             census_filt['pollutant'] = poll
-            census_filt['cconc'] = zi
-            poll_df = census_filt.dropna(subset=['cconc']) # drop blocks with nan conc because outside hull
+            census_filt['cconc'] = zic
+            census_filt['aconc'] = zia
+            poll_df = census_filt.dropna(subset=['cconc','aconc']) # drop blocks with nan conc because outside hull
             pollframes.append(poll_df)            
 
         self.census_filt = census_filt
         self.all_inner_df = pd.concat(pollframes, ignore_index=True)
-    
+                
         Logger.logMessage('Finished interpolation of user supplied concentrations')
         
 
@@ -109,7 +130,7 @@ class UserConcsRunner():
         else:
             # Alternate receptors
 #TODO Make sure alt recs are using lat/lon and not utm
-            self.all_inner_df.drop(['hill','utmzone','location_type'], inplace=True)
+            self.all_inner_df.drop(['hill','utmzone','location_type'], axis=1, inplace=True)
         
         # Add some required columns
         self.all_inner_df['source_id'] = 'sourceID'
@@ -122,12 +143,21 @@ class UserConcsRunner():
         self.all_inner_df.drop('cconc', axis=1, inplace=True)
         
         # Set the column order
-        if self.acuteyn == 'N':
-            cols = ['fips', 'block', 'lat', 'lon', 'source_id', 'emis_type', 'pollutant', 'conc',
-                    'elev', 'drydep', 'wetdep', 'population', 'overlap', 'rec_type']
+        if self.altrec == False:
+            if self.acuteyn == 'N':
+                cols = ['fips', 'block', 'lat', 'lon', 'source_id', 'emis_type', 'pollutant', 'conc',
+                        'elev', 'drydep', 'wetdep', 'population', 'overlap', 'rec_type']
+            else:
+                cols = ['fips', 'block', 'lat', 'lon', 'source_id', 'emis_type', 'pollutant', 'conc',
+                        'aconc', 'elev', 'drydep', 'wetdep', 'population', 'overlap', 'rec_type']
         else:
-            cols = ['fips', 'block', 'lat', 'lon', 'source_id', 'emis_type', 'pollutant', 'conc',
-                    'aconc', 'elev', 'drydep', 'wetdep', 'population', 'overlap', 'rec_type']
+            if self.acuteyn == 'N':
+                cols = ['rec_id', 'lat', 'lon', 'source_id', 'emis_type', 'pollutant', 'conc',
+                        'elev', 'drydep', 'wetdep', 'population', 'overlap', 'rec_type']
+            else:
+                cols = ['rec_id', 'lat', 'lon', 'source_id', 'emis_type', 'pollutant', 'conc',
+                        'aconc', 'elev', 'drydep', 'wetdep', 'population', 'overlap', 'rec_type']
+                      
         self.all_inner_df = self.all_inner_df[cols]
         
         self.model.all_inner_receptors_df = self.all_inner_df
@@ -139,9 +169,12 @@ class UserConcsRunner():
 
         # Initialize some dataframes needed for output processing
         self.model.outerblks_df = pd.DataFrame()
-        self.model.innerblks_df = self.census_filt
         self.model.runstream_hapemis = pd.DataFrame({'pollutant':self.polls})
+        # An innerblks dataframe is needed in Block Summary Chronic. This is a unique list of all receptors with hill height.
+        userconcs_receptors = self.userconcs_df.drop_duplicates(subset=['lat', 'lon'])
+        self.model.innerblks_df = pd.concat([self.census_filt, userconcs_receptors], ignore_index=True)
 
+        
         # Compute utm coordinates in innerblks_df
         self.model.innerblks_df[['utmn', 'utme', 'uzone', 'hemi', 'epsg']] = \
             (self.model.innerblks_df.apply(lambda row: UTM.ll2utm(row[lat],row[lon]), 
@@ -153,28 +186,55 @@ class UserConcsRunner():
                                   np.where(self.model.innerblks_df['blockid'].str.contains('S'),'S',
                                   np.where(self.model.innerblks_df['blockid'].str.contains('U'),'P','C')))
              
-        # Write the All_Inner_Receptors file
+        #---------- All_Inner_Receptors file --------------------------------
         allinner = AllInnerReceptorsNonCensus(self.fac_folder, self.facilityId, self.model, None, self.acuteyn) if self.altrec \
                         else AllInnerReceptors(self.fac_folder, self.facilityId, self.model, None, self.acuteyn)
         allinner.write(False, self.model.all_inner_receptors_df)
         Logger.logMessage('Finished creating the All Inner Receptors output file')
         
-        # Create and write Block Summary Chronic file
+        #---------- Block Summary Chronic file ------------------------------
         Logger.logMessage('Creating the Block Summary Chronic output file...')
         block_summary_chronic = BlockSummaryChronicNonCensus(targetDir=self.fac_folder, facilityId=self.facilityId,
                  model=self.model, plot_df=None, outerAgg=None) if self.altrec else \
             BlockSummaryChronic(self.fac_folder, self.facilityId, self.model, None, None)
         block_summary_chronic.write()
+        self.model.block_summary_chronic_df = block_summary_chronic.dataframe
         Logger.logMessage('Finished creating the Block Summary Chronic output file')
+
         
         # Create risk_by_latlon DF because it is need by Maximum Individual Risk
         self.model.risk_by_latlon = block_summary_chronic.dataframe
-        
-        
-        # Create and write Maximum Individual Risk file
-        max_indiv_risk = MaximumIndividualRisksUserconcs(self.fac_folder, self.facilityId, self.model) 
+                
+        #------------ Maximum Individual Risk file ---------------------------
+        Logger.logMessage('Creating the Maximum Individual Risk output file...')
+        max_indiv_risk = MaximumIndividualRisksUserconcs(self.fac_folder, self.facilityId, 
+                                                         self.model, self.altrec) 
         max_indiv_risk.write()
+        Logger.logMessage('Finished creating the Maximum Individual Risk output file')
         
+
+        #------------ Cancer Risk Exposure file ---------------------------
+        Logger.logMessage('Creating the Cancer Risk Exposure output file...')
+        cancer_risk_exposure = CancerRiskExposure(self.fac_folder, self.facilityId, 
+                                                  self.model, None, self.model.block_summary_chronic_df)
+        cancer_risk_exposure.write()
+        Logger.logMessage('Finished creating the Cancer Risk Exposure output file')
+        
+
+        #------------ Noncancer Risk Exposure file ---------------------------
+        Logger.logMessage('Creating the Noncancer Risk Exposure output file...')
+        noncancer_risk_exposure = NoncancerRiskExposure(self.fac_folder, self.facilityId, 
+                                                        self.model, None, self.model.block_summary_chronic_df)
+        noncancer_risk_exposure.write()
+        Logger.logMessage('Finished creating the Noncancer Risk Exposure output file')
+
+
+        #------------ Incidence file ---------------------------
+        Logger.logMessage('Creating the Incidence output file...')
+        incidence= Incidence(self.fac_folder, self.facilityId, self.model, None, None)        
+        incidence.write()
+        Logger.logMessage('Finished creating the Incidence output file')
+
 
         # Did user abort?
         if self.abort.is_set():

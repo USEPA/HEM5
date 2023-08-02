@@ -124,11 +124,11 @@ class Hem(Page):
 
         #alt receptors
         self.altlbl = tk.StringVar()
-        self.altlbl.set("Please select an alternate receptor CSV file:")
+        self.altlbl.set("Please select an Alternate Receptor CSV file:")
 
         #user concentrations
         self.uconclbl = tk.StringVar()
-        self.uconclbl.set("Please select a User Supplied Concentratoin CSV file:")
+        self.uconclbl.set("Please select a User Supplied Concentration CSV file:")
 
         # tab placehodler for nav
         self.current_tab = self.nav
@@ -579,7 +579,7 @@ class Hem(Page):
 
             self.uploader.upload("userconcs", fullpath)
 
-            if self.model.userconcs.dataframe is not None:
+            if self.model.userconcs.dataframe.empty == False:
                 self.model.model_optns["userconcs"] = True
 
                 # Update the UI
