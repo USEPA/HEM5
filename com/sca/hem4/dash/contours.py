@@ -606,7 +606,7 @@ class contours():
                     classes = levels[:-1]
                     midpts = []
                     for i, level in enumerate(levels[:-1]):
-                        midpts.append(self.riskfig((levels[i] + levels[i+1])/2, digz+1))
+                        midpts.append(roundsf((levels[i] + levels[i+1])/2, digz+2))
                     contgdf['midpts'] = midpts
                                         
                     ctg=[]                               
