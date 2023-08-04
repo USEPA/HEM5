@@ -17,6 +17,7 @@ import gc
 from com.sca.hem4.log.Logger import Logger
 import traceback
 from tkinter import messagebox
+import requests.exceptions
 
 
 class ElevHill:
@@ -39,7 +40,7 @@ class ElevHill:
                 batch = coords[i:i+batch_size]
                 
                 try:
-                    batch_elev = py3dep.elevation_bycoords(batch, source='tnm')
+                    batch_elev = py3dep.elevation_bycoords(batch, crs='epsg:5070', source='tep')
                 except BaseException as e:
                     messagebox.showinfo("Cannot access USGS server", "Your computer was unable to connect to the USGS server to obtain elevation data." \
                                         " This HEM run will stop. Please check your Internet connection and restart this run." \
@@ -54,7 +55,7 @@ class ElevHill:
                     elevation_data.extend(batch_elev)
         else:
             try:
-                batch_elev = py3dep.elevation_bycoords(coords, source='tnm')
+                batch_elev = py3dep.elevation_bycoords(coords, source='tep')
             except BaseException as e:
                 messagebox.showinfo("Cannot access USGS server", "Your computer was unable to connect to the USGS server to obtain elevation data." \
                                     " This HEM run will stop. Please check your Internet connection and restart this run." \
@@ -72,57 +73,7 @@ class ElevHill:
         
         return elev_rounded
         
-    
-    # @staticmethod
-    # def getElevGrid(max_model_dist, center_lon, center_lat, min_rec_elev):
-    #     """
-
-    #     Parameters
-    #     ----------
-    #     max_model_dist: Float
-    #         Maximum modeling distance of this facility
-    #     center_lon : Float
-    #         Longitude of center of the receptors.
-    #     center_lat : Float
-    #         Latitude of center of the receptors.
-    #     min_rec_elev : Float
-    #         Minimum elevation of the receptors
-
-    #     Returns
-    #     -------
-    #     elev_xarray : xarray
-    #         Grid of 90m resolution elevations around the center coordinate.
-    #     radius_to_use : Float
-    #         Horizontal distance (km) to use from the receptor distance to capture hill heights.
-
-    #     """
-
-    #     # Construct a geometric box centered on the facility center. The box has
-    #     # length and width that is 2*initial_radius. Use
-    #     # the box to get an xarray of 90m resolution elevation data.
-    #     # initial_radius is in km and is the max modeling distance plus 62km which is 10x
-    #     # the height of Dinali in km. This is the needed radius to capture Dinali as a
-    #     # hill height for any receptor. This is the starting distance.
-    #     initial_radius = max_model_dist + 62
-    #     r_earth = 6371 # radius of earth in km
-    #     lat2 = fac_center[1]  + (initial_radius / r_earth) * (180 / pi)
-    #     lon2 = fac_center[0] + (initial_radius / r_earth) * (180 / pi) / cos(np.deg2rad(fac_center[1]))
-    #     lat1 = fac_center[1]  - (initial_radius / r_earth) * (180 / pi)
-    #     lon1 = fac_center[0] - (initial_radius / r_earth) * (180 / pi) / cos(np.deg2rad(fac_center[1]))
-    #     geo_box = (lon1, lat1, lon2, lat2)
-    #     elev_xarray = py3dep.get_dem(geo_box, 90, crs='epsg:4269')
-
-    #     # Use the max of the 90m grid elevations and the min receptor elevation
-    #     # to compute the horizontal distance (km) needed for a 10% slope to get hill height.
-    #     maxelev = elev_xarray.max().values
-    #     radius_to_use = ((maxelev - min_rec_elev) * 0.001 * 10) + 0.1
         
-    #     return elev_xarray, radius_to_use
-
-    def getMax_wrapper(self, rec_lat, rec_lon, rec_elev, elev_lat, elev_lon, elev_elev):
-        return self.getMax(rec_lat, rec_lon, rec_elev, elev_lat, elev_lon, elev_elev)
-    
-    
     # Takes a single receptor coordinate and calculates the max elev that exceeds 10% slope
     @staticmethod
     @jit(nopython=True, parallel=True)
@@ -171,7 +122,7 @@ class ElevHill:
         lon1 = center_lon - (initial_radius / r_earth) * (180 / pi) / cos(np.deg2rad(center_lat))
         geo_box = (lon1, lat1, lon2, lat2)
         try:
-            sample_xarray = py3dep.get_dem(geo_box, 90, crs='epsg:4269')
+            sample_xarray = py3dep.get_dem(geo_box, 90, crs='epsg:5070')
         except BaseException as e:
             messagebox.showinfo("Cannot access USGS server", "Your computer was unable to connect to the USGS server to obtain elevation data." \
                                 " This HEM run will stop. Please check your Internet connection and restart this run." \
@@ -201,7 +152,7 @@ class ElevHill:
 
         # Get the 30m gridded elevation data
         try:
-            elev_xarray = py3dep.get_dem(geo_box, 30, crs='epsg:4269')
+            elev_xarray = py3dep.get_dem(geo_box, 30, crs='epsg:5070')
         except BaseException as e:
             messagebox.showinfo("Cannot access USGS server", "Your computer was unable to connect to the USGS server to obtain elevation data." \
                                 " This HEM run will stop. Please check your Internet connection and restart this run." \
