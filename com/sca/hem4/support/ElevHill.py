@@ -157,7 +157,7 @@ class ElevHill:
         """
         
         # Query the 30m DEM server for all elevations within a geo box where the radius is
-        # based on the max HEM modeling distance plus 62km to potentially account dor Denali
+        # based on the max HEM modeling distance plus 62km to potentially account for Denali
         # at a 10% slope.
         initial_radius = max_model_dist + 62
         r_earth = 6371 # radius of earth in km
@@ -181,7 +181,7 @@ class ElevHill:
                               " Detailed error message: \n\n" + fullStackInfo)                
             raise ValueError("USGS elevation server unavailable")
 
-        # Use the max of the 90m grid elevations and the min receptor elevation
+        # Use the max of the 30m grid elevations and the min receptor elevation
         # to compute the horizontal distance (km) needed for a 10% slope to get hill height.
         maxelev = xarray.max().values
         minelev = np.max(rec_arr[:, 2])
