@@ -23,7 +23,7 @@ class AcuteChemicalPopulatedNonCensus(ExcelWriter):
     information.
     """
 
-    def __init__(self, targetDir, facilityId, model, plot_df):
+    def __init__(self, targetDir=None, facilityId=None, model=None, plot_df=None):
         ExcelWriter.__init__(self, model, plot_df)
 
         self.filename = os.path.join(targetDir, facilityId + "_acute_chem_pop.xlsx")
@@ -55,11 +55,13 @@ class AcuteChemicalPopulatedNonCensus(ExcelWriter):
         polinfo.set_index([pollutant], inplace=True, drop=False)
         
         # Define aggregation columns and new column names
-        aggs = {rec_id:'first', pollutant:'first', lat:'first', lon:'first', population:'first', overlap:'first', aconc:'sum'}
-        newcolumns = [rec_id, pollutant, lat, lon, population, overlap, aconc]
+        aggs = {rec_id:'first', pollutant:'first', lat:'first', lon:'first', population:'first', 
+                overlap:'first', rec_type:'first', aconc:'sum'}
+        newcolumns = [rec_id, pollutant, lat, lon, population, overlap, rec_type, aconc]
         
         # 1) First search the discrete (inner) receptors for the max acute conc per pollutant
-        #    Note: population at receptor must be > 0 to be considered
+        #    Note: population at receptor must be > 0 or receptor must be a user receptor
+        #    to be considered
         
         if self.model.all_inner_receptors_df.empty == False:
             inner_df = self.model.all_inner_receptors_df.copy()
@@ -70,12 +72,12 @@ class AcuteChemicalPopulatedNonCensus(ExcelWriter):
             for x in pols:
                 if innsum[((innsum[pollutant].str.lower() == x)
                                        & ((innsum[population] > 0) |
-                                          (innsum[rec_id].str.contains('U')==True))
+                                          (innsum[rec_type] == 'P'))
                                        & (innsum[overlap] == 'N'))].empty == False:
             
                     max_idx = innsum[((innsum[pollutant].str.lower() == x)
                                        & ((innsum[population] > 0) |
-                                          (innsum[rec_id].str.contains('U')==True)))][aconc].idxmax()
+                                          (innsum[rec_type] == 'P')))][aconc].idxmax()
                     # Overlap?
                     if innsum[overlap].loc[max_idx] == 'N':
                         maxconc_df.loc[x, aconc] = innsum[aconc].loc[max_idx]
@@ -85,7 +87,7 @@ class AcuteChemicalPopulatedNonCensus(ExcelWriter):
                     else:
                         max_idx = innsum[((innsum[pollutant].str.lower() == x)
                                        & ((innsum[population] > 0) |
-                                          (innsum[rec_id].str.contains('U')==True))
+                                          (innsum[rec_type] == 'P'))
                                        & (innsum[overlap] == 'N'))][aconc].idxmax()
                         maxconc_df.loc[x, aconc] = innsum[aconc].loc[max_idx]
                         maxconc_df.loc[x, lon] = innsum[lon].loc[max_idx]
@@ -126,17 +128,17 @@ class AcuteChemicalPopulatedNonCensus(ExcelWriter):
                 for p in pols:
                     if outsum[((outsum[pollutant].str.lower() == p)
                                        & ((outsum[population] > 0) |
-                                          (outsum[rec_id].str.contains('U')==True)))].empty == False:
+                                          (outsum[rec_type] == 'P')))].empty == False:
                 
                         max_idx = outsum[((outsum[pollutant].str.lower() == p)
                                            & ((outsum[population] > 0) |
-                                              (outsum[rec_id].str.contains('U')==True)))][aconc].idxmax()
+                                              (outsum[rec_type] == 'P')))][aconc].idxmax()
                         # Overlap?
                         if outsum[overlap].loc[max_idx] == 'Y':
                             # Look for next highest with no overlap
                             max_idx = outsum[((outsum[pollutant].str.lower() == p)
                                             & ((outsum[population] > 0) |
-                                              (outsum[rec_id].str.contains('U')==True))
+                                              (outsum[rec_type] == 'P'))
                                             & (outsum[overlap] == 'N'))][aconc].idxmax()
                             noteTxt = 'Interpolated overlapped source. Next highest interpolated.'
                         else:

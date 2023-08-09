@@ -66,7 +66,6 @@ class AcuteChemicalMax(ExcelWriter, InputFile):
         polinfo.set_index([pollutant], inplace=True, drop=False)
  
         # 1) First search the polar receptors for the max acute conc per pollutant
-        
         polarconcs = self.model.all_polar_receptors_df.copy()
         # Sum acute conc to unique lat/lons
         aggs = {pollutant:'first', lat:'first', lon:'first', aconc:'sum'}

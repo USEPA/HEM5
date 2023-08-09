@@ -14,6 +14,10 @@ from com.sca.hem4.writer.excel.MaximumIndividualRisksUserconcs import MaximumInd
 from com.sca.hem4.writer.excel.CancerRiskExposure import CancerRiskExposure
 from com.sca.hem4.writer.excel.NoncancerRiskExposure import NoncancerRiskExposure
 from com.sca.hem4.writer.excel.Incidence import Incidence
+from com.sca.hem4.writer.excel.AcuteChemicalPopulated import AcuteChemicalPopulated
+from com.sca.hem4.writer.excel.AcuteChemicalPopulatedNonCensus import AcuteChemicalPopulatedNonCensus
+from com.sca.hem4.writer.excel.AcuteChemicalMax import AcuteChemicalMax
+from com.sca.hem4.writer.excel.AcuteChemicalMaxNonCensus import AcuteChemicalMaxNonCensus
 from com.sca.hem4.support.UTM import *
 import numpy as np
 
@@ -42,16 +46,18 @@ class UserConcsRunner():
         # Note that whether census or alternate receptors are used to interpolate to, the
         # dataframe is called "census".
         if not self.altrec:
-            self.census_df = model.census.dataframe
+            # U.S. Census
+            self.census_df = model.census.dataframe.collect()
         else:
-            self.census_df = model.altreceptr.dataframe
+            # Alternate Receptors
+            self.census_df = model.altreceptr.dataframe.collect()
+                        
             # If any alternate receptors are in UTM coordinates, convert to lat/lon
-            ltype = self.census_df.iloc[0]['location_type']
-            if ltype == 'U':
-                [[lat, lon]] = emislocs.apply(lambda row: UTM.utm2ll(row[lat],row[lon],row[utmzone]) 
+            altrec_df = self.census_df.to_pandas()
+            altrec_df[[lat, lon]] = altrec_df.apply(lambda row: UTM.utm2ll(row[lat],row[lon],row[utmzone]) 
                                        if row['location_type']=='U' else [row[lat],row[lon]], result_type="expand", axis=1)
-
-                
+            self.census_df = pl.from_pandas(altrec_df)
+            
         # Prepare the output folder
         self.fac_folder =  "output/" + self.model.group_name + "/" + self.facilityId + "/"
 
@@ -71,7 +77,7 @@ class UserConcsRunner():
         resulting dataframe. This allows risk to be computed at those receptors.          
         '''
         
-        Logger.logMessage('Interpolating user supplied concentrations...')
+        Logger.logMessage('\nInterpolating user supplied concentrations...')
 
         if not self.altrec:
             # If interpolating to census, then rename user conc column "rec_id" to "blockid"
@@ -90,7 +96,7 @@ class UserConcsRunner():
                 
             census_filt = self.census_df.filter(
                 (pl.col('lat') <= maxlat) & (pl.col('lat') >= minlat) 
-                & (pl.col('lon') <= maxlon) & (pl.col('lon') >= minlon)).collect().to_pandas()
+                & (pl.col('lon') <= maxlon) & (pl.col('lon') >= minlon)).to_pandas()
             
             x = tempuser_df['lon'].values
             y = tempuser_df['lat'].values
@@ -129,7 +135,6 @@ class UserConcsRunner():
             self.all_inner_df.drop(['blockid','hill','urban_pop'], axis=1, inplace=True)
         else:
             # Alternate receptors
-#TODO Make sure alt recs are using lat/lon and not utm
             self.all_inner_df.drop(['hill','utmzone','location_type'], axis=1, inplace=True)
         
         # Add some required columns
@@ -141,6 +146,10 @@ class UserConcsRunner():
         self.all_inner_df['wetdep'] = ''
         self.all_inner_df['conc'] = self.all_inner_df['cconc']
         self.all_inner_df.drop('cconc', axis=1, inplace=True)
+        
+        # Replace NaN with 0 in certain columns
+        self.all_inner_df[['population', 'elev']] = \
+                                self.all_inner_df[['population', 'elev']].fillna(0)
         
         # Set the column order
         if self.altrec == False:
@@ -159,7 +168,6 @@ class UserConcsRunner():
                         'aconc', 'elev', 'drydep', 'wetdep', 'population', 'overlap', 'rec_type']
                       
         self.all_inner_df = self.all_inner_df[cols]
-        
         self.model.all_inner_receptors_df = self.all_inner_df
     
     
@@ -170,10 +178,16 @@ class UserConcsRunner():
         # Initialize some dataframes needed for output processing
         self.model.outerblks_df = pd.DataFrame()
         self.model.runstream_hapemis = pd.DataFrame({'pollutant':self.polls})
+        self.model.all_polar_receptors_df = pd.DataFrame({'pollutant':self.polls,
+                                                          'lat':0.0, 'lon':0.0, 'aconc':0.0}) 
+        
         # An innerblks dataframe is needed in Block Summary Chronic. This is a unique list of all receptors with hill height.
         userconcs_receptors = self.userconcs_df.drop_duplicates(subset=['lat', 'lon'])
         self.model.innerblks_df = pd.concat([self.census_filt, userconcs_receptors], ignore_index=True)
-
+        self.model.innerblks_df['distance'] = ''
+        self.model.innerblks_df['angle'] = ''
+        self.model.innerblks_df[['population', 'elev', 'hill']] = \
+                    self.model.innerblks_df[['population', 'elev', 'hill']].fillna(0)
         
         # Compute utm coordinates in innerblks_df
         self.model.innerblks_df[['utmn', 'utme', 'uzone', 'hemi', 'epsg']] = \
@@ -187,13 +201,14 @@ class UserConcsRunner():
                                   np.where(self.model.innerblks_df['blockid'].str.contains('U'),'P','C')))
              
         #---------- All_Inner_Receptors file --------------------------------
+        Logger.logMessage('\nCreating the All Inner Receptors output file...')
         allinner = AllInnerReceptorsNonCensus(self.fac_folder, self.facilityId, self.model, None, self.acuteyn) if self.altrec \
                         else AllInnerReceptors(self.fac_folder, self.facilityId, self.model, None, self.acuteyn)
         allinner.write(False, self.model.all_inner_receptors_df)
         Logger.logMessage('Finished creating the All Inner Receptors output file')
         
         #---------- Block Summary Chronic file ------------------------------
-        Logger.logMessage('Creating the Block Summary Chronic output file...')
+        Logger.logMessage('\nCreating the Block Summary Chronic output file...')
         block_summary_chronic = BlockSummaryChronicNonCensus(targetDir=self.fac_folder, facilityId=self.facilityId,
                  model=self.model, plot_df=None, outerAgg=None) if self.altrec else \
             BlockSummaryChronic(self.fac_folder, self.facilityId, self.model, None, None)
@@ -206,7 +221,7 @@ class UserConcsRunner():
         self.model.risk_by_latlon = block_summary_chronic.dataframe
                 
         #------------ Maximum Individual Risk file ---------------------------
-        Logger.logMessage('Creating the Maximum Individual Risk output file...')
+        Logger.logMessage('\nCreating the Maximum Individual Risk output file...')
         max_indiv_risk = MaximumIndividualRisksUserconcs(self.fac_folder, self.facilityId, 
                                                          self.model, self.altrec) 
         max_indiv_risk.write()
@@ -214,7 +229,7 @@ class UserConcsRunner():
         
 
         #------------ Cancer Risk Exposure file ---------------------------
-        Logger.logMessage('Creating the Cancer Risk Exposure output file...')
+        Logger.logMessage('\nCreating the Cancer Risk Exposure output file...')
         cancer_risk_exposure = CancerRiskExposure(self.fac_folder, self.facilityId, 
                                                   self.model, None, self.model.block_summary_chronic_df)
         cancer_risk_exposure.write()
@@ -222,7 +237,7 @@ class UserConcsRunner():
         
 
         #------------ Noncancer Risk Exposure file ---------------------------
-        Logger.logMessage('Creating the Noncancer Risk Exposure output file...')
+        Logger.logMessage('\nCreating the Noncancer Risk Exposure output file...')
         noncancer_risk_exposure = NoncancerRiskExposure(self.fac_folder, self.facilityId, 
                                                         self.model, None, self.model.block_summary_chronic_df)
         noncancer_risk_exposure.write()
@@ -230,10 +245,26 @@ class UserConcsRunner():
 
 
         #------------ Incidence file ---------------------------
-        Logger.logMessage('Creating the Incidence output file...')
+        Logger.logMessage('\nCreating the Incidence output file...')
         incidence= Incidence(self.fac_folder, self.facilityId, self.model, None, None)        
         incidence.write()
         Logger.logMessage('Finished creating the Incidence output file')
+
+
+        #------------ Acute Chem Pop file ---------------------------
+        if self.acuteyn == 'Y':
+            
+            Logger.logMessage('\nCreating the Acute Chemical Populated output file...')
+            acutechempop = AcuteChemicalPopulatedNonCensus(self.fac_folder, self.facilityId, self.model) if self.altrec \
+                 else AcuteChemicalPopulated(self.fac_folder, self.facilityId, self.model)
+            acutechempop.write()
+            Logger.logMessage('Finished creating the Acute Chemical Populated output file')
+
+            Logger.logMessage('\nCreating the Acute Chemical Max output file...')
+            acutechemmax = AcuteChemicalMaxNonCensus(self.fac_folder, self.facilityId, self.model) if self.altrec \
+                 else AcuteChemicalMax(self.fac_folder, self.facilityId, self.model)
+            acutechemmax.write()
+            Logger.logMessage('Finished creating the Acute Chemical Max output file')
 
 
         # Did user abort?

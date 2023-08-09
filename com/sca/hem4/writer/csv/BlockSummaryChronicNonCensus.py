@@ -60,10 +60,44 @@ class BlockSummaryChronicNonCensus(CsvWriter, InputFile):
                    utme, utmn, population, hill]
         innermerged = allinner_df.merge(innerblocks, on=[lat, lon])[columns]
 
-        # compute cancer and noncancer values for each Inner rececptor row
-        innermerged[[mir, hi_resp, hi_live, hi_neur, hi_deve, hi_repr, hi_kidn, hi_ocul, hi_endo,
-                     hi_hema, hi_immu, hi_skel, hi_sple, hi_thyr, hi_whol]] = \
-            innermerged.apply(lambda row: self.calculateRisks(row[pollutant], row[conc]), axis=1)
+        #=========== New way =============================================
+        
+        unique_pollutants = innermerged[pollutant].unique().tolist()
+        
+        # Get the dose response data for all the pollutants
+        drdata_df = self.getUreRfc(unique_pollutants)
+        
+        # Compute risk and HI
+        risk_df = innermerged[[pollutant, conc, lat, lon]].merge(drdata_df, on=pollutant)
+        risk_df[mir] = risk_df[conc] * risk_df[ure]
+        risk_df[hi_resp] = (risk_df[conc] * risk_df['invrfc'] * risk_df['resp']) / 1000
+        risk_df[hi_live] = (risk_df[conc] * risk_df['invrfc'] * risk_df['live']) / 1000
+        risk_df[hi_neur] = (risk_df[conc] * risk_df['invrfc'] * risk_df['neur']) / 1000
+        risk_df[hi_deve] = (risk_df[conc] * risk_df['invrfc'] * risk_df['deve']) / 1000
+        risk_df[hi_repr] = (risk_df[conc] * risk_df['invrfc'] * risk_df['repr']) / 1000
+        risk_df[hi_kidn] = (risk_df[conc] * risk_df['invrfc'] * risk_df['kidn']) / 1000
+        risk_df[hi_ocul] = (risk_df[conc] * risk_df['invrfc'] * risk_df['ocul']) / 1000
+        risk_df[hi_endo] = (risk_df[conc] * risk_df['invrfc'] * risk_df['endo']) / 1000
+        risk_df[hi_hema] = (risk_df[conc] * risk_df['invrfc'] * risk_df['hema']) / 1000
+        risk_df[hi_immu] = (risk_df[conc] * risk_df['invrfc'] * risk_df['immu']) / 1000
+        risk_df[hi_skel] = (risk_df[conc] * risk_df['invrfc'] * risk_df['skel']) / 1000
+        risk_df[hi_sple] = (risk_df[conc] * risk_df['invrfc'] * risk_df['sple']) / 1000
+        risk_df[hi_thyr] = (risk_df[conc] * risk_df['invrfc'] * risk_df['thyr']) / 1000
+        risk_df[hi_whol] = (risk_df[conc] * risk_df['invrfc'] * risk_df['whol']) / 1000
+        
+        # Put risk and HI into innermerged
+        riskcols = [pollutant, lat, lon, mir, hi_resp, hi_live, hi_neur, hi_deve, hi_repr, 
+                    hi_kidn, hi_ocul, hi_endo, hi_hema, hi_immu, hi_skel, hi_sple, 
+                    hi_thyr, hi_whol]
+        innermerged = innermerged.merge(risk_df[riskcols], on=[pollutant,lat,lon])
+        
+
+        #=========== Old way =============================================
+        
+        # # compute cancer and noncancer values for each Inner rececptor row
+        # innermerged[[mir, hi_resp, hi_live, hi_neur, hi_deve, hi_repr, hi_kidn, hi_ocul, hi_endo,
+        #              hi_hema, hi_immu, hi_skel, hi_sple, hi_thyr, hi_whol]] = \
+        #     innermerged.apply(lambda row: self.calculateRisks(row[pollutant], row[conc]), axis=1)
 
         # For the Inner and Outer receptors, group by lat,lon and then aggregate each group by summing the mir and hazard index fields
         aggs = {pollutant:'first', lat:'first', lon:'first', overlap:'first', elev:'first', utme:'first',
@@ -157,6 +191,50 @@ class BlockSummaryChronicNonCensus(CsvWriter, InputFile):
             risks.append(hazard_index)
         return Series(risks)
 
+
+    def getUreRfc(self, pollist):
+        # Take a unique list of pollutant names and find their URE, RFC (inverted) and target organs
+        URE = None
+        invRFC = None
+        organs = None
+        
+        drlist = []
+        
+        for pol in pollist:
+            risks = [pol]
+            pattern = '^' + re.escape(pol) + '$'
+            
+            drrow = self.model.haplib.dataframe.loc[
+                self.model.haplib.dataframe[pollutant].str.contains(pattern, case=False, regex=True)]
+            
+            if drrow.size == 0:
+                URE = 0
+                invRFC = 0
+            else:
+                URE = drrow.iloc[0][ure]
+                invRFC = 0 if drrow.iloc[0][rfc] == 0 else 1/drrow.iloc[0][rfc]
+            
+            risks.extend([URE, invRFC])
+            
+            targetrow = self.model.organs.dataframe.loc[
+                self.model.organs.dataframe[pollutant].str.contains(pattern, case=False, regex=True)]
+
+            if targetrow.size == 0:
+                organs = [0]*14
+            else:
+                organs = targetrow.values.tolist()[0][2:]
+
+            risks.extend(organs)
+            
+            drlist.append(risks)
+                   
+        DR_df = pd.DataFrame(drlist, columns=[pollutant,'ure','invrfc','resp','live','neur','deve','repr',
+                                              'kidn','ocul','endo','hema','immu','skel','sple',
+                                              'thyr','whol'])
+        
+        return DR_df
+    
+    
     def createDataframe(self):
         # Type setting for CSV reading
         self.numericColumns = [lat, lon, elev, utme, utmn, population, hill, mir, hi_resp, hi_live, hi_neur, hi_deve,
