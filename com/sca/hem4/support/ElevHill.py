@@ -20,6 +20,12 @@ import traceback
 from tkinter import messagebox
 import time
 
+import requests
+import rasterio
+from rasterio.io import MemoryFile
+import multiprocessing
+from concurrent.futures import ThreadPoolExecutor
+
 
 class ElevHill:
     """
@@ -131,6 +137,49 @@ class ElevHill:
                 stack.append((split_point1, upper_right))
 
         return boxes
+    
+    # Takes a usgs url, gets a tif file, and creates and returns a dataframe of lat, lon, and elevations
+    @staticmethod
+    def grab_tif(url, max_model_dist, center_lon, center_lat, min_rec_elev):
+        # Make a GET request to download the TIFF file
+        response = requests.get(url)
+        
+        # Check if the request was successful
+        if response.status_code == 200:
+            # Read the TIFF file into memory
+            with MemoryFile(response.content) as memfile:
+                with memfile.open() as dataset:
+                    # Read the elevation data
+                    elevation_data = dataset.read(1)
+                    
+                    # Create arrays for latitude and longitude
+                    latitudes, longitudes = np.meshgrid(
+                        np.array([dataset.xy(row, 0)[1] for row in range(dataset.height)]),
+                        np.array([dataset.xy(0, col)[0] for col in range(dataset.width)]),
+                        indexing='ij'
+                    )
+
+                    # Convert the elevation data and coordinates to a DataFrame
+                    data = {
+                        'latitude': latitudes.flatten(),
+                        'longitude': longitudes.flatten(),
+                        'elevation': elevation_data.flatten()
+                    }
+                    df = pd.DataFrame(data)
+                    
+                    # Filter the dataframe based on the max elev in the tif
+                    r_earth = 6371 # radius of earth in km
+                    maxelev = df['elevation'].max()
+                    maxelev_radius = 50 + ((maxelev - min_rec_elev) * 0.001 * 10)                
+                    lat2 = center_lat  + (maxelev_radius / r_earth) * (180 / pi)
+                    lon2 = center_lon + (maxelev_radius / r_earth) * (180 / pi) / cos(np.deg2rad(center_lat))
+                    lat1 = center_lat  - (maxelev_radius / r_earth) * (180 / pi)
+                    lon1 = center_lon - (maxelev_radius / r_earth) * (180 / pi) / cos(np.deg2rad(center_lat))
+                    df2 = df.loc[df['latitude'].between(lat1, lat2) & df['longitude'].between(lon1, lon2)].copy()
+                                       
+                    return df2
+        else:
+            print(f"Failed to download file, status code: {response.status_code}")
 
     # Takes a receptor coordinate array and returns an array of calculated hill height scales
     @staticmethod
@@ -167,29 +216,63 @@ class ElevHill:
         lon1 = center_lon - (initial_radius / r_earth) * (180 / pi) / cos(np.deg2rad(center_lat))
         geo_box = (lon1, lat1, lon2, lat2)
         
-        try:
-            xarray = py3dep.get_dem(geo_box, 30, crs='epsg:4269')
-            elev_df = xarray.to_dataframe()
-        except BaseException as e:
-            messagebox.showinfo("Cannot access 30m USGS server", "Your computer was unable to connect to the USGS server to obtain elevation data." \
-                                " This HEM run will stop. Please check your Internet connection and restart this run." \
-                                " (If an Internet connection is not available, you can model without elevations.)" \
-                                " More detail about this error is available in the log.")
-            fullStackInfo = traceback.format_exc()
-            Logger.logMessage("Cannot access the 30m USGS server needed by the py3dep get_dem function.\n" \
-                              " Aborting this HEM run.\n" \
-                              " Detailed error message: \n\n" + fullStackInfo)                
-            raise ValueError("USGS elevation server unavailable")
+        ''' Use the tif method of grabbing elevations instead of,
+            or as a backup to, the py3dep method
+        '''
+        lats = np.arange(np.ceil(lat1), np.ceil(lat2) + 1).tolist()
+        lons = np.arange(np.floor(lon1), np.ceil(lon2)).tolist()
+        lats = [str(int(num)) for num in lats]
+        lons = [f'{abs(int(num)):03}' for num in lons]
+        urls = []        
 
-        # Use the max of the 30m grid elevations and the min receptor elevation
-        # to compute the horizontal distance (km) needed for a 10% slope to get hill height.
-        maxelev = xarray.max().values
-        minelev = np.max(rec_arr[:, 2])
-        maxelev_radius = ((maxelev - minelev) * 0.001 * 10) + 0.1
-                            
+        for y in lats:
+            for x in lons:
+                url = f'https://prd-tnm.s3.amazonaws.com/StagedProducts/Elevation/1/TIFF/current/n{y}w{x}/USGS_1_n{y}w{x}.tif'
+                urls.append(url)
+                
+        max_mod_dist_list = [max_model_dist] * len(urls)
+        cenlon_list = [center_lon] * len(urls)
+        cenlat_list = [center_lat] * len(urls)
+        min_rec_elev_list = [min_rec_elev] * len(urls)
+                        
+        # Use ThreadPoolExecutor to multithread the function
+        workers = multiprocessing.cpu_count()/2
+        elevframes = []
+        with ThreadPoolExecutor(max_workers=workers) as executor:
+            for df in executor.map(ElevHill.grab_tif, urls, max_mod_dist_list, cenlon_list, cenlat_list, min_rec_elev_list):
+                if df is not None and not df.empty:
+                    elevframes.append(df)
+                    
+            elev_df = pd.concat(elevframes)
+                    
+        ''' For now just commenting out the py3dep method - need to work both the tif and py3dep methods in as backups
+        '''
+        
+        # try:
+        #     xarray = py3dep.get_dem(geo_box, 30, crs='epsg:4269')
+        #     elev_df = xarray.to_dataframe()
+        # except BaseException as e:
+        #     messagebox.showinfo("Cannot access 30m USGS server", "Your computer was unable to connect to the USGS server to obtain elevation data." \
+        #                         " This HEM run will stop. Please check your Internet connection and restart this run." \
+        #                         " (If an Internet connection is not available, you can model without elevations.)" \
+        #                         " More detail about this error is available in the log.")
+        #     fullStackInfo = traceback.format_exc()
+        #     Logger.logMessage("Cannot access the 30m USGS server needed by the py3dep get_dem function.\n" \
+        #                       " Aborting this HEM run.\n" \
+        #                       " Detailed error message: \n\n" + fullStackInfo)                
+        #     raise ValueError("USGS elevation server unavailable")
+
+        # # Use the max of the 30m grid elevations and the min receptor elevation
+        # # to compute the horizontal distance (km) needed for a 10% slope to get hill height.
+        # maxelev = xarray.max().values
+        # minelev = np.max(rec_arr[:, 2])
+        # maxelev_radius = ((maxelev - minelev) * 0.001 * 10) + 0.1
+        
+        maxelev = elev_df['elevation']
+        maxelev_radius = ((maxelev - min_rec_elev) *.001 *10)                    
         elev_df.reset_index(inplace=True)
-        elev_lat = elev_df['y'].to_numpy()
-        elev_lon = elev_df['x'].to_numpy()
+        elev_lat = elev_df['latitude'].to_numpy()
+        elev_lon = elev_df['longitude'].to_numpy()
         elev_elev = elev_df['elevation'].to_numpy()
         elev_arr = np.column_stack((elev_lat, elev_lon, elev_elev))
         del elev_df, elev_lat, elev_lon, elev_elev
