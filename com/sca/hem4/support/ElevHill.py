@@ -140,46 +140,43 @@ class ElevHill:
     
     # Takes a usgs url, gets a tif file, and creates and returns a dataframe of lat, lon, and elevations
     @staticmethod
-    def grab_tif(url, max_model_dist, center_lon, center_lat, min_rec_elev):
+    def getTIF(url, max_model_dist, center_lon, center_lat, min_rec_elev):
         # Make a GET request to download the TIFF file
         response = requests.get(url)
         
-        # Check if the request was successful
-        if response.status_code == 200:
-            # Read the TIFF file into memory
-            with MemoryFile(response.content) as memfile:
-                with memfile.open() as dataset:
-                    # Read the elevation data
-                    elevation_data = dataset.read(1)
-                    
-                    # Create arrays for latitude and longitude
-                    latitudes, longitudes = np.meshgrid(
-                        np.array([dataset.xy(row, 0)[1] for row in range(dataset.height)]),
-                        np.array([dataset.xy(0, col)[0] for col in range(dataset.width)]),
-                        indexing='ij'
-                    )
+        # Read the TIFF file into memory
+        with MemoryFile(response.content) as memfile:
+            with memfile.open() as dataset:
+                # Read the elevation data
+                elevation_data = dataset.read(1)
+                
+                # Create arrays for latitude and longitude
+                latitudes, longitudes = np.meshgrid(
+                    np.array([dataset.xy(row, 0)[1] for row in range(dataset.height)]),
+                    np.array([dataset.xy(0, col)[0] for col in range(dataset.width)]),
+                    indexing='ij'
+                )
 
-                    # Convert the elevation data and coordinates to a DataFrame
-                    data = {
-                        'latitude': latitudes.flatten(),
-                        'longitude': longitudes.flatten(),
-                        'elevation': elevation_data.flatten()
-                    }
-                    df = pd.DataFrame(data)
-                    
-                    # Filter the dataframe based on the max elev in the tif
-                    r_earth = 6371 # radius of earth in km
-                    maxelev = df['elevation'].max()
-                    maxelev_radius = 50 + ((maxelev - min_rec_elev) * 0.001 * 10)                
-                    lat2 = center_lat  + (maxelev_radius / r_earth) * (180 / pi)
-                    lon2 = center_lon + (maxelev_radius / r_earth) * (180 / pi) / cos(np.deg2rad(center_lat))
-                    lat1 = center_lat  - (maxelev_radius / r_earth) * (180 / pi)
-                    lon1 = center_lon - (maxelev_radius / r_earth) * (180 / pi) / cos(np.deg2rad(center_lat))
-                    df2 = df.loc[df['latitude'].between(lat1, lat2) & df['longitude'].between(lon1, lon2)].copy()
-                                       
-                    return df2
-        else:
-            print(f"Failed to download file, status code: {response.status_code}")
+                # Convert the elevation data and coordinates to a DataFrame
+                data = {
+                    'latitude': latitudes.flatten(),
+                    'longitude': longitudes.flatten(),
+                    'elevation': elevation_data.flatten()
+                }
+                df = pd.DataFrame(data)
+                                    
+                # Filter the dataframe based on the max elev in the tif
+                r_earth = 6371 # radius of earth in km
+                maxelev = df['elevation'].max()
+                maxelev_radius = 50 + ((maxelev - min_rec_elev) * 0.001 * 10)                
+                lat2 = center_lat  + (maxelev_radius / r_earth) * (180 / pi)
+                lon2 = center_lon + (maxelev_radius / r_earth) * (180 / pi) / cos(np.deg2rad(center_lat))
+                lat1 = center_lat  - (maxelev_radius / r_earth) * (180 / pi)
+                lon1 = center_lon - (maxelev_radius / r_earth) * (180 / pi) / cos(np.deg2rad(center_lat))
+                df2 = df.loc[df['latitude'].between(lat1, lat2) & df['longitude'].between(lon1, lon2)].copy()
+                                   
+                return df2
+        
 
     # Takes a receptor coordinate array and returns an array of calculated hill height scales
     @staticmethod
@@ -216,36 +213,48 @@ class ElevHill:
         lon1 = center_lon - (initial_radius / r_earth) * (180 / pi) / cos(np.deg2rad(center_lat))
         geo_box = (lon1, lat1, lon2, lat2)
         
-        ''' Use the tif method of grabbing elevations instead of,
-            or as a backup to, the py3dep method
+        ''' Use the tif method of grabbing elevations
         '''
+        # Use the overall bounding box to determine which 1-degree tifs to request
         lats = np.arange(np.ceil(lat1), np.ceil(lat2) + 1).tolist()
         lons = np.arange(np.floor(lon1), np.ceil(lon2)).tolist()
         lats = [str(int(num)) for num in lats]
         lons = [f'{abs(int(num)):03}' for num in lons]
         urls = []        
 
+        # Generate the urls needed to request tifs
         for y in lats:
             for x in lons:
                 url = f'https://prd-tnm.s3.amazonaws.com/StagedProducts/Elevation/1/TIFF/current/n{y}w{x}/USGS_1_n{y}w{x}.tif'
                 urls.append(url)
-                
+        
+        # Generate the arguments for the threads
         max_mod_dist_list = [max_model_dist] * len(urls)
         cenlon_list = [center_lon] * len(urls)
         cenlat_list = [center_lat] * len(urls)
         min_rec_elev_list = [min_rec_elev] * len(urls)
                         
         # Use ThreadPoolExecutor to multithread the function
-        workers = multiprocessing.cpu_count()/2
+        workers = int(multiprocessing.cpu_count()/2)
         elevframes = []
         with ThreadPoolExecutor(max_workers=workers) as executor:
-            for df in executor.map(ElevHill.grab_tif, urls, max_mod_dist_list, cenlon_list, cenlat_list, min_rec_elev_list):
+            for df in executor.map(ElevHill.getTIF, urls, max_mod_dist_list, cenlon_list, cenlat_list, min_rec_elev_list):
                 if df is not None and not df.empty:
                     elevframes.append(df)
                     
             elev_df = pd.concat(elevframes)
                     
-        ''' For now just commenting out the py3dep method - need to work both the tif and py3dep methods in as backups
+        ''' For now just commenting out the py3dep method - need to work both the tif and py3dep methods together
+            The getTIF function is called multiple times (because of multiple 1-deg tifs), and if any one
+            of those requests fail, we would want to end (or move to py3dep if tif goes first) because we want ALL
+            of the tifs.
+            So, if tif method went first, we could:
+                try
+                    tif method
+                except
+                    py3dep method
+                except
+                    same exception as before?
         '''
         
         # try:
