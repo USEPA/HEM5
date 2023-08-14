@@ -235,7 +235,7 @@ class ElevHill:
         min_rec_elev_list = [min_rec_elev] * len(urls)
                         
         # Use ThreadPoolExecutor to multithread the function
-        workers = int(multiprocessing.cpu_count()/2)
+        workers = multiprocessing.cpu_count()
         elevframes = []
         with ThreadPoolExecutor(max_workers=workers) as executor:
             for df in executor.map(ElevHill.getTIF, urls, max_mod_dist_list, cenlon_list, cenlat_list, min_rec_elev_list):
