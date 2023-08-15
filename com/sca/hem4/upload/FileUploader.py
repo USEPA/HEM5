@@ -46,7 +46,7 @@ class FileUploader():
             # This uses a lazyframe and cannot use empty parameter
             uploaded = Census()
             self.model.census = uploaded
-            if uploaded is None:
+            if uploaded.dataframe is None:
                 return False
             else:
                 return True

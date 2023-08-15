@@ -305,9 +305,8 @@ class FacilityPrep():
                         message = ("Computing hill heights for user receptors... \n")
                         Logger.logMessage(message)
                         usercoords_4hill = user_recs.loc[:, [lat, lon, elev]].to_numpy()
-                        min_user_elev = user_recs[elev].min()                   
                         user_recs[hill] = ElevHill.getHill(usercoords_4hill, op_maxdistkm, cenlon, 
-                                                          cenlat, min_user_elev)
+                                                          cenlat, self.model)
     
                 # determine if the user receptors overlap any emission sources
                 user_recs[overlap] = user_recs.apply(lambda row: self.check_overlap(row[utme],
@@ -526,9 +525,8 @@ class FacilityPrep():
             message = ("Computing hill heights for polar receptors... \n")
             Logger.logMessage(message)
             polarcoords_4hill = polar_df.loc[:, [lat, lon, elev]].to_numpy()
-            min_polar_elev = polar_df[elev].min()
             polar_df[hill] = ElevHill.getHill(polarcoords_4hill, op_maxdistkm, cenlon, 
-                                              cenlat, min_polar_elev)
+                                              cenlat, self.model)
             
             # Make sure hill heights are equal or greater than corresponding elevations
             qa_df = polar_df[polar_df[elev] > polar_df[hill]]

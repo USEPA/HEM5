@@ -19,6 +19,8 @@ from com.sca.hem4.log.Logger import Logger
 import traceback
 from tkinter import messagebox
 import time
+from itertools import product
+import polars as pl
 
 
 class ElevHill:
@@ -134,7 +136,7 @@ class ElevHill:
 
     # Takes a receptor coordinate array and returns an array of calculated hill height scales
     @staticmethod
-    def getHill(rec_arr, max_model_dist, center_lon, center_lat, min_rec_elev):
+    def getHill(rec_arr, max_model_dist, center_lon, center_lat, model):
         """
         Parameters
         ----------
@@ -147,8 +149,8 @@ class ElevHill:
             Longitude of center of the receptors.
         center_lat : Float
             Latitude of center of the receptors.
-        min_rec_elev : Float
-            Minimum elevation of the receptors
+        model : Class
+            Model class used to hold 30m elevation dataframe
 
         Returns
         -------
@@ -167,35 +169,96 @@ class ElevHill:
         lon1 = center_lon - (initial_radius / r_earth) * (180 / pi) / cos(np.deg2rad(center_lat))
         geo_box = (lon1, lat1, lon2, lat2)
         
-        try:
-            xarray = py3dep.get_dem(geo_box, 30, crs='epsg:4269')
-            elev_df = xarray.to_dataframe()
-        except BaseException as e:
-            messagebox.showinfo("Cannot access 30m USGS server", "Your computer was unable to connect to the USGS server to obtain elevation data." \
-                                " This HEM run will stop. Please check your Internet connection and restart this run." \
-                                " (If an Internet connection is not available, you can model without elevations.)" \
-                                " More detail about this error is available in the log.")
-            fullStackInfo = traceback.format_exc()
-            Logger.logMessage("Cannot access the 30m USGS server needed by the py3dep get_dem function.\n" \
-                              " Aborting this HEM run.\n" \
-                              " Detailed error message: \n\n" + fullStackInfo)                
-            raise ValueError("USGS elevation server unavailable")
+        start_time = time.time()
+        
+        # Check to see if 30m elevation data already exists in a dataframe
+        if model.elev30m_df is None:
 
+            try:
+                xarray = py3dep.get_dem(geo_box, 30, crs='epsg:4269')
+                print("--- %s seconds to get 30m elevs ---" % (time.time() - start_time))
+            except BaseException as e:
+                messagebox.showinfo("Cannot access 30m USGS server", "Your computer was unable to connect to the USGS server to obtain elevation data." \
+                                    " This HEM run will stop. Please check your Internet connection and restart this run." \
+                                    " (If an Internet connection is not available, you can model without elevations.)" \
+                                    " More detail about this error is available in the log.")
+                fullStackInfo = traceback.format_exc()
+                Logger.logMessage("Cannot access the 30m USGS server needed by the py3dep get_dem function.\n" \
+                                  " Aborting this HEM run.\n" \
+                                  " Detailed error message: \n\n" + fullStackInfo)                
+                raise ValueError("USGS elevation server unavailable")
+    
+            #---------- Pandas -----------------------------------------------
+            # Create a numpy elevation array from the 30m data using Pandas
+            grid30_df = xarray.to_dataframe()
+            model.elev30m_df = grid30_df
+            
+        else:
+            
+            # 30m elev grid DF already exists
+            grid30_df = model.elev30m_df
+            
+        grid30_df.reset_index(inplace=True)
+        grid30_lat = grid30_df['y'].to_numpy()
+        grid30_lon = grid30_df['x'].to_numpy()
+        grid30_elev = grid30_df['elevation'].to_numpy()
+        grid30_arr = np.column_stack((grid30_lat, grid30_lon, grid30_elev))
+                
         # Use the max of the 30m grid elevations and the min receptor elevation
         # to compute the horizontal distance (km) needed for a 10% slope to get hill height.
-        maxelev = xarray.max().values
-        minelev = np.max(rec_arr[:, 2])
-        maxelev_radius = ((maxelev - minelev) * 0.001 * 10) + 0.1
-                            
-        elev_df.reset_index(inplace=True)
-        elev_lat = elev_df['y'].to_numpy()
-        elev_lon = elev_df['x'].to_numpy()
-        elev_elev = elev_df['elevation'].to_numpy()
-        elev_arr = np.column_stack((elev_lat, elev_lon, elev_elev))
-        del elev_df, elev_lat, elev_lon, elev_elev
-        gc.collect()
+        maxelev = grid30_elev.max()
+        minelev = np.min(rec_arr[:, 2])
+        maxelev_radius = ((maxelev - minelev) * 0.001 * 10) + 1
+
+        # # ----------- xarray -----------------------------------------------
+        # # Now filter the xarray to lat/lons within maxelev_radius + max_model_dist
+        # real_radius = maxelev_radius + max_model_dist
+        # lat2 = center_lat  + (real_radius / r_earth) * (180 / pi)
+        # lon2 = center_lon + (real_radius / r_earth) * (180 / pi) / cos(np.deg2rad(center_lat))
+        # lat1 = center_lat  - (real_radius / r_earth) * (180 / pi)
+        # lon1 = center_lon - (real_radius / r_earth) * (180 / pi) / cos(np.deg2rad(center_lat))
+        # xarray_filt = xarray.where((xarray.x >= lon1) & (xarray.x <= lon2) & (xarray.y >= lat1) 
+        #                            & (xarray.y <= lat2) & (xarray > minelev), drop=True) 
+
+        # # -------------- xarray ----------------------------------------------
+        # # Create numpy arrays of the elevation grid needed for the hill height calc function
+        # xarray_coords = list(product(xarray_filt.coords['y'].values, xarray_filt.coords['x'].values))
+        # grid_lats = [item[0] for item in xarray_coords]
+        # grid_lons = [item[1] for item in xarray_coords]
+        # xarray_stacked = xarray_filt.stack(z = ('y', 'x'), create_index=False)
+        # grid_elevs = xarray_stacked.values
+        # grid_arr = np.column_stack((grid_lats, grid_lons, grid_elevs))
         
-        # Process each receptor        
+        # clean up
+        # del elev_df, elev_lat, elev_lon, elev_elev
+        # gc.collect()
+
+        
+        # # Shrink the elevation xarray using the real radius
+        # rec_lat = rec_arr[:, 0]
+        # rec_lon = rec_arr[:, 1]
+        # cenlat_arr = np.full((rec_lat.size,), center_lat)      
+        # cenlon_arr = np.full((rec_lon.size,), center_lon)
+        # dist_arr = (2 * arcsin(sqrt(sin(pi/180*(cenlat_arr-rec_lat)/2)**2 + 
+        #         cos(pi/180*(rec_lat)) * cos(pi/180*(cenlat_arr)) * 
+        #         sin(pi/180*(cenlon_arr-rec_lon)/2)**2)) * 6371000)
+        # maxrec_dist = np.max(dist_arr)
+        
+        
+        # ----------------- Pandas -------------------------------------------
+        # Now shrink the elev array using a real radius
+        real_radius = max_model_dist + maxelev_radius
+        lat2 = center_lat  + (real_radius / r_earth) * (180 / pi)
+        lon2 = center_lon + (real_radius / r_earth) * (180 / pi) / cos(np.deg2rad(center_lat))
+        lat1 = center_lat  - (real_radius / r_earth) * (180 / pi)
+        lon1 = center_lon - (real_radius / r_earth) * (180 / pi) / cos(np.deg2rad(center_lat))
+        latcon = ((grid30_arr[:, 0] >= lat1) &  (grid30_arr[:, 0] <= lat2))
+        loncon = ((grid30_arr[:, 1] >= lon1) &  (grid30_arr[:, 1] <= lon2))
+        elevcon = (grid30_arr[:, 2] > minelev)
+        grid_arr = grid30_arr[latcon & loncon & elevcon]
+                           
+        
+        # Process each receptor
         hill_arr = np.empty((rec_arr.shape[0],))  # Create an empty NumPy array
         for i in range(rec_arr.shape[0]):
             row = rec_arr[i]
@@ -208,10 +271,10 @@ class ElevHill:
             lon2 = lon + (maxelev_radius / r_earth) * (180 / pi) / cos(np.deg2rad(lat))
             lat1 = lat  - (maxelev_radius / r_earth) * (180 / pi)
             lon1 = lon - (maxelev_radius / r_earth) * (180 / pi) / cos(np.deg2rad(lat))
-            latcon = ((elev_arr[:, 0] >= lat1) &  (elev_arr[:, 0] <= lat2))
-            loncon = ((elev_arr[:, 1] >= lon1) &  (elev_arr[:, 1] <= lon2))
-            elevcon = (elev_arr[:, 2] > elev)
-            elev_filter = elev_arr[latcon & loncon & elevcon]
+            latcon = ((grid_arr[:, 0] >= lat1) &  (grid_arr[:, 0] <= lat2))
+            loncon = ((grid_arr[:, 1] >= lon1) &  (grid_arr[:, 1] <= lon2))
+            elevcon = (grid_arr[:, 2] > elev)
+            elev_filter = grid_arr[latcon & loncon & elevcon]
             elev_lat = elev_filter[:,0]
             elev_lon = elev_filter[:,1]
             elev_elev = elev_filter[:,2]
@@ -221,6 +284,8 @@ class ElevHill:
             rec_lon = np.full((elev_lon.size,), lon)
             Hillht = ElevHill.getMax(rec_lat, rec_lon, rec_elev, elev_lat, elev_lon, elev_elev)
             hill_arr[i] = max(Hillht, elev)
+
+        print("--- %s seconds to completely compute hill heights ---" % (time.time() - start_time))
             
         return hill_arr
 

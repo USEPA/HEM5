@@ -51,7 +51,9 @@ class Processor():
         if 'altrec' not in self.model.dependencies:
             self.uploader = FileUploader(self.model)
             success = self.uploader.uploadLibrary("census")
-            if not success:
+            if success:
+                Logger.logMessage('Uploaded the Census file')
+            else:
                 messagebox.showinfo('Error', "Invalid Census file. Check log for details.")
                 return success
 
