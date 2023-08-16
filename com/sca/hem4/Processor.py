@@ -129,6 +129,15 @@ class Processor():
 
                     # Check for USGS elevation server error which aborts the HEM run
                     if str(ex) == "USGS elevation server unavailable":
+                        messagebox.showinfo("Cannot access 30m USGS server", "Your computer was unable to connect to the USGS server to obtain elevation data." \
+                                            " This HEM run will stop. Please check your Internet connection and restart this run." \
+                                            " (If an Internet connection is not available, you can model without elevations.)" \
+                                            " More detail about this error is available in the log.")
+                        fullStackInfo = traceback.format_exc()
+                        Logger.logMessage("Cannot access the 30m USGS server needed by the py3dep get_dem function.\n" \
+                                          " Aborting this HEM run.\n" \
+                                          " Detailed error message: \n\n" + fullStackInfo)                
+
                         self.abortProcessing()
                         break
                         

@@ -402,14 +402,45 @@ class contours():
                         dfpl, geometry=gp.points_from_xy(dfpl.Longitude, dfpl.Latitude), crs="EPSG:4326")
                     
                     if metric == 'MIR':
-                        maptitle = html.H4(f'Facility {facname} - Lifetime Cancer Risk (in a million)')
+                        if gdf['RecID'].str.contains('UCONC').any():
+                            maptitle = html.H4(f'User-Supplied Concentrations - Lifetime Cancer Risk (in a million)')
+                        else:
+                            maptitle = html.H4(f'Facility {facname} - Lifetime Cancer Risk (in a million)')
                     else:
-                        maptitle = html.H4(f'Facility {facname} - {metric}')
+                        if gdf['RecID'].str.contains('UCONC').any():
+                            maptitle = html.H4(f'User-Supplied Concentrations - {metric}')
+                        else:
+                            maptitle = html.H4(f'Facility {facname} - {metric}')
+                                            
+                    # Limit the size of the area to contour
+                    span = abs(dfpl['Latitude'].max() - dfpl['Latitude'].min())*111133/1000
+                    if gdf['RecID'].str.contains('ang|UCONC').any():
+                        if span > 40:
+                            cont_radius = 20
+                        else:
+                            cont_radius = round(span/2)
+                            # cont_radius = round(span/sqrt(8))
+                    else:
+                        cont_radius = round(span/2)
+                        
+                    # Use the max receptor to center the map
+                    max_x = dfpl.loc[dfpl[metric].idxmax()]
+                    avglat = max_x['Latitude'] 
+                    avglon = max_x['Longitude']
+                    fac_center = [avglon, avglat]
+                    
+                    # Calculate the extents of the contour area
+                    r_earth = 6371                    
+                    lat2 = fac_center[1]  + (cont_radius / r_earth) * (180 / pi)
+                    lon2 = fac_center[0] + (cont_radius / r_earth) * (180 / pi) / cos(np.deg2rad(fac_center[1]))
+                    lat1 = fac_center[1]  - (cont_radius / r_earth) * (180 / pi)
+                    lon1 = fac_center[0] - (cont_radius / r_earth) * (180 / pi) / cos(np.deg2rad(fac_center[1]))
                     
                     # Create separate layers for polar and block receptors
-                    polar_recpts = gdf[gdf['RecID'].apply(lambda x: 'ang' in x)].copy()
-                    block_recpts = gdf[gdf['RecID'].apply(lambda x: 'ang' not in x)].copy()
-                                            
+                    # The block layer does not include receptors from the user-supplied concentration option
+                    polar_recpts = gdf.loc[gdf['RecID'].str.contains('ang')].copy()
+                    block_recpts = gdf.loc[~gdf['RecID'].str.contains('ang|UCONC')].copy()
+                                                               
                     if polar_recpts is not None and len(polar_recpts) != 0:
                         polar_recpts['Distance (m)'] = [x.split('ang')[0] for x in polar_recpts['RecID']]
                         polar_recpts['Angle (deg)'] = [x.split('ang')[1] for x in polar_recpts['RecID']]
@@ -437,54 +468,41 @@ class contours():
                             block_recpts['tooltip'] = '<b>Block/User Receptor</b>' + '<br><b>Receptor ID: </b>' + block_recpts['RecID'] \
                                 + f'<br><b>{metric}: </b>' + block_recpts[metric].apply(lambda x: f'{self.riskfig(x, digz)}').astype(str)
                         blockmax_gdf = block_recpts[~block_recpts['RecID'].str.contains('S|M|B')]
-                        block_max_val =  blockmax_gdf[metric].max()  
-                        blockjson = json.loads(block_recpts.to_json())
+                        block_max_val =  blockmax_gdf[metric].max()
+                        if gdf['RecID'].str.contains('UCONC').any():
+                            block_recpts_subset = block_recpts.loc[block_recpts['Latitude'].between(lat1, lat2)
+                                                                          & block_recpts['Longitude'].between(lon1, lon2)].copy()
+                        else:
+                            block_recpts_subset = block_recpts
+                        
+                        blockjson = json.loads(block_recpts_subset.to_json())
                         blockbuf = dlx.geojson_to_geobuf(blockjson)
                                                     
                     else:
                         blockbuf = None                       
-                    
-                    # Use the max receptor to center the map
-                    max_x = dfpl.loc[dfpl[metric].idxmax()]
-                    avglat = max_x['Latitude'] 
-                    avglon = max_x['Longitude']
-                                
-                    # Limit the size of the area to contour
-                    span = abs(dfpl['Latitude'].max() - dfpl['Latitude'].min())*111133/1000
-                    if gdf['RecID'].str.contains('ang').any():
-                        if span > 40:
-                            cont_radius = 20
-                        else:
-                            cont_radius = round(span/2)
-                            # cont_radius = round(span/sqrt(8))
-                    else:
-                        cont_radius = round(span/2)
-                                                                               
-                    numcells = round(cont_radius*2*1000/10)
-                    r_earth = 6371
-                    fac_center = [avglon, avglat]
-                    lat2 = fac_center[1]  + (cont_radius / r_earth) * (180 / pi)
-                    lon2 = fac_center[0] + (cont_radius / r_earth) * (180 / pi) / cos(np.deg2rad(fac_center[1]))
-                    lat1 = fac_center[1]  - (cont_radius / r_earth) * (180 / pi)
-                    lon1 = fac_center[0] - (cont_radius / r_earth) * (180 / pi) / cos(np.deg2rad(fac_center[1]))
-                                        
-                    gdfBounds = gdf.bounds                    
-                
+                                    
                     ''' Create the meshgrid to which to interpolate
                     '''
+                    numcells = round(cont_radius*2*1000/10) 
                     x_coord = np.linspace(lon1, lon2, numcells)
                     y_coord = np.linspace(lat1, lat2, numcells)
                     x_grid, y_grid = np.meshgrid(x_coord, y_coord)
                             
                     ''' Use scipy griddata interpolation on the meshgrid
                     '''
+                    # Exclude census blocks/alternate receptors from contours when user-supplied concentration option is used
+                    # In this case, the census/alternate receptors are all interpolated and provide no new info
+                    if gdf['RecID'].str.contains('UCONC').any():
+                        gdf = gdf.loc[gdf['RecID'].str.contains('UCONC')].copy()
+                    gdfBounds = gdf.bounds
                     scigrid = griddata((gdfBounds.minx.to_numpy(), gdfBounds.miny.to_numpy()), gdf[metric].to_numpy(),
                                         (x_grid, y_grid), method = 'linear', rescale=True)
                                         
-                    minmaxgdf = gdf.loc[gdf['Latitude'].between(lat1, lat2) & gdf['Longitude'].between(lon1, lon2)]
+                    minmaxgdf = gdf.loc[gdf['Latitude'].between(lat1, lat2) & gdf['Longitude'].between(lon1, lon2)].copy()
                     
                     # use the scigrid min as datamin unless it is nan
                     # if not gdf['RecID'].str.contains('ang').any() or np.isnan(scigrid.min()):
+                    
                     if np.isnan(scigrid.min()):
                         datamin = minmaxgdf[metric].min()
                     else:
@@ -599,8 +617,7 @@ class contours():
                     
                     # contgdf = gp.GeoDataFrame.from_features(geojson_data["features"])
                     # contgdf['fill'] = hex_codes
-                    # # breakpoint()
-                    
+                                        
                     loadcont=json.loads(cont_json)
                     contgdf=gp.GeoDataFrame.from_features(loadcont)
                     classes = levels[:-1]
@@ -641,7 +658,65 @@ class contours():
                     # draw_cluster = Namespace('HEM_leaflet_functions', 'contour')('draw_cluster')
                     
                     cont_hideout=dict(colorscale=colorscale, classes=classes, style=style, colorProp='midpts')
-                                            
+                    
+                    # if blockbuf == None and polarbuf != None:
+                    #     blocks_or_polars = [dl.Overlay(
+                              
+                    #             dl.LayerGroup(
+                    #             dl.GeoJSON(id = 'ctab-polars', format="geobuf",
+                    #                        data=polarbuf,
+                    #                        options = dict(pointToLayer=draw_polars),
+                    #                        # options = dict(pointToLayer=draw_recepts, onEachFeature=draw_arrow),
+                    #                       ),
+                    #             ),
+                    #             name = 'Polar Receptors', checked = False
+                              
+                    #       )]
+                    # elif polarbuf == None and blockbuf != None:
+                    #     blocks_or_polars = [dl.Overlay(
+                              
+                    #            dl.LayerGroup(
+                    #            dl.GeoJSON(id = 'ctab-blocks', format="geobuf",
+                    #                       data=blockbuf,
+                    #                       # cluster=True, 
+                    #                       # superClusterOptions = dict(radius=100),                                                                    
+                    #                       options = dict(pointToLayer=draw_blocks),
+                    #                       # options = dict(pointToLayer=draw_recepts, onEachFeature=draw_arrow),
+                    #                      ),
+                    #            ),
+                    #            name = 'Block/User Receptors', checked = False
+                              
+                    #       )]
+                    # else:
+                    #     blocks_or_polars = [dl.Overlay(
+                              
+                    #            dl.LayerGroup(
+                    #            dl.GeoJSON(id = 'ctab-blocks', format="geobuf",
+                    #                       data=blockbuf,
+                    #                       # cluster=True, 
+                    #                       # superClusterOptions = dict(radius=100),                                                                    
+                    #                       options = dict(pointToLayer=draw_blocks),
+                    #                       # options = dict(pointToLayer=draw_recepts, onEachFeature=draw_arrow),
+                    #                      ),
+                    #            ),
+                    #            name = 'Block/User Receptors', checked = False
+                              
+                    #       ),
+                       
+                    #     dl.Overlay(
+                              
+                    #            dl.LayerGroup(
+                    #            dl.GeoJSON(id = 'ctab-polars', format="geobuf",
+                    #                       data=polarbuf,
+                    #                       options = dict(pointToLayer=draw_polars),
+                    #                       # options = dict(pointToLayer=draw_recepts, onEachFeature=draw_arrow),
+                    #                      ),
+                    #            ),
+                    #            name = 'Polar Receptors', checked = False
+                              
+                    #       )]
+                    
+                                    
                     contmap = [
                         
                             dl.MeasureControl(position="topleft", primaryLengthUnit="meters", primaryAreaUnit="hectares",
@@ -650,34 +725,36 @@ class contours():
                             dl.LayersControl([ct_esri, ct_dark, ct_light, ct_openstreet] +
                                              
                                               [ct_roads, ct_places,
+                                               
+                                               # *blocks_or_polars,
                                                                                                         
-                                                  dl.Overlay(
+                                                   dl.Overlay(
                                                         
-                                                         dl.LayerGroup(
-                                                         dl.GeoJSON(id = 'ctab-blocks', format="geobuf",
-                                                                    data=blockbuf,
-                                                                    # cluster=True, 
-                                                                    # superClusterOptions = dict(radius=100),                                                                    
-                                                                    options = dict(pointToLayer=draw_blocks),
-                                                                    # options = dict(pointToLayer=draw_recepts, onEachFeature=draw_arrow),
-                                                                   ),
-                                                         ),
-                                                         name = 'Block/User Receptors', checked = False
+                                                          dl.LayerGroup(
+                                                          dl.GeoJSON(id = 'ctab-blocks', format="geobuf",
+                                                                     data=blockbuf,
+                                                                     # cluster=True, 
+                                                                     # superClusterOptions = dict(radius=100),                                                                    
+                                                                     options = dict(pointToLayer=draw_blocks),
+                                                                     # options = dict(pointToLayer=draw_recepts, onEachFeature=draw_arrow),
+                                                                    ),
+                                                          ),
+                                                          name = 'Block/User Receptors', checked = False
                                                         
-                                                    ),
+                                                     ),
                                                  
-                                                  dl.Overlay(
+                                                   dl.Overlay(
                                                         
-                                                         dl.LayerGroup(
-                                                         dl.GeoJSON(id = 'ctab-polars', format="geobuf",
-                                                                    data=polarbuf,
-                                                                    options = dict(pointToLayer=draw_polars),
-                                                                    # options = dict(pointToLayer=draw_recepts, onEachFeature=draw_arrow),
-                                                                   ),
-                                                         ),
-                                                         name = 'Polar Receptors', checked = False
+                                                          dl.LayerGroup(
+                                                          dl.GeoJSON(id = 'ctab-polars', format="geobuf",
+                                                                     data=polarbuf,
+                                                                     options = dict(pointToLayer=draw_polars),
+                                                                     # options = dict(pointToLayer=draw_recepts, onEachFeature=draw_arrow),
+                                                                    ),
+                                                          ),
+                                                          name = 'Polar Receptors', checked = False
                                                         
-                                                    ),
+                                                     ),
                                              
                                                  dl.Overlay(
                                                      
@@ -776,15 +853,15 @@ class contours():
                             if 'angle' in currdf.columns:
                                 currdf['RecID'] = currdf.dist.astype(str).str.cat(currdf.angle.astype(str), sep='ang')
                             elif 'Receptor ID' in currdf.columns:
-                                currdf['RecID'] = currdf['Receptor ID']
+                                currdf['RecID'] = currdf['Receptor ID']            
                             else:
                                 currdf['RecID'] = currdf.FIPs.astype(str).str.cat(currdf.Block.astype(str))
-                            
+                                                        
                             tempdf = currdf.copy()
                             tempdf['MIR'] = tempdf['MIR']*1000000
                             
                             # Limit the number of block receptors (don't need so many nor so far out)
-                            if 'block_summary_chronic.csv' in item:
+                            if 'block_summary_chronic.csv' in item and ~currdf['RecID'].str.contains('UCONC', case=False, na=False).any():
                                                                     
                                 try:
                                     for metric in metrics.values():
@@ -912,14 +989,18 @@ class contours():
                 return no_update
             else:
                 tempdf = pd.DataFrame(metdata)
-                block_data = tempdf[~tempdf['RecID'].str.contains('S|M|B|ang')]
+                block_data = tempdf[~tempdf['RecID'].str.contains('S|M|B|ang|UCONC')]
                 if len(block_data)==0:
                     return None
                 else:
                     maxrisk = block_data[metric].max()
                     maxrisk_sf = self.riskfig(maxrisk, digz)
                     
-                    return html.P(f'** Census block/alternate receptors are included out to 10km from the location of maximum impact.\
+                    if tempdf['RecID'].str.contains('UCONC').any():
+                        return html.P(f'** Census block/alternate receptors are included out to 20km from the location of maximum impact.\
+                                      The maximum {metrics_reversed[metric]} for a populated receptor is {maxrisk_sf} based on your input data.')
+                    else:
+                        return html.P(f'** Census block/alternate receptors are included out to 10km from the location of maximum impact.\
                                   The maximum {metrics_reversed[metric]} for a populated receptor is {maxrisk_sf} based on your input data.')
                             
         return app
