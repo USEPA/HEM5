@@ -11,6 +11,8 @@ class Writer(ABC):
         self.batchSize = 10000000
 
     def write(self, generateOnly=False, otherDF=None):
+        
+        # otherDF is used for dataframes not generated through the generateOutputs approach
 
         if not generateOnly:
             self.writeHeader()

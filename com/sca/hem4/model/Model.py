@@ -116,6 +116,7 @@ class Model():
         self.sourceExclusion = {}
         self.aermod = None
         self.acuteplot_df = None
+        self.elev30m_df = None
 
         # Initialize model options
         self.initializeAltRecOptions()

@@ -39,7 +39,6 @@ class Processor():
 
     def process(self):
 
-
         try:
             # create Inputs folder
             inputspkgr = InputsPackager(self.model.rootoutput, self.model)
@@ -52,7 +51,9 @@ class Processor():
         if 'altrec' not in self.model.dependencies:
             self.uploader = FileUploader(self.model)
             success = self.uploader.uploadLibrary("census")
-            if not success:
+            if success:
+                Logger.logMessage('Uploaded the Census file')
+            else:
                 messagebox.showinfo('Error', "Invalid Census file. Check log for details.")
                 return success
 
@@ -128,6 +129,14 @@ class Processor():
 
                     # Check for USGS elevation server error which aborts the HEM run
                     if str(ex) == "USGS elevation server unavailable":
+                        messagebox.showinfo("Cannot obtain elevation data", "Your computer was unable to obtain elevation data for this model run." \
+                                            " This HEM run will stop. This problem may be due to your Internet connection or the elevation data not being available from the USGS." \
+                                            " More detail about this error is available in the log.")
+                        fullStackInfo = traceback.format_exc()
+                        Logger.logMessage("Cannot obtain elevation data.\n" \
+                                          " Aborting this HEM run.\n" \
+                                          " Detailed error message: \n\n" + fullStackInfo)                
+
                         self.abortProcessing()
                         break
                         
@@ -271,12 +280,14 @@ class Processor():
             skipped_df.to_excel(skipped_path, index=False)
 
        
+        # Clean up any cache file created by the elevation functions
+        if os.path.exists('cache'):
+            for file in os.scandir('cache'):
+                os.remove(file.path)
         
         self.nav.reset_gui()
 
         
-        
-
         return success
 
     def createSourceCategoryOutputs(self):

@@ -14,6 +14,7 @@ from tkinter import messagebox
 from tkinter.filedialog import askopenfilename
 from com.sca.hem4.checker.InputChecker import InputChecker
 from com.sca.hem4.Processor import Processor
+from com.sca.hem4.userconcsProcessor import userconcsProcessor
 from com.sca.hem4.DepositionDepletion import check_dep, check_phase
 import shutil
 import sys
@@ -123,7 +124,11 @@ class Hem(Page):
 
         #alt receptors
         self.altlbl = tk.StringVar()
-        self.altlbl.set("Please select an alternate receptor CSV file:")
+        self.altlbl.set("Please select an Alternate Receptor CSV file:")
+
+        #user concentrations
+        self.uconclbl = tk.StringVar()
+        self.uconclbl.set("Please select a User Supplied Concentration CSV file:")
 
         # tab placehodler for nav
         self.current_tab = self.nav
@@ -135,24 +140,28 @@ class Hem(Page):
         # self.required_inputs = tk.Frame(self, width=600, bg=self.tab_color)
         # self.required_inputs.pack(fill="both", expand=True, side="top")
         self.s1 = tk.Frame(self.container, width=600, height=50, bg=self.tab_color)
-        self.s3 = tk.Frame(self.container, width=600, height=75, pady=5, padx=5, bg=self.tab_color)
+        self.s2 = tk.Frame(self.container, width=600, height=75, pady=5, padx=5, bg=self.tab_color)
+        self.s3 = tk.Frame(self.container, width=600, height=50, pady=5, padx=5, bg=self.tab_color)
         self.s4 = tk.Frame(self.container, width=600, height=50, pady=5, padx=5, bg=self.tab_color)
         self.s5 = tk.Frame(self.container, width=600, height=50, pady=5, padx=5, bg=self.tab_color)
         self.s6 = tk.Frame(self.container, width=600, height=50, pady=5, padx=5, bg=self.tab_color)
         self.s7 = tk.Frame(self.container, width=600, height=50, pady=5, padx=5, bg=self.tab_color)
         self.s10 = tk.Frame(self.container, width=600, height=50, pady=5, padx=5, bg=self.tab_color)
+        self.s11 = tk.Frame(self.container, width=600, height=50, pady=5, padx=5, bg=self.tab_color)
 
         self.alturep = tk.Frame(self.container, width=250, height=250,  bg=self.tab_color, pady=5, padx=5)
 
         # grid layout for main inputs
         self.s1.grid(row=1, column=0, columnspan=2, sticky="nsew")
         self.alturep.grid(row=4, column=0, columnspan=2, sticky="nsew")
-        self.s3.grid(row=3, column=0, columnspan=2, sticky="nsew", pady=10)
+        self.s2.grid(row=2, column=0, columnspan=2, sticky="nsew", pady=10)
+        self.s3.grid(row=3, column=0, columnspan=2, sticky="nsew")
         self.s4.grid(row=5, column=0, columnspan=2, sticky="nsew")
         self.s5.grid(row=6, column=0, columnspan=2, sticky="nsew")
         self.s6.grid(row=7, column=0, columnspan=2, sticky="nsew")
         self.s7.grid(row=8, column=0, columnspan=2, sticky="nsew")
         self.s10.grid(row=9, column=0, columnspan=2, sticky="nsew")
+        self.s11.grid(row=10, column=0, columnspan=2, sticky="nsew")
 
         #self.s2.grid_propagate(0)
 
@@ -168,8 +177,19 @@ class Hem(Page):
         self.title.grid(row=1, column=1, sticky="W", pady=10, padx=10)
 
         # Setting up  directions text space
-        self.add_instructions(self.s3, self.s3)
+        self.add_instructions(self.s2, self.s2)
 
+
+        # Setting up user supplied concentration space
+        self.check_userconc = tk.IntVar()
+        self.check_userconc.set(0)
+        self.defaultUserConc_sel = tk.Checkbutton(self.s3, text='Use User Supplied Concentrations',
+                                                  variable=self.check_userconc, onvalue=1, 
+                                                  offvalue=0, font=TEXT_FONT, bg=self.tab_color,
+                                                  command=self.set_userconc)
+        self.defaultUserConc_sel.grid(row=0, column=1, sticky='W')
+        
+        
         # Setting up each file upload space (includes browse button)
         group_label = tk.Label(self.s4, font=TEXT_FONT, bg=self.tab_color,
                                text="Name Run Group (optional):")
@@ -548,6 +568,27 @@ class Hem(Page):
                 self.optional.urlbl.set(fullpath.split("\\")[-1])
 
 
+    def uploadUserConcs(self, container, label, event):
+        """
+        Function for uploading User Supplied Concentrations
+        """
+
+        fullpath = self.openFile(askopenfilename())
+        if fullpath is not None:
+
+
+            self.uploader.upload("userconcs", fullpath)
+
+            if self.model.userconcs.dataframe.empty == False:
+                self.model.model_optns["userconcs"] = True
+
+                # Update the UI
+                [self.scr.insert(tk.INSERT, msg) for msg in self.model.userconcs.log]
+
+                self.uconclbl.set('')
+                self.uconclbl.set(fullpath.split("\\")[-1])
+
+
     def uploadAltReceptors(self, container, label, event):
         """
         Function for uploading Alternate Receptors
@@ -606,6 +647,38 @@ class Hem(Page):
                 self.model.dependencies.remove('altrec')
             self.urepLabel.destroy()
             self.urep_file.destroy()
+
+
+    def set_userconc(self):
+        
+        if self.check_userconc.get() == 1:
+
+            self.fileLabel.grid_forget()
+            self.button_file.grid_forget()
+            self.hapLabel.grid_forget()
+            self.hap_file.grid_forget()
+            self.emisLabel.grid_forget()
+            self.emis_file.grid_forget()
+            self.check_userconc.set(1)
+            
+            if 'userconcs' not in self.model.dependencies:
+                self.model.dependencies.append('userconcs')
+                self.add_userconc()
+            
+        elif self.check_userconc.get() == 0:
+
+            self.uconcLabel.destroy()
+            self.uconc_file.destroy()
+            self.fileLabel.grid(row=3, column=0, padx=10)
+            self.button_file.grid(row=3, column=1, sticky='W')
+            self.hapLabel.grid(row=3, column=0, padx=10)
+            self.hap_file.grid(row=3, column=1, sticky='W')
+            self.emisLabel.grid(row=2, column=0, padx=10)
+            self.emis_file.grid(row=2, column=1, sticky='W')
+
+            if 'userconcs' in self.model.dependencies:
+                self.model.dependencies.remove('userconcs')
+                            
 
     def add_ur(self):
         """
@@ -670,6 +743,38 @@ class Hem(Page):
         self.urepLabel.bind("<Enter>", lambda x: self.color_config(self.urepLabel, self.urep_file, self.s10, self.highlightcolor, x))
         self.urepLabel.bind("<Leave>", lambda x: self.remove_config(self.urepLabel, self.urep_file, self.s10, self.tab_color, x))
         self.urepLabel.bind("<Button-1>",  lambda x: self.uploadAltReceptors(self.alturep, self.urep_file, x))
+
+
+    def add_userconc(self):
+        """
+        Function for creating row and upload widgets for User Supplied Concentrations
+        """
+
+        # set the appropriate instructions text
+        browse = "instructions/userconc_browse.txt"
+        man = "instructions/userconc_man.txt"
+
+        # user concs label
+        self.uconc = PIL.Image.open('images\icons8-import-48.png').resize((30,30))
+        self.uconcicon = self.add_margin(self.uconc, 5, 0, 5, 0)
+        self.uconcileicon = ImageTk.PhotoImage(self.uconc)
+        self.uconcLabel = tk.Label(self.s5, image=self.uconcileicon, bg=self.tab_color)
+        self.uconcLabel.image = self.uconcileicon # keep a reference!
+        self.uconcLabel.grid(row=0, column=0, padx=10, sticky='W')
+
+
+        self.uconc_file = tk.Label(self.s5, font=TEXT_FONT, bg=self.tab_color,
+                                  textvariable=self.uconclbl)
+        self.uconc_file.grid(row=0, column=1, sticky='W')
+
+
+        self.uconc_file.bind("<Enter>", lambda x: self.color_config( self.uconc_file, self.uconcLabel, self.s5, self.highlightcolor, x))
+        self.uconc_file.bind("<Leave>", lambda x: self.remove_config( self.uconc_file, self.uconcLabel, self.s5, self.tab_color, x))
+        self.uconc_file.bind("<Button-1>", lambda x: self.uploadUserConcs(self.s5, self.uconc_file, x))
+
+        self.uconcLabel.bind("<Enter>", lambda x: self.color_config(self.uconcLabel, self.uconc_file, self.s5, self.highlightcolor, x))
+        self.uconcLabel.bind("<Leave>", lambda x: self.remove_config(self.uconcLabel, self.uconc_file, self.s5, self.tab_color, x))
+        self.uconcLabel.bind("<Button-1>",  lambda x: self.uploadUserConcs(self.s5, self.urep_file, x))
 
 
     def add_variation(self):
@@ -890,96 +995,102 @@ class Hem(Page):
                 return None
 
 
-        #Check inputs
-        check_inputs = InputChecker(self.model)
+        #Check inputs if user concentrations not provided
+        if "userconcs" not in self.model.dependencies:
+            
+            check_inputs = InputChecker(self.model)
 
-        try:
-            required = check_inputs.check_required()
-
-        except Exception as e:
-
-            Logger.logMessage(str(e))
+            try:
+                required = check_inputs.check_required()
+    
+            except Exception as e:
+    
+                Logger.logMessage(str(e))
+    
+            else:
+                if 'ready' not in required['result']:
+                    messagebox.showinfo('Error', required['result'])
+                    self.ready = False
+    
+                elif required['dependencies'] is not []:
+                    try:
+    
+                        optional = check_inputs.check_dependent(required['dependencies'])
+    
+                    except Exception as e:
+    
+                        Logger.logMessage(str(e))
+    
+                    else:
+    
+    
+                        if 'ready' not in optional['result']:
+                            messagebox.showinfo('Error', optional['result'])
+                            self.ready = False
+    
+                        else:
+                            self.ready = True
+    
+    
+                            #get deposition exclusions
+                            print('Checking depletion.... against', self.model.depdeplt)
+    
+                            if self.model.depdeplt != None:
+    
+                                #look through hapemis for facilities that are running deposition or depletion
+                                hapDep = self.model.hapemis.dataframe[self.model.hapemis.dataframe['fac_id'].isin(self.model.depdeplt)]
+    
+                                #now check phase in facilities list option file
+                                facDep = self.model.faclist.dataframe[self.model.faclist.dataframe['fac_id'].isin(self.model.depdeplt)]
+    
+                                # Initialize lists that will contain sources that should not be modeled as P or V
+                                particleExcludeList = []
+                                vaporExcludeList = []
+    
+                                for i, r in facDep.iterrows():
+                                    if r['phase'] in ['P', 'V', 'B']:
+    
+                                        #look at pollutants
+                                        pols = hapDep[hapDep['fac_id'] == r['fac_id']]
+    
+                                        #get sourcelist
+                                        sourcesList = set(pols['source_id'].tolist())
+    
+                                        for source in sourcesList:
+    
+                                            if r['phase'] == 'P' or r['phase'] == 'B':
+                                                #get the sum of part frac
+                                                polSum = sum(pols[pols['source_id'] == source]['part_frac'].tolist())
+    
+                                                #if they are zero then its not particulate at all
+                                                if polSum == 0:
+    
+                                                    #add it to the list of source exclusions
+                                                    particleExcludeList.append(source)
+    
+                                            elif r['phase'] == 'V':
+    
+                                                #get
+                                                so = pols[pols['source_id'] == source]['part_frac'].tolist()
+                                                polSum = sum(so)
+                                                allPart = len(so) * 100
+    
+                                                #if they are all particle (100%)
+                                                if polSum == allPart:
+    
+                                                    #add it to the list of source exclusions
+                                                    vaporExcludeList.append(source)
+    
+                                        self.model.sourceExclusion['P'+r['fac_id']] = particleExcludeList
+                                        self.model.sourceExclusion['V'+r['fac_id']] = vaporExcludeList
+    
+                                    else:
+                                        self.ready = True
 
         else:
-            if 'ready' not in required['result']:
-                messagebox.showinfo('Error', required['result'])
-                self.ready = False
-
-            elif required['dependencies'] is not []:
-                try:
-
-                    optional = check_inputs.check_dependent(required['dependencies'])
-
-                except Exception as e:
-
-                    Logger.logMessage(str(e))
-
-                else:
-
-
-                    if 'ready' not in optional['result']:
-                        messagebox.showinfo('Error', optional['result'])
-                        self.ready = False
-
-                    else:
-                        self.ready = True
-
-
-                        #get deposition exclusions
-                        print('Checking depletion.... against', self.model.depdeplt)
-
-                        if self.model.depdeplt != None:
-
-                            #look through hapemis for facilities that are running deposition or depletion
-                            hapDep = self.model.hapemis.dataframe[self.model.hapemis.dataframe['fac_id'].isin(self.model.depdeplt)]
-
-                            #now check phase in facilities list option file
-                            facDep = self.model.faclist.dataframe[self.model.faclist.dataframe['fac_id'].isin(self.model.depdeplt)]
-
-                            # Initialize lists that will contain sources that should not be modeled as P or V
-                            particleExcludeList = []
-                            vaporExcludeList = []
-
-                            for i, r in facDep.iterrows():
-                                if r['phase'] in ['P', 'V', 'B']:
-
-                                    #look at pollutants
-                                    pols = hapDep[hapDep['fac_id'] == r['fac_id']]
-
-                                    #get sourcelist
-                                    sourcesList = set(pols['source_id'].tolist())
-
-                                    for source in sourcesList:
-
-                                        if r['phase'] == 'P' or r['phase'] == 'B':
-                                            #get the sum of part frac
-                                            polSum = sum(pols[pols['source_id'] == source]['part_frac'].tolist())
-
-                                            #if they are zero then its not particulate at all
-                                            if polSum == 0:
-
-                                                #add it to the list of source exclusions
-                                                particleExcludeList.append(source)
-
-                                        elif r['phase'] == 'V':
-
-                                            #get
-                                            so = pols[pols['source_id'] == source]['part_frac'].tolist()
-                                            polSum = sum(so)
-                                            allPart = len(so) * 100
-
-                                            #if they are all particle (100%)
-                                            if polSum == allPart:
-
-                                                #add it to the list of source exclusions
-                                                vaporExcludeList.append(source)
-
-                                    self.model.sourceExclusion['P'+r['fac_id']] = particleExcludeList
-                                    self.model.sourceExclusion['V'+r['fac_id']] = vaporExcludeList
-
-                                else:
-                                    self.ready = True
-
+            # user supplied concentrations used
+            self.ready = True
+            
 
         #%%if the object is ready
         if self.ready == True:
@@ -1048,7 +1159,12 @@ class Hem(Page):
         if hasattr(self, 'back'):
             self.back.destroy()
 
-        self.processor = Processor(self, self.model, Event())
+        # If this is a user supplied conc run, then use a different processor module
+        if "userconcs" not in self.model.dependencies:
+            self.processor = Processor(self, self.model, Event())
+        else:
+            self.processor = userconcsProcessor(self, self.model, Event())
+            
         future = executor.submit(self.processor.process)
         future.add_done_callback(self.processing_finish)
 
