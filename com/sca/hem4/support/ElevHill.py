@@ -50,36 +50,23 @@ class ElevHill:
                 try:
                     batch_elev = py3dep.elevation_bycoords(batch, source='tep')
                 except BaseException as e:
-                    messagebox.showinfo("Cannot access USGS server", "Your computer was unable to connect to the USGS server to obtain elevation data." \
-                                        " This HEM run will stop. Please check your Internet connection and restart this run." \
-                                        " (If an Internet connection is not available, you can model without elevations.)" \
-                                        " More detail about this error is available in the log.")
-                    fullStackInfo = traceback.format_exc()
-                    Logger.logMessage("Cannot access the USGS server needed by the py3dep elevation_bycoords function.\n" \
-                                      " Aborting this HEM run.\n" \
-                                      " Detailed error message: \n\n" + fullStackInfo)                        
                     raise ValueError("USGS elevation server unavailable")
                 else:
                     elevation_data.extend(batch_elev)
         else:
             try:
-                batch_elev = py3dep.elevation_bycoords(coords, source='tnm')
+                batch_elev = py3dep.elevation_bycoords(coords, source='tep')
             except BaseException as e:
-                messagebox.showinfo("Cannot access USGS server", "Your computer was unable to connect to the USGS server to obtain elevation data." \
-                                    " This HEM run will stop. Please check your Internet connection and restart this run." \
-                                    " (If an Internet connection is not available, you can model without elevations.)" \
-                                    " More detail about this error is available in the log.")
-                fullStackInfo = traceback.format_exc()
-                Logger.logMessage("Cannot access the USGS server needed by the py3dep elevation_bycoords function.\n" \
-                                  " Aborting this HEM run.\n" \
-                                  " Detailed error message: \n\n" + fullStackInfo)                
                 raise ValueError("USGS elevation server unavailable")
             else:
                 elevation_data.append(batch_elev)
 
         elev_rounded = [round(e) for e in elevation_data]
         
-        return elev_rounded
+        # Replace any negative elecations with 0. Elevations can be -99999 if over water.
+        elev_rounded_positive = [0 if i < 0 else i for i in elev_rounded]
+        
+        return elev_rounded_positive
         
         
     # Takes a single receptor coordinate and calculates the max elev that exceeds 10% slope
@@ -253,17 +240,19 @@ class ElevHill:
                     grid30_df = pd.concat(elevframes)
 
             except BaseException as e:
-                #-------------- Use py3dep method ---------------------------
-                                
-                xarray = py3dep.get_dem(geo_box, 30, crs='epsg:4269')
-                grid30_df = xarray.to_dataframe()
-                grid30_df.reset_index(inplace=True)
-                grid30_df.rename(columns={'x':'longitude', 'y':'latitude'}, inplace=True)
                 
-            except requests.exceptions.ReadTimeout:
-                #--------- py3dep method timed out ---------------------------
+                try:
+                    #-------------- Use py3dep method ---------------------------
+                                    
+                    xarray = py3dep.get_dem(geo_box, 30, crs='epsg:4269')
+                    grid30_df = xarray.to_dataframe()
+                    grid30_df.reset_index(inplace=True)
+                    grid30_df.rename(columns={'x':'longitude', 'y':'latitude'}, inplace=True)
                 
-                raise ValueError("USGS elevation server unavailable")
+                except BaseException as e:
+                    #--------- py3dep method failed ---------------------------
+                                        
+                    raise ValueError("USGS elevation server unavailable")
     
             # Store the 30m elevation dataframe into the model
             model.elev30m_df = grid30_df

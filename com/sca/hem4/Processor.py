@@ -129,12 +129,11 @@ class Processor():
 
                     # Check for USGS elevation server error which aborts the HEM run
                     if str(ex) == "USGS elevation server unavailable":
-                        messagebox.showinfo("Cannot access 30m USGS server", "Your computer was unable to connect to the USGS server to obtain elevation data." \
-                                            " This HEM run will stop. Please check your Internet connection and restart this run." \
-                                            " (If an Internet connection is not available, you can model without elevations.)" \
+                        messagebox.showinfo("Cannot obtain elevation data", "Your computer was unable to obtain elevation data for this model run." \
+                                            " This HEM run will stop. This problem may be due to your Internet connection or the elevation data not being available from the USGS." \
                                             " More detail about this error is available in the log.")
                         fullStackInfo = traceback.format_exc()
-                        Logger.logMessage("Cannot access the 30m USGS server needed by the py3dep get_dem function.\n" \
+                        Logger.logMessage("Cannot obtain elevation data.\n" \
                                           " Aborting this HEM run.\n" \
                                           " Detailed error message: \n\n" + fullStackInfo)                
 
@@ -281,12 +280,14 @@ class Processor():
             skipped_df.to_excel(skipped_path, index=False)
 
        
+        # Clean up any cache file created by the elevation functions
+        if os.path.exists('cache'):
+            for file in os.scandir('cache'):
+                os.remove(file.path)
         
         self.nav.reset_gui()
 
         
-        
-
         return success
 
     def createSourceCategoryOutputs(self):
