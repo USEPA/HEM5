@@ -360,9 +360,17 @@ class MaximumIndividualRisksUserconcs(ExcelWriter, InputFile):
             # census receptors
             
             mr_parameter = "Cancer risk"
-            io_idx = self.model.risk_by_latlon[((self.model.risk_by_latlon[population] > 0) |
-                                               (self.model.risk_by_latlon[rec_type] == "P"))][mir].idxmax()
-            if self.model.risk_by_latlon[mir].loc[io_idx] > 0:
+            
+            # Make sure there are candidate receptors for max risk/HI
+            check_df = self.model.risk_by_latlon[((self.model.risk_by_latlon[population] > 0) |
+                                               (self.model.risk_by_latlon[rec_type] == "P"))]
+            if not check_df.empty:
+                io_idx = check_df[mir].idxmax()
+                maxmir = self.model.risk_by_latlon[mir].loc[io_idx]
+            else:
+                maxmir = 0
+            
+            if maxmir > 0:
                 #max risk is > 0, do calculations
                 mr_lat = float(self.model.risk_by_latlon[lat].loc[io_idx])
                 mr_lon = float(self.model.risk_by_latlon[lon].loc[io_idx])
@@ -476,9 +484,17 @@ class MaximumIndividualRisksUserconcs(ExcelWriter, InputFile):
             # alternate receptors
             
             mr_parameter = "Cancer risk"
-            io_idx = self.model.risk_by_latlon[((self.model.risk_by_latlon[population] > 0) |
-                                               (self.model.risk_by_latlon[rec_type] == "P"))][mir].idxmax()
-            if self.model.risk_by_latlon[mir].loc[io_idx] > 0:
+            
+            # Make sure there are candidate receptors for max risk/HI
+            check_df = self.model.risk_by_latlon[((self.model.risk_by_latlon[population] > 0) |
+                                               (self.model.risk_by_latlon[rec_type] == "P"))]
+            if not check_df.empty:
+                io_idx = check_df[mir].idxmax()
+                maxmir = self.model.risk_by_latlon[mir].loc[io_idx]
+            else:
+                maxmir = 0
+            
+            if maxmir > 0:            
                 #max risk is > 0, do calculations
                 mr_lat = float(self.model.risk_by_latlon[lat].loc[io_idx])
                 mr_lon = float(self.model.risk_by_latlon[lon].loc[io_idx])
@@ -588,7 +604,7 @@ class MaximumIndividualRisksUserconcs(ExcelWriter, InputFile):
 
         #iterate over histatus_df to see if a target organ HI exists
         for row in histatus_df.itertuples():
-            if row.Status == "N":
+            if row.Status == "N" or check_df.empty:
                 #no HI, use default info
                 hirow = defhirow.copy()
                 hirow[0] = row.Parmname
