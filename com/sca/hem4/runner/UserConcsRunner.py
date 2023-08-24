@@ -181,9 +181,10 @@ class UserConcsRunner():
         self.model.all_polar_receptors_df = pd.DataFrame({'pollutant':self.polls,
                                                           'lat':0.0, 'lon':0.0, 'aconc':0.0}) 
         
-        # An innerblks dataframe is needed in Block Summary Chronic. This is a unique list of all receptors with hill height.
-        userconcs_receptors = self.userconcs_df.drop_duplicates(subset=['lat', 'lon'])
-        self.model.innerblks_df = pd.concat([self.census_filt, userconcs_receptors], ignore_index=True)
+        # Create a unique list of lat/lons/hill from the user receptors and interpolated to receptors.
+        # This DF is needed in the Block Summary Chronic module.
+        self.model.innerblks_df = pd.concat([self.census_filt, self.userconcs_df], ignore_index=True)
+        self.model.innerblks_df = self.model.innerblks_df.drop_duplicates(subset=['lat', 'lon'])        
         self.model.innerblks_df['distance'] = ''
         self.model.innerblks_df['angle'] = ''
         self.model.innerblks_df[['population', 'elev', 'hill']] = \

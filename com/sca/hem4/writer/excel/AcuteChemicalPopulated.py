@@ -52,7 +52,7 @@ class AcuteChemicalPopulated(ExcelWriter, InputFile):
     def generateOutputs(self):
 
         try:
-            
+                        
             # Set-up a dataframe to hold the running max conc for each pollutant along with location of the receptor
             pols = self.model.runstream_hapemis[pollutant].str.lower().unique().tolist()
             cols = [aconc, lon, lat, notes]
@@ -176,6 +176,8 @@ class AcuteChemicalPopulated(ExcelWriter, InputFile):
             acute_df[population] = 0
             acute_df[utme] = 0
             acute_df[utmn] = 0
+            acute_df[fips] = ''
+            acute_df[block] = ''
                    
             for index, row in acute_df.iterrows():
                 if row[notes].split(" ")[0] == 'Interpolated':

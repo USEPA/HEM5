@@ -109,7 +109,7 @@ class AllOuterReceptorsNonCensus(CsvWriter, InputFile):
         self.haplib_df['invrfc'] = self.haplib_df.apply(lambda x: 1/x['rfc'] if x['rfc']>0 else 0.0, axis=1)
 
         # Local copy of target organs and combine target organ columns into one list column
-        self.organs_df = self.model.organs.dataframe
+        self.organs_df = self.model.organs.dataframe.copy()
         self.organs_df['organ_list'] = (self.organs_df[['resp','liver','neuro','dev','reprod','kidney',
                         'ocular','endoc','hemato','immune','skeletal','spleen','thyroid','wholebod']]
                         .values.tolist())

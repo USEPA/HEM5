@@ -203,9 +203,10 @@ class ElevHill:
 
         # Determine the minimum receptor elevation
         min_rec_elev = np.min(rec_arr[:, 2])
-                        
+        
+               
         # Check to see if 30m elevation data already exists in a dataframe
-        if model.elev30m_df is None:
+        if 'elev30m' not in model.model_optns:
 
             try:
                 # ---------- Use TIF files ----------------------------------
@@ -254,13 +255,13 @@ class ElevHill:
                                         
                     raise ValueError("USGS elevation server unavailable")
     
-            # Store the 30m elevation dataframe into the model
-            model.elev30m_df = grid30_df
+            # Store the 30m elevation dataframe into the model_optns dictionary
+            model.model_optns['elev30m'] = grid30_df
             
         else:
             
             # 30m elev grid DF already exists
-            grid30_df = model.elev30m_df
+            grid30_df = model.model_optns['elev30m']
             
         # Create a numpy elevation array from the 30m dataframe
         grid30_lat = grid30_df['latitude'].to_numpy()
@@ -271,7 +272,7 @@ class ElevHill:
         # Use the max of the 30m grid elevations and the min receptor elevation
         # to compute the horizontal distance (km) needed for a 10% slope to get hill height.
         maxelev = grid30_elev.max()
-        maxelev_radius = ((maxelev - min_rec_elev) * 0.001 * 10) + 1
+        maxelev_radius = ((maxelev - min_rec_elev) * 0.001 * 10)
 
         # clean up
         del grid30_lat, grid30_lon, grid30_elev
