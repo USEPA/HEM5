@@ -59,20 +59,20 @@ class BlockSummaryChronic(CsvWriter, InputFile):
         allinner_df = self.model.all_inner_receptors_df.copy()
 
         innerblocks = self.model.innerblks_df[[lat, lon, utme, utmn, hill]]
-
+        
         # join inner receptor df with the inner block df and then select columns
         columns = [pollutant, conc, lat, lon, fips, block, overlap, elev, utme, utmn, population, hill]
         innermerged = allinner_df.merge(innerblocks, on=[lat, lon])[columns]
 
         #=========== New way =============================================
-        
+         
         unique_pollutants = innermerged[pollutant].unique().tolist()
         
         # Get the dose response data for all the pollutants
         drdata_df = self.getUreRfc(unique_pollutants)
         
         # Compute risk and HI
-        risk_df = innermerged[[pollutant, conc, lat, lon]].merge(drdata_df, on=pollutant)
+        risk_df = innermerged[[pollutant, conc, fips, block, lat, lon]].merge(drdata_df, on=pollutant)
         risk_df[mir] = risk_df[conc] * risk_df[ure]
         risk_df[hi_resp] = (risk_df[conc] * risk_df['invrfc'] * risk_df['resp']) / 1000
         risk_df[hi_live] = (risk_df[conc] * risk_df['invrfc'] * risk_df['live']) / 1000
@@ -90,10 +90,10 @@ class BlockSummaryChronic(CsvWriter, InputFile):
         risk_df[hi_whol] = (risk_df[conc] * risk_df['invrfc'] * risk_df['whol']) / 1000
         
         # Put risk and HI into innermerged
-        riskcols = [pollutant, lat, lon, mir, hi_resp, hi_live, hi_neur, hi_deve, hi_repr, 
+        riskcols = [pollutant, fips, block, lat, lon, mir, hi_resp, hi_live, hi_neur, hi_deve, hi_repr, 
                     hi_kidn, hi_ocul, hi_endo, hi_hema, hi_immu, hi_skel, hi_sple, 
                     hi_thyr, hi_whol]
-        innermerged = innermerged.merge(risk_df[riskcols], on=[pollutant,lat,lon])
+        innermerged = innermerged.merge(risk_df[riskcols], on=[pollutant,fips,block,lat,lon])
         
         #============== Old way ============================================
         
@@ -117,7 +117,7 @@ class BlockSummaryChronic(CsvWriter, InputFile):
                       mir, hi_resp, hi_live, hi_neur, hi_deve, hi_repr, hi_kidn, hi_ocul,
                       hi_endo, hi_hema, hi_immu, hi_skel, hi_sple, hi_thyr, hi_whol]
 
-        inneragg = innermerged.groupby([lat, lon]).agg(aggs)[newcolumns]
+        inneragg = innermerged.groupby([fips, block, lat, lon]).agg(aggs)[newcolumns]
 
         # Add a column to indicate type of census block. D => discrete, I => interpolated
         inneragg[blk_type] = "D"

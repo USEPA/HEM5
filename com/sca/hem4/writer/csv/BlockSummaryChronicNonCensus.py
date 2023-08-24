@@ -215,7 +215,7 @@ class BlockSummaryChronicNonCensus(CsvWriter, InputFile):
                 invRFC = 0 if drrow.iloc[0][rfc] == 0 else 1/drrow.iloc[0][rfc]
             
             risks.extend([URE, invRFC])
-            
+                        
             targetrow = self.model.organs.dataframe.loc[
                 self.model.organs.dataframe[pollutant].str.contains(pattern, case=False, regex=True)]
 

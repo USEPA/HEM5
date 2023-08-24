@@ -79,7 +79,6 @@ class Process_outputs():
             Logger.logMessage("Terminating output processing...")
             return
 
-
         #----------- create input selection file -----------------
         input_selection = InputSelectionOptions(self.outdir, self.facid, self.model, None)
         input_selection.write()

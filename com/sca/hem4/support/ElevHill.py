@@ -203,7 +203,10 @@ class ElevHill:
 
         # Determine the minimum receptor elevation
         min_rec_elev = np.min(rec_arr[:, 2])
-                        
+        
+        #Debug
+        import pdb; pdb.set_trace() 
+               
         # Check to see if 30m elevation data already exists in a dataframe
         if model.elev30m_df is None:
 
