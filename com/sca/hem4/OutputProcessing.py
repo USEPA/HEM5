@@ -190,7 +190,7 @@ class Process_outputs():
             ring_risk[population] = 0
         else:
             # alternate receptors used
-            block_columns = ring_columns + [rec_type, 'blk_type', rec_id]
+            block_columns = ring_columns + [rec_type, 'blk_type', rec_id, population]
             ring_risk[rec_id] = ''
             
         # Subset the block summary chronic DF to needed columns

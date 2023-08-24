@@ -45,7 +45,8 @@ class MaximumIndividualRisksNonCensus(ExcelWriter, InputFile):
 
     def calcHI(self, hiname, hivar):
         mr_parameter = hiname
-        io_idx = self.model.risk_by_latlon[self.model.risk_by_latlon[rec_type] == "P"][hivar].idxmax()
+        io_idx = self.model.risk_by_latlon[((self.model.risk_by_latlon[population] > 0) |
+                                           (self.model.risk_by_latlon[rec_type] == "P"))][hivar].idxmax()
         mr_lat = float(self.model.risk_by_latlon[lat].loc[io_idx])
         mr_lon = float(self.model.risk_by_latlon[lon].loc[io_idx])
         if self.model.risk_by_latlon[overlap].loc[io_idx] == "N":
@@ -82,7 +83,9 @@ class MaximumIndividualRisksNonCensus(ExcelWriter, InputFile):
                 mr_notes = "Interpolated"
         else:
             #overlapped
-            iop_idx = self.model.risk_by_latlon[self.model.risk_by_latlon[overlap] == "N"][hivar].idxmax()
+            iop_idx = self.model.risk_by_latlon[(self.model.risk_by_latlon[overlap] == "N") & 
+                      (self.model.risk_by_latlon[rec_type] != 'S') & 
+                      (self.model.risk_by_latlon[rec_type] != 'M')][hivar].idxmax()
             mr_lat = float(self.model.risk_by_latlon[lat].loc[iop_idx])
             mr_lon = float(self.model.risk_by_latlon[lon].loc[iop_idx])
             mr_value = self.model.risk_by_latlon[hivar].loc[iop_idx]
