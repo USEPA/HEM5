@@ -129,6 +129,8 @@ class contours():
     and you are using the automatically generated class breaks, unpopulated areas of higher impact (than predicted for populated receptors)\
         may appear close to the facility as areas outside the color-coded contours. Note: To include unpopulated areas of higher impact\
             in the maximum contour, you can use the  “Input list of class breaks” option to enter a class break higher than the populated max impact (but ≤ the unpopulated max impact).                                        
+
+> See the HEM User’s Guide for further discussion regarding the shape of the contours with respect to the modeled receptors and using the contours as part of QA review for your risk modeling.
                                             
                                         ''')
                                         ),                        

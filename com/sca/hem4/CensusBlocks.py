@@ -255,7 +255,7 @@ def in_box(modelblks, sourcelocs, modeldist, maxdist, overlap_dist, model):
                 polyvertices.loc[:, "tract"] = polyvertices[fac_id].str[0:10]
                 intract = pd.merge(outerblks, polyvertices, how='inner', on='tract')
                 if len(intract) > 0:
-                    innerblks = innerblks.append(intract).reset_index(drop=True)
+                    innerblks = pd.concat([innerblks, intract], ignore_index=True)
                     innerblks = innerblks[~innerblks[blockid].duplicated()]
                     outerblks = outerblks[~outerblks[blockid].isin(innerblks[blockid])].copy()
             
@@ -309,7 +309,7 @@ def in_box_NonCensus(modelblks, sourcelocs, modeldist, maxdist, overlap_dist, mo
       
         if len(indist) > 0:
             # Append to innerblks and shrink outerblks
-            innerblks = innerblks.append(indist).reset_index(drop=True)
+            innerblks = pd.concat([innerblks, indist], ignore_index=True)
             innerblks = innerblks[~innerblks[rec_id].duplicated()]
             outerblks = outerblks[~outerblks[rec_id].isin(innerblks[rec_id])].copy()
 
@@ -337,7 +337,7 @@ def in_box_NonCensus(modelblks, sourcelocs, modeldist, maxdist, overlap_dist, mo
             indist = outerblks.query('inbox == True')
             if len(indist) > 0:
                 # Append to innerblks and shrink outerblks
-                innerblks = innerblks.append(indist).reset_index(drop=True)
+                innerblks = pd.concat([innerblks, indist], ignore_index=True)
                 innerblks = innerblks[~innerblks[rec_id].duplicated()]
                 outerblks = outerblks[~outerblks[rec_id].isin(innerblks[rec_id])]
             
@@ -364,7 +364,7 @@ def in_box_NonCensus(modelblks, sourcelocs, modeldist, maxdist, overlap_dist, mo
                              np.array([row[utme],row[utmn]]), modeldist), axis=1))
                         polyblks = outerblks.query('nearpoly == True')
                         if len(polyblks) > 0:
-                            innerblks = innerblks.append(polyblks).reset_index(drop=True)
+                            innerblks = pd.concat([innerblks, polyblks], ignore_index=True)
                             innerblks = innerblks[~innerblks[rec_id].duplicated()]
                             outerblks = outerblks[~outerblks[rec_id].isin(innerblks[rec_id])]
                     if outerblks.empty:
