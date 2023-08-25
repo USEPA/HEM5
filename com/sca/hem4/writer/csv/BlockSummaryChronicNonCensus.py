@@ -53,12 +53,19 @@ class BlockSummaryChronicNonCensus(CsvWriter, InputFile):
         
         allinner_df = self.model.all_inner_receptors_df.copy()
 
-        innerblocks = self.model.innerblks_df[[lat, lon, utme, utmn, hill]]
+        # Sum the All Inner concs to fips/block/lat/lon/pollutant
+        sumcols = [rec_id, lat, lon, pollutant, overlap, population, conc]
+        aggs = {rec_id:'first', lat:'first', lon:'first', pollutant:'first', 
+                overlap:'first', population:'first', conc:'sum'}        
+        allinner_sum = allinner_df.groupby([rec_id, lat, lon, pollutant],
+                                           as_index=False).agg(aggs)[sumcols]
+
+        innerblocks = self.model.innerblks_df[[lat, lon, utme, utmn, elev, hill]]
 
         # join inner receptor df with the inner block df and then select columns
         columns = [pollutant, conc, lat, lon, rec_id, overlap, elev,
                    utme, utmn, population, hill]
-        innermerged = allinner_df.merge(innerblocks, on=[lat, lon])[columns]
+        innermerged = allinner_sum.merge(innerblocks, on=[lat, lon])[columns]
 
         #=========== New way =============================================
         

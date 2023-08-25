@@ -73,7 +73,7 @@ class CensusGenerator():
                 return
 
             # Append all additions to the census df and re-generate the JSON
-            census_df = census_df.append(additions_df)
+            census_df = pd.concat([census_df, additions_df], ignore_index=True)
             census_df = census_df.sort_values(by=['fips', 'blkid'])
             self.writeCensusFile(censusFilepath, census_df)
 

@@ -41,6 +41,22 @@ class ElevHill:
         where the coordinates are a list of tuples organized as (longitude, latitude).
         """
         # Get elevations for batches of 100 coordinates
+        
+        # First determine what resolution elevation data is available
+        min_x = min(coords)[0]
+        min_y = min(coords)[1]
+        max_x = max(coords)[0]
+        max_y = max(coords)[1]
+        bbox = (min_x, min_y, max_x, max_y)
+        src = py3dep.query_3dep_sources(bbox)
+        src_dict = src.groupby('dem_res')['OBJECTID'].count().to_dict()
+        if '10m' in src_dict:
+            ressrc = 'tep'
+        elif '30m' in src_dict:
+            ressrc = 'airmap'
+        else:
+            ressrc = 'tep'
+                       
         elevation_data = []
         batch_size = 100
         if len(coords) > 1:
@@ -48,7 +64,7 @@ class ElevHill:
                 batch = coords[i:i+batch_size]
                 
                 try:
-                    batch_elev = py3dep.elevation_bycoords(batch, source='tep')
+                    batch_elev = py3dep.elevation_bycoords(batch, source=ressrc)
                 except BaseException as e:
                     raise ValueError("USGS elevation server unavailable")
                 else:
@@ -152,6 +168,7 @@ class ElevHill:
                     'elevation': elevation_data.flatten()
                 }
                 df = pd.DataFrame(data)
+                df.dropna(inplace=True, ignore_index=True)
                                     
                 # Filter the dataframe based on the max elev in the tif
                 r_earth = 6371 # radius of earth in km
@@ -244,7 +261,9 @@ class ElevHill:
                 
                 try:
                     #-------------- Use py3dep method ---------------------------
-                                    
+                    
+                    print("Trying py3dep method for hill heights")
+                    
                     xarray = py3dep.get_dem(geo_box, 30, crs='epsg:4269')
                     grid30_df = xarray.to_dataframe()
                     grid30_df.reset_index(inplace=True)
@@ -262,7 +281,7 @@ class ElevHill:
             
             # 30m elev grid DF already exists
             grid30_df = model.model_optns['elev30m']
-            
+                
         # Create a numpy elevation array from the 30m dataframe
         grid30_lat = grid30_df['latitude'].to_numpy()
         grid30_lon = grid30_df['longitude'].to_numpy()
@@ -271,7 +290,7 @@ class ElevHill:
                         
         # Use the max of the 30m grid elevations and the min receptor elevation
         # to compute the horizontal distance (km) needed for a 10% slope to get hill height.
-        maxelev = grid30_elev.max()
+        maxelev = np.nanmax(grid30_elev)
         maxelev_radius = ((maxelev - min_rec_elev) * 0.001 * 10)
 
         # clean up
@@ -288,8 +307,7 @@ class ElevHill:
         loncon = ((grid30_arr[:, 1] >= lon1) &  (grid30_arr[:, 1] <= lon2))
         elevcon = (grid30_arr[:, 2] > min_rec_elev)
         grid_arr = grid30_arr[latcon & loncon & elevcon]
-                           
-        
+                                   
         # Process each receptor
         hill_arr = np.empty((rec_arr.shape[0],))  # Create an empty NumPy array
         for i in range(rec_arr.shape[0]):

@@ -57,12 +57,20 @@ class BlockSummaryChronic(CsvWriter, InputFile):
         """
                 
         allinner_df = self.model.all_inner_receptors_df.copy()
-
-        innerblocks = self.model.innerblks_df[[lat, lon, utme, utmn, hill]]
+        
+        # Sum the All Inner concs to fips/block/lat/lon/pollutant
+        sumcols = [fips, block, lat, lon, pollutant, overlap, population, conc]
+        aggs = {fips:'first', block:'first', lat:'first', lon:'first', pollutant:'first', 
+                overlap:'first', population:'first', conc:'sum'}        
+        allinner_sum = allinner_df.groupby([fips, block, lat, lon, pollutant],
+                                           as_index=False).agg(aggs)[sumcols]
+       
+        innerblocks = self.model.innerblks_df[[lat, lon, utme, utmn, elev, hill]]
         
         # join inner receptor df with the inner block df and then select columns
-        columns = [pollutant, conc, lat, lon, fips, block, overlap, elev, utme, utmn, population, hill]
-        innermerged = allinner_df.merge(innerblocks, on=[lat, lon])[columns]
+        columns = [pollutant, conc, lat, lon, fips, block, overlap, elev, 
+                   utme, utmn, population, hill]
+        innermerged = allinner_sum.merge(innerblocks, on=[lat, lon])[columns]
 
         #=========== New way =============================================
          
@@ -117,7 +125,7 @@ class BlockSummaryChronic(CsvWriter, InputFile):
                       mir, hi_resp, hi_live, hi_neur, hi_deve, hi_repr, hi_kidn, hi_ocul,
                       hi_endo, hi_hema, hi_immu, hi_skel, hi_sple, hi_thyr, hi_whol]
 
-        inneragg = innermerged.groupby([fips, block, lat, lon]).agg(aggs)[newcolumns]
+        inneragg = innermerged.groupby([fips, block, lat, lon], as_index=False).agg(aggs)[newcolumns]
 
         # Add a column to indicate type of census block. D => discrete, I => interpolated
         inneragg[blk_type] = "D"

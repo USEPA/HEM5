@@ -42,6 +42,9 @@ class UserConcsRunner():
         else:
             self.acuteyn = 'N'
         
+        # Set the rec_type of the user concs as C
+        self.userconcs_df['rec_type'] = 'C'
+        
         # Either census or alternate receptors are used. Both are stored as lazyframes.
         # Note that whether census or alternate receptors are used to interpolate to, the
         # dataframe is called "census".
@@ -57,7 +60,8 @@ class UserConcsRunner():
             altrec_df[[lat, lon]] = altrec_df.apply(lambda row: UTM.utm2ll(row[lat],row[lon],row[utmzone]) 
                                        if row['location_type']=='U' else [row[lat],row[lon]], result_type="expand", axis=1)
             self.census_df = pl.from_pandas(altrec_df)
-            
+         
+        
         # Prepare the output folder
         self.fac_folder =  "output/" + self.model.group_name + "/" + self.facilityId + "/"
 
@@ -113,6 +117,16 @@ class UserConcsRunner():
             census_filt['cconc'] = zic
             census_filt['aconc'] = zia
             poll_df = census_filt.dropna(subset=['cconc','aconc']) # drop blocks with nan conc because outside hull
+            
+            # If census used, assign a receptor type of C if census, P if census user receptor, S if school, and M if monitor.
+            # If alternate receptors used, assign receptor type as C.
+            if self.altrec == False:
+                poll_df['rec_type']=np.where(poll_df['blockid'].str.contains('M'),'M',
+                                      np.where(poll_df['blockid'].str.contains('S'),'S',
+                                      np.where(poll_df['blockid'].str.contains('U'),'P','C')))
+            else:
+                poll_df['rec_type'] = 'C'
+            
             pollframes.append(poll_df)            
 
         self.census_filt = census_filt
@@ -141,7 +155,6 @@ class UserConcsRunner():
         self.all_inner_df['source_id'] = 'sourceID'
         self.all_inner_df['emis_type'] = 'C'
         self.all_inner_df['overlap'] = 'N'
-        self.all_inner_df['rec_type'] = 'C'
         self.all_inner_df['drydep'] = ''
         self.all_inner_df['wetdep'] = ''
         self.all_inner_df['conc'] = self.all_inner_df['cconc']
