@@ -33,14 +33,12 @@ class MaximumOffsiteImpactsNonCensus(ExcelWriter):
         Max offsite impacts occur at non-overlapped inner or polar receptors with the highest value. Outer
         receptors are not checked because they cannot be higher than any polar receptor.
         """
-
+        
         # dictionary of receptor types and notes
         rectype_dict = {"PG":"Polar Grid", "P":"Alternate Receptor/User", "M":"Monitor", 
                         "S":"School", "B":"Boundary"}
         notes_dict = {"PG":"Polar", "P":"Alternate Receptor or Populated User Receptor", 
                       "M":"Monitor Receptor", "S":"School Receptor", "B":"Boundary Receptor"}
-#        rectype_dict = {"PG":"Polar grid", "D":"Census block", "I":"Census block"}
-#        notes_dict = {"PG":"Polar", "D":"Discrete", "I":"Interpolated"}
 
         ring_risk = self.ring_summary_chronic_df.copy()
         inner_risk = self.inner_recep_risk_df.copy()

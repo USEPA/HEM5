@@ -567,19 +567,16 @@ def getBlocksFromAltRecs(facid, cenx, ceny, cenlon, cenlat, utmZone, hemi, maxdi
     innerblks, outerblks = in_box_NonCensus(modelblks, sourcelocs, modeldist, maxdist, overlap_dist, model)
 
     # convert utme, utmn, utmz, and population to appropriate numeric types
-    # and set the rec_type column
     innerblks[utme] = innerblks[utme].astype(np.float64)
     innerblks[utmn] = innerblks[utmn].astype(np.float64)
     innerblks[utmz] = innerblks[utmz].astype(int)
     innerblks[population] = pd.to_numeric(innerblks[population], errors='coerce').astype(int)
-    innerblks[rec_type] = 'C'
     
     if not outerblks.empty:
         outerblks[utme] = outerblks[utme].astype(np.float64)
         outerblks[utmn] = outerblks[utmn].astype(np.float64)
         outerblks[utmz] = outerblks[utmz].astype(int)
         outerblks[population] = pd.to_numeric(outerblks[population], errors='coerce').astype(int)
-        outerblks[rec_type] = 'C'
 
     return innerblks, outerblks
 
