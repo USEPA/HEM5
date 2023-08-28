@@ -50,12 +50,19 @@ class ElevHill:
         bbox = (min_x, min_y, max_x, max_y)
         src = py3dep.query_3dep_sources(bbox)
         src_dict = src.groupby('dem_res')['OBJECTID'].count().to_dict()
-        if '10m' in src_dict:
-            ressrc = 'tep'
-        elif '30m' in src_dict:
+        
+        # If Canada, use airmap (30m)
+        if min_y >= 41.7:
             ressrc = 'airmap'
         else:
-            ressrc = 'tep'
+            if '10m' in src_dict:
+                ressrc = 'tep'
+            elif '30m' in src_dict:
+                ressrc = 'airmap'
+            else:
+                ressrc = 'None'
+        
+        print("Elevation bycoords using source ", ressrc)
                        
         elevation_data = []
         batch_size = 100
