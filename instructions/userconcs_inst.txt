@@ -1,0 +1,1 @@
+This HEM option will interpolate your user-supplied pollutant-specific concentrations to the receptor network you indicate (for those census or alternate receptors located in the same geographical area as your user-supplied concentrations) and calculate cancer and noncancer risks at each of these receptors.

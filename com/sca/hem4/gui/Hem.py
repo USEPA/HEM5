@@ -155,7 +155,7 @@ class Hem(Page):
         self.s1.grid(row=1, column=0, columnspan=2, sticky="nsew")
         self.alturep.grid(row=4, column=0, columnspan=2, sticky="nsew")
         self.s2.grid(row=2, column=0, columnspan=2, sticky="nsew", pady=10)
-        self.s3.grid(row=3, column=0, columnspan=2, sticky="nsew")
+        self.s3.grid(row=3, column=0, columnspan=2, sticky="e")
         self.s4.grid(row=5, column=0, columnspan=2, sticky="nsew")
         self.s5.grid(row=6, column=0, columnspan=2, sticky="nsew")
         self.s6.grid(row=7, column=0, columnspan=2, sticky="nsew")
@@ -188,7 +188,9 @@ class Hem(Page):
                                                   offvalue=0, font=TEXT_FONT, bg=self.tab_color,
                                                   command=self.set_userconc)
         self.defaultUserConc_sel.grid(row=0, column=1, sticky='W')
-        
+        self.defaultUserConc_sel.bind("<Enter>", lambda x: self.color_config( self.defaultUserConc_sel, self.defaultUserConc_sel, self.s3, self.highlightcolor, x))
+        self.defaultUserConc_sel.bind("<Leave>", lambda x: self.remove_config( self.hap_file, self.defaultUserConc_sel, self.s3, self.tab_color, x))
+      
         
         # Setting up each file upload space (includes browse button)
         group_label = tk.Label(self.s4, font=TEXT_FONT, bg=self.tab_color,
@@ -751,8 +753,8 @@ class Hem(Page):
         """
 
         # set the appropriate instructions text
-        browse = "instructions/userconc_browse.txt"
-        man = "instructions/userconc_man.txt"
+        browse = "instructions/userconcs_browse.txt"
+        man = "instructions/userconcs_inst.txt"
 
         # user concs label
         self.uconc = PIL.Image.open('images\icons8-import-48.png').resize((30,30))
@@ -766,7 +768,6 @@ class Hem(Page):
         self.uconc_file = tk.Label(self.s5, font=TEXT_FONT, bg=self.tab_color,
                                   textvariable=self.uconclbl)
         self.uconc_file.grid(row=0, column=1, sticky='W')
-
 
         self.uconc_file.bind("<Enter>", lambda x: self.color_config( self.uconc_file, self.uconcLabel, self.s5, self.highlightcolor, x))
         self.uconc_file.bind("<Leave>", lambda x: self.remove_config( self.uconc_file, self.uconcLabel, self.s5, self.tab_color, x))
@@ -1546,6 +1547,33 @@ class Hem(Page):
         # container.configure(bg=color)
 
         # serve instructions
+        if self.defaultUserConc_sel in [widget1, widget2]:
+            if self.instruction_instance.get() == " ":
+
+                self.browse("instructions/userconcs_inst.txt")
+
+            else:
+                self.instruction_instance.set(" ")
+
+
+        if "Please select a User Supplied Concentration CSV file:" in [widget1['text'], widget2['text']]:
+            if self.instruction_instance.get() == " ":
+
+                self.browse("instructions/userconcs_browse.txt")
+
+            else:
+                self.instruction_instance.set(" ")
+
+
+        if "Please select an Alternate Receptor CSV file:" in [widget1['text'], widget2['text']]:
+            if self.instruction_instance.get() == " ":
+
+                self.browse("instructions/altrec_browse.txt")
+
+            else:
+                self.instruction_instance.set(" ")
+
+
         if self.hapLabel in [widget1, widget2]:
             if self.instruction_instance.get() == " ":
 
