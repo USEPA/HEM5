@@ -518,6 +518,9 @@ def getBlocksFromAltRecs(facid, cenx, ceny, cenlon, cenlat, utmZone, hemi, maxdi
         (pl.col('lat') <= cenlat+1) & (pl.col('lat') >= cenlat-1) 
         & (pl.col('lon') <= cenlon+1) & (pl.col('lon') >= cenlon-1)).collect().to_pandas()
     
+    # Prefix all receptor IDs with ALT to distinguish them as alternate receptors
+    altrecs[rec_id] = 'ALT' + altrecs[rec_id].astype(str)
+        
     # If any population values are missing, we cannot create an Incidence report
     model.altRec_optns['altrec_nopop'] = altrecs.isnull().any()[population]
     altrecs[population] = pd.to_numeric(altrecs[population], errors='coerce').fillna(0)
