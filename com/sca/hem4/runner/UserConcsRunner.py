@@ -55,10 +55,12 @@ class UserConcsRunner():
             # Alternate Receptors
             self.census_df = model.altreceptr.dataframe.collect()
                         
-            # If any alternate receptors are in UTM coordinates, convert to lat/lon
+            # If any alternate receptors are in UTM coordinates, convert to lat/lon.
+            # Also prefix the receptor ID with ALT
             altrec_df = self.census_df.to_pandas()
             altrec_df[[lat, lon]] = altrec_df.apply(lambda row: UTM.utm2ll(row[lat],row[lon],row[utmzone]) 
                                        if row['location_type']=='U' else [row[lat],row[lon]], result_type="expand", axis=1)
+            altrec_df['rec_id'] = 'ALT' + altrec_df['rec_id'].astype(str)
             self.census_df = pl.from_pandas(altrec_df)
          
         
@@ -129,9 +131,11 @@ class UserConcsRunner():
             
             pollframes.append(poll_df)            
 
-        self.census_filt = census_filt
         self.all_inner_df = pd.concat(pollframes, ignore_index=True)
-                
+        
+        # Use one of the filtered census DF's to represent the census data
+        self.census_filt = census_filt
+                        
         Logger.logMessage('Finished interpolation of user supplied concentrations')
         
 
