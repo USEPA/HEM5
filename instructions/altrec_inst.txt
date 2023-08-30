@@ -1,0 +1,1 @@
+This HEM option will model emissions using AERMOD and predict pollutant-specific concentrations and risk at a network of alternate receptors that you provide.
