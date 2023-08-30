@@ -210,11 +210,17 @@ class Hem(Page):
                                              variable = self.check_altrec, bg=self.tab_color,
                                              command = self.set_altrec, font=TEXT_FONT, value=1)
         self.defaultrec_sel.grid(row=0, column=1, sticky='W')
+        self.defaultrec_sel.bind("<Enter>", lambda x: self.color_config( self.defaultrec_sel, self.defaultrec_sel, self.alturep, self.highlightcolor, x))
+        self.defaultrec_sel.bind("<Leave>", lambda x: self.remove_config( self.defaultrec_sel, self.defaultrec_sel, self.alturep, self.tab_color, x))
+
 
         self.altrec_sel = tk.Radiobutton(self.alturep, text="Use alternate receptors",
                                          variable = self.check_altrec, bg=self.tab_color,
                                          command = self.set_altrec, font=TEXT_FONT, value=2)
         self.altrec_sel.grid(row=0, column=2, sticky='W')
+        self.altrec_sel.bind("<Enter>", lambda x: self.color_config( self.altrec_sel, self.altrec_sel, self.alturep, self.highlightcolor, x))
+        self.altrec_sel.bind("<Leave>", lambda x: self.remove_config( self.altrec_sel, self.altrec_sel, self.alturep, self.tab_color, x))
+
 
         self.fu = PIL.Image.open('images\icons8-import-48.png').resize((30,30))
         self.ficon = self.add_margin(self.fu, 5, 0, 5, 0)
@@ -1560,6 +1566,24 @@ class Hem(Page):
             if self.instruction_instance.get() == " ":
 
                 self.browse("instructions/userconcs_browse.txt")
+
+            else:
+                self.instruction_instance.set(" ")
+
+
+        if "Use U.S. Census receptors" in [widget1['text'], widget2['text']]:
+            if self.instruction_instance.get() == " ":
+
+                self.browse("instructions/census_inst.txt")
+
+            else:
+                self.instruction_instance.set(" ")
+
+
+        if "Use alternate receptors" in [widget1['text'], widget2['text']]:
+            if self.instruction_instance.get() == " ":
+
+                self.browse("instructions/altrec_inst.txt")
 
             else:
                 self.instruction_instance.set(" ")
