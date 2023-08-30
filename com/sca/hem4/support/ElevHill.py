@@ -42,14 +42,32 @@ class ElevHill:
         """
         # Get elevations for batches of 100 coordinates
         
-        # First determine what resolution elevation data is available
+        # First determine what resolution of elevation data is available
         min_x = min(coords)[0]
         min_y = min(coords)[1]
         max_x = max(coords)[0]
         max_y = max(coords)[1]
-        bbox = (min_x, min_y, max_x, max_y)
-        src = py3dep.query_3dep_sources(bbox)
-        src_dict = src.groupby('dem_res')['OBJECTID'].count().to_dict()
+        
+        # If there is only a single coordinate or they are all the same, create a 1x1km box.
+        if min_x == max_x or min_y == max_y:
+            r_earth = 6371 # radius of earth in km
+            lat2 = min_y  + (0.5 / r_earth) * (180 / pi)
+            lon2 = min_x + (0.5 / r_earth) * (180 / pi) / cos(np.deg2rad(min_y))
+            lat1 = min_y  - (0.5 / r_earth) * (180 / pi)
+            lon1 = min_x - (0.5 / r_earth) * (180 / pi) / cos(np.deg2rad(min_y))
+        else:
+            lat1 = min_y
+            lon1 = min_x
+            lat2 = max_y
+            lon2 = max_x
+                    
+        bbox = (lon1, lat1, lon2, lat2)
+        try:
+            src = py3dep.query_3dep_sources(bbox)
+        except BaseException as e:
+            raise ValueError("USGS elevation server unavailable")
+        else:
+            src_dict = src.groupby('dem_res')['OBJECTID'].count().to_dict()
         
         # If Canada, use airmap (30m)
         if min_y >= 41.7:
