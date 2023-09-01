@@ -45,6 +45,7 @@ class UserConcsRunner():
         # Set the rec_type of the user concs as C
         self.userconcs_df['rec_type'] = 'C'
         
+        
         # Either census or alternate receptors are used. Both are stored as lazyframes.
         # Note that whether census or alternate receptors are used to interpolate to, the
         # dataframe is called "census".
@@ -85,11 +86,15 @@ class UserConcsRunner():
         
         Logger.logMessage('\nInterpolating user supplied concentrations...')
 
+        # If interpolating to census, then rename user conc column "rec_id" to "blockid"
+        # and set a FIPS column. If interpolating to Alt Receptors, prefix the user conc
+        # receptor ID with "UCONC" for easier identification.
         if not self.altrec:
-            # If interpolating to census, then rename user conc column "rec_id" to "blockid"
-            # and set a FIPS column.
             self.userconcs_df.rename(columns={'rec_id': 'blockid'}, inplace=True)
             self.userconcs_df['fips'] = 'UCONC'
+        else:
+            self.userconcs_df['rec_id'] = 'UCONC' + self.userconcs_df['rec_id'].astype(str)
+
         
         self.polls = list(self.userconcs_df['pollutant'].unique())
         pollframes = [self.userconcs_df]
