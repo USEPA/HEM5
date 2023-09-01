@@ -208,12 +208,12 @@ class KMLWriter():
 
 
         # Create a dataframe of polar receptor risk by receptor and pollutant        
-        polarsum = model.all_polar_receptors_df.groupby(['distance', 'angle', 'lat', 'lon', 'pollutant'],
+        polarsum = model.all_polar_receptors_df.groupby(['distance', 'angle', 'lat', 'lon', 'pollutant', 'overlap'],
                                                         as_index=False)[['conc']].sum()
         polarmerge1  = polarsum.merge(model.haplib.dataframe, on='pollutant')[['distance', 'angle',
-                                     'lat','lon','pollutant','conc','ure','rfc']]
+                                     'lat','lon','pollutant','overlap','conc','ure','rfc']]
         polarmerge2  = polarmerge1.merge(model.organs.dataframe, on='pollutant', how='left')[['distance', 'angle',
-                                     'lat','lon','pollutant','conc','ure','rfc','resp','liver',
+                                     'lat','lon','pollutant','overlap','conc','ure','rfc','resp','liver',
                                      'neuro','dev','reprod','kidney','ocular','endoc','hemato','immune',
                                      'skeletal','spleen','thyroid','wholebod']]
         polarmerge2['risk'] = polarmerge2['conc'] * polarmerge2['ure']
@@ -226,13 +226,13 @@ class KMLWriter():
                                  row['rfc'], row[his[1]]), axis=1)
 
         # Create a dataframe of inner receptor risk by receptor and pollutant
-        innersum = model.all_inner_receptors_df.groupby(['fips', 'block', 'lat', 'lon', 'rec_type', 'pollutant'],
+        innersum = model.all_inner_receptors_df.groupby(['fips', 'block', 'lat', 'lon', 'rec_type', 'pollutant','overlap'],
                                                         as_index=False)[['conc']].sum()
         if not innersum.empty:
             innermerge1  = innersum.merge(model.haplib.dataframe, on='pollutant')[['fips','block'
-                                         ,'lat','lon','pollutant','conc','ure','rfc','rec_type']]
+                                         ,'lat','lon','pollutant','overlap','conc','ure','rfc','rec_type']]
             innermerge2  = innermerge1.merge(model.organs.dataframe, on='pollutant', how='left')[['fips','block',
-                                         'lat','lon','pollutant','conc','ure','rfc','rec_type','resp',
+                                         'lat','lon','pollutant','conc','overlap','ure','rfc','rec_type','resp',
                                          'liver','neuro','dev','reprod','kidney','ocular',
                                          'endoc','hemato','immune','skeletal','spleen',
                                          'thyroid','wholebod']]
@@ -362,8 +362,11 @@ class KMLWriter():
             if not urec_df.empty:
                 urcr_folder = kml.Folder(ns=self.ns, name="User receptor cancer risk")
                 urcr_folder.isopen = 0
-                for block, group in urec_df.groupby("block"):
-                    ublock = group.iloc[0]['block']
+                for block, group in urec_df.groupby(["block", "overlap"]):
+                    if group.iloc[0]['overlap'] == 'N':
+                        ublock = group.iloc[0]['block']
+                    else:
+                        ublock = group.iloc[0]['block'] + ' (Overlapped)'
                     ulat = group.iloc[0]['lat']
                     ulon = group.iloc[0]['lon']
     
@@ -421,8 +424,11 @@ class KMLWriter():
                                 
                 urt_folder = kml.Folder(ns=self.ns, name="User receptor TOSHI")
                 urt_folder.isopen = 0
-                for block, group in urec_df.groupby("block"):
-                    ublock = group.iloc[0]['block']
+                for block, group in urec_df.groupby(["block", "overlap"]):
+                    if group.iloc[0]['overlap'] == 'N':
+                        ublock = group.iloc[0]['block']
+                    else:
+                        ublock = group.iloc[0]['block'] + ' (Overlapped)'
                     ulat = group.iloc[0]['lat']
                     ulon = group.iloc[0]['lon']
     
@@ -491,17 +497,19 @@ class KMLWriter():
             
             # Only use Census blocks (exclude user receptors)
             cblks = innermerge2.loc[innermerge2['rec_type']=='C']
-#            cblks = innermerge2.loc[~innermerge2['block'].str.upper().str.contains('U')]
-            for loc, group in cblks.groupby(["lat","lon"]):
+            for loc, group in cblks.groupby(["lat","lon","overlap"]):
                 slat = loc[0]
                 slon = loc[1]
-                sBlock = group.iloc[0]['block']
+                if group.iloc[0]['overlap'] == 'N':
+                    sBlock = group.iloc[0]['block']
+                else:
+                    sBlock = group.iloc[0]['block'] + ' (Overlapped)'
     
                 cbtot = group['risk'].sum() * 1000000
                 cbrnd = round(cbtot,2)
     
                 description = "<div align='center'><B> Census Block Receptor</B> <br /> \n" + \
-                              "    " + "<B> Block: " + str(group.iloc[0]['block']) + "</B> <br /> \n" + \
+                              "    " + "<B> Block: " + sBlock + "</B> <br /> \n" + \
                               "    " + "<B> HEM Estimated Cancer Risk (in a million) </B> <br /> \n" + \
                               "    " + "Total = " + str(cbrnd) + "<br /><br /> \n"
     
@@ -555,11 +563,14 @@ class KMLWriter():
             irt_folder = kml.Folder(ns=self.ns, name="Census block TOSHI")
             irt_folder.isopen = 0
     
-            for loc, group in cblks.groupby(["lat","lon"]):
+            for loc, group in cblks.groupby(["lat","lon","overlap"]):
                 slat = loc[0]
                 slon = loc[1]
                 sfips = group.iloc[0]['fips']
-                sblock = group.iloc[0]['block']
+                if group.iloc[0]['overlap'] == 'N':
+                    sblock = group.iloc[0]['block']
+                else:
+                    sblock = group.iloc[0]['block'] + ' (Overlapped)'
     
                 # Sum each toshi in this group
                 sg = group[['hi_resp','hi_live','hi_neur','hi_deve','hi_repr','hi_kidn',
@@ -799,14 +810,14 @@ class KMLWriter():
                                  row['rfc'], row[his[1]]), axis=1)
 
         # Create a dataframe of inner receptor risk by receptor and pollutant
-        innersum = model.all_inner_receptors_df.groupby(['rec_id', 'lat', 'lon', 'pollutant'],
+        innersum = model.all_inner_receptors_df.groupby(['rec_id', 'lat', 'lon', 'pollutant', 'overlap'],
                                                         as_index=False)[['conc']].sum()
 
         if not innersum.empty:
             innermerge1  = innersum.merge(model.haplib.dataframe, on='pollutant')[['rec_id',
-                                          'lat','lon','pollutant','conc','ure','rfc']]
+                                          'lat','lon','pollutant','overlap','conc','ure','rfc']]
             innermerge2  = innermerge1.merge(model.organs.dataframe, on='pollutant', how='left')[['rec_id',
-                                         'lat','lon','pollutant','conc','ure','rfc','resp',
+                                         'lat','lon','pollutant','overlap','conc','ure','rfc','resp',
                                          'liver','neuro','dev','reprod','kidney','ocular',
                                          'endoc','hemato','immune','skeletal','spleen',
                                          'thyroid','wholebod']]
