@@ -118,8 +118,9 @@ class contours():
 > The contours are generated using the griddata (linear) interpolation method of the [SciPy](https://scipy.org/) Python library.\
     There is inherent uncertainty involved in any interpolation.
     
-> The contour interpolation is more accurate when more input data are used, so it is recommended to select both the ring summary\
-    and block summary chronic output files.
+> The contour interpolation is more accurate when more input data are used, so it is recommended that your polar receptor\
+    network have at least the default number of rings (13) and radials (16). Including the census block receptors may add\
+        some resolution near the facility, but too many receptors can cause undesired irregular contour edges.
     
 > To expedite loading, the contoured area is limited to no more than 20km from the location of maximum impact, where the risks are the highest.\
     The boundary of the contoured area could be rectangular, circular, or irregular depending on the size of your modeling domain \
@@ -217,7 +218,7 @@ class contours():
                                 html.Div(id='ctab-upload-alert-div'),
                                                                        
                                 dbc.Tooltip(                        
-                                    [html.P('Select ring summary and/or block summary files (both are recommended)'),
+                                    [html.P('Select ring summary file with or without the block summary file'),
                                     html.P('Found in your HEM output dir\<your model run group>\<facility ID> folder')],
                                     target='ctab-upload-data',
                                     style={'backgroundColor': '#FFFFFF',
