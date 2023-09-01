@@ -292,7 +292,7 @@ class FacilityPrep():
                 # Compute distance and bearing (angle) from the center of the facility
                 user_recs['distance'] = np.sqrt((cenx - user_recs.utme)**2 + (ceny - user_recs.utmn)**2)
                 user_recs['angle'] = user_recs.apply(lambda row: self.bearing(row[utme],row[utmn],cenx,ceny), axis=1)
-    
+                    
                 # If facility is being run with elevated terrrain, get elevations
                 # and hill heights if the user did not provide them.
                 if self.model.facops[elev].iloc[0].upper() == "Y":
