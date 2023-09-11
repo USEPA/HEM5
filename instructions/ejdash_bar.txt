@@ -20,4 +20,4 @@ ____
 
 ![Bar Image](..\\assets\\ejdash_bar_image.png)
 
-> ##### If you mouse over the graph, a widget bar appears in the upper right. There are several widgets, including zoom and pan, and a widget that allows the download of the graph as an image file.
+> ##### If you hover your mouse over the graph, a widget bar appears in the upper right. There are several widgets, including zoom and pan, and a widget that allows the download of the graph as an image file.

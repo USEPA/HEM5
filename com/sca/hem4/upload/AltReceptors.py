@@ -53,9 +53,20 @@ class AltReceptors(InputFile):
             messagebox.showinfo("Duplicates", "One or more receptor IDs are duplicated in the Alternate Receptors file. Please correct and retry.")
             return None
 
+        # Check for invalid elevations (meters)
+        if len(df.filter((pl.col(elev) < -415) | (pl.col(elev) > 8850)).collect()) > 0 :
+            Logger.logMessage("There is at least one elevation value in the Alternate Receptor file that is less than -415m or greater than 8850m. Please correct and retry.")
+            messagebox.showinfo("Invalied Elevation Values", "There is at least one elevation value in the Alternate Receptor file that is less than -415m or greater than 8850m. Please correct and retry.")
+            return None
+
+        # Check for negative population values
+        if len(df.filter(pl.col(population) < 0).collect()) > 0 :
+            Logger.logMessage("Some receptors have negative population values in the Alternate Receptor file. Please correct and retry.")
+            messagebox.showinfo("Negative Population Values", "Some receptors have negative population values in the Alternate Receptor file. Please correct and retry.")
+            return None
+
         # Check for missing population values
         if len(df.filter((pl.col(population).is_null()) & (pl.col(rec_type) == 'P')).collect()) > 0 :
-        # if len(df.loc[(df[population].isnull()) & (df[rec_type] == 'P')]) > 0:
             Logger.logMessage("Some 'P' receptors are missing population values in the Alternate Receptor file. Please correct and retry.")
             messagebox.showinfo("Missing Population Values", "Some 'P' receptors are missing population values in the Alternate Receptor file. Please correct and retry.")
             return None

@@ -69,19 +69,22 @@ class ElevHill:
         else:
             src_dict = src.groupby('dem_res')['OBJECTID'].count().to_dict()
         
+        
         # If Canada, use airmap (30m)
-        if min_y >= 41.7:
+        if min_y > 42 and max_y < 83 and min_x > -141 and max_x < -53:
             ressrc = 'airmap'
         else:
             if '10m' in src_dict:
                 ressrc = 'tep'
-            elif '30m' in src_dict:
-                ressrc = 'airmap'
             else:
-                ressrc = 'None'
+                if '30m' in src_dict:
+                    ressrc = 'airmap'
+                else:
+                    ressrc = 'None'
+                    raise ValueError("USGS elevation server unavailable")
         
         print("Elevation bycoords using source ", ressrc)
-                       
+                    
         elevation_data = []
         batch_size = 100
         if len(coords) > 1:
@@ -96,7 +99,7 @@ class ElevHill:
                     elevation_data.extend(batch_elev)
         else:
             try:
-                batch_elev = py3dep.elevation_bycoords(coords, source='tep')
+                batch_elev = py3dep.elevation_bycoords(coords, source=ressrc)
             except BaseException as e:
                 raise ValueError("USGS elevation server unavailable")
             else:

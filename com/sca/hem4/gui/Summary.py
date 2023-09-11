@@ -316,6 +316,7 @@ class Summary(Page):
         if self.reports_ready:
             self.lift_page(self.nav.liLabel, self.nav.logLabel, self.nav.log, self.nav.current_button)
 
+
     def createReports(self,  arguments=None):
 
         self.reports_ready = False
@@ -332,9 +333,7 @@ class Summary(Page):
         # and the modeling group name is taken from the first part of the filename.
         try:
             skeleton = os.path.join(self.fullpath, '*facility_max_risk_and_hi.xl*')
-            print(skeleton)
             fname = glob.glob(skeleton)
-            print(fname)
 
             if fname:
                 head, tail = os.path.split(fname[0])
@@ -345,13 +344,13 @@ class Summary(Page):
             else:
                 Logger.logMessage("Cannot generate summaries because there is no Facility_Max_Risk_and_HI Excel file \
                                   in the folder you selected.")
-                messagebox.showinfo("Error", "Cannot generate summaries because there is no Facility_Max_Risk_and_HI \
-                                    Excel file in the folder you selected.")
+                messagebox.showinfo("Error", "Cannot generate summaries because there is no Facility_Max_Risk_and_HI" +
+                                    " Excel file in the folder you selected.")
+                self.reset()
+                return
 
         except Exception as e:
             print(e)
-            print("No facilities selected.",
-                  "Please select a run folder.")
             messagebox.showinfo("No facilities selected",
                                 "Please select a run folder.")
 
@@ -360,7 +359,6 @@ class Summary(Page):
         reportNameArgs = {}
         try:
             for report in self.checked:
-                print(self.checked)
 
                 if report == 'Max Risk and Hazard Indices':
                     reportNames.append('MaxRisk')
@@ -392,17 +390,14 @@ class Summary(Page):
                     # Translate user supplied starting position to array index value (0-based indexing)
                     if self.max_risk_pos_num.get() == '' or self.max_risk_pos_num.get() == '0':
                         startpos = 0
-                        print(startpos)
                     else:
                         startpos = int(self.max_risk_pos_num.get()) - 1
-                        print(startpos)
 
                     # Convert non-numeric to 0 (handles blank case)
                     if self.max_risk_chars_num.get().isnumeric():
                         numchars = int(self.max_risk_chars_num.get())
                     else:
                         numchars = 0
-                    print(numchars)
 
                     reportNameArgs['SourcePollutantMaxRisk'] = [startpos, numchars]
 
@@ -412,17 +407,14 @@ class Summary(Page):
                     # Translate user supplied starting position to array index value (0-based indexing)
                     if self.pos_num.get() == '' or self.pos_num.get() == '0':
                         startpos = 0
-                        print(startpos)
                     else:
                         startpos = int(self.pos_num.get()) - 1
-                        print(startpos)
 
                     # Convert non-numeric to 0 (handles blank case)
                     if self.chars_num.get().isnumeric():
                         numchars = int(self.chars_num.get())
                     else:
                         numchars = 0
-                    print(numchars)
 
                     reportNameArgs['SourceTypeRiskHistogram'] = [startpos, numchars]
 
@@ -544,11 +536,9 @@ class Summary(Page):
                 for i in self.nav.current_button:
                     i.configure(bg=self.main_color)
 
-#            print('Current Button before:', self.nav.current_button)
-#            print('page:', page)
             page.lift()
             self.nav.current_button = [widget1, widget2]
-#            print('Current Button after:', self.nav.current_button)
+            
         except Exception as e:
             print(e)
 
@@ -556,3 +546,34 @@ class Summary(Page):
         widget1.configure(bg=color)
         widget2.configure(bg=color)
         container.configure(bg=color)
+
+    def reset(self):
+        """
+        Function resets the Summary GUI to ddefault status
+        """
+        
+        self.titleLabel.configure(image=self.titleicon)
+
+        if "Source Type Risk Histogram" in self.checked:
+            self.pos.destroy()
+            self.pos_num.destroy()
+            self.chars.destroy()
+            self.chars_num.destroy()
+
+        if "Max Risk and HI by Source\nand Pollutant" in self.checked:
+            self.max_risk_pos.destroy()
+            self.max_risk_pos_num.destroy()
+            self.max_risk_chars.destroy()
+            self.max_risk_chars_num.destroy()
+
+        if "Max Concentration" in self.checked:
+            self.pollutant_name.destroy()
+            self.pollutant_label.destroy()
+            self.n5.destroy()
+
+        for icon in self.checked_icons:
+            icon.configure(image=self.uncheckedIcon)
+
+        self.folder_select['text'] = "Select output folder"
+        self.nav.summaryLabel.configure(image=self.nav.summaryIcon)
+        self.logfile.close()

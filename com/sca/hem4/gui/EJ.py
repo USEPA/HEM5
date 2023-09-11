@@ -97,7 +97,7 @@ class EJ(Page):
         self.fileLabel.grid(row=1, column=1, padx=10)
 
         self.step1_instructions = tk.Label(self.folder_frame,
-                                      text="Select output folder", font=SMALL_TEXT_FONT, bg=self.tab_color, anchor="w")
+                                      text="Select folder containing modeled risk results", font=SMALL_TEXT_FONT, bg=self.tab_color, anchor="w")
         self.step1_instructions.grid(pady=10, padx=10, row=1, column=2)
         self.fileLabel.bind("<Button-1>", partial(self.browse, self.step1_instructions))
 
@@ -109,7 +109,7 @@ class EJ(Page):
         self.step2.grid(pady=10, padx=10, row=1, column=0)
 
         self.step2_instructions = tk.Label(self.category_frame, font=SMALL_TEXT_FONT, bg=self.tab_color,
-                              text="Enter a run group name and prefix.")
+                              text="Enter a run group name and prefix to be used for the demographic results.")
         self.step2_instructions.grid(row=1, column=1, padx=5, sticky="W", columnspan=2)
 
         self.name_lbl = tk.Label(self.category_frame, font=SMALL_TEXT_FONT, bg=self.tab_color, text="Name:")
@@ -473,11 +473,13 @@ class EJ(Page):
 
             executor = ThreadPoolExecutor(max_workers=1)
             future = executor.submit(self.create_reports)
-
+            
     # Load all needed data sets and create an instance of EnvironmentalJustice so that we can
     # create reports.
     def create_reports(self):
 
+        self.successful_run = False
+        
         skipped_list = []
         
         # First, load the ACS datasets needed for analysis (if they haven't already been loaded...)
@@ -494,8 +496,19 @@ class EJ(Page):
             messagebox.showinfo("Missing files",
                                 "Unable to find required ACS data. Please check your HEM resources folder and " +
                                 "try again.")
+            self.reset()
             return
 
+        # Make sure the Facility Max Risk and HI file exists
+        facrisk_fname = os.path.basename(os.path.normpath(self.fullpath)) + "_facility_max_risk_and_hi.xlsx"
+        facrisk_path = os.path.join(self.fullpath, facrisk_fname)
+        if not os.path.isfile(facrisk_path):
+            Logger.logMessage("Couldn't find Facility Max Risk and HI file. Aborting...")
+            messagebox.showinfo("File Not Found", "Please check the HEM output folder for a properly named Facility Max Risk and HI file.")
+            self.reset()
+            return
+           
+        
         # Next, create (if doesn't exist) an all receptors file...
         all_receptors = MirHIAllReceptors(targetDir=self.fullpath)
         Logger.logMessage("Loading MIR HI All Receptors data...")

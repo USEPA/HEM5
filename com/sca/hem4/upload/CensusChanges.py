@@ -22,7 +22,8 @@ class CensusChanges(InputFile):
                                         'lat', 'lon', 'population', 'elev', 'hill', 'urban_pop'))
 
         if changes_df.empty == False:
-            changes_df[['population', 'urban_pop']] = changes_df[['population', 'urban_pop']].fillna(0)
+            changes_df[['population', 'urban_pop']] = changes_df[['population', 'urban_pop',
+                                                                  'elev', 'hill']].fillna(0)
             changes_df['population'] = changes_df['population'].astype(int)
             changes_df['urban_pop'] = changes_df['urban_pop'].astype(int)
         

@@ -120,9 +120,13 @@ class UserReceptors(DependentInputFile):
 
             valid = ['P', 'B', 'M', 'S']
             if row[rec_type] not in valid:
-                Logger.logMessage("Facility " + facility + ": Receptor type value " + str(row[rec_type]) + " invalid " +
+                if row[rec_type] == 'NAN':
+                    invalid_rectype = 'blank'
+                else:
+                    invalid_rectype = row[rec_type]
+                Logger.logMessage("Facility " + facility + ": Receptor type value " + '"' + invalid_rectype + '"' + " invalid " +
                                   "in the User Receptors List.")
-                messagebox.showinfo("Invalid receptor", "Facility " + facility + ": Receptor type value " + str(row[rec_type]) + " invalid " +
+                messagebox.showinfo("Invalid receptor type", "Facility " + facility + ": Receptor type value " + '"' + invalid_rectype + '"' + " invalid " +
                                   "in the User Receptors List.")
                 return None
 
