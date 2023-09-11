@@ -116,7 +116,12 @@ class contours():
                             dcc.Markdown('''
                                            
 > The contours are generated using the griddata (linear) interpolation method of the [SciPy](https://scipy.org/) Python library.\
-    There is inherent uncertainty involved in any interpolation.
+    There is inherent uncertainty involved in any interpolation. The contour interpolation is more accurate \
+        when more input data are used, so it is recommended that your polar receptor network have at least the \
+            default number of rings (13) and radials (16). Including the census block receptors may increase \
+                resolution near the facility, although too many receptors can cause undesired irregular contour edges. \
+                    Experiment with using ring summary with and without block summary data, to balance contour \
+                        smoothness with resolution around the modeled facility.
     
 > The contour interpolation is more accurate when more input data are used, so it is recommended that your polar receptor\
     network have at least the default number of rings (13) and radials (16). Including the census block receptors may add\
@@ -218,7 +223,7 @@ class contours():
                                 html.Div(id='ctab-upload-alert-div'),
                                                                        
                                 dbc.Tooltip(                        
-                                    [html.P('Select ring summary file with or without the block summary file'),
+                                    [html.P('Select ring summary and/or block summary files'),
                                     html.P('Found in your HEM output dir\<your model run group>\<facility ID> folder')],
                                     target='ctab-upload-data',
                                     style={'backgroundColor': '#FFFFFF',

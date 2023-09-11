@@ -61,6 +61,7 @@ class EmisVar(DependentInputFile):
 
     def clean(self, df):
         cleaned = df
+
         cleaned.replace(to_replace={fac_id:{"nan":""}, source_id:{"nan":""}}, inplace=True)
         cleaned = cleaned.reset_index(drop = True)
 
@@ -88,12 +89,16 @@ class EmisVar(DependentInputFile):
         val_list = []
         for index, row in df.iterrows():
             facility = row[fac_id]
-
+            
             valid = ['SEASON', 'MONTH', 'HROFDY', 'WSPEED', 'SEASHR', 'HRDOW',
                      'HRDOW7', 'SHRDOW', 'SHRDOW7', 'MHRDOW', 'MHRDOW7']
             if row['variation'] not in valid:
-                Logger.logMessage("Facility " + facility + " has invalid emission variation value of " + row['variation'])
-                messagebox.showinfo("Variation invalid", "Facility " + facility + " has invalid emission variation value of " + row['variation'])
+                if pd.isnull(row['variation']):
+                    invalid_variation = 'blank'
+                else:
+                    invalid_variation = row['variation']
+                Logger.logMessage("Facility " + facility + " has invalid emission variation value of " + invalid_variation)
+                messagebox.showinfo("Variation invalid", "Facility " + facility + " has invalid emission variation value of " + invalid_variation)
                 
                 return None
         #-----------------------------------------------------------------------------------------------------

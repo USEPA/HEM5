@@ -85,17 +85,36 @@ class Downwash(DependentInputFile):
                 Logger.logMessage(d)
             return None
 
+        # Any facility listed in the downwash file must have 5 rows of data - BUILDHGT,
+        # BUILDWID, BUILDLEN, XBADJ, and YBADJ
+        qacnt = df.groupby(fac_id)[keyword].nunique()
+        short = qacnt[qacnt < 5]
+        if len(short) > 0:
+            short_list = short.index.tolist()
+            short_facs = str(short_list)[1:-1]
+            Logger.logMessage("The following facilities are missing at least one keyword in the Downwash File: \n" + short_facs)
+            messagebox.showinfo("Missing downwash keyword", "The following facilities are missing at least one keyword in the Downwash File: \n" + short_facs)
+            return None
+            
+        
         for index, row in df.iterrows():
-
             if row[section] != 'SO':
-                Logger.logMessage("Invalid section " + str(row[section]) + ".")
-                messagebox.showinfo("Invalid section", "Invalid section " + str(row[section]) + ".")
+                if row[section] == 'NAN':
+                    invalid_section = 'blank'
+                else:
+                    invalid_section = row[section]
+                Logger.logMessage("Invalid section: " + invalid_section + ".")
+                messagebox.showinfo("Invalid section", "Invalid section: " + invalid_section + ".")
                 return None
 
             valid = ['BUILDHGT', 'BUILDWID', 'BUILDLEN', 'XBADJ', 'YBADJ']
             if row[keyword] not in valid:
-                Logger.logMessage("Invalid keyword " + str(row[keyword]) + ".")
-                messagebox.showinfo("Invalid keyword", "Invalid keyword " + str(row[keyword]) + ".")
+                if row[keyword] == 'NAN':
+                    invalid_keyword = 'blank'
+                else:
+                    invalid_keyword = row[keyword]
+                Logger.logMessage("Invalid keyword: " + invalid_keyword + ".")
+                messagebox.showinfo("Invalid keyword", "Invalid keyword: " + invalid_keyword + ".")
                 return None
 
             constrained = ['BUILDHGT', 'BUILDWID', 'BUILDLEN']
@@ -104,7 +123,7 @@ class Downwash(DependentInputFile):
 
                 if row[keyword] in constrained and row[field] < 0:
                     Logger.logMessage("Invalid down wash value " + str(row[field]) + ".")
-                    messagebox.showinfo("INvalid values", "Invalid down wash value " + str(row[field]) + ".")
+                    messagebox.showinfo("Invalid values", "Invalid down wash value " + str(row[field]) + ".")
                     return None
 
 
