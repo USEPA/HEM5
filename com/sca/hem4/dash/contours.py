@@ -120,18 +120,14 @@ class contours():
         when more input data are used, so it is recommended that your polar receptor network have at least the \
             default number of rings (13) and radials (16). Including the census block receptors may increase \
                 resolution near the facility, although too many receptors can cause undesired irregular contour edges. \
-                    Experiment with using ring summary with and without block summary data, to balance contour \
+                    Experiment using ring summary with and without block summary data, to balance contour \
                         smoothness with resolution around the modeled facility.
-    
-> The contour interpolation is more accurate when more input data are used, so it is recommended that your polar receptor\
-    network have at least the default number of rings (13) and radials (16). Including the census block receptors may add\
-        some resolution near the facility, but too many receptors can cause undesired irregular contour edges.
-    
+        
 > To expedite loading, the contoured area is limited to no more than 20km from the location of maximum impact, where the risks are the highest.\
     The boundary of the contoured area could be rectangular, circular, or irregular depending on the size of your modeling domain \
-        and whether your inputs are block or polar receptor data.
+        and whether your contours are based on ring summary with or without block summary data.
 
-> If your contours are based on both unpopulated receptors (e.g., polars) and populated receptors (e.g., census blocks),\
+> If your contours are based on both unpopulated receptors (e.g., polar rings) and populated receptors (e.g., census blocks),\
     and you are using the automatically generated class breaks, unpopulated areas of higher impact (than predicted for populated receptors)\
         may appear close to the facility as areas outside the color-coded contours. Note: To include unpopulated areas of higher impact\
             in the maximum contour, you can use the  “Input list of class breaks” option to enter a class break higher than the populated max impact (but ≤ the unpopulated max impact).                                        
