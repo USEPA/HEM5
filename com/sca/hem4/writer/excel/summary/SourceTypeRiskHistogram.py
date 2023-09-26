@@ -226,7 +226,7 @@ class SourceTypeRiskHistogram(ExcelWriter, AltRecAwareSummary):
             hundo.append(codelist[1])
             ten.append(codelist[2])
             one.append(codelist[3])
-            incidences.append(self.round_to_sigfig(codelist[4]))
+            incidences.append(self.round_to_sigfig(codelist[4], 1))
 
         allvalues = [['Cancer Risk'], maximum, ['Number of people'], hundo, ten, one, [''], incidences]
         allvalues.insert(0, header)

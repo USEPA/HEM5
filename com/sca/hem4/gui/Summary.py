@@ -297,6 +297,9 @@ class Summary(Page):
 
     def browse(self, icon, event):
 
+        if 'disabled' in self.fileLabel.config('state'):
+            return
+        
         self.fullpath = tk.filedialog.askdirectory()
         # Make sure a directory was selected
         if self.fullpath:
@@ -462,6 +465,8 @@ class Summary(Page):
             self.nav.log.scr.configure(state='disabled')
 
             self.titleLabel.configure(image=self.nav.greenIcon)
+            self.fileLabel.configure(state='disabled')
+            self.folder_select.configure(state='disabled')
             summaryMgr = SummaryManager(self.fullpath, groupname, faclist)
 
             # loop through for each report selected
@@ -495,6 +500,8 @@ class Summary(Page):
             self.logfile.write(str(datetime.now()) + ":    " + "Risk Summary Reports Finished." + "\n")
 
             self.titleLabel.configure(image=self.titleicon)
+            self.fileLabel.configure(state='normal')
+            self.folder_select.configure(state='normal')
 
             messagebox.showinfo("Summary Reports Finished", "Risk summary reports for  " + ', '.join(faclist) + " run.")
 
