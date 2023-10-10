@@ -130,15 +130,6 @@ class HEMdash():
         fname = self.SCname + "_facility_max_risk_and_hi.xlsx"
         max_rsk_hi = os.path.join(self.dir, fname)
         cols2use = ('A,B,D,E,F,G,H,M,N,Q,R,W,X,AA,AB,AE,AF,AI,AJ,AM,AN,AQ,AR,AU,AV,AY,AZ,BC,BD,BG,BH,BK,BL,BO,BQ,BR,BS,BT,BU,BV')
-        #cols2use = ('Facil_id', 'mx_can_rsk', 'can_rcpt_type',
-        #       'can_latitude', 'can_longitude', 'can_blk', 'respiratory_hi',
-        #       'resp_blk', 'liver_hi', 'liver_blk', 'neurological_hi', 'neuro_blk',
-        #       'developmental_hi', 'devel_blk', 'reproductive_hi', 'repro_blk',
-        #       'kidney_hi', 'kidney_blk', 'ocular_hi', 'ocular_blk', 'endocrine_hi',
-        #       'endo_blk', 'hematological_hi', 'hema_blk', 'immunological_hi',
-        #       'immun_blk', 'skeletal_hi', 'skel_blk', 'spleen_hi', 'spleen_blk',
-        #       'thyroid_hi', 'thyroid_blk', 'whole_body_hi', 'whole_blk', 'incidence',
-        #       'metname', 'km_to_metstation', 'fac_center_latitude', 'fac_center_longitude', 'rural_urban')
         dataTypes1 = {'Facil_id':str, 'mx_can_rsk':float, 'can_rcpt_type':str,
                'can_latitude':float, 'can_longitude':float, 'can_blk':str, 'respiratory_hi':float,
                'resp_blk':str, 'liver_hi':float, 'liver_blk':str, 'neurological_hi':float, 'neuro_blk':str,
@@ -162,9 +153,14 @@ class HEMdash():
                'Met Station', 'Distance to Met Station (km)', 'Facility Center Lat', 'Facility Center Lon',
                'Rural or Urban']
         MaxRisk = df_max_can['MIR (in a million)'].max()
-        # mapmets = ['MIR (in a million)', 'Respiratory HI', 'Liver HI','Neurological HI','Developmental HI',
-        #            'Reproductive HI', 'Kidney HI', 'Ocular HI', 'Endocrine HI', 'Hematological HI',
-        #            'Immunological HI','Skeletal HI', 'Spleen HI', 'Thyroid HI']
+        
+        # Find all risk metric columns with at least one nonzero value
+        allmets = ['MIR (in a million)', 'Respiratory HI', 'Liver HI','Neurological HI','Developmental HI',
+                    'Reproductive HI', 'Kidney HI', 'Ocular HI', 'Endocrine HI', 'Hematological HI',
+                    'Immunological HI','Skeletal HI', 'Spleen HI', 'Thyroid HI', 'Whole body HI']
+        nonzero_columns = df_max_can.columns[df_max_can.apply(lambda x: x != 0).any()]
+        nonzero_metrics = list(nonzero_columns.intersection(allmets))
+        
         
         # Define center coordinates of facilities and find their count
         cenlat = (df_max_can['Facility Center Lat'].max() + df_max_can['Facility Center Lat'].min())/2
@@ -181,7 +177,7 @@ class HEMdash():
             dataTypes2 = {'Facility ID':str, 'Source ID': str}
             df_canc_driv_temp = pd.read_excel(canc_driv_file, dtype=dataTypes2,
                                          usecols = ('A,B,C,D,F'))
-            df_canc_driv = df_canc_driv_temp.loc[(df_canc_driv_temp['MIR']>=5E-7) & (df_canc_driv_temp['Cancer Risk'] >= .1 * df_canc_driv_temp['MIR'])]
+            df_canc_driv = df_canc_driv_temp.loc[(df_canc_driv_temp['MIR']>=5E-7) & (df_canc_driv_temp['Cancer Risk'] >= .1 * df_canc_driv_temp['MIR'])].copy()
             df_canc_driv['Source/Pollutant Risk_MILL'] = df_canc_driv['Cancer Risk']*1000000
             df_canc_driv.columns = ['Facility', 'Facility MIR', 'Pollutant', 'S/P Risk', 'Source ID', 'Source/Pollutant Risk']
             df_canc_driv['Pollutant'] = df_canc_driv['Pollutant'].str.title()
@@ -193,7 +189,7 @@ class HEMdash():
             hi_driv_file = os.path.join(self.dir, fname)
             df_max_HI = pd.read_excel(hi_driv_file, dtype=dataTypes2)
             HI_types_formax = list(set(df_max_HI['HI Type']))
-            df_max_HI = df_max_HI.loc[(df_max_HI['HI Total'] >= 0.2) & (df_max_HI['Hazard Index'] >= .1 * df_max_HI['HI Total'])]
+            df_max_HI = df_max_HI.loc[(df_max_HI['HI Total'] >= 0.2) & (df_max_HI['Hazard Index'] >= .1 * df_max_HI['HI Total'])].copy()
             df_max_HI['Pollutant'] = df_max_HI['Pollutant'].str.title()
             df_max_HI.sort_values(by = ['HI Total'], ascending = False, inplace = True)
 #            df_max_HI.rename(columns={'Facility ID' : 'Facility'})
@@ -231,7 +227,7 @@ class HEMdash():
             can_inc_src_drvFile = os.path.join(self.dir, fname)
             df_inc_src_drv = pd.read_excel(can_inc_src_drvFile, skiprows=1)
             df_inc_src_drv.drop(columns = 'Maximum Overall', inplace=True)
-            Inc_row = df_inc_src_drv.loc[df_inc_src_drv['Unnamed: 0']=='Incidence']
+            Inc_row = df_inc_src_drv.loc[df_inc_src_drv['Unnamed: 0']=='Incidence'].copy()
             Inc_row.drop(columns = 'Unnamed: 0', inplace = True)
             Inc_row_melt = pd.melt(Inc_row, var_name = 'Source Type', value_name = 'Incidence',
                                     value_vars = Inc_row.columns)
@@ -244,7 +240,7 @@ class HEMdash():
             df_can_histo = pd.read_excel(can_histo_file, dtype={'Risk level': str, 'Population': float},
                                        usecols = ('A,B'))
             df_can_histo.columns = ['Risk Level', 'Population']
-            df_can_histo = df_can_histo.fillna(0)
+            df_can_histo = df_can_histo.fillna(0).copy()
             
             # Create dataframe of cancer histogram
             fname = self.SCname + "_hi_histogram.xlsx"
@@ -458,12 +454,7 @@ class HEMdash():
             # for column in cols2format_E  +  cols2format_f:
             #     df_dashtable[column] = df_dashtable[column].map(lambda x: '{:.6f}'.format(x))
             
-            # These are for the facility map tab
-            facs_mapmets = ['MIR (in a million)', 'Respiratory HI', 'Liver HI', 'Neurological HI',
-            'Developmental HI', 'Reproductive HI', 'Kidney HI', 'Ocular HI',
-            'Endocrine HI', 'Hematological HI', 'Immunological HI', 'Skeletal HI',
-            'Spleen HI', 'Thyroid HI', 'Whole body HI']
-
+            
             blue_scale = ['#bce6f9', '#74bbed', '#4d96ce', '#48799d', '#404d54']
             # blue_scale = ['aliceblue', 'darkblue']
             green_scale = ['#cbf6d9', '#64d2a2', '#33b581', '#368165', '#39544c']
@@ -521,12 +512,21 @@ class HEMdash():
                             html.H6("Risk metric"),
                               dcc.Dropdown(id='facs_metdrop',
                                            
-                                          options=[{"label": i, "value": i} for i in facs_mapmets],
+                                          options=[{"label": i, "value": i} for i in nonzero_metrics],
                                           multi=False,
                                           clearable=False,
-                                          value = 'MIR (in a million)',
+                                          value = nonzero_metrics[0],
                                           placeholder="Select a Metric",
                                           ),
+                              dbc.Tooltip(                        
+                                  [html.P('Risk metrics with all zero values are not included in this dropdown menu')],
+                                  target='facs_metdrop',
+                                  trigger = 'click hover focus legacy',
+                                  style={'backgroundColor': '#FFFFFF',
+                                         'opacity': '1.0',
+                                         'borderRadius': '4px'},
+                                  class_name="fw-bold"
+                              ),
                             
                             html.Hr(),
                             html.H6("Color ramp"),  
@@ -747,21 +747,32 @@ class HEMdash():
                 facs_geojson = json.loads(facs_gdf.to_json())
                 facs_buf = dlx.geojson_to_geobuf(facs_geojson)
                 
-                                    
-                color_prop = f'Log {metric}'
+                
                 colorscale = facramps[ramp]
+                                
+                if (facs_gdf[metric].max() >= 100 * facs_gdf[metric].median()):
+                    color_prop = f'Log {metric}'
+                    vmin = facs_gdf[color_prop].min()
+                    vmin_lin = 10**vmin
+                    vmax = facs_gdf[color_prop].max()
+                    vmid = (vmax+vmin)/2
+                    vmax_lin = 10**vmax            
+                    vmid_lin = 10**vmid 
                     
-                vmin = facs_gdf[color_prop].min()
-                vmin_lin = 10**vmin
+                else:
+                    color_prop = metric
+                    vmin = facs_gdf[color_prop].min()
+                    vmin_lin = vmin
+                    vmax = facs_gdf[color_prop].max()
+                    vmid = (vmax+vmin)/2
+                    vmax_lin = vmax            
+                    vmid_lin = vmid                  
+                                    
                 tick1 = int(self.riskfig(vmin_lin,1)) if vmin_lin >= 1 else self.riskfig(vmin_lin,1)
-                vmax = facs_gdf[color_prop].max()
-                vmid = (vmax+vmin)/2
-                vmax_lin = 10**vmax            
-                vmid_lin = 10**vmid            
                 tick2 = int(self.riskfig(vmid_lin,1)) if vmid_lin >= 1 else self.riskfig(vmid_lin,1)
                 tick3 = int(self.riskfig(vmax_lin,1)) if vmax_lin >= 1 else self.riskfig(vmax_lin,1)
                 tickText=[str(tick1), str(tick2), str(tick3)]
-                                    
+                                                    
                 maptitle = f'Facility Map ({numFacs} facilities) - {metric}'
                 draw_facs = Namespace('HEM_leaflet_functions', 'facs')('draw_facilities') 
                 fac_hideout=dict(min=vmin, max=vmax, colorscale=colorscale, circleOptions=dict(fillOpacity=1, stroke=False, radius=size), colorProp=color_prop)
@@ -780,16 +791,16 @@ class HEMdash():
 #                return 'Shutting down server'
 
                
-            @app.callback(
-                    Output("ctab-offcanvas0", "is_open"),
+            # @app.callback(
+            #         Output("ctab-offcanvas0", "is_open"),
 
-                    Input("ctab-open-offcanvas0", "n_clicks"),
-                    State("ctab-offcanvas0", "is_open")
-                    )
-            def toggle_offcanvas0(n1, is_open):
-                if n1:
-                    return not is_open
-                return is_open    
+            #         Input("ctab-open-offcanvas0", "n_clicks"),
+            #         State("ctab-offcanvas0", "is_open")
+            #         )
+            # def toggle_offcanvas0(n1, is_open):
+            #     if n1:
+            #         return not is_open
+            #     return is_open    
 
                 
             return app
