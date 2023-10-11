@@ -266,7 +266,7 @@ class HEMdash():
             # Create a bar chart of risk drivers
             
             if df_canc_driv.empty:
-                pass
+                riskDriv = None
             else:
                 riskDriv = px.bar(df_canc_driv, x = 'Facility', y = 'Source/Pollutant Risk',
                                   color = 'Pollutant', barmode = 'relative', hover_data=('Source ID', 'Pollutant'),
@@ -285,7 +285,7 @@ class HEMdash():
             # Create a bar chart of HI drivers
             
             if df_max_HI.empty:
-                pass
+                HIDriv = None
             else: 
                 HIDriv = px.bar(df_max_HI, x="Facility ID", y="Hazard Index", color="Pollutant", barmode="relative",
                                 facet_row ="HI Type", text = 'Source ID', height=300*numTOs,
@@ -335,12 +335,12 @@ class HEMdash():
                                        xaxis={'tickangle':45, 'automargin':True},
                                        )
             except:
-                pass
+                acuteBar = None
             
             #Create a pie chart of cancer incidence by pollutant
             
             if df_inc_drv.empty:
-                pass
+                inc_Pie = None
             else:
                 if len(self.SCname) > 15:
                     poll_title = f'Cancer Incidence by Pollutant for <br>{self.SCname}<br>(for pollutants that contribute at least 1%)'
@@ -354,7 +354,7 @@ class HEMdash():
             #Create a pie chart of cancer incidence by source type
             
             if Inc_row_melt.empty:
-                pass
+                src_inc_Pie = None
             else:
                 if len(self.SCname) > 15:
                     src_title = f'Cancer Incidence by Source Type for <br>{self.SCname}'
@@ -371,7 +371,7 @@ class HEMdash():
             # Create a cancer histogram
             
             if df_can_histo.empty:
-                pass
+                can_histo = None
             else:
                 can_histo = px.bar(df_can_histo, x = 'Risk Level', y = 'Population',
                                    
@@ -381,7 +381,7 @@ class HEMdash():
             # Create a noncancer histogram
             
             if df_hi_histo_melt.empty:
-                pass
+                hi_histo = None
             else:
                 hi_histo = px.bar(df_hi_histo_melt, x="HI Level", y="Population", color="Target Organ", barmode="group",
                                 log_y=True, text= "{}".format("Population"))
@@ -414,12 +414,12 @@ class HEMdash():
             
             #Here, if the dataframe for the graph is empty, don't make a graph
 
-            if df_canc_driv.empty:
+            if riskDriv is None:
                 riskdriv_dcc = ''
             else:
                 riskdriv_dcc = dcc.Graph(figure = riskDriv, config = chart_config, style = {'height': 600})
                 
-            if df_max_HI.empty:
+            if HIDriv is None:
                 HIDriv_dcc = ''
             else:
                 HIDriv_dcc = dcc.Graph(figure = HIDriv, config = HIDriv_config, style = {'height': numTOs*300})
@@ -429,22 +429,22 @@ class HEMdash():
             except:
                 acute_dcc = ''    
                 
-            if df_inc_drv.empty:
+            if inc_Pie is None:
                 pollinc_dcc = ''
             else:
                 pollinc_dcc = dcc.Graph(figure = inc_Pie, config = chart_config)    
                 
-            if df_inc_src_drv.empty:
+            if src_inc_Pie is None:
                 srcinc_dcc = ''
             else:
                 srcinc_dcc = dcc.Graph(figure = src_inc_Pie, config = chart_config)    
                 
-            if df_can_histo.empty:
+            if can_histo is None:
                 canhisto_dcc = ''
             else:
                 canhisto_dcc = dcc.Graph(figure = can_histo, config = chart_config, style = {'height': 600})    
                 
-            if df_hi_histo.empty:
+            if hi_histo is None:
                 hihisto_dcc = ''
             else:
                 hihisto_dcc = dcc.Graph(figure = hi_histo, config = chart_config, style = {'height': 600}) 
