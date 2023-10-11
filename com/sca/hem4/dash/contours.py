@@ -231,12 +231,21 @@ class contours():
                                 # html.Br(),
                                 html.Label(["Risk metric"]),
                                 dcc.Dropdown(id='ctab-metricdrop',
-                                              options=[{"label": key, "value": value} for key, value in metrics.items()],
+                                              options=[],
                                               multi=False,
                                               clearable=False,
-                                              value = 'MIR',
                                               placeholder="Select a Metric",
                                               ),
+                                dbc.Tooltip(                        
+                                    [html.P('After you load data, only risk metrics with at least one\
+                                            nonzero value will be included in this dropdown menu')],
+                                    target='ctab-metricdrop',
+                                    trigger = 'click hover focus legacy',
+                                    style={'backgroundColor': '#FFFFFF',
+                                           'opacity': '1.0',
+                                           'borderRadius': '4px'},
+                                    class_name="fw-bold"
+                                ),
                                 html.Div(id='ctab-metric-alert-div'),
                                                 
                                 html.Hr(),
@@ -375,7 +384,7 @@ class contours():
                    Output('ctab-themap', 'zoom'),
                    Output('ctab-themap', 'center'),
                    Output('ctab-store-cont-json', 'data'),
-                  
+              
                   Input('ctab-store-metricdata', 'data'),
                   Input('ctab-metricdrop','value'),
                   Input('ctab-classinput', 'value'),
@@ -384,13 +393,21 @@ class contours():
                   Input('ctab-rampdrop', 'value'),
                   Input('ctab-sigfigdrop', 'value'),
                   Input('ctab-store-facid', 'data'),
-                  Input('ctab-upload-data', 'filename')
+                  Input('ctab-upload-data', 'filename'),
+                  Input('ctab-store-rawdata', 'data')
                  
                   )
         
-        def interp_contour(metdata, metric, usercls, opac, numclass, ramp, digz, facname, filelist):
-                    
-            if metdata is None:
+        def interp_contour(metdata, metric, usercls, opac, numclass, ramp, digz, facname, filelist, rawdata):
+            
+            if rawdata is None:
+                maptitle = html.H4('Select files to create contours')
+                return no_update, no_update, maptitle, no_update, no_update, no_update
+            elif metric is None:
+                maptitle = html.H4('Select a risk metric')
+                return no_update, no_update, maptitle, no_update, no_update, no_update
+                
+            elif metdata is None:
                 return no_update, no_update, no_update, no_update, no_update, no_update
             else:
                 ctx = callback_context
@@ -407,7 +424,7 @@ class contours():
                     
                     if metric == 'MIR':
                         if gdf['RecID'].str.contains('UCONC').any():
-                            maptitle = html.H4(f'User-Supplied Concentrations - Lifetime Cancer Risk (in a million)')
+                            maptitle = html.H4('User-Supplied Concentrations - Lifetime Cancer Risk (in a million)')
                         else:
                             maptitle = html.H4(f'Facility {facname} - Lifetime Cancer Risk (in a million)')
                     else:
@@ -803,7 +820,8 @@ class contours():
         @app.callback(Output('ctab-store-rawdata', 'data'),
                       Output('ctab-upload-alert-div', 'children'),
                       Output('ctab-store-facid', 'data'),
-                                                  
+                      Output('ctab-metricdrop', 'options'),
+                                                                        
                       Input('ctab-upload-data', 'filename'),
                       Input('ctab-upload-data', 'contents'),
                       
@@ -816,13 +834,15 @@ class contours():
                 alert = no_update
                 data = no_update
                 facname = no_update
-                                
+                ddown_opts = no_update
+                                                
             else:
                 if len(filelist) > 2:
                     alert = self.make_alert("Only load 1 or 2 files")
                     data = no_update
                     facname = no_update
-                                            
+                    ddown_opts = no_update
+                                                                
                 else:
                     goodnames = []
                     goodcontents = []
@@ -838,12 +858,14 @@ class contours():
                         alert = self.make_alert("No ring or block csv files selected")
                         data = no_update
                         facname = no_update
-                        
+                        ddown_opts = no_update
+                                                
                     elif len(goodnames) == 2 and (goodnames[0].split('_')[0] != goodnames[1].split('_')[0]):
                         alert =self.make_alert("Facility names for the files don't match")
                         data = no_update
                         facname = no_update
-                                
+                        ddown_opts = no_update
+                                                        
                     else:
                         dflist =[]
                         for i, item in enumerate(goodnames):
@@ -895,11 +917,18 @@ class contours():
                            
                             
                         alldfs = pd.concat(dflist)
-                                            
+                        
+                        # Find all risk metric columns with at least one nonzero value
+                        nonzero_columns = alldfs.columns[alldfs.apply(lambda x: x != 0).any()]
+                        nonzero_metrics = list(nonzero_columns.intersection(list(metrics.values())))
+                        nz_metrics_dict = {key: metrics_reversed.get(key, None) for key in nonzero_metrics}
+                        nz_metrics_rev = {value: key for key, value in nz_metrics_dict.items()}
+                        ddown_opts = [{"label": key, "value": value} for key, value in nz_metrics_rev.items()]
+                                                                                     
                         alert=no_update
                         data = alldfs.to_dict('records')
                                         
-                return data, alert, facname
+                return data, alert, facname, ddown_opts
                 
                 
         # Take the df of the concatenated raw data and trim down the columns to chosen metric               
