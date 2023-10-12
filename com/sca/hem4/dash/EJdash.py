@@ -393,93 +393,93 @@ class EJdash():
             
                         ]),
                 
-                        dcc.Tab(label="Map of Facilities", children=[
+                        # dcc.Tab(label="Map of Facilities", children=[
                                 
                                 
-                                            ###########  Start Map Dropdowns  ##########
+                        #                     ###########  Start Map Dropdowns  ##########
         
-                                html.Div([
+                        #         html.Div([
                                         
-                                        html.H6("Metric to Display"),
-                                          dcc.Dropdown(id='metdrop',
+                        #                 html.H6("Metric to Display"),
+                        #                   dcc.Dropdown(id='metdrop',
                                                        
-                                                      options=[{"label": i, "value": i} for i in mapmets],
-                                                      multi=False,
-                                                      clearable=False,
-                                                      value = 'MIR (in a million)',
-                                                      placeholder="Select a Metric",
-                                                      ),
+                        #                               options=[{"label": i, "value": i} for i in mapmets],
+                        #                               multi=False,
+                        #                               clearable=False,
+                        #                               value = 'MIR (in a million)',
+                        #                               placeholder="Select a Metric",
+                        #                               ),
                                         
-                                        html.H6("Linear or Log Scale"),
-                                          dcc.Dropdown(id='scaledrop',
+                        #                 html.H6("Linear or Log Scale"),
+                        #                   dcc.Dropdown(id='scaledrop',
                                                        
-                                                      options=[{"label": 'Linear', "value": 'linear'},
-                                                               {"label": 'Log', "value": 'log'}
-                                                               ],
-                                                      multi=False,
-                                                      clearable=False,
-                                                      value = 'linear',
-                                                      placeholder="Linear or Log Scale",
-                                                      ),
+                        #                               options=[{"label": 'Linear', "value": 'linear'},
+                        #                                        {"label": 'Log', "value": 'log'}
+                        #                                        ],
+                        #                               multi=False,
+                        #                               clearable=False,
+                        #                               value = 'linear',
+                        #                               placeholder="Linear or Log Scale",
+                        #                               ),
                                         
                                                         
-                                        html.H6("Basemap"),
-                                          dcc.Dropdown(id='basemapdrop',
+                        #                 html.H6("Basemap"),
+                        #                   dcc.Dropdown(id='basemapdrop',
                                                        
-                                                      options=[{"label": 'Light', "value": 'carto-positron'},
-                                                               {"label": 'Dark', "value": 'carto-darkmatter'},
-                                                               {"label": 'Satellite', "value": 'satellite-streets'},
-                                                               {"label": 'Streets', "value": 'open-street-map'}
-                                                               ],
-                                                      multi=False,
-                                                      clearable=False,
-                                                      value = 'carto-positron',
-                                                      placeholder="Select a Basemap",
-                                                      ),
+                        #                               options=[{"label": 'Light', "value": 'carto-positron'},
+                        #                                        {"label": 'Dark', "value": 'carto-darkmatter'},
+                        #                                        {"label": 'Satellite', "value": 'satellite-streets'},
+                        #                                        {"label": 'Streets', "value": 'open-street-map'}
+                        #                                        ],
+                        #                               multi=False,
+                        #                               clearable=False,
+                        #                               value = 'carto-positron',
+                        #                               placeholder="Select a Basemap",
+                        #                               ),
                                   
-                                        html.H6("Color Ramp"),  
-                                          dcc.Dropdown(id='rampdrop',
+                        #                 html.H6("Color Ramp"),  
+                        #                   dcc.Dropdown(id='rampdrop',
                                                        
-                                                      options=[{"label": 'Blue to Red', "value": px.colors.sequential.Bluered},
-                                                               {"label": 'Blue to Yellow', "value": px.colors.sequential.Cividis},
-                                                               {"label": 'Purple to Yellow', "value": px.colors.sequential.Viridis},
-                                                               {"label": 'Blue Scale', "value": px.colors.sequential.Blues},
-                                                               {"label": 'Green Scale', "value": px.colors.sequential.Greens},
-                                                               {"label": 'Red Scale', "value": px.colors.sequential.Reds}],
-                                                      multi=False,
-                                                      clearable=False,
-                                                      value = px.colors.sequential.Viridis,
-                                                      placeholder="Select a Color Ramp",
-                                                      ),
+                        #                               options=[{"label": 'Blue to Red', "value": px.colors.sequential.Bluered},
+                        #                                        {"label": 'Blue to Yellow', "value": px.colors.sequential.Cividis},
+                        #                                        {"label": 'Purple to Yellow', "value": px.colors.sequential.Viridis},
+                        #                                        {"label": 'Blue Scale', "value": px.colors.sequential.Blues},
+                        #                                        {"label": 'Green Scale', "value": px.colors.sequential.Greens},
+                        #                                        {"label": 'Red Scale', "value": px.colors.sequential.Reds}],
+                        #                               multi=False,
+                        #                               clearable=False,
+                        #                               value = px.colors.sequential.Viridis,
+                        #                               placeholder="Select a Color Ramp",
+                        #                               ),
                                                        
-                                        html.H6("Dot Size"),  
-                                          dcc.Dropdown(id='sizedrop',
+                        #                 html.H6("Dot Size"),  
+                        #                   dcc.Dropdown(id='sizedrop',
                                                        
-                                                      options=[{"label": i, "value": i} for i in range(5,16)],
-                                                      multi=False,
-                                                      clearable=False,
-                                                      value = 6,
-                                                      placeholder="Select a Dot Size",
-                                                      ),
-                                ], className = 'two columns'),
+                        #                               options=[{"label": i, "value": i} for i in range(5,16)],
+                        #                               multi=False,
+                        #                               clearable=False,
+                        #                               value = 6,
+                        #                               placeholder="Select a Dot Size",
+                        #                               ),
+                        #         ], className = 'two columns'),
                                               
-                                html.Div([
+                        #         html.Div([
                                     
                         
-                                    html.Div([
-                                        dcc.Graph(id = 'map', style={"height": 800}, config = {
-                                                'modeBarButtonsToRemove': ['lasso2d', 'select2d', 'hoverCompareCartesian', 'hoverClosestCartesian'],
-                                                'toImageButtonOptions': {
-                                                        'format': 'jpeg', # one of png, svg, jpeg, webp
-                                                        'filename': 'Facility Map',
-                                                        'scale': 1}
-                                                  }),
-                                    ], className='ten columns'),
+                        #             html.Div([
+                        #                 dcc.Graph(id = 'map', style={"height": 800}, config = {
+                        #                         'modeBarButtonsToRemove': ['lasso2d', 'select2d', 'hoverCompareCartesian', 'hoverClosestCartesian'],
+                        #                         'toImageButtonOptions': {
+                        #                                 'format': 'jpeg', # one of png, svg, jpeg, webp
+                        #                                 'filename': 'Facility Map',
+                        #                                 'scale': 1}
+                        #                           }),
+                        #             ], className='ten columns'),
                         
                                         
-                                ], className = 'row'),
+                        #         ], className = 'row'),
                                        
-                        ]),
+                        # ]),
                                                        
                         dcc.Tab(label="Summary Table", children=[
                                                      
@@ -521,9 +521,9 @@ class EJdash():
                                         dcc.Tab(label='About the Bar Graph',children=[
                                                 dcc.Markdown(bar_instr),
                                         ]),
-                                        dcc.Tab(label='About the Map',children=[
-                                                dcc.Markdown(map_instr),
-                                        ]),
+                                        # dcc.Tab(label='About the Map',children=[
+                                        #         dcc.Markdown(map_instr),
+                                        # ]),
                                         dcc.Tab(label='About the Summary Table',children=[
                                                 dcc.Markdown(table_instr),
                                         ]),
@@ -695,82 +695,82 @@ class EJdash():
                 
             return fig
         
-        ### Callback for the Map
-        @app.callback(Output('map', 'figure'),
-                     [Input('barchart', 'clickData'),
-                      Input('demodrop', 'value'),
-                      Input('basemapdrop', 'value'),
-                      Input('rampdrop', 'value'),
-                      Input('scaledrop', 'value'),
-                      Input('sizedrop', 'value'),
-                      Input('metdrop', 'value')
-                      ])  
-        def makemap (clickdata, demo, basemap, ramp, scale, dotsize, metric):
+#         ### Callback for the Map
+#         @app.callback(Output('map', 'figure'),
+#                      [Input('barchart', 'clickData'),
+#                       Input('demodrop', 'value'),
+#                       Input('basemapdrop', 'value'),
+#                       Input('rampdrop', 'value'),
+#                       Input('scaledrop', 'value'),
+#                       Input('sizedrop', 'value'),
+#                       Input('metdrop', 'value')
+#                       ])  
+#         def makemap (clickdata, demo, basemap, ramp, scale, dotsize, metric):
             
-            dff = xlsheet 
-            dff['logmetric'] = np.log10(dff['MIR (in a million)'])
+#             dff = xlsheet 
+#             dff['logmetric'] = np.log10(dff['MIR (in a million)'])
             
-        #    print(dff.head(10))
+#         #    print(dff.head(10))
             
-            if clickdata is None:
-                cenlat = dff['Latitude'].mean()
-                cenlon = dff['Longitude'].mean()
-                zoom = 3
+#             if clickdata is None:
+#                 cenlat = dff['Latitude'].mean()
+#                 cenlon = dff['Longitude'].mean()
+#                 zoom = 3
                                   
-            else:        
-                print(clickdata)
-                fac = clickdata['points'][0]['x']
-                dfFac = dff.loc[dff['Facility'] == fac]
-                cenlat = dfFac['Latitude'].mean()
-                cenlon = dfFac['Longitude'].mean()
-                zoom = 15
+#             else:        
+#                 print(clickdata)
+#                 fac = clickdata['points'][0]['x']
+#                 dfFac = dff.loc[dff['Facility'] == fac]
+#                 cenlat = dfFac['Latitude'].mean()
+#                 cenlon = dfFac['Longitude'].mean()
+#                 zoom = 15
             
-            if scale == 'log':
-                prefix = '1E '
-                color = np.log10(dff[metric])
+#             if scale == 'log':
+#                 prefix = '1E '
+#                 color = np.log10(dff[metric])
                 
-            else:
-                prefix = ''
-                color = metric
+#             else:
+#                 prefix = ''
+#                 color = metric
                 
-#            hoverdata = ['Block ID', 'MIR (in a million)', 'Cancer Incidence','Respiratory HI', 'Liver HI', 'Neurological HI', 'Developmental HI',
-#                 'Reproductive HI', 'Kidney HI', 'Ocular HI', 'Endocrine HI', 'Hematological HI', 'Immunological HI',
-#                 'Skeletal HI', 'Spleen HI', 'Thyroid HI',  'Latitude', 'Longitude']
+# #            hoverdata = ['Block ID', 'MIR (in a million)', 'Cancer Incidence','Respiratory HI', 'Liver HI', 'Neurological HI', 'Developmental HI',
+# #                 'Reproductive HI', 'Kidney HI', 'Ocular HI', 'Endocrine HI', 'Hematological HI', 'Immunological HI',
+# #                 'Skeletal HI', 'Spleen HI', 'Thyroid HI',  'Latitude', 'Longitude']
             
-            hoverdata={
-                    'MIR (in a million)':':.1e',
-                    'Respiratory HI':':.1e',
-                    'Liver HI':':.1e',
-                    'Neurological HI':':.1e',
-                    'Developmental HI':':.1e',
-                    'Reproductive HI':':.1e',
-                    'Kidney HI':':.1e',
-                    'Ocular HI':':.1e',
-                    'Endocrine HI':':.1e',
-                    'Hematological HI':':.1e',
-                    'Immunological HI':':.1e',
-                    'Skeletal HI':':.1e',
-                    'Spleen HI':':.1e',
-                    'Thyroid HI':':.1e',
-                    'Latitude':':.7f',
-                    'Longitude':':.7f',
-                    }
+#             hoverdata={
+#                     'MIR (in a million)':':.1e',
+#                     'Respiratory HI':':.1e',
+#                     'Liver HI':':.1e',
+#                     'Neurological HI':':.1e',
+#                     'Developmental HI':':.1e',
+#                     'Reproductive HI':':.1e',
+#                     'Kidney HI':':.1e',
+#                     'Ocular HI':':.1e',
+#                     'Endocrine HI':':.1e',
+#                     'Hematological HI':':.1e',
+#                     'Immunological HI':':.1e',
+#                     'Skeletal HI':':.1e',
+#                     'Spleen HI':':.1e',
+#                     'Thyroid HI':':.1e',
+#                     'Latitude':':.7f',
+#                     'Longitude':':.7f',
+#                     }
             
-#            if scale == 'log':
-#                    hoverdata['color'] = False
+# #            if scale == 'log':
+# #                    hoverdata['color'] = False
                        
-            fig = px.scatter_mapbox(dff, lat = 'Latitude', lon = 'Longitude', color = color,
-                                    mapbox_style = basemap, color_continuous_scale=ramp, opacity = 1, zoom = zoom,
-                                    center = dict(lat = cenlat, lon = cenlon),
-                                    hover_name = 'Facility',
-                                    hover_data = hoverdata                           
-                                    )
-            fig.update_traces(marker=dict(size=dotsize))
-            fig.update_layout(title = '<b>Facility Map - {}</b>'.format(metric),
-                              title_font=dict(size = 22, color = 'black'), uirevision = 'foo',
-                              )
-            fig.update_coloraxes(colorbar_tickprefix= prefix, colorbar_title = metric)
-            return fig
+#             fig = px.scatter_mapbox(dff, lat = 'Latitude', lon = 'Longitude', color = color,
+#                                     mapbox_style = basemap, color_continuous_scale=ramp, opacity = 1, zoom = zoom,
+#                                     center = dict(lat = cenlat, lon = cenlon),
+#                                     hover_name = 'Facility',
+#                                     hover_data = hoverdata                           
+#                                     )
+#             fig.update_traces(marker=dict(size=dotsize))
+#             fig.update_layout(title = '<b>Facility Map - {}</b>'.format(metric),
+#                               title_font=dict(size = 22, color = 'black'), uirevision = 'foo',
+#                               )
+#             fig.update_coloraxes(colorbar_tickprefix= prefix, colorbar_title = metric)
+#             return fig
            
          
         @app.callback(Output('callbackTable', 'children'),
