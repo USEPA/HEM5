@@ -234,6 +234,7 @@ class contours():
                                               options=[],
                                               multi=False,
                                               clearable=False,
+                                              value=[],
                                               placeholder="Select a Metric",
                                               ),
                                 dbc.Tooltip(                        
@@ -821,6 +822,7 @@ class contours():
                       Output('ctab-upload-alert-div', 'children'),
                       Output('ctab-store-facid', 'data'),
                       Output('ctab-metricdrop', 'options'),
+                      Output('ctab-metricdrop', 'value'),
                                                                         
                       Input('ctab-upload-data', 'filename'),
                       Input('ctab-upload-data', 'contents'),
@@ -835,6 +837,7 @@ class contours():
                 data = no_update
                 facname = no_update
                 ddown_opts = no_update
+                metric1=no_update
                                                 
             else:
                 if len(filelist) > 2:
@@ -842,6 +845,7 @@ class contours():
                     data = no_update
                     facname = no_update
                     ddown_opts = no_update
+                    metric1=no_update
                                                                 
                 else:
                     goodnames = []
@@ -859,12 +863,14 @@ class contours():
                         data = no_update
                         facname = no_update
                         ddown_opts = no_update
+                        metric1=no_update
                                                 
                     elif len(goodnames) == 2 and (goodnames[0].split('_')[0] != goodnames[1].split('_')[0]):
                         alert =self.make_alert("Facility names for the files don't match")
                         data = no_update
                         facname = no_update
                         ddown_opts = no_update
+                        metric1=no_update
                                                         
                     else:
                         dflist =[]
@@ -924,11 +930,12 @@ class contours():
                         nz_metrics_dict = {key: metrics_reversed.get(key, None) for key in nonzero_metrics}
                         nz_metrics_rev = {value: key for key, value in nz_metrics_dict.items()}
                         ddown_opts = [{"label": key, "value": value} for key, value in nz_metrics_rev.items()]
+                        metric1=ddown_opts[0]['value']
                                                                                      
                         alert=no_update
                         data = alldfs.to_dict('records')
                                         
-                return data, alert, facname, ddown_opts
+                return data, alert, facname, ddown_opts,metric1
                 
                 
         # Take the df of the concatenated raw data and trim down the columns to chosen metric               
