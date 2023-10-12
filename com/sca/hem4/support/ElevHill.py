@@ -62,26 +62,27 @@ class ElevHill:
             lon2 = max_x
                     
         bbox = (lon1, lat1, lon2, lat2)
-        try:
-            src = py3dep.query_3dep_sources(bbox)
-        except BaseException as e:
-            raise ValueError("USGS elevation server unavailable")
-        else:
-            src_dict = src.groupby('dem_res')['OBJECTID'].count().to_dict()
+        # try:
+        #     src = py3dep.query_3dep_sources(bbox)
+        # except BaseException as e:
+        #     raise ValueError("USGS elevation server unavailable")
+        # else:
+        #     src_dict = src.groupby('dem_res')['OBJECTID'].count().to_dict()
         
         
-        # If Canada, use airmap (30m)
+        # If Canada, use airmap (30m) otherwise use 10m
         if min_y > 42 and max_y < 83 and min_x > -141 and max_x < -53:
             ressrc = 'airmap'
         else:
-            if '10m' in src_dict:
-                ressrc = 'tep'
-            else:
-                if '30m' in src_dict:
-                    ressrc = 'airmap'
-                else:
-                    ressrc = 'None'
-                    raise ValueError("USGS elevation server unavailable")
+            ressrc = 'tep'
+            # if '10m' in src_dict:
+            #     ressrc = 'tep'
+            # else:
+            #     if '30m' in src_dict:
+            #         ressrc = 'airmap'
+            #     else:
+            #         ressrc = 'None'
+            #         raise ValueError("USGS elevation server unavailable")
         
         print("Elevation bycoords using source ", ressrc)
                     
@@ -196,7 +197,7 @@ class ElevHill:
                     'elevation': elevation_data.flatten()
                 }
                 df = pd.DataFrame(data)
-                df.dropna(inplace=True, ignore_index=True)
+                df.dropna(inplace=True)
                                     
                 # Filter the dataframe based on the max elev in the tif
                 r_earth = 6371 # radius of earth in km
@@ -253,7 +254,7 @@ class ElevHill:
         # Check to see if 30m elevation data already exists in a dataframe
         if 'elev30m' not in model.model_optns:
 
-            try:
+            try:                
                 # ---------- Use TIF files ----------------------------------
                                 
                 # Use the overall bounding box to determine which 1-degree tifs to request
