@@ -12,19 +12,18 @@ import geopandas as gp
 # from fiona import _shim, schema
 from shapely.geometry import Point
 from bokeh.io import curdoc
-from bokeh.tile_providers import STAMEN_TONER_LABELS, get_provider
+# from bokeh.tile_providers import get_provider
 from bokeh.models import WMTSTileSource, LabelSet, ColumnDataSource, HoverTool, \
     WheelZoomTool, ZoomInTool, ZoomOutTool, PanTool, ResetTool, SaveTool
 # from bokeh.models.layouts import TabPanel, Tabs
 from bokeh.models import TabPanel, Tabs
-
 from bokeh.plotting import figure, save
 
 from com.sca.hem4.support.Directory import Directory
 from com.sca.hem4.writer.csv.AllPolarReceptors import AllPolarReceptors
 from com.sca.hem4.writer.excel.summary.AcuteImpacts import *
 
-pd.set_option('display.max_columns', 500)
+from sigfig import round as roundsf
 
 #------------------------------------------
 # Creates html files with maps displaying acute impact data. CSV files are also created
@@ -36,7 +35,14 @@ class AcuteImpactsVisualizer():
         self.sourceDir = sourceDir
         self.basepath = os.path.basename(os.path.normpath(sourceDir))
         self.facilityIds = Directory.find_facilities(self.sourceDir)
-
+    
+    def riskfig(self,num):
+        try:
+            output_type = float if num < 1 else int
+            return roundsf(num, sigfigs=1, output_type=output_type)
+        except Exception as e:
+            return None
+        
     def visualize(self):
 
         # Suppress various bokeh warnings
@@ -121,13 +127,15 @@ class AcuteImpactsVisualizer():
             gdf = gdf.to_crs(epsg=3857)
             
             ESRI_tile = WMTSTileSource(url='https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{Z}/{Y}/{X}.jpg')
+            # roads_tile = WMTSTileSource(url='https://tigerweb.geo.census.gov/arcgis/rest/services/TIGERweb/Transportation/MapServer/tile/{z}/{y}/{x}')
+            
             
             gdf['x'] = gdf.centroid.map(lambda p: p.x)
             gdf['y'] = gdf.centroid.map(lambda p: p.y)
             avg_x = gdf['x'].mean()
             avg_y = gdf['y'].mean()
             gdf = gdf.drop('Coordinates', axis=1)
-            gdf['HQ'] = gdf['HQ'].map(lambda x: '%.1g' % x)
+            gdf['HQ'] = gdf['HQ'].apply(lambda x: self.riskfig(x))
             gdf['lat'] = gdf['lat'].map(lambda x: '%.6f' % x)
             gdf['lon'] = gdf['lon'].map(lambda x: '%.6f' % x)
             gdf['angle'] = gdf['angle'].map(lambda x: '%.1f' % x)
@@ -152,8 +160,9 @@ class AcuteImpactsVisualizer():
 
             p.toolbar.active_scroll = p.select_one(WheelZoomTool)
             p.add_tile(ESRI_tile)
-            tile_provider = get_provider(STAMEN_TONER_LABELS)
-            p.add_tile(tile_provider)
+            # tile_provider = get_provider("CARTODBPOSITRON")
+            # p.add_tile(tile_provider)
+            # p.add_tile(roads_tile)
 
             p.circle('x', 'y', color = 'yellow', size = 7, source=source)
             p.xaxis.visible = False
@@ -162,11 +171,6 @@ class AcuteImpactsVisualizer():
             p.ygrid.visible = False
             p.background_fill_color = None
             p.border_fill_color = None
-
-#            labels = LabelSet(x='x', y='y', text='HQ', source = source,\
-#                              level='glyph', x_offset=0, y_offset=0, text_font_size='8pt',\
-#                              text_color='black', background_fill_color='yellow',\
-#                              text_font_style='bold', text_align='center', text_baseline='middle')
             
             labels = LabelSet(x='x', y='y', text='HQ', source = source,\
                               x_offset=0, y_offset=0, text_font_size='8pt',\
