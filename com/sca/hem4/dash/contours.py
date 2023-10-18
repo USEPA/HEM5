@@ -608,8 +608,8 @@ class contours():
                         # ndigits=5,
                         unit='',
                         # min_angle_deg = 5
-                    )
-                    
+                    ) 
+                                                            
                     # # Alternate method to convert contour to geojson
                     
                     # # Extract contour paths and levels
@@ -814,6 +814,8 @@ class contours():
                         center = [avglat,avglon]
                         zoom = 14
                     
+                    # Close the matplotlib figure
+                    plt.close()
                     return no_update, contmap, maptitle, zoom, center, gdfJSON
 
 
