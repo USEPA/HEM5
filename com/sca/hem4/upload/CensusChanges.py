@@ -20,9 +20,9 @@ class CensusChanges(InputFile):
 
         changes_df = self.readFromPath(('change', 'facid', 'category', 'blockid',
                                         'lat', 'lon', 'population', 'elev', 'hill', 'urban_pop'))
-
+        
         if changes_df.empty == False:
-            changes_df[['population', 'urban_pop']] = changes_df[['population', 'urban_pop',
+            changes_df[['population', 'urban_pop', 'elev', 'hill']] = changes_df[['population', 'urban_pop',
                                                                   'elev', 'hill']].fillna(0)
             changes_df['population'] = changes_df['population'].astype(int)
             changes_df['urban_pop'] = changes_df['urban_pop'].astype(int)

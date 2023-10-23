@@ -161,6 +161,14 @@ class EJ(Page):
         
     # Reset the GUI to its original (default) state.
     def reset(self):
+
+        for child in self.folder_frame.winfo_children():
+            child.configure(state='normal')
+        for child in self.category_frame.winfo_children():
+            child.configure(state='normal')
+        for child in self.run_frame.winfo_children():
+            child.configure(state='normal')
+
         self.step1_instructions["text"] = "Select output folder"
         self.fullpath = None
 
@@ -180,6 +188,18 @@ class EJ(Page):
         self.nav.peopleLabel.configure(image=self.nav.ejIcon)
         self.titleLabel.configure(image=self.nav.ejIcon)
 
+
+    # Disable the GUI while the module is running
+    def disable(self):
+        for child in self.folder_frame.winfo_children():
+           child.configure(state='disable')
+        for child in self.category_frame.winfo_children():
+           child.configure(state='disable')
+        for child in self.run_frame.winfo_children():
+           child.configure(state='disable')
+        
+        
+        
     # The folder browse handler.
     def browse(self, icon, event):
         self.fullpath = tk.filedialog.askdirectory()
@@ -463,6 +483,9 @@ class EJ(Page):
 
         # Launch the runner
         if options_ok:
+            
+            # disable the GUI
+            self.disable()
 
             existing = len(self.run_configs)
             Logger.logMessage("Running HEM Environmental Justice reporting tool...")

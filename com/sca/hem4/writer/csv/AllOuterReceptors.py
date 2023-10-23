@@ -412,39 +412,43 @@ class AllOuterReceptors(CsvWriter, InputFile):
                 #.... Interpolate polar Aermod concs to each outer receptor ......
                                 
                 # first do chronic conc
-                toInterp_df = outer4interp[['fips','block','source_id','result_s1r1','result_s1r2'
-                                    ,'result_s2r1','result_s2r2','s','ring_loc']].copy()
+                toInterp_df = outer4interp[['fips','block','source_id','emis_type','result_s1r1'
+                                            ,'result_s1r2','result_s2r1','result_s2r2'
+                                            ,'s','ring_loc']].copy()
                 toInterp_df.rename({'result_s1r1':'conc_s1r1','result_s1r2':'conc_s1r2'
                                     ,'result_s2r1':'conc_s2r1','result_s2r2':'conc_s2r2'}
                                    ,axis=1, inplace=True)
                 interpolated_df = self.interpolate(toInterp_df)
                 outerconcs = outer4interp[['fips', 'block', 'lat', 'lon', 'elev', 'population', 'overlap',
                                         'emis_type', 'source_id', 'rec_type']].copy()
-                outerconcs = pd.merge(outerconcs, interpolated_df[['fips','block','source_id','intconc']]
-                                      , on=['fips','block','source_id'], how='inner')
+                outerconcs = pd.merge(outerconcs, interpolated_df[['fips','block','source_id'
+                                                                   ,'emis_type','intconc']]
+                                      , on=['fips','block','source_id','emis_type'], how='inner')
                 outerconcs.rename({'intconc':'intcconc'}, axis=1, inplace=True)
+                                
                 # QA - make sure merge retained all rows
                 if outerconcs.shape[0] != interpolated_df.shape[0]:
                     raise ValueError("""Error! Chronic outerconcs has wrong number 
-                                     of rows for Acute in AllOuterReceptors""")
-                    #TODO stop this facility
+                                     of rows in AllOuterReceptors""")
 
                
                 # next do acute conc
                 
-                toInterp_df = outer4interp[['fips','block','source_id','aresult_s1r1','aresult_s1r2'
-                                    ,'aresult_s2r1','aresult_s2r2','s','ring_loc']].copy()
+                toInterp_df = outer4interp[['fips','block','source_id','emis_type'
+                                            ,'aresult_s1r1','aresult_s1r2','aresult_s2r1'
+                                            ,'aresult_s2r2','s','ring_loc']].copy()
                 toInterp_df.rename({'aresult_s1r1':'conc_s1r1','aresult_s1r2':'conc_s1r2'
                                     ,'aresult_s2r1':'conc_s2r1','aresult_s2r2':'conc_s2r2'}
                                    ,axis=1, inplace=True)
                 interpolated_df = self.interpolate(toInterp_df)
-                outerconcs = pd.merge(outerconcs, interpolated_df[['fips','block','source_id','intconc']]
-                                      , on=['fips','block','source_id'], how='inner')
+                outerconcs = pd.merge(outerconcs, interpolated_df[['fips','block','source_id'
+                                                                   ,'emis_type','intconc']]
+                                      , on=['fips','block','source_id','emis_type'], how='inner')
                 outerconcs.rename({'intconc':'intaconc'}, axis=1, inplace=True)
                 # QA - make sure merge retained all rows
                 if outerconcs.shape[0] != toInterp_df.shape[0]:
                     raise ValueError("""Error! Acute outerconcs has wrong number 
-                                     of rows for Acute in AllOuterReceptors""")
+                                     of rows in AllOuterReceptors""")
                 
                 
                 #   Apply emissions to interpolated outer concs and write
