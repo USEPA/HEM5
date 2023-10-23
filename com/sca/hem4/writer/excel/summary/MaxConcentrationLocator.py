@@ -64,7 +64,7 @@ class MaxConcentrationLocator(ExcelWriter, AltRecAwareSummary):
                     allpolar = AllPolarReceptors(targetDir=targetDir, facilityId=facilityId, acuteyn=acute_yn)
                     allpolar_df = allpolar.createDataframe()
     
-                    allpolar_df = allpolar_df.loc[(allpolar_df[pollutant].str.contains("(?i)" + self.pollutant)) &
+                    allpolar_df = allpolar_df.loc[(allpolar_df[pollutant].str.contains(self.pollutant, case=False, regex=False)) &
                                                   (allpolar_df[overlap] == 'N')]
     
                     print(str(len(allpolar_df)) + " polar rows.")
@@ -76,11 +76,11 @@ class MaxConcentrationLocator(ExcelWriter, AltRecAwareSummary):
                     allinner_df = allinner.createDataframe()
     
                     print(str(len(allinner_df)) + " inner rows before filter.")
-    
+                        
                     # Don't consider schools and monitors
                     allinner_df = allinner_df.loc[(~allinner_df[block].str.contains('S')) &
                                                   (~allinner_df[block].str.contains('M')) &
-                                                  (allinner_df[pollutant].str.contains("(?i)" + self.pollutant)) &
+                                                  (allinner_df[pollutant].str.contains(self.pollutant, case=False, regex=False)) &
                                                   (allinner_df[overlap] == 'N')]
     
                     print(str(len(allinner_df)) + " inner rows after filter.")
@@ -105,7 +105,7 @@ class MaxConcentrationLocator(ExcelWriter, AltRecAwareSummary):
                             # Don't consider schools and monitors
                             allouter_df = allouter_df.loc[(~allouter_df[block].str.contains('S')) &
                                                           (~allouter_df[block].str.contains('M')) &
-                                                          (allouter_df[pollutant].str.contains("(?i)" + self.pollutant)) &
+                                                          (allouter_df[pollutant].str.contains(self.pollutant, case=False, regex=False)) &
                                                           (allouter_df[overlap] == 'N')]
     
                             allouter_combined = pd.concat([allouter_combined, allouter_df])

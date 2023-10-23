@@ -193,9 +193,9 @@ class Hem(Page):
       
         
         # Setting up each file upload space (includes browse button)
-        group_label = tk.Label(self.s4, font=TEXT_FONT, bg=self.tab_color,
+        self.group_label = tk.Label(self.s4, font=TEXT_FONT, bg=self.tab_color,
                                text="Name Run Group (optional):")
-        group_label.grid(row=1, column=0, sticky="W")
+        self.group_label.grid(row=1, column=0, sticky="W")
         #group text entry
         self.group_list = tk.StringVar(self.s4)
         self.group_list_man = ttk.Entry(self.s4)
@@ -661,12 +661,12 @@ class Hem(Page):
         
         if self.check_userconc.get() == 1:
 
-            self.fileLabel.grid_forget()
-            self.button_file.grid_forget()
-            self.hapLabel.grid_forget()
-            self.hap_file.grid_forget()
-            self.emisLabel.grid_forget()
-            self.emis_file.grid_forget()
+            self.fileLabel.grid_remove()
+            self.button_file.grid_remove()
+            self.hapLabel.grid_remove()
+            self.hap_file.grid_remove()
+            self.emisLabel.grid_remove()
+            self.emis_file.grid_remove()
             self.check_userconc.set(1)
             
             if 'userconcs' not in self.model.dependencies:
@@ -781,7 +781,7 @@ class Hem(Page):
 
         self.uconcLabel.bind("<Enter>", lambda x: self.color_config(self.uconcLabel, self.uconc_file, self.s5, self.highlightcolor, x))
         self.uconcLabel.bind("<Leave>", lambda x: self.remove_config(self.uconcLabel, self.uconc_file, self.s5, self.tab_color, x))
-        self.uconcLabel.bind("<Button-1>",  lambda x: self.uploadUserConcs(self.s5, self.urep_file, x))
+        self.uconcLabel.bind("<Button-1>",  lambda x: self.uploadUserConcs(self.s5, self.uconc_file, x))
 
 
     def add_variation(self):
@@ -1198,6 +1198,8 @@ class Hem(Page):
             self.aborted = False
             self.reset_gui()
             self.after(500, self.check_processing)
+        else:
+            self.reset_gui()
 
     def check_processing(self):
         """
@@ -1275,10 +1277,14 @@ class Hem(Page):
         self.emis_file.unbind('<Button1>')
         self.emisLabel.unbind('<Button1>')
 
+        self.group_label.config(state="disabled")
+        self.group_list_man.config(state="disabled")
+        self.defaultrec_sel.config(state="disabled")
+        self.altrec_sel.config(state="disabled")
+        
         if 'user_rcpt' in self.model.dependencies:
             self.ur_file.unbind('<Button1>')
             self.urLabel.unbind('<Button1>')
-
 
         #emis var
         if 'emis_var' in self.model.dependencies:
@@ -1309,9 +1315,30 @@ class Hem(Page):
         if 'seasons' in self.model.dependencies:
             self.seasons_file.unbind('<Button1>')
             self.seasonsLabel.unbind('<Button1>')
+            
+        if 'userconcs' in self.model.dependencies:
+            self.defaultUserConc_sel.config(state="disabled")
+            self.uconc_file.config(state="disabled")
+            self.uconcLabel.config(state="disabled")
+                
 
     def reset_gui(self):
         #reset all inputs if everything finished. actually destroy and recreate all inputs
+
+        self.fileLabel.grid()
+        self.button_file.grid()
+        self.hapLabel.grid()
+        self.hap_file.grid()
+        self.emisLabel.grid()
+        self.emis_file.grid()
+        
+        self.group_label.config(state="normal")
+        self.group_list_man.config(state="enable")
+        self.defaultrec_sel.config(state="normal")
+        self.altrec_sel.config(state="normal")
+        self.defaultUserConc_sel.config(state='normal')
+        self.check_userconc.set(0)
+
         self.faclbl.set('')
         self.faclbl.set("1. Please select a Facilities List Options file:")
         self.button_file.unbind('<Button1>')
@@ -1331,13 +1358,23 @@ class Hem(Page):
 
         self.altlbl.set('')
         self.altlbl.set("Please select an alternate receptor CSV file:")
+        
         #reset alt reeceptors
         if 'altrec' in self.model.dependencies:
-
             self.model.dependencies.remove('altrec')
             self.urepLabel.destroy()
             self.urep_file.destroy()
             self.check_altrec.set(1)
+
+         
+        # reset user supplied concs
+        if 'userconcs' in self.model.dependencies:
+            self.model.dependencies.remove('userconcs')
+            self.uconcLabel.destroy()
+            self.uconc_file.destroy()
+            self.defaultUserConc_sel.config(state='normal')
+            self.uconclbl.set("Please select a User Supplied Concentration CSV file:")
+            self.check_userconc.set(0)
 
         # find the last next button and disable that one
         if 'user_rcpt' in self.model.dependencies:

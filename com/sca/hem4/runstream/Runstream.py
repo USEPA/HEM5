@@ -923,8 +923,8 @@ class Runstream():
             jend = 365
     
         mes    = "ME STARTING \n"
-        me_sfc = "ME SURFFILE  metdata\\" + surf_file + "\n"
-        me_pfl = "ME PROFFILE  metdata\\" + upper_file + "\n"
+        me_sfc = "ME SURFFILE  " + '"metdata\\' + surf_file + '"' + "\n"
+        me_pfl = "ME PROFFILE  " + '"metdata\\' + upper_file + '"' + "\n"
         me_sud = "ME SURFDATA  " + surfdata_str +  "\n"
         me_uad = "ME UAIRDATA  " + uairdata_str + "\n"
         me_prb = "ME PROFBASE  " + str(prof_base) + "\n"

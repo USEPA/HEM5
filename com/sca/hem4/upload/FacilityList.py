@@ -88,7 +88,7 @@ class FacilityList(InputFile):
                                       flagpole:{"nan":"N"}}, inplace=True)
 
         cleaned = cleaned.reset_index(drop = True)
-
+        
         # upper case for selected fields
         cleaned[rural_urban] = cleaned[rural_urban].str.upper()
         cleaned[acute] = cleaned[acute].str.upper()
@@ -107,7 +107,7 @@ class FacilityList(InputFile):
         # Divide flagpole into Y/N part and default height part
         # First make sure all flagpole values contain a comma and height value
         mask = (cleaned[flagpole].str.contains(','))
-        cleaned.loc[~mask, flagpole] = df[flagpole].astype(str) + ',0'
+        cleaned.loc[~mask, flagpole] = cleaned[flagpole].astype(str) + ',0'
 
         cleaned[[flagYN, flagdef]] = cleaned[flagpole].str.split(",", expand=True)
         cleaned[flagdef] = cleaned[flagdef].replace({None:'0'})
