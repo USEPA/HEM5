@@ -51,12 +51,7 @@ class EJdash():
         external_stylesheets = ['https://codepen.io/chriddyp/pen/bWLwgP.css']
         app = dash.Dash(__name__, external_stylesheets=external_stylesheets, assets_folder=self.resource_path('assets'))
         app.title = self.SCname + ' Demographic Assessment'
-        
-        mapbox_access_token = 'pk.eyJ1IjoiYnJ1enp5IiwiYSI6ImNrOTE5YmwzdDBhMXYzbW8yMjY4aWJ3eHQifQ.5tNjnlK2Y8b-U1kvfPP8FA'
-        px.set_mapbox_access_token(mapbox_access_token)
-        #pd.set_option("display.max_columns", 50)
-        #pd.options.display.max_colwidth = 50
-        
+                
         ### create dictionary of metrics for display purposes
         toshis = EJ('foo').toshis
         display_mets = {k:v + ' HI' for (k,v) in toshis.items()}
