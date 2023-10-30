@@ -40,71 +40,29 @@ class ElevHill:
         Using USGS 10m resolution DEM data, get elevations for a list of coordinates
         where the coordinates are a list of tuples organized as (longitude, latitude).
         """
+
         # Get elevations for batches of 100 coordinates
-        
-        # First determine what resolution of elevation data is available
-        min_x = min(coords)[0]
-        min_y = min(coords)[1]
-        max_x = max(coords)[0]
-        max_y = max(coords)[1]
-        
-        # If there is only a single coordinate or they are all the same, create a 1x1km box.
-        if min_x == max_x or min_y == max_y:
-            r_earth = 6371 # radius of earth in km
-            lat2 = min_y  + (0.5 / r_earth) * (180 / pi)
-            lon2 = min_x + (0.5 / r_earth) * (180 / pi) / cos(np.deg2rad(min_y))
-            lat1 = min_y  - (0.5 / r_earth) * (180 / pi)
-            lon1 = min_x - (0.5 / r_earth) * (180 / pi) / cos(np.deg2rad(min_y))
-        else:
-            lat1 = min_y
-            lon1 = min_x
-            lat2 = max_y
-            lon2 = max_x
-                    
-        bbox = (lon1, lat1, lon2, lat2)
-        # try:
-        #     src = py3dep.query_3dep_sources(bbox)
-        # except BaseException as e:
-        #     raise ValueError("USGS elevation server unavailable")
-        # else:
-        #     src_dict = src.groupby('dem_res')['OBJECTID'].count().to_dict()
-        
-        
-        # If Canada, use airmap (30m) otherwise use 10m
-        if min_y > 42 and max_y < 83 and min_x > -141 and max_x < -53:
-            ressrc = 'airmap'
-        else:
-            ressrc = 'tep'
-            # if '10m' in src_dict:
-            #     ressrc = 'tep'
-            # else:
-            #     if '30m' in src_dict:
-            #         ressrc = 'airmap'
-            #     else:
-            #         ressrc = 'None'
-            #         raise ValueError("USGS elevation server unavailable")
-        
-        print("Elevation bycoords using source ", ressrc)
-                    
+                          
         elevation_data = []
         batch_size = 100
-        if len(coords) > 1:
-            for i in range(0, len(coords), batch_size):
-                batch = coords[i:i+batch_size]
-                
-                try:
-                    batch_elev = py3dep.elevation_bycoords(batch, source=ressrc)
-                except BaseException as e:
-                    raise ValueError("USGS elevation server unavailable")
-                else:
-                    elevation_data.extend(batch_elev)
-        else:
+        for i in range(0, len(coords), batch_size):
+            batch = coords[i:i+batch_size]
+            
             try:
-                batch_elev = py3dep.elevation_bycoords(coords, source=ressrc)
+                # first try to use 10m elevation data
+                batch_elev = py3dep.elevation_bycoords(batch, source='tep')
             except BaseException as e:
-                raise ValueError("USGS elevation server unavailable")
+                # 10m did not work. Now try 30m.
+                try:
+                    batch_elev = py3dep.elevation_bycoords(batch, source='airmap')
+                except BaseException as e:
+                    # 30m failed too
+                    raise ValueError("USGS elevation server unavailable")
             else:
-                elevation_data.append(batch_elev)
+                if len(coords) > 1:
+                    elevation_data.extend(batch_elev)
+                else:
+                    elevation_data.append(batch_elev)
 
         elev_rounded = [round(e) for e in elevation_data]
         
@@ -228,7 +186,7 @@ class ElevHill:
         center_lat : Float
             Latitude of center of the receptors.
         model : Class
-            Model class used to hold 30m elevation dataframe
+            Model class used to hold 30m elevation dataframe for this facility
 
         Returns
         -------
