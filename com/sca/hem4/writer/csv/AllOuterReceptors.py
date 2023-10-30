@@ -820,7 +820,7 @@ class AllOuterReceptors(CsvWriter, InputFile):
         return df.fillna("")
     
 
-    def createBigDataframe(self):
+    def createBigDataframe(self, fname):
         # Type setting for CSV reading
         if self.acute_yn == 'N':
             self.numericColumns = [lat, lon, conc, elev, population]
@@ -829,10 +829,14 @@ class AllOuterReceptors(CsvWriter, InputFile):
             
         self.strColumns = [fips, block, source_id, 'emis_type', pollutant, overlap, rec_type]
 
+        dtypes = {col: str for col in self.strColumns}
+        floatTypes = {col: np.float64 for col in self.numericColumns}
+        dtypes.update(floatTypes)
+
         colnames = self.getColumns()
         self.skiprows = 1
-        reader = pd.read_csv(f, skiprows=self.skiprows, names=colnames, dtype=str, 
-                             na_values=[''], keep_default_na=False, chunksize=100000)
+        reader = pd.read_csv(fname, skiprows=self.skiprows, names=colnames, dtype=dtypes, 
+                             na_values=[''], keep_default_na=False, chunksize=1000000)
 
         return reader
     

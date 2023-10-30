@@ -3,6 +3,7 @@ from com.sca.hem4.writer.excel.FacilityMaxRiskandHI import FacilityMaxRiskandHI
 from com.sca.hem4.writer.excel.RiskBreakdown import *
 from com.sca.hem4.writer.excel.InputSelectionOptions import InputSelectionOptions
 from com.sca.hem4.log.Logger import Logger
+import os
 
 risk_contrib = 'risk_contrib'
 category = 'category'
@@ -140,32 +141,64 @@ class MultiPathway(ExcelWriter):
             anyOuters = "N"
             for f in listOuter:
                 allouter = AllOuterReceptors(targetDir=targetDir, acuteyn=acute_yn, filenameOverride=f)
-                allouter_df = allouter.createDataframe()
+                
+                # If AllOuter file is over 1GB, then use chunking option in read_csv
+                fpath = os.path.join(targetDir, f)
+                if os.path.getsize(fpath) < 10000000000:
+                    allouter_df = allouter.createDataframe()
+                    usechunks = "N"
+                else:
+                    allouter_chunks = allouter.createBigDataframe(fpath)
+                    usechunks = "Y"
 
-                if not allouter_df.empty:
+                if usechunks == "N":
                     
-                    anyOuters = "Y"
-                    
-                    # Only keep populated or user receptors that are not overlapped
-                    allouter_df = allouter_df.loc[((allouter_df[population] > 0) | (allouter_df[rec_type] == 'P')) &
-                                                  (allouter_df[overlap] == 'N')]
-#                    # Only keep records that have non-zero population or represent non-overlapped user receptors
-#                    allouter_df = allouter_df.loc[((allouter_df[block].str.contains('U')) | (allouter_df[population] > 0)) &
-#                                                  (allouter_df[overlap] == 'N')]
-    
-                    allouter_df = allouter_df.groupby(by=[fips, block, population, lat, lon, pollutant], as_index=False) \
-                        .sum().reset_index(drop=True)
-    
-                    allouter_df['risk'] = allouter_df.apply(lambda x: self.calculateRisk(x[pollutant], x[conc]), axis=1)
-    
-                    # keep all records but give default designation of 'POL' to pollutants which are not in crosswalk
-                    alloutermerged_df = allouter_df.merge(pollutantCrosswalk_df, left_on=[pollutant], right_on=[pollutant_name], how="left")
-                    alloutermerged_df[designation] = alloutermerged_df[designation].fillna('POL')
-    
-                    outer_summed = alloutermerged_df.groupby(by=[fips, block, population, lat, lon, designation], as_index=False) \
-                        .sum().reset_index(drop=True)
-                    allouter_summed = pd.concat([allouter_summed, outer_summed])
+                    if not allouter_df.empty:
+                        
+                        anyOuters = "Y"
+                        
+                        # Only keep populated or user receptors that are not overlapped
+                        allouter_df = allouter_df.loc[((allouter_df[population] > 0) | (allouter_df[rec_type] == 'P')) &
+                                                      (allouter_df[overlap] == 'N')]
+                        allouter_df = allouter_df.groupby(by=[fips, block, population, lat, lon, pollutant], as_index=False) \
+                            .sum().reset_index(drop=True)
+        
+                        allouter_df['risk'] = allouter_df.apply(lambda x: self.calculateRisk(x[pollutant], x[conc]), axis=1)
+        
+                        # keep all records but give default designation of 'POL' to pollutants which are not in crosswalk
+                        alloutermerged_df = allouter_df.merge(pollutantCrosswalk_df, left_on=[pollutant], right_on=[pollutant_name], how="left")
+                        alloutermerged_df[designation] = alloutermerged_df[designation].fillna('POL')
+                                
+                        outer_summed = alloutermerged_df.groupby(by=[fips, block, population, lat, lon, designation], as_index=False) \
+                            .sum().reset_index(drop=True)
+                        allouter_summed = pd.concat([allouter_summed, outer_summed])
 
+                else:
+                    
+                    # AllOuter is in chunks
+                    for allouter_df in allouter_chunks:
+                        
+                        if not allouter_df.empty:
+                            
+                            anyOuters = "Y"
+                            
+                            # Only keep populated or user receptors that are not overlapped
+                            allouter_df = allouter_df.loc[((allouter_df[population] > 0) | (allouter_df[rec_type] == 'P')) &
+                                                          (allouter_df[overlap] == 'N')]
+                            allouter_df = allouter_df.groupby(by=[fips, block, population, lat, lon, pollutant], as_index=False) \
+                                .sum().reset_index(drop=True)
+            
+                            allouter_df['risk'] = allouter_df.apply(lambda x: self.calculateRisk(x[pollutant], x[conc]), axis=1)
+            
+                            # keep all records but give default designation of 'POL' to pollutants which are not in crosswalk
+                            alloutermerged_df = allouter_df.merge(pollutantCrosswalk_df, left_on=[pollutant], right_on=[pollutant_name], how="left")
+                            alloutermerged_df[designation] = alloutermerged_df[designation].fillna('POL')
+            
+                            outer_summed = alloutermerged_df.groupby(by=[fips, block, population, lat, lon, designation], as_index=False) \
+                                .sum().reset_index(drop=True)
+                            allouter_summed = pd.concat([allouter_summed, outer_summed])
+                        
+                        
             if anyOuters == "Y":
                 riskblocks_df = pd.concat([inner_summed, allouter_summed])
             else:

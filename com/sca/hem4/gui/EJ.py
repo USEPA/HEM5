@@ -136,7 +136,7 @@ class EJ(Page):
                                            justify="left", text=step3_text)
         self.step3_instructions.grid(row=1, column=1, padx=5, sticky="W", columnspan=4, rowspan=3)
 
-        self.add_config(initYN="Y", radius=50, cancer_risk=1, hi_risk=1)
+        self.add_config(initYN="Y", radius=None, cancer_risk=None, hi_risk=None)
         self.create_add_config()
 
         ru = PIL.Image.open('images\icons8-create-48.png').resize((30,30))
@@ -180,7 +180,7 @@ class EJ(Page):
 
         self.combinations = {}
 
-        self.add_config(initYN="Y", radius=50, cancer_risk=1, hi_risk=1)
+        self.add_config(initYN="Y", radius=None, cancer_risk=None, hi_risk=None)
 
         if self.add_config_btn is None:
             self.create_add_config()
