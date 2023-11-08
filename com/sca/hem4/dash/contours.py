@@ -489,7 +489,7 @@ class contours():
                         else:
                             block_recpts['tooltip'] = '<b>Block/User Receptor</b>' + '<br><b>Receptor ID: </b>' + block_recpts['RecID'] \
                                 + f'<br><b>{metric}: </b>' + block_recpts[metric].apply(lambda x: f'{self.riskfig(x, digz)}').astype(str)
-                        blockmax_gdf = block_recpts[~block_recpts['RecID'].str.contains('S|M|B')]
+                        blockmax_gdf = block_recpts[block_recpts['Receptor Type'].str.contains('C|P')]
                         block_max_val =  blockmax_gdf[metric].max()
                         if gdf['RecID'].str.contains('UCONC').any():
                             block_recpts_subset = block_recpts.loc[block_recpts['Latitude'].between(lat1, lat2)
@@ -887,6 +887,7 @@ class contours():
                             
                             if 'angle' in currdf.columns:
                                 currdf['RecID'] = currdf.dist.astype(str).str.cat(currdf.angle.astype(str), sep='ang')
+                                currdf['Receptor Type'] = 'R'
                             elif 'Receptor ID' in currdf.columns:
                                 currdf['RecID'] = currdf['Receptor ID']            
                             else:
@@ -925,7 +926,7 @@ class contours():
                            
                             
                         alldfs = pd.concat(dflist)
-                        
+                                                
                         # Find all risk metric columns with at least one nonzero value
                         nonzero_columns = alldfs.columns[alldfs.apply(lambda x: x != 0).any()]
                         nonzero_metrics = list(nonzero_columns.intersection(list(metrics.values())))
@@ -958,8 +959,8 @@ class contours():
                     return no_update
                 else:
                     dff = pd.DataFrame(indata)
-                    dff2 = dff.loc[:,['RecID', 'Latitude', 'Longitude', metric]]
-                               
+                    dff2 = dff.loc[:,['RecID', 'Latitude', 'Longitude', metric, 'Receptor Type']]
+                           
                     outdata = dff2.to_dict('records')
                     return outdata
 
@@ -1032,7 +1033,7 @@ class contours():
                 return no_update
             else:
                 tempdf = pd.DataFrame(metdata)
-                block_data = tempdf[~tempdf['RecID'].str.contains('S|M|B|ang|UCONC')]
+                block_data = tempdf[tempdf['Receptor Type'].str.contains('C|P')]
                 if len(block_data)==0:
                     return None
                 else:
