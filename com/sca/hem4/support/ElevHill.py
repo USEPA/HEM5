@@ -41,6 +41,13 @@ class ElevHill:
         where the coordinates are a list of tuples organized as (longitude, latitude).
         """
 
+        # Confirm that an Internet connection is available
+        try:
+            request = requests.get('https://www.google.com', timeout=10)
+        except BaseException as e:
+            # no Internet connection
+            raise ValueError("There is no Internet connection. Elevations cannot be acquired from the USGS")
+        
         # Get elevations for batches of 100 coordinates
                           
         elevation_data = []
@@ -132,6 +139,14 @@ class ElevHill:
     # Takes a usgs url, gets a tif file, and creates and returns a dataframe of lat, lon, and elevations
     @staticmethod
     def getTIF(url, max_model_dist, center_lon, center_lat, min_rec_elev):
+        # Confirm that an Internet connection is available
+        try:
+            request = requests.get('https://www.google.com', timeout=10)
+        except BaseException as e:
+            # no Internet connection
+            raise ValueError("There is no Internet connection. TIFFs cannot be acquired from the USGS")
+
+
         # Make a GET request to download the TIFF file
         response = requests.get(url)
         

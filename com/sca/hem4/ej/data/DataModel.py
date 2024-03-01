@@ -46,7 +46,7 @@ class DataModel():
         self.acs_dict = self.acs_df.to_dict(orient='index')
 
         self.levels_df = levels_df
-        self.levels_df.index = self.levels_df['ID']
+        self.levels_df.index = self.levels_df['TCT']
         self.levels_dict = self.levels_df.to_dict(orient='index')
 
         self.create_national_bin()
@@ -76,23 +76,6 @@ class DataModel():
 
         self.national_bin[1][0] = ""
 
-#        # Special hard-coding to conform to referenceable values!
-#
-#        # ages...
-#        self.national_bin[1][6] = 0.226000000
-#        self.national_bin[0][6] = 0.226000000 * self.national_bin[0][0]
-#        self.national_bin[1][7] = 0.617000000
-#        self.national_bin[0][7] = 0.617000000 * self.national_bin[0][0]
-#        self.national_bin[1][8] = 0.157000000
-#        self.national_bin[0][8] = 0.157000000 * self.national_bin[0][0]
-#
-#        # below poverty level
-#        self.national_bin[1][11] = 0.134000000
-#        self.national_bin[0][11] = 0.134000000 * self.national_bin[0][0]
-#
-#        # ..without high school diploma
-#        self.national_bin[1][10] = 0.121000000
-#        self.national_bin[0][10] = 0.121000000 * self.national_bin[0][9]
 
     def create_state_bin(self):
         # Create state bin and tabulate population weighted demographic stats for each sub group.
@@ -580,20 +563,24 @@ class DataModel():
                 Logger.logMessage("Block group not found in ACS data will be defaulted: " + str(block_group_id))
 
         if block_group is None or isna(value):
+
             tract_id = block_group_id[:-1]
 
-            if tract_id in self.levels_dict:
-                tract = self.levels_dict[tract_id]
-                value = tract[subgroup]
+            # first search for missing block group ID in the default dictionary by using block group
+            if block_group_id in self.levels_dict:
+                bkgrp_def = self.levels_dict[block_group_id]
+                value = bkgrp_def[subgroup]
+                if not any(block_group_id in sublist for sublist in self.missing_block_groups):
+                    self.missing_block_groups.append([block_group_id,'defaulted by Decennial Census block group'])
+            
+            # next look using the tract ID
+            elif tract_id in self.levels_dict:
+                tract_def = self.levels_dict[block_group_id] 
+                value = tract_def[subgroup]
                 if not any(block_group_id in sublist for sublist in self.missing_block_groups):
                     self.missing_block_groups.append([block_group_id,'defaulted by tract'])
-            
-            elif block_group_id in self.levels_dict:
-                blkgrp = self.levels_dict[block_group_id] 
-                value = blkgrp[subgroup]
-                if not any(block_group_id in sublist for sublist in self.missing_block_groups):
-                    self.missing_block_groups.append([block_group_id,'defaulted by nearest block group'])
         
+            # now try county
             else:
                 county_id = block_group_id[:5]
                 if county_id in self.levels_dict:
@@ -603,7 +590,7 @@ class DataModel():
                         self.missing_block_groups.append([block_group_id,'defaulted by county'])
 
                 else:
-                    Logger.logMessage("Couldn't resolve this record by tract, nearest block group or county! " + block_group_id)
+                    Logger.logMessage("Couldn't resolve this record by block group, tract, or county! " + block_group_id)
                     return None
 
         return value / 100 if is_pct else value
