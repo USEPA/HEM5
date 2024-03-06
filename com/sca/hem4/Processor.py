@@ -127,6 +127,21 @@ class Processor():
 
                 except BaseException as ex:
 
+                    # Check for bad Internet connection which aborts the HEM run
+                    if 'There is no Internet connection' in str(ex):
+                        messagebox.showinfo("No Internet connection", "Your computer is not connected to the Internet and this run needs elevation data from the USGS server." \
+                                            " This HEM run will stop." \
+                                            " One option is to re-run this Run Group with elevation turned off." \
+                                            " More detail about this error is available in the log.")
+                        fullStackInfo = traceback.format_exc()
+                        Logger.logMessage("No Internet connection.\n" \
+                                          " Aborting this HEM run.\n" \
+                                          " Detailed error message: \n\n" + fullStackInfo)                
+
+                        self.abortProcessing()
+                        break
+                        
+                                        
                     # Check for USGS elevation server error which aborts the HEM run
                     if str(ex) == "USGS elevation server unavailable":
                         messagebox.showinfo("Cannot obtain elevation data", "Your computer was unable to obtain elevation data for this model run." \

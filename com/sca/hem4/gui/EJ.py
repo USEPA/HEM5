@@ -513,7 +513,7 @@ class EJ(Page):
                 self.acs_df = acs.dataframe
 
             if self.levels_df is None:
-                levels = ACSCountyTract(path="resources/acs-levels.csv")
+                levels = ACSCountyTract(path="resources/acs_defaults.csv")
                 self.levels_df = levels.dataframe
         except FileNotFoundError:
             messagebox.showinfo("Missing files",
