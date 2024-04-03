@@ -15,27 +15,33 @@ class HiDiploma(WorksheetTable):
 
     def get_table_name(self):
         return 'Table ' + self.identifier + '-3. Distribution of Hazard Indices for Adults without a High School Diploma - ' + \
-               self.radius + ' km Study Area Radius'
+               self.radius + ' km Study Area Radius \u1d43'
 
     def get_sub_header_1(self):
         scope = 'the ' + self.source_category + ' Source Category' if self.facility is None else \
             'Facility ' + self.facility
-        return self.name + ' Hazard Index Ranges for ' + scope
+        return self.name + ' Hazard Index Ranges for ' + scope + ' \u1d47'
 
     def get_sub_header_2(self):
         article = 'any' if self.facility is None else 'the'
         return 'Number of People within ' + self.radius + ' km of ' + article + \
-               ' Facility in Different Hazard Index Ranges \u1D43'
+               ' Facility in Different Hazard Index Ranges \u1D47'
 
     def get_average_header(self):
-        return "Average Hazard Index\u1D47"
+        return "Average " + self.name + " Hazard Index \u1D9C"
 
     def get_notes(self):
-        return 'Notes:\n\n\u1D43 Distributions by education level are based on education data at the census block ' + \
-               'group level. Hazard indices for ' + self.source_category + ' emissions are modeled ' + \
-               'at the census block level.\n' + \
-               '\u1D47 The population-weighted average hazard index takes into account hazard index levels at all ' + \
-               'populated block receptors in the modeled domain for the entire source category.'
+        notes_dict = {'a':"The demographic populations are based on the 2020 Decennial Census' total block populations that are located within the indicated"
+                      ,
+                      'note1_a':"radius, which are linked to the Census’ 2018-2022 American Community Survey five-year demographic averages at the block group level."
+                      ,
+                      'b':"Hazard indices from the modeled emissions are at the census block level, based on the predicted outdoor concentration over a 70-year"
+                      ,
+                      'note1_b':"lifetime, and not adjusted for exposure factors. See the HEM5 User's Guide for more information."
+                      ,
+                      'c':"The population-weighted average hazard index takes into account risk levels at all populated block receptors in the entire modeled domain."
+                      }
+        return notes_dict
 
     def get_sheet_name(self):
         return 'Table' + self.identifier + '3NC'

@@ -11,13 +11,13 @@ class CancerElaineSummary(ElaineSummary):
         self.facility = facility
 
     def get_table_header(self):
-        scope = 'The ' + self.source_category + ' Source Category' if self.facility is None else \
-            'Facility ' + self.facility
-        return 'Table A-6. ' + scope + ' : Community ' + \
-               'Assessment based on Cancer Risk Results - ' + self.radius + ' km Study Area Radius'
+        scope =  self.source_category if self.facility is None else self.facility
+        return 'Table for Preamble: Demographic Assessment of Cancer Risk Results based on' + scope + ' Emissions ' + \
+               '- ' + self.radius + ' km Study Area Radius \u1d43'
 
     def get_risk_header(self):
-        return 'Population with Cancer Risk Greater than or Equal to ' + self.cancer_risk_threshold + ' in 1 Million'
+        return 'Population with Cancer Risk Greater than or Equal to ' + self.cancer_risk_threshold + \
+               ' in 1 Million based on Modeled Emissions'
 
     def get_risk_bins(self, data):
         # Note: this map corresponds to the bin assignments that happen in the DataModel#tabulate_mir_data() method.

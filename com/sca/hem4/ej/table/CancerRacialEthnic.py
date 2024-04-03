@@ -15,36 +15,41 @@ class CancerRacialEthnic(WorksheetTable):
 
     def get_table_name(self):
         return 'Table ' + self.identifier + '-1. Distribution of Cancer Risk for Racial and Ethnic Groups - ' + \
-               self.radius + ' km Study Area Radius'
+               self.radius + ' km Study Area Radius \u1D43'
 
     def get_sub_header_1(self):
         scope = 'the ' + self.source_category + ' Source Category' if self.facility is None else\
             'Facility ' + self.facility
 
-        return 'Range of Lifetime Individual Cancer Risk from ' + scope + ' (Chance in One Million) \u1D43'
+        return 'Range of Lifetime Individual Cancer Risk from ' + scope + ' (Chance in One Million) \u1D47'
 
     def get_sub_header_2(self):
         article = 'any' if self.facility is None else 'the'
         return 'Number of People within ' + self.radius + ' km of ' + article +\
-               ' Facility in Different Ranges for Lifetime Cancer Risk \u1D47'
+               ' Facility in Different Ranges for Lifetime Cancer Risk'
 
     def get_average_header(self):
-        return "Average Risk (Chance in One Million)\u1D43"
+        return "Average Risk (Chance in One Million) \u1D9C"
 
     def get_notes(self):
-        return 'Notes:\n\n\u1D43 Modeled risks are for a 70-year lifetime, based on the predicted outdoor ' + \
-               'concentration and not adjusted for exposure factors. Risks from ' + self.source_category + \
-               ' emissions are modeled at the census block level.\n' + \
-               '\u1D47 Distributions by race are based on demographic information at the census block group level.\n' + \
-                '\u1D9C In order to avoid double counting, the "Hispanic or Latino" category is treated as a ' + \
-               'distinct demographic category for these analyses. A person is identified as one of five ' + \
-               'racial/ethnic categories above: White, African American, Native American, Other and Multiracial, or' + \
-               ' Hispanic/Latino.'
+        notes_dict = {'a':"The demographic populations are based on the 2020 Decennial Census' total block populations that are located within the indicated radius, which are linked to the Census’"
+                      ,
+                      'note_a':"2018-2022 American Community Survey five-year demographic averages at the block group level. See the HEM5 User's Guide for more information."
+                      ,
+                      'b':"Risks from the modeled emissions are at the census block level, based on the predicted outdoor concentration over a 70-year lifetime, and not adjusted for exposure factors."
+                      ,
+                      'c':"The population-weighted average risk takes into account risk levels at all populated block receptors in the entire modeled domain."
+                      ,
+                      'd':'In order to avoid double counting, the "Hispanic or Latino" category is treated as a distinct demographic category for these analyses. A person is identified as one of five'
+                      ,
+                      'note_d':"racial/ethnic categories: White, African American, Native American, Other and Multiracial, or Hispanic/Latino."
+                     }
+        return notes_dict
 
     def get_sheet_name(self):
         return 'Table' + self.identifier + '1C'
 
     def get_columns(self):
         return ['Total Population', 'White', 'African American', 'Native American', 'Other and Multiracial',
-                'Hispanic or Latino\u1D9C']
+                'Hispanic or Latino \u1D48']
 

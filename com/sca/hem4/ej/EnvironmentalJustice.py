@@ -8,7 +8,7 @@ from com.sca.hem4.ej.ReportWriter import ReportWriter
 class EnvironmentalJustice():
 
     def __init__(self, mir_rec_df, acs_df, levels_df, outputdir, source_cat_name, source_cat_prefix, radius,
-                 cancer_risk_threshold, hi_risk_threshold, requested_toshis, facility=None):
+                 cancer_risk_threshold, hi_risk_threshold, requested_toshis, facility=None, write_notes=False):
         self.output_dir = outputdir
         self.source_cat = source_cat_name
         self.source_cat_prefix = source_cat_prefix
@@ -17,6 +17,7 @@ class EnvironmentalJustice():
         self.cancer_risk_threshold = cancer_risk_threshold
         self.hi_risk_threshold = hi_risk_threshold
         self.requested_toshis = requested_toshis
+        self.write_notes = write_notes
 
         missing_block_path = outputdir
 
@@ -28,7 +29,8 @@ class EnvironmentalJustice():
         self.report_writer = ReportWriter(target_dir=self.output_dir, source_cat_prefix=self.source_cat_prefix,
                                      source_cat=self.source_cat, radius=self.radius, facility=facility,
                                      cancer_risk_threshold=self.cancer_risk_threshold,
-                                     hi_risk_threshold=self.hi_risk_threshold)
+                                     hi_risk_threshold=self.hi_risk_threshold,
+                                     write_notes = self.write_notes)
 
     # Create the run group level reports for both cancer and HI. These workbooks contain both tables (i.e. RacialEthnic,
     # Poverty, Diploma, etc.) and summaries (DGSummary, KCSummary, Elaine).
@@ -36,7 +38,7 @@ class EnvironmentalJustice():
         self.create_cancer_reports()
         self.create_hi_reports()
 
-    def create_cancer_reports(self):
+    def create_cancer_reports(self):        
         # First, create the output path if it doesn't exist
         if not os.path.isdir(self.output_dir):
             os.makedirs(self.output_dir)
@@ -69,6 +71,7 @@ class EnvironmentalJustice():
 
     # Create workbooks for facility specific reports.
     def create_facility_summaries(self, cancer_selected):
+
         # First, create the output path if it doesn't exist
         if not os.path.isdir(self.output_dir):
             os.makedirs(self.output_dir)
