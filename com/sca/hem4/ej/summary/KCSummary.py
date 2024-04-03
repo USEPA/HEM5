@@ -24,67 +24,71 @@ class KCSummary():
 
         firstcol = 'A'
         lastcol = chr(ord(firstcol) + len(column_headers))
-        top_header_coords = firstcol+'1:'+lastcol+'1'
+        title_header_coords = firstcol+'1:'+lastcol+'1'
+        top_header_coords = 'C1:'+lastcol+'1'
 
         # Increase the cell size of the merged cells to highlight the formatting.
         worksheet.set_column(top_header_coords, 12)
-        worksheet.set_column("A:A", 24)
+        worksheet.set_column("A:A", 36)
         worksheet.set_column("B:B", 16)
         worksheet.set_column("C:C", 16)
         worksheet.set_column("G:G", 14)
         worksheet.set_column("N:N", 14)
         worksheet.set_column("O:O", 12)
         worksheet.set_row(0, 30)
-        worksheet.set_row(2, 24)
+        worksheet.set_row(2, 30)
         worksheet.set_row(3, 30)
         worksheet.set_row(4, 30)
-        worksheet.set_row(5, 30)
-        worksheet.set_row(7, 48)
-        worksheet.set_row(8, 30)
-        worksheet.set_row(12, 30)
-        worksheet.set_row(13, 30)
-        worksheet.set_row(14, 30)
-        worksheet.set_row(15, 30)
-        worksheet.set_row(16, 30)
-        worksheet.set_row(17, 30)
+        worksheet.set_row(6, 30)
 
         # Create top level header
-        worksheet.merge_range(top_header_coords, self.get_table_name(),  formats['top_header'])
+        worksheet.merge_range(title_header_coords, self.get_table_name(),  formats['top_header'])
 
+        # Row headers
+        worksheet.write("A2", 'Population Basis',  formats['sub_header_2'])
+        worksheet.write(2, 0, 'Nationwide \u1d48')
+        worksheet.write(3, 0, 'State \u1d48')
+        worksheet.write(4, 0, 'County \u1d48')
+        worksheet.write(5, 0, ' ')
+        worksheet.write_rich_string(6, 0, self.get_risk_header()
+                                  , formats['superscript'], ' e,f', formats['wrap'])
+        
+  
         # Create column headers
-        worksheet.merge_range("A2:A3", 'Population Basis',  formats['sub_header_2'])
-        worksheet.write(3, 0, 'Nationwide')
-        worksheet.write(4, 0, 'State')
-        worksheet.write(5, 0, 'County')
-        worksheet.merge_range("B2:N2", 'Demographic Group',  formats['sub_header_3'])
-
-        worksheet.set_row(2, 72, formats['sub_header_2'])
+        worksheet.set_row(1, 72, formats['sub_header_2'])
         for col_num, data in enumerate(column_headers):
-            worksheet.write(2, col_num+1, data)
+            worksheet.write(1, col_num+1, data)
 
-        worksheet.write(7, 1, self.get_max_risk_header(), formats['sub_header_3'])
-        worksheet.write(8, 0, 'Source Category' if self.facility is None else 'Facility')
-        worksheet.write(8, 1, max_value)
-        worksheet.merge_range("A7:N7", '')
-        worksheet.merge_range("C8:N8", self.get_risk_header(),  formats['sub_header_3'])
 
-        # Create notes
-        worksheet.merge_range("A11:H14", self.get_notes(),  formats['notes'])
+        # Write notes
+        notes_dict = self.get_notes(max_value)
+        notes_row = 9
+        for note in notes_dict:
+            if 'note' in note:
+                worksheet.write_rich_string('A'+str(notes_row), formats['notes'], 
+                                            notes_dict[note], ' ')                
+            elif note == '*':
+                worksheet.write_rich_string('A'+str(notes_row), formats['asterik'],
+                                            note, ' ', formats['notes'], notes_dict[note])
+            else:
+                worksheet.write_rich_string('A'+str(notes_row), formats['superscript'],
+                                            note, ' ', formats['notes'], notes_dict[note])
+            notes_row+=1
 
-        self.append_aggregated_data(national_values, worksheet, formats, 3)
-        self.append_aggregated_data(state_values, worksheet, formats, 4)
-        self.append_aggregated_data(county_values, worksheet, formats, 5)
+        self.append_aggregated_data(national_values, worksheet, formats, 2)
+        self.append_aggregated_data(state_values, worksheet, formats, 3)
+        self.append_aggregated_data(county_values, worksheet, formats, 4)
         self.append_data(values, worksheet, formats)
 
     def get_table_name(self):
         scope = 'the ' + self.source_category + ' Source Category' if self.facility is None else \
             'Facility ' + self.facility
         return 'Table 2. Summary of Demographic Assessment of ' + self.hazard_name + ' Hazard Index Results for ' + \
-               scope + ' - ' + self.radius + ' km Study Area Radius'
+               scope + ' - ' + self.radius + ' km Study Area Radius \u1d43'
 
     def get_columns(self):
-        return ['', 'Total', 'People of Color', 'African American', 'Native American',
-                'Other and Multiracial', 'Hispanic or Latino', 'Age (Years)\n0-17', 'Age (Years)\n18-64',
+        return ['Total Population', 'People of Color \u1D47', 'African American', 'Native American',
+                'Other and Multiracial', 'Hispanic or Latino \u1D9C', 'Age (Years)\n0-17', 'Age (Years)\n18-64',
                 'Age (Years)\n>=65', 'Below the Poverty Level', 'Below Twice the Poverty Level',
                 'Over 25 Without a High School Diploma', 'Linguistically Isolated']
 
@@ -104,7 +108,7 @@ class KCSummary():
         col_idx = np.array(self.active_columns)
         slice = np.array(data)[row_idx[:, None], col_idx]
 
-        startcol = 2
+        startcol = 1
 
         numrows = len(slice) - 1
         numcols = len(slice[0])
@@ -147,8 +151,8 @@ class KCSummary():
         for c in self.active_columns:
             slice.append(row_totals[c])
 
-        startrow = 8
-        startcol = 2
+        startrow = 6
+        startcol = 1
 
         numcols = len(slice)
 

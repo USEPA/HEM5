@@ -16,14 +16,15 @@ class FacilitySummary():
         self.radius = str(int(radius) if radius.is_integer() else radius)
         self.source_category = source_category
         self.active_columns = [0, 14, 2, 3, 4, 5, 6, 7, 8, 11, 12, 10, 13]
-
+ 
     @staticmethod
     def init_sheets():
         FacilitySummary.sheets = {}
         FacilitySummary.lines = {}
+        FacilitySummary.lastcol = ''
 
     def create_summary(self, workbook, formats, national_values, state_values, county_values, values, run_group_values,
-                       hazard_name=None):
+                       hazard_name=None, write_notes=False):
 
         self.hazard_name = hazard_name
 
@@ -57,9 +58,14 @@ class FacilitySummary():
             firstcol = 'A'
             lastcol = chr(ord(firstcol) + len(column_headers))
             top_header_coords = firstcol+'1:'+lastcol+'1'
-
-            # Increase the cell size of the merged cells to highlight the formatting.
-            worksheet.set_column(top_header_coords, 12)
+            top_header_coords_minusA = 'B1:'+lastcol+'1'
+                        
+            # remember lastcol
+            FacilitySummary.lastcol = lastcol
+            
+            # Increase the cell size of the column headers to highlight the formatting.
+            worksheet.set_column('A:A', 28)
+            worksheet.set_column(top_header_coords_minusA, 12)
             worksheet.set_row(0, 30)
             worksheet.set_row(2, 24)
 
@@ -67,43 +73,54 @@ class FacilitySummary():
             worksheet.merge_range(top_header_coords, self.get_table_name(), formats['top_header'])
 
             # Create column headers
-            worksheet.merge_range("A2:A3", 'Population Basis',  formats['sub_header_2'])
-            worksheet.write(3, 0, 'Nationwide')
-            worksheet.write(4, 0, 'State')
-            worksheet.write(5, 0, 'County')
-            worksheet.merge_range("B2:N2", 'Demographic Group',  formats['sub_header_3'])
+            # worksheet.merge_range("A2:A3", 'Population Basis',  formats['sub_header_2'])
+            worksheet.write(1, 0, 'Population Basis',  formats['sub_header_2'])
+            worksheet.write(1, 1, 'Analysis Type \u1d47',  formats['sub_header_2'])
+            worksheet.write(2, 0, 'Nationwide (2018-2022 ACS) \u1da0')
+            worksheet.write(2, 1, 'N/A', formats['vcenter'])
+            worksheet.write(3, 0, 'State \u1d4d')
+            worksheet.write(3, 1, 'Proximity')
+            worksheet.write(4, 0, 'County \u1d4d')
+            worksheet.write(4, 1, 'Proximity')
+            # worksheet.merge_range("B2:N2", 'Demographic Group',  formats['sub_header_3'])
 
-            worksheet.set_row(2, 60, formats['sub_header_2'])
+            worksheet.set_row(1, 60, formats['sub_header_2'])
             for col_num, data in enumerate(column_headers):
-                worksheet.write(2, col_num+1, data)
+                worksheet.write(1, col_num+1, data)
 
-            worksheet.merge_range("A7:N7", '')
+            # worksheet.merge_range("A7:N7", '')
 
-            worksheet.merge_range("A8:A9", self.source_category, formats['sub_header_1'])
-            worksheet.write(7, 1, 'Proximity')
-            worksheet.write(8, 1, self.get_risk_label())
-
-            next_line = 8
+            # worksheet.merge_range("A8:A9", self.source_category, formats['sub_header_1'])
+            worksheet.write(6, 0, self.source_category, formats['sub_header_1'])
+            worksheet.write(7, 0, self.source_category, formats['sub_header_1'])
+            worksheet.write(6, 1, 'Proximity')
+            worksheet.write(7, 1, self.get_risk_label())
+            
+            next_line = 7
             self.append_data(run_group_values, worksheet, formats, next_line-1)
 
-            worksheet.merge_range("A10:N10", '')
+            # worksheet.merge_range("A10:N10", '')
 
-            self.append_aggregated_data(national_values, worksheet, formats, 3)
-            self.append_aggregated_data(state_values, worksheet, formats, 4)
-            self.append_aggregated_data(county_values, worksheet, formats, 5)
+            self.append_aggregated_data(national_values, worksheet, formats, 2)
+            self.append_aggregated_data(state_values, worksheet, formats, 3)
+            self.append_aggregated_data(county_values, worksheet, formats, 4)
 
             FacilitySummary.sheets[sheets_key] = worksheet
-            next_line = 11
+            next_line = 10
 
         # Update the worksheet with current facility info on next line
-        facility_range = 'A' + str(next_line) + ':A' + str(next_line+1)
-        worksheet.merge_range(facility_range, self.facilityId, formats['sub_header_3'])
+        worksheet.write(next_line-1, 0, self.facilityId, formats['sub_header_3'])
+        worksheet.write(next_line, 0, self.facilityId, formats['sub_header_3'])
         worksheet.write(next_line-1, 1, 'Proximity')
         worksheet.write(next_line, 1, self.get_risk_label())
 
         self.append_data(values, worksheet, formats, next_line-1)
 
         FacilitySummary.lines[lines_key] = next_line + 1
+        
+        # If this is the last facility, then write the footnotes
+        if write_notes == True:
+            self.create_footnotes(worksheet, formats, next_line+3)
 
     def get_risk_label(self):
         return ''
@@ -112,8 +129,8 @@ class FacilitySummary():
         return ''
 
     def get_columns(self):
-        return ['', 'Total', 'People of Color', 'African American', 'Native American',
-                'Other and Multiracial', 'Hispanic or Latino', 'Age (Years)\n0-17', 'Age (Years)\n18-64',
+        return ['', 'Total Population \u1d9C', 'People of Color \u1d48', 'African American', 'Native American',
+                'Other and Multiracial', 'Hispanic or Latino \u1d49', 'Age (Years)\n0-17', 'Age (Years)\n18-64',
                 'Age (Years)\n>=65', 'Below the Poverty Level', 'Below Twice the Poverty Level',
                 'Over 25 Without a High School Diploma', 'Linguistically Isolated']
 
@@ -137,17 +154,16 @@ class FacilitySummary():
 
         numrows = len(slice)
         numcols = len(slice[0])
-        for row in range(0, numrows):
-            for col in range(0, numcols):
+        for col in range(0, numcols):
 
-                # total pop kept as raw number, but we're using percentages for the breakdowns...
-                value = slice[row][col]
-                if value != "":
-                    value = float(value)
-                    format = formats['percentage'] if value <= 1 else formats['number']
-                    worksheet.write_number(startrow+row, startcol+col, value, format)
-                else:
-                    worksheet.write(startrow+row, startcol+col, value)
+            # total pop kept as raw number, but we're using percentages for the breakdowns...
+            value = slice[0][col]
+            if value != "":
+                value = float(value)
+                format = formats['percentage'] if value <= 1 else formats['number']
+                worksheet.write_number(startrow, startcol+col, value, format)
+            else:
+                worksheet.write(startrow, startcol+col, value)
 
         return startrow + numrows
 
@@ -229,3 +245,18 @@ class FacilitySummary():
                 worksheet.write(startrow, startcol+col, value)
 
         return startrow + 1
+
+    def create_footnotes(self, worksheet, formats, startrow):
+        notes_dict = self.get_notes()
+        for note in notes_dict:
+            if 'note' in note:
+                worksheet.write_rich_string('A'+str(startrow), formats['notes'], 
+                                            notes_dict[note], ' ')                
+            elif note == '*':
+                worksheet.write_rich_string('A'+str(startrow), formats['asterik'],
+                                            note, ' ', formats['notes'], notes_dict[note])
+            else:
+                worksheet.write_rich_string('A'+str(startrow), formats['superscript'],
+                                            note, ' ', formats['notes'], notes_dict[note])
+            startrow+=1
+        

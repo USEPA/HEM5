@@ -29,7 +29,7 @@ class ReportWriter():
     facility_summary_workbooks = {}
 
     def __init__(self, target_dir, source_cat, source_cat_prefix, radius, facility,
-                 cancer_risk_threshold, hi_risk_threshold):
+                 cancer_risk_threshold, hi_risk_threshold, write_notes):
         self.output_dir = target_dir
         self.source_cat = source_cat
         self.source_cat_prefix = source_cat_prefix
@@ -41,6 +41,7 @@ class ReportWriter():
         self.formats = None
         self.hazard_prefix = None
         self.hazard_name = None
+        self.write_notes = write_notes
 
         self.hiSheets = {'HiRacialEthnic': hiRacialEthnicModule,
                          'HiAgeGroups': hiAgeGroupsModule,
@@ -118,10 +119,28 @@ class ReportWriter():
         formats['sub_header_4'] = workbook.add_format({
             'bold': 1,
             'align': 'left',
+            'valign': 'vcenter',
+            'text_wrap': 1})
+
+        formats['sub_header_5'] = workbook.add_format({
+            'bold': 0,
+            'align': 'center',
             'valign': 'vcenter'})
 
+        formats['sub_header_6'] = workbook.add_format({
+            'bold': 0,
+            'align': 'left',
+            'valign': 'vcenter',
+            'text_wrap': 1})
+
+        formats['sub_header_7'] = workbook.add_format({
+            'bold': 1,
+            'align': 'left',
+            'valign': 'vcenter',
+            'text_wrap': 0})
+
         formats['notes'] = workbook.add_format({
-            'font_size': 12,
+            'font_size': 11,
             'bold': 0,
             'align': 'left',
             'valign': 'top',
@@ -138,6 +157,12 @@ class ReportWriter():
 
         formats['int_percentage'] = workbook.add_format({
             'num_format': '0%'})
+        
+        formats['superscript'] = workbook.add_format({'font_script': 1})
+
+        formats['asterik'] = workbook.add_format({'bold': 1, 'font_size': 14})
+        
+        formats['vcenter'] = workbook.add_format({'valign': 'vcenter'})
 
         return formats
 
@@ -270,7 +295,8 @@ class ReportWriter():
         cancer_fac_summary.create_summary(workbook=workbook, hazard_name=None, formats=formats,
                                           national_values=national_values, state_values=state_values,
                                           county_values=county_values, values=values,
-                                          run_group_values=run_group_values)
+                                          run_group_values=run_group_values,
+                                          write_notes=self.write_notes)
 
     def add_hi_facility_summaries(self, national_values, state_values, county_values, values, run_group_values, toshis):
 
@@ -290,7 +316,8 @@ class ReportWriter():
             hi_fac_summary.create_summary(workbook=workbook, hazard_name=value, formats=formats,
                                           national_values=national_values, state_values=state_values,
                                           county_values=county_values, values=values[key],
-                                          run_group_values=run_group_values[key])
+                                          run_group_values=run_group_values[key],
+                                          write_notes=self.write_notes)
 
             toshi_index += 1
 

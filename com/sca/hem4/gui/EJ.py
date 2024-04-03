@@ -24,6 +24,8 @@ from com.sca.hem4.upload.MetLib import MetLib
 from com.sca.hem4.writer.csv.MirHIAllReceptors import *
 from decimal import ROUND_HALF_UP, Decimal, getcontext
 from com.sca.hem4.writer.excel.summary.AltRecAwareSummary import AltRecAwareSummary
+import traceback
+
 
 # The GUI portion of the EJ functionality in HEM. This class manages the various dialogs and options needed
 # to kick off a run of the EJ reporting tool. Its main entry into the code that actually performs the report
@@ -142,20 +144,20 @@ class EJ(Page):
         ru = PIL.Image.open('images\icons8-create-48.png').resize((30,30))
         ricon = self.add_margin(ru, 5, 0, 5, 0)
         rileicon = ImageTk.PhotoImage(ricon)
-        rileLabel = tk.Label(self.run_frame, image=rileicon, bg=self.tab_color)
-        rileLabel.image = rileicon # keep a reference!
-        rileLabel.grid(row=1, column=1, padx=0, pady=20, sticky='E')
+        self.rileLabel = tk.Label(self.run_frame, image=rileicon, bg=self.tab_color)
+        self.rileLabel.image = rileicon # keep a reference!
+        self.rileLabel.grid(row=1, column=1, padx=0, pady=20, sticky='E')
 
-        run_button = tk.Label(self.run_frame, text="Run Reports", font=TEXT_FONT, bg=self.tab_color)
-        run_button.grid(row=1, column=2, padx=20, pady=20, sticky='E')
+        self.run_button = tk.Label(self.run_frame, text="Run Reports", font=TEXT_FONT, bg=self.tab_color)
+        self.run_button.grid(row=1, column=2, padx=20, pady=20, sticky='E')
 
-        run_button.bind("<Enter>", partial(self.color_config, run_button, rileLabel, self.run_frame, 'light grey'))
-        run_button.bind("<Leave>", partial(self.color_config, run_button, rileLabel, self.run_frame, self.tab_color))
-        run_button.bind("<Button-1>", self.run_reports)
+        self.run_button.bind("<Enter>", partial(self.color_config, self.run_button, self.rileLabel, self.run_frame, 'light grey'))
+        self.run_button.bind("<Leave>", partial(self.color_config, self.run_button, self.rileLabel, self.run_frame, self.tab_color))
+        self.run_button.bind("<Button-1>", self.run_reports)
 
-        rileLabel.bind("<Enter>", partial(self.color_config, rileLabel, run_button, self.run_frame, 'light grey'))
-        rileLabel.bind("<Leave>", partial(self.color_config, rileLabel, run_button, self.run_frame, self.tab_color))
-        rileLabel.bind("<Button-1>", self.run_reports)
+        self.rileLabel.bind("<Enter>", partial(self.color_config, self.rileLabel, self.run_button, self.run_frame, 'light grey'))
+        self.rileLabel.bind("<Leave>", partial(self.color_config, self.rileLabel, self.run_button, self.run_frame, self.tab_color))
+        self.rileLabel.bind("<Button-1>", self.run_reports)
 
         
         
@@ -184,19 +186,38 @@ class EJ(Page):
 
         if self.add_config_btn is None:
             self.create_add_config()
+        else:
+            self.add_config_btn['state'] = 'normal'
 
         self.nav.peopleLabel.configure(image=self.nav.ejIcon)
         self.titleLabel.configure(image=self.nav.ejIcon)
+        
+        self.fileLabel.bind("<Button-1>", partial(self.browse, self.step1_instructions))
+        self.step1_instructions.bind("<Button-1>", partial(self.browse, self.step1_instructions))
+        
+        self.run_button.bind("<Button-1>", self.run_reports)
+        self.rileLabel.bind("<Button-1>", self.run_reports)
 
 
     # Disable the GUI while the module is running
     def disable(self):
+        for child in self.parameters_frame.winfo_children():
+            if isinstance(child, tk.Frame):
+                for grandchild in child.winfo_children():
+                    grandchild.configure(state='disable')
+            else:
+                child.configure(state='disable')
         for child in self.folder_frame.winfo_children():
            child.configure(state='disable')
         for child in self.category_frame.winfo_children():
            child.configure(state='disable')
         for child in self.run_frame.winfo_children():
            child.configure(state='disable')
+        self.fileLabel.unbind("<Button-1>")
+        self.step1_instructions.unbind("<Button-1>")
+        self.run_button.unbind("<Button-1>")
+        self.rileLabel.unbind("<Button-1>")
+        self.add_config_btn['state'] = 'disabled'
         
         
         
@@ -603,7 +624,7 @@ class EJ(Page):
                 # Infer which TOSHIs to include from the filtered all receptors file
                 # should be of this form: {'Deve':'Developmental', 'Neur':'Neurological', ...}
                 toshis = {} if cancer_selected else self.choose_toshis(filtered_mir_hi_df)
-
+                
                 ej = EnvironmentalJustice(mir_rec_df=filtered_mir_hi_df, acs_df=self.acs_df, levels_df=self.levels_df,
                                           outputdir=output_dir, source_cat_name=self.category_name.get_text_value(),
                                           source_cat_prefix=self.category_prefix.get_text_value(),
@@ -611,13 +632,22 @@ class EJ(Page):
                                           cancer_risk_threshold=config["cancer_risk"],
                                           hi_risk_threshold=config["hi_risk"])
 
+
                 # We will create -either- the cancer or HI reports but not both.
                 ej.create_cancer_reports() if cancer_selected else ej.create_hi_reports()
                 ej.create_facility_summaries(cancer_selected=cancer_selected)
             except BaseException as e:
-                Logger.logMessage(e)
+                messagebox.showinfo('Report creation error', 'An error occurred while creating '
+                                    'a Demographic Assessment report. This run will stop. Please see the log for '
+                                    'a detailed error message.')
+                fullStackInfo = traceback.format_exc()
+                Logger.logMessage('An error occurred while creating a Demographic Assessment report. Detailed error message: \n\n' \
+                                  + fullStackInfo)
+                self.reset()
+                return
 
             Logger.logMessage("Creating facility specific reports...")
+            last_fac = False
             for facilityId in facilities:
                 Logger.logMessage(facilityId + "...")
 
@@ -666,6 +696,10 @@ class EJ(Page):
                     if not (os.path.exists(fac_output_dir) or os.path.isdir(fac_output_dir)):
                         Logger.logMessage("Creating ej subdirectory for facility results...")
                         os.mkdir(fac_output_dir)
+                    
+                    # If this is the last facility, then set the flag to write footnotes
+                    if facilityId == facilities[-1]:
+                        last_fac = True
 
                     fac_ej = EnvironmentalJustice(facility=facilityId, mir_rec_df=filtered_bsc_df, acs_df=self.acs_df,
                                                   levels_df=self.levels_df, outputdir=fac_output_dir,
@@ -673,14 +707,22 @@ class EJ(Page):
                                                   source_cat_prefix=self.category_prefix.get_text_value(),
                                                   radius=config["radius"], requested_toshis=toshis,
                                                   cancer_risk_threshold=config["cancer_risk"],
-                                                  hi_risk_threshold=config["hi_risk"])
-
+                                                  hi_risk_threshold=config["hi_risk"],
+                                                  write_notes=last_fac)
+                   
                     # We will create -either- the cancer or HI reports but not both.
                     fac_ej.create_cancer_reports() if cancer_selected else fac_ej.create_hi_reports()
                     fac_ej.add_facility_summaries(run_group_data_model=ej.data_model, cancer_selected=cancer_selected)
-
+                    
                 except BaseException as e:
-                    Logger.logMessage(e)
+                    messagebox.showinfo('Report creation error', 'An error occurred while creating '
+                                        'a Demographic Assessment report for a facility. This run will stop. Please see the log for '
+                                        'a detailed error message.')
+                    fullStackInfo = traceback.format_exc()
+                    Logger.logMessage('An error occurred while creating a Demographic Assessment report for a facility. Detailed error message: \n\n' \
+                                      + fullStackInfo)
+                    self.reset()
+                    return
 
             config_num += 1
 
