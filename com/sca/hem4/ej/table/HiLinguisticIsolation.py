@@ -39,7 +39,7 @@ class HiLinguisticIsolation(WorksheetTable):
                       ,
                       'note1_b':"lifetime, and not adjusted for exposure factors. See the HEM5 User's Guide for more information."
                       ,
-                      'c':"The population-weighted average hazard index takes into account risk levels at all populated block receptors in the entire modeled domain."
+                      'c':"The population-weighted average hazard index (HI) takes into account HI levels at all populated block receptors in the entire modeled domain."
                      }
         return notes_dict
 

@@ -37,7 +37,7 @@ class HiRacialEthnic(WorksheetTable):
                       ,
                       'b':"Hazard indices from the modeled emissions are at the census block level, based on the predicted outdoor concentration over a 70-year lifetime, and not adjusted for exposure factors."
                       ,
-                      'c':"The population-weighted average hazard index takes into account risk levels at all populated block receptors in the entire modeled domain."
+                      'c':"The population-weighted average hazard index (HI) takes into account HI levels at all populated block receptors in the entire modeled domain."
                       ,
                       'd':'In order to avoid double counting, the "Hispanic or Latino" category is treated as a distinct demographic category for these analyses. A person is identified as one of five'
                       ,

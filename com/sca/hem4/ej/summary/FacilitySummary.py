@@ -66,6 +66,8 @@ class FacilitySummary():
             # Increase the cell size of the column headers to highlight the formatting.
             worksheet.set_column('A:A', 28)
             worksheet.set_column(top_header_coords_minusA, 12)
+            # Override column B width
+            worksheet.set_column('B:B', 13)
             worksheet.set_row(0, 30)
             worksheet.set_row(2, 24)
 

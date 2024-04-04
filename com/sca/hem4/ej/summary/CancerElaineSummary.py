@@ -12,7 +12,7 @@ class CancerElaineSummary(ElaineSummary):
 
     def get_table_header(self):
         scope =  self.source_category if self.facility is None else self.facility
-        return 'Table for Preamble: Demographic Assessment of Cancer Risk Results based on' + scope + ' Emissions ' + \
+        return 'Table for Preamble: Demographic Assessment of Cancer Risk Results based on ' + scope + ' Emissions ' + \
                '- ' + self.radius + ' km Study Area Radius \u1d43'
 
     def get_risk_header(self):

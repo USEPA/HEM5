@@ -60,9 +60,10 @@ class DGSummary():
         worksheet.write("A11", '     Percentage of total')
 
         # Create sub header 2
-        scope = 'the ' + self.source_category + ' Source Category' if self.facility is None else \
+        scope = self.source_category if self.facility is None else \
             'Facility ' + self.facility
-        worksheet.write("A12", 'Proximity Results plus Modeled ' + self.get_risk_name() + ' from ' + scope,
+        worksheet.write("A12", 'Proximity Results plus Average ' + self.get_risk_name() 
+                            + ' based on ' + scope + ' modeled emissions',
                               formats['sub_header_7'])
 
         article = 'any' if self.facility is None else 'the'

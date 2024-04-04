@@ -25,8 +25,8 @@ class HiFacilitySummary(FacilitySummary):
                       'note2_a':"may be determined by multiplying the total population provided in each row by the respective demographic percentages in the same row."
                       ,
                       'b':'The "Proximity" analysis is for the entire population irrespective of '
-                          'risk (i.e., for all risk levels combined). The "At Risk" analysis is for only '
-                          'the population within Census blocks having HEM5-modeled risk at and above the indicated risk level.' 
+                          'hazard index (i.e., for all HI levels combined). The "Above HI" analysis is for only '
+                          'the population within Census blocks having HEM5-modeled hazard index above the indicated HI level.' 
                       ,
                       'c':'The total population values for the run group and each individual facility are based on block level data from the 2020 Decennial Census, with block populations summed over the area defined by the indicated radius around each facility.'
                       ,
