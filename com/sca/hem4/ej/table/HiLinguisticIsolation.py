@@ -4,7 +4,7 @@ from com.sca.hem4.ej.table.WorksheetTable import WorksheetTable
 class HiLinguisticIsolation(WorksheetTable):
 
     def __init__(self, radius_value, source_category, prefix, name, facility):
-        self.active_columns = [0, 13]
+        self.active_columns = [0, 14]
         self.prefix = prefix
         self.name = name
         WorksheetTable.__init__(self, radius=radius_value, source_category=source_category, facility=facility)
@@ -14,7 +14,7 @@ class HiLinguisticIsolation(WorksheetTable):
                 '>7 to <= 8', '>8 to <= 9', '>9 to <= 10', '> 10']
 
     def get_table_name(self):
-        return 'Table ' + self.identifier + '-5. Distribution of Hazard Indices for People Living in Linguistic Isolation - ' + \
+        return 'Table ' + self.identifier + '-5. Distribution of Hazard Indices for People Living in Limited English Speaking Households - ' + \
                self.radius + ' km Study Area Radius \u1d43'
 
     def get_sub_header_1(self):
@@ -47,4 +47,4 @@ class HiLinguisticIsolation(WorksheetTable):
         return 'Table' + self.identifier + '5NC'
 
     def get_columns(self):
-        return ['Total Population', 'People Living in Linguistic Isolation']
+        return ['Total Population', 'People Living in Limited English Speaking Households']

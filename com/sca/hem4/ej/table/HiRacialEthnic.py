@@ -4,7 +4,7 @@ from com.sca.hem4.ej.table.WorksheetTable import WorksheetTable
 class HiRacialEthnic(WorksheetTable):
 
     def __init__(self, radius_value, source_category, prefix, name, facility):
-        self.active_columns = [0, 1, 2, 3, 4, 5]
+        self.active_columns = [0, 1, 2, 3, 4, 5, 6]
         self.prefix = prefix
         self.name = name
         WorksheetTable.__init__(self, radius=radius_value, source_category= source_category, facility=facility)
@@ -39,9 +39,9 @@ class HiRacialEthnic(WorksheetTable):
                       ,
                       'c':"The population-weighted average hazard index (HI) takes into account HI levels at all populated block receptors in the entire modeled domain."
                       ,
-                      'd':'In order to avoid double counting, the "Hispanic or Latino" category is treated as a distinct demographic category for these analyses. A person is identified as one of five'
+                      'd':'In order to avoid double counting, the "Hispanic or Latino" category is treated as a distinct demographic category for these analyses. A person is identified as one of six'
                       ,
-                      'note_d':"racial/ethnic categories: White, African American, Native American, Other and Multiracial, or Hispanic/Latino."
+                      'note_d':"racial/ethnic categories: White, Black, American Indian or Alaska Native, Asian, Other and Multiracial, or Hispanic/Latino."
                      }
         return notes_dict
 
@@ -49,5 +49,5 @@ class HiRacialEthnic(WorksheetTable):
         return 'Table' + self.identifier + '1NC'
 
     def get_columns(self):
-        return ['Total Population', 'White', 'African American', 'Native American', 'Other and Multiracial',
+        return ['Total Population', 'White', 'Black', 'American Indian or Alaska Native', 'Asian', 'Other and Multiracial',
                 'Hispanic or Latino \u1D48']

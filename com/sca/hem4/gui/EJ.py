@@ -217,7 +217,8 @@ class EJ(Page):
         self.step1_instructions.unbind("<Button-1>")
         self.run_button.unbind("<Button-1>")
         self.rileLabel.unbind("<Button-1>")
-        self.add_config_btn['state'] = 'disabled'
+        if self.add_config_btn is not None:
+            self.add_config_btn['state'] = 'disable'
         
         
         

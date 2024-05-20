@@ -33,7 +33,7 @@ class WorksheetTable:
 
         # Increase the cell size of the merged cells to highlight the formatting.
         worksheet.set_column(0, 0, 40)
-        worksheet.set_column(top_header_coords_wo_A, 20)
+        worksheet.set_column(top_header_coords_wo_A, 22)
         worksheet.set_row(0, 55)
         worksheet.set_row(1, 60)
         # worksheet.set_row(2, 28)

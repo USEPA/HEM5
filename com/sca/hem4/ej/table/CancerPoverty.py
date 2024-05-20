@@ -6,7 +6,7 @@ class CancerPoverty(WorksheetTable):
     def __init__(self, radius_value, source_category, facility):
         self.name = None
         self.prefix = None
-        self.active_columns = [0, 12, 11]
+        self.active_columns = [0, 13, 12]
         WorksheetTable.__init__(self, radius=radius_value, source_category=source_category, facility=facility)
 
     def get_bin_headers(self):

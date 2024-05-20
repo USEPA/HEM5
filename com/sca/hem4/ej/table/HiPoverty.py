@@ -4,7 +4,7 @@ from com.sca.hem4.ej.table.WorksheetTable import WorksheetTable
 class HiPoverty(WorksheetTable):
 
     def __init__(self, radius_value, source_category, prefix, name, facility):
-        self.active_columns = [0, 12, 11]
+        self.active_columns = [0, 13, 12]
         self.prefix = prefix
         self.name = name
         WorksheetTable.__init__(self, radius=radius_value, source_category=source_category, facility=facility)
