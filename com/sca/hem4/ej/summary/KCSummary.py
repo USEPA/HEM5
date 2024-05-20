@@ -13,7 +13,7 @@ class KCSummary():
         self.radius = str(int(radius) if radius.is_integer() else radius)
         self.source_category = source_category
         self.facility = facility
-        self.active_columns = [0, 14, 2, 3, 4, 5, 6, 7, 8, 11, 12, 10, 13]
+        self.active_columns = [0, 15, 2, 3, 4, 5, 6, 7, 8, 9, 12, 13, 11, 14]
 
     def create_summary(self, workbook, formats, national_values, state_values, county_values, values, max_value,
                        hazard_name=None):
@@ -25,16 +25,11 @@ class KCSummary():
         firstcol = 'A'
         lastcol = chr(ord(firstcol) + len(column_headers))
         title_header_coords = firstcol+'1:'+lastcol+'1'
-        top_header_coords = 'C1:'+lastcol+'1'
+        top_header_coords = 'B1:'+lastcol+'1'
 
         # Increase the cell size of the merged cells to highlight the formatting.
-        worksheet.set_column(top_header_coords, 12)
+        worksheet.set_column(top_header_coords, 14)
         worksheet.set_column("A:A", 36)
-        worksheet.set_column("B:B", 16)
-        worksheet.set_column("C:C", 16)
-        worksheet.set_column("G:G", 14)
-        worksheet.set_column("N:N", 14)
-        worksheet.set_column("O:O", 12)
         worksheet.set_row(0, 30)
         worksheet.set_row(2, 30)
         worksheet.set_row(3, 30)
@@ -46,12 +41,12 @@ class KCSummary():
 
         # Row headers
         worksheet.write("A2", 'Population Basis',  formats['sub_header_2'])
-        worksheet.write(2, 0, 'Nationwide \u1d48')
-        worksheet.write(3, 0, 'State \u1d48')
-        worksheet.write(4, 0, 'County \u1d48')
+        worksheet.write(2, 0, 'Nationwide \u1d4d')
+        worksheet.write(3, 0, 'State \u1d4d')
+        worksheet.write(4, 0, 'County \u1d4d')
         worksheet.write(5, 0, ' ')
         worksheet.write_rich_string(6, 0, self.get_risk_header()
-                                  , formats['superscript'], ' e,f', formats['wrap'])
+                                  , formats['superscript'], ' h,i', formats['wrap'])
         
   
         # Create column headers
@@ -87,10 +82,10 @@ class KCSummary():
                scope + ' - ' + self.radius + ' km Study Area Radius \u1d43'
 
     def get_columns(self):
-        return ['Total Population', 'People of Color \u1D47', 'African American', 'Native American',
+        return ['Total Population', 'People of Color \u1D47', 'Black', 'American Indian or Alaska Native', 'Asian',
                 'Other and Multiracial', 'Hispanic or Latino \u1D9C', 'Age (Years)\n0-17', 'Age (Years)\n18-64',
-                'Age (Years)\n>=65', 'Below the Poverty Level', 'Below Twice the Poverty Level',
-                'Over 25 Without a High School Diploma', 'Linguistically Isolated']
+                'Age (Years)\n>=65', 'Below the Poverty Level \u1d48', 'Below Twice the Poverty Level \u1d48',
+                'Over 25 Without a High School Diploma \u1d49', 'People Living in Limited English Speaking Households \u1da0']
 
     def get_sheet_name(self):
         return "Pop. At Risk Summary"
@@ -100,7 +95,7 @@ class KCSummary():
         data = deepcopy(values)
 
         # For this summary, we only want the percentages, which are in the second row.
-        for index in range(1, 15):
+        for index in range(1, 16):
             data[0][index] = data[1][index]
 
         # First, select the columns that are relevant
@@ -136,12 +131,12 @@ class KCSummary():
         row_totals = [sum(x) for x in zip(*dg_data)]
 
         saved_edu_pop = None
-        for index in range(1, 15):
+        for index in range(1, 16):
             # Education is a special case...we want the population over 25 as the denominator, not the total population!
-            if index == 9:
+            if index == 10:
                 saved_edu_pop = row_totals[index]
 
-            if index == 10:
+            if index == 11:
                 row_totals[index] = (row_totals[index] / saved_edu_pop) if saved_edu_pop > 0 else 0
             else:
                 row_totals[index] = (row_totals[index] / row_totals[0]) if row_totals[0] > 0 else 0

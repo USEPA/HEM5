@@ -6,7 +6,7 @@ class CancerLinguisticIsolation(WorksheetTable):
     def __init__(self, radius_value, source_category, facility):
         self.name = None
         self.prefix = None
-        self.active_columns = [0, 13]
+        self.active_columns = [0, 14]
         WorksheetTable.__init__(self, radius=radius_value, source_category=source_category, facility=facility)
 
     def get_bin_headers(self):
@@ -14,7 +14,7 @@ class CancerLinguisticIsolation(WorksheetTable):
                 '50 to < 100', '100 to < 200', '200 to < 300', '>= 300']
 
     def get_table_name(self):
-        return 'Table ' + self.identifier + '-5. Distribution of Cancer Risk for People Living in Linguistic Isolation - ' + \
+        return 'Table ' + self.identifier + '-5. Distribution of Cancer Risk for People Living in Limited English Speaking Households - ' + \
                self.radius + ' km Study Area Radius \u1d43'
 
     def get_sub_header_1(self):
@@ -48,4 +48,4 @@ class CancerLinguisticIsolation(WorksheetTable):
         return 'Table' + self.identifier + '5C'
 
     def get_columns(self):
-        return ['Total Population', 'People Living in Linguistic Isolation']
+        return ['Total Population', 'People Living in Limited English Speaking Households']

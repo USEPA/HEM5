@@ -4,7 +4,7 @@ from com.sca.hem4.ej.table.WorksheetTable import WorksheetTable
 class HiDiploma(WorksheetTable):
 
     def __init__(self, radius_value, source_category, prefix, name, facility):
-        self.active_columns = [0, 9, 10]
+        self.active_columns = [0, 10, 11]
         self.prefix = prefix
         self.name = name
         WorksheetTable.__init__(self, radius=radius_value, source_category=source_category, facility=facility)

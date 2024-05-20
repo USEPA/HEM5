@@ -152,7 +152,7 @@ class FacilityList(InputFile):
             facility = row[fac_id]
             
             # urban and urban_pop..note that the rural_urban value can be blank, and in this case we will
-            # leave it blank here (it will be defaulted in Runstream based on census data)
+            # leave it blank here (it will be defaulted in Runstream based on census data [CensusBlocks.py])
             valid = ['U', 'R', '']
             if not row[rural_urban] in valid:
                 Logger.logMessage("Facility " + facility +
