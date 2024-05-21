@@ -243,7 +243,7 @@ class FacilityList(InputFile):
                 Logger.logMessage("Facility " + facility + ": Using default (calculated) center instead.")
                 row[fac_center] = ""
 
-            # Ring distances...comma separated list that contains at least 3 values, all must be > 0 and <= 50000, and
+            # Ring distances...comma separated list that contains at least 3 values, all must be > 0 and <= max_dist, and
             # values must be increasing
             distance_spec = row['ring_distances']
             spec_valid = True
@@ -259,7 +259,7 @@ class FacilityList(InputFile):
                 prev = 0
                 for d in distances[1:]:
                     ring_distance = int(float(d))
-                    if ring_distance <= prev or ring_distance > 50000:
+                    if ring_distance <= prev or ring_distance > row[max_dist]:
                         spec_valid = False
                     prev = ring_distance
 
