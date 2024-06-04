@@ -156,10 +156,11 @@ class EJdash():
                         
             
         rungroup = file_list[0].split('_EJ-Summary_')[0]
-        demogroups = ['People of Color', 'African American','Native American', 'Other and Multiracial', 'Hispanic or Latino',
+        demogroups = ['People of Color', 'Black','American Indian or Alaska Native', 'Asian',
+                      'Other and Multiracial', 'Hispanic or Latino',
                       'Age 0-17', 'Age 18-64', 'Age >=65','Below Poverty Level', 
                       'Below Twice Poverty Level', 'No High School Diploma',
-                      'Linguistically Isolated']
+                      'Limited English Speaking Households', 'People with Disabilities']
         
         ### Go through the files (and sheets within files) to get all the scenarios run in the Demographic Assessment module
         scenarios = pd.DataFrame(columns = ['Metric', 'Distance', 'Risk_Level', 'Filename'])
@@ -190,27 +191,34 @@ class EJdash():
         metrics = scenarios['Metric'].unique()
                 
         ### Create a dataframe of the national, state, and county averages
-        compnames = ['Average', 'Total Pop', 'People of Color', 'African American','Native American',
-                     'Other and Multiracial', 'Hispanic or Latino','Age 0-17', 'Age 18-64', 'Age >=65',
+        compnames = ['Average', 'Total Pop', 'People of Color', 'Black','American Indian or Alaska Native',
+                     'Asian', 'Other and Multiracial', 'Hispanic or Latino','Age 0-17', 'Age 18-64', 'Age >=65',
                      'Below Poverty Level', 'Below Twice Poverty Level',
-                     'No High School Diploma','Linguistically Isolated']
+                     'No High School Diploma','Limited English Speaking Households',
+                     'People with Disabilities']
         compdf = pd.DataFrame()
         
         for scen in scenarios.itertuples():
-            temp = pd.read_excel(scen.Filename, skiprows = [0,1], usecols = [0, 2,3,4,5,6,7,8,9,10,11,12,13,14],
-                                 names = compnames
+            temp = pd.read_excel(scen.Filename, skiprows = [0,1], usecols = [0,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16],
+                                 names = compnames, header=None
                                  )
-            compdata = temp.loc[temp['Average'].isin(['Nationwide', 'State', 'County'])]
+            # Remove blank rows and footnotes
+            temp = temp[temp['Average'].notna() & temp['Total Pop'].notna()]
+            
+            # compdata = temp.loc[temp['Average'].isin(['Nationwide', 'State', 'County'])]
+            compdata = temp.loc[temp['Average'].str.contains("Nationwide|State|County", case=True)]
             compdata['Distance'] = scen.Distance
             compdf = pd.concat([compdf, compdata])
         
         compdf.drop_duplicates(inplace = True)
         
         ### Create a dataframe of the facility data  
-        mainnames = ['Facility', 'RiskorProx', 'Total Pop', 'People of Color', 'African American','Native American',
+        mainnames = ['Facility', 'RiskorProx', 'Total Pop', 'People of Color', 'Black',
+                     'American Indian or Alaska Native', 'Asian',
                      'Other and Multiracial', 'Hispanic or Latino','Age 0-17', 'Age 18-64', 'Age >=65',
                      'Below Poverty Level', 'Below Twice Poverty Level',
-                     'No High School Diploma','Linguistically Isolated']        
+                     'No High School Diploma','Limited English Speaking Households',
+                     'People with Disabilities']        
         maindf = pd.DataFrame()
         noprox = scenarios[~scenarios['Risk_Level'].isin(['Proximity Only'])]
         
@@ -223,11 +231,15 @@ class EJdash():
         
                 # Read Excel sheet as dtype string and then convert columns 2 onward to float.
                 # This ensures the facility ID is a string.
-                temp = xl.parse(skiprows = [0,1,3,4,5,6,7,8,9], names = mainnames, sheet_name=sheet, dtype=str)
+                temp = xl.parse(skiprows = [0,1,3,4,5,6,7,8], names = mainnames, sheet_name=sheet, dtype=str)
                 temp[temp.columns[2:]] = temp[temp.columns[2:]].astype(float)
                 temp.insert(0, 'Metric', tail.split('_')[2])
                 temp.insert(1, 'Distance', tail.split('_')[0])
                 temp.insert(2, 'Risk_Level', sheet)
+                
+                # Remove blank rows or rows with footnotes
+                temp = temp[temp['RiskorProx'].notna()]
+
                 
                 ## Adding cols for demog group pop; and facility names in rows where absent
                 ## Note: over 25 without a HS diploma uses count of people over age 25, not total pop
@@ -262,10 +274,10 @@ class EJdash():
                 # Convert the decimal fractions to percents for the demo groups        
                 for col in demogroups:
                     temp[col] = 100 * temp[col]
-                
+                                    
                 maindf = pd.concat([maindf, temp], ignore_index = True)
-        
-        
+                
+                
         ##### The app layout 
         app.layout = html.Div([
             
@@ -296,36 +308,7 @@ class EJdash():
                                                           ),
                                             ], className = 'four columns'),
                                     
-#                                     html.Div([html.H6("Risk Metric"),
-#                                              dcc.Dropdown(id='riskdrop',
-#                                                           options=[{"label": display_mets[i], "value": i} for i in metrics],
-# #                                                          options=[{"label": v, "value": k} for k,v in display_mets],
-#                                                           multi=False,
-#                                                           clearable=False,
-#                                                           value = metrics[0],
-#                                                           placeholder="Select a Metric",
-#                                                           ),
-#                                             ], className = 'two columns'),
-                                             
-#                                     html.Div([html.H6("Distance (km)"),
-#                                               dcc.Dropdown(id='distdrop',
-#                                                            options=[],
-#                                                           multi=False,
-#                                                           clearable=False,
-#                                                           # value = scenarios.loc[0, 'Distance'],
-#                                                           placeholder="Select a Distance (km)",
-#                                                           ),
-#                                             ], className = 'two columns'),
-                                    
-#                                     html.Div([html.H6("Risk/HI Level"),
-#                                               dcc.Dropdown(id='leveldrop',
-#                                                            options=[],
-#                                                           multi=False,
-#                                                           # clearable=False,
-#                                                           # value = scenarios.loc[0, 'Risk_Level'],
-#                                                           placeholder="Select a Risk or HI Level",
-#                                                           ),
-#                                             ], className = 'two columns'),
+
                                                            
                                     html.Div([html.H6("Demographic Group"),
                                               dcc.Dropdown(id='demodrop',
@@ -388,93 +371,6 @@ class EJdash():
             
                         ]),
                 
-                        # dcc.Tab(label="Map of Facilities", children=[
-                                
-                                
-                        #                     ###########  Start Map Dropdowns  ##########
-        
-                        #         html.Div([
-                                        
-                        #                 html.H6("Metric to Display"),
-                        #                   dcc.Dropdown(id='metdrop',
-                                                       
-                        #                               options=[{"label": i, "value": i} for i in mapmets],
-                        #                               multi=False,
-                        #                               clearable=False,
-                        #                               value = 'MIR (in a million)',
-                        #                               placeholder="Select a Metric",
-                        #                               ),
-                                        
-                        #                 html.H6("Linear or Log Scale"),
-                        #                   dcc.Dropdown(id='scaledrop',
-                                                       
-                        #                               options=[{"label": 'Linear', "value": 'linear'},
-                        #                                        {"label": 'Log', "value": 'log'}
-                        #                                        ],
-                        #                               multi=False,
-                        #                               clearable=False,
-                        #                               value = 'linear',
-                        #                               placeholder="Linear or Log Scale",
-                        #                               ),
-                                        
-                                                        
-                        #                 html.H6("Basemap"),
-                        #                   dcc.Dropdown(id='basemapdrop',
-                                                       
-                        #                               options=[{"label": 'Light', "value": 'carto-positron'},
-                        #                                        {"label": 'Dark', "value": 'carto-darkmatter'},
-                        #                                        {"label": 'Satellite', "value": 'satellite-streets'},
-                        #                                        {"label": 'Streets', "value": 'open-street-map'}
-                        #                                        ],
-                        #                               multi=False,
-                        #                               clearable=False,
-                        #                               value = 'carto-positron',
-                        #                               placeholder="Select a Basemap",
-                        #                               ),
-                                  
-                        #                 html.H6("Color Ramp"),  
-                        #                   dcc.Dropdown(id='rampdrop',
-                                                       
-                        #                               options=[{"label": 'Blue to Red', "value": px.colors.sequential.Bluered},
-                        #                                        {"label": 'Blue to Yellow', "value": px.colors.sequential.Cividis},
-                        #                                        {"label": 'Purple to Yellow', "value": px.colors.sequential.Viridis},
-                        #                                        {"label": 'Blue Scale', "value": px.colors.sequential.Blues},
-                        #                                        {"label": 'Green Scale', "value": px.colors.sequential.Greens},
-                        #                                        {"label": 'Red Scale', "value": px.colors.sequential.Reds}],
-                        #                               multi=False,
-                        #                               clearable=False,
-                        #                               value = px.colors.sequential.Viridis,
-                        #                               placeholder="Select a Color Ramp",
-                        #                               ),
-                                                       
-                        #                 html.H6("Dot Size"),  
-                        #                   dcc.Dropdown(id='sizedrop',
-                                                       
-                        #                               options=[{"label": i, "value": i} for i in range(5,16)],
-                        #                               multi=False,
-                        #                               clearable=False,
-                        #                               value = 6,
-                        #                               placeholder="Select a Dot Size",
-                        #                               ),
-                        #         ], className = 'two columns'),
-                                              
-                        #         html.Div([
-                                    
-                        
-                        #             html.Div([
-                        #                 dcc.Graph(id = 'map', style={"height": 800}, config = {
-                        #                         'modeBarButtonsToRemove': ['lasso2d', 'select2d', 'hoverCompareCartesian', 'hoverClosestCartesian'],
-                        #                         'toImageButtonOptions': {
-                        #                                 'format': 'jpeg', # one of png, svg, jpeg, webp
-                        #                                 'filename': 'Facility Map',
-                        #                                 'scale': 1}
-                        #                           }),
-                        #             ], className='ten columns'),
-                        
-                                        
-                        #         ], className = 'row'),
-                                       
-                        # ]),
                                                        
                         dcc.Tab(label="Summary Table", children=[
                                                      
@@ -529,50 +425,7 @@ class EJdash():
                               
         ])
  
-        ##############################
-        ##  Callbacks
-        ##############################  
-                               
-                          
-        # ### Callback for the Distance Dropdown                  
-        # @app.callback(Output('distdrop', 'options'),
-        #               # Output('distdrop', 'value'),
-        #               [Input('riskdrop', 'value')],
-        #                # Input('leveldrop', 'value')]
-        #                )
-        # def distlist(metric):
-        #     # if level is None:
-        #     #     shortdf = scenarios.loc[(scenarios['Metric'] == metric)]
-        #     # else:
-        #     #     shortdf = scenarios.loc[(scenarios['Metric'] == metric) & (scenarios['Risk_Level'] == level)]
-        #     shortdf = scenarios.loc[(scenarios['Metric'] == metric)]
-        #     shortlist = shortdf['Distance'].unique()
-        #     dist_options = [{"label": i, "value": i} for i in shortlist]
-        #     # dist_default = shortdf.at[0, 'Distance']
-        #     # breakpoint()
-    
-        #     return dist_options#, dist_default              
-                          
-        # ### Callback for the Risk Level Dropdown                  
-        # @app.callback(Output('leveldrop', 'options'),
-        #               # Output('leveldrop', 'value'),
-        #               [Input('riskdrop', 'value'),
-        #                Input('distdrop', 'value')]
-        #                )
-        # def levellist(metric, distance):
-        #     if distance is None:
-        #         return None                
-        #     else:
-        #         shortdf = scenarios.loc[(scenarios['Metric'] == metric) & (scenarios['Distance'] == distance)]
-        #         shortlist = shortdf['Risk_Level'].unique()
-        #         level_options = [{"label": i, "value": i} for i in shortlist]
-        #         # breakpoint()
-        #         return level_options#, level_default
-                
-        #     # level_default = shortdf.at[0, 'Risk_Level']
-        #     # breakpoint()
-            
-            
+           
         
         ### Callback for the Bar Chart
         @app.callback(Output('barchart', 'figure'),
@@ -609,11 +462,11 @@ class EJdash():
                 dff = dff.loc[(dff[group] > 0) & (dff[group + ' Pop'] >= 1)].sort_values(by=[sorter], ascending = False)
                 
                 dff = dff.round(decimals = 1)
-                
+           
                 ### Get the geographic averages for the given distance and demographic group
-                natwide = compdf.loc[(compdf['Average'] == 'Nationwide') & (compdf['Distance'] == distance), group]
-                statwide = compdf.loc[(compdf['Average'] == 'State') & (compdf['Distance'] == distance), group]
-                countwide = compdf.loc[(compdf['Average'] == 'County') & (compdf['Distance'] == distance), group]
+                natwide = compdf.loc[(compdf['Average'].str.contains('Nationwide', case=True)) & (compdf['Distance'] == distance), group]
+                statwide = compdf.loc[(compdf['Average'].str.contains('State', case=True)) & (compdf['Distance'] == distance), group]
+                countwide = compdf.loc[(compdf['Average'].str.contains('County', case=True)) & (compdf['Distance'] == distance), group]
                 natwide = round(natwide[0]*100,1)
                 statwide = round(statwide[1]*100,1)
                 countwide = round(countwide[2]*100,1)
@@ -691,84 +544,7 @@ class EJdash():
                 
             return fig
         
-#         ### Callback for the Map
-#         @app.callback(Output('map', 'figure'),
-#                      [Input('barchart', 'clickData'),
-#                       Input('demodrop', 'value'),
-#                       Input('basemapdrop', 'value'),
-#                       Input('rampdrop', 'value'),
-#                       Input('scaledrop', 'value'),
-#                       Input('sizedrop', 'value'),
-#                       Input('metdrop', 'value')
-#                       ])  
-#         def makemap (clickdata, demo, basemap, ramp, scale, dotsize, metric):
-            
-#             dff = xlsheet 
-#             dff['logmetric'] = np.log10(dff['MIR (in a million)'])
-            
-#         #    print(dff.head(10))
-            
-#             if clickdata is None:
-#                 cenlat = dff['Latitude'].mean()
-#                 cenlon = dff['Longitude'].mean()
-#                 zoom = 3
-                                  
-#             else:        
-#                 print(clickdata)
-#                 fac = clickdata['points'][0]['x']
-#                 dfFac = dff.loc[dff['Facility'] == fac]
-#                 cenlat = dfFac['Latitude'].mean()
-#                 cenlon = dfFac['Longitude'].mean()
-#                 zoom = 15
-            
-#             if scale == 'log':
-#                 prefix = '1E '
-#                 color = np.log10(dff[metric])
-                
-#             else:
-#                 prefix = ''
-#                 color = metric
-                
-# #            hoverdata = ['Block ID', 'MIR (in a million)', 'Cancer Incidence','Respiratory HI', 'Liver HI', 'Neurological HI', 'Developmental HI',
-# #                 'Reproductive HI', 'Kidney HI', 'Ocular HI', 'Endocrine HI', 'Hematological HI', 'Immunological HI',
-# #                 'Skeletal HI', 'Spleen HI', 'Thyroid HI',  'Latitude', 'Longitude']
-            
-#             hoverdata={
-#                     'MIR (in a million)':':.1e',
-#                     'Respiratory HI':':.1e',
-#                     'Liver HI':':.1e',
-#                     'Neurological HI':':.1e',
-#                     'Developmental HI':':.1e',
-#                     'Reproductive HI':':.1e',
-#                     'Kidney HI':':.1e',
-#                     'Ocular HI':':.1e',
-#                     'Endocrine HI':':.1e',
-#                     'Hematological HI':':.1e',
-#                     'Immunological HI':':.1e',
-#                     'Skeletal HI':':.1e',
-#                     'Spleen HI':':.1e',
-#                     'Thyroid HI':':.1e',
-#                     'Latitude':':.7f',
-#                     'Longitude':':.7f',
-#                     }
-            
-# #            if scale == 'log':
-# #                    hoverdata['color'] = False
-                       
-#             fig = px.scatter_mapbox(dff, lat = 'Latitude', lon = 'Longitude', color = color,
-#                                     mapbox_style = basemap, color_continuous_scale=ramp, opacity = 1, zoom = zoom,
-#                                     center = dict(lat = cenlat, lon = cenlon),
-#                                     hover_name = 'Facility',
-#                                     hover_data = hoverdata                           
-#                                     )
-#             fig.update_traces(marker=dict(size=dotsize))
-#             fig.update_layout(title = '<b>Facility Map - {}</b>'.format(metric),
-#                               title_font=dict(size = 22, color = 'black'), uirevision = 'foo',
-#                               )
-#             fig.update_coloraxes(colorbar_tickprefix= prefix, colorbar_title = metric)
-#             return fig
-           
-         
+
         @app.callback(Output('callbackTable', 'children'),
                       [Input('my-slider', 'value'),
                        Input('radio', 'value')
@@ -802,7 +578,7 @@ class EJdash():
                         tabletemp.at[counter, 'Total Facility Count'] = facCount
                         tabletemp.at[counter, 'Average'] = basis
                         for group in demogroups:
-                            avg = compdf.loc[(compdf['Average'] == basis) & (compdf['Distance'] == scen.Distance), group].values[0]
+                            avg = compdf.loc[(compdf['Average'].str.contains(basis, case=True)) & (compdf['Distance'] == scen.Distance), group].values[0]
                             if radval == 'num':
                                 cellval = len(comptemp[comptemp[group]/100 > (1 + slidepct/100)*avg])
                             else:
@@ -827,10 +603,6 @@ class EJdash():
                     
                 grphead = '{} of Facilities Exceeding the Geographic Average {}'.format(prefix, suffix)
                     
-            #        if radval == 'num':
-            #            grphead = 'Number of Facilities Exceeding the Geographic Average'
-            #        else:
-            #            grphead = 'Percent of Facilities Exceeding the Geographic Average'
                     
                 table = dash_table.DataTable(
                                              
@@ -841,8 +613,9 @@ class EJdash():
                                 {"name": ['Scenario', 'Total Facility Count'], "id": 'Total Facility Count'},
                                 {"name": ['', 'Average'], "id": 'Average', 'presentation': 'dropdown'},
                                 {"name": [grphead, 'People of Color'], "id": 'People of Color'},
-                                {"name": [grphead, 'African American'], "id": 'African American'},
-                                {"name": [grphead, 'Native American'], "id": 'Native American'},
+                                {"name": [grphead, 'Black'], "id": 'Black'},
+                                {"name": [grphead, 'American Indian or Alaska Native'], "id": 'American Indian or Alaska Native'},
+                                {"name": [grphead, 'Asian'], "id": 'Asian'},
                                 {"name": [grphead, 'Other and Multiracial'], "id": 'Other and Multiracial'},
                                 {"name": [grphead, 'Hispanic or Latino'], "id": 'Hispanic or Latino'},
                                 {"name": [grphead, 'Age 0-17'], "id": 'Age 0-17'},
@@ -851,7 +624,8 @@ class EJdash():
                                 {"name": [grphead, 'Below Poverty Level'], "id": 'Below Poverty Level'},
                                 {"name": [grphead, 'Below Twice Poverty Level'], "id": 'Below Twice Poverty Level'},
                                 {"name": [grphead, 'No High School Diploma',], "id": 'No High School Diploma',},
-                                {"name": [grphead, 'Linguistically Isolated'], "id": 'Linguistically Isolated'}
+                                {"name": [grphead, 'Limited English Speaking Households'], "id": 'Limited English Speaking Households'},
+                                {"name": [grphead, 'People with Disabilities'], "id": 'People with Disabilities'}
                                 
                         ],
                         
@@ -932,33 +706,7 @@ class EJdash():
             self.shutdown_server()
             return 'Server shutting down...'
         
-        
-#        @app.callback(
-#            Output('button-clicks', 'children'),
-#            [Input('dirbutton', 'n_clicks')])
-#        def getSecondDir(n_clicks):
-#            root = tk.Tk()
-#            root.lift()
-#            root.withdraw()
-#            seconddir = None
-#            if n_clicks is not None:
-#                seconddir= tk.filedialog.askdirectory()
-#            root.destroy()
-#            return seconddir
-#
-#        app.clientside_callback(
-#            """
-#            function() {
-#            alert(“Client side callback triggered”);
-#            document.getElementById("dirbutton").focus(); //use this to set the focus on whatever component you want
-#            //document.getElementById("dirbutton").blur(); //this will remove the focus from a selected component
-#            return;
-#            }
-#            """,
-#            Output('input2', 'value'), #Callback needs an output, so this is dummy
-#            [Input('dirbutton', 'n_clicks')] #This triggers the javascript callback
-#        )            
-        
+               
         return app
 
              
@@ -973,25 +721,4 @@ class EJdash():
                                    
 
         
-##------------- Code to run the class ----------------------------------------    
-#
-## Directory to process
-#dirtouse = r"C:\Git_HEM4\HEM4\output\PrimCopperActual"
-#
-## Instansiate
-#ejdashapp = EJdash(dirtouse)
-#
-## If possible, build the app
-#try:
-#    ejappobj = ejdashapp.buildApp()
-#except BaseException as ex:
-#    exception = ex
-#    fullStackInfo=''.join(traceback.format_exception(
-#        etype=type(ex), value=ex, tb=ex.__traceback__))
-#    print("Error: ", fullStackInfo)
-#
-## Display results
-#if ejappobj != None:
-#    webbrowser.open_new('http://localhost:8050/')
-#    ejappobj.run_server(debug= False, port=8050)
 

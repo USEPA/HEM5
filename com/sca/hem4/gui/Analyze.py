@@ -23,6 +23,7 @@ class Analyze(Page):
     def __init__(self, nav, *args, **kwargs):
         Page.__init__(self, *args, **kwargs)
         
+        self.exception = None
         self.hemdashport = 8030
         self.contourport = 8040
         self.ejport = 8050
@@ -234,12 +235,17 @@ class Analyze(Page):
         self.instruction_instance.set(" ")
 
     def ejdash_button(self, event):
-
+            
         # Start a new thread for dash
         executor = ThreadPoolExecutor(max_workers=1)
         future = executor.submit(self.runEJdash)
+        # # get return value
+        # exception = future.exception()
+        # # check if there was an exception
+        # if exception:
+        #     tk.messagebox.showerror("Demographic Assessment Viewing Error"
+        #                           , "An error happened while attempting to provide a graphical means of viewing demographic assessment results. Please see the log for details.")            
         self.instruction_instance.set(" ")
-
         
     def runDash(self,  arguments=None):
         try:
@@ -322,6 +328,7 @@ class Analyze(Page):
                 ex, value=ex, tb=ex.__traceback__))
             message = "An error occurred while trying to run the EJdash app:\n" + fullStackInfo
             Logger.logMessage(message)
+            sys.stdout = orig_stdout
 
 
     def open_browser(self):

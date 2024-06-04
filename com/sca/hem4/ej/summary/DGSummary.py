@@ -11,7 +11,7 @@ class DGSummary():
         self.radius = str(int(radius) if radius.is_integer() else radius)
         self.source_category = source_category
         self.facility = facility
-        self.active_columns = [0, 1, 15, 2, 3, 4, 5, 6, 7, 8, 9, 12, 13, 10, 11, 14]
+        self.active_columns = [0, 1, 15, 2, 3, 4, 5, 6, 7, 8, 9, 12, 13, 10, 11, 14, 17]
 
     def create_summary(self, workbook, formats, national_values, state_values, county_values, values, hazard_name=None):
 
@@ -46,17 +46,17 @@ class DGSummary():
 
         # Create sub header 1 (national)
         worksheet.write("A3", 'Nationwide Demographic Breakdown',  formats['sub_header_4'])
-        worksheet.write("A4", '     Total population \u1d4d')
+        worksheet.write("A4", '     Total population \u02b0')
         worksheet.write("A5", '     Percentage of total')
 
         # state...
         worksheet.write("A6", 'State Demographic Breakdown',  formats['sub_header_4'])
-        worksheet.write("A7", '     Total population \u1d4d')
+        worksheet.write("A7", '     Total population \u02b0')
         worksheet.write("A8", '     Percentage of total')
 
         # county...
         worksheet.write("A9", 'County Demographic Breakdown',  formats['sub_header_4'])
-        worksheet.write("A10", '     Total population \u1d4d')
+        worksheet.write("A10", '     Total population \u02b0')
         worksheet.write("A11", '     Percentage of total')
 
         # Create sub header 2
@@ -96,9 +96,10 @@ class DGSummary():
     def get_columns(self):
         return ['', 'Total Population', 'White', 'People of Color \u1d47', 'Black', 'American Indian or Alaska Native',
                 'Asian', 'Other and Multiracial', 'Hispanic or Latino \u1d9c', 'Age (Years)\n0-17', 'Age (Years)\n18-64',
-                'Age (Years)\n>=65', 'People Living Below the Poverty Level \u1d48',
-                'People Living Below Twice the Poverty Level \u1d48', 'Total Number >= 25 Years Old',
-                'Number >= 25 Years Old without a High School Diploma \u1d49', 'People Living in Limited English Speaking Households \u1da0']
+                'Age (Years)\n>=65', 'Below the Poverty Level \u1d48',
+                'Below Twice the Poverty Level \u1d48', 'Total Number >= 25 Years Old',
+                'Over 25 without a High School Diploma \u1d49', 'People Living in Limited English Speaking Households \u1da0',
+                'People with One or More Disabilities \u1d4d']
 
     def get_sheet_name(self):
         return "Proximity & Ave. Risk Summary"
@@ -136,9 +137,9 @@ class DGSummary():
 
         # We need three rows, two of which have already been calculated....
         dg_data = data[-2:]
-        dg_data.insert(1, [0]*16)
+        dg_data.insert(1, [0]*18)
         
-        for index in range(1, 16):
+        for index in range(1, 18):
             # Education is a special case...we want the population over 25 as the denominator, not the total population!
             if index == 11:
                 dg_data[1][index] = (dg_data[0][index] / dg_data[0][10]) if dg_data[0][10] > 0 else 0
@@ -151,7 +152,7 @@ class DGSummary():
         row_idx = np.array([i for i in range(0, len(dg_data))])
         col_idx = np.array(self.active_columns)
         slice = np.array(dg_data)[row_idx[:, None], col_idx]
-
+        
         startrow = 12
         startcol = 1
 

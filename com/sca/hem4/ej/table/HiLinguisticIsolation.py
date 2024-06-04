@@ -28,7 +28,7 @@ class HiLinguisticIsolation(WorksheetTable):
                ' Facility in Different Hazard Index Ranges \u1D43'
 
     def get_average_header(self):
-        return "Average " + self.name + " Hazard Index \u1D9C"
+        return "Average " + self.name + " Hazard Index \u1D48"
 
     def get_notes(self):
         notes_dict = {'a':"The demographic populations are based on the 2020 Decennial Census' total block populations that are located within the indicated"
@@ -39,7 +39,11 @@ class HiLinguisticIsolation(WorksheetTable):
                       ,
                       'note1_b':"lifetime, and not adjusted for exposure factors. See the HEM5 User's Guide for more information."
                       ,
-                      'c':"The population-weighted average hazard index (HI) takes into account HI levels at all populated block receptors in the entire modeled domain."
+                      'c':" The number of people living in Limited English Speaking Households is estimated at the block group level and assumes that the number"
+                      ,
+                      'note1_c':"  of individuals per household is the same for Limited English Speaking households as for the general population."
+                      ,
+                      'd':"The population-weighted average hazard index (HI) takes into account HI levels at all populated block receptors in the entire modeled domain."
                      }
         return notes_dict
 
@@ -47,4 +51,4 @@ class HiLinguisticIsolation(WorksheetTable):
         return 'Table' + self.identifier + '5NC'
 
     def get_columns(self):
-        return ['Total Population', 'People Living in Limited English Speaking Households']
+        return ['Total Population', 'People Living in Limited English Speaking Households \u1d9c']

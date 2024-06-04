@@ -15,7 +15,7 @@ class FacilitySummary():
         self.hi_risk_threshold = str(hi_risk_threshold)
         self.radius = str(int(radius) if radius.is_integer() else radius)
         self.source_category = source_category
-        self.active_columns = [0, 15, 2, 3, 4, 5, 6, 7, 8, 9, 12, 13, 11, 14]
+        self.active_columns = [0, 15, 2, 3, 4, 5, 6, 7, 8, 9, 12, 13, 11, 14, 17]
  
     @staticmethod
     def init_sheets():
@@ -134,7 +134,8 @@ class FacilitySummary():
         return ['', 'Total Population \u1d9C', 'People of Color \u1d48', 'Black', 'American Indian or Alaska Native',
                 'Asian', 'Other and Multiracial', 'Hispanic or Latino \u1d49', 'Age (Years)\n0-17', 'Age (Years)\n18-64',
                 'Age (Years)\n>=65', 'Below the Poverty Level \u1da0', 'Below Twice the Poverty Level \u1da0',
-                'Over 25 Without a High School Diploma \u1d4d', 'People Living in Limited English Speaking Households \u02b0']
+                'Over 25 Without a High School Diploma \u1d4d', 'People Living in Limited English Speaking Households \u02b0',
+                'People with One or More Disabilities \u02b2']
 
     def get_sheet_name(self):
         return "Facility Summary"
@@ -144,7 +145,7 @@ class FacilitySummary():
         data = deepcopy(values)
 
         # For this summary, we only want the percentages, which are in the second row.
-        for index in range(1, 15):
+        for index in range(1, 18):
             data[0][index] = data[1][index]
 
         # First, select the columns that are relevant
@@ -174,9 +175,9 @@ class FacilitySummary():
         # First line is same as DGSummary...
         data = deepcopy(values)
         dg_data = data[-2:]
-        dg_data.insert(1, [0]*16)
+        dg_data.insert(1, [0]*18)
 
-        for index in range(1, 16):
+        for index in range(1, 18):
             # Education is a special case..we want the population over 25 as the denominator, not the total population!
             if index == 11:
                 dg_data[1][index] = (dg_data[0][index] / dg_data[0][10]) if dg_data[0][10] > 0 else 0
@@ -219,7 +220,7 @@ class FacilitySummary():
         row_totals = [sum(x) for x in zip(*dg_data)]
 
         saved_edu_pop = None
-        for index in range(1, 16):
+        for index in range(1, 18):
             # Education is a special case...we want the population over 25 as the denominator, not the total population!!
             if index == 11:
                 saved_edu_pop = row_totals[index]

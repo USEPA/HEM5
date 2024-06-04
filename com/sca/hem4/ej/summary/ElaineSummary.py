@@ -54,12 +54,16 @@ class ElaineSummary():
         worksheet.write(16, 0, 'Over 25 and without a High School Diploma', formats['wrap'])
         worksheet.write(17, 0, 'Over 25 and with a High School Diploma', formats['wrap'])
 
-        worksheet.write("D19", 'People Living in Limited English Speaking Households by Percent \u1d49', formats['sub_header_5'])
-        worksheet.write(19, 0, 'People Living in Limited English Speaking Households', formats['wrap'])
+        worksheet.write("D19", 'Disabilities by Percent \u1d49', formats['sub_header_5'])
+        worksheet.write(19, 0, 'One or More Disabilities', formats['wrap'])
+        worksheet.write(20, 0, 'No Disabilities', formats['wrap'])
+
+        worksheet.write("D22", 'People Living in Limited English Speaking Households by Percent \u1da0', formats['sub_header_5'])
+        worksheet.write(22, 0, 'People Living in Limited English Speaking Households', formats['wrap'])
 
         # Create notes
         notes_dict = self.get_notes()
-        notes_row = 21
+        notes_row = 24
         for note in notes_dict:
             if 'note' in note:
                 worksheet.write_rich_string('A'+str(notes_row), formats['notes'], 
@@ -89,17 +93,29 @@ class ElaineSummary():
                       ,
                       'note1_c':'  dorms, prisons, nursing homes, and military barracks. To derive the nationwide demographic percentages shown, these block group level tallies are summed for all block groups in the nation and then divided by the total U.S. population'
                       ,
-                      'note2_c':"  based on the 2018-2022 ACS. The study area's facility-specific and run group-wide population counts are based on the methodology noted in footnote 1 to derive block-level demographic population counts for the study area,"
+                      'note2_c':"  based on the 2018-2022 ACS. The study area's facility-specific and run group-wide population counts are based on the methodology noted in footnote 'a' to derive block-level demographic population counts for the study area,"
                       ,
                       'note3_c':'  which are then divided by the respective total block-level population (facility-specific and run group-wide) to derive the study area demographic percentages shown.'
                       ,
                       'd':'The demographic percentage for people >= 25 years old without a high school diploma is based on Census ACS data for the total population 25 years old and older at '
                           'the block group level, which is used as the denominator when calculating this demographic percentage.'
                       ,
-                      'e':'The Limited English Speaking population is estimated at the block group level by taking the product of the block group population and the fraction of '
+                      'e':'The demographic percentages for people with one or more disabilities are based on Census ACS surveys at the block group level of civilian '
+                          'non-institutionalized people (i.e., all U.S. civilians not residing in institutional group quarters facilities such as '
+                      ,
+                      'note1_e':'  correctional institutions, juvenile facilities, skilled nursing facilities, and other long-term care living arrangements). '
+                                'To derive the nationwide demographic percentages shown, these block group level tallies are summed for all block groups in the nation '
+                      ,
+                      'note2_e':'  and then divided by the total U.S. population based on the 2018-2022 ACS. The study areas’ facility-specific and '
+                                'run group-wide population counts are based on the methodology noted in footnote 1 to derive block-level demographic population counts'
+                      ,
+                      'note3_e':'  for the study area, which are then divided by the respective total block-level population (facility-specific and run group-wide) to '
+                                'derive the study area demographic percentages shown.'
+                      ,
+                      'f':'The Limited English Speaking population is estimated at the block group level by taking the product of the block group population and the fraction of '
                           'Limited English Speaking households in the block group, assuming that the number of individuals '
                       ,
-                      'note1_e':'  per household is the same for Limited English Speaking households '
+                      'note1_f':'  per household is the same for Limited English Speaking households '
                                 'as for the general population, and summed over all block groups.'
                      }
         return notes_dict
@@ -111,7 +127,7 @@ class ElaineSummary():
         data = deepcopy(values)
 
         # For this summary, we only want the percentages, which are in the second row.
-        for index in range(1, 16):
+        for index in range(1, 18):
             data[0][index] = data[1][index]
 
         # total pop kept as raw number, but we're using percentages for the breakdowns...
@@ -178,10 +194,20 @@ class ElaineSummary():
         format = formats['percentage']
         worksheet.write_number(17, startcol, value, format)
 
+        # with disabilities
+        value = float(data[0][17])
+        format = formats['percentage']
+        worksheet.write_number(19, startcol, value, format)
+
+        # without disabilities
+        value = 1 - value if exposure_value > 0 else 0
+        format = formats['percentage']
+        worksheet.write_number(20, startcol, value, format)
+
         # linguistically isolated
         value = float(data[0][14])
         format = formats['percentage']
-        worksheet.write_number(19, startcol, value, format)
+        worksheet.write_number(22, startcol, value, format)
 
     def append_data(self, values, worksheet, formats):
         data = deepcopy(values)
@@ -191,7 +217,7 @@ class ElaineSummary():
         row_totals = [sum(x) for x in zip(*dg_data)]
 
         saved_edu_pop = None
-        for index in range(1, 16):
+        for index in range(1, 18):
             # Education is a special case...we want the population over 25 as the denominator, not the total population!
             if index == 10:
                 saved_edu_pop = row_totals[index]
@@ -256,6 +282,16 @@ class ElaineSummary():
         value = 1 - value if exposure_value > 0 else 0
         worksheet.write_number(17, 4, value, format)
 
+        # with disabilities
+        value = float(row_totals[17])
+        format = formats['percentage']
+        worksheet.write_number(19, 4, value, format)
+
+        # without disabilities
+        value = 1 - value if exposure_value > 0 else 0
+        format = formats['percentage']
+        worksheet.write_number(20, 4, value, format)
+
         # linguistically isolated
         value = float(row_totals[14])
-        worksheet.write_number(19, 4, value, format)
+        worksheet.write_number(22, 4, value, format)

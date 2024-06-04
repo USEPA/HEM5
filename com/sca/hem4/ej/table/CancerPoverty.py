@@ -29,18 +29,22 @@ class CancerPoverty(WorksheetTable):
                ' Facility in Different Ranges for Lifetime Cancer Risk \u1D47'
 
     def get_average_header(self):
-        return "Average Risk (Chance in One Million) \u1D9C"
+        return "Average Risk (Chance in One Million) \u1D48"
 
     def get_notes(self):
         notes_dict = {'a':"The demographic populations are based on the 2020 Decennial Census' total block populations that are located within the indicated"
                       ,
-                      'note1_a':"radius, which are linked to the Census’ 2018-2022 American Community Survey five-year demographic averages at the block group level."
+                      'note1_a':"  radius, which are linked to the Census’ 2018-2022 American Community Survey five-year demographic averages at the block group level."
                       ,
                       'b':"Risks from the modeled emissions are at the census block level, based on the predicted outdoor concentration over a 70-year"
                       ,
-                      'note1_b':"lifetime, and not adjusted for exposure factors. See the HEM5 User's Guide for more information."
+                      'note1_b':"  lifetime, and not adjusted for exposure factors. See the HEM5 User's Guide for more information."
                       ,
-                      'c':"The population-weighted average risk takes into account risk levels at all populated block receptors in the entire modeled domain."
+                      'c':"The number of people living below the poverty line or below twice the poverty line are based on Census ACS surveys at the block group"
+                      ,
+                      'note1_c':"  level that do not include people in group living situations such as dorms, prisons, nursing homes, and military barracks."
+                      ,
+                      'd':"The population-weighted average risk takes into account risk levels at all populated block receptors in the entire modeled domain."
                      }
         return notes_dict
     
@@ -48,5 +52,5 @@ class CancerPoverty(WorksheetTable):
         return 'Table' + self.identifier + '4C'
 
     def get_columns(self):
-        return ['Total Population', 'People Living in Households with Income Below Twice the Poverty Level',
-                'People Living in Households with Income Below the Poverty Level']
+        return ['Total Population', 'People Living in Households with Income Below Twice the Poverty Level \u1d9c',
+                'People Living in Households with Income Below the Poverty Level \u1d9c']

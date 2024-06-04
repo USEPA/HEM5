@@ -4,9 +4,7 @@ from com.sca.hem4.ej.summary.DGSummary import DGSummary
 class HiDGSummary(DGSummary):
 
     def get_table_name(self):
-        return 'C-6. Proximity and Average Hazard Indices for Racial and Ethnic Groups, Age Groups, Adults without a ' + \
-               'High School Diploma, People Living in Low Income Households, and People Living in ' + \
-               'Limited English Speaking Households - ' + self.radius + ' km Study Area Radius \u1d43'
+        return 'C-6. Proximity and Average Hazard Indices for All Demographic Groups Analyzed - ' + self.radius + ' km Study Area Radius \u1d43'
 
     def get_notes(self):
         notes_dict = {
@@ -22,7 +20,7 @@ class HiDGSummary(DGSummary):
                       ,
                       'note1_d':'  dorms, prisons, nursing homes, and military barracks. To derive the nationwide demographic percentages shown, these block group level tallies are summed for all block groups in the nation and then divided by the total U.S. population'
                       ,
-                      'note2_d':"  based on the 2018-2022 ACS. The study area's facility-specific and run group-wide population counts are based on the methodology noted in footnote 1 to derive block-level demographic population counts for the study area,"
+                      'note2_d':"  based on the 2018-2022 ACS. The study area's facility-specific and run group-wide population counts are based on the methodology noted in footnote 'a' to derive block-level demographic population counts for the study area,"
                       ,
                       'note3_d':'  which are then divided by the respective total block-level population (facility-specific and run group-wide) to derive the study area demographic percentages shown.'
                       ,
@@ -35,11 +33,23 @@ class HiDGSummary(DGSummary):
                       'note1_f':'  per household is the same for Limited English Speaking households '
                                 'as for the general population, and summed over all block groups.'
                       ,
-                      'g':'The total nationwide population includes all 50 states, the District of Columbia, and Puerto Rico. The state and county populations include any states and counties, respectively, with census blocks within the radius of the modeled area.'
+                      'g':'The demographic percentages for people with one or more disabilities are based on Census ACS surveys at the block group level of civilian '
+                          'non-institutionalized people (i.e., all U.S. civilians not residing in institutional group quarters facilities such as '
                       ,
-                      'h':"The population-weighted average hazard index takes into account hazard index levels at all populated block receptors in the entire modeled domain. Hazard indices from the modeled emissions are at the census block level, based on the predicted outdoor concentration over a 70-year lifetime,"
+                      'note1_g':'  correctional institutions, juvenile facilities, skilled nursing facilities, and other long-term care living arrangements). '
+                                'To derive the nationwide demographic percentages shown, these block group level tallies are summed for all block groups in the nation '
                       ,
-                      'note1_h':"and not adjusted for exposure factors. See the HEM5 User's Guide for more information."
+                      'note2_g':'  and then divided by the total U.S. population based on the 2018-2022 ACS. The study areas’ facility-specific and '
+                                'run group-wide population counts are based on the methodology noted in footnote 1 to derive block-level demographic population counts'
+                      ,
+                      'note3_g':'  for the study area, which are then divided by the respective total block-level population (facility-specific and run group-wide) to '
+                                'derive the study area demographic percentages shown.'
+                      ,
+                      'h':'The total nationwide population includes all 50 states, the District of Columbia, and Puerto Rico. The state and county populations include any states and counties, respectively, with census blocks within the radius of the modeled area.'
+                      ,
+                      'i':"The population-weighted average hazard index takes into account hazard index levels at all populated block receptors in the entire modeled domain. Hazard indices from the modeled emissions are at the census block level, based on the predicted outdoor concentration over a 70-year lifetime,"
+                      ,
+                      'note1_i':"and not adjusted for exposure factors. See the HEM5 User's Guide for more information."
                       }            
         return notes_dict
 
@@ -47,4 +57,4 @@ class HiDGSummary(DGSummary):
         return self.hazard_name + ' Hazard Indices'
 
     def get_risk_header(self):
-        return 'Average ' + self.hazard_name + " HI \u02b0"
+        return 'Average ' + self.hazard_name + " HI \u2071"

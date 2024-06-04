@@ -13,7 +13,7 @@ class KCSummary():
         self.radius = str(int(radius) if radius.is_integer() else radius)
         self.source_category = source_category
         self.facility = facility
-        self.active_columns = [0, 15, 2, 3, 4, 5, 6, 7, 8, 9, 12, 13, 11, 14]
+        self.active_columns = [0, 15, 2, 3, 4, 5, 6, 7, 8, 9, 12, 13, 11, 14, 17]
 
     def create_summary(self, workbook, formats, national_values, state_values, county_values, values, max_value,
                        hazard_name=None):
@@ -41,12 +41,12 @@ class KCSummary():
 
         # Row headers
         worksheet.write("A2", 'Population Basis',  formats['sub_header_2'])
-        worksheet.write(2, 0, 'Nationwide \u1d4d')
-        worksheet.write(3, 0, 'State \u1d4d')
-        worksheet.write(4, 0, 'County \u1d4d')
+        worksheet.write(2, 0, 'Nationwide \u02b0')
+        worksheet.write(3, 0, 'State \u02b0')
+        worksheet.write(4, 0, 'County \u02b0')
         worksheet.write(5, 0, ' ')
         worksheet.write_rich_string(6, 0, self.get_risk_header()
-                                  , formats['superscript'], ' h,i', formats['wrap'])
+                                  , formats['superscript'], ' i,j', formats['wrap'])
         
   
         # Create column headers
@@ -85,7 +85,8 @@ class KCSummary():
         return ['Total Population', 'People of Color \u1D47', 'Black', 'American Indian or Alaska Native', 'Asian',
                 'Other and Multiracial', 'Hispanic or Latino \u1D9C', 'Age (Years)\n0-17', 'Age (Years)\n18-64',
                 'Age (Years)\n>=65', 'Below the Poverty Level \u1d48', 'Below Twice the Poverty Level \u1d48',
-                'Over 25 Without a High School Diploma \u1d49', 'People Living in Limited English Speaking Households \u1da0']
+                'Over 25 Without a High School Diploma \u1d49', 'People Living in Limited English Speaking Households \u1da0',
+                'People with One or More Disabilities \u1d4d']
 
     def get_sheet_name(self):
         return "Pop. At Risk Summary"
@@ -95,7 +96,7 @@ class KCSummary():
         data = deepcopy(values)
 
         # For this summary, we only want the percentages, which are in the second row.
-        for index in range(1, 16):
+        for index in range(1, 18):
             data[0][index] = data[1][index]
 
         # First, select the columns that are relevant
@@ -131,7 +132,7 @@ class KCSummary():
         row_totals = [sum(x) for x in zip(*dg_data)]
 
         saved_edu_pop = None
-        for index in range(1, 16):
+        for index in range(1, 18):
             # Education is a special case...we want the population over 25 as the denominator, not the total population!
             if index == 10:
                 saved_edu_pop = row_totals[index]

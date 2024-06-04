@@ -13,11 +13,11 @@ class HiElaineSummary(ElaineSummary):
 
     def get_table_header(self):
         scope =  self.source_category if self.facility is None else self.facility
-        return 'Table for Preamble: Demographic Assessment of Hazard Index Results based on ' + scope + ' Emissions' + \
+        return 'Table for Preamble: Demographic Assessment of ' + self.hazard_name + ' Hazard Index Results based on ' + scope + ' Emissions' + \
                ' - ' + self.radius + ' km Study Area Radius \u1d43'
 
     def get_risk_header(self):
-        return 'Population with Hazard Index Greater than ' + self.hi_risk_threshold + \
+        return 'Population with ' + self.hazard_name + ' Hazard Index Greater than ' + self.hi_risk_threshold + \
                 ' based on Modeled Emissions'
             
 

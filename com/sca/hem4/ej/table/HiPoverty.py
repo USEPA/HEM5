@@ -28,18 +28,22 @@ class HiPoverty(WorksheetTable):
                ' Facility in Different Hazard Index Ranges \u1D43'
 
     def get_average_header(self):
-        return "Average " + self.name + " Hazard Index \u1D9C"
+        return "Average " + self.name + " Hazard Index \u1D48"
 
     def get_notes(self):
         notes_dict = {'a':"The demographic populations are based on the 2020 Decennial Census' total block populations that are located within the indicated"
                       ,
-                      'note1_a':"radius, which are linked to the Census’ 2018-2022 American Community Survey five-year demographic averages at the block group level."
+                      'note1_a':"  radius, which are linked to the Census’ 2018-2022 American Community Survey five-year demographic averages at the block group level."
                       ,
                       'b':"Hazard indices from the modeled emissions are at the census block level, based on the predicted outdoor concentration over a 70-year"
                       ,
-                      'note1_b':"lifetime, and not adjusted for exposure factors. See the HEM5 User's Guide for more information."
+                      'note1_b':"  lifetime, and not adjusted for exposure factors. See the HEM5 User's Guide for more information."
                       ,
-                      'c':"The population-weighted average hazard index (HI) takes into account HI levels at all populated block receptors in the entire modeled domain."
+                      'c':"The number of people living below the poverty line or below twice the poverty line are based on Census ACS surveys at the block group"
+                      ,
+                      'note1_c':"  level that do not include people in group living situations such as dorms, prisons, nursing homes, and military barracks."
+                      ,
+                      'd':"The population-weighted average hazard index (HI) takes into account HI levels at all populated block receptors in the entire modeled domain."
                      }
         return notes_dict
 

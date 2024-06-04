@@ -48,4 +48,4 @@ class CancerDiploma(WorksheetTable):
         return 'Table' + self.identifier + '3C'
 
     def get_columns(self):
-        return ['Total Population', 'Number >= 25 Years Old', 'Number >= 25 Years Old without a High School Diploma']
+        return ['Total Population', 'People >= 25 Years Old', 'People >= 25 Years Old without a High School Diploma']

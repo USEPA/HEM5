@@ -31,7 +31,7 @@ class HiFacilitySummary(FacilitySummary):
                       ,
                       'c':'The total population values for the run group and each individual facility are based on block level data from the 2020 Decennial Census, with block populations summed over the area defined by the indicated radius around each facility.'
                       ,
-                      'd':'A person is identified as one of five racial/ethnic categories: White, Black, American Indian or Alaska Native, Asian, Other and Multiracial, or Hispanic/Latino. The People of Color population is the total population minus the White population.'
+                      'd':'A person is identified as one of six racial/ethnic categories: White, Black, American Indian or Alaska Native, Asian, Other and Multiracial, or Hispanic/Latino. The People of Color population is the total population minus the White population.'
                       ,
                       'e':'To avoid double counting, the "Hispanic or Latino" category is treated as a distinct demographic category. A person who identifies as Hispanic or Latino is counted only as Hispanic/Latino for this analysis (regardless of other racial identifiers).'
                       ,
@@ -39,7 +39,7 @@ class HiFacilitySummary(FacilitySummary):
                       ,
                       'note1_f':'  dorms, prisons, nursing homes, and military barracks. To derive the nationwide demographic percentages shown, these block group level tallies are summed for all block groups in the nation and then divided by the total U.S. population'
                       ,
-                      'note2_f':"  based on the 2018-2022 ACS. The study area's facility-specific and run group-wide population counts are based on the methodology noted in footnote 1 to derive block-level demographic population counts for the study area,"
+                      'note2_f':"  based on the 2018-2022 ACS. The study area's facility-specific and run group-wide population counts are based on the methodology noted in footnote 'a' to derive block-level demographic population counts for the study area,"
                       ,
                       'note3_f':'  which are then divided by the respective total block-level population (facility-specific and run group-wide) to derive the study area demographic percentages shown.'
                       ,
@@ -52,6 +52,18 @@ class HiFacilitySummary(FacilitySummary):
                       'note1_h':'  per household is the same for Limited English Speaking households '
                                 'as for the general population, and summed over all block groups.'
                       ,
-                      'i':"The total nationwide population includes all 50 states, the District of Columbia, and Puerto Rico. The state and county populations include any states and counties, respectively, with census blocks within the radius of the modeled area."
+                      'i':'The demographic percentages for people with one or more disabilities are based on Census ACS surveys at the block group level of civilian '
+                          'non-institutionalized people (i.e., all U.S. civilians not residing in institutional group quarters facilities such as '
+                      ,
+                      'note1_i':'  correctional institutions, juvenile facilities, skilled nursing facilities, and other long-term care living arrangements). '
+                                'To derive the nationwide demographic percentages shown, these block group level tallies are summed for all block groups in the nation '
+                      ,
+                      'note2_i':'  and then divided by the total U.S. population based on the 2018-2022 ACS. The study areas’ facility-specific and '
+                                'run group-wide population counts are based on the methodology noted in footnote 1 to derive block-level demographic population counts'
+                      ,
+                      'note3_i':'  for the study area, which are then divided by the respective total block-level population (facility-specific and run group-wide) to '
+                                'derive the study area demographic percentages shown.'
+                      ,
+                      'j':"The total nationwide population includes all 50 states, the District of Columbia, and Puerto Rico. The state and county populations include any states and counties, respectively, with census blocks within the radius of the modeled area."
                      }
         return notes_dict    
