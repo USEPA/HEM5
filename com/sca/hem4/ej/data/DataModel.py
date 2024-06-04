@@ -57,11 +57,11 @@ class DataModel():
 
     def create_national_bin(self):
         # Create national bin and tabulate population weighted demographic stats for each sub group.
-        self.national_bin = [ [0]*17 for _ in range(2) ]
+        self.national_bin = [ [0]*18 for _ in range(2) ]
         self.acs_df.apply(lambda row: self.tabulate_national_data(row), axis=1)
 
         # Calculate population percentages by dividing population for each sub group
-        for index in range(1, 17):
+        for index in range(1, 18):
             self.national_bin[1][index] = self.national_bin[1][index] / (100 * self.national_bin[0][index])
             # if index == 11:
             #     self.national_bin[1][index] = self.national_bin[1][index] / (100 * self.national_bin[0][0])
@@ -69,69 +69,46 @@ class DataModel():
             #     self.national_bin[1][index] = self.national_bin[1][index] / (100 * self.national_bin[0][index])
 
         # Calculate population counts
-        self.national_bin[0][16] = self.national_bin[0][0] * self.national_bin[1][16]
-        for index in range(1, 16):
+        for index in range(1, 18):
             self.national_bin[0][index] = self.national_bin[0][index] * self.national_bin[1][index]
-            # if index == 11:
-            #     self.national_bin[0][index] = self.national_bin[0][10] * self.national_bin[1][index]
-            # else:
-            #     self.national_bin[0][index] = self.national_bin[0][0] * self.national_bin[1][index]
         
         self.national_bin[1][0] = ""
 
 
     def create_state_bin(self):
         # Create state bin and tabulate population weighted demographic stats for each sub group.
-        self.state_bin = [ [0]*17 for _ in range(2) ]
+        self.state_bin = [ [0]*18 for _ in range(2) ]
         self.state_df.apply(lambda row: self.tabulate_state_data(row), axis=1)
         
         # Calculate state population percentages by dividing population for each sub group
-        for index in range(1, 17):
+        for index in range(1, 18):
             self.state_bin[1][index] = self.state_bin[1][index] / (100 * self.state_bin[0][index])
-            # if index == 12:
-            #     self.state_bin[1][index] = self.state_bin[1][index] / (100 * self.state_bin[0][0])
-            # else:
-            #     self.state_bin[1][index] = self.state_bin[1][index] / (100 * self.state_bin[0][index])
         
         # Calculate state population counts
-        self.state_bin[0][16] = self.state_bin[0][0] * self.state_bin[1][16]
-        for index in range(1, 16):
+        for index in range(1, 18):
             self.state_bin[0][index] = self.state_bin[0][index] * self.state_bin[1][index]
-            # if index == 11:
-            #     self.state_bin[0][index] = self.state_bin[0][10] * self.state_bin[1][index]
-            # else:
-            #     self.state_bin[0][index] = self.state_bin[0][0] * self.state_bin[1][index]
 
         self.state_bin[1][0] = ""
 
     def create_county_bin(self):
         # Create county bin and tabulate population weighted demographic stats for each sub group.
-        self.county_bin = [ [0]*17 for _ in range(2) ]
+        self.county_bin = [ [0]*18 for _ in range(2) ]
         self.county_df.apply(lambda row: self.tabulate_county_data(row), axis=1)
 
         # Calculate county population percentages by dividing population for each sub group
-        for index in range(1, 17):
+        for index in range(1, 18):
             self.county_bin[1][index] = self.county_bin[1][index] / (100 * self.county_bin[0][index])
-            # if index == 12:
-            #     self.county_bin[1][index] = self.county_bin[1][index] / (100 * self.county_bin[0][0])
-            # else:
-            #     self.county_bin[1][index] = self.county_bin[1][index] / (100 * self.county_bin[0][index])
 
         # Calculate county population counts
-        self.county_bin[0][16] = self.county_bin[0][0] * self.county_bin[1][16]
-        for index in range(1, 16):
+        for index in range(1, 18):
             self.county_bin[0][index] = self.county_bin[0][index] * self.county_bin[1][index]
-            # if index == 11:
-            #     self.county_bin[0][index] = self.county_bin[0][10] * self.county_bin[1][index]
-            # else:
-            #     self.county_bin[0][index] = self.county_bin[0][0] * self.county_bin[1][index]
 
         self.county_bin[1][0] = ""
         
     def create_bins(self):
-        # Create cancer bins and tabulate the risk based on the mir column. Note that there are 16 sub groups (columns)
+        # Create cancer bins and tabulate the risk based on the mir column. Note that there are 18 sub groups (columns)
         # and 13 rows, which correspond to 11 risk bins + total + average.
-        self.cancer_bins = [ [0]*16 for _ in range(13) ]
+        self.cancer_bins = [ [0]*18 for _ in range(13) ]
         self.max_risk['mir'] = 0
 
         self.total_missing_pop = 0
@@ -140,7 +117,7 @@ class DataModel():
         self.hazards_df.apply(lambda row: self.tabulate_mir_data(row), axis=1)
         
         # Calculate averages by dividing population for each sub group
-        for index in range(16):
+        for index in range(18):
             if self.cancer_bins[11][index] == 0:
                 self.cancer_bins[12][index] = 0
             else:
@@ -148,20 +125,20 @@ class DataModel():
 
         Logger.logMessage("Done with MIR tabulation.")
 
-        # Next create toshi bins and tabulate risk for each requested toshi. Note that there are 15 sub groups (columns)
+        # Next create toshi bins and tabulate risk for each requested toshi. Note that there are 18 sub groups (columns)
         # and 13 rows, which correspond to 11 risk bins + total + average.
         if len(self.toshis.items()) > 0:
             self.toshi_bins = {}
             for key,value in self.toshis.items():
                 self.max_risk[key] = 0
-                self.toshi_bins[key] = [ [0]*16 for _ in range(13) ]
+                self.toshi_bins[key] = [ [0]*18 for _ in range(13) ]
 
             Logger.logMessage("Tabulating toshi data...")
             self.hazards_df.apply(lambda row: self.tabulate_toshi_data(row), axis=1)
 
             # Calculate averages by dividing population for each sub group
             for key, bin in self.toshi_bins.items():
-                for index in range(16):
+                for index in range(18):
                     if bin[11][index] == 0:
                         bin[12][index] = 0
                     else:
@@ -187,6 +164,8 @@ class DataModel():
         pct_lowinc = row['PCT_LOWINC']
         pct_lingiso = row['PCT_LINGISO']
         pct_pov = row['PCT_POV']
+        pct_dis = row['PCT_DIS']
+        dis_universe = row['DIS_UNIVERSE']
 
         self.national_bin[0][0] += population
         if not isna(pct_minority):
@@ -237,6 +216,9 @@ class DataModel():
         if not isna(pct_minority):
             self.national_bin[1][15] += pct_minority * population
             self.national_bin[0][15] += population
+        if not isna(pct_dis) and not isna(dis_universe):
+            self.national_bin[1][17] += pct_dis * dis_universe
+            self.national_bin[0][17] += population
 
     def tabulate_state_data(self, row):
 
@@ -256,6 +238,8 @@ class DataModel():
         pct_lowinc = row['PCT_LOWINC']
         pct_lingiso = row['PCT_LINGISO']
         pct_pov = row['PCT_POV']
+        pct_dis = row['PCT_DIS']
+        dis_universe = row['DIS_UNIVERSE']
 
         self.state_bin[0][0] += population
         if not isna(pct_minority):
@@ -306,6 +290,9 @@ class DataModel():
         if not isna(pct_minority):
             self.state_bin[1][15] += pct_minority * population
             self.state_bin[0][15] += population
+        if not isna(pct_dis) and not isna(dis_universe):
+            self.state_bin[1][17] += pct_dis * dis_universe
+            self.state_bin[0][17] += population
 
     def tabulate_county_data(self, row):
 
@@ -325,6 +312,8 @@ class DataModel():
         pct_lowinc = row['PCT_LOWINC']
         pct_lingiso = row['PCT_LINGISO']
         pct_pov = row['PCT_POV']
+        pct_dis = row['PCT_DIS']
+        dis_universe = row['DIS_UNIVERSE']
 
         self.county_bin[0][0] += population
         if not isna(pct_minority):
@@ -375,6 +364,9 @@ class DataModel():
         if not isna(pct_minority):
             self.county_bin[1][15] += pct_minority * population
             self.county_bin[0][15] += population
+        if not isna(pct_dis) and not isna(dis_universe):
+            self.county_bin[1][17] += pct_dis * dis_universe
+            self.county_bin[0][17] += population
             
     def tabulate_toshi_data(self, row):
 
@@ -402,17 +394,20 @@ class DataModel():
         pct_2xpov = self.get_value(block_group, group_id, 'PCT_LOWINC')
         pct_lingiso = self.get_value(block_group, group_id, 'PCT_LINGISO')
         pct_pov = self.get_value(block_group, group_id, 'PCT_POV')
+        pct_dis = self.get_value(block_group, group_id, 'PCT_DIS')
+        dis_universe = self.get_value(block_group, group_id, 'DIS_UNIVERSE', False)
 
         if pct_white is None or pct_black is None or pct_amerind is None or pct_asian is None or pct_other is None or pct_hisp is None \
                 or pct_age_lt18 is None \
                 or pct_age_gt64 is None or pct_edu_lths is None \
                 or pct_2xpov is None or pct_lingiso is None or pov_universe is None or edu_universe is None\
-                or pct_minority is None or pct_pov is None:
+                or pct_minority is None or pct_pov is None or pct_dis is None or dis_universe is None:
             print("Unable to compile enough data to include this record: " + group_id)
             return
 
         pct_edu_universe = edu_universe / total_pop if total_pop > 0 else 0
         pct_pov_universe = pov_universe / total_pop if total_pop > 0 else 0
+        pct_dis_universe = dis_universe / total_pop if total_pop > 0 else 0
         
         for key, item in self.toshis.items():
             tab_column = self.risk_column_map[key]
@@ -471,6 +466,7 @@ class DataModel():
                 bins[r][13] += population * pct_pov_universe * pct_2xpov * risk_value
                 bins[r][14] += population * pct_lingiso * risk_value
                 bins[r][15] += population * pct_minority * risk_value
+                bins[r][16] += population * pct_dis_universe * pct_dis * risk_value
             
     def tabulate_mir_data(self, row):
 
@@ -496,17 +492,20 @@ class DataModel():
         pct_2xpov = self.get_value(block_group, group_id, 'PCT_LOWINC')
         pct_pov = self.get_value(block_group, group_id, 'PCT_POV')
         pct_lingiso = self.get_value(block_group, group_id, 'PCT_LINGISO')
-
+        pct_dis = self.get_value(block_group, group_id, 'PCT_DIS')
+        dis_universe = self.get_value(block_group, group_id, 'DIS_UNIVERSE', False)
+        
         if pct_white is None or pct_black is None or pct_amerind is None or pct_asian is None or pct_other is None or pct_hisp is None \
                 or pct_age_lt18 is None \
                 or pct_age_gt64 is None or pct_edu_lths is None \
                 or pct_2xpov is None or pct_lingiso is None or pov_universe is None or edu_universe is None \
-                or pct_minority is None or pct_pov is None:
+                or pct_minority is None or pct_pov is None or pct_dis is None or dis_universe is None:
             print("Unable to compile enough data to include this record: " + group_id)
             return
 
         pct_edu_universe = edu_universe / total_pop if total_pop > 0 else 0
         pct_pov_universe = pov_universe / total_pop if total_pop > 0 else 0
+        pct_dis_universe = dis_universe / total_pop if total_pop > 0 else 0
 
         # Assign the block to a risk bin...this means not only giving the entire population represented by the block
         # to the total population column, but also giving a percentage of it to each sub group (based on the ACS
@@ -564,6 +563,7 @@ class DataModel():
             self.cancer_bins[r][13] += population * pct_pov_universe * pct_2xpov * risk_value
             self.cancer_bins[r][14] += population * pct_lingiso * risk_value
             self.cancer_bins[r][15] += population * pct_minority * risk_value
+            self.cancer_bins[r][17] += population * pct_dis_universe * pct_dis * risk_value
 
     def write_missing_block_groups(self):
         if len(self.missing_block_groups) > 0:

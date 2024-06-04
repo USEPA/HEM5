@@ -57,13 +57,13 @@ class ACSCountyTract:
     def getColumns(self):
         return ['RECTYPE', 'TCT', 'TOTALPOP', 'PCT_MINORITY', 'PCT_WHITE', 'PCT_BLACK', 'PCT_AMIND', 'PCT_ASIAN', 'PCT_HISP', 'PCT_OTHER_RACE', 
                 'PCT_AGE_LT18', 'PCT_AGE_GT64', 'PCT_LOWINC', 'PCT_POV', 'PCT_EDU_LTHS', 'PCT_LINGISO', 
-                'POV_UNIVERSE', 'EDU_UNIVERSE', 'LINGISO_UNIVERSE']
+                'PCT_DIS', 'POV_UNIVERSE', 'EDU_UNIVERSE', 'LINGISO_UNIVERSE', 'DIS_UNIVERSE']
 
     def createDataframe(self):
         # Type setting for reading
         self.numericColumns = ['TOTALPOP', 'PCT_MINORITY', 'PCT_WHITE', 'PCT_BLACK', 'PCT_AMIND', 'PCT_ASIAN', 'PCT_HISP', 'PCT_OTHER_RACE', 
                                'PCT_AGE_LT18', 'PCT_AGE_GT64', 'POV_UNIVERSE', 'PCT_LOWINC', 'PCT_POV', 'EDU_UNIVERSE', 'PCT_EDU_LTHS', 
-                               'PCT_LINGISO', 'LINGISO_UNIVERSE']
+                               'PCT_DIS', 'PCT_LINGISO', 'LINGISO_UNIVERSE', 'DIS_UNIVERSE']
         self.strColumns = ['RECTYPE', 'TCT']
 
         df = self.readFromPath(self.getColumns())

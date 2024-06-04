@@ -621,7 +621,7 @@ class EJ(Page):
                 filtered_mir_hi_df = self.all_receptors_df.query('distance <= @maxdist').copy()
                 Logger.logMessage("Filtered MIR HI All Receptors dataset (radius = " + str(maxdist) + ") contains " +
                                   str(len(filtered_mir_hi_df)) + " records.")
-
+                
                 # Infer which TOSHIs to include from the filtered all receptors file
                 # should be of this form: {'Deve':'Developmental', 'Neur':'Neurological', ...}
                 toshis = {} if cancer_selected else self.choose_toshis(filtered_mir_hi_df)
