@@ -61,7 +61,7 @@ class HiFacilitySummary(FacilitySummary):
                       'note2_i':'  and then divided by the total U.S. population based on the 2018-2022 ACS. The study areas’ facility-specific and '
                                 'run group-wide population counts are based on the methodology noted in footnote 1 to derive block-level demographic population counts'
                       ,
-                      'note3_i':'  for the study area, which are then divided by the respective total block-level population (facility-specific and run group-wide) to '
+                      'note3_i':'  for the study area, which are then divided by the respective total block-level population to '
                                 'derive the study area demographic percentages shown.'
                       ,
                       'j':"The total nationwide population includes all 50 states, the District of Columbia, and Puerto Rico. The state and county populations include any states and counties, respectively, with census blocks within the radius of the modeled area."

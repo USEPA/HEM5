@@ -14,7 +14,7 @@ class HiDiploma(WorksheetTable):
                 '>7 to <= 8', '>8 to <= 9', '>9 to <= 10', '> 10']
 
     def get_table_name(self):
-        return 'Table ' + self.identifier + '-3. Distribution of Hazard Indices for Adults without a High School Diploma - ' + \
+        return 'Table 3. Distribution of Hazard Indices for Adults without a High School Diploma - ' + \
                self.radius + ' km Study Area Radius \u1d43'
 
     def get_sub_header_1(self):
@@ -33,18 +33,18 @@ class HiDiploma(WorksheetTable):
     def get_notes(self):
         notes_dict = {'a':"The demographic populations are based on the 2020 Decennial Census' total block populations that are located within the indicated"
                       ,
-                      'note1_a':"radius, which are linked to the Census’ 2018-2022 American Community Survey five-year demographic averages at the block group level."
+                      'note1_a':"  radius, which are linked to the Census’ 2018-2022 American Community Survey five-year demographic averages at the block group level."
                       ,
                       'b':"Hazard indices from the modeled emissions are at the census block level, based on the predicted outdoor concentration over a 70-year"
                       ,
-                      'note1_b':"lifetime, and not adjusted for exposure factors. See the HEM5 User's Guide for more information."
+                      'note1_b':"  lifetime, and not adjusted for exposure factors. See the HEM5 User's Guide for more information."
                       ,
                       'c':"The population-weighted average hazard index (HI) takes into account HI levels at all populated block receptors in the entire modeled domain."
                       }
         return notes_dict
 
     def get_sheet_name(self):
-        return 'Table' + self.identifier + '3NC'
+        return 'Table3-NC'
 
     def get_columns(self):
         return ['Total Population', 'People >= 25 Years Old', 'People >= 25 Years Old without a High School Diploma']

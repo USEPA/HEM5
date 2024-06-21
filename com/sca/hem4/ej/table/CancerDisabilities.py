@@ -1,7 +1,7 @@
 from com.sca.hem4.ej.table.WorksheetTable import WorksheetTable
 
 
-class CancerLinguisticIsolation(WorksheetTable):
+class CancerDisabilities(WorksheetTable):
 
     def __init__(self, radius_value, source_category, facility):
         self.name = None
@@ -14,7 +14,7 @@ class CancerLinguisticIsolation(WorksheetTable):
                 '50 to < 100', '100 to < 200', '200 to < 300', '>= 300']
 
     def get_table_name(self):
-        return 'Table 5. Distribution of Cancer Risk for People Living in Limited English Speaking Households - ' + \
+        return 'Table 6. Distribution of Cancer Risk for People With One or More Disabilities - ' + \
                self.radius + ' km Study Area Radius \u1d43'
 
     def get_sub_header_1(self):
@@ -34,22 +34,26 @@ class CancerLinguisticIsolation(WorksheetTable):
     def get_notes(self):
         notes_dict = {'a':"The demographic populations are based on the 2020 Decennial Census' total block populations that are located within the indicated"
                       ,
-                      'note1_a':"  radius, which are linked to the Census’ 2018-2022 American Community Survey five-year demographic averages at the block group level."
+                      'note1_a':"  radius, which for people with one or more disabilities are linked to the Census’ 2018-2022 American Community Survey five-year"
+                      ,
+                      'note2_a':"  demographic averages at the census tract level."
                       ,
                       'b':"Risks from the modeled emissions are at the census block level, based on the predicted outdoor concentration over a 70-year"
                       ,
                       'note1_b':"  lifetime, and not adjusted for exposure factors. See the HEM5 User's Guide for more information."
                       ,
-                      'c':"The number of people living in Limited English Speaking Households is estimated at the block group level and assumes that the number"
+                      'c':"The number of people with one or more disabilities is based on the American Community Survey at the census tract level of civilian"
                       ,
-                      'note1_c':"  of individuals per household is the same for Limited English Speaking households as for the general population."
+                      'note1_c':"  non-institutionalized people. The tract-based percentage of people with one or more disabilities is applied to all block groups"
+                      ,
+                      'note2_c':"  and blocks within the respective tract, for those blocks that are within the indicated radius and risk range."
                       ,
                       'd':"The population-weighted average risk takes into account risk levels at all populated block receptors in the entire modeled domain."
                      }
         return notes_dict
 
     def get_sheet_name(self):
-        return 'Table5-C'
+        return 'Table6-C'
 
     def get_columns(self):
-        return ['Total Population', 'People Living in Limited English Speaking Households \u1d9c']
+        return ['Total Population', 'People With One or More Disabilities \u1d9c']

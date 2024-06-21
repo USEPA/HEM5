@@ -59,11 +59,11 @@ class ElaineSummary():
         worksheet.write(20, 0, 'No Disabilities', formats['wrap'])
 
         worksheet.write("D22", 'People Living in Limited English Speaking Households by Percent \u1da0', formats['sub_header_5'])
-        worksheet.write(22, 0, 'People Living in Limited English Speaking Households', formats['wrap'])
+        worksheet.write(22, 0, 'People Living in Limited English Speaking Households', formats['wrap_w_bottom'])
 
         # Create notes
         notes_dict = self.get_notes()
-        notes_row = 24
+        notes_row = 25
         for note in notes_dict:
             if 'note' in note:
                 worksheet.write_rich_string('A'+str(notes_row), formats['notes'], 
@@ -85,7 +85,7 @@ class ElaineSummary():
         notes_dict = {
                       'a':"The demographic percentages are based on the 2020 Decennial Census' block populations, which are linked to the Census’ 2018-2022 American Community Survey (ACS) five-year demographic averages at the block group level. To derive"
                       ,
-                      'note1_a':"  demographic percentages, it is assumed a given block's demographics are the same as the block group in which it is contained. Demographics are tallied for all blocks falling within the indicated radius."
+                      'note1_a':"  demographic percentages, it is assumed a block's demographics are the same as the block group in which it is contained. Demographics are tallied for all blocks falling within the indicated radius."
                       ,
                       'b':'To avoid double counting, the "Hispanic or Latino" category is treated as a distinct demographic category. A person who identifies as Hispanic or Latino is counted only as Hispanic/Latino for this analysis (regardless of other racial identifiers).'
                       ,
@@ -93,24 +93,22 @@ class ElaineSummary():
                       ,
                       'note1_c':'  dorms, prisons, nursing homes, and military barracks. To derive the nationwide demographic percentages shown, these block group level tallies are summed for all block groups in the nation and then divided by the total U.S. population'
                       ,
-                      'note2_c':"  based on the 2018-2022 ACS. The study area's facility-specific and run group-wide population counts are based on the methodology noted in footnote 'a' to derive block-level demographic population counts for the study area,"
+                      'note2_c':"  based on the 2018-2022 ACS. The study area's population counts are based on the methodology noted in footnote 'a' to derive block-level demographic population counts, which are then divided by the respective"
                       ,
-                      'note3_c':'  which are then divided by the respective total block-level population (facility-specific and run group-wide) to derive the study area demographic percentages shown.'
+                      'note3_c':'  total block-level population to derive the study area demographic percentages shown.'
                       ,
                       'd':'The demographic percentage for people >= 25 years old without a high school diploma is based on Census ACS data for the total population 25 years old and older at '
                           'the block group level, which is used as the denominator when calculating this demographic percentage.'
                       ,
-                      'e':'The demographic percentages for people with one or more disabilities are based on Census ACS surveys at the block group level of civilian '
-                          'non-institutionalized people (i.e., all U.S. civilians not residing in institutional group quarters facilities such as '
+                      'e':'The demographic percentages for people with one or more disabilities are based on Census ACS surveys at the tract level of civilian '
+                          'non-institutionalized people (i.e., all U.S. civilians not residing in institutional group quarters facilities such as correctional institutions,'
                       ,
-                      'note1_e':'  correctional institutions, juvenile facilities, skilled nursing facilities, and other long-term care living arrangements). '
+                      'note1_e':'  juvenile facilities, skilled nursing facilities, and other long-term care living arrangements). '
                                 'To derive the nationwide demographic percentages shown, these block group level tallies are summed for all block groups in the nation '
                       ,
-                      'note2_e':'  and then divided by the total U.S. population based on the 2018-2022 ACS. The study areas’ facility-specific and '
-                                'run group-wide population counts are based on the methodology noted in footnote 1 to derive block-level demographic population counts'
+                      'note2_e':'  the 2018-2022 ACS. The study areas’ population counts are based on applying the Census tract level percentage of people with one or more disabilities to each block group and block within the respective tract. The methodology noted in footnote "a" is then used'
                       ,
-                      'note3_e':'  for the study area, which are then divided by the respective total block-level population (facility-specific and run group-wide) to '
-                                'derive the study area demographic percentages shown.'
+                      'note3_e':'  to derive block-level demographic population counts, which are then divided by the respective total block-level population to derive the study area demographic percentages shown.'
                       ,
                       'f':'The Limited English Speaking population is estimated at the block group level by taking the product of the block group population and the fraction of '
                           'Limited English Speaking households in the block group, assuming that the number of individuals '
@@ -206,7 +204,7 @@ class ElaineSummary():
 
         # linguistically isolated
         value = float(data[0][14])
-        format = formats['percentage']
+        format = formats['percentage_w_bottom']
         worksheet.write_number(22, startcol, value, format)
 
     def append_data(self, values, worksheet, formats):
@@ -294,4 +292,5 @@ class ElaineSummary():
 
         # linguistically isolated
         value = float(row_totals[14])
+        format = formats['percentage_w_bottom']
         worksheet.write_number(22, 4, value, format)

@@ -14,7 +14,7 @@ class CancerRacialEthnic(WorksheetTable):
                 '50 to < 100', '100 to < 200', '200 to < 300', '>= 300']
 
     def get_table_name(self):
-        return 'Table ' + self.identifier + '-1. Distribution of Cancer Risk for Racial and Ethnic Groups - ' + \
+        return 'Table 1. Distribution of Cancer Risk for Racial and Ethnic Groups - ' + \
                self.radius + ' km Study Area Radius \u1D43'
 
     def get_sub_header_1(self):
@@ -34,7 +34,7 @@ class CancerRacialEthnic(WorksheetTable):
     def get_notes(self):
         notes_dict = {'a':"The demographic populations are based on the 2020 Decennial Census' total block populations that are located within the indicated radius, which are linked to the Census’"
                       ,
-                      'note_a':"2018-2022 American Community Survey five-year demographic averages at the block group level. See the HEM5 User's Guide for more information."
+                      'note_a':"  2018-2022 American Community Survey five-year demographic averages at the block group level. See the HEM5 User's Guide for more information."
                       ,
                       'b':"Risks from the modeled emissions are at the census block level, based on the predicted outdoor concentration over a 70-year lifetime, and not adjusted for exposure factors."
                       ,
@@ -42,12 +42,12 @@ class CancerRacialEthnic(WorksheetTable):
                       ,
                       'd':'In order to avoid double counting, the "Hispanic or Latino" category is treated as a distinct demographic category for these analyses. A person is identified as one of six'
                       ,
-                      'note_d':"racial/ethnic categories: White, Black, American Indian or Alaska Native, Asian, Other and Multiracial, or Hispanic/Latino."
+                      'note_d':"  racial/ethnic categories: White, Black, American Indian or Alaska Native, Asian, Other and Multiracial, or Hispanic/Latino."
                      }
         return notes_dict
 
     def get_sheet_name(self):
-        return 'Table' + self.identifier + '1C'
+        return 'Table1-C'
 
     def get_columns(self):
         return ['Total Population', 'White', 'Black', 'American Indian or Alaska Native', 'Asian', 'Other and Multiracial',

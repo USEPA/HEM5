@@ -46,7 +46,7 @@ class KCSummary():
         worksheet.write(4, 0, 'County \u02b0')
         worksheet.write(5, 0, ' ')
         worksheet.write_rich_string(6, 0, self.get_risk_header()
-                                  , formats['superscript'], ' i,j', formats['wrap'])
+                                  , formats['superscript'], ' i, j', formats['wrap'])
         
   
         # Create column headers
@@ -78,7 +78,7 @@ class KCSummary():
     def get_table_name(self):
         scope = 'the ' + self.source_category + ' Source Category' if self.facility is None else \
             'Facility ' + self.facility
-        return 'Table 2. Summary of Demographic Assessment of ' + self.hazard_name + ' Hazard Index Results for ' + \
+        return 'Demographic Assessment of ' + self.hazard_name + ' Hazard Index Results for ' + \
                scope + ' - ' + self.radius + ' km Study Area Radius \u1d43'
 
     def get_columns(self):
