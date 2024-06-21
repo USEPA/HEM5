@@ -14,7 +14,7 @@ class CancerPoverty(WorksheetTable):
                 '50 to < 100', '100 to < 200', '200 to < 300', '>= 300']
 
     def get_table_name(self):
-        return 'Table ' + self.identifier + '-4. Distribution of Cancer Risk for People Living in Households Below Twice ' + \
+        return 'Table 4. Distribution of Cancer Risk for People Living in Households Below Twice ' + \
                'the Poverty Level and Below the Poverty Level - ' + self.radius + ' km Study Area Radius \u1d43'
 
     def get_sub_header_1(self):
@@ -40,7 +40,7 @@ class CancerPoverty(WorksheetTable):
                       ,
                       'note1_b':"  lifetime, and not adjusted for exposure factors. See the HEM5 User's Guide for more information."
                       ,
-                      'c':"The number of people living below the poverty line or below twice the poverty line are based on Census ACS surveys at the block group"
+                      'c':"The number of people living below the poverty line or below twice the poverty line are based on the American Community Survey at the block group"
                       ,
                       'note1_c':"  level that do not include people in group living situations such as dorms, prisons, nursing homes, and military barracks."
                       ,
@@ -49,7 +49,7 @@ class CancerPoverty(WorksheetTable):
         return notes_dict
     
     def get_sheet_name(self):
-        return 'Table' + self.identifier + '4C'
+        return 'Table4-C'
 
     def get_columns(self):
         return ['Total Population', 'People Living in Households with Income Below Twice the Poverty Level \u1d9c',

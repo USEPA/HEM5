@@ -14,7 +14,7 @@ class HiLinguisticIsolation(WorksheetTable):
                 '>7 to <= 8', '>8 to <= 9', '>9 to <= 10', '> 10']
 
     def get_table_name(self):
-        return 'Table ' + self.identifier + '-5. Distribution of Hazard Indices for People Living in Limited English Speaking Households - ' + \
+        return 'Table 5. Distribution of Hazard Indices for People Living in Limited English Speaking Households - ' + \
                self.radius + ' km Study Area Radius \u1d43'
 
     def get_sub_header_1(self):
@@ -33,13 +33,13 @@ class HiLinguisticIsolation(WorksheetTable):
     def get_notes(self):
         notes_dict = {'a':"The demographic populations are based on the 2020 Decennial Census' total block populations that are located within the indicated"
                       ,
-                      'note1_a':"radius, which are linked to the Census’ 2018-2022 American Community Survey five-year demographic averages at the block group level."
+                      'note1_a':"  radius, which are linked to the Census’ 2018-2022 American Community Survey five-year demographic averages at the block group level."
                       ,
                       'b':"Hazard indices from the modeled emissions are at the census block level, based on the predicted outdoor concentration over a 70-year"
                       ,
-                      'note1_b':"lifetime, and not adjusted for exposure factors. See the HEM5 User's Guide for more information."
+                      'note1_b':"  lifetime, and not adjusted for exposure factors. See the HEM5 User's Guide for more information."
                       ,
-                      'c':" The number of people living in Limited English Speaking Households is estimated at the block group level and assumes that the number"
+                      'c':"The number of people living in Limited English Speaking Households is estimated at the block group level and assumes that the number"
                       ,
                       'note1_c':"  of individuals per household is the same for Limited English Speaking households as for the general population."
                       ,
@@ -48,7 +48,7 @@ class HiLinguisticIsolation(WorksheetTable):
         return notes_dict
 
     def get_sheet_name(self):
-        return 'Table' + self.identifier + '5NC'
+        return 'Table5-NC'
 
     def get_columns(self):
         return ['Total Population', 'People Living in Limited English Speaking Households \u1d9c']

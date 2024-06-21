@@ -78,11 +78,11 @@ class FacilitySummary():
             # worksheet.merge_range("A2:A3", 'Population Basis',  formats['sub_header_2'])
             worksheet.write(1, 0, 'Population Basis',  formats['sub_header_2'])
             worksheet.write(1, 1, 'Analysis Type \u1d47',  formats['sub_header_2'])
-            worksheet.write(2, 0, 'Nationwide (2018-2022 ACS) \u2071')
+            worksheet.write(2, 0, 'Nationwide (2018-2022 ACS) \u02b2')
             worksheet.write(2, 1, 'N/A', formats['vcenter'])
-            worksheet.write(3, 0, 'State \u2071')
+            worksheet.write(3, 0, 'State \u02b2')
             worksheet.write(3, 1, 'Proximity')
-            worksheet.write(4, 0, 'County \u2071')
+            worksheet.write(4, 0, 'County \u02b2')
             worksheet.write(4, 1, 'Proximity')
             # worksheet.merge_range("B2:N2", 'Demographic Group',  formats['sub_header_3'])
 
@@ -93,12 +93,12 @@ class FacilitySummary():
             # worksheet.merge_range("A7:N7", '')
 
             # worksheet.merge_range("A8:A9", self.source_category, formats['sub_header_1'])
+            worksheet.write(5, 0, self.source_category, formats['sub_header_1'])
             worksheet.write(6, 0, self.source_category, formats['sub_header_1'])
-            worksheet.write(7, 0, self.source_category, formats['sub_header_1'])
-            worksheet.write(6, 1, 'Proximity')
-            worksheet.write(7, 1, self.get_risk_label())
+            worksheet.write(5, 1, 'Proximity')
+            worksheet.write(6, 1, self.get_risk_label())
             
-            next_line = 7
+            next_line = 6
             self.append_data(run_group_values, worksheet, formats, next_line-1)
 
             # worksheet.merge_range("A10:N10", '')
@@ -108,7 +108,7 @@ class FacilitySummary():
             self.append_aggregated_data(county_values, worksheet, formats, 4)
 
             FacilitySummary.sheets[sheets_key] = worksheet
-            next_line = 10
+            next_line = 8
 
         # Update the worksheet with current facility info on next line
         worksheet.write(next_line-1, 0, self.facilityId, formats['sub_header_3'])
@@ -135,7 +135,7 @@ class FacilitySummary():
                 'Asian', 'Other and Multiracial', 'Hispanic or Latino \u1d49', 'Age (Years)\n0-17', 'Age (Years)\n18-64',
                 'Age (Years)\n>=65', 'Below the Poverty Level \u1da0', 'Below Twice the Poverty Level \u1da0',
                 'Over 25 Without a High School Diploma \u1d4d', 'People Living in Limited English Speaking Households \u02b0',
-                'People with One or More Disabilities \u02b2']
+                'People with One or More Disabilities \u2071']
 
     def get_sheet_name(self):
         return "Facility Summary"

@@ -14,11 +14,13 @@ import com.sca.hem4.ej.table.HiAgeGroups as hiAgeGroupsModule
 import com.sca.hem4.ej.table.HiDiploma as hiDiplomaModule
 import com.sca.hem4.ej.table.HiPoverty as hiPovertyModule
 import com.sca.hem4.ej.table.HiLinguisticIsolation as hiLinguisticIsolationModule
+import com.sca.hem4.ej.table.HiDisabilities as hiDisabilitiesModule
 import com.sca.hem4.ej.table.CancerRacialEthnic as cancerRacialEthnicModule
 import com.sca.hem4.ej.table.CancerAgeGroups as cancerAgeGroupsModule
 import com.sca.hem4.ej.table.CancerDiploma as cancerDiplomaModule
 import com.sca.hem4.ej.table.CancerPoverty as cancerPovertyModule
 import com.sca.hem4.ej.table.CancerLinguisticIsolation as cancerLinguisticIsolationModule
+import com.sca.hem4.ej.table.CancerDisabilities as cancerDisabilitiesModule
 
 
 # The class that provides methods for creating/closing workbooks and adding information to them.
@@ -47,13 +49,15 @@ class ReportWriter():
                          'HiAgeGroups': hiAgeGroupsModule,
                          'HiDiploma': hiDiplomaModule,
                          'HiPoverty': hiPovertyModule,
-                         'HiLinguisticIsolation': hiLinguisticIsolationModule}
+                         'HiLinguisticIsolation': hiLinguisticIsolationModule,
+                         'HiDisabilities': hiDisabilitiesModule}
 
         self.cancerSheets = {'CancerRacialEthnic': cancerRacialEthnicModule,
                              'CancerAgeGroups': cancerAgeGroupsModule,
                              'CancerDiploma': cancerDiplomaModule,
                              'CancerPoverty': cancerPovertyModule,
-                             'CancerLinguisticIsolation': cancerLinguisticIsolationModule}
+                             'CancerLinguisticIsolation': cancerLinguisticIsolationModule,
+                             'CancerDisabilities': cancerDisabilitiesModule}
 
     def create_cancer_workbook(self):
         filename = ReportWriter.construct_filename(self.hazard_prefix, self.facility, self.cancer_risk_threshold,
@@ -163,6 +167,16 @@ class ReportWriter():
         formats['asterik'] = workbook.add_format({'bold': 1, 'font_size': 14})
         
         formats['vcenter'] = workbook.add_format({'valign': 'vcenter'})
+        
+        formats['bottom_border'] = workbook.add_format({'bottom': 1})
+
+        formats['wrap_w_bottom'] = workbook.add_format({
+            'text_wrap': 1,
+            'bottom': 1})
+
+        formats['percentage_w_bottom'] = workbook.add_format({
+            'num_format': '0.0%',
+            'bottom': 1})
 
         return formats
 
