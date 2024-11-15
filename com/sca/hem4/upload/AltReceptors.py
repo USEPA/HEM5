@@ -50,7 +50,7 @@ class AltReceptors(InputFile):
         uniq = df.collect().unique(subset=[rec_id])
         if uniq.select(pl.count())[0,0] != df.collect().select(pl.count())[0,0]:
             Logger.logMessage("One or more receptor IDs are duplicated in the Alternate Receptors file. Please correct and retry.")
-            messagebox.showinfo("Duplicates", "One or more receptor IDs are duplicated in the Alternate Receptors file. Please correct and retry.")
+            messagebox.showinfo("Duplicate receptor IDs", "One or more receptor IDs are duplicated in the Alternate Receptors file. Please correct and retry.")
             return None
 
         # Check for invalid elevations (meters)
@@ -82,8 +82,8 @@ class AltReceptors(InputFile):
         # Check for duplicate coordinates
         uniq = df.collect().unique(subset=[lat, lon])
         if uniq.select(pl.count())[0,0] != df.collect().select(pl.count())[0,0]:
-            Logger.logMessage("One or more sets of coordinates are duplicated in the Alternate Receptors file. Please correct and retry.")
-            messagebox.showinfo("Duplicates", "One or more sets of coordinates are duplicated in the Alternate Receptors file. Please correct and retry.")
+            Logger.logMessage("One or more lat/lon coordinates are duplicated in the Alternate Receptors file. Please correct and retry.")
+            messagebox.showinfo("Duplicate lat/lon", "One or more lat/lon coordinates are duplicated in the Alternate Receptors file. Please correct and retry.")
             return None
 
         
