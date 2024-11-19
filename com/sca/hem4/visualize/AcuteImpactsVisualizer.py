@@ -83,13 +83,11 @@ class AcuteImpactsVisualizer():
         RefDF = pd.read_excel(RefFile)
         RefDF['Pollutant'] = RefDF['Pollutant'].str.lower()
         RefDF.set_index('Pollutant',inplace=True)
-        RefDict = {'REL': 'REL\n(mg/m3)',\
+        RefDict = {'REL': 'Acute REL\n(mg/m3)',\
                    'AEGL-1 1-hr':'AEGL-1  (1-hr)\n(mg/m3)',\
                    'ERPG-1':'ERPG-1\n(mg/m3)',\
                    'AEGL-2 1-hr':'AEGL-2  (1-hr)\n(mg/m3)',\
-                   'ERPG-2':'ERPG-2\n(mg/m3)',\
-                   'AEGL-1 8-hr':'AEGL-1  (8-hr)\n(mg/m3)',\
-                   'AEGL-2 8-hr':'AEGL-2  (8-hr)\n(mg/m3)'}
+                   'ERPG-2':'ERPG-2\n(mg/m3)'}
 
         tablist=[]
         for acuteset in (flag_list):
