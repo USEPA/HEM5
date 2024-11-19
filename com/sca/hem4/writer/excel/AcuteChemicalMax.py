@@ -37,15 +37,15 @@ class AcuteChemicalMax(ExcelWriter, InputFile):
         self.targetDir = targetDir
 
     def getHeader(self):
-        return ['Pollutant', 'Conc (µg/m3)', 'Conc sci (µg/m3)', 'Aegl_1 1hr (mg/m3)', 'Aegl_1 8hr (mg/m3)',
-                'Aegl_2 1hr (mg/m3)', 'Aegl_2 8hr (mg/m3)', 'Erpg_1 (mg/m3)', 'Erpg_2 (mg/m3)', 'Idlh_10 (mg/m3)',
-                'Mrl (mg/m3)', 'Rel (mg/m3)', 'Teel_0 (mg/m3)', 'Teel_1 (mg/m3)', 'Population',
+        return ['Pollutant', 'Conc (µg/m3)', 'Conc sci (µg/m3)', 'Aegl_1 1hr (mg/m3)', 
+                'Aegl_2 1hr (mg/m3)', 'Erpg_1 (mg/m3)', 'Erpg_2 (mg/m3)',
+                'Acute Rel (mg/m3)', 'Population',
                 'Distance (in meters)', 'Angle (from north)', 'Elevation (in meters)', 'Hill Height (in meters)',
                 'Fips', 'Block', 'Utm easting', 'Utm northing', 'Latitude', 'Longitude', 'Receptor type', 'Notes']
 
     def getColumns(self):
-        return [pollutant, aconc, aconc_sci, aegl_1_1h,aegl_1_8h,aegl_2_1h,aegl_2_8h,erpg_1,erpg_2,
-                idlh_10,mrl,rel,teel_0,teel_1, population, distance, angle, elev, hill, fips, block,
+        return [pollutant, aconc, aconc_sci, aegl_1_1h,aegl_2_1h,erpg_1,erpg_2,
+                rel, population, distance, angle, elev, hill, fips, block,
                 utme, utmn, lat, lon, rec_type, notes]
 
     def generateOutputs(self):
@@ -58,8 +58,7 @@ class AcuteChemicalMax(ExcelWriter, InputFile):
         maxconc_df = pd.DataFrame(data=filler, index=pols, columns=cols)
         
         # dataframe of pollutants with their acute benchmarks
-        polinfo_cols = [pollutant, aegl_1_1h, aegl_1_8h, aegl_2_1h, aegl_2_8h, erpg_1, erpg_2,
-                        idlh_10, mrl, rel, teel_0, teel_1]
+        polinfo_cols = [pollutant, aegl_1_1h, aegl_2_1h, erpg_1, erpg_2, rel]
         polinfo = self.model.haplib.dataframe[polinfo_cols][
                   self.model.haplib.dataframe[pollutant].str.lower().isin([x.lower() for x in pols])]
         polinfo[pollutant] = polinfo.apply(lambda x: x[pollutant].lower(), axis=1)
@@ -211,8 +210,8 @@ class AcuteChemicalMax(ExcelWriter, InputFile):
 
     def createDataframe(self):
         # Type setting for XLS reading
-        self.numericColumns = [aconc, aconc_sci, aegl_1_1h,aegl_1_8h,aegl_2_1h,aegl_2_8h,erpg_1,erpg_2,idlh_10,mrl,rel,
-                               teel_0,teel_1, population, distance, angle, elev, hill, utme, utmn, lat, lon]
+        self.numericColumns = [aconc, aconc_sci, aegl_1_1h,aegl_2_1h,erpg_1,erpg_2,rel,
+                               population, distance, angle, elev, hill, utme, utmn, lat, lon]
         self.strColumns = [pollutant, fips, block, rec_type, notes]
 
         df = self.readFromPath(self.getColumns())
