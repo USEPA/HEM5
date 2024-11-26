@@ -20,6 +20,13 @@ angle = 'angle';
 
 
 #%%
+def copyUTMColumns(utmn, utme):
+    round_utmn = round(utmn)
+    round_utme = round(utme)
+    return [round_utmn, round_utme]
+
+
+#%%
 def haversineDistance(blkcoors, faclon, faclat):
     """
     Calculate the great circle distance in meters between two points 
@@ -550,7 +557,7 @@ def getBlocksFromAltRecs(facid, cenx, ceny, cenlon, cenlat, utmZone, hemi, maxdi
         modelblks[[utmn, utme]] = modelblks.apply(lambda row: UTM.ll2utm_alt(row[lat],row[lon],utmZone,hemi), 
                                 result_type="expand", axis=1)
     else:
-        modelblks[[utmn, utme]] = modelblks.apply(lambda row: self.copyUTMColumns(row[lat],row[lon]), 
+        modelblks[[utmn, utme]] = modelblks.apply(lambda row: copyUTMColumns(row[lat],row[lon]), 
                                 result_type="expand", axis=1)
 
     # Set utmzone as the common zone
