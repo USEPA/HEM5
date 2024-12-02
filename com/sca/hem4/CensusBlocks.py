@@ -517,13 +517,41 @@ def getblocks(cenx, ceny, cenlon, cenlat, utmzone, hemi, maxdist, modeldist, sou
 # Determine inner and outer receptors from the set of alternate receptors.
 def getBlocksFromAltRecs(facid, cenx, ceny, cenlon, cenlat, utmZone, hemi, maxdist, modeldist
                          , sourcelocs, overlap_dist, model):
+
+    # create string version of utm zone
+    utmZoneStr = str(utmZone)
+    
+    # Convert alternate receptor polars DF to pandas DF
+    altrecs = model.altreceptr.dataframe.collect().to_pandas()
+    
+    # Divide by utm and latlon coordinate types
+    altrecs_utm = altrecs[altrecs['location_type'] == 'U']
+    altrecs_utm['utmn'] = altrecs_utm['lat'].round()
+    altrecs_utm['utme'] = altrecs_utm['lon'].round()
+    altrecs_latlon = altrecs[altrecs['location_type'] == 'L']
+        
+    # Compute lat/lon in utm DF and utm in lat/lon DF
+    if len(altrecs_utm) > 0:
+        altrecs_utm[['lat', 'lon']] = altrecs_utm.apply(lambda row: UTM.utm2ll(row['lat'],row['lon']
+                                                        ,utmZoneStr), result_type="expand", axis=1)
+    
+    if len(altrecs_latlon) > 0:
+        altrecs_latlon[['utmn', 'utme']] = altrecs_latlon.apply(lambda row: UTM.ll2utm_alt(row['lat']
+                                                            ,row['lon'],utmZone,hemi)
+                                                            ,result_type="expand", axis=1)
+    
+    # Concat utm and latlon DFs back into altrecs DF
+    altrecs = pd.concat([altrecs_utm, altrecs_latlon], ignore_index=True)
+    
     
     # Subset the Alternate Rececptors to receptors within one lat/lon of the facility center.
     # This creates a smaller dataframe that is more efficient.
-
-    altrecs = model.altreceptr.dataframe.filter(
-        (pl.col('lat') <= cenlat+1) & (pl.col('lat') >= cenlat-1) 
-        & (pl.col('lon') <= cenlon+1) & (pl.col('lon') >= cenlon-1)).collect().to_pandas()
+    altrecs = altrecs[(altrecs['lat'] <= cenlat+1) & (altrecs['lat'] >= cenlat-1) 
+                      & (altrecs['lon'] <= cenlon+1) & (altrecs['lon'] >= cenlon-1)]
+    
+    # altrecs = model.altreceptr.dataframe.filter(
+    #     (pl.col('lat') <= cenlat+1) & (pl.col('lat') >= cenlat-1) 
+    #     & (pl.col('lon') <= cenlon+1) & (pl.col('lon') >= cenlon-1)).collect().to_pandas()
     
     # Prefix all receptor IDs with ALT to distinguish them as alternate receptors
     altrecs[rec_id] = 'ALT' + altrecs[rec_id].astype(str)
@@ -550,15 +578,15 @@ def getBlocksFromAltRecs(facid, cenx, ceny, cenlon, cenlat, utmZone, hemi, maxdi
                           "Aborting processing of this facility.")
         raise RuntimeError("No discrete receptors")
 
-    # Which location type is being used? If lat/lon, convert to UTM. Otherwise, just copy over
-    # the relevant values.
-    ltype = modelblks.iloc[0]['location_type']
-    if ltype == 'L':
-        modelblks[[utmn, utme]] = modelblks.apply(lambda row: UTM.ll2utm_alt(row[lat],row[lon],utmZone,hemi), 
-                                result_type="expand", axis=1)
-    else:
-        modelblks[[utmn, utme]] = modelblks.apply(lambda row: copyUTMColumns(row[lat],row[lon]), 
-                                result_type="expand", axis=1)
+    # # Which location type is being used? If lat/lon, convert to UTM. Otherwise, just copy over
+    # # the relevant values.
+    # ltype = modelblks.iloc[0]['location_type']
+    # if ltype == 'L':
+    #     modelblks[[utmn, utme]] = modelblks.apply(lambda row: UTM.ll2utm_alt(row[lat],row[lon],utmZone,hemi), 
+    #                             result_type="expand", axis=1)
+    # else:
+    #     modelblks[[utmn, utme]] = modelblks.apply(lambda row: copyUTMColumns(row[lat],row[lon]), 
+    #                             result_type="expand", axis=1)
 
     # Set utmzone as the common zone
     modelblks[utmz] = utmZone
@@ -575,7 +603,7 @@ def getBlocksFromAltRecs(facid, cenx, ceny, cenlon, cenlat, utmZone, hemi, maxdi
             
     # Split modelblks into inner and outer block receptors
     innerblks, outerblks = in_box_NonCensus(modelblks, sourcelocs, modeldist, maxdist, overlap_dist, model)
-
+    
     # convert utme, utmn, utmz, and population to appropriate numeric types
     innerblks[utme] = innerblks[utme].astype(np.float64)
     innerblks[utmn] = innerblks[utmn].astype(np.float64)

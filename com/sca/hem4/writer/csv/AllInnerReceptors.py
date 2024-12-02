@@ -103,7 +103,6 @@ class AllInnerReceptors(CsvWriter, InputFile):
         dlist = []
         col_list = self.getColumns()
 
-
         # process inner concs one source_id at a time
         for x in srcids:
             innerplot_onesrcid = innerplot_df[self.plotcols[self.rtype]].loc[innerplot_df[source_id] == x]
