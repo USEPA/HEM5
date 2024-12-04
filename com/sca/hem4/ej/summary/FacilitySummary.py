@@ -186,6 +186,9 @@ class FacilitySummary():
 
         dg_data[1][0] = ""
 
+        # Remember the over 25 population count. This is needed below to compute risk % of no HS
+        saved_edu_pop = dg_data[0][10]
+        
         # First, select the columns that are relevant
         row_idx = np.array([i for i in range(0, len(dg_data))])
         col_idx = np.array(self.active_columns)
@@ -219,12 +222,8 @@ class FacilitySummary():
         dg_data = self.get_risk_bins(data)
         row_totals = [sum(x) for x in zip(*dg_data)]
 
-        saved_edu_pop = None
         for index in range(1, 18):
             # Education is a special case...we want the population over 25 as the denominator, not the total population!!
-            if index == 11:
-                saved_edu_pop = row_totals[index]
-
             if index == 11:
                 row_totals[index] = (row_totals[index] / saved_edu_pop) if saved_edu_pop > 0 else 0
             else:
