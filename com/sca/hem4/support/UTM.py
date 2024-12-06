@@ -63,12 +63,13 @@ class UTM:
         """
       
         # First, check for any utm zones provided by the user in the emission location file
-        utmzones_df = el_df["utmzone"].loc[el_df["location_type"] == "U"]
+        utmzones_df = el_df[el_df["location_type"] == "U"][['utmzone']]
+        utmzones_df['utmzonestr'] = utmzones_df['utmzone']
                
         if utmzones_df.shape[0] > 0:
             # there are some; find the smallest one
-            utmzones_df['utmzone'] = utmzones_df.apply(lambda row: UTM.getZone(row))
-            utmzones_df['utmband'] = utmzones_df.apply(lambda row: UTM.getBand(row))
+            utmzones_df['utmzone'] = utmzones_df.apply(lambda row: UTM.getZone(row['utmzonestr']), axis=1)
+            utmzones_df['utmband'] = utmzones_df.apply(lambda row: UTM.getBand(row['utmzonestr']), axis=1)
             min_utmzu = int(np.nan_to_num(utmzones_df['utmzone']).min(axis=0))
             min_utmbu = utmzones_df['utmband'].min()
         else:
@@ -83,11 +84,13 @@ class UTM:
         else:
             min_utmzl = 0
             
-        lat_df = el_df[["lat"]].loc[el_df["location_type"] == "L"]
+        lat_df = el_df[["lat"]].loc[el_df["location_type"] == "L"]            
         if lat_df.shape[0] > 0 and lat_df["lat"].min() < 0:
             min_utmbl = "S"
-        else:
+        elif lat_df.shape[0] > 0 and lat_df["lat"].min() > 0:
             min_utmbl = "N"
+        else:
+            min_utmbl = "Z"
 
         if min_utmzu == 0:
             utmzone = min_utmzl
