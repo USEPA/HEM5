@@ -519,7 +519,7 @@ def getBlocksFromAltRecs(facid, cenx, ceny, cenlon, cenlat, utmZone, hemi, maxdi
                          , sourcelocs, overlap_dist, model):
 
     # create string version of utm zone
-    utmZoneStr = str(utmZone)
+    utmZoneStr = str(utmZone) + hemi
     
     # Convert alternate receptor polars DF to pandas DF
     altrecs = model.altreceptr.dataframe.collect().to_pandas()

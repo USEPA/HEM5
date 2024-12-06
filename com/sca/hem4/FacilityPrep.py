@@ -54,7 +54,7 @@ class FacilityPrep():
             emislocs.drop(emislocs[emislocs[source_type]=='B'].index, inplace = True)
             emislocs = pd.concat([emislocs, blRows], ignore_index=True)
 
-        # Determine the utm zone to use for this facility. Also get the hemisphere (N or S).
+        # Determine the utm zone to use for this facility. Also get the hemisphere (N or S).       
         facutmzonenum, hemi = UTM.zone2use(emislocs)
         facutmzonestr = str(facutmzonenum) + hemi
 
