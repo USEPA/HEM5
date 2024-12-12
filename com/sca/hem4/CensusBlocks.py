@@ -518,7 +518,7 @@ def getblocks(cenx, ceny, cenlon, cenlat, utmzone, hemi, maxdist, modeldist, sou
 def getBlocksFromAltRecs(facid, cenx, ceny, cenlon, cenlat, utmZone, hemi, maxdist, modeldist
                          , sourcelocs, overlap_dist, model):
 
-    # create string version of utm zone
+    # create string version of the common utm zone
     utmZoneStr = str(utmZone) + hemi
     
     # Convert alternate receptor polars DF to pandas DF
@@ -530,10 +530,17 @@ def getBlocksFromAltRecs(facid, cenx, ceny, cenlon, cenlat, utmZone, hemi, maxdi
     altrecs_utm['utme'] = altrecs_utm['lon'].round()
     altrecs_latlon = altrecs[altrecs['location_type'] == 'L']
         
-    # Compute lat/lon in utm DF and utm in lat/lon DF
+    # Compute lat/lon in utm DF and utm in lat/lon DF using the common zone
+        
     if len(altrecs_utm) > 0:
+        # compute lat/lon using zone in the alt recs file
         altrecs_utm[['lat', 'lon']] = altrecs_utm.apply(lambda row: UTM.utm2ll(row['lat'],row['lon']
-                                                        ,utmZoneStr), result_type="expand", axis=1)
+                                                        ,row['utmzone']), result_type="expand", axis=1)
+                
+        # compute utm coordinates using common zone
+        altrecs_utm[['utmn', 'utme']] = altrecs_utm.apply(lambda row: UTM.ll2utm_alt(row['lat']
+                                                            ,row['lon'],utmZone,hemi)
+                                                            ,result_type="expand", axis=1)
     
     if len(altrecs_latlon) > 0:
         altrecs_latlon[['utmn', 'utme']] = altrecs_latlon.apply(lambda row: UTM.ll2utm_alt(row['lat']

@@ -157,7 +157,7 @@ class UTM:
         
 
     @staticmethod
-    def ll2utm_alt(lat,lon,zoneUsed, hemiUsed):
+    def ll2utm_alt(lat, lon, zoneUsed, hemiUsed):
         realN, realE, realZone, realHemi, realepsg = UTM.ll2utm(lat,lon)
         if zoneUsed == realZone:
             return realN, realE
