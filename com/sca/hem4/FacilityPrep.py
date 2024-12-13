@@ -67,8 +67,6 @@ class FacilityPrep():
         # Next compute UTM coordinates using the common zone
         emislocs[[utmn, utme]] = emislocs.apply(lambda row: UTM.ll2utm_alt(row[lat],row[lon],facutmzonenum,hemi)
                                , result_type="expand", axis=1)
-        # Replace utmzone with common zone
-        emislocs[utmzone] = facutmzonestr
 
         # Compute lat/lon of any x2 and y2 coordinates that were supplied in UTM.
         emislocs[['lat_y2', 'lon_x2']] = emislocs.apply(lambda row: UTM.utm2ll(row["y2"],row["x2"],row[utmzone]) 
@@ -77,6 +75,9 @@ class FacilityPrep():
         # Compute UTM coordinates of lat_x2 and lon_y2 using the common zone
         emislocs[['utmn_y2', 'utme_x2']] = emislocs.apply(lambda row: UTM.ll2utm_alt(row["lat_y2"],row["lon_x2"],facutmzonenum,hemi)
                           , result_type="expand", axis=1)
+
+        # Replace utmzone with common zone
+        emislocs[utmzone] = facutmzonestr
         
         #%%---------- HAP Emissions --------------------------------------
         hapemis = self.model.hapemis.dataframe.loc[self.model.hapemis.dataframe[fac_id] == facid]
