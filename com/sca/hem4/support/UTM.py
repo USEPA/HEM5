@@ -114,7 +114,7 @@ class UTM:
         return utmzone, hemi
 
     @staticmethod
-    def utm2ll(utmn,utme,zone):
+    def utm2ll(utmn,utme,zone):            
         zonenum = UTM.getZone(zone)
         zonehemi = UTM.getBand(zone)
         zonetxt = UTM.zonetxt(zonenum)
@@ -157,7 +157,7 @@ class UTM:
         
 
     @staticmethod
-    def ll2utm_alt(lat,lon,zoneUsed, hemiUsed):
+    def ll2utm_alt(lat, lon, zoneUsed, hemiUsed):
         realN, realE, realZone, realHemi, realepsg = UTM.ll2utm(lat,lon)
         if zoneUsed == realZone:
             return realN, realE

@@ -518,7 +518,7 @@ def getblocks(cenx, ceny, cenlon, cenlat, utmzone, hemi, maxdist, modeldist, sou
 def getBlocksFromAltRecs(facid, cenx, ceny, cenlon, cenlat, utmZone, hemi, maxdist, modeldist
                          , sourcelocs, overlap_dist, model):
 
-    # create string version of utm zone
+    # create string version of the common utm zone
     utmZoneStr = str(utmZone) + hemi
     
     # Convert alternate receptor polars DF to pandas DF
@@ -530,10 +530,17 @@ def getBlocksFromAltRecs(facid, cenx, ceny, cenlon, cenlat, utmZone, hemi, maxdi
     altrecs_utm['utme'] = altrecs_utm['lon'].round()
     altrecs_latlon = altrecs[altrecs['location_type'] == 'L']
         
-    # Compute lat/lon in utm DF and utm in lat/lon DF
+    # Compute lat/lon in utm DF and utm in lat/lon DF using the common zone
+        
     if len(altrecs_utm) > 0:
+        # compute lat/lon using zone in the alt recs file
         altrecs_utm[['lat', 'lon']] = altrecs_utm.apply(lambda row: UTM.utm2ll(row['lat'],row['lon']
-                                                        ,utmZoneStr), result_type="expand", axis=1)
+                                                        ,row['utmzone']), result_type="expand", axis=1)
+                
+        # compute utm coordinates using common zone
+        altrecs_utm[['utmn', 'utme']] = altrecs_utm.apply(lambda row: UTM.ll2utm_alt(row['lat']
+                                                            ,row['lon'],utmZone,hemi)
+                                                            ,result_type="expand", axis=1)
     
     if len(altrecs_latlon) > 0:
         altrecs_latlon[['utmn', 'utme']] = altrecs_latlon.apply(lambda row: UTM.ll2utm_alt(row['lat']
@@ -556,8 +563,8 @@ def getBlocksFromAltRecs(facid, cenx, ceny, cenlon, cenlat, utmZone, hemi, maxdi
     # Prefix all receptor IDs with ALT to distinguish them as alternate receptors
     altrecs[rec_id] = 'ALT' + altrecs[rec_id].astype(str)
         
-    # If any population values are missing, we cannot create an Incidence report
-    model.altRec_optns['altrec_nopop'] = altrecs.isnull().any()[population]
+    # If any population values are 0, we cannot create an Incidence report
+    model.altRec_optns['altrec_nopop'] = altrecs[altrecs['rec_type']=='P'].isnull().any()[population]
     altrecs[population] = pd.to_numeric(altrecs[population], errors='coerce').fillna(0)
 
     # If any elevation or hill height values are missing, we must run in FLAT mode.
@@ -568,6 +575,21 @@ def getBlocksFromAltRecs(facid, cenx, ceny, cenlon, cenlat, utmZone, hemi, maxdi
     # Compute distance from the center of the facility to each alternate receptor
     reccoors = np.array(tuple(zip(altrecs.lon, altrecs.lat)))
     altrecs[distance] = haversineDistance(reccoors, cenlon, cenlat)
+
+    # If the user has not selected Urban or Rural dispersion, then compute default
+    # by taking all blocks within 3km of facility and compute the population density.
+    # If > 750 people/square km, then urban. Compute urban population by summing all
+    # block population within 20km.
+    if model.facops.iloc[0]['rural_urban'] == '':
+        pop3km_sum = altrecs[altrecs['distance'] <= 3000]['population'].sum()
+        if pop3km_sum/28.27433388 > 750:
+            pop20km_sum = altrecs[altrecs['distance'] <= 20000]['population'].sum()
+            model.facops['rural_urban'] = 'U'
+            model.facops['urban_pop'] = pop20km_sum
+        else:
+            model.facops['rural_urban'] = 'R'
+            model.facops['urban_pop'] = 0
+    
     
     #subset the altrecs dataframe to blocks that are within the max distance of the facility
     modelblks = altrecs.query('distance <= @maxdist')
@@ -577,16 +599,6 @@ def getBlocksFromAltRecs(facid, cenx, ceny, cenlon, cenlat, utmZone, hemi, maxdi
         Logger.logMessage("There are no discrete receptors within the max distance of this facility. " +
                           "Aborting processing of this facility.")
         raise RuntimeError("No discrete receptors")
-
-    # # Which location type is being used? If lat/lon, convert to UTM. Otherwise, just copy over
-    # # the relevant values.
-    # ltype = modelblks.iloc[0]['location_type']
-    # if ltype == 'L':
-    #     modelblks[[utmn, utme]] = modelblks.apply(lambda row: UTM.ll2utm_alt(row[lat],row[lon],utmZone,hemi), 
-    #                             result_type="expand", axis=1)
-    # else:
-    #     modelblks[[utmn, utme]] = modelblks.apply(lambda row: copyUTMColumns(row[lat],row[lon]), 
-    #                             result_type="expand", axis=1)
 
     # Set utmzone as the common zone
     modelblks[utmz] = utmZone
@@ -598,7 +610,7 @@ def getBlocksFromAltRecs(facid, cenx, ceny, cenlon, cenlat, utmZone, hemi, maxdi
     # Compute bearing (angle) from the center of the facility to each receptor
     modelblks['angle'] = modelblks.apply(lambda row: bearing(row[utme],row[utmn],cenx,ceny), axis=1)
 
-    # No urban pop value for alternate receptors
+    # No urban pop value for alternate receptors. Set to 0 for consistency with census.
     modelblks['urban_pop'] = 0
             
     # Split modelblks into inner and outer block receptors

@@ -54,12 +54,13 @@ class FacilityPrep():
             emislocs.drop(emislocs[emislocs[source_type]=='B'].index, inplace = True)
             emislocs = pd.concat([emislocs, blRows], ignore_index=True)
 
-        # Determine the utm zone to use for this facility. Also get the hemisphere (N or S).       
+        #====== Determine the UTM zone to use for this facility. Also get the hemisphere (N or S).
+        #====== This is determined from the emislocs.        
         facutmzonenum, hemi = UTM.zone2use(emislocs)
         facutmzonestr = str(facutmzonenum) + hemi
 
                 
-        # Compute lat/lon of any user supplied UTM coordinates
+        # Compute lat/lon of any user supplied emisloc UTM coordinates
         emislocs[[lat, lon]] = emislocs.apply(lambda row: UTM.utm2ll(row[lat],row[lon],row[utmzone]) 
                                if row['location_type']=='U' else [row[lat],row[lon]], result_type="expand", axis=1)
 
@@ -67,14 +68,16 @@ class FacilityPrep():
         emislocs[[utmn, utme]] = emislocs.apply(lambda row: UTM.ll2utm_alt(row[lat],row[lon],facutmzonenum,hemi)
                                , result_type="expand", axis=1)
 
-        # Compute lat/lon of any x2 and y2 coordinates that were supplied as UTM
-        emislocs[['lat_y2', 'lon_x2']] = emislocs.apply(lambda row: UTM.utm2ll(row["y2"],row["x2"],row["utmzone"]) 
+        # Compute lat/lon of any x2 and y2 coordinates that were supplied in UTM.
+        emislocs[['lat_y2', 'lon_x2']] = emislocs.apply(lambda row: UTM.utm2ll(row["y2"],row["x2"],row[utmzone]) 
                           if row['location_type']=='U' else [row["y2"],row["x2"]], result_type="expand", axis=1)
 
         # Compute UTM coordinates of lat_x2 and lon_y2 using the common zone
         emislocs[['utmn_y2', 'utme_x2']] = emislocs.apply(lambda row: UTM.ll2utm_alt(row["lat_y2"],row["lon_x2"],facutmzonenum,hemi)
                           , result_type="expand", axis=1)
 
+        # Replace utmzone with common zone
+        emislocs[utmzone] = facutmzonestr
         
         #%%---------- HAP Emissions --------------------------------------
         hapemis = self.model.hapemis.dataframe.loc[self.model.hapemis.dataframe[fac_id] == facid]
@@ -202,30 +205,43 @@ class FacilityPrep():
             sourcelocs = sourcelocs.fillna({source_type:'', lengthx:0, lengthy:0, angle:0, "utme_x2":0, "utmn_y2":0})
             sourcelocs = sourcelocs.reset_index(drop=True)
 
-        # Compute the coordinates of the facililty center if not specified in options
+
+        #====== Compute the coordinates of the facililty center if not specified in options =====
+        
         if (self.fac_center == "" or self.ring_distances == ""):
             cenx, ceny, cenlon, cenlat, max_srcdist, vertx_a, verty_a = UTM.center(sourcelocs, facutmzonenum, hemi)
 
         if self.fac_center != "":
-            # Grab the specified center and translate to/from UTM
+            # Grab the specified center and translate to/from UTM using the common zone
             components = self.fac_center.split(',')
             if components[0] == "L":
-                cenlat = float(components[1])
-                cenlon = float(components[2])
-                ceny, cenx, zone, hemi, epsg = UTM.ll2utm(cenlat, cenlon)
+                cenlat = float(components[1].strip())
+                cenlon = float(components[2].strip())
+                ceny, cenx = UTM.ll2utm_alt(cenlat, cenlon, facutmzonenum, hemi)
             else:
-                ceny = int(float(components[1]))
-                cenx = int(float(components[2]))
-
-                zone = components[3].strip()
-                cenlat, cenlon = UTM.utm2ll(ceny, cenx, zone)
+                temp_ceny = int(float(components[1].strip()))
+                temp_cenx = int(float(components[2].strip()))
+                temp_zone = UTM.getZone(components[3].strip())
+                temp_hemi = UTM.getBand(components[3].strip())
+                
+                if temp_zone == facutmzonenum:
+                    # User specified the common zone
+                    ceny = temp_ceny
+                    cenx = temp_cenx
+                    cenlat, cenlon = UTM.utm2ll(ceny, cenx, facutmzonestr)
+                else:
+                    # Uesr did not specify the common zone. Convert to common zone.
+                    cenlat, cenlon = UTM.utm2ll(ceny, cenx, facutmzonestr)
+                    ceny, cenx = UTM.ll2utm_alt(cenlat, cenlon, facutmzonenum, hemi)
 
         Logger.logMessage("Using facility center [x, y, lat, lon] = [" + str(cenx) + ", " + str(ceny) + ", " +
                               str(cenlat) + ", " + str(cenlon) + "]")
         self.model.computedValues['cenlat'] = cenlat
         self.model.computedValues['cenlon'] = cenlon
 
-        # retrieve blocks
+
+        #========= Retrieve blocks ================
+        
         maxdist = self.model.facops[max_dist].iloc[0]
         modeldist = self.model.facops[model_dist].iloc[0]
         
@@ -281,11 +297,13 @@ class FacilityPrep():
                 user_recs[[lat, lon]] = user_recs.apply(lambda row: UTM.utm2ll(row[lat],row[lon],row[utmzone])
                              if row['location_type']=='U' else [row[lat],row[lon]], result_type="expand", axis=1)
         
-                # Next compute UTM coordinates using the common zone
-                user_recs[[utmn, utme]] = user_recs.apply(lambda row: UTM.ll2utm_alt(row[lat],row[lon],facutmzonenum,hemi)
-                             if row['location_type']=='L' else [row[utmn],row[utme]], result_type="expand", axis=1)
-        
                 
+                # Next compute UTM coordinates using the common zone
+                user_recs[[utmn, utme]] = user_recs.apply(lambda row: UTM.ll2utm_alt(row[lat],
+                                    row[lon],facutmzonenum,hemi), result_type="expand", axis=1)
+                # Replace utmzone with common zone
+                user_recs[utmzone] = facutmzonestr
+                        
                 user_recs.reset_index(inplace=True)
     
     
