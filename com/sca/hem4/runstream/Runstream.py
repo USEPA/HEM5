@@ -79,7 +79,7 @@ class Runstream():
 
         if self.model.altRec_optns.get('altrec_flat', None):
             optel = " FLAT "
-        elif self.eleva == "Y":
+        elif self.eleva == "Y" or self.eleva == "O":
             optel = " ELEV "
         else:
             optel = " FLAT "
@@ -804,7 +804,7 @@ class Runstream():
         rech = list(discrecs_df[hill][:]) # Hill height
 
         for i in np.arange(len(recx)):
-            if self.eleva == "Y":
+            if self.eleva == "Y" or self.eleva == "O":
                 if self.flagpole == "N":
                     redec = ("RE DISCCART  " + str("{:.0f}".format(recx[i])) + " " + str("{:.0f}".format(recy[i])) + 
                              " " + str(normal_round(rece[i])) + " " + 
@@ -857,7 +857,7 @@ class Runstream():
         self.inp_f.write(newline)
     
         #add elevations and hill height if user selected it
-        if self.eleva == "Y":
+        if self.eleva == "Y" or self.eleva == "O":
             for i in range(1, num_sectors+1):
                 indexStr = "S" + str(i) + "R1"
                 repelev0 = ("RE GRIDPOLR polgrid1 ELEV " + 
