@@ -14,6 +14,7 @@ from com.sca.hem4.support.NormalRounding import *
 from com.sca.hem4.support.ElevHill import ElevHill
 import math
 import traceback
+import numpy as np
 
 distance = 'distance';
 angle = 'angle';
@@ -524,27 +525,65 @@ class FacilityPrep():
         # If elevated terrain is being modeled, then assign elevations to emission sources 
         # that need them, and assign elevations and hill heights to polar receptors.
         
-        if self.model.facops[elev].iloc[0].upper() == "Y":
+        if self.model.facops[elev].iloc[0].upper() in ["Y", "O"]:
             
             # Assign elevations to emission sources if not provided by the user
             if emislocs[elev].max() == 0 and emislocs[elev].min() == 0:
                 message = ("Getting elevations for emission sources... \n")
                 Logger.logMessage(message)
                 coords = [(lon, lat) for lon, lat in zip(emislocs[lon], emislocs[lat])]
-                emislocs[elev] = ElevHill.getElev(coords)
+                
+                if self.model.facops[elev].iloc[0].upper() == "Y":
+                    # Elevations are to be acquired from USGS
+                    emislocs[elev] = ElevHill.getElev(coords)
+                else:
+                    # Elevations are computed using offline method
+                    elev_coords = np.concatenate((self.innerblks[[lon,lat]].to_numpy()
+                                                  ,self.outerblks[[lon,lat]].to_numpy())
+                                                  ,axis=0)
+                    elev_values = np.concatenate((self.innerblks[elev].to_numpy()
+                                                  ,self.outerblks[elev].to_numpy())
+                                                  ,axis=0)
+                    emislocs[elev] = ElevHill.offline_ElevHill(elev_coords,elev_values,coords)
                               
             # Assign elevations to the polar receptors
             message = ("Getting elevations for polar receptors... \n")
             Logger.logMessage(message)
             coords = [(lon, lat) for lon, lat in zip(polar_df[lon], polar_df[lat])]
-            polar_df[elev] = ElevHill.getElev(coords)
+
+            if self.model.facops[elev].iloc[0].upper() == "Y":
+                # Elevations are to be acquired from USGS
+                polar_df[elev] = ElevHill.getElev(coords)
+            else:
+                # Elevations are computed using offline method
+                elev_coords = np.concatenate((self.innerblks[[lon,lat]].to_numpy()
+                                              ,self.outerblks[[lon,lat]].to_numpy())
+                                              ,axis=0)
+                elev_values = np.concatenate((self.innerblks[elev].to_numpy()
+                                              ,self.outerblks[elev].to_numpy())
+                                              ,axis=0)
+                polar_df[elev] = ElevHill.offline_ElevHill(elev_coords,elev_values,np.array(coords))
             
             # Assign hill heights to the polar receptors
             message = ("Computing hill heights for polar receptors... \n")
             Logger.logMessage(message)
             polarcoords_4hill = polar_df.loc[:, [lat, lon, elev]].to_numpy()
-            polar_df[hill] = ElevHill.getHill(polarcoords_4hill, op_maxdistkm, cenlon, 
-                                              cenlat, self.model)
+
+            if self.model.facops[elev].iloc[0].upper() == "Y":
+                # Hill heights are to be acquired from USGS
+                polar_df[hill] = ElevHill.getHill(polarcoords_4hill, op_maxdistkm, cenlon, 
+                                                  cenlat, self.model)
+            else:
+                # Hill heights are computed using offline method
+                polarcoords = polar_df.loc[:, [lon, lat]].to_numpy()
+                hill_coords = np.concatenate((self.innerblks[[lon,lat]].to_numpy()
+                                              ,self.outerblks[[lon,lat]].to_numpy())
+                                              ,axis=0)
+                hill_values = np.concatenate((self.innerblks[hill].to_numpy()
+                                              ,self.outerblks[hill].to_numpy())
+                                              ,axis=0)
+                polar_df[hill] = ElevHill.offline_ElevHill(hill_coords,hill_values,polarcoords)
+
             
             # Make sure hill heights are equal or greater than corresponding elevations
             qa_df = polar_df[polar_df[elev] > polar_df[hill]]
