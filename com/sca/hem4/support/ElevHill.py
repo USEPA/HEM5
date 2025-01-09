@@ -61,7 +61,6 @@ class ElevHill:
                 time.sleep(60)
         
         # Get elevations for batches of 100 coordinates
-                          
         elevation_data = []
         batch_size = 100
         for i in range(0, len(coords), batch_size):
@@ -78,15 +77,22 @@ class ElevHill:
                     # 30m failed too
                     raise ValueError("USGS elevation server unavailable")
             else:
+                # make sure all elevs are not -999999. That means elevs not available.
                 if len(coords) > 1:
-                    elevation_data.extend(batch_elev)
+                    if all(x == -999999 for x in batch_elev):
+                        raise ValueError("USGS elevation server unavailable")
+                    else:
+                        elevation_data.extend(batch_elev)
                 else:
-                    elevation_data.append(batch_elev)
+                    if batch_elev == -999999:
+                        raise ValueError("USGS elevation server unavailable")
+                    else:
+                        elevation_data.append(batch_elev)
 
         elev_rounded = [round(e) for e in elevation_data]
         
-        # Replace any negative elecations with 0. Elevations can be -99999 if over water.
-        elev_rounded_positive = [0 if i < 0 else i for i in elev_rounded]
+        # Replace any -99999 elecations with 0. These are over water.
+        elev_rounded_positive = [0 if i == -999999 else i for i in elev_rounded]
         
         return elev_rounded_positive
         
