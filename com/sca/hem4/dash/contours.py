@@ -816,7 +816,8 @@ class contours():
                     
                     # Close the matplotlib figure
                     plt.close()
-                    return no_update, contmap, maptitle, zoom, center, gdfJSON
+                    # return no_update, contmap, maptitle, zoom, center, gdfJSON
+                    return no_update, contmap, maptitle, zoom, center, cont_json
 
 
         # This callback takes the csv file(s) loaded by user and creates a dataframe
@@ -1033,7 +1034,8 @@ class contours():
                 return no_update
             else:
                 tempdf = pd.DataFrame(metdata)
-                block_data = tempdf[tempdf['Receptor Type'].str.contains('C|P')]
+                block_data = tempdf[tempdf['Receptor Type'].str.contains('C|P') &
+                                    ~tempdf['RecID'].str.contains('UCONC')]
                 if len(block_data)==0:
                     return None
                 else:
@@ -1046,6 +1048,8 @@ class contours():
                     else:
                         return html.P(f'** Census block/alternate receptors are included out to 10km from the location of maximum impact.\
                                   The maximum {metrics_reversed[metric]} for a populated receptor is {maxrisk_sf} based on your input data.')
+                                  
+                    
                             
         return app
 

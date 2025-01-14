@@ -152,7 +152,7 @@ class HEMdash():
                'Thyroid HI', 'Thyroid Block', 'Whole body HI', 'Whole Body Block', 'Cancer Incidence',
                'Met Station', 'Distance to Met Station (km)', 'Facility Center Lat', 'Facility Center Lon',
                'Rural or Urban']
-        MaxRisk = df_max_can['MIR (in a million)'].max()
+        MaxRisk = df_max_can['MIR (in a million)'].max()  
         
         # Find all risk metric columns with at least one nonzero value
         allmets = ['MIR (in a million)', 'Respiratory HI', 'Liver HI','Neurological HI','Developmental HI',
@@ -162,11 +162,17 @@ class HEMdash():
         nonzero_metrics = list(nonzero_columns.intersection(allmets))
         
         
-        # Define center coordinates of facilities and find their count
+        # Define center coordinates of facilities and find their count; find bounds
         cenlat = (df_max_can['Facility Center Lat'].max() + df_max_can['Facility Center Lat'].min())/2
         cenlon = (df_max_can['Facility Center Lon'].max() + df_max_can['Facility Center Lon'].min())/2
         center = [cenlat, cenlon]
         numFacs = df_max_can['Facility'].count()
+        
+        southWest_lat = df_max_can['Facility Center Lat'].min()
+        southWest_lng = df_max_can['Facility Center Lon'].min()
+        northEast_lat = df_max_can['Facility Center Lat'].max()
+        northEast_lng = df_max_can['Facility Center Lon'].max()
+        mapbounds = [[southWest_lat, southWest_lng], [northEast_lat, northEast_lng]]
         
         try:
         
@@ -209,7 +215,7 @@ class HEMdash():
             
             #Creating a df just for the dashtable
             df_dashtable = df_max_can.copy()
-            
+                        
             # Create dataframe of pollutant incidence drivers
             fname = self.SCname + "_incidence_drivers.xlsx"
             can_inc_drv = os.path.join(self.dir, fname)
@@ -556,7 +562,7 @@ class HEMdash():
                                                         
                             html.H5(id='facs-map-title'),
                             
-                            dl.Map(id="tab1-map", center=[39.8283, -97], zoom = 4, minZoom = 3, zoomSnap = .3,
+                            dl.Map(id="tab1-map", center=[39.8283, -97], zoom = 4, minZoom = 3, zoomSnap = .3, bounds=mapbounds,
                                     children = [                                    
                                         
                                          dl.LayersControl([ct_esri, ct_dark, ct_light, ct_openstreet] +                                                                
