@@ -316,7 +316,7 @@ class FacilityList(InputFile):
                 row[pdepl] = 'NO'
 
             # elev, flagYN, user_rcpt, bldg_dw, fastall, emis_var
-            valid = ['Y', 'N']
+            valid = ['Y', 'N', 'O']
             if row[elev] not in valid:
                 Logger.logMessage("Facility " + facility + ": Invalid value for elev. Defaulting to 'Y'.")
                 row[elev] = 'Y'

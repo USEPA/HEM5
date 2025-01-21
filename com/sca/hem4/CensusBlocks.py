@@ -308,7 +308,7 @@ def in_box_NonCensus(modelblks, sourcelocs, modeldist, maxdist, overlap_dist, mo
     for index, row in ptsources.iterrows():
         src_x = row[utme]
         src_y = row[utmn]
-        indist = outerblks.query('sqrt((@src_x - utme)**2 + (@src_y - utmn)**2) <= @modeldist')
+        indist = outerblks.query('sqrt((@src_x - utme)**2 + (@src_y - utmn)**2) <= @modeldist').copy()
 
         # Determine overlap
         indist['overlap'] = np.where(np.sqrt(np.double((indist[utme]-src_x)**2 +
@@ -592,7 +592,7 @@ def getBlocksFromAltRecs(facid, cenx, ceny, cenlon, cenlat, utmZone, hemi, maxdi
     
     
     #subset the altrecs dataframe to blocks that are within the max distance of the facility
-    modelblks = altrecs.query('distance <= @maxdist')
+    modelblks = altrecs.query('distance <= @maxdist').copy()
 
     # If no blocks within max distance, then this facility cannot be modeled; skip it.
     if modelblks.empty == True:

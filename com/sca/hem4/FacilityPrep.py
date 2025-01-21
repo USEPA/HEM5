@@ -14,6 +14,7 @@ from com.sca.hem4.support.NormalRounding import *
 from com.sca.hem4.support.ElevHill import ElevHill
 import math
 import traceback
+import numpy as np
 
 distance = 'distance';
 angle = 'angle';
@@ -215,10 +216,12 @@ class FacilityPrep():
             # Grab the specified center and translate to/from UTM using the common zone
             components = self.fac_center.split(',')
             if components[0] == "L":
+                # lat/lon
                 cenlat = float(components[1].strip())
                 cenlon = float(components[2].strip())
                 ceny, cenx = UTM.ll2utm_alt(cenlat, cenlon, facutmzonenum, hemi)
             else:
+                # UTM
                 temp_ceny = int(float(components[1].strip()))
                 temp_cenx = int(float(components[2].strip()))
                 temp_zone = UTM.getZone(components[3].strip())
@@ -231,11 +234,11 @@ class FacilityPrep():
                     cenlat, cenlon = UTM.utm2ll(ceny, cenx, facutmzonestr)
                 else:
                     # Uesr did not specify the common zone. Convert to common zone.
-                    cenlat, cenlon = UTM.utm2ll(ceny, cenx, facutmzonestr)
+                    cenlat, cenlon = UTM.utm2ll(temp_ceny, temp_cenx, facutmzonestr)
                     ceny, cenx = UTM.ll2utm_alt(cenlat, cenlon, facutmzonenum, hemi)
 
         Logger.logMessage("Using facility center [x, y, lat, lon] = [" + str(cenx) + ", " + str(ceny) + ", " +
-                              str(cenlat) + ", " + str(cenlon) + "]")
+                              str(cenlat) + ", " + str(cenlon) + "]\n")
         self.model.computedValues['cenlat'] = cenlat
         self.model.computedValues['cenlon'] = cenlon
 
@@ -313,18 +316,51 @@ class FacilityPrep():
                     
                 # If facility is being run with elevated terrrain, get elevations
                 # and hill heights if the user did not provide them.
-                if self.model.facops[elev].iloc[0].upper() == "Y":
+                if self.model.facops[elev].iloc[0].upper() in ["Y", "O"]:
+
                     if user_recs[elev].max() == 0 and user_recs[elev].min() == 0:
-                        message = ("Getting elevations for user receptors... \n")
-                        Logger.logMessage(message)
+
                         coords = [(lon, lat) for lon, lat in zip(user_recs[lon], user_recs[lat])]
-                        user_recs[elev] = ElevHill.getElev(coords)
+                        
+                        if self.model.facops[elev].iloc[0].upper() == "Y":
+                            # Elevations are to be acquired from USGS
+                            message = ("Getting USGS elevations for user receptors... \n")
+                            Logger.logMessage(message)
+                            user_recs[elev] = ElevHill.getElev(coords)
+                        else:
+                            # Elevations are computed using offline method
+                            message = ("Using off-line method to get elevations for user receptors... \n")
+                            Logger.logMessage(message)
+                            elev_coords = np.concatenate((self.innerblks[[lon,lat]].to_numpy()
+                                                  ,self.outerblks[[lon,lat]].to_numpy())
+                                                  ,axis=0)
+                            elev_values = np.concatenate((self.innerblks[elev].to_numpy()
+                                                  ,self.outerblks[elev].to_numpy())
+                                                  ,axis=0)
+                            user_recs[elev] = ElevHill.offline_ElevHill(elev_coords,elev_values,np.array(coords))
+
                     if user_recs[hill].max() == 0 and user_recs[hill].min() == 0:
-                        message = ("Computing hill heights for user receptors... \n")
-                        Logger.logMessage(message)
-                        usercoords_4hill = user_recs.loc[:, [lat, lon, elev]].to_numpy()
-                        user_recs[hill] = ElevHill.getHill(usercoords_4hill, op_maxdistkm, cenlon, 
+
+                        if self.model.facops[elev].iloc[0].upper() == "Y":
+                            # Elevations are to be acquired from USGS
+                            message = ("Computing USGS hill heights for user receptors... \n")
+                            Logger.logMessage(message)
+                            usercoords_4hill = user_recs.loc[:, [lat, lon, elev]].to_numpy()
+                            user_recs[hill] = ElevHill.getHill(usercoords_4hill, op_maxdistkm, cenlon, 
                                                           cenlat, self.model)
+                        else:
+                            # Hill heights are computed using offline method
+                            message = ("Using off-line method to get hill heights for user receptors... \n")
+                            Logger.logMessage(message)
+                            user_coords = user_recs.loc[:, [lon, lat]].to_numpy()
+                            hill_coords = np.concatenate((self.innerblks[[lon,lat]].to_numpy()
+                                                          ,self.outerblks[[lon,lat]].to_numpy())
+                                                          ,axis=0)
+                            hill_values = np.concatenate((self.innerblks[hill].to_numpy()
+                                                          ,self.outerblks[hill].to_numpy())
+                                                          ,axis=0)
+                            user_recs[hill] = ElevHill.offline_ElevHill(hill_coords,hill_values,user_coords)
+
     
                 # determine if the user receptors overlap any emission sources
                 user_recs[overlap] = user_recs.apply(lambda row: self.check_overlap(row[utme],
@@ -357,7 +393,7 @@ class FacilityPrep():
                         # Some user receptors are already in the census. Remove these from the user receptor list.
                         user_recs = user_recs[~user_recs.set_index(['blockid']).index.isin(dups.set_index(['blockid']).index)].copy()
                     
-                        msg = 'The following user receptors have coordinates that are already in the Census data:\n' \
+                        msg = 'The following user receptors have IDs that are already in the Census data:\n' \
                             + str(dups['rec_id'].tolist()) + '\n' \
                             + 'They will be removed from the user receptor list.'
                         Logger.logMessage(msg)
@@ -376,7 +412,7 @@ class FacilityPrep():
             distances = self.ring_distances.split(',')
             self.model.computedValues['firstring'] = float(distances[0])
             polar_dist = [float(x) for x in distances]
-            Logger.logMessage("Using defined rings: " + str(polar_dist)[1:-1] )
+            Logger.logMessage("Using defined rings: " + str(polar_dist)[1:-1] + "\n" )
         else:
             # First find the farthest distance to any source.
             maxsrcd = 0
@@ -524,29 +560,74 @@ class FacilityPrep():
         # If elevated terrain is being modeled, then assign elevations to emission sources 
         # that need them, and assign elevations and hill heights to polar receptors.
         
-        if self.model.facops[elev].iloc[0].upper() == "Y":
+        if self.model.facops[elev].iloc[0].upper() in ["Y", "O"]:
             
             # Assign elevations to emission sources if not provided by the user
             if emislocs[elev].max() == 0 and emislocs[elev].min() == 0:
-                message = ("Getting elevations for emission sources... \n")
-                Logger.logMessage(message)
+
                 coords = [(lon, lat) for lon, lat in zip(emislocs[lon], emislocs[lat])]
-                emislocs[elev] = ElevHill.getElev(coords)
+                
+                if self.model.facops[elev].iloc[0].upper() == "Y":
+                    # Elevations are to be acquired from USGS
+                    message = ("Getting USGS elevations for emission sources... \n")
+                    Logger.logMessage(message)
+                    emislocs[elev] = ElevHill.getElev(coords)
+                else:
+                    # Elevations are computed using offline method
+                    message = ("Using off-line method to get elevations for emission sources... \n")
+                    Logger.logMessage(message)
+                    elev_coords = np.concatenate((self.innerblks[[lon,lat]].to_numpy()
+                                                  ,self.outerblks[[lon,lat]].to_numpy())
+                                                  ,axis=0)
+                    elev_values = np.concatenate((self.innerblks[elev].to_numpy()
+                                                  ,self.outerblks[elev].to_numpy())
+                                                  ,axis=0)
+                    emislocs[elev] = ElevHill.offline_ElevHill(elev_coords,elev_values,coords)
                               
             # Assign elevations to the polar receptors
-            message = ("Getting elevations for polar receptors... \n")
-            Logger.logMessage(message)
             coords = [(lon, lat) for lon, lat in zip(polar_df[lon], polar_df[lat])]
-            polar_df[elev] = ElevHill.getElev(coords)
+
+            if self.model.facops[elev].iloc[0].upper() == "Y":
+                # Elevations are to be acquired from USGS
+                message = ("Getting USGS elevations for polar receptors... \n")
+                Logger.logMessage(message)
+                polar_df[elev] = ElevHill.getElev(coords)
+            else:
+                # Elevations are computed using offline method
+                message = ("Using off-line method to get elevations for polar receptors... \n")
+                Logger.logMessage(message)
+                elev_coords = np.concatenate((self.innerblks[[lon,lat]].to_numpy()
+                                              ,self.outerblks[[lon,lat]].to_numpy())
+                                              ,axis=0)
+                elev_values = np.concatenate((self.innerblks[elev].to_numpy()
+                                              ,self.outerblks[elev].to_numpy())
+                                              ,axis=0)
+                polar_df[elev] = ElevHill.offline_ElevHill(elev_coords,elev_values,np.array(coords))
             
             # Assign hill heights to the polar receptors
-            message = ("Computing hill heights for polar receptors... \n")
-            Logger.logMessage(message)
-            polarcoords_4hill = polar_df.loc[:, [lat, lon, elev]].to_numpy()
-            polar_df[hill] = ElevHill.getHill(polarcoords_4hill, op_maxdistkm, cenlon, 
-                                              cenlat, self.model)
+
+            if self.model.facops[elev].iloc[0].upper() == "Y":
+                # Hill heights are to be acquired from USGS
+                message = ("Computing USGS hill heights for polar receptors... \n")
+                Logger.logMessage(message)
+                polarcoords_4hill = polar_df.loc[:, [lat, lon, elev]].to_numpy()
+                polar_df[hill] = ElevHill.getHill(polarcoords_4hill, op_maxdistkm, cenlon, 
+                                                  cenlat, self.model)
+            else:
+                # Hill heights are computed using offline method
+                message = ("Using off-line method to get hill heights for polar receptors... \n")
+                Logger.logMessage(message)
+                polarcoords = polar_df.loc[:, [lon, lat]].to_numpy()
+                hill_coords = np.concatenate((self.innerblks[[lon,lat]].to_numpy()
+                                              ,self.outerblks[[lon,lat]].to_numpy())
+                                              ,axis=0)
+                hill_values = np.concatenate((self.innerblks[hill].to_numpy()
+                                              ,self.outerblks[hill].to_numpy())
+                                              ,axis=0)
+                polar_df[hill] = ElevHill.offline_ElevHill(hill_coords,hill_values,polarcoords)
+
             
-            # Make sure hill heights are equal or greater than corresponding elevations
+            # Make sure polar hill heights are equal or greater than corresponding elevations
             qa_df = polar_df[polar_df[elev] > polar_df[hill]]
             if len(qa_df) > 0:
                 Logger.logMessage("Some polar elevations are higher than the hill height. Aborting processing for this facility.")

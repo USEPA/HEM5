@@ -27,6 +27,12 @@ from rasterio.io import MemoryFile
 import multiprocessing
 from concurrent.futures import ThreadPoolExecutor
 
+from scipy.interpolate import griddata
+from scipy.spatial import KDTree
+
+import socket
+import datetime
+
 
 class ElevHill:
     """
@@ -41,15 +47,20 @@ class ElevHill:
         where the coordinates are a list of tuples organized as (longitude, latitude).
         """
 
-        # Confirm that an Internet connection is available
-        try:
-            request = requests.get('https://www.google.com', timeout=10)
-        except BaseException as e:
-            # no Internet connection
-            raise ValueError("There is no Internet connection. Elevations cannot be acquired from the USGS")
+        # Confirm that an Internet connection is available. If there is not, then keep
+        # checking every minute indefinitely. Report progress to the log.
+        gotInternet = False
+        while not gotInternet:
+            gotInternet = ElevHill.internet()
+            if gotInternet == False:
+                currtime = datetime.datetime.now().strftime("%H:%M:%S")
+                message = "No Internet connection to retrieve elevations. Will try again in 1 minute. \n" \
+                          + "Click Exit to stop this loop. \n" \
+                          + "Current time is: " + currtime + "\n"
+                Logger.logMessage(message)
+                time.sleep(60)
         
         # Get elevations for batches of 100 coordinates
-                          
         elevation_data = []
         batch_size = 100
         for i in range(0, len(coords), batch_size):
@@ -66,15 +77,22 @@ class ElevHill:
                     # 30m failed too
                     raise ValueError("USGS elevation server unavailable")
             else:
+                # make sure all elevs are not -999999. That means elevs not available.
                 if len(coords) > 1:
-                    elevation_data.extend(batch_elev)
+                    if all(x == -999999 for x in batch_elev):
+                        raise ValueError("USGS elevation server unavailable")
+                    else:
+                        elevation_data.extend(batch_elev)
                 else:
-                    elevation_data.append(batch_elev)
+                    if batch_elev == -999999:
+                        raise ValueError("USGS elevation server unavailable")
+                    else:
+                        elevation_data.append(batch_elev)
 
         elev_rounded = [round(e) for e in elevation_data]
         
-        # Replace any negative elecations with 0. Elevations can be -99999 if over water.
-        elev_rounded_positive = [0 if i < 0 else i for i in elev_rounded]
+        # Replace any -99999 elecations with 0. These are over water.
+        elev_rounded_positive = [0 if i == -999999 else i for i in elev_rounded]
         
         return elev_rounded_positive
         
@@ -139,13 +157,19 @@ class ElevHill:
     # Takes a usgs url, gets a tif file, and creates and returns a dataframe of lat, lon, and elevations
     @staticmethod
     def getTIF(url, max_model_dist, center_lon, center_lat, min_rec_elev):
-        # Confirm that an Internet connection is available
-        try:
-            request = requests.get('https://www.google.com', timeout=10)
-        except BaseException as e:
-            # no Internet connection
-            raise ValueError("There is no Internet connection. TIFFs cannot be acquired from the USGS")
-
+        
+        # Confirm that an Internet connection is available. If there is not, then keep
+        # checking every minute indefinitely. Report progress to the log.
+        gotInternet = False
+        while not gotInternet:
+            gotInternet = ElevHill.internet()
+            if gotInternet == False:
+                currtime = datetime.datetime.now().strftime("%H:%M:%S")
+                message = "No Internet connection to retrieve elevations. Will try again in 1 minute. \n" \
+                          + "Click Exit to stop this loop. \n" \
+                          + "Current time is: " + currtime + "\n"
+                Logger.logMessage(message)
+                time.sleep(60)
 
         # Make a GET request to download the TIFF file
         response = requests.get(url)
@@ -208,7 +232,21 @@ class ElevHill:
         hill_arr : 1-dim array
             Hill heights (m) of each input receptor.
         """
-        
+ 
+        # Confirm that an Internet connection is available. If there is not, then keep
+        # checking every minute indefinitely. Report progress to the log.
+        gotInternet = False
+        while not gotInternet:
+            gotInternet = ElevHill.internet()
+            if gotInternet == False:
+                currtime = datetime.datetime.now().strftime("%H:%M:%S")
+                message = "No Internet connection to retrieve elevations. Will try again in 1 minute. \n" \
+                          + "Click Exit to stop this loop. \n" \
+                          + "Current time is: " + currtime + "\n"
+                Logger.logMessage(message)
+                time.sleep(60)
+
+
         # Query the 30m DEM server for all elevations within a geo box where the radius is
         # based on the max HEM modeling distance plus 62km to potentially account for Denali
         # at a 10% slope.
@@ -340,3 +378,65 @@ class ElevHill:
         return hill_arr
 
 
+    @staticmethod
+    def offline_ElevHill(known_coords, known_values, coords_needing_help):
+        """
+        Purpose
+        -------
+        This function is used to compute elevations (m) or hill heights when the "offline" 
+        elevation option is selected. Elevations or hill heights for a list of coordinates 
+        are computed by interpolating across a set of known elevations/hills extracted from the 
+        Census or Alternate Receptors for this facility.
+        
+        Parameters
+        ----------
+        known_coords : 2-dimensional numpy array
+            Array of known elevation coordinates organized as (lon,lat).
+        known_value : 1-dimensional numpy array
+            Elevations for the coordinates in known_elev_coords
+        coords_needing_help : 2-dimensional numpy array
+            Array of coordinates that need elevation or hill height. Organized as (lon,lat).
+
+        Returns
+        -------
+        linear_vals : 1-dim array
+            Elevation (m) or hill height (m) of each coords_needing_help coordinate.
+        """
+
+        linear_vals = griddata(known_coords, known_values, coords_needing_help, method='linear')
+
+        # There will be NaN interpolated values if the desired points fall outside the convex hull 
+        missing = np.isnan(linear_vals)
+        
+        # Use nearest-neighbor interpolation for missing points
+        if missing.any():
+            tree = KDTree(known_coords)  # Build KDTree with known points
+            _, indices = tree.query(coords_needing_help[missing])  # Find nearest neighbors for missing points
+            nearest_vals = known_values[indices]  # Get elevations for nearest neighbors
+        
+            # Combine results
+            linear_vals[missing] = nearest_vals  # Replace NaNs with nearest-neighbor values
+        
+        # Round the values to integers
+        linear_vals_rounded = [round(e) for e in linear_vals]
+        
+        return linear_vals_rounded
+    
+
+    @staticmethod
+    def internet(host="8.8.8.8", port=53, timeout=3):
+        """
+        Purpose
+        -------
+        Determines if there is an active Internet connection.
+        
+        Host: 8.8.8.8 (google-public-dns-a.google.com)
+        OpenPort: 53/tcp
+        Service: domain (DNS/TCP)
+        """
+        try:
+            socket.setdefaulttimeout(timeout)
+            socket.socket(socket.AF_INET, socket.SOCK_STREAM).connect((host, port))
+            return True
+        except socket.error as ex:
+            return False
