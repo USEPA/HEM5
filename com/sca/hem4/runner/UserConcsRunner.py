@@ -103,7 +103,7 @@ class UserConcsRunner():
         # do not include user concs in the all_inner.
         #----------------------------------------------------------------
         
-        census_pandas_df = self.census_df.collect()
+        census_pandas_df = self.census_df.to_pandas()
         duplicates = pd.merge(census_pandas_df, self.userconcs_df, on=['lat', 'lon'], how="inner")
         if len(duplicates) == 0:
             # no dups
