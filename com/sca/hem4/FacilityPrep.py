@@ -281,7 +281,7 @@ class FacilityPrep():
 
         #%%---------- Optional User Receptors -----------------------------------------
 
-        # If the user input any user receptors for this facility, then they will be
+        # If the user inputs any user receptors for this facility, then they will be
         # added into the Inner block receptor dataframe
         if hasattr(self.model.ureceptr, "dataframe"):
 
@@ -318,15 +318,20 @@ class FacilityPrep():
                 # and hill heights if the user did not provide them.
                 if self.model.facops[elev].iloc[0].upper() in ["Y", "O"]:
 
-                    if user_recs[elev].max() == 0 and user_recs[elev].min() == 0:
+                    missing_elev_list = user_recs[user_recs[elev].isna()].index.tolist()
+                    missing_hill_list = user_recs[user_recs[hill].isna()].index.tolist()
 
-                        coords = [(lon, lat) for lon, lat in zip(user_recs[lon], user_recs[lat])]
+                    if len(missing_elev_list) > 0:
+                        # User did not provide all elevations for the user receptors
+                
+                        missing_elev_df = user_recs.loc[missing_elev_list]
+                        coords = [(lon, lat) for lon, lat in zip(missing_elev_df[lon], missing_elev_df[lat])]
                         
                         if self.model.facops[elev].iloc[0].upper() == "Y":
                             # Elevations are to be acquired from USGS
-                            message = ("Getting USGS elevations for user receptors... \n")
+                            message = ("Using USGS method to get elevations for user receptors... \n")
                             Logger.logMessage(message)
-                            user_recs[elev] = ElevHill.getElev(coords)
+                            missing_elev_df[elev] = ElevHill.getElev(coords)
                         else:
                             # Elevations are computed using offline method
                             message = ("Using off-line method to get elevations for user receptors... \n")
@@ -337,29 +342,41 @@ class FacilityPrep():
                             elev_values = np.concatenate((self.innerblks[elev].to_numpy()
                                                   ,self.outerblks[elev].to_numpy())
                                                   ,axis=0)
-                            user_recs[elev] = ElevHill.offline_ElevHill(elev_coords,elev_values,np.array(coords))
+                            missing_elev_df[elev] = ElevHill.offline_ElevHill(elev_coords,elev_values,np.array(coords))
 
-                    if user_recs[hill].max() == 0 and user_recs[hill].min() == 0:
+                        # drop missing elev rows from user_recs and append computed hill rows
+                        user_recs= user_recs.drop(missing_elev_list)
+                        user_recs = pd.concat([user_recs, missing_elev_df])
+
+
+                    if len(missing_hill_list) > 0:
+                        # User did not provide all hill heights for the user receptors
+                
+                        missing_hill_df = user_recs.loc[missing_hill_list]
 
                         if self.model.facops[elev].iloc[0].upper() == "Y":
-                            # Elevations are to be acquired from USGS
-                            message = ("Computing USGS hill heights for user receptors... \n")
+                            # Hill heights are to be acquired from USGS
+                            message = ("Using USGS method to get hill heights for user receptors... \n")
                             Logger.logMessage(message)
-                            usercoords_4hill = user_recs.loc[:, [lat, lon, elev]].to_numpy()
-                            user_recs[hill] = ElevHill.getHill(usercoords_4hill, op_maxdistkm, cenlon, 
+                            usercoords_4hill = missing_hill_df.loc[:, [lat, lon, elev]].to_numpy()
+                            missing_hill_df[hill] = ElevHill.getHill(usercoords_4hill, op_maxdistkm, cenlon, 
                                                           cenlat, self.model)
                         else:
                             # Hill heights are computed using offline method
                             message = ("Using off-line method to get hill heights for user receptors... \n")
                             Logger.logMessage(message)
-                            user_coords = user_recs.loc[:, [lon, lat]].to_numpy()
+                            user_coords = missing_hill_df.loc[:, [lon, lat]].to_numpy()
                             hill_coords = np.concatenate((self.innerblks[[lon,lat]].to_numpy()
                                                           ,self.outerblks[[lon,lat]].to_numpy())
                                                           ,axis=0)
                             hill_values = np.concatenate((self.innerblks[hill].to_numpy()
                                                           ,self.outerblks[hill].to_numpy())
                                                           ,axis=0)
-                            user_recs[hill] = ElevHill.offline_ElevHill(hill_coords,hill_values,user_coords)
+                            missing_hill_df[hill] = ElevHill.offline_ElevHill(hill_coords,hill_values,user_coords)
+
+                        # drop missing hill rows from user_recs and append computed hill rows
+                        user_recs= user_recs.drop(missing_hill_list)
+                        user_recs = pd.concat([user_recs, missing_hill_df])
 
     
                 # determine if the user receptors overlap any emission sources
@@ -483,7 +500,7 @@ class FacilityPrep():
             # set computed polar distances to integers
             polar_dist = [int(item) for item in polar_dist]
 
-
+        
         # setup list of polar angles
         start = 0.
         stop = 360. - (360./op_radial)
@@ -563,15 +580,18 @@ class FacilityPrep():
         if self.model.facops[elev].iloc[0].upper() in ["Y", "O"]:
             
             # Assign elevations to emission sources if not provided by the user
-            if emislocs[elev].max() == 0 and emislocs[elev].min() == 0:
-
-                coords = [(lon, lat) for lon, lat in zip(emislocs[lon], emislocs[lat])]
+            missing_elev_list = emislocs[emislocs[elev].isna()].index.tolist()
+            
+            if len(missing_elev_list) > 0:
                 
+                missing_elev_df = emislocs.loc[missing_elev_list]
+                coords = [(lon, lat) for lon, lat in zip(missing_elev_df[lon], missing_elev_df[lat])]
+                            
                 if self.model.facops[elev].iloc[0].upper() == "Y":
                     # Elevations are to be acquired from USGS
-                    message = ("Getting USGS elevations for emission sources... \n")
+                    message = ("Using USGS method to get elevations for emission sources... \n")
                     Logger.logMessage(message)
-                    emislocs[elev] = ElevHill.getElev(coords)
+                    missing_elev_df[elev] = ElevHill.getElev(coords)
                 else:
                     # Elevations are computed using offline method
                     message = ("Using off-line method to get elevations for emission sources... \n")
@@ -582,14 +602,27 @@ class FacilityPrep():
                     elev_values = np.concatenate((self.innerblks[elev].to_numpy()
                                                   ,self.outerblks[elev].to_numpy())
                                                   ,axis=0)
-                    emislocs[elev] = ElevHill.offline_ElevHill(elev_coords,elev_values,coords)
+                    missing_elev_df[elev] = ElevHill.offline_ElevHill(elev_coords,elev_values,coords)
+                
+                # drop missing elev rows from emislocs and append computed elev rows
+                emislocs = emislocs.drop(missing_elev_list)
+                if len(emislocs) > 0:
+                    # user provided some elevations
+                    user_elev_avg = emislocs.loc[:,elev].mean()
+                    computed_elev_avg = missing_elev_df.loc[:,elev].mean()
+                    message = ("Mean of user supplied emission source elevations (m) is " + str(user_elev_avg) + " \n"
+                               "Mean of computed emission source elevations (m) is " + str(computed_elev_avg) + " \n")
+                    Logger.logMessage(message)
+                    
+                emislocs = pd.concat([emislocs, missing_elev_df])
+                
                               
             # Assign elevations to the polar receptors
             coords = [(lon, lat) for lon, lat in zip(polar_df[lon], polar_df[lat])]
 
             if self.model.facops[elev].iloc[0].upper() == "Y":
                 # Elevations are to be acquired from USGS
-                message = ("Getting USGS elevations for polar receptors... \n")
+                message = ("Using USGS method to get elevations for polar receptors... \n")
                 Logger.logMessage(message)
                 polar_df[elev] = ElevHill.getElev(coords)
             else:
@@ -608,7 +641,7 @@ class FacilityPrep():
 
             if self.model.facops[elev].iloc[0].upper() == "Y":
                 # Hill heights are to be acquired from USGS
-                message = ("Computing USGS hill heights for polar receptors... \n")
+                message = ("Using USGS mmethod to get hill heights for polar receptors... \n")
                 Logger.logMessage(message)
                 polarcoords_4hill = polar_df.loc[:, [lat, lon, elev]].to_numpy()
                 polar_df[hill] = ElevHill.getHill(polarcoords_4hill, op_maxdistkm, cenlon, 

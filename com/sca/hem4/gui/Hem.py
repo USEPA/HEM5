@@ -1118,7 +1118,7 @@ class Hem(Page):
                 self.nav.iconLabel.configure(image=self.nav.greenIcon)
 
                 Logger.logMessage("\nHEM is starting...")
-
+                
                 #set run name
                 if len(self.group_list.get()) > 0:
                     self.model.group_name = self.group_list.get()

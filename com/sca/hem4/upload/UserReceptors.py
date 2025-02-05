@@ -34,7 +34,6 @@ class UserReceptors(DependentInputFile):
     def clean(self, df):
         cleaned = df
         cleaned.replace(to_replace={fac_id:{"nan":""}}, inplace=True)
-        cleaned.fillna({elev:0, hill:0}, inplace=True)
         cleaned = cleaned.reset_index(drop = True)
 
         # upper case of selected fields
