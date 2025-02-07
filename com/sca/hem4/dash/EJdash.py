@@ -206,7 +206,7 @@ class EJdash():
             temp = temp[temp['Average'].notna() & temp['Total Pop'].notna()]
             
             # compdata = temp.loc[temp['Average'].isin(['Nationwide', 'State', 'County'])]
-            compdata = temp.loc[temp['Average'].str.contains("Nationwide|State|County", case=True)]
+            compdata = temp.loc[temp['Average'].str.contains("Nationwide|State|County", case=True)].copy()
             compdata['Distance'] = scen.Distance
             compdf = pd.concat([compdf, compdata])
         
@@ -447,11 +447,11 @@ class EJdash():
                 level = scenrow.iat[0,2]
                 
                 if level == 'Proximity Only':
-                    dff = maindf.loc[(maindf['Metric'] == risk) & (maindf['Distance'] == distance) & (maindf['RiskorProx'] == 'Proximity')]
+                    dff = maindf.loc[(maindf['Metric'] == risk) & (maindf['Distance'] == distance) & (maindf['RiskorProx'] == 'Proximity')].copy()
                     dff = dff.drop_duplicates(subset=['Distance','Facility'], keep='first')
                 else:
                     dff = maindf.loc[(maindf['Metric'] == risk) & (maindf['Distance'] == distance) & (maindf['Risk_Level'] == level) &
-                                     (maindf['RiskorProx'] != 'Proximity')]
+                                     (maindf['RiskorProx'] != 'Proximity')].copy()
                     dff = dff.drop_duplicates(subset=['Distance','Facility','Metric','Risk_Level'], keep='first')
                 
                 if sort == 'Pct':
@@ -459,7 +459,7 @@ class EJdash():
                 else:
                     sorter = group + ' Pop'
                 
-                dff = dff.loc[(dff[group] > 0) & (dff[group + ' Pop'] >= 1)].sort_values(by=[sorter], ascending = False)
+                dff = dff.loc[(dff[group] > 0) & (dff[group + ' Pop'] >= 1)].sort_values(by=[sorter], ascending = False).copy()
                 
                 dff = dff.round(decimals = 1)
            
@@ -487,6 +487,7 @@ class EJdash():
                     texttemplate = '%{text:.0f}%'
                     ytitle = '<b>' + group + ' Population</b>'
                     type = 'log'
+                    brange = None
                     
                 else:
                     yaxis = group
@@ -494,12 +495,14 @@ class EJdash():
                     texttemplate = '%{text:,.0f}'
                     ytitle = '<b>' + group + ' (%)</b>'
                     type = 'linear'
+                    brange = [0,100]
                 
                 hoverdata = {group: ':.1f',
                              group +' Pop': ':0f'}
                 # breakpoint()
-                fig = px.bar(dff, x='Facility', y=yaxis, height=800, width=1500, text = text,opacity=.7, hover_data=hoverdata)                    
-                fig.update_yaxes(type = type, title_text=ytitle, title_font=dict(size = 16, color = 'black'), automargin=True)
+                fig = px.bar(dff, x='Facility', y=yaxis, height=800, width=1500, text = text,opacity=.7, hover_data=hoverdata)
+                              
+                fig.update_yaxes(type = type, title_text=ytitle, title_font=dict(size = 16, color = 'black'), automargin=True, range=brange)
                 if numFacs > 0:
                     fig.update_xaxes(title_text='<b>Facility</b>', title_font=dict(size = 16, color = 'black'), automargin=True, tickangle=40,
                                      type = 'category', range = (-.5, min(numFacs,50)))
@@ -518,7 +521,7 @@ class EJdash():
                         ymax = max(stats)+1
                     else:
                         ymax = max(stats)
-                                
+                           
                     fig.add_shape(                                        
                                 type = 'rect',
                                 layer = 'below',
@@ -563,11 +566,11 @@ class EJdash():
                     tabletemp = pd.DataFrame(columns = ['Metric', 'Distance (km)', 'Risk Level', 'Total Facility Count', 'Average'] + demogroups)
                     if scen.RiskorProx == 'Proximity':
                         comptemp = maindf.loc[(maindf['Metric'] == scen.Metric) & (maindf['Distance'] == scen.Distance) &
-                                              (maindf['Risk_Level'] == scen.Risk_Level) & (maindf['RiskorProx'] == 'Proximity')]
+                                              (maindf['Risk_Level'] == scen.Risk_Level) & (maindf['RiskorProx'] == 'Proximity')].copy()
                         level = 'Proximity Only'
                     else:
                         comptemp = maindf.loc[(maindf['Metric'] == scen.Metric) & (maindf['Distance'] == scen.Distance) &
-                                              (maindf['Risk_Level'] == scen.Risk_Level) & (maindf['RiskorProx'] != 'Proximity')]
+                                              (maindf['Risk_Level'] == scen.Risk_Level) & (maindf['RiskorProx'] != 'Proximity')].copy()
                         level = scen.Risk_Level
                     facCount = len(comptemp[comptemp['Total Pop']>0])
                     
@@ -620,7 +623,7 @@ class EJdash():
                                 {"name": [grphead, 'Hispanic or Latino'], "id": 'Hispanic or Latino'},
                                 {"name": [grphead, 'Age 0-17'], "id": 'Age 0-17'},
                                 {"name": [grphead, 'Age 18-64'], "id": 'Age 18-64'},
-                                {"name": [grphead, 'Age >=65'], "id": 'Age >=65'},
+                                {"name": [grphead, 'Age ≥65'], "id": 'Age >=65'},
                                 {"name": [grphead, 'Below Poverty Level'], "id": 'Below Poverty Level'},
                                 {"name": [grphead, 'Below Twice Poverty Level'], "id": 'Below Twice Poverty Level'},
                                 {"name": [grphead, 'No High School Diploma',], "id": 'No High School Diploma',},
@@ -670,11 +673,12 @@ class EJdash():
                         style_header={
                                 'backgroundColor': 'LightGrey',
                                 'fontWeight': 'bold',
-                                'fontSize':16,
+                                'fontSize': 16,
                                 'border': '1px solid black',
-                                'textAlign': 'center'
-                                },
-            #                                style_as_list_view=True,        
+                                'textAlign': 'center',
+                                'minWidth': '100px', 'width': '100px', 'maxWidth': '100px',
+                            },
+                             
                         style_cell={
                                 'whiteSpace': 'normal',
                                 'height': 'auto',
@@ -682,13 +686,8 @@ class EJdash():
                                 'fontSize':15,
                                 'minWidth': '10px', 'width': '110px', 'maxWidth': '200px'},
                         style_cell_conditional=[
-                                {'if': {'column_id': 'Metric'},'width': '5%'},
-                                {'if': {'column_id': 'Distance (km)'},'width': '5%'},
-                                {'if': {'column_id': 'Total Facility Count'},'width': '5%'},
-                                {'if': {'column_id': 'Average'},'width': '5%'},
-                                {'if': {'column_id': 'Risk Level'},'width': '8%'},
                                 {'if': {'row_index': [3,4,5,9,10,11,15,16,17,21,22,23,27,28,29,33,34,35,39,40,41]},
-                                 'backgroundColor': '#F7D8F4'
+                                 'backgroundColor': 'LightGrey'
                                 },
             
                         ],
