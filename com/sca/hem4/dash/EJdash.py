@@ -462,7 +462,10 @@ class EJdash():
                 dff = dff.loc[(dff[group] > 0) & (dff[group + ' Pop'] >= 1)].sort_values(by=[sorter], ascending = False).copy()
                 
                 dff = dff.round(decimals = 1)
-           
+                
+                ### Get max value for the demog group
+                groupmax = dff[group].max()
+                           
                 ### Get the geographic averages for the given distance and demographic group
                 natwide = compdf.loc[(compdf['Average'].str.contains('Nationwide', case=True)) & (compdf['Distance'] == distance), group]
                 statwide = compdf.loc[(compdf['Average'].str.contains('State', case=True)) & (compdf['Distance'] == distance), group]
@@ -470,6 +473,12 @@ class EJdash():
                 natwide = round(natwide[0]*100,1)
                 statwide = round(statwide[1]*100,1)
                 countwide = round(countwide[2]*100,1)
+                stats = [natwide,statwide,countwide]
+                
+                ### Get overall max value
+                overall_max = max(stats + [groupmax])
+                ybar_max = min(overall_max + 10, 100)
+                
                 
                 ### Set chart title based on user choice of proximity or risk        
                 if level == 'Proximity Only':
@@ -495,11 +504,10 @@ class EJdash():
                     texttemplate = '%{text:,.0f}'
                     ytitle = '<b>' + group + ' (%)</b>'
                     type = 'linear'
-                    brange = [0,100]
+                    brange = [0,ybar_max]
                 
-                hoverdata = {group: ':.1f',
-                             group +' Pop': ':0f'}
-                # breakpoint()
+                hoverdata = {group: ':.1f%', group + ' Pop': ':,0f'}
+                
                 fig = px.bar(dff, x='Facility', y=yaxis, height=800, width=1500, text = text,opacity=.7, hover_data=hoverdata)
                               
                 fig.update_yaxes(type = type, title_text=ytitle, title_font=dict(size = 16, color = 'black'), automargin=True, range=brange)
