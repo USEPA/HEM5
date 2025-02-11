@@ -38,11 +38,11 @@ class EJdash():
 
     def buildApp(self):
 
-        # Make sure a directory was selected and it contains EJ results
+        # Make sure a directory was selected and it contains demographic results
         if self.dir:
-            ejdir = os.path.join(self.dir, 'ej')
+            ejdir = os.path.join(self.dir, 'pop')
             if not os.path.isdir(ejdir):
-                messagebox.showinfo("Missing ej sub-directory", "The directory chosen does not contain an ej sub-directory. Please ensure that the "+
+                messagebox.showinfo("Missing pop sub-directory", "The directory chosen does not contain a pop sub-directory. Please ensure that the "+
                                     "Demographic Assessment tool has been run on this directory.")
                 return None
         else:
@@ -144,7 +144,7 @@ class EJdash():
             file_list = fnmatch.filter(files, pattern)
          
         # Make sure there are unique rungroups in this folder
-        rungroups = [i.split('_EJ-Summary_',1)[0] for i in file_list]
+        rungroups = [i.split('_Pop-Summary_',1)[0] for i in file_list]
         rungroups_unique = set(rungroups)
         if len(rungroups_unique) > 1:
             emessage = ("The rungroup names on the files in this folder are " +
@@ -155,7 +155,7 @@ class EJdash():
             raise Exception(emessage)
                         
             
-        rungroup = file_list[0].split('_EJ-Summary_')[0]
+        rungroup = file_list[0].split('_Pop-Summary_')[0]
         demogroups = ['People of Color', 'Black','American Indian or Alaska Native', 'Asian',
                       'Other and Multiracial', 'Hispanic or Latino',
                       'Age 0-17', 'Age 18-64', 'Age >=65','Below Poverty Level', 
@@ -167,7 +167,7 @@ class EJdash():
         scen_ind = 0
                 
         for file in file_list:
-                tail = file.split('_EJ-Summary_')[1]
+                tail = file.split('_Pop-Summary_')[1]
                 extension = tail.split('_')[-1]
                 metric = tail.split('_')[2]
                 distance = tail.split('_')[0]
@@ -180,7 +180,7 @@ class EJdash():
                     scenarios.loc[scen_ind, 'Metric'] = metric
                     scenarios.loc[scen_ind, 'Distance'] = distance
                     scenarios.loc[scen_ind, 'Risk_Level'] = sheet
-                    fname = os.path.join(ejdir, rungroup + '_EJ-Summary_' + distance + '_km_' + metric + '_' + extension)
+                    fname = os.path.join(ejdir, rungroup + '_Pop-Summary_' + distance + '_km_' + metric + '_' + extension)
                     scenarios.loc[scen_ind, 'Filename'] = fname
                     scen_ind +=1
         
@@ -224,7 +224,7 @@ class EJdash():
         
         for file in file_list:
             fname = os.path.join(ejdir, file)
-            tail = file.split('_EJ-Summary_')[1]
+            tail = file.split('_Pop-Summary_')[1]
             xl = pd.ExcelFile(fname)
             sheets = xl.sheet_names
             for sheet in sheets:

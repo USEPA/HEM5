@@ -271,7 +271,7 @@ class Analyze(Page):
             self.exception = ex
             fullStackInfo=''.join(traceback.format_exception(
                 ex, value=ex, tb=ex.__traceback__))
-            message = "An error occurred while trying to run the HEMdash app:\n" + fullStackInfo
+            message = "An error occurred while trying to run the demographic dash app:\n" + fullStackInfo
             Logger.logMessage(message)
 
 

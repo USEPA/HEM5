@@ -4,7 +4,7 @@ import pandas as pd
 from concurrent.futures.thread import ThreadPoolExecutor
 from tkinter import messagebox
 
-from com.sca.hem4.ej.EnvironmentalJustice import EnvironmentalJustice
+from com.sca.hem4.ej.DemoAssessment import DemoAssessment
 from com.sca.hem4.ej.ReportWriter import ReportWriter
 from com.sca.hem4.ej.data.ACSCountyTract import ACSCountyTract
 from com.sca.hem4.ej.data.ACSDataset import ACSDataset
@@ -29,7 +29,7 @@ import traceback
 
 # The GUI portion of the EJ functionality in HEM. This class manages the various dialogs and options needed
 # to kick off a run of the EJ reporting tool. Its main entry into the code that actually performs the report
-# creation is the EnvironmentalJustice class from the ej package.
+# creation is the DemoAssessment class from the ej package.
 class EJ(Page):
     def __init__(self, nav, *args, **kwargs):
         Page.__init__(self, *args, **kwargs)
@@ -519,7 +519,7 @@ class EJ(Page):
             executor = ThreadPoolExecutor(max_workers=1)
             future = executor.submit(self.create_reports)
             
-    # Load all needed data sets and create an instance of EnvironmentalJustice so that we can
+    # Load all needed data sets and create an instance of DemoAssessment so that we can
     # create reports.
     def create_reports(self):
 
@@ -567,9 +567,9 @@ class EJ(Page):
         Logger.logMessage("MIR HI All Receptors dataset contains " + str(len(self.all_receptors_df)) + " records.")
 
         # Next, create an ej output directory if it doesn't already exist
-        output_dir = os.path.join(self.fullpath, "ej")
+        output_dir = os.path.join(self.fullpath, "pop")
         if not (os.path.exists(output_dir) or os.path.isdir(output_dir)):
-            Logger.logMessage("Creating ej directory for results...")
+            Logger.logMessage("Creating pop directory for results...")
             os.mkdir(output_dir)
 
         # Next, get the max risk and HI so that we can assign a distance to the block summary chronic datasets
@@ -608,7 +608,7 @@ class EJ(Page):
         # Finally, create reports for each requested combination of parameters
         config_num = 1
         for config in self.run_configs.values():
-            Logger.logMessage("Creating EJ reports for combination #" + str(config_num))
+            Logger.logMessage("Creating demographic reports for combination #" + str(config_num))
 
             # Determine if this config was for cancer or HI
             cancer_selected = config["cancer_selected"]
@@ -626,7 +626,7 @@ class EJ(Page):
                 # should be of this form: {'Deve':'Developmental', 'Neur':'Neurological', ...}
                 toshis = {} if cancer_selected else self.choose_toshis(filtered_mir_hi_df)
                 
-                ej = EnvironmentalJustice(mir_rec_df=filtered_mir_hi_df, acs_df=self.acs_df, levels_df=self.levels_df,
+                ej = DemoAssessment(mir_rec_df=filtered_mir_hi_df, acs_df=self.acs_df, levels_df=self.levels_df,
                                           outputdir=output_dir, source_cat_name=self.category_name.get_text_value(),
                                           source_cat_prefix=self.category_prefix.get_text_value(),
                                           radius=config["radius"], requested_toshis=toshis,
@@ -695,14 +695,14 @@ class EJ(Page):
 
                     fac_output_dir = os.path.join(output_dir, facilityId)
                     if not (os.path.exists(fac_output_dir) or os.path.isdir(fac_output_dir)):
-                        Logger.logMessage("Creating ej subdirectory for facility results...")
+                        Logger.logMessage("Creating pop subdirectory for facility results...")
                         os.mkdir(fac_output_dir)
                     
                     # If this is the last facility, then set the flag to write footnotes
                     if facilityId == facilities[-1]:
                         last_fac = True
 
-                    fac_ej = EnvironmentalJustice(facility=facilityId, mir_rec_df=filtered_bsc_df, acs_df=self.acs_df,
+                    fac_ej = DemoAssessment(facility=facilityId, mir_rec_df=filtered_bsc_df, acs_df=self.acs_df,
                                                   levels_df=self.levels_df, outputdir=fac_output_dir,
                                                   source_cat_name=self.category_name.get_text_value(),
                                                   source_cat_prefix=self.category_prefix.get_text_value(),
@@ -731,13 +731,13 @@ class EJ(Page):
 
         # Write out the list of any skipped facilities
         if len(skipped_list) > 0:
-            skipped_path = os.path.join(self.fullpath, 'Skipped EJ facilities.xlsx')
+            skipped_path = os.path.join(self.fullpath, 'Skipped demographic facilities.xlsx')
             skipped_df = pd.DataFrame(skipped_list, columns=['Facility ID'])
             skipped_df.to_excel(skipped_path, index=False)
         
         messagebox.showinfo("Demographic Assessment Reports Finished", "Please check the output folder for reports.")
 
-        ej_directory = os.path.join(self.fullpath, "ej")
+        ej_directory = os.path.join(self.fullpath, "pop")
         next_log_name = self.find_next_log_name(ej_directory)
         Logger.archiveLog(run_dir=ej_directory, filename_override=next_log_name)
         Logger.initializeLog()

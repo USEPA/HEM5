@@ -183,9 +183,9 @@ class ReportWriter():
     @staticmethod
     def construct_filename(hazard_prefix=None, facility=None, cancer_risk_threshold=None, hi_risk_threshold=None,
                            output_dir=None, source_cat_prefix=None, radius=None, cancer=True):
-        # Test_50_km_1_EJ_Neur_demo_tables_date.xlsx
+        # Test_50_km_1_pop_Neur_demo_tables_date.xlsx
 
-        hazard_type = 'EJ_Cancer' if cancer else 'EJ_' + hazard_prefix
+        hazard_type = 'pop_Cancer' if cancer else 'pop_' + hazard_prefix
         date_string = datetime.datetime.now().strftime("%m-%d-%Y-%H-%M")
         facility_name = '' if facility is None else facility + '_'
         risk = str(cancer_risk_threshold) if cancer else str(hi_risk_threshold)
@@ -199,26 +199,9 @@ class ReportWriter():
         date_string = datetime.datetime.now().strftime("%m-%d-%Y-%H-%M")
         facility_name = '' if facility is None else facility + '_'
 
-        return os.path.join(output_dir, source_cat_prefix + '_' + facility_name + 'EJ-Summary_' +
+        return os.path.join(output_dir, source_cat_prefix + '_' + facility_name + 'Pop-Summary_' +
                             str(int(radius)) + '_km_' + hazard_type + date_string + '.xlsx')
 
-    # def construct_filename(self, cancer=True):
-    #     # Test_50_km_1_EJ_Neur_demo_tables_date.xlsx
-    #
-    #     hazard_type = 'EJ_Cancer' if cancer else 'EJ_' + self.hazard_prefix
-    #     date_string = datetime.datetime.now().strftime("%m-%d-%Y-%H-%M")
-    #     facility_name = '' if self.facility is None else self.facility + '_'
-    #     risk = str(self.cancer_risk_threshold) if cancer else str(self.hi_risk_threshold)
-    #     return os.path.join(self.output_dir, self.source_cat_prefix + '_' + facility_name + str(int(self.radius)) +
-    #                         '_km_' + risk + '_' + hazard_type + '_demo_tables_' + date_string + '.xlsx')
-
-    # def construct_facility_summary_filename(self, cancer=True, hazard_prefix=None):
-    #     hazard_type = 'Cancer_' if cancer else hazard_prefix + '_'
-    #     date_string = datetime.datetime.now().strftime("%m-%d-%Y-%H-%M")
-    #     facility_name = '' if self.facility is None else self.facility + '_'
-    #
-    #     return os.path.join(self.output_dir, self.source_cat_prefix + '_' + facility_name + 'EJ-Summary_' +
-    #                         str(int(self.radius)) + '_km_' + hazard_type + date_string + '.xlsx')
 
     def create_cancer_summaries(self, national_values, state_values, county_values, values, max_risk):
         dg_summary = CancerDGSummary(radius=self.radius, source_category=self.source_cat, facility=self.facility)

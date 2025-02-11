@@ -641,7 +641,7 @@ class FacilityPrep():
 
             if self.model.facops[elev].iloc[0].upper() == "Y":
                 # Hill heights are to be acquired from USGS
-                message = ("Using USGS mmethod to get hill heights for polar receptors... \n")
+                message = ("Using USGS method to get hill heights for polar receptors... \n")
                 Logger.logMessage(message)
                 polarcoords_4hill = polar_df.loc[:, [lat, lon, elev]].to_numpy()
                 polar_df[hill] = ElevHill.getHill(polarcoords_4hill, op_maxdistkm, cenlon, 

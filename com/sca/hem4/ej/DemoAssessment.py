@@ -3,9 +3,9 @@ from com.sca.hem4.ej.data.DataModel import DataModel
 from com.sca.hem4.ej.ReportWriter import ReportWriter
 
 
-# The main encapsulation of an EJ run. This class contains all of the details needed to create reports such as:
+# The main encapsulation of a demographic run. This class contains all of the details needed to create reports such as:
 # ACS data, receptor data, naming, radius, risk thresholds, facility, and requested TOSHIs.
-class EnvironmentalJustice():
+class DemoAssessment():
 
     def __init__(self, mir_rec_df, acs_df, levels_df, outputdir, source_cat_name, source_cat_prefix, radius,
                  cancer_risk_threshold, hi_risk_threshold, requested_toshis, facility=None, write_notes=False):
