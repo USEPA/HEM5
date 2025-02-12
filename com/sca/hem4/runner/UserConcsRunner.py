@@ -97,7 +97,21 @@ class UserConcsRunner():
 
         
         self.polls = list(self.userconcs_df['pollutant'].unique())
-        pollframes = [self.userconcs_df]
+        
+        #----------------------------------------------------------------
+        # If the user concs and census have any duplicate lat/lons, then
+        # do not include user concs in the all_inner.
+        #----------------------------------------------------------------
+        
+        census_pandas_df = self.census_df.to_pandas()
+        duplicates = pd.merge(census_pandas_df, self.userconcs_df, on=['lat', 'lon'], how="inner")
+        if len(duplicates) == 0:
+            # no dups
+            pollframes = [self.userconcs_df]
+        else:
+            # there are dups
+            pollframes = []
+            
         for poll in self.polls:
             tempuser_df = self.userconcs_df.loc[self.userconcs_df['pollutant'] == poll]
             minlat = tempuser_df['lat'].min()

@@ -466,7 +466,7 @@ class DataModel():
                 bins[r][13] += population * pct_pov_universe * pct_2xpov * risk_value
                 bins[r][14] += population * pct_lingiso * risk_value
                 bins[r][15] += population * pct_minority * risk_value
-                bins[r][16] += population * pct_dis_universe * pct_dis * risk_value
+                bins[r][17] += population * pct_dis_universe * pct_dis * risk_value
             
     def tabulate_mir_data(self, row):
 

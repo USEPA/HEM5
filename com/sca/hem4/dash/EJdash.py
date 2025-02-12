@@ -17,7 +17,6 @@ from flask import request
 from com.sca.hem4.gui.EJ import EJ
 from com.sca.hem4.log.Logger import Logger
 
-
 class EJdash():
 
     def __init__(self, dirtouse):
@@ -38,11 +37,11 @@ class EJdash():
 
     def buildApp(self):
 
-        # Make sure a directory was selected and it contains EJ results
+        # Make sure a directory was selected and it contains demographic results
         if self.dir:
-            ejdir = os.path.join(self.dir, 'ej')
+            ejdir = os.path.join(self.dir, 'pop')
             if not os.path.isdir(ejdir):
-                messagebox.showinfo("Missing ej sub-directory", "The directory chosen does not contain an ej sub-directory. Please ensure that the "+
+                messagebox.showinfo("Missing pop sub-directory", "The directory chosen does not contain a pop sub-directory. Please ensure that the "+
                                     "Demographic Assessment tool has been run on this directory.")
                 return None
         else:
@@ -99,9 +98,9 @@ class EJdash():
                excel = pd.ExcelFile(dfile_path)
                sheetname = fnmatch.filter(excel.sheet_names, 'Table*3*C')
                dfile_df = pd.read_excel(dfile_path, sheet_name=sheetname[0], 
-                                        skiprows=5, nrows = 12, header=None,
-                                        names=['range','emptycol','totpop','age25pop','noHS'])
-               
+                                        skiprows=2, nrows = 12, header=None,
+                                        names=['range','totpop','age25pop','noHS'])
+                              
                # Define index based on the metric and risk ranges. Key is risk level and value is index number
                r_index = {}
                if metric == "cancer":
@@ -130,11 +129,11 @@ class EJdash():
                    r_index[10]=10
                
                # Count of age 25 and up based on the risk/HI level
-               riskage25 = dfile_df.iloc[r_index[level]:-1,3].sum()
+               riskage25 = dfile_df.iloc[r_index[level]:-1,2].sum()
                age25pop[facilityID+'_'+metric+'_'+distance+'_'+str(level)+'_risk'] = riskage25
                    
                # Count of age 25 and up based on proximity
-               proxage25 = dfile_df.iloc[11,3]
+               proxage25 = dfile_df.iloc[11,2]
                age25pop[facilityID+'_'+metric+'_'+distance+'_'+str(level)+'_prox'] = proxage25
         
         ##### Get EJ summary files
@@ -144,7 +143,7 @@ class EJdash():
             file_list = fnmatch.filter(files, pattern)
          
         # Make sure there are unique rungroups in this folder
-        rungroups = [i.split('_EJ-Summary_',1)[0] for i in file_list]
+        rungroups = [i.split('_Pop-Summary_',1)[0] for i in file_list]
         rungroups_unique = set(rungroups)
         if len(rungroups_unique) > 1:
             emessage = ("The rungroup names on the files in this folder are " +
@@ -155,19 +154,19 @@ class EJdash():
             raise Exception(emessage)
                         
             
-        rungroup = file_list[0].split('_EJ-Summary_')[0]
+        rungroup = file_list[0].split('_Pop-Summary_')[0]
         demogroups = ['People of Color', 'Black','American Indian or Alaska Native', 'Asian',
                       'Other and Multiracial', 'Hispanic or Latino',
                       'Age 0-17', 'Age 18-64', 'Age >=65','Below Poverty Level', 
-                      'Below Twice Poverty Level', 'No High School Diploma',
-                      'Limited English Speaking Households', 'People with Disabilities']
+                      'Below Twice Poverty Level', 'Age >=25 with No High School Diploma',
+                      'Limited English Speaking Households', 'People with One or More Disabilities']
         
         ### Go through the files (and sheets within files) to get all the scenarios run in the Demographic Assessment module
         scenarios = pd.DataFrame(columns = ['Metric', 'Distance', 'Risk_Level', 'Filename'])
         scen_ind = 0
                 
         for file in file_list:
-                tail = file.split('_EJ-Summary_')[1]
+                tail = file.split('_Pop-Summary_')[1]
                 extension = tail.split('_')[-1]
                 metric = tail.split('_')[2]
                 distance = tail.split('_')[0]
@@ -180,7 +179,7 @@ class EJdash():
                     scenarios.loc[scen_ind, 'Metric'] = metric
                     scenarios.loc[scen_ind, 'Distance'] = distance
                     scenarios.loc[scen_ind, 'Risk_Level'] = sheet
-                    fname = os.path.join(ejdir, rungroup + '_EJ-Summary_' + distance + '_km_' + metric + '_' + extension)
+                    fname = os.path.join(ejdir, rungroup + '_Pop-Summary_' + distance + '_km_' + metric + '_' + extension)
                     scenarios.loc[scen_ind, 'Filename'] = fname
                     scen_ind +=1
         
@@ -194,8 +193,8 @@ class EJdash():
         compnames = ['Average', 'Total Pop', 'People of Color', 'Black','American Indian or Alaska Native',
                      'Asian', 'Other and Multiracial', 'Hispanic or Latino','Age 0-17', 'Age 18-64', 'Age >=65',
                      'Below Poverty Level', 'Below Twice Poverty Level',
-                     'No High School Diploma','Limited English Speaking Households',
-                     'People with Disabilities']
+                     'Age >=25 with No High School Diploma','Limited English Speaking Households',
+                     'People with One or More Disabilities']
         compdf = pd.DataFrame()
         
         for scen in scenarios.itertuples():
@@ -206,7 +205,7 @@ class EJdash():
             temp = temp[temp['Average'].notna() & temp['Total Pop'].notna()]
             
             # compdata = temp.loc[temp['Average'].isin(['Nationwide', 'State', 'County'])]
-            compdata = temp.loc[temp['Average'].str.contains("Nationwide|State|County", case=True)]
+            compdata = temp.loc[temp['Average'].str.contains("Nationwide|State|County", case=True)].copy()
             compdata['Distance'] = scen.Distance
             compdf = pd.concat([compdf, compdata])
         
@@ -217,21 +216,22 @@ class EJdash():
                      'American Indian or Alaska Native', 'Asian',
                      'Other and Multiracial', 'Hispanic or Latino','Age 0-17', 'Age 18-64', 'Age >=65',
                      'Below Poverty Level', 'Below Twice Poverty Level',
-                     'No High School Diploma','Limited English Speaking Households',
-                     'People with Disabilities']        
+                     'Age >=25 with No High School Diploma','Limited English Speaking Households',
+                     'People with One or More Disabilities']        
         maindf = pd.DataFrame()
         noprox = scenarios[~scenarios['Risk_Level'].isin(['Proximity Only'])]
         
         for file in file_list:
             fname = os.path.join(ejdir, file)
-            tail = file.split('_EJ-Summary_')[1]
+            tail = file.split('_Pop-Summary_')[1]
             xl = pd.ExcelFile(fname)
             sheets = xl.sheet_names
             for sheet in sheets:
         
                 # Read Excel sheet as dtype string and then convert columns 2 onward to float.
                 # This ensures the facility ID is a string.
-                temp = xl.parse(skiprows = [0,1,3,4,5,6,7,8], names = mainnames, sheet_name=sheet, dtype=str)
+                temp = xl.parse(skiprows = [0,1,3,4,5,6], names = mainnames, sheet_name=sheet, dtype=str)
+                # temp = xl.parse(skiprows = [0,1,3,4,5,6,7,8], names = mainnames, sheet_name=sheet, dtype=str)
                 temp[temp.columns[2:]] = temp[temp.columns[2:]].astype(float)
                 temp.insert(0, 'Metric', tail.split('_')[2])
                 temp.insert(1, 'Distance', tail.split('_')[0])
@@ -245,7 +245,7 @@ class EJdash():
                 ## Note: over 25 without a HS diploma uses count of people over age 25, not total pop
                 for col in demogroups:
                     newcol = col + ' Pop'
-                    if col != 'No High School Diploma':
+                    if col != 'Age >=25 with No High School Diploma':
                         temp[newcol] = (temp[col] * temp['Total Pop'])
                     else:
                         temp[newcol] = 0
@@ -268,15 +268,15 @@ class EJdash():
                     else:
                         age25pop_key = temp.iloc[i,3] + '_' + temp.iloc[i,0].lower() + '_' + temp.iloc[i,1] + '_' + rlevel + '_risk'                        
                     count_age25up = age25pop[age25pop_key]
-                    temp.loc[i, 'No High School Diploma Pop'] = \
-                                temp.loc[i, 'No High School Diploma'] * count_age25up
+                    temp.loc[i, 'Age >=25 with No High School Diploma Pop'] = \
+                                temp.loc[i, 'Age >=25 with No High School Diploma'] * count_age25up
                 
                 # Convert the decimal fractions to percents for the demo groups        
                 for col in demogroups:
                     temp[col] = 100 * temp[col]
                                     
                 maindf = pd.concat([maindf, temp], ignore_index = True)
-                
+        # breakpoint()        
                 
         ##### The app layout 
         app.layout = html.Div([
@@ -319,7 +319,7 @@ class EJdash():
                                                           value = 'People of Color',
                                                           placeholder= 'Select a Demographic Group',
                                                           ),
-                                            ], className = 'two columns'),
+                                            ], className = 'three columns'),
                                     
                                     html.Div([html.H6("Bar Heights: % or Pop"),
                                               dcc.Dropdown(id='barhtdrop',
@@ -447,11 +447,11 @@ class EJdash():
                 level = scenrow.iat[0,2]
                 
                 if level == 'Proximity Only':
-                    dff = maindf.loc[(maindf['Metric'] == risk) & (maindf['Distance'] == distance) & (maindf['RiskorProx'] == 'Proximity')]
+                    dff = maindf.loc[(maindf['Metric'] == risk) & (maindf['Distance'] == distance) & (maindf['RiskorProx'] == 'Proximity')].copy()
                     dff = dff.drop_duplicates(subset=['Distance','Facility'], keep='first')
                 else:
                     dff = maindf.loc[(maindf['Metric'] == risk) & (maindf['Distance'] == distance) & (maindf['Risk_Level'] == level) &
-                                     (maindf['RiskorProx'] != 'Proximity')]
+                                     (maindf['RiskorProx'] != 'Proximity')].copy()
                     dff = dff.drop_duplicates(subset=['Distance','Facility','Metric','Risk_Level'], keep='first')
                 
                 if sort == 'Pct':
@@ -459,10 +459,13 @@ class EJdash():
                 else:
                     sorter = group + ' Pop'
                 
-                dff = dff.loc[(dff[group] > 0) & (dff[group + ' Pop'] >= 1)].sort_values(by=[sorter], ascending = False)
+                dff = dff.loc[(dff[group] > 0) & (dff[group + ' Pop'] >= 1)].sort_values(by=[sorter], ascending = False).copy()
                 
                 dff = dff.round(decimals = 1)
-           
+                
+                ### Get max value for the demog group
+                groupmax = dff[group].max()
+                           
                 ### Get the geographic averages for the given distance and demographic group
                 natwide = compdf.loc[(compdf['Average'].str.contains('Nationwide', case=True)) & (compdf['Distance'] == distance), group]
                 statwide = compdf.loc[(compdf['Average'].str.contains('State', case=True)) & (compdf['Distance'] == distance), group]
@@ -470,6 +473,12 @@ class EJdash():
                 natwide = round(natwide[0]*100,1)
                 statwide = round(statwide[1]*100,1)
                 countwide = round(countwide[2]*100,1)
+                stats = [natwide,statwide,countwide]
+                
+                ### Get overall max value
+                overall_max = max(stats + [groupmax])
+                ybar_max = min(overall_max + 10, 100)
+                
                 
                 ### Set chart title based on user choice of proximity or risk        
                 if level == 'Proximity Only':
@@ -487,6 +496,7 @@ class EJdash():
                     texttemplate = '%{text:.0f}%'
                     ytitle = '<b>' + group + ' Population</b>'
                     type = 'log'
+                    brange = None
                     
                 else:
                     yaxis = group
@@ -494,12 +504,13 @@ class EJdash():
                     texttemplate = '%{text:,.0f}'
                     ytitle = '<b>' + group + ' (%)</b>'
                     type = 'linear'
+                    brange = [0,ybar_max]
                 
-                hoverdata = {group: ':.1f',
-                             group +' Pop': ':0f'}
-                # breakpoint()
-                fig = px.bar(dff, x='Facility', y=yaxis, height=800, width=1500, text = text,opacity=.7, hover_data=hoverdata)                    
-                fig.update_yaxes(type = type, title_text=ytitle, title_font=dict(size = 16, color = 'black'), automargin=True)
+                hoverdata = {group: ':.1f%', group + ' Pop': ':,0f'}
+                
+                fig = px.bar(dff, x='Facility', y=yaxis, height=800, width=1500, text = text,opacity=.7, hover_data=hoverdata)
+                              
+                fig.update_yaxes(type = type, title_text=ytitle, title_font=dict(size = 16, color = 'black'), automargin=True, range=brange)
                 if numFacs > 0:
                     fig.update_xaxes(title_text='<b>Facility</b>', title_font=dict(size = 16, color = 'black'), automargin=True, tickangle=40,
                                      type = 'category', range = (-.5, min(numFacs,50)))
@@ -518,7 +529,7 @@ class EJdash():
                         ymax = max(stats)+1
                     else:
                         ymax = max(stats)
-                                
+                           
                     fig.add_shape(                                        
                                 type = 'rect',
                                 layer = 'below',
@@ -563,11 +574,11 @@ class EJdash():
                     tabletemp = pd.DataFrame(columns = ['Metric', 'Distance (km)', 'Risk Level', 'Total Facility Count', 'Average'] + demogroups)
                     if scen.RiskorProx == 'Proximity':
                         comptemp = maindf.loc[(maindf['Metric'] == scen.Metric) & (maindf['Distance'] == scen.Distance) &
-                                              (maindf['Risk_Level'] == scen.Risk_Level) & (maindf['RiskorProx'] == 'Proximity')]
+                                              (maindf['Risk_Level'] == scen.Risk_Level) & (maindf['RiskorProx'] == 'Proximity')].copy()
                         level = 'Proximity Only'
                     else:
                         comptemp = maindf.loc[(maindf['Metric'] == scen.Metric) & (maindf['Distance'] == scen.Distance) &
-                                              (maindf['Risk_Level'] == scen.Risk_Level) & (maindf['RiskorProx'] != 'Proximity')]
+                                              (maindf['Risk_Level'] == scen.Risk_Level) & (maindf['RiskorProx'] != 'Proximity')].copy()
                         level = scen.Risk_Level
                     facCount = len(comptemp[comptemp['Total Pop']>0])
                     
@@ -620,12 +631,12 @@ class EJdash():
                                 {"name": [grphead, 'Hispanic or Latino'], "id": 'Hispanic or Latino'},
                                 {"name": [grphead, 'Age 0-17'], "id": 'Age 0-17'},
                                 {"name": [grphead, 'Age 18-64'], "id": 'Age 18-64'},
-                                {"name": [grphead, 'Age >=65'], "id": 'Age >=65'},
+                                {"name": [grphead, 'Age ≥65'], "id": 'Age >=65'},
                                 {"name": [grphead, 'Below Poverty Level'], "id": 'Below Poverty Level'},
                                 {"name": [grphead, 'Below Twice Poverty Level'], "id": 'Below Twice Poverty Level'},
-                                {"name": [grphead, 'No High School Diploma',], "id": 'No High School Diploma',},
+                                {"name": [grphead, 'Age ≥25 with No High School Diploma',], "id": 'Age >=25 with No High School Diploma',},
                                 {"name": [grphead, 'Limited English Speaking Households'], "id": 'Limited English Speaking Households'},
-                                {"name": [grphead, 'People with Disabilities'], "id": 'People with Disabilities'}
+                                {"name": [grphead, 'People with One or More Disabilities'], "id": 'People with One or More Disabilities'}
                                 
                         ],
                         
@@ -670,11 +681,12 @@ class EJdash():
                         style_header={
                                 'backgroundColor': 'LightGrey',
                                 'fontWeight': 'bold',
-                                'fontSize':16,
+                                'fontSize': 16,
                                 'border': '1px solid black',
-                                'textAlign': 'center'
-                                },
-            #                                style_as_list_view=True,        
+                                'textAlign': 'center',
+                                'minWidth': '100px', 'width': '100px', 'maxWidth': '100px',
+                            },
+                             
                         style_cell={
                                 'whiteSpace': 'normal',
                                 'height': 'auto',
@@ -682,13 +694,8 @@ class EJdash():
                                 'fontSize':15,
                                 'minWidth': '10px', 'width': '110px', 'maxWidth': '200px'},
                         style_cell_conditional=[
-                                {'if': {'column_id': 'Metric'},'width': '5%'},
-                                {'if': {'column_id': 'Distance (km)'},'width': '5%'},
-                                {'if': {'column_id': 'Total Facility Count'},'width': '5%'},
-                                {'if': {'column_id': 'Average'},'width': '5%'},
-                                {'if': {'column_id': 'Risk Level'},'width': '8%'},
                                 {'if': {'row_index': [3,4,5,9,10,11,15,16,17,21,22,23,27,28,29,33,34,35,39,40,41]},
-                                 'backgroundColor': '#F7D8F4'
+                                 'backgroundColor': 'LightGrey'
                                 },
             
                         ],

@@ -1,18 +1,19 @@
 #### **The Demographic Assessment module gives demographic estimates for scenarios that are based on distance and risk level. The table gives the number (or percent) of facilities that exceed the geographic averages for each of the following demographic groups:**
 * People of Color
-* African American (or Black)
-* Native Americans
+* Black
+* American Indian and Alaskan Native
 * Other races and multiracial
 * Hispanic or Latino
 * Children 17 years of age and under
 * Adults 18 to 64 years of age
 * Adults 65 years of age and over
-* No high school diploma
-* Below poverty level
-* Below twice poverty level
-* Linguistically isolated people
+* People living below the poverty level
+* People living below twice the poverty level
+* Adults 25 years of age and older without a high school diploma
+* People living in limited English speaking households
+* People living with one or more disabilities
 
-> ###### *Statistics on total population, race, ethnicity, age, education level, low household income, poverty status and linguistic isolation are obtained from the Census [American Community Survey (ACS)](https://www.census.gov/programs-surveys/acs) 5-year averages for 2016-2020.*
+> ###### *Statistics on total population, race, ethnicity, age, education level, low household income, poverty status and linguistic isolation are obtained from the Census [American Community Survey (ACS)](https://www.census.gov/programs-surveys/acs) 5-year averages for 2018-2022.*
 
 ---
 

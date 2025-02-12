@@ -52,7 +52,7 @@ class EmissionsLocations(InputFile):
 
         cleaned = df.fillna({utmzone:'0N', source_type:'', lengthx:1, lengthy:1, angle:0,
                                     horzdim:0, vertdim:0, areavolrelhgt:0, stkht:0, stkdia:0,
-                                    stkvel:0, stktemp:0, elev:0, x2:0, y2:0, method:1, massfrac:1, partdiam:1})
+                                    stkvel:0, stktemp:0, x2:0, y2:0, method:1, massfrac:1, partdiam:1})
         cleaned.replace(to_replace={fac_id:{"nan":""}, source_id:{"nan":""}}, inplace=True)
         cleaned = cleaned.reset_index(drop = True)
 
