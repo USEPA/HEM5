@@ -130,7 +130,7 @@ class EJdash():
                    r_index[10]=10
                
                # Count of age 25 and up based on the risk/HI level
-               riskage25 = dfile_df.iloc[r_index[level]:-1,3].sum()
+               riskage25 = dfile_df.iloc[r_index[level]:-1,2].sum()
                age25pop[facilityID+'_'+metric+'_'+distance+'_'+str(level)+'_risk'] = riskage25
                    
                # Count of age 25 and up based on proximity
