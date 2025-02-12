@@ -99,9 +99,9 @@ class EJdash():
                excel = pd.ExcelFile(dfile_path)
                sheetname = fnmatch.filter(excel.sheet_names, 'Table*3*C')
                dfile_df = pd.read_excel(dfile_path, sheet_name=sheetname[0], 
-                                        skiprows=5, nrows = 12, header=None,
-                                        names=['range','emptycol','totpop','age25pop','noHS'])
-               
+                                        skiprows=2, nrows = 12, header=None,
+                                        names=['range','totpop','age25pop','noHS'])
+                              
                # Define index based on the metric and risk ranges. Key is risk level and value is index number
                r_index = {}
                if metric == "cancer":
@@ -134,7 +134,7 @@ class EJdash():
                age25pop[facilityID+'_'+metric+'_'+distance+'_'+str(level)+'_risk'] = riskage25
                    
                # Count of age 25 and up based on proximity
-               proxage25 = dfile_df.iloc[11,3]
+               proxage25 = dfile_df.iloc[11,2]
                age25pop[facilityID+'_'+metric+'_'+distance+'_'+str(level)+'_prox'] = proxage25
         
         ##### Get EJ summary files

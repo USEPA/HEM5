@@ -510,7 +510,7 @@ class EJ(Page):
             self.disable()
 
             existing = len(self.run_configs)
-            Logger.logMessage("Running HEM Environmental Justice reporting tool...")
+            Logger.logMessage("Running HEM Demographic Assessment reporting tool...")
             Logger.logMessage("Ready to run " + str(existing) + " run combinations.")
 
             self.nav.peopleLabel.configure(image=self.nav.greenIcon)
