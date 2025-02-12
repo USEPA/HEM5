@@ -230,7 +230,8 @@ class EJdash():
         
                 # Read Excel sheet as dtype string and then convert columns 2 onward to float.
                 # This ensures the facility ID is a string.
-                temp = xl.parse(skiprows = [0,1,3,4,5,6,7,8], names = mainnames, sheet_name=sheet, dtype=str)
+                temp = xl.parse(skiprows = [0,1,3,4,5,6], names = mainnames, sheet_name=sheet, dtype=str)
+                # temp = xl.parse(skiprows = [0,1,3,4,5,6,7,8], names = mainnames, sheet_name=sheet, dtype=str)
                 temp[temp.columns[2:]] = temp[temp.columns[2:]].astype(float)
                 temp.insert(0, 'Metric', tail.split('_')[2])
                 temp.insert(1, 'Distance', tail.split('_')[0])
@@ -275,7 +276,7 @@ class EJdash():
                     temp[col] = 100 * temp[col]
                                     
                 maindf = pd.concat([maindf, temp], ignore_index = True)
-                
+        # breakpoint()        
                 
         ##### The app layout 
         app.layout = html.Div([
