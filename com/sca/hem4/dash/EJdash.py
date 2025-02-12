@@ -158,9 +158,9 @@ class EJdash():
         rungroup = file_list[0].split('_Pop-Summary_')[0]
         demogroups = ['People of Color', 'Black','American Indian or Alaska Native', 'Asian',
                       'Other and Multiracial', 'Hispanic or Latino',
-                      'Age 0-17', 'Age 18-64', 'Age >=65','Below Poverty Level', 
-                      'Below Twice Poverty Level', 'No High School Diploma',
-                      'Limited English Speaking Households', 'People with Disabilities']
+                      'Age 0-17', 'Age 18-64', 'Age ≥65','Below Poverty Level', 
+                      'Below Twice Poverty Level', 'Age ≥25 with No High School Diploma',
+                      'Limited English Speaking Households', 'People with One or More Disabilities']
         
         ### Go through the files (and sheets within files) to get all the scenarios run in the Demographic Assessment module
         scenarios = pd.DataFrame(columns = ['Metric', 'Distance', 'Risk_Level', 'Filename'])
@@ -192,10 +192,10 @@ class EJdash():
                 
         ### Create a dataframe of the national, state, and county averages
         compnames = ['Average', 'Total Pop', 'People of Color', 'Black','American Indian or Alaska Native',
-                     'Asian', 'Other and Multiracial', 'Hispanic or Latino','Age 0-17', 'Age 18-64', 'Age >=65',
+                     'Asian', 'Other and Multiracial', 'Hispanic or Latino','Age 0-17', 'Age 18-64', 'Age ≥65',
                      'Below Poverty Level', 'Below Twice Poverty Level',
-                     'No High School Diploma','Limited English Speaking Households',
-                     'People with Disabilities']
+                     'Age ≥25 with No High School Diploma','Limited English Speaking Households',
+                     'People with One or More Disabilities']
         compdf = pd.DataFrame()
         
         for scen in scenarios.itertuples():
@@ -215,10 +215,10 @@ class EJdash():
         ### Create a dataframe of the facility data  
         mainnames = ['Facility', 'RiskorProx', 'Total Pop', 'People of Color', 'Black',
                      'American Indian or Alaska Native', 'Asian',
-                     'Other and Multiracial', 'Hispanic or Latino','Age 0-17', 'Age 18-64', 'Age >=65',
+                     'Other and Multiracial', 'Hispanic or Latino','Age 0-17', 'Age 18-64', 'Age ≥65',
                      'Below Poverty Level', 'Below Twice Poverty Level',
-                     'No High School Diploma','Limited English Speaking Households',
-                     'People with Disabilities']        
+                     'Age ≥25 with No High School Diploma','Limited English Speaking Households',
+                     'People with One or More Disabilities']        
         maindf = pd.DataFrame()
         noprox = scenarios[~scenarios['Risk_Level'].isin(['Proximity Only'])]
         
@@ -245,7 +245,7 @@ class EJdash():
                 ## Note: over 25 without a HS diploma uses count of people over age 25, not total pop
                 for col in demogroups:
                     newcol = col + ' Pop'
-                    if col != 'No High School Diploma':
+                    if col != 'Age ≥25 with No High School Diploma':
                         temp[newcol] = (temp[col] * temp['Total Pop'])
                     else:
                         temp[newcol] = 0
@@ -268,8 +268,8 @@ class EJdash():
                     else:
                         age25pop_key = temp.iloc[i,3] + '_' + temp.iloc[i,0].lower() + '_' + temp.iloc[i,1] + '_' + rlevel + '_risk'                        
                     count_age25up = age25pop[age25pop_key]
-                    temp.loc[i, 'No High School Diploma Pop'] = \
-                                temp.loc[i, 'No High School Diploma'] * count_age25up
+                    temp.loc[i, 'Age ≥25 with No High School Diploma Pop'] = \
+                                temp.loc[i, 'Age ≥25 with No High School Diploma'] * count_age25up
                 
                 # Convert the decimal fractions to percents for the demo groups        
                 for col in demogroups:
@@ -319,7 +319,7 @@ class EJdash():
                                                           value = 'People of Color',
                                                           placeholder= 'Select a Demographic Group',
                                                           ),
-                                            ], className = 'two columns'),
+                                            ], className = 'three columns'),
                                     
                                     html.Div([html.H6("Bar Heights: % or Pop"),
                                               dcc.Dropdown(id='barhtdrop',
@@ -631,12 +631,12 @@ class EJdash():
                                 {"name": [grphead, 'Hispanic or Latino'], "id": 'Hispanic or Latino'},
                                 {"name": [grphead, 'Age 0-17'], "id": 'Age 0-17'},
                                 {"name": [grphead, 'Age 18-64'], "id": 'Age 18-64'},
-                                {"name": [grphead, 'Age ≥65'], "id": 'Age >=65'},
+                                {"name": [grphead, 'Age ≥65'], "id": 'Age ≥65'},
                                 {"name": [grphead, 'Below Poverty Level'], "id": 'Below Poverty Level'},
                                 {"name": [grphead, 'Below Twice Poverty Level'], "id": 'Below Twice Poverty Level'},
-                                {"name": [grphead, 'No High School Diploma',], "id": 'No High School Diploma',},
+                                {"name": [grphead, 'Age ≥25 with No High School Diploma',], "id": 'Age ≥25 with No High School Diploma',},
                                 {"name": [grphead, 'Limited English Speaking Households'], "id": 'Limited English Speaking Households'},
-                                {"name": [grphead, 'People with Disabilities'], "id": 'People with Disabilities'}
+                                {"name": [grphead, 'People with One or More Disabilities'], "id": 'People with One or More Disabilities'}
                                 
                         ],
                         
