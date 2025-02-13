@@ -147,7 +147,7 @@ class CensusUpdater():
         # Put quotation marks around FIPs and Block ID columns for csv compatability
         census_df.update('"' + census_df[['fips','blockid']] + '"')
         headerlist = ['"fips"','"blockid"','"population"','"lat"','"lon"','"elev"',
-                      '"hill"','"urban_pop"']
+                      '"hill"']
         census_df.to_csv(updatedFilepath, header=headerlist, mode="w", index=False, 
                          chunksize=1000, quoting=csv.QUOTE_NONE, quotechar='"')
         Logger.logMessage("\nFinished writing the updated census file. The revised census file " +
@@ -175,28 +175,4 @@ class CensusUpdater():
             return None
  
         
-    # def readChangesFromPath(self):
-    #     # Load the change file into a dataframe
-    #     InputFile.__init__(self, self.changeFile)
-
-    #     self.numericColumns = ["lat", "lon", "population", "elev", "hill", "urban_pop"]
-    #     self.strColumns = ["change", "facid", "category", "blockid"]
-
-    #     with open(self.changeFile, "rb") as f:
-    #         df = pd.read_excel(f, skiprows=0, names=colnames, dtype=dtypes, 
-    #                            na_values=[''], keep_default_na=False)
-    #         df[['population', 'elev', 'hill', 'urban_pop']] = \
-    #                   df[['population', 'elev', 'hill', 'urban_pop']].fillna(value=0)
-    #         return df
-
-
-    # def readCensusFromPath(self, filepath):
-    #     datatypes = {'fips':pl.Utf8, 'blockid':pl.Utf8, 'population':pl.Utf8, 
-    #                       'lat':pl.Utf8, 'lon':pl.Utf8, 'elev':pl.Utf8, 
-    #                       'hill':pl.Utf8, 'urban_pop':pl.Utf8}
-    #     with open(filepath, "rb") as f:
-    #         plf = pl.scan_csv(f.name, has_header=True, dtypes=datatypes, null_values=[''])
-    #         df = plf.collect().to_pandas()
-    #         return df
-
 
