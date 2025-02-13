@@ -15,12 +15,12 @@ class CensusDF(InputFile):
 
         # Column names
         colnames = ['fips', 'blockid', 'population', 'lat', 'lon', 'elev',
-                    'hill', 'urban_pop']
+                    'hill']
         
         # Specify dtypes for all fields
         self.datatypes = {'fips':pl.Utf8, 'blockid':pl.Utf8, 'population':pl.Int64, 
                           'lat':pl.Float64, 'lon':pl.Float64, 'elev':pl.Float64, 
-                          'hill':pl.Float64, 'urban_pop':pl.Int64}
+                          'hill':pl.Float64}
 
         # Create pandas dataframe
         df = self.readFromPathCsvPolarsDF(colnames)

@@ -15,17 +15,16 @@ class CensusChanges(InputFile):
     def createDataframe(self):
         
         # Specify dtypes for all fields
-        self.numericColumns = ["lat", "lon", "population", "elev", "hill", "urban_pop"]
+        self.numericColumns = ["lat", "lon", "population", "elev", "hill"]
         self.strColumns = ["change", "facid", "category", "blockid"]
 
         changes_df = self.readFromPath(('change', 'facid', 'category', 'blockid',
-                                        'lat', 'lon', 'population', 'elev', 'hill', 'urban_pop'))
+                                        'lat', 'lon', 'population', 'elev', 'hill'))
         
         if changes_df.empty == False:
-            changes_df[['population', 'urban_pop', 'elev', 'hill']] = changes_df[['population', 'urban_pop',
+            changes_df[['population', 'elev', 'hill']] = changes_df[['population',
                                                                   'elev', 'hill']].fillna(0)
             changes_df['population'] = changes_df['population'].astype(int)
-            changes_df['urban_pop'] = changes_df['urban_pop'].astype(int)
         
         self.dataframe = changes_df
         
