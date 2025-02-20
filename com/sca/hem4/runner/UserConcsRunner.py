@@ -169,7 +169,7 @@ class UserConcsRunner():
         if not self.altrec:
             # Census
             self.all_inner_df['block'] = self.all_inner_df['blockid']
-            self.all_inner_df.drop(['blockid','hill','urban_pop'], axis=1, inplace=True)
+            self.all_inner_df.drop(['blockid','hill'], axis=1, inplace=True)
         else:
             # Alternate receptors
             self.all_inner_df.drop(['hill','utmzone','location_type'], axis=1, inplace=True)
