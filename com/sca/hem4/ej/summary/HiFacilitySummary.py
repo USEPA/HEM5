@@ -26,8 +26,8 @@ class HiFacilitySummary(FacilitySummary):
                       'note2_a':"may be determined by multiplying the total population provided in each row by the respective demographic percentages in the same row."
                       ,
                       'b':'The "Proximity" analysis is for the entire population irrespective of '
-                          'risk (i.e., for all risk levels combined). The "At Risk" analysis is for only '
-                          'the population within Census blocks having HEM5-modeled risk at and above the indicated risk level.' 
+                          'risk (i.e., for all risk levels combined). The "Above HI" analysis is for only '
+                          'the population within Census blocks having HEM5-modeled HI at and above the indicated HI level.' 
                       ,
                       'c':'The total population values for the run group and each individual facility are based on block level data from the 2020 Decennial Census, with block populations summed over the area defined by the indicated radius around each facility.'
                       ,
@@ -39,7 +39,7 @@ class HiFacilitySummary(FacilitySummary):
                       ,
                       'note1_f':'  dorms, prisons, nursing homes, and military barracks. To derive the nationwide demographic percentages shown, these block group level tallies are summed for all block groups in the nation and then divided by the total U.S. population'
                       ,
-                      'note2_f':"  based on the 2018-2022 ACS. The study area's facility-specific and run group-wide population counts are based on the methodology noted in footnote 'a' to derive block-level demographic population counts for the study area,"
+                      'note2_f':"  based on the 2018-2022 ACS. The study area's facility-specific and run group-wide population counts are based on the methodology noted in footnote \"a\" to derive block-level demographic population counts for the study area,"
                       ,
                       'note3_f':'  which are then divided by the respective total block-level population (facility-specific and run group-wide) to derive the study area demographic percentages shown.'
                       ,

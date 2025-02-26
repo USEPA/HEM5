@@ -2,6 +2,7 @@
 * People of Color
 * Black
 * American Indian and Alaskan Native
+* Asian
 * Other races and multiracial
 * Hispanic or Latino
 * Children 17 years of age and under

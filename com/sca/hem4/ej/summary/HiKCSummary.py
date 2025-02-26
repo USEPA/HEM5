@@ -19,7 +19,7 @@ class HiKCSummary(KCSummary):
                       ,
                       'note1_d':'  dorms, prisons, nursing homes, and military barracks. To derive the nationwide demographic percentages shown, these block group level tallies are summed for all block groups in the nation and then divided by the total U.S. population'
                       ,
-                      'note2_d':"  based on the 2018-2022 ACS. The study area's population counts are based on the methodology noted in footnote 'a' to derive block-level demographic population counts, which are then divided by the respective"
+                      'note2_d':"  based on the 2018-2022 ACS. The study area's population counts are based on the methodology noted in footnote \"a\" to derive block-level demographic population counts, which are then divided by the respective"
                       ,
                       'note3_d':'  total block-level population to derive the study area demographic percentages shown.'
                       ,
@@ -44,9 +44,9 @@ class HiKCSummary(KCSummary):
                       ,
                       'h':"The total nationwide population includes all 50 states, the District of Columbia, and Puerto Rico. The state and county populations include any states and counties, respectively, with census blocks within the radius of the modeled area."
                       ,
-                      'i':"The at-risk population and its demographic breakdown are the people residing within the indicated study area radius of each modeled facility with a cancer risk greater than or equal to the indicated level."
+                      'i':"The at-risk population and its demographic breakdown are the people residing within the indicated study area radius of each modeled facility with an HI greater than or equal to the indicated level."
                       ,
-                      'j':"The maximum modeled risk is " + maxrisk + " in 1 million based on " + scope + " emissions. This maximum occurs at the single populated receptor with the highest modeled risk. See the HEM5 User's Guide for more information."
+                      'j':"The maximum modeled HI is " + maxrisk + " based on " + scope + " emissions. This maximum occurs at the single populated receptor with the highest modeled HI. See the HEM5 User's Guide for more information."
                       }
         return notes_dict
 

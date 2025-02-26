@@ -45,7 +45,7 @@ class CancerFacilitySummary(FacilitySummary):
                       ,
                       'note1_f':'  dorms, prisons, nursing homes, and military barracks. To derive the nationwide demographic percentages shown, these block group level tallies are summed for all block groups in the nation and then divided by the total U.S. population'
                       ,
-                      'note2_f':"  based on the 2018-2022 ACS. The study area's facility-specific and run group-wide population counts are based on the methodology noted in footnote 'a' to derive block-level demographic population counts for the study area,"
+                      'note2_f':"  based on the 2018-2022 ACS. The study area's facility-specific and run group-wide population counts are based on the methodology noted in footnote \"a\" to derive block-level demographic population counts for the study area,"
                       ,
                       'note3_f':'  which are then divided by the respective total block-level population to derive the study area demographic percentages shown.'
                       ,

@@ -5,4 +5,4 @@ ___________________________________________________________
 
 ![map image](..\\assets\\ejdash_map_image.png)
 
-> #### If you mouse over the map, a widget bar appears in the upper right of the map. There are several widgets, including zoom and pan, and a widget that allows the download of the map as an image file.
+> #### If you hover your mouse over the map, a widget bar appears in the upper right of the map. There are several widgets, including zoom and pan, and a widget that allows the download of the map as an image file.
