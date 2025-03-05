@@ -312,7 +312,7 @@ class HEMdash():
                 fname = self.SCname + "_acute_impacts.xlsx"
                 acute_file = os.path.join(self.dir, fname)
                 df_acute = pd.read_excel(acute_file, dtype=dataTypes2,
-                                         usecols = ('A,B,J,K,L,N,O'))
+                                         usecols = ('A,B,I,J,K,L,M'))
                 df_acute.columns = ['Facility', 'Pollutant', 'REL', 'AEGL-1', 'ERPG-1', 'AEGL-2', 'ERPG-2']
                 df_acute['Pollutant'] = df_acute['Pollutant'].str.title()
                 df_acute_melt = pd.melt(df_acute, id_vars = ['Facility', 'Pollutant'],var_name = 'Reference Value', value_name = 'HQ',
