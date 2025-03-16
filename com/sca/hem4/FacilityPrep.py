@@ -397,7 +397,7 @@ class FacilityPrep():
                     # Some user receptors are already in the census. Remove these from the user receptor list.
                     user_recs = user_recs[~user_recs.set_index([utme, utmn]).index.isin(dups.set_index([utme, utmn]).index)].copy()
                 
-                    msg = 'The following user receptors have coordinates that are already in the Alternate Receptor data:\n' \
+                    msg = 'The following user receptors have coordinates that are already in the Census data:\n' \
                         + str(dups['rec_id'].tolist()) + '\n' \
                         + 'They will be removed from the user receptor list.'
                     Logger.logMessage(msg)

@@ -47,18 +47,18 @@ class ElevHill:
         where the coordinates are a list of tuples organized as (longitude, latitude).
         """
 
-        # Confirm that an Internet connection is available. If there is not, then keep
-        # checking every minute indefinitely. Report progress to the log.
-        gotInternet = False
-        while not gotInternet:
-            gotInternet = ElevHill.internet()
-            if gotInternet == False:
-                currtime = datetime.datetime.now().strftime("%H:%M:%S")
-                message = "No Internet connection to retrieve elevations. Will try again in 1 minute. \n" \
-                          + "Click Exit to stop this loop. \n" \
-                          + "Current time is: " + currtime + "\n"
-                Logger.logMessage(message)
-                time.sleep(60)
+        # # Confirm that an Internet connection is available. If there is not, then keep
+        # # checking every minute indefinitely. Report progress to the log.
+        # gotInternet = False
+        # while not gotInternet:
+        #     gotInternet = ElevHill.internet()
+        #     if gotInternet == False:
+        #         currtime = datetime.datetime.now().strftime("%H:%M:%S")
+        #         message = "No Internet connection to retrieve elevations. Will try again in 1 minute. \n" \
+        #                   + "Click Exit to stop this loop. \n" \
+        #                   + "Current time is: " + currtime + "\n"
+        #         Logger.logMessage(message)
+        #         time.sleep(60)
         
         # Get elevations for batches of 100 coordinates
         elevation_data = []
@@ -158,18 +158,18 @@ class ElevHill:
     @staticmethod
     def getTIF(url, max_model_dist, center_lon, center_lat, min_rec_elev):
         
-        # Confirm that an Internet connection is available. If there is not, then keep
-        # checking every minute indefinitely. Report progress to the log.
-        gotInternet = False
-        while not gotInternet:
-            gotInternet = ElevHill.internet()
-            if gotInternet == False:
-                currtime = datetime.datetime.now().strftime("%H:%M:%S")
-                message = "No Internet connection to retrieve elevations. Will try again in 1 minute. \n" \
-                          + "Click Exit to stop this loop. \n" \
-                          + "Current time is: " + currtime + "\n"
-                Logger.logMessage(message)
-                time.sleep(60)
+        # # Confirm that an Internet connection is available. If there is not, then keep
+        # # checking every minute indefinitely. Report progress to the log.
+        # gotInternet = False
+        # while not gotInternet:
+        #     gotInternet = ElevHill.internet()
+        #     if gotInternet == False:
+        #         currtime = datetime.datetime.now().strftime("%H:%M:%S")
+        #         message = "No Internet connection to retrieve elevations. Will try again in 1 minute. \n" \
+        #                   + "Click Exit to stop this loop. \n" \
+        #                   + "Current time is: " + currtime + "\n"
+        #         Logger.logMessage(message)
+        #         time.sleep(60)
 
         # Make a GET request to download the TIFF file
         response = requests.get(url)
@@ -235,16 +235,16 @@ class ElevHill:
  
         # Confirm that an Internet connection is available. If there is not, then keep
         # checking every minute indefinitely. Report progress to the log.
-        gotInternet = False
-        while not gotInternet:
-            gotInternet = ElevHill.internet()
-            if gotInternet == False:
-                currtime = datetime.datetime.now().strftime("%H:%M:%S")
-                message = "No Internet connection to retrieve elevations. Will try again in 1 minute. \n" \
-                          + "Click Exit to stop this loop. \n" \
-                          + "Current time is: " + currtime + "\n"
-                Logger.logMessage(message)
-                time.sleep(60)
+        # gotInternet = False
+        # while not gotInternet:
+        #     gotInternet = ElevHill.internet()
+        #     if gotInternet == False:
+        #         currtime = datetime.datetime.now().strftime("%H:%M:%S")
+        #         message = "No Internet connection to retrieve elevations. Will try again in 1 minute. \n" \
+        #                   + "Click Exit to stop this loop. \n" \
+        #                   + "Current time is: " + currtime + "\n"
+        #         Logger.logMessage(message)
+        #         time.sleep(60)
 
 
         # Query the 30m DEM server for all elevations within a geo box where the radius is
