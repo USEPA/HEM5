@@ -146,7 +146,7 @@ class Processor():
                     if str(ex) == "USGS elevation server unavailable":
                         messagebox.showinfo("Cannot obtain elevation data", "Your computer was unable to obtain elevation data for this model run." \
                                             " This HEM run will stop. This problem may be due to your Internet connection or the elevation data not being available from the USGS." \
-                                            " One option is to re-run this Run Group with elevation turned off." \
+                                            " If your Internet connection is active, then options are to run this Run Group with no elevation or to use the off-line elevation method." \
                                             " More detail about this error is available in the log.")
                         fullStackInfo = traceback.format_exc()
                         Logger.logMessage("Cannot obtain elevation data.\n" \

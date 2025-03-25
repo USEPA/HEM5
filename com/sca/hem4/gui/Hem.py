@@ -7,7 +7,7 @@ from com.sca.hem4.model.Model import Model
 import tkinter as tk
 import PIL.Image
 from PIL import ImageTk
-from com.sca.hem4.gui.Styles import TITLE_FONT, TAB_FONT, TEXT_FONT, MAIN_COLOR
+from com.sca.hem4.gui.Styles import TITLE_FONT, TAB_FONT, TEXT_FONT, MAIN_COLOR, TEXT_FONT_BOLD
 from com.sca.hem4.upload.FileUploader import FileUploader
 import tkinter.ttk as ttk
 from tkinter import messagebox
@@ -289,6 +289,15 @@ class Hem(Page):
                               command=self.lift_tab, font=TEXT_FONT)
 
         self.next.grid(row=10, column=2, sticky='E', padx=20, pady=20)
+
+        # Caution note
+        self.caution1 = tk.Label(self.s11, font=(TEXT_FONT_BOLD), bg=self.tab_color, text="Caution:")
+        self.caution1.grid(row=3, column=0, sticky='W')
+        
+        self.caution2 = tk.Label(self.s11, font=(TEXT_FONT), bg=self.tab_color, justify="left"
+                                 , wraplength=500
+                                  , text="If you chose the default USGS elevation modeling option in the Facility List Options file, a continuous internet connection is required. Any break in the internet connection will end the HEM run.")
+        self.caution2.grid(row=4, column=0, sticky='W')
 
 
     def lift_tab(self):

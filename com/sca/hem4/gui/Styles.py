@@ -2,6 +2,7 @@ TITLE_FONT= ("Daytona", 16, 'bold')
 SUBTITLE_FONT= ("Daytona", 13, 'bold')
 TAB_FONT =("Daytona", 10, 'bold')
 TEXT_FONT = ("Daytona", 12)
+TEXT_FONT_BOLD = ("Daytona", 12, 'bold')
 SMALL_TEXT_FONT = ("Daytona", 10)
 
 MAIN_COLOR = "white"
