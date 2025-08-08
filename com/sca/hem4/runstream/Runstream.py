@@ -7,6 +7,7 @@ Created on Thu Oct 18 10:23:14 2018
 """
 import math
 import os
+import numpy as np
 
 import com.sca.hem4.FindMet as fm
 from com.sca.hem4.model.Model import *
@@ -41,9 +42,6 @@ class Runstream():
         self.emisvar_df = emisvar_df
         self.model = model
         self.urban = False
-        
-        
-        
         
         # Facility ID
         self.facid = self.facoptn_df['fac_id'].iloc[0]                 
@@ -212,8 +210,106 @@ class Runstream():
         self.inp_f.write(co6)
         self.inp_f.write(co7)
         self.inp_f.write(co8)    
+
+
+    def build_co_lead(self, innerblks, outerblks):
+        """
+        Creates CO section of Aermod.inp file for LEADPOST use
+        """
+        
+        self.phaseType = 'C'
+
+
+    # Elevations --------------------------------------------------------------
+           
+        self.eleva = self.facoptn_df['elev'].iloc[0]                        
+
+        if self.model.altRec_optns.get('altrec_flat', None):
+            optel = " FLAT "
+        elif self.eleva == "Y" or self.eleva == "O":
+            optel = " ELEV "
+        else:
+            optel = " FLAT "
     
-    def build_so(self, phase):
+    # deposition & depletion --------------------------------------------------
+        
+        # dep & depl not used by LEADPOST
+        
+        optdp = ''
+        titletwo = "CO TITLETWO  Combined particle and vapor-phase emissions \n"
+    
+        self.model.model_optns['titletwo'] = titletwo
+
+    # Building downwash option ------------------------------------------------
+        self.blddw = self.facoptn_df['bldg_dw'].iloc[0]
+        
+    # FASTALL Model Option for AERMOD -----------------------------------------
+        fasta = self.facoptn_df['fastall'].iloc[0]                     
+    
+        if fasta == "Y":
+            optfa = " FASTALL "
+        else:
+            optfa = ""
+
+    # CO Section ----------------------------------------------------------
+        
+        co1 = "CO STARTING  \n"
+        co2 = "CO TITLEONE  " + str(self.facid) + "\n"
+        co3 = titletwo   
+        co4 = "CO MODELOPT  CONC  ALPHA  BETA " + optdp + optel + optfa + "\n"  
+    
+
+        self.inp_f.write(co1)
+        self.inp_f.write(co2)
+        self.inp_f.write(co3)
+        self.inp_f.write(co4)
+        
+        
+        # Determine urban/rural dispersion setting
+        if self.facoptn_df['rural_urban'].values[0] == 'U':
+            self.urban = True
+            urbanopt = "CO URBANOPT " + str(self.facoptn_df['urban_pop'].values[0]) + "\n"
+            self.inp_f.write(urbanopt)
+             
+        # If rural, leave urban as false
+        elif self.facoptn_df['rural_urban'].values[0] == 'R':
+            
+            self.urban = False
+        
+        # If there is nothing, then leave urban as false (use rural)
+        else:
+
+            self.urban = False
+            Logger.logMessage("Urban/rural setting was not determined. " +
+                              "Using rural dispersion.")
+
+        #set urban in model options
+        self.model.model_optns['urban'] = self.urban
+
+
+        # If flagpole height is needed, create the FLAGPOLE card
+        self.flagpole = self.facoptn_df['flagYN'].values[0]
+        self.flaghgt = self.facoptn_df['flagdef'].values[0]
+                
+        if self.flagpole == 'Y':
+            if self.facoptn_df['flagdef'].values[0] == 0:
+                flagopt = 'CO FLAGPOLE \n'
+            else:
+                flagopt = 'CO FLAGPOLE ' + str(self.facoptn_df['flagdef'].values[0]) + '\n'
+            self.inp_f.write(flagopt)
+                    
+        co5 = "CO AVERTIME  MONTH \n"
+        co6 = "CO POLLUTID  LEAD \n"
+        co7 = "CO RUNORNOT  RUN \n"
+        co8 = "CO FINISHED  \n" + "\n"
+    
+        self.inp_f.write(co5)
+        self.inp_f.write(co6)
+        self.inp_f.write(co7)
+        self.inp_f.write(co8) 
+        
+        
+    def build_so(self, phase, aermodleadYN):
         """
         Function writes SO section of Aermod.inp, names source types and 
         their parameters
@@ -769,6 +865,13 @@ class Runstream():
                 sogroup = ("SO SRCGROUP " + self.uniqsrcs[i] + " " + 
                            self.uniqsrcs[i] + "-" + self.uniqsrcs[i] + "\n")
                 self.inp_f.write(sogroup)
+                
+        # If this as a lead Aermod run, add ALL group
+        if aermodleadYN == 'Y':
+            self.uniqsrcs = np.append(self.uniqsrcs, 'ALL')
+            sogroup = "SO SRCGROUP ALL\n"
+            self.inp_f.write(sogroup)
+
         so3 = "SO FINISHED \n" + "\n"
         self.inp_f.write(so3)
                 
@@ -928,7 +1031,7 @@ class Runstream():
         me_sud = "ME SURFDATA  " + surfdata_str +  "\n"
         me_uad = "ME UAIRDATA  " + uairdata_str + "\n"
         me_prb = "ME PROFBASE  " + str(prof_base) + "\n"
-        
+                
         me_strtend = ""
         if self.facoptn_df['annual'].iloc[0] != 'Y' and self.facoptn_df['period_start'].iloc[0] != '' and self.facoptn_df['period_end'].iloc[0] != '':
             me_strtend = "ME STARTEND  " + self.facoptn_df['period_start'].iloc[0] + self.facoptn_df['period_end'].iloc[0] + "\n"
@@ -996,6 +1099,29 @@ class Runstream():
         self.inp_f.write(ou)
     
         self.inp_f.close()
+
+
+    def build_ou_lead(self):
+        """
+        Writes OU section of aermod.inp for LEADPOST use
+        """
+                
+        ou = "OU STARTING \n"
+        self.inp_f.write(ou)
+    
+        fortran_unitnum = 31
+        for j in np.arange(len(self.uniqsrcs)):
+            postfile_name = "lead_" + self.uniqsrcs[j] + ".pst"
+            ou = ("OU POSTFILE MONTH " + self.uniqsrcs[j] +
+                  " PLOT " + postfile_name + " " + str(fortran_unitnum) + " \n")
+            self.inp_f.write(ou)
+            fortran_unitnum+=1
+                
+        ou = "OU FINISHED \n"
+        self.inp_f.write(ou)
+    
+        self.inp_f.close()
+
         
     def get_blddw(self, srid):
         """
@@ -1035,7 +1161,7 @@ class Runstream():
                     
     def get_particle(self, srid):
         """
-        Compiles and writes paremeters for particle deposition/depletion 
+        Compiles and writes parameters for particle deposition/depletion 
         by source
         """
             

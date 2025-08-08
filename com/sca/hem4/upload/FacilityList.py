@@ -43,6 +43,7 @@ period_end = 'period_end'
 flagpole = 'flagpole'
 flagYN = 'flagYN'
 flagdef = 'flagdef'
+leadYN = 'leadYN'
 
 class FacilityList(InputFile):
     
@@ -60,15 +61,16 @@ class FacilityList(InputFile):
                                ring1,urban_pop,hivalu]
         self.strColumns = [fac_id,met_station,rural_urban,acute,elev,dep,depl,pdep,pdepl,
                            vdep,vdepl,user_rcpt,bldg_dw,fastall,fac_center,ring_distances,emis_var,
-                           annual,period_start,period_end,flagpole]
+                           annual,period_start,period_end,flagpole,leadYN]
 
         faclist_df = self.readFromPath(
             (fac_id,met_station,rural_urban,urban_pop,max_dist,model_dist,radial,circles,overlap_dist, ring1,
              fac_center,ring_distances, acute,
-             hours,multiplier,hivalu,dep,depl,pdep,pdepl,vdep,vdepl,elev,flagpole,
+             hours,multiplier,hivalu,dep,depl,pdep,pdepl,vdep,vdepl,elev,flagpole,leadYN,
              user_rcpt,bldg_dw,fastall,emis_var,annual,period_start,period_end)
         )
         self.dataframe = faclist_df
+        
 
     def clean(self, df):
 
@@ -85,7 +87,8 @@ class FacilityList(InputFile):
                                       fastall:{"nan":"N"}, acute:{"nan":"N"}, fac_center:{"nan":""},
                                       'ring_distances':{"nan":""}, emis_var:{"nan":"N"}, annual:{"nan":"Y"},
                                       period_start:{"nan":""}, period_end:{"nan":""},
-                                      flagpole:{"nan":"N"}}, inplace=True)
+                                      flagpole:{"nan":"N"}, leadYN:{"nan":"N"}}, 
+                                      inplace=True)
 
         cleaned = cleaned.reset_index(drop = True)
         
@@ -116,7 +119,8 @@ class FacilityList(InputFile):
         cleaned[flagdef] = cleaned[flagdef].round()
         cleaned[flagdef] = cleaned[flagdef].astype(int)
         cleaned[flagYN] = cleaned[flagYN].str.upper()
-
+        cleaned[leadYN] = cleaned[leadYN].str.upper()
+        
         return cleaned
 
     def validate(self, df):
@@ -315,14 +319,20 @@ class FacilityList(InputFile):
                 Logger.logMessage("Facility " + facility + ": Invalid value for pdepl. Defaulting to 'NO'.")
                 row[pdepl] = 'NO'
 
-            # elev, flagYN, user_rcpt, bldg_dw, fastall, emis_var
+            # elev
             valid = ['Y', 'N', 'O']
             if row[elev] not in valid:
                 Logger.logMessage("Facility " + facility + ": Invalid value for elev. Defaulting to 'Y'.")
                 row[elev] = 'Y'
+                                
+            # flagYN, user_rcpt, bldg_dw, fastall, emis_var, lead
+            valid = ['Y', 'N']
             if row[flagYN] not in valid:
                 Logger.logMessage("Facility " + facility + ": Invalid value for flagpole. Defaulting to 'N'.")
                 row[flagYN] = 'N'
+            if row[leadYN] not in valid:
+                Logger.logMessage("Facility " + facility + ": Invalid value for lead. Defaulting to 'N'.")
+                row[leadYN] = 'N'
             if row[user_rcpt] not in valid:
                 Logger.logMessage("Facility " + facility + ": Invalid value for user_rcpt. Defaulting to 'N'.")
                 row[user_rcpt] = 'N'
