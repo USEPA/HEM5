@@ -69,12 +69,13 @@ class FacilityList(InputFile):
              user_rcpt,bldg_dw,fastall,emis_var,annual,period_start,period_end)
         )
         self.dataframe = faclist_df
-
+        
     def clean(self, df):
 
         # Replace NaN with blank, No or 0
         # Note: use of elevations or all receptors are defaulted to Y, acute hours is defaulted to 1,
         # acute multiplier is defaulted to 10, and emission variation is defaulted to N
+
         cleaned = df.fillna({radial:16, circles:13, overlap_dist:30, hours:1, multiplier:10, max_dist: 50000, model_dist: 3000,
                                                       ring1:100, urban_pop:0, hivalu:1})
 
@@ -124,6 +125,7 @@ class FacilityList(InputFile):
         # ----------------------------------------------------------------------------------
         # Strict: Invalid values in these columns will cause the upload to fail immediately.
         # ----------------------------------------------------------------------------------
+
         if len(df.loc[(df[fac_id] == '')]) > 0:
             Logger.logMessage("One or more facility IDs are missing in the Facility List.")
             messagebox.showinfo("Missing facility IDs", "One or more facility IDs are missing in the Facility List.")

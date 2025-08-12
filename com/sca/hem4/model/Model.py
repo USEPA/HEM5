@@ -69,6 +69,7 @@ class Model():
         risk_by_latlon - 
         max_indiv_risk_df - 
         facops - facility specific options from faclist
+        acute_names - acute benchmark names to be used in acute outputs
         """
         self.faclist = None
         self.emisloc = None
@@ -116,6 +117,7 @@ class Model():
         self.sourceExclusion = {}
         self.aermod = None
         self.acuteplot_df = None
+        self.acute_names = None
 
         # Initialize model options
         self.initializeAltRecOptions()
@@ -164,6 +166,7 @@ class Model():
         self.aermod = None
         self.acuteplot_df = None
         self.dependencies = []
+        self.acute_names = None
 
 
         # Initialize model options

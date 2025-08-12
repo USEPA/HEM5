@@ -3,6 +3,7 @@ from tkinter import messagebox
 from com.sca.hem4.log import Logger
 from com.sca.hem4.upload.InputFile import InputFile
 from com.sca.hem4.model.Model import *
+import pandas as pd
 
 ure = 'ure';
 rfc = 'rfc';
@@ -15,8 +16,9 @@ cas_no = 'cas_no';
 
 class DoseResponse(InputFile):
 
-    def __init__(self):
+    def __init__(self, model):
         InputFile.__init__(self, "resources/Dose_Response_Library.xlsx")
+                
 
     def clean(self, df):
 
@@ -40,9 +42,10 @@ class DoseResponse(InputFile):
 
             Logger.logMessage("Please remove the duplicate records and restart HEM.")
             return None
-        else:
-            return df
+        
+        return df
 
+        
     def createDataframe(self):
 
         # Specify dtypes for all fields
@@ -52,9 +55,8 @@ class DoseResponse(InputFile):
         # DOSE RESPONSE excel to dataframe
         # HEADER----------------------
         # pollutant|pollutant group|cas no|URE 1/(µg/m3)|RFC (mg/m3)|aegl_1 (1-hr) (mg/m3)|
-        # aegl_2 (1 hr) (mg/m3)|erpg_1 (mg/m3)|erpg_2 (mg/m3)|rel
-        
-        # columns to remove on 11/18/24: aegl_1_8h, aegl_2_8h, mrl, idlh_10, teel_0, teel_1, comments,
-        #                                drvalues,group_ure,tef,acute_con
+        # aegl_2 (1 hr) (mg/m3)|erpg_1 (mg/m3)|erpg_2 (mg/m3)|rel        
         self.dataframe = self.readFromPath(
             (pollutant,group,cas_no,ure,rfc,aegl_1_1h,aegl_2_1h,erpg_1,erpg_2,rel))
+        
+
