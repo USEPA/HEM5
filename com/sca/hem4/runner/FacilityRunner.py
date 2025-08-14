@@ -683,7 +683,7 @@ class FacilityRunner():
         if success == True:
              
             # Move aermod.inp, aermod.out, and all post files to the facility folder.
-            
+                        
             # First see if these files are alrezdy in the output folder. If so, delete them.
             if os.path.isfile(fac_folder + 'aermod_lead.out'):
                 os.remove(fac_folder + 'aermod_lead.out')
@@ -691,12 +691,12 @@ class FacilityRunner():
             if os.path.isfile(fac_folder + 'aermod_lead.inp'):
                 os.remove(fac_folder + 'aermod_lead.inp')
 
-            extension = 'pst'
+            extensions = ['pst', 'tmp']
             for item in os.listdir(fac_folder):
                 item_path = os.path.join(fac_folder, item)
     
                 # Check if the item is a file and has the desired extension
-                if os.path.isfile(item_path) and item.endswith(extension):
+                if os.path.isfile(item_path) and any(item.lower().endswith(ext.lower()) for ext in extensions):
                     os.remove(item_path)
 
             # Now move files
@@ -710,15 +710,15 @@ class FacilityRunner():
             new_name = os.path.join(fac_folder, 'aermod_lead.inp')
             shutil.move(inpfile, new_name)
 
-            # move all post files and create the inputfiles.txt file needed by LEADPOST
+            # move all post and TMP files and create the inputfiles.txt file needed by LEADPOST
             post_input_name = os.path.join('leadpost', 'inputfiles.txt')
             with open(post_input_name, "w") as postfile:
-                extension = 'pst'
+                extensions = ['pst', 'tmp']
                 for item in os.listdir('aermod'):
                     item_path = os.path.join('aermod', item)
         
                     # Check if the item is a file and has the desired extension
-                    if os.path.isfile(item_path) and item.endswith(extension):
+                    if os.path.isfile(item_path) and any(item.lower().endswith(ext.lower()) for ext in extensions):
                         new_name = os.path.join(fac_folder, item)
                         shutil.move(item_path, new_name)
                         postfile.write('"../'+new_name+'"\n') 
@@ -960,13 +960,41 @@ class FacilityRunner():
         for filename in os.listdir(fac_folder):
             if filename.endswith('pst') and os.path.isfile(os.path.join(fac_folder, filename)):
                 post_list.append(filename)
+
+        # Get the ALL post file and load into a dataframe
+        for fname in post_list:
+            if fname == "lead_ALL.pst":
+                all_path = os.path.join(fac_folder, fname)
+                all_df = pd.read_table(all_path, delim_whitespace=True, header=None, 
+                    names=['x','y','avgconc','elev','hill','flag','avg_time','source_id','date','net_id'],
+                    usecols=[0,1,2,3,4,5,6,7,8,9], 
+                    dtype={'x':np.float64,'y':np.float64,'avgconc':np.float64,'elev':np.float64,'hill':np.float64
+                           ,'flag':np.float64,'avg_time':np.str,'source_id':np.str,'date':np.int64,'net_id':np.str},
+                    comment='*') 
+                # set conc to 0
+                all_df['avgconc'] = 0
+                
+                # Save the header of the ALL post file
+                all_header_rows = []
+                with open(all_path, 'r') as file:
+                    for line in file:
+                        if line.strip().startswith('*'):
+                            all_header_rows.append(line)
+                
+                
+                break
                         
-        #--- Load each post file into a dataframe and multiply by the lead compounds emissions
-
-        # The ALL Aermod source category will need a sum of all lead emissions
-        allemis = self.model.leademis_df['emis_tpy'].sum()
-
+        #--- Load each post file into a dataframe and multiply by the Lead Compounds emissions
+        #--- The ALL dataframe will need to contain a sum of all post file concs
+        
+        summed_column_series = pd.Series([0] * len(all_df))
+        
         for pfile in post_list:
+            
+            # skip ALL post file to avoid double counting
+            if pfile == "lead_ALL.pst":
+                continue
+            
             pfile_path = os.path.join(fac_folder, pfile)
             
             # save the header of the post file
@@ -984,14 +1012,13 @@ class FacilityRunner():
                        ,'flag':np.float64,'avg_time':np.str,'source_id':np.str,'date':np.int64,'net_id':np.str},
                 comment='*')
                         
-            # multiply by lead emissions (tpy)
+            # multiply conc by lead emissions (tpy)
             srcid = postf_df.iloc[0,7]
-            if srcid == 'ALL':
-                leademis_tpy = allemis
-            else:
-                leademis_tpy = (self.model.leademis_df[self.model.leademis_df['source_id']
-                                                   ==srcid]['emis_tpy'].iloc[0])
+            leademis_tpy = (self.model.leademis_df[self.model.leademis_df['source_id']                                                   ==srcid]['emis_tpy'].iloc[0])
             postf_df['avgconc'] = postf_df['avgconc'] * leademis_tpy * cf
+            
+            # sum to create ALL concs
+            summed_column_series += postf_df['avgconc']
             
             # write back to post file
             with open(pfile_path, 'w') as outfile:
@@ -1002,7 +1029,7 @@ class FacilityRunner():
                     formatted_line = []
                     formatted_line.append(f"{row['x']:>14.5f}")
                     formatted_line.append(f"{row['y']:>14.5f}")
-                    formatted_line.append(f"{row['avgconc']:>14.5f}")
+                    formatted_line.append(f"{self.fortranFormat(row['avgconc']):>14}")
                     formatted_line.append(f"{row['elev']:>9.2f}")
                     formatted_line.append(f"{row['hill']:>9.2f}")
                     formatted_line.append(f"{row['flag']:>9.2f}")
@@ -1012,10 +1039,35 @@ class FacilityRunner():
                     formatted_line.append(f"{row['net_id']:>10}")
                     outfile.write("".join(formatted_line) + '\n')
                     
+        # Put summed concs into ALL df and write back to post file
+        all_df['avgconc'] = summed_column_series
+        
+        with open(all_path, 'w') as outfile:
+            for row in all_header_rows:
+                outfile.write(row)
+                
+            for index, row in all_df.iterrows():
+                formatted_line = []
+                formatted_line.append(f"{row['x']:>14.5f}")
+                formatted_line.append(f"{row['y']:>14.5f}")
+                formatted_line.append(f"{self.fortranFormat(row['avgconc']):>14}")
+                formatted_line.append(f"{row['elev']:>9.2f}")
+                formatted_line.append(f"{row['hill']:>9.2f}")
+                formatted_line.append(f"{row['flag']:>9.2f}")
+                formatted_line.append(f"{row['avg_time']:>8}")
+                formatted_line.append(f"{row['source_id']:>10}")
+                formatted_line.append(f"{row['date']:>10}")
+                formatted_line.append(f"{row['net_id']:>10}")
+                outfile.write("".join(formatted_line) + '\n')
+                    
         Logger.logMessage("Ready to run LEADPOST for facility " + self.facilityId + "\n")
                     
                     
-                    
+    def fortranFormat(self, n):
+       a = '{:.5E}'.format(float(n))
+       e = a.find('E')
+       return '0.{}{}{}{:02d}'.format(a[0],a[2:e],a[e:e+2],abs(int(a[e+1:])*1+1))
+                   
                     
                     
             

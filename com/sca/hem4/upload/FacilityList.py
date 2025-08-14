@@ -69,6 +69,7 @@ class FacilityList(InputFile):
              hours,multiplier,hivalu,dep,depl,pdep,pdepl,vdep,vdepl,elev,flagpole,leadYN,
              user_rcpt,bldg_dw,fastall,emis_var,annual,period_start,period_end)
         )
+
         self.dataframe = faclist_df
         
 
