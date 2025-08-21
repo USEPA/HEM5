@@ -56,8 +56,9 @@ class FacilityPrep():
         else:
             # this is a lead run
             leademis_df = (self.model.hapemis.dataframe.loc
-                           [self.model.hapemis.dataframe[pollutant].str.lower() ==
-                            'lead compounds'])
+                           [(self.model.hapemis.dataframe[fac_id] == facid) & 
+                            (self.model.hapemis.dataframe[pollutant].str.lower() ==
+                            'lead compounds')])
             self.model.leademis_df = leademis_df
         
             if not leademis_df.empty:
@@ -65,7 +66,8 @@ class FacilityPrep():
                 # There are lead emissions
                 lead_sources_list = leademis_df[source_id].tolist()
                 emislocs = (self.model.emisloc.dataframe.loc
-                            [self.model.emisloc.dataframe[source_id].isin(lead_sources_list)])                
+                            [(self.model.emisloc.dataframe[fac_id] == facid) & 
+                        (self.model.emisloc.dataframe[source_id].isin(lead_sources_list))])
             else:
                 
                 # No lead emissions
