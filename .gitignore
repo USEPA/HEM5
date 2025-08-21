@@ -26,4 +26,3 @@ com/sca/hem4/*.spec
 envs/
 *.spec
 *.yml
-/resources/*.csv
