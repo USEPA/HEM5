@@ -27,7 +27,20 @@ class MirHIAllReceptors(CsvWriter, InputFile):
 
         self.filename = path
         self.basepath = os.path.basename(os.path.normpath(self.output_dir))
-        self.facilityIds = Directory.find_facilities(self.output_dir)
+
+        # Get the list of facilities from the max risk and HI
+        maxRiskAndHI = FacilityMaxRiskandHI(targetDir=targetDir,
+                                            filenameOverride=self.basepath + "_facility_max_risk_and_hi.xlsx")
+
+        try:
+            maxRiskAndHI_df = maxRiskAndHI.createDataframe()
+        except FileNotFoundError as e:
+            Logger.logMessage("Couldn't find max risk file. Aborting...")
+            messagebox.showinfo("File Not Found", "Please check the output folder for a properly named Facility Max Risk and HI file.")
+            self.reset()
+            return
+
+        self.facilityIds = Directory.find_facilities(self.output_dir, maxRiskAndHI_df)
         self.altrec = self.determineAltRec(self.output_dir)
 
     def getHeader(self):
