@@ -658,7 +658,7 @@ class FacilityRunner():
             message = check.read()
             now = datetime.now().time()
             current_time = now.strftime("%H:%M:%S")
-            if 'AERMOD for lead finishes UN-successfully' in message:
+            if 'AERMOD Finishes UN-successfully' in message:
                 success = False
                 self.model.aermod = False
     
@@ -721,7 +721,9 @@ class FacilityRunner():
                     if os.path.isfile(item_path) and any(item.lower().endswith(ext.lower()) for ext in extensions):
                         new_name = os.path.join(fac_folder, item)
                         shutil.move(item_path, new_name)
-                        postfile.write('"../'+new_name+'"\n') 
+                        if new_name.lower().endswith('.pst'):
+                            # populate inputfiles.txt
+                            postfile.write('"../'+new_name+'"\n') 
                 
         else:
             # Aermod failed. Move aermod.inp and aermod.out and rename.
