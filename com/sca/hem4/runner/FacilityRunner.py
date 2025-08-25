@@ -101,9 +101,6 @@ class FacilityRunner():
             
     
     def setup(self):
-
-        #Debug
-        self.model.faclist.dataframe['leadYN'] = 'N'
             
         #put phase in model_optns
         self.acute_yn = self.facops[acute].tolist()[0]
