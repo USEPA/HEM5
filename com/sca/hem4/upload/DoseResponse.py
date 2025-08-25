@@ -16,7 +16,7 @@ cas_no = 'cas_no';
 
 class DoseResponse(InputFile):
 
-    def __init__(self, model):
+    def __init__(self):
         InputFile.__init__(self, "resources/Dose_Response_Library.xlsx")
                 
 
@@ -58,5 +58,13 @@ class DoseResponse(InputFile):
         # aegl_2 (1 hr) (mg/m3)|erpg_1 (mg/m3)|erpg_2 (mg/m3)|rel        
         self.dataframe = self.readFromPath(
             (pollutant,group,cas_no,ure,rfc,aegl_1_1h,aegl_2_1h,erpg_1,erpg_2,rel))
+
+    @staticmethod
+    def getAcuteNames():
         
+        # Read header of dose response Excel file and return the acute benchmark names
+        
+        haplib_header = pd.read_excel("resources/Dose_Response_Library.xlsx", nrows=1)
+        haplib_acute_names = haplib_header.columns.tolist()[-5:]
+        return haplib_acute_names
 

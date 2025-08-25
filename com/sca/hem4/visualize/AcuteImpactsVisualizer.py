@@ -25,6 +25,9 @@ from com.sca.hem4.writer.excel.summary.AcuteImpacts import *
 
 from sigfig import round as roundsf
 
+from com.sca.hem4.upload.DoseResponse import DoseResponse
+
+
 #------------------------------------------
 # Creates html files with maps displaying acute impact data. CSV files are also created
 # should someone want to create their own visualization with the raw data.
@@ -76,18 +79,31 @@ class AcuteImpactsVisualizer():
         else:
             if os.path.isdir(self.sourceDir + '/Acute Maps') == 0:
                 os.mkdir(self.sourceDir + '/Acute Maps')
-
+        
+        # Get the acute benchmark names from the Dose Response file
+        acutebench = DoseResponse.getAcuteNames()
+        if len(acutebench) != 5:
+            Logger.logMessage("Error in AcuteImpactsVisualizer.py. " +
+                              "The number of acute benchmarks in the Dose Response file is not 5.")
+            return
+            
+        
         # Find the HEM dose-response library and create df of it
         # Under the HEM4 dir names, "Reference" would be "Resources"
         RefFile = 'resources/Dose_Response_Library.xlsx'
         RefDF = pd.read_excel(RefFile)
         RefDF['Pollutant'] = RefDF['Pollutant'].str.lower()
         RefDF.set_index('Pollutant',inplace=True)
-        RefDict = {'REL': 'Acute REL\n(mg/m3)',\
-                   'AEGL-1 1-hr':'AEGL-1  (1-hr)\n(mg/m3)',\
-                   'ERPG-1':'ERPG-1\n(mg/m3)',\
-                   'AEGL-2 1-hr':'AEGL-2  (1-hr)\n(mg/m3)',\
-                   'ERPG-2':'ERPG-2\n(mg/m3)'}
+        RefDict = {'AEGL-1 1-hr': acutebench[0],\
+                   'AEGL-2 1-hr': acutebench[1],\
+                   'ERPG-1': acutebench[2],\
+                   'ERPG-2': acutebench[3],\
+                   'REL': acutebench[4]}
+        # RefDict = {'REL': 'Acute REL\n(mg/m3)',\
+        #            'AEGL-1 1-hr':'AEGL-1  (1-hr)\n(mg/m3)',\
+        #            'ERPG-1':'ERPG-1\n(mg/m3)',\
+        #            'AEGL-2 1-hr':'AEGL-2  (1-hr)\n(mg/m3)',\
+        #            'ERPG-2':'ERPG-2\n(mg/m3)'}
 
         tablist=[]
         for acuteset in (flag_list):
@@ -104,7 +120,7 @@ class AcuteImpactsVisualizer():
             allpolar = AllPolarReceptors(targetDir=path, facilityId=Fac, acuteyn='Y')
             allpolar_df = allpolar.createDataframe()
             allpolar_df[pollutant] = allpolar_df[pollutant].str.lower()
-
+           
             # Find the reference value
             ref_typ_col = RefDict[refType]
             refVal = RefDF.loc[HAP, ref_typ_col]
@@ -148,7 +164,7 @@ class AcuteImpactsVisualizer():
                         ("Angle (deg)", "@angle")
                     ]
             
-            title = '%s %s Acute HQ (%s)' %(Fac, HAP.title(), refType)
+            title = '%s %s Acute HQ (%s)' %(Fac, HAP.title(), ref_typ_col.replace('\n',''))
             tools = [ZoomInTool(), ZoomOutTool(), PanTool(),\
                        WheelZoomTool(), ResetTool(), HoverTool(tooltips=tooltips)]
             

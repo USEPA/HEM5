@@ -31,7 +31,7 @@ class FileUploader():
     def uploadLibrary(self, filetype):
         uploaded = None
         if filetype == "haplib":
-            uploaded = DoseResponse(self.model)
+            uploaded = DoseResponse()
             self.model.haplib = uploaded
         elif filetype == "organs":
             uploaded = TargetOrganEndpoints(self.model.haplib)
