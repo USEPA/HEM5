@@ -122,9 +122,10 @@ class Processor():
                 
                 
                 try:
-                    
+                                        
                     runner = FacilityRunner(facid, self.model, self.abort)
-                    if self.model.faclist.dataframe['leadYN'].iloc[0].upper() == 'N':
+                    if self.model.faclist.dataframe.loc[self.model.faclist.dataframe['fac_id']
+                                                        ==facid]['leadYN'].iloc[0].upper() == 'N':
                         # no special lead modeling
                         runner.setup()
                     else:

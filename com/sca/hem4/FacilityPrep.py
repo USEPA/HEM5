@@ -75,7 +75,8 @@ class FacilityPrep():
                                   " does not have any emissions of pollutant Lead Compounds but the LEADPOST option has benn set to Y." 
                                   + " LEADPOST will not be run for this facility.\n")
                 # Reset
-                self.model.faclist.dataframe['leadYN'] = 'N'
+                self.model.faclist.dataframe.loc[self.model.faclist.dataframe[fac_id]
+                                                  ==facid]['leadYN'] = 'N'
                 return None
             
                 # emislocs = self.model.emisloc.dataframe.loc[self.model.emisloc.dataframe[fac_id] == facid].copy()
@@ -115,7 +116,7 @@ class FacilityPrep():
         emislocs[utmzone] = facutmzonestr
         
         #%%---------- HAP Emissions --------------------------------------
-        if self.model.facops[leadYN].iloc[0].upper() == 'N':
+        if aermodleadYN == 'N':
             # not a lead run
             hapemis = self.model.hapemis.dataframe.loc[self.model.hapemis.dataframe[fac_id] == facid]
         else:

@@ -439,7 +439,7 @@ class FacilityList(InputFile):
                     row[period_end] = ""
 
             df.loc[index] = row
-
+        
         Logger.logMessage("Uploaded facilities options list file for " + str(len(df)) + " facilities.\n")
         return df
 
