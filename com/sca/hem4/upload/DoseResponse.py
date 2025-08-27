@@ -62,7 +62,8 @@ class DoseResponse(InputFile):
     @staticmethod
     def getAcuteNames():
         
-        # Read header of dose response Excel file and return the acute benchmark names
+        # Read header of dose response Excel file and return the acute benchmark names.
+        # There are 5 of them.
         
         haplib_header = pd.read_excel("resources/Dose_Response_Library.xlsx", nrows=1)
         haplib_acute_names = haplib_header.columns.tolist()[-5:]

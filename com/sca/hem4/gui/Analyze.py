@@ -248,7 +248,7 @@ class Analyze(Page):
         self.instruction_instance.set(" ")
         
     def runDash(self,  arguments=None):
-        try:
+        try:            
             self.hemdashport += 1
             # Redirect stdout
             orig_stdout = sys.stdout
