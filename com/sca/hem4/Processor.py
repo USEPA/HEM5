@@ -108,8 +108,8 @@ class Processor():
         else:
           
             print(str(self.model.facids.count()))
-            
-            Logger.logMessage("Preparing Inputs for " + str(self.model.facids.count()) + " facilities\n")
+                        
+            Logger.logMessage("There are " + str(self.model.facids.count()) + " facilities to model\n")
             
            
             fac_list = []
@@ -121,7 +121,7 @@ class Processor():
                 num = 1
     
     #        Logger.logMessage("The facility ids being modeled: , False)
-            Logger.logMessage("The facility ids being modeled: " + ", ".join(fac_list))
+            Logger.logMessage("The facility ids to model are: " + ", ".join(fac_list))
                
             success = False
     
@@ -144,14 +144,22 @@ class Processor():
                 
                 
                 #save version of this gui as is? constantly overwrite it once each facility is done?
-                Logger.logMessage("Running facility " + str(num) + " of " + str(len(fac_list)))
+                Logger.logMessage("Preparing to model facility " + str(num) + " of " + str(len(fac_list)))
                 
                 success = False
                 
                 
                 try:
+                                        
                     runner = FacilityRunner(facid, self.model, self.abort)
-                    runner.setup()
+                    if self.model.faclist.dataframe.loc[self.model.faclist.dataframe['fac_id']
+                                                        ==facid]['leadYN'].iloc[0].upper() == 'N':
+                        # no special lead modeling
+                        runner.setup()
+                    else:
+                        # Run Aermod twice - once for lead and once for all pollutants
+                        runner.setupLead()
+                        runner.setup()
 
                 except BaseException as ex:
 

@@ -10,6 +10,7 @@ from com.sca.hem4.DepositionDepletion import sort
 from com.sca.hem4.model.Model import *
 from datetime import datetime
 from com.sca.hem4.support.NormalRounding import *
+import com.sca.hem4.FindMet as fm
 
 
 class FacilityRunner():
@@ -22,21 +23,11 @@ class FacilityRunner():
         self.phase = None
         
         self.phaseNames = {'P': 'Particle', 'V': 'Vapor'}
-                
-    
-    def setup(self):
-            
-        #put phase in model_optns
-        fac = self.model.faclist.dataframe.loc[self.model.faclist.dataframe[fac_id] == self.facilityId]
-        self.acute_yn = fac[acute].tolist()[0]
-        
-        if fac['phase'].iloc[0] == "":
-            self.model.model_optns['phase'] = None
+        self.facops = self.model.faclist.dataframe.loc[self.model.faclist.dataframe[fac_id] == self.facilityId]
 
-        else:
-            self.model.model_optns['phase'] = fac['phase'].tolist()[0]
 
-                    
+    def setupLead(self):
+                                
         #create fac folder
         fac_folder =  "output/" + self.model.group_name + "/" + self.facilityId + "/"
 
@@ -55,8 +46,92 @@ class FacilityRunner():
 
         
         # phases dictionary
+        phases = {'phase': None, 'settings': None}
+
+              
+        # create Aermod runstream for the lead run
+        self.runstream = self.prep_fac.createRunstream(self.facilityId, phases, aermodleadYN='Y')
+
+        if self.runstream is None:
+            # In this case, no lead emissions were found for this facility. Do not run LEADPOST.
+            # Instead return to Processor and run setup for mormal Aermod run.
+            return
+            
+        # Set the runtype variable which indicates how Aermod is run (with or without deposition)
+        # and what columns will be in the Aermod postfile
+        depoYN = 'N'
+        depotype = 'NO'
+        runtype = self.set_runtype(depoYN, depotype)
+        self.model.model_optns['runtype'] = runtype
+                    
+        #run aermod
+        Logger.logMessage("Aermod will be run for lead sources only and produce outputs for LEADPOST.")
+        self.run(fac_folder)
+
+        #check lead aermod run and if successful then run LEADPOST
+        check = False
+        try:
+            check = self.check_AermodLead_run(fac_folder)
+        
+        except BaseException as e:
+            
+            Logger.logMessage(str(e))
+        
+        
+        if check == True:
+            
+            # The post files represent unit emissions. Adjust them using the real
+            # lead emissions.
+            self.adjustPostfiles(fac_folder)
+            
+            # run LEADPOST
+            self.runLeadPost(fac_folder)
+
+            #check LEADPOST run
+            checkpost = False
+            try:
+                checkpost = self.check_LeadPost_run(fac_folder)
+            
+            except BaseException as e:
+                
+                Logger.logMessage(str(e))
+            
+
+
+            
+    
+    def setup(self):
+            
+        #put phase in model_optns
+        self.acute_yn = self.facops[acute].tolist()[0]
+        
+        if self.facops['phase'].iloc[0] == "":
+            self.model.model_optns['phase'] = None
+
+        else:
+            self.model.model_optns['phase'] = self.facops['phase'].tolist()[0]
+
+                    
+        #create faility folder
+        fac_folder =  "output/" + self.model.group_name + "/" + self.facilityId + "/"
+
+        if os.path.exists(fac_folder):
+            pass
+        else:
+            os.makedirs(fac_folder)        
+        
+        #do prep
+        try:    
+            self.prep_fac = self.prep()
+            
+        except BaseException as e:
+                
+                Logger.logMessage(str(e))
+
+        
+        # phases dictionary
         if self.model.model_optns['phase'] in ('P', 'V', 'B'):
-            phases = sort(fac)
+            phases = sort(self.facops)
             
         elif self.model.model_optns['phase'] == 'Z':
             phases = {'phase': 'Z', 'settings': None}
@@ -65,10 +140,10 @@ class FacilityRunner():
             phases = {'phase': None, 'settings': None}
 
               
-        # dSingle run model options
+        # Single run model options
         if self.model.model_optns['phase'] != 'B':
 
-            self.runstream = self.prep_fac.createRunstream(self.facilityId, phases)
+            self.runstream = self.prep_fac.createRunstream(self.facilityId, phases, aermodleadYN='N')
 
             # Set the runtype variable which indicates how Aermod is run (with or without deposition)
             # and what columns will be in the Aermod plotfile
@@ -184,7 +259,7 @@ class FacilityRunner():
     
                     # Put the acute plot file into the Model class
                     self.model.acuteplot_df = aplot_df
-
+                
                 # Process outputs for single facility
                 self.process_outputs(fac_folder, plot_df)
                 
@@ -193,7 +268,7 @@ class FacilityRunner():
             #double run for particle and vapor
 
             #let the sort get both phases then loop through each
-            phases = sort(fac)
+            phases = sort(self.facops)
                         
             runstreams = []
             plot_df = pd.DataFrame()
@@ -210,7 +285,7 @@ class FacilityRunner():
                 
                 # create runstream for individual phase
                 try:
-                    self.runstream = self.prep_fac.createRunstream(self.facilityId, r)
+                    self.runstream = self.prep_fac.createRunstream(self.facilityId, r, aermodleadYN='N')
                     
                 except BaseException as e:
                 
@@ -299,6 +374,7 @@ class FacilityRunner():
                 
             # Process outputs for this facility
             self.process_outputs(fac_folder, plot_df)
+            
     
     def prep(self):
         
@@ -307,14 +383,10 @@ class FacilityRunner():
         try:
             
             prep = FacilityPrep(self.model)
-        
-#        print("building runstream")
-        
+                
         except BaseException as e:
             
             Logger.logMessage(str(e))
-                
-        
         
         return prep
             
@@ -342,6 +414,64 @@ class FacilityRunner():
                 time.sleep(0.5)
                 subRunning = (p.poll() is None)
                         
+
+    def runLeadPost(self, fac_folder):
+
+        #run LEADPOST
+        now = datetime.now().time()
+        current_time = now.strftime("%H:%M:%S")
+        Logger.logMessage("Running LEADPOST for " + self.facilityId + ". Started at time " + current_time)
+
+
+        # Need the modeling time period as an input to LEADPOST.
+        
+        if self.facops['annual'].iloc[0] != 'Y' and self.facops['period_start'].iloc[0] != '' and self.facops['period_end'].iloc[0] != '':
+            # User provided modeling time period
+            period_start_spec = self.facops['period_start'].iloc[0]
+            starts = period_start_spec.split(" ")
+            start_year = starts[0]
+            start_month = starts[1].zfill(2)
+            period_end_spec = self.facops['period_end'].iloc[0]
+            ends = period_end_spec.split(" ")
+            end_year = ends[0]
+            end_month = ends[1]
+        else:
+            # Model is run for one year. Get the meteorology year.
+            surf_file, upper_file, surfdata_str, uairdata_str, prof_base, distance, year = \
+                   fm.find_met(self.model.computedValues['cenlat'], self.model.computedValues['cenlon'], self.model.metlib.dataframe)
+            start_year = str(year)
+            start_month = '01'
+            end_year = str(year)
+            end_month = '12'
+
+        # Construct the names of the LEADPOST outputs. They are named after the modeling
+        # time period and will be needed later.
+        self.monthconc_output = (start_month + '_' + start_year + '_' + end_month + '_' 
+                            + end_year + '_3_month_concs.txt')
+        self.monthmaxconc_output = (start_month + '_' + start_year + '_' + end_month + '_' 
+                            + end_year + '_3_month_max_concs_rec.txt')
+        
+
+        # Start LEADPOST asynchronously and then monitor it, with the possibility
+        # of terminating it midstream (i.e. if the thread is asked to die...)
+
+        leadpost_inputs = [start_month+' '+start_year+' '+end_month+' '+end_year, '', 'Y', 'A', '1']
+        executable = os.path.join("leadpost", "leadpost.exe")
+        p = subprocess.Popen([executable], stdin=subprocess.PIPE, text=True, cwd="leadpost")
+        for data_input in leadpost_inputs:
+            p.stdin.write(data_input + '\n')
+        p.stdin.flush()
+        p.stdin.close()
+        subRunning = True
+        while subRunning:
+            if self.abort.is_set():
+                Logger.logMessage("Terminating LEADPOST process...")
+                p.terminate()
+                return
+            else:
+                time.sleep(0.5)
+                subRunning = (p.poll() is None)
+
                 
     def check_run(self, fac_folder, phasetype):
 
@@ -368,7 +498,7 @@ class FacilityRunner():
                                   " output folder. Ended at time "+ current_time)
             else:
                 success = True
-                self.aermod = True
+                self.model.aermod = True
                 Logger.logMessage("Aermod ran successfully. Ended at time " + current_time)
             check.close()
         else:
@@ -432,6 +562,11 @@ class FacilityRunner():
             if os.path.isfile(fac_folder + max_version):
                 os.remove(fac_folder + max_version)
 
+            for item in os.listdir(fac_folder):
+                if item.endswith(".tmp"):
+                    file_path = os.path.join(fac_folder, item)
+                    os.remove(file_path)
+
             # move aermod.out file
             shutil.move(output, fac_folder)
             
@@ -449,13 +584,6 @@ class FacilityRunner():
                 shutil.move(apltfile, fac_folder)
                 
             
-#            # if an acute maxhour.plt plotfile was output by Aermod, move it too
-#            maxfile = os.path.join("aermod", "maxhour.plt")
-#            if os.path.isfile(maxfile):
-#                if os.path.isfile(fac_folder + "maxhour.plt"):
-#                    os.remove(fac_folder + "maxhour.plt")
-#                shutil.move(maxfile, fac_folder)
-
             # if a temporal seasonhr.plt plotfile was output by Aermod, move it too
             seasonhrfile = os.path.join("aermod", "seasonhr.plt")
             if os.path.isfile(seasonhrfile):
@@ -477,6 +605,13 @@ class FacilityRunner():
                 if os.path.isfile(newname):
                     os.remove(newname)
                 os.rename(oldname, newname)    
+
+            # Move any Aermod tmp files. These contain error or warning messages.
+            for item in os.listdir("aermod"):
+                if item.endswith(".tmp"):
+                    old_name = os.path.join("aermod", item)
+                    new_name = os.path.join(fac_folder, item)
+                    os.rename(old_name, new_name)
         
         else:
             # Aermod failed. Move aermod.inp and aermod.out and rename if appropriate.
@@ -504,6 +639,186 @@ class FacilityRunner():
             
         return success
 
+
+    def check_AermodLead_run(self, fac_folder):
+
+        # Did user abort?
+        if self.abort.is_set():
+            success = False
+            self.model.aermod = False
+            return success
+        
+        ## Check for successful aermod run:
+        output = os.path.join("aermod", "aermod.out")
+        if os.path.exists(output):
+            check = open(output, 'r')
+            message = check.read()
+            now = datetime.now().time()
+            current_time = now.strftime("%H:%M:%S")
+            if 'AERMOD Finishes UN-successfully' in message:
+                success = False
+                self.model.aermod = False
+    
+                
+                Logger.logMessage("Aermod for Lead ran unsuccessfully. Please check the "+
+                                  "error section of the aermod.out file in the "  + str(self.facilityId) + 
+                                  " output folder. Ended at time "+ current_time)
+            else:
+                success = True
+                self.model.aermod = True
+                Logger.logMessage("Aermod for Lead ran successfully. Ended at time " + current_time)
+            check.close()
+        else:
+            # aermod.out does not exist
+            success = False
+            self.model.aermod = False
+            
+            Logger.logMessage("Aermod for Lead finished but the aermod.out file does not exist. Please check the "+
+                              "aermod folder for any *.TMP or *.ERR files that may indicate the problem.")
+            
+
+        if success == True:
+             
+            # Move aermod.inp, aermod.out, and all post files to the facility folder.
+                        
+            # First see if these files are alrezdy in the output folder. If so, delete them.
+            if os.path.isfile(fac_folder + 'aermod_lead.out'):
+                os.remove(fac_folder + 'aermod_lead.out')
+
+            if os.path.isfile(fac_folder + 'aermod_lead.inp'):
+                os.remove(fac_folder + 'aermod_lead.inp')
+
+            extensions = ['pst', 'tmp']
+            for item in os.listdir(fac_folder):
+                item_path = os.path.join(fac_folder, item)
+    
+                # Check if the item is a file and has the desired extension
+                if os.path.isfile(item_path) and any(item.lower().endswith(ext.lower()) for ext in extensions):
+                    os.remove(item_path)
+
+            # Now move files
+
+            # move aermod.out file
+            new_name = os.path.join(fac_folder, 'aermod_lead.out')
+            shutil.move(output, new_name)
+            
+            # move aermod.inp file
+            inpfile = os.path.join("aermod", "aermod.inp")
+            new_name = os.path.join(fac_folder, 'aermod_lead.inp')
+            shutil.move(inpfile, new_name)
+
+            # move all post and TMP files and create the inputfiles.txt file needed by LEADPOST
+            post_input_name = os.path.join('leadpost', 'inputfiles.txt')
+            with open(post_input_name, "w") as postfile:
+                extensions = ['pst', 'tmp']
+                for item in os.listdir('aermod'):
+                    item_path = os.path.join('aermod', item)
+        
+                    # Check if the item is a file and has the desired extension
+                    if os.path.isfile(item_path) and any(item.lower().endswith(ext.lower()) for ext in extensions):
+                        new_name = os.path.join(fac_folder, item)
+                        shutil.move(item_path, new_name)
+                        if new_name.lower().endswith('.pst'):
+                            # populate inputfiles.txt
+                            postfile.write('"../'+new_name+'"\n') 
+                
+        else:
+            # Aermod failed. Move aermod.inp and aermod.out and rename.
+
+            # move aermod.out file
+            new_name = os.path.join(fac_folder, 'aermod_lead.out')
+            shutil.move(output, new_name)
+            
+            # move aermod.inp file
+            inpfile = os.path.join("aermod", "aermod.inp")
+            new_name = os.path.join(fac_folder, 'aermod_lead.inp')
+            shutil.move(inpfile, new_name)
+            
+        return success
+
+
+    def check_LeadPost_run(self, fac_folder):
+
+        # Did user abort?
+        if self.abort.is_set():
+            success = False
+            self.model.leadpost = False
+            return success
+        
+        ## Check for successful LEADPOST run:
+        outlog = os.path.join("leadpost", "lead.log")
+        if os.path.exists(outlog):
+            check = open(outlog, 'r')
+            message = check.read()
+            now = datetime.now().time()
+            current_time = now.strftime("%H:%M:%S")
+            if 'Calculating maximum concentrations' in message:
+                success = True
+                self.model.leadpost = True          
+                Logger.logMessage("LEADPOST ran successfully. Ended at time " + current_time)
+            else:
+                success = False
+                self.model.leadpost = False
+                Logger.logMessage("LEADPOST ran unsuccessfully. Please check the "+
+                                  "lead.log file in the "  + str(self.facilityId) + 
+                                  " output folder. Ended at time "+ current_time)
+            check.close()
+        else:
+            # lead.log does not exist
+            success = False
+            self.model.leadpost = False         
+            Logger.logMessage("LEADPOST finished but the lead.log file does not exist. Please check the "+
+                              "leadpost folder for any *.TMP or *.ERR files that may indicate the problem.")
+            
+
+        if success == True:
+             
+            # Move all LEADPOST output files to the facility folder.
+            # Replace if one is already in there othewrwise will throw error
+
+            # Move log file
+            if os.path.isfile(os.path.join(fac_folder, 'lead.log')):
+                os.remove(os.path.join(fac_folder, 'lead.log'))
+            new_name = os.path.join(fac_folder, 'lead.log')
+            shutil.move(outlog, new_name)
+                
+            # Move lead.out file
+            leadout = os.path.join("leadpost", "lead.out")
+            if os.path.isfile(os.path.join(fac_folder, 'lead.out')):
+                os.remove(os.path.join(fac_folder, 'lead.out'))
+            new_name = os.path.join(fac_folder, 'lead.out')
+            shutil.move(leadout, new_name)
+
+            # Move inputfiles.txt file
+            old_name = os.path.join("leadpost", "inputfiles.txt")
+            if os.path.isfile(os.path.join(fac_folder, 'inputfiles.txt')):
+                os.remove(os.path.join(fac_folder, 'inputfiles.txt'))
+            new_name = os.path.join(fac_folder, 'inputfiles.txt')
+            shutil.move(old_name, new_name)
+
+            # Move output files
+            leadconc = os.path.join("leadpost", self.monthconc_output)
+            if os.path.isfile(os.path.join(fac_folder, self.monthconc_output)):
+                os.remove(os.path.join(fac_folder, self.monthconc_output))
+            new_name = os.path.join(fac_folder, self.monthconc_output)
+            shutil.move(leadconc, new_name)
+
+            leadmaxconc = os.path.join("leadpost", self.monthmaxconc_output)
+            if os.path.isfile(os.path.join(fac_folder, self.monthmaxconc_output)):
+                os.remove(os.path.join(fac_folder, self.monthmaxconc_output))
+            new_name = os.path.join(fac_folder, self.monthmaxconc_output)
+            shutil.move(leadmaxconc, new_name)
+            
+            
+        else:
+            # LEADPOST failed.
+
+            # move lead.log file
+            new_name = os.path.join(fac_folder, 'lead.log')
+            shutil.move(outlog, new_name)
+            
+            
+        return success
 
     def set_runtype(self, depYN, deptype):
         
@@ -632,3 +947,129 @@ class FacilityRunner():
             pace =  str(round((time.time()- self.start)/60, 2)) + ' minutes'
             Logger.logMessage("Finished calculations for " + self.facilityId + 
                               ' after ' + pace + "\n")
+            
+            
+    def adjustPostfiles(self, fac_folder):
+        
+        # Conversion factor for tons/year to ug/m3
+        cf = 2000*0.4536/3600/8760
+        
+        # Get list of all post files in the facility folder
+        post_list = []
+        for filename in os.listdir(fac_folder):
+            if filename.endswith('pst') and os.path.isfile(os.path.join(fac_folder, filename)):
+                post_list.append(filename)
+
+        # Get the ALL post file and load into a dataframe
+        for fname in post_list:
+            if fname == "lead_ALL.pst":
+                all_path = os.path.join(fac_folder, fname)
+                all_df = pd.read_table(all_path, delim_whitespace=True, header=None, 
+                    names=['x','y','avgconc','elev','hill','flag','avg_time','source_id','date','net_id'],
+                    usecols=[0,1,2,3,4,5,6,7,8,9], 
+                    dtype={'x':np.float64,'y':np.float64,'avgconc':np.float64,'elev':np.float64,'hill':np.float64
+                           ,'flag':np.float64,'avg_time':np.str,'source_id':np.str,'date':np.int64,'net_id':np.str},
+                    comment='*') 
+                # set conc to 0
+                all_df['avgconc'] = 0
+                
+                # Save the header of the ALL post file
+                all_header_rows = []
+                with open(all_path, 'r') as file:
+                    for line in file:
+                        if line.strip().startswith('*'):
+                            all_header_rows.append(line)
+                
+                
+                break
+                        
+        #--- Load each post file into a dataframe and multiply by the Lead Compounds emissions
+        #--- The ALL dataframe will need to contain a sum of all post file concs
+        
+        summed_column_series = pd.Series([0] * len(all_df))
+        
+        for pfile in post_list:
+            
+            # skip ALL post file to avoid double counting
+            if pfile == "lead_ALL.pst":
+                continue
+            
+            pfile_path = os.path.join(fac_folder, pfile)
+            
+            # save the header of the post file
+            header_rows = []
+            with open(pfile_path, 'r') as file:
+                for line in file:
+                    if line.strip().startswith('*'):
+                        header_rows.append(line)
+            
+            # load into dataframe
+            postf_df = pd.read_table(pfile_path, delim_whitespace=True, header=None, 
+                names=['x','y','avgconc','elev','hill','flag','avg_time','source_id','date','net_id'],
+                usecols=[0,1,2,3,4,5,6,7,8,9], 
+                dtype={'x':np.float64,'y':np.float64,'avgconc':np.float64,'elev':np.float64,'hill':np.float64
+                       ,'flag':np.float64,'avg_time':np.str,'source_id':np.str,'date':np.int64,'net_id':np.str},
+                comment='*')
+                        
+            # multiply conc by lead emissions (tpy)
+            srcid = postf_df.iloc[0,7]
+            leademis_tpy = (self.model.leademis_df[self.model.leademis_df['source_id']                                                   ==srcid]['emis_tpy'].iloc[0])
+            postf_df['avgconc'] = postf_df['avgconc'] * leademis_tpy * cf
+            
+            # sum to create ALL concs
+            summed_column_series += postf_df['avgconc']
+            
+            # write back to post file
+            with open(pfile_path, 'w') as outfile:
+                for row in header_rows:
+                    outfile.write(row)
+                    
+                for index, row in postf_df.iterrows():
+                    formatted_line = []
+                    formatted_line.append(f"{row['x']:>14.5f}")
+                    formatted_line.append(f"{row['y']:>14.5f}")
+                    formatted_line.append(f"{self.fortranFormat(row['avgconc']):>14}")
+                    formatted_line.append(f"{row['elev']:>9.2f}")
+                    formatted_line.append(f"{row['hill']:>9.2f}")
+                    formatted_line.append(f"{row['flag']:>9.2f}")
+                    formatted_line.append(f"{row['avg_time']:>8}")
+                    formatted_line.append(f"{row['source_id']:>10}")
+                    formatted_line.append(f"{row['date']:>10}")
+                    formatted_line.append(f"{row['net_id']:>10}")
+                    outfile.write("".join(formatted_line) + '\n')
+                    
+        # Put summed concs into ALL df and write back to post file
+        all_df['avgconc'] = summed_column_series
+        
+        with open(all_path, 'w') as outfile:
+            for row in all_header_rows:
+                outfile.write(row)
+                
+            for index, row in all_df.iterrows():
+                formatted_line = []
+                formatted_line.append(f"{row['x']:>14.5f}")
+                formatted_line.append(f"{row['y']:>14.5f}")
+                formatted_line.append(f"{self.fortranFormat(row['avgconc']):>14}")
+                formatted_line.append(f"{row['elev']:>9.2f}")
+                formatted_line.append(f"{row['hill']:>9.2f}")
+                formatted_line.append(f"{row['flag']:>9.2f}")
+                formatted_line.append(f"{row['avg_time']:>8}")
+                formatted_line.append(f"{row['source_id']:>10}")
+                formatted_line.append(f"{row['date']:>10}")
+                formatted_line.append(f"{row['net_id']:>10}")
+                outfile.write("".join(formatted_line) + '\n')
+                    
+        Logger.logMessage("Ready to run LEADPOST for facility " + self.facilityId + "\n")
+                    
+                    
+    def fortranFormat(self, n):
+       a = '{:.5E}'.format(float(n))
+       e = a.find('E')
+       return '0.{}{}{}{:02d}'.format(a[0],a[2:e],a[e:e+2],abs(int(a[e+1:])*1+1))
+                   
+                    
+                    
+            
+            
+
+                

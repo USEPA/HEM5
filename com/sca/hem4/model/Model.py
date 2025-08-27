@@ -21,6 +21,7 @@ angle = 'angle';
 concdate = 'concdate';
 rank = 'rank';
 flag_hgt = 'flag_hgt';
+leadYN = 'leadYN';
 
 class Model():
 
@@ -117,7 +118,8 @@ class Model():
         self.sourceExclusion = {}
         self.aermod = None
         self.acuteplot_df = None
-        self.acute_names = None
+        self.leadpost = None
+        self.leademis_df = None
 
         # Initialize model options
         self.initializeAltRecOptions()
@@ -166,8 +168,8 @@ class Model():
         self.aermod = None
         self.acuteplot_df = None
         self.dependencies = []
-        self.acute_names = None
-
+        self.leadpost = None
+        self.leademis_df = None
 
         # Initialize model options
         self.initializeAltRecOptions()

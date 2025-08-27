@@ -15,6 +15,8 @@ from com.sca.hem4.support.ElevHill import ElevHill
 import math
 import traceback
 import numpy as np
+import textwrap
+
 
 distance = 'distance';
 angle = 'angle';
@@ -29,7 +31,7 @@ class FacilityPrep():
         self.model = model
         
 
-    def createRunstream(self, facid, runPhase):
+    def createRunstream(self, facid, runPhase, aermodleadYN):
 
         #%%---------- Facility Options --------------------------------------
         self.model.facops = self.model.faclist.dataframe.loc[self.model.faclist.dataframe[fac_id] == facid].copy()
@@ -45,8 +47,41 @@ class FacilityPrep():
         self.ring_distances = self.model.facops['ring_distances'].iloc[0]
 
         #%%---------- Emissions Locations --------------------------------------
-        emislocs = self.model.emisloc.dataframe.loc[self.model.emisloc.dataframe[fac_id] == facid].copy()
-
+        
+        # If this is an Aermod lead run, only use lead emission sources
+        if aermodleadYN == 'N':
+            # not a lead run
+            emislocs = self.model.emisloc.dataframe.loc[self.model.emisloc.dataframe[fac_id] == facid].copy()
+        
+        else:
+            # this is a lead run
+            leademis_df = (self.model.hapemis.dataframe.loc
+                           [(self.model.hapemis.dataframe[fac_id] == facid) & 
+                            (self.model.hapemis.dataframe[pollutant].str.lower() ==
+                            'lead compounds')])
+            self.model.leademis_df = leademis_df
+        
+            if not leademis_df.empty:
+                
+                # There are lead emissions
+                lead_sources_list = leademis_df[source_id].tolist()
+                emislocs = (self.model.emisloc.dataframe.loc
+                            [(self.model.emisloc.dataframe[fac_id] == facid) & 
+                        (self.model.emisloc.dataframe[source_id].isin(lead_sources_list))])
+            else:
+                
+                # No lead emissions
+                Logger.logMessage("\nWarning! Facility " + facid + 
+                                  " does not have any emissions of pollutant Lead Compounds but the LEADPOST option has benn set to Y." 
+                                  + " LEADPOST will not be run for this facility.\n")
+                # Reset
+                self.model.faclist.dataframe.loc[self.model.faclist.dataframe[fac_id]
+                                                  ==facid]['leadYN'] = 'N'
+                return None
+            
+                # emislocs = self.model.emisloc.dataframe.loc[self.model.emisloc.dataframe[fac_id] == facid].copy()
+                # aermodleadYN = 'N'
+            
         
         # If there is a bouyant line source with other sources, then it has to come last because of an Aermod v19191 bug.
         blRows = emislocs[emislocs[source_type]=='B']
@@ -81,7 +116,12 @@ class FacilityPrep():
         emislocs[utmzone] = facutmzonestr
         
         #%%---------- HAP Emissions --------------------------------------
-        hapemis = self.model.hapemis.dataframe.loc[self.model.hapemis.dataframe[fac_id] == facid]
+        if aermodleadYN == 'N':
+            # not a lead run
+            hapemis = self.model.hapemis.dataframe.loc[self.model.hapemis.dataframe[fac_id] == facid]
+        else:
+            # this is a lead run
+            hapemis = leademis_df
 
 
         #%%---------- Optional Buoyant Line Parameters -----------------------------------------
@@ -237,6 +277,9 @@ class FacilityPrep():
                     cenlat, cenlon = UTM.utm2ll(temp_ceny, temp_cenx, facutmzonestr)
                     ceny, cenx = UTM.ll2utm_alt(cenlat, cenlon, facutmzonenum, hemi)
 
+        # msgtxt = ("Using facility center [x, y, lat, lon] = [" + str(cenx) + ", " + str(ceny) + ", " +
+        #                       str(cenlat) + ", " + str(cenlon) + "]\n")
+        # indent_msgtxt = textwrap.indent(msgtxt, "    ")
         Logger.logMessage("Using facility center [x, y, lat, lon] = [" + str(cenx) + ", " + str(ceny) + ", " +
                               str(cenlat) + ", " + str(cenlon) + "]\n")
         self.model.computedValues['cenlat'] = cenlat
@@ -682,14 +725,26 @@ class FacilityPrep():
         runstream = Runstream(self.model.facops, emislocs, hapemis, buoyant_df,
                               polyver_df, bldgdw_df, partdia_df, landuse_df,
                               seasons_df, emisvar_df, self.model)
-        runstream.build_co(runPhase, self.innerblks, self.outerblks)
-        runstream.build_so(runPhase)
+        
+        if aermodleadYN == 'N':
+            # not a lead run
+            runstream.build_co(runPhase, self.innerblks, self.outerblks)
+        else:
+            # this is a lead run
+            runstream.build_co_lead(self.innerblks, self.outerblks)
+            
+        runstream.build_so(runPhase, aermodleadYN)
         runstream.build_re(self.innerblks, cenx, ceny, polar_df)
         metfile, distanceToMet = runstream.build_me(cenlat, cenlon)
         self.model.computedValues['metfile'] = metfile
         self.model.computedValues['distance'] = distanceToMet
 
-        runstream.build_ou()
+        if aermodleadYN == 'N':
+            # not a lead run
+            runstream.build_ou()
+        else:
+            # this is a lead run
+            runstream.build_ou_lead()
 
         return runstream
 

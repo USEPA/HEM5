@@ -587,7 +587,7 @@ class EJ(Page):
 
         # Next, compile a list of all facility folders in the output folder (which will be used when we create
         # reports for each facility individually.)
-        facilities = Directory.find_facilities(self.fullpath)
+        facilities = Directory.find_facilities(self.fullpath, maxRiskAndHI_df)
 
         # Are any of the these facilities in the Virgin Islands? If so, show a message
         # that they will be skipped because there is no ACS data for them.
