@@ -62,11 +62,11 @@ class Processor():
         # The user can change them in the dose reponse file, so record them and 
         # compare to the default names to let the user know if they have been changed.
         # ----------------------------------------------------------------------------------
-        haplib_acute_names_default = ["AEGL-1  (1-hr)(mg/m3)",
-                                           "AEGL-2  (1-hr)(mg/m3)",
-                                           "ERPG-1(mg/m3)",
-                                           "ERPG-2(mg/m3)",
-                                           "Acute REL(mg/m3)"]
+        haplib_acute_names_default = ["AEGL-1  (1-hr)\n(mg/m3)",
+                                           "AEGL-2  (1-hr)\n(mg/m3)",
+                                           "ERPG-1\n(mg/m3)",
+                                           "ERPG-2\n(mg/m3)",
+                                           "Acute REL\n(mg/m3)"]
         
         haplib_header = pd.read_excel("resources/Dose_Response_Library.xlsx", nrows=1)
         haplib_acute_names_real = haplib_header.columns.tolist()[-5:]
