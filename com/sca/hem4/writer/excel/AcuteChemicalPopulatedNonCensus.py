@@ -31,11 +31,17 @@ class AcuteChemicalPopulatedNonCensus(ExcelWriter):
          
 
     def getHeader(self):
-        return ['Pollutant', 'Conc (µg/m3)', 'Conc sci (µg/m3)', 'Aegl_1 1hr (mg/m3)',
-                'Aegl_2 1hr (mg/m3)', 'Erpg_1 (mg/m3)', 'Erpg_2 (mg/m3)',
-                'Acute Rel (mg/m3)', 'Population',
-                'Distance (in meters)', 'Angle (from north)', 'Elevation (in meters)', 'Hill Height (in meters)',
-                'Receptor ID', 'Utm easting', 'Utm northing', 'Latitude', 'Longitude', 'Receptor type', 'Notes']
+        
+        # Get acute benchmark names
+        bench_names = self.model.acute_names
+        
+        header_names = (['Pollutant', 'Conc (µg/m3)', 'Conc sci (µg/m3)'] + bench_names +
+                 ['Population', 'Distance (in meters)', 'Angle (from north)', 
+                 'Elevation (in meters)', 'Hill Height (in meters)', 'Receptor ID', 
+                 'Utm easting', 'Utm northing', 'Latitude', 'Longitude', 
+                 'Receptor type', 'Notes'])
+        
+        return header_names
 
     def generateOutputs(self):
         

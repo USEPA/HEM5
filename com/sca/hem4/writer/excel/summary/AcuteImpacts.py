@@ -4,6 +4,8 @@ from com.sca.hem4.writer.excel.RiskBreakdown import *
 from com.sca.hem4.writer.excel.summary.AltRecAwareSummary import AltRecAwareSummary
 import os
 
+from com.sca.hem4.upload.DoseResponse import DoseResponse
+
 hq_rel = 'hq_rel'
 hq_aegl1 = 'hq_aegl1'
 hq_erpg1 = 'hq_erpg1'
@@ -29,12 +31,31 @@ class AcuteImpacts(ExcelWriter, InputFile, AltRecAwareSummary):
         self.altrec = self.determineAltRec(self.categoryFolder)
 
     def getHeader(self):
+        # Get acute benchmark names from Dose Response file. Remove any newlines
+        # and characters after the newline.
+        bench_names = []
+        for item in DoseResponse.getAcuteNames():
+            # Split the string at the first occurrence of a newline character
+            # and take the first part
+            bench_item = item.split('\n')[0]
+            bench_names.append(bench_item)
+
         if self.altrec == 'Y':
-            return ['Facility ID', 'Pollutant', 'CONC_MG/M3', 'REL', 'AEGL_1_1H', 'ERPG_1', 'AEGL_2_1H', 'ERPG_2',
-                    'HQ_REL	', 'HQ_AEGL1', 'HQ_ERPG1', 'HQ_AEGL2', 'HQ_ERPG2', 'Receptor ID', 'Distance', 'Angle']
+            header_list = ['Facility ID', 'Pollutant', 'CONC_MG/M3', bench_names[4]
+                           , bench_names[0], bench_names[2], bench_names[1], bench_names[3]
+                           , 'HQ_'+bench_names[4], 'HQ_'+bench_names[0], 'HQ_'+bench_names[2]
+                           , 'HQ_'+bench_names[1], 'HQ_'+bench_names[3]
+                           , 'Receptor ID', 'Distance', 'Angle']
+            
+            return header_list
         else:
-            return ['Facility ID', 'Pollutant', 'CONC_MG', 'REL', 'AEGL_1_1H', 'ERPG_1', 'AEGL_2_1H', 'ERPG_2',
-                'HQ_REL	', 'HQ_AEGL1', 'HQ_ERPG1', 'HQ_AEGL2', 'HQ_ERPG2', 'FIPS', 'Block', 'Distance', 'Angle']
+            header_list = ['Facility ID', 'Pollutant', 'CONC_MG/M3', bench_names[4]
+                           , bench_names[0], bench_names[2], bench_names[1], bench_names[3]
+                           , 'HQ_'+bench_names[4], 'HQ_'+bench_names[0], 'HQ_'+bench_names[2]
+                           , 'HQ_'+bench_names[1], 'HQ_'+bench_names[3]
+                           , 'FIPS', 'Block', 'Distance', 'Angle']
+            
+            return header_list
 
 
     def getColumns(self):

@@ -26,6 +26,9 @@ from com.sca.hem4.writer.excel.summary.AcuteImpacts import *
 
 from sigfig import round as roundsf
 
+from com.sca.hem4.upload.DoseResponse import DoseResponse
+
+
 #------------------------------------------
 # Creates html files with maps displaying acute impact data. CSV files are also created
 # should someone want to create their own visualization with the raw data.
@@ -63,6 +66,20 @@ class AcuteImpactsVisualizer():
         # Suppress various bokeh warnings
         warnings.filterwarnings("ignore")
 
+        # Get acute benchmark names from Dose Response file. Remove any newlines
+        # and characters after the newline.
+        acutebench = []
+        for item in DoseResponse.getAcuteNames():
+            # Split the string at the first occurrence of a newline character
+            # and take the first part
+            bench_item = item.split('\n')[0]
+            acutebench.append(bench_item)
+
+        if len(acutebench) != 5:
+            Logger.logMessage("Error in AcuteImpactsVisualizer.py. " +
+                              "The number of acute benchmarks in the Dose Response file is not 5.")
+            return
+
         flag_list = []
         acuteImpacts = AcuteImpacts(targetDir=self.sourceDir, facilityIds=self.facilityIds, parameters=[self.basepath])
 
@@ -70,15 +87,15 @@ class AcuteImpactsVisualizer():
 
         for index, row in flag_df.iterrows():
             if row[hq_rel] >= 1.5:
-                flag_list.append((row[fac_id],row.pollutant, "REL"))
+                flag_list.append((row[fac_id],row.pollutant, acutebench[4]))
             if row[hq_aegl1] >= 1.5:
-                flag_list.append((row[fac_id],row.pollutant, "AEGL-1 1-hr"))
+                flag_list.append((row[fac_id],row.pollutant, acutebench[0]))
             if row[hq_erpg1] >= 1.5:
-                flag_list.append((row[fac_id],row.pollutant, "ERPG-1"))
+                flag_list.append((row[fac_id],row.pollutant, acutebench[2]))
             if row[hq_aegl2] >= 1.5:
-                flag_list.append((row[fac_id],row.pollutant, "AEGL-2 1-hr"))
+                flag_list.append((row[fac_id],row.pollutant, acutebench[1]))
             if row[hq_erpg2] >= 1.5:
-                flag_list.append((row[fac_id],row.pollutant, "ERPG-2"))
+                flag_list.append((row[fac_id],row.pollutant, acutebench[3]))
 
         flag_list.sort()
 
@@ -91,18 +108,17 @@ class AcuteImpactsVisualizer():
         else:
             if os.path.isdir(self.sourceDir + '/Acute Maps') == 0:
                 os.mkdir(self.sourceDir + '/Acute Maps')
-
-        # Find the HEM dose-response library and create df of it
-        # Under the HEM4 dir names, "Reference" would be "Resources"
-        RefFile = 'resources/Dose_Response_Library.xlsx'
-        RefDF = pd.read_excel(RefFile)
-        RefDF['Pollutant'] = RefDF['Pollutant'].str.lower()
-        RefDF.set_index('Pollutant',inplace=True)
-        RefDict = {'REL': 'Acute REL\n(mg/m3)',\
-                   'AEGL-1 1-hr':'AEGL-1  (1-hr)\n(mg/m3)',\
-                   'ERPG-1':'ERPG-1\n(mg/m3)',\
-                   'AEGL-2 1-hr':'AEGL-2  (1-hr)\n(mg/m3)',\
-                   'ERPG-2':'ERPG-2\n(mg/m3)'}
+                    
+        
+        # Create a DF of the dose response library and dictionary of acute names        
+        RefDF = DoseResponse().dataframe
+        RefDF[pollutant] = RefDF[pollutant].str.lower()
+        RefDF.set_index(pollutant,inplace=True)
+        RefDict = {acutebench[0]: aegl_1_1h,\
+                   acutebench[1]: aegl_2_1h,\
+                   acutebench[2]: erpg_1,\
+                   acutebench[3]: erpg_2,\
+                   acutebench[4]: rel}
 
         tablist=[]
         for acuteset in (flag_list):
@@ -119,7 +135,7 @@ class AcuteImpactsVisualizer():
             allpolar = AllPolarReceptors(targetDir=path, facilityId=Fac, acuteyn='Y')
             allpolar_df = allpolar.createDataframe()
             allpolar_df[pollutant] = allpolar_df[pollutant].str.lower()
-
+           
             # Find the reference value
             ref_typ_col = RefDict[refType]
             refVal = RefDF.loc[HAP, ref_typ_col]
