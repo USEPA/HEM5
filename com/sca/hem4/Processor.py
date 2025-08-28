@@ -14,10 +14,12 @@ from com.sca.hem4.writer.excel.FacilityTOSHIExp import FacilityTOSHIExp
 from com.sca.hem4.writer.kml.KMLWriter import KMLWriter
 from com.sca.hem4.inputsfolder.InputsPackager import InputsPackager
 from com.sca.hem4.upload.FileUploader import FileUploader
+from com.sca.hem4.support.ElevHill import ElevHill
 
 import traceback
 from collections import defaultdict
 import uuid
+import time
 
 from tkinter import messagebox
 
@@ -62,11 +64,11 @@ class Processor():
         # The user can change them in the dose reponse file, so record them and 
         # compare to the default names to let the user know if they have been changed.
         # ----------------------------------------------------------------------------------
-        haplib_acute_names_default = ["AEGL-1  (1-hr)(mg/m3)",
-                                           "AEGL-2  (1-hr)(mg/m3)",
-                                           "ERPG-1(mg/m3)",
-                                           "ERPG-2(mg/m3)",
-                                           "Acute REL(mg/m3)"]
+        haplib_acute_names_default = ["AEGL-1  (1-hr)\n(mg/m3)",
+                                           "AEGL-2  (1-hr)\n(mg/m3)",
+                                           "ERPG-1\n(mg/m3)",
+                                           "ERPG-2\n(mg/m3)",
+                                           "Acute REL\n(mg/m3)"]
         
         haplib_header = pd.read_excel("resources/Dose_Response_Library.xlsx", nrows=1)
         haplib_acute_names_real = haplib_header.columns.tolist()[-5:]
@@ -116,11 +118,9 @@ class Processor():
             for index, row in self.model.faclist.dataframe.iterrows():
                 
                 facid = row[0]
-                #print(facid)
                 fac_list.append(facid)
                 num = 1
     
-    #        Logger.logMessage("The facility ids being modeled: , False)
             Logger.logMessage("The facility ids to model are: " + ", ".join(fac_list))
                
             success = False
@@ -131,24 +131,47 @@ class Processor():
             
             self.completed = []
             self.skipped = []
-            for facid in fac_list:
-                print(facid)
+            
+            #-------------Iterrate over all facilities-------------------------
+            num = 0
+            for index, row in self.model.faclist.dataframe.iterrows():
+                
+                num+=1
+                facid = row['fac_id']
+                
                 if self.abort.is_set():
                     Logger.logMessage('HEM RUN GROUP: ' + str(self.model.group_name) + ' canceled')
                     messagebox.showinfo('Run Canceled', 'HEM RUN GROUP: ' + str(self.model.group_name) + ' canceled')
                     self.nav.abortLabel.destroy()
-#                    Logger.logMessage("Aborting processing...")
                     success = False
                     return success
-                
-                
                 
                 #save version of this gui as is? constantly overwrite it once each facility is done?
                 Logger.logMessage("Preparing to model facility " + str(num) + " of " + str(len(fac_list)))
                 
+                if row['elev'] == 'Y':
+                    # This facility will use elevations.
+                    # Confirm that an Internet connection is available. If there is not, then keep
+                    # checking every minute indefinitely. Report progress to the log.
+                    inLoop = False
+                    gotInternet = False
+                    while not gotInternet:
+                        gotInternet = ElevHill.isInternet()
+                        if gotInternet == False:
+                            inLoop = True
+                            currtime = datetime.now().strftime("%H:%M:%S")
+                            message = "\nThis facility needs elevation data but there is no Internet connection to retrieve elevations. Will try again in 1 minute. \n" \
+                                      + "Click Exit to stop this loop. \n" \
+                                      + "Current time is: " + currtime
+                            Logger.logMessage(message)
+                            time.sleep(60)
+                        else:
+                            if inLoop == True:
+                                message = '\nInternet connection is restored. Will continue processing this facility.\n'
+                                Logger.logMessage(message)
+                
                 success = False
-                
-                
+                                
                 try:
                                         
                     runner = FacilityRunner(facid, self.model, self.abort)
