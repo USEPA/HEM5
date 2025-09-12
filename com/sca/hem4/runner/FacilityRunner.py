@@ -846,32 +846,32 @@ class FacilityRunner():
     def readplotf(self, pfile, runtype):
 
         if runtype == 0:
-            plotf_df = pd.read_table(pfile, delim_whitespace=True, header=None, 
+            plotf_df = pd.read_table(pfile, sep='\s+', header=None, 
                 names=[utme,utmn,result,elev,hill,flag,avg_time,source_id,num_yrs,net_id],
                 usecols=[0,1,2,3,4,5,6,7,8,9], 
                 converters={utme:np.float64,utmn:np.float64,result:np.float64,elev:np.float64,hill:np.float64
-                       ,flag:np.float64,avg_time:np.str,source_id:np.str,num_yrs:np.int64,net_id:np.str},
+                       ,flag:np.float64,avg_time:str,source_id:str,num_yrs:np.int64,net_id:str},
                 comment='*')
         elif runtype == 1:
-            plotf_df = pd.read_table(pfile, delim_whitespace=True, header=None, 
+            plotf_df = pd.read_table(pfile, sep='\s+', header=None, 
                 names=[utme,utmn,result,ddp,wdp,elev,hill,flag,avg_time,source_id,num_yrs,net_id],
                 usecols=[0,1,2,3,4,5,6,7,8,9,10,11], 
                 converters={utme:np.float64,utmn:np.float64,result:np.float64,ddp:np.float64,wdp:np.float64,elev:np.float64,hill:np.float64
-                       ,flag:np.float64,avg_time:np.str,source_id:np.str,num_yrs:np.int64,net_id:np.str},
+                       ,flag:np.float64,avg_time:str,source_id:str,num_yrs:np.int64,net_id:str},
                 comment='*')
         elif runtype == 2:
-            plotf_df = pd.read_table(pfile, delim_whitespace=True, header=None, 
+            plotf_df = pd.read_table(pfile, sep='\s+', header=None, 
                 names=[utme,utmn,result,ddp,elev,hill,flag,avg_time,source_id,num_yrs,net_id],
                 usecols=[0,1,2,3,4,5,6,7,8,9,10], 
                 converters={utme:np.float64,utmn:np.float64,result:np.float64,ddp:np.float64,elev:np.float64,hill:np.float64
-                       ,flag:np.float64,avg_time:np.str,source_id:np.str,num_yrs:np.int64,net_id:np.str},
+                       ,flag:np.float64,avg_time:str,source_id:str,num_yrs:np.int64,net_id:str},
                 comment='*')
         elif runtype == 3:
-            plotf_df = pd.read_table(pfile, delim_whitespace=True, header=None, 
+            plotf_df = pd.read_table(pfile, sep='\s+', header=None, 
                 names=[utme,utmn,result,wdp,elev,hill,flag,avg_time,source_id,num_yrs,net_id],
                 usecols=[0,1,2,3,4,5,6,7,8,9,10], 
                 converters={utme:np.float64,utmn:np.float64,result:np.float64,wdp:np.float64,elev:np.float64,hill:np.float64
-                       ,flag:np.float64,avg_time:np.str,source_id:np.str,num_yrs:np.int64,net_id:np.str},
+                       ,flag:np.float64,avg_time:str,source_id:str,num_yrs:np.int64,net_id:str},
                 comment='*')
 
         # Round utm coordinates to integers
@@ -887,39 +887,39 @@ class FacilityRunner():
         
         if runtype == 0:
             # No deposition
-            aplot_df = pd.read_table(apfile, delim_whitespace=True, header=None, 
+            aplot_df = pd.read_table(apfile, sep='\s+', header=None, 
                 names=[utme,utmn,aresult,elev,hill,flag,avg_time,source_id,num_yrs,net_id],
                 usecols=[0,1,2,3,4,5,6,7,8,9], 
                 converters={utme:np.float64,utmn:np.float64,aresult:np.float64,elev:np.float64,hill:np.float64
-                       ,flag:np.float64,avg_time:np.str,source_id:np.str,rank:np.str,net_id:np.str
-                       ,concdate:np.str},
+                       ,flag:np.float64,avg_time:str,source_id:str,rank:str,net_id:str
+                       ,concdate:str},
                 comment='*')             
         elif runtype == 1:
             # Wet and Dry deposition
-            aplot_df = pd.read_table(apfile, delim_whitespace=True, header=None, 
+            aplot_df = pd.read_table(apfile, sep='\s+', header=None, 
                 names=[utme,utmn,aresult,adry,awet,elev,hill,flag,avg_time,source_id,num_yrs,net_id],
                 usecols=[0,1,2,3,4,5,6,7,8,9,10,11], 
                 converters={utme:np.float64,utmn:np.float64,aresult:np.float64,adry:np.float64,
                             awet:np.float64,elev:np.float64,hill:np.float64,flag:np.float64,
-                            avg_time:np.str,source_id:np.str,rank:np.str,net_id:np.str,concdate:np.str},
+                            avg_time:str,source_id:str,rank:str,net_id:str,concdate:str},
                 comment='*')                       
         elif runtype == 2:
             # Dry only deposition
-            aplot_df = pd.read_table(apfile, delim_whitespace=True, header=None, 
+            aplot_df = pd.read_table(apfile, sep='\s+', header=None, 
                 names=[utme,utmn,aresult,adry,elev,hill,flag,avg_time,source_id,num_yrs,net_id],
                 usecols=[0,1,2,3,4,5,6,7,8,9,10], 
                 converters={utme:np.float64,utmn:np.float64,aresult:np.float64,adry:np.float64,
                             elev:np.float64,hill:np.float64,flag:np.float64,
-                            avg_time:np.str,source_id:np.str,rank:np.str,net_id:np.str,concdate:np.str},
+                            avg_time:str,source_id:str,rank:str,net_id:str,concdate:str},
                 comment='*')                       
         elif runtype == 3:
             # Wet only deposition
-            aplot_df = pd.read_table(apfile, delim_whitespace=True, header=None, 
+            aplot_df = pd.read_table(apfile, sep='\s+', header=None, 
                 names=[utme,utmn,aresult,awet,elev,hill,flag,avg_time,source_id,num_yrs,net_id],
                 usecols=[0,1,2,3,4,5,6,7,8,9,10], 
                 converters={utme:np.float64,utmn:np.float64,aresult:np.float64,awet:np.float64,
                             elev:np.float64,hill:np.float64,flag:np.float64,
-                            avg_time:np.str,source_id:np.str,rank:np.str,net_id:np.str,concdate:np.str},
+                            avg_time:str,source_id:str,rank:str,net_id:str,concdate:str},
                 comment='*')
  
         # Round utm coordinates to integers
@@ -964,11 +964,11 @@ class FacilityRunner():
         for fname in post_list:
             if fname == "lead_ALL.pst":
                 all_path = os.path.join(fac_folder, fname)
-                all_df = pd.read_table(all_path, delim_whitespace=True, header=None, 
+                all_df = pd.read_table(all_path, sep='\s+', header=None, 
                     names=['x','y','avgconc','elev','hill','flag','avg_time','source_id','date','net_id'],
                     usecols=[0,1,2,3,4,5,6,7,8,9], 
                     dtype={'x':np.float64,'y':np.float64,'avgconc':np.float64,'elev':np.float64,'hill':np.float64
-                           ,'flag':np.float64,'avg_time':np.str,'source_id':np.str,'date':np.int64,'net_id':np.str},
+                           ,'flag':np.float64,'avg_time':str,'source_id':str,'date':np.int64,'net_id':str},
                     comment='*') 
                 # set conc to 0
                 all_df['avgconc'] = 0
@@ -1004,11 +1004,11 @@ class FacilityRunner():
                         header_rows.append(line)
             
             # load into dataframe
-            postf_df = pd.read_table(pfile_path, delim_whitespace=True, header=None, 
+            postf_df = pd.read_table(pfile_path, sep='\s+', header=None, 
                 names=['x','y','avgconc','elev','hill','flag','avg_time','source_id','date','net_id'],
                 usecols=[0,1,2,3,4,5,6,7,8,9], 
                 dtype={'x':np.float64,'y':np.float64,'avgconc':np.float64,'elev':np.float64,'hill':np.float64
-                       ,'flag':np.float64,'avg_time':np.str,'source_id':np.str,'date':np.int64,'net_id':np.str},
+                       ,'flag':np.float64,'avg_time':str,'source_id':str,'date':np.int64,'net_id':str},
                 comment='*')
                         
             # multiply conc by lead emissions (tpy)

@@ -319,7 +319,7 @@ class Temporal(CsvWriter, InputFile):
         columns = [0,1,2,3,4,5,6,7,8,9,10]
         colnames = [utme,utmn,conc,elev,hill,flag,source_id,nhrs,seas,hour,net_id]
         type_converters = {utme:np.float64,utmn:np.float64,conc:np.float64,elev:np.float64,hill:np.float64,
-            flag:np.float64,source_id:np.str,nhrs:np.int64,seas:np.int64,hour:np.int64,net_id:np.str}
+            flag:np.float64,source_id:str,nhrs:np.int64,seas:np.int64,hour:np.int64,net_id:str}
 
         if self.rtype == 1:
             # Wet and dry dep
@@ -340,7 +340,7 @@ class Temporal(CsvWriter, InputFile):
             colnames.insert(3, wetdep)
             type_converters[wetdep] = np.float64
 
-        plot_df = pd.read_table(pfile, delim_whitespace=True, header=None, names=colnames, usecols=columns,
+        plot_df = pd.read_table(pfile, sep='\s+', header=None, names=colnames, usecols=columns,
              converters=type_converters, comment='*')
 
         plot_df.utme = plot_df.utme.round()

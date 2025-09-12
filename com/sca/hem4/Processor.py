@@ -117,9 +117,8 @@ class Processor():
             fac_list = []
             for index, row in self.model.faclist.dataframe.iterrows():
                 
-                facid = row[0]
+                facid = row.iloc[0]
                 fac_list.append(facid)
-                num = 1
     
             Logger.logMessage("The facility ids to model are: " + ", ".join(fac_list))
                
@@ -221,7 +220,6 @@ class Processor():
                     Logger.logMessage(message)
                     
                     self.skipped.append(facid)
-                    num += 1
                     continue
 
                     ## if the try is successful this is where we would update the 
@@ -297,7 +295,6 @@ class Processor():
                     else:
                         self.completed.append(facid)
                     
-                num += 1
                 success = True
                 
 

@@ -87,11 +87,11 @@ class InputFile(ABC):
         
         else:
                             
-            df = df.astype(str).applymap(self.convertEmptyToNaN)
+            df = df.astype(str).map(self.convertEmptyToNaN)
 
             # Verify no type errors
             numeric_only = df.copy()
-            numeric_only[self.numericColumns] = numeric_only[self.numericColumns].applymap(InputFile.is_numeric)
+            numeric_only[self.numericColumns] = numeric_only[self.numericColumns].map(InputFile.is_numeric)
             if not numeric_only.equals(df):
                 messagebox.showinfo("Error uploading input file", "Some non-numeric values were found in numeric columns in this data set: " +
                                   os.path.basename(self.path))
@@ -142,16 +142,14 @@ class InputFile(ABC):
     
                         dataframe = pd.DataFrame()
                         return dataframe
-                
-                # Logger.logMessage(str(e))
-                
+                          
             else:
                 
-                df = df.astype(str).applymap(self.convertEmptyToNaN)
+                df = df.astype(str).map(self.convertEmptyToNaN)
 
                 # Verify no type errors
                 numeric_only = df.copy()
-                numeric_only[self.numericColumns] = numeric_only[self.numericColumns].applymap(InputFile.is_numeric)
+                numeric_only[self.numericColumns] = numeric_only[self.numericColumns].map(InputFile.is_numeric)
                 if not numeric_only.equals(df):
                     messagebox.showinfo("Error uploading input file", "Some non-numeric values were found in numeric columns in this data set: " +
                                   os.path.basename(self.path))

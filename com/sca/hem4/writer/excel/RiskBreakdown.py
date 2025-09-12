@@ -172,7 +172,7 @@ class RiskBreakdown(ExcelWriter, InputFile):
                 temp_df = bkdndata[columns]
     
                 # append to riskbkdn_df
-                riskbkdn_df = pd.concat([riskbkdn_df, temp_df], ignore_index=True)
+                riskbkdn_df = (temp_df.copy() if riskbkdn_df.empty else pd.concat([riskbkdn_df, temp_df], ignore_index=True))
     
     
                 # ----------- Next, breakdown max offsite risk for this parameter ---------------
@@ -252,7 +252,7 @@ class RiskBreakdown(ExcelWriter, InputFile):
                 temp_df = bkdndata[columns]
     
                 # append to riskbkdn_df
-                riskbkdn_df = pd.concat([riskbkdn_df, temp_df], ignore_index=True)
+                riskbkdn_df = (temp_df.copy() if riskbkdn_df.empty else pd.concat([riskbkdn_df, temp_df], ignore_index=True))
     
             # Change dtype of conc
             riskbkdn_df[conc] = pd.to_numeric(riskbkdn_df[conc])

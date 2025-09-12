@@ -21,7 +21,7 @@ from bokeh.plotting import figure, save
 
 from com.sca.hem4.support.Directory import Directory
 from com.sca.hem4.writer.csv.AllPolarReceptors import AllPolarReceptors
-from com.sca.hem4.writer.excel import FacilityMaxRiskandHI
+from com.sca.hem4.writer.excel.FacilityMaxRiskandHI import FacilityMaxRiskandHI
 from com.sca.hem4.writer.excel.summary.AcuteImpacts import *
 
 from sigfig import round as roundsf
@@ -38,10 +38,9 @@ class AcuteImpactsVisualizer():
     def __init__(self, sourceDir):
         self.sourceDir = sourceDir
         self.basepath = os.path.basename(os.path.normpath(sourceDir))
-
+        
         # Get the list of facilities from the max risk and HI
-        self.basepath = os.path.basename(os.path.normpath(self.fullpath))
-        maxRiskAndHI = FacilityMaxRiskandHI(targetDir=self.fullpath,
+        maxRiskAndHI = FacilityMaxRiskandHI(targetDir=self.sourceDir,
                                             filenameOverride=self.basepath + "_facility_max_risk_and_hi.xlsx")
 
         try:

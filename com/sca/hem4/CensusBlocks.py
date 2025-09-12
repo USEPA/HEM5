@@ -212,16 +212,9 @@ def in_box(modelblks, sourcelocs, modeldist, maxdist, overlap_dist, model):
       
         if len(indist) > 0:
             # Append to innerblks and shrink outerblks
-            innerblks = pd.concat([innerblks, indist]).reset_index(drop=True)
+            innerblks = (indist.copy() if innerblks.empty else pd.concat([innerblks, indist]).reset_index(drop=True))
             innerblks = innerblks[~innerblks[blockid].duplicated()]
             outerblks = outerblks[~outerblks[blockid].isin(innerblks[blockid])].copy()
-
-#            #Do any of these inner or outer blocks overlap this source?
-#            innerblks.loc[innerblks['overlap'] != 'Y', 'overlap'] = np.where(np.sqrt(np.double((innerblks[utme]-src_x)**2 +
-#                                           (innerblks[utmn]-src_y)**2)) <= overlap_dist, "Y", "N")
-#            if not outerblks.empty:
-#                outerblks.loc[outerblks['overlap'] != 'Y', 'overlap'] = np.where(np.sqrt(np.double((outerblks[utme]-src_x)**2 +
-#                                               (outerblks[utmn]-src_y)**2)) <= overlap_dist, "Y", "N")
 
     #....... Find blocks within modeldist of area sources ..........
 
@@ -240,7 +233,7 @@ def in_box(modelblks, sourcelocs, modeldist, maxdist, overlap_dist, model):
             indist = outerblks.query('inbox == True')
             if len(indist) > 0:
                 # Append to innerblks and shrink outerblks
-                innerblks = pd.concat([innerblks, indist]).reset_index(drop=True)
+                innerblks = (indist.copy() if innerblks.empty else pd.concat([innerblks, indist]).reset_index(drop=True))
                 innerblks = innerblks[~innerblks[blockid].duplicated()]
                 outerblks = outerblks[~outerblks[blockid].isin(innerblks[blockid])].copy()
             
@@ -262,7 +255,7 @@ def in_box(modelblks, sourcelocs, modeldist, maxdist, overlap_dist, model):
                 polyvertices.loc[:, "tract"] = polyvertices[fac_id].str[0:10]
                 intract = pd.merge(outerblks, polyvertices, how='inner', on='tract')
                 if len(intract) > 0:
-                    innerblks = pd.concat([innerblks, intract], ignore_index=True)
+                    innerblks = (intract.copy() if innerblks.empty else pd.concat([innerblks, intract], ignore_index=True))
                     innerblks = innerblks[~innerblks[blockid].duplicated()]
                     outerblks = outerblks[~outerblks[blockid].isin(innerblks[blockid])].copy()
             
@@ -278,7 +271,7 @@ def in_box(modelblks, sourcelocs, modeldist, maxdist, overlap_dist, model):
                              np.array([row[utme],row[utmn]]), modeldist), axis=1))
                         polyblks = outerblks.query('nearpoly == True')
                         if len(polyblks) > 0:
-                            innerblks = pd.concat([innerblks, polyblks]).reset_index(drop=True)
+                            innerblks = (polyblks.copy() if innerblks.empty else pd.concat([innerblks, polyblks]).reset_index(drop=True))
                             innerblks = innerblks[~innerblks[blockid].duplicated()]
                             outerblks = outerblks[~outerblks[blockid].isin(innerblks[blockid])]
                     if outerblks.empty:
@@ -316,16 +309,10 @@ def in_box_NonCensus(modelblks, sourcelocs, modeldist, maxdist, overlap_dist, mo
       
         if len(indist) > 0:
             # Append to innerblks and shrink outerblks
-            innerblks = pd.concat([innerblks, indist], ignore_index=True)
+            innerblks = (indist.copy() if innerblks.empty else pd.concat([innerblks, indist], ignore_index=True))
             innerblks = innerblks[~innerblks[rec_id].duplicated()]
             outerblks = outerblks[~outerblks[rec_id].isin(innerblks[rec_id])].copy()
 
-#            #Do any of these inner or outer blocks overlap this source?
-#            innerblks.loc[innerblks['overlap'] != 'Y', 'overlap'] = np.where(np.sqrt(np.double((innerblks[utme]-src_x)**2 +
-#                                           (innerblks[utmn]-src_y)**2)) <= overlap_dist, "Y", "N")
-#            if not outerblks.empty:
-#                outerblks.loc[outerblks['overlap'] != 'Y', 'overlap'] = np.where(np.sqrt(np.double((outerblks[utme]-src_x)**2 +
-#                                               (outerblks[utmn]-src_y)**2)) <= overlap_dist, "Y", "N")
 
     #....... Find blocks within modeldist of area sources ..........
 
@@ -344,7 +331,7 @@ def in_box_NonCensus(modelblks, sourcelocs, modeldist, maxdist, overlap_dist, mo
             indist = outerblks.query('inbox == True')
             if len(indist) > 0:
                 # Append to innerblks and shrink outerblks
-                innerblks = pd.concat([innerblks, indist], ignore_index=True)
+                innerblks = (indist.copy() if innerblks.empty else pd.concat([innerblks, indist], ignore_index=True))
                 innerblks = innerblks[~innerblks[rec_id].duplicated()]
                 outerblks = outerblks[~outerblks[rec_id].isin(innerblks[rec_id])]
             
@@ -371,7 +358,7 @@ def in_box_NonCensus(modelblks, sourcelocs, modeldist, maxdist, overlap_dist, mo
                              np.array([row[utme],row[utmn]]), modeldist), axis=1))
                         polyblks = outerblks.query('nearpoly == True')
                         if len(polyblks) > 0:
-                            innerblks = pd.concat([innerblks, polyblks], ignore_index=True)
+                            innerblks = (polyblks.copy() if innerblks.empty else pd.concat([innerblks, polyblks], ignore_index=True))
                             innerblks = innerblks[~innerblks[rec_id].duplicated()]
                             outerblks = outerblks[~outerblks[rec_id].isin(innerblks[rec_id])]
                     if outerblks.empty:

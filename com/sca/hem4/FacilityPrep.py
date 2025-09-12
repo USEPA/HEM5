@@ -67,7 +67,7 @@ class FacilityPrep():
                 lead_sources_list = leademis_df[source_id].tolist()
                 emislocs = (self.model.emisloc.dataframe.loc
                             [(self.model.emisloc.dataframe[fac_id] == facid) & 
-                        (self.model.emisloc.dataframe[source_id].isin(lead_sources_list))])
+                        (self.model.emisloc.dataframe[source_id].isin(lead_sources_list))]).copy()
             else:
                 
                 # No lead emissions
@@ -94,8 +94,7 @@ class FacilityPrep():
         #====== This is determined from the emislocs.        
         facutmzonenum, hemi = UTM.zone2use(emislocs)
         facutmzonestr = str(facutmzonenum) + hemi
-
-                
+        
         # Compute lat/lon of any user supplied emisloc UTM coordinates
         emislocs[[lat, lon]] = emislocs.apply(lambda row: UTM.utm2ll(row[lat],row[lon],row[utmzone]) 
                                if row['location_type']=='U' else [row[lat],row[lon]], result_type="expand", axis=1)

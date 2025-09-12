@@ -59,7 +59,7 @@ class AcuteChemicalMax(ExcelWriter, InputFile):
         # Set-up a dataframe to hold the running max conc for each pollutant along with location of the receptor
         pols = self.model.runstream_hapemis[pollutant].str.lower().unique().tolist()
         cols = [aconc, lon, lat, notes]
-        fillval = [0, 0, 0, '']
+        fillval = [0.0, 0.0, 0.0, '']
         filler = [fillval for p in pols]
         maxconc_df = pd.DataFrame(data=filler, index=pols, columns=cols)
         
@@ -139,11 +139,11 @@ class AcuteChemicalMax(ExcelWriter, InputFile):
         acute_df[aconc_sci] = acute_df.apply(lambda x: format(x[aconc], ".1e"), axis=1)
         acute_df[elev] = 0
         acute_df[hill] = 0
-        acute_df[distance] = 0
-        acute_df[angle] = 0
+        acute_df[distance] = 0.0
+        acute_df[angle] = 0.0
         acute_df[population] = 0
-        acute_df[utme] = 0
-        acute_df[utmn] = 0
+        acute_df[utme] = 0.0
+        acute_df[utmn] = 0.0
                
         for index, row in acute_df.iterrows():
             if row[notes] == 'Polar':

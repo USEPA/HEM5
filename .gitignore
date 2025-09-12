@@ -7,7 +7,6 @@ Inputs
 /output
 /test/output
 /cache
-Admin
 census
 Documentation
 MetData
@@ -18,7 +17,6 @@ working_kml
 build
 dist
 save
-com/sca/hem4/HEM4_UserConc_2.py
 com/sca/hem4/*.spec
 *.pyc
 **/__pycache__/*.pyc

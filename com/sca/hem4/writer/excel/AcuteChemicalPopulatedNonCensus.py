@@ -48,7 +48,7 @@ class AcuteChemicalPopulatedNonCensus(ExcelWriter):
         # Set-up a dataframe to hold the running max conc for each pollutant along with location of the receptor
         pols = self.model.runstream_hapemis[pollutant].str.lower().unique().tolist()
         cols = [aconc, lon, lat, notes]
-        fillval = [0, 0, 0, '']
+        fillval = [0.0, 0.0, 0.0, '']
         filler = [fillval for p in pols]
         maxconc_df = pd.DataFrame(data=filler, index=pols, columns=cols)
         

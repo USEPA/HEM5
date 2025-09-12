@@ -743,7 +743,7 @@ class HEMdash():
                 
                 message = ("An error occurred while building the dash app in HEMdash.py. The error is:\n" 
                            + ex)
-                Logger.logMessage(message)
+                raise ValueError(message)
                 
             
             # Callback for the facility map

@@ -10,6 +10,7 @@ from com.sca.hem4.writer.excel.summary.AltRecAwareSummary import AltRecAwareSumm
 from collections import OrderedDict
 import numpy as np
 
+lead = 'lead'
 
 class SourceTypeRiskHistogram(ExcelWriter, AltRecAwareSummary):
 
@@ -39,10 +40,10 @@ class SourceTypeRiskHistogram(ExcelWriter, AltRecAwareSummary):
         faclistFile = os.path.join(self.categoryFolder, "inputs/faclist.xlsx")
         cols = [fac_id,met_station,rural_urban,urban_pop,max_dist,model_dist,radial,circles,overlap_dist, ring1,
                 fac_center,ring_distances, acute,
-                hours,multiplier,hivalu,dep,depl,pdep,pdepl,vdep,vdepl,elev,flagpole,
+                hours,multiplier,hivalu,dep,depl,pdep,pdepl,vdep,vdepl,elev,flagpole,lead,
                 user_rcpt,bldg_dw,fastall,emis_var,annual,period_start,period_end]
         faclist = pd.read_excel(faclistFile, skiprows=1, names=cols, dtype=str)
-        faclist[acute].fillna('N', inplace=True)
+        faclist[acute] = faclist[acute].fillna('N')
 
         # Create a list to hold the values for each bucket
         maximum = []

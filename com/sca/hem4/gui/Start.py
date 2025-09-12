@@ -60,7 +60,7 @@ class Start(Page):
 
 
         img = PIL.Image.open('images\\usersguides.jpg')
-        img = img.resize((250,200), PIL.Image.ANTIALIAS)
+        img = img.resize((250,200), PIL.Image.Resampling.LANCZOS)
         image2 = ImageTk.PhotoImage(img)
         itwo = tk.Label(self.s3, image=image2)
         itwo.image = image2 # keep a reference!
