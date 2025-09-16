@@ -9,11 +9,11 @@ from fastkml import kml, SchemaData, Data, SimpleField, Placemark
 import fastkml
 # from fastkml.kml import KML, Document, Placemark, Schema, SimpleField
 # from fastkml.geometry import Geometry, Point, Polygon
-from fastkml import geometry
+from pygeoif import geometry
 from fastkml import ExtendedData
 from fastkml.enums import AltitudeMode
 from fastkml.styles import LineStyle, PolyStyle, IconStyle, LabelStyle, BalloonStyle, StyleUrl, Style
-# from pygeoif import LinearRing, LineString
+from fastkml.geometry import create_kml_geometry
 from shapely.geometry import LineString, LinearRing
 from xml.sax.saxutils import unescape
 from operator import itemgetter
@@ -58,20 +58,17 @@ class KMLWriter():
                 
         # schema = fastkml.data.Schema(ns=self.ns, id="srcmap_schema", name="srcmap")
         # schema.append("string", "Source_id", "Sourceid")
- 
-        #debug
-        import pdb; pdb.set_trace() 
-        
+         
         document.append(schema)
 
         # Areasrc style...
-        document.styles.append(self.getAreaSrcStyle())
+        document.append(self.getAreaSrcStyle())
 
         # Ptsrc style...
-        document.styles.append(self.getPtSrcStyle())
+        document.append(self.getPtSrcStyle())
 
         # center style...
-        document.styles.append(self.getCenterStyle())
+        document.append(self.getCenterStyle())
         
         # Iterate over srcmap DF to get facility id, source ids, source type and location parameters
         for facid, group in srcmap.groupby("fac_id"):
@@ -120,17 +117,23 @@ class KMLWriter():
             # Setup an Emission Sources folder for this facility
             name_str = "Facility " + facid + " Emission sources"
             es_folder = kml.Folder(ns=self.ns, name=name_str)
-  
+
             # Facility center placemark
-            point = geometry.Point(coordinates=(avglon, avglat, 0.0),
-                                   altitude_mode=AltitudeMode.relative_to_ground)
-            point.altitude_mode = "relativeToGround"
+            point = geometry.Point(avglon, avglat, 0.0)
+            kml_geometry = create_kml_geometry(
+                    geometry=point,
+                    altitude_mode=AltitudeMode.relative_to_ground,
+                )
+            style_url_ref = StyleUrl(url="#center")
+            
             placemark = kml.Placemark(ns=self.ns, name="Facility center",
                                       description=("<div align='center'>Center of facility " +
                                                         facid + " </div>"),
-                                      styleUrl="#center", geometry=point)
+                                      style_url=style_url_ref, 
+                                      kml_geometry=kml_geometry)
             es_folder.append(placemark)
-                      
+ 
+                     
             for name, group in sub_map.groupby(["source_id","source_type"]):
                 sname = name[0]
                 stype = name[1]
@@ -138,12 +141,17 @@ class KMLWriter():
                 # Emission sources  Point, Capped, Horizontal
                 if stype == 'P' or stype == 'C' or stype == 'H':
 
-                    point = geometry.Point()
-                    point.coordinates = (group.iloc[0]['lon'], group.iloc[0]['lat'], 0.0)
-                    point.altitude_mode = "relativeToGround"
+                    point = geometry.Point(group.iloc[0]['lon'], group.iloc[0]['lat'], 0.0)
+                    kml_geometry = create_kml_geometry(
+                            geometry=point,
+                            altitude_mode=AltitudeMode.relative_to_ground,
+                        )
+                    style_url_ref = StyleUrl(url="#Ptsrc")
+
                     placemark = kml.Placemark(ns=self.ns, name=sname,
                                               description=("<div align='center'>" + sname + "</div>"),
-                                              styleUrl="#Ptsrc", geometry=point)
+                                              style_url=style_url_ref, 
+                                              kml_geometry=kml_geometry)
                     es_folder.append(placemark)
 
                 # Area, Volume or Polygon
@@ -153,7 +161,7 @@ class KMLWriter():
                     data = [simpleData]
                     schemaData = SchemaData(ns=self.ns, schema_url="#Source_map_schema", data=data)
                     elements = [schemaData]
-                    placemark.extended_data = ExtendedData(ns=self.ns, elements=elements)
+                    extended_data = ExtendedData(ns=self.ns, elements=elements)
 
                     latlons = []
                     for index, row in group.iterrows():
@@ -162,10 +170,17 @@ class KMLWriter():
 
                     linearRing = LinearRing(coordinates=latlons)
                     polygon = geometry.Polygon(shell=linearRing.coords)
-                    polygon.altitude_mode = "clampToGround"
+                    kml_geometry = create_kml_geometry(
+                            geometry=polygon,
+                            altitude_mode=AltitudeMode.clamp_to_ground,
+                        )
+                    style_url_ref = StyleUrl(url="#Areasrc")
+                    
                     placemark = kml.Placemark(ns=self.ns, name=sname,
                                               description=("<div align='center'>" + sname + "</div>"),
-                                              styleUrl="#Areasrc", geometry=polygon)
+                                              style_url=style_url_ref, 
+                                              kml_geometry=kml_geometry,
+                                              extended_data=extended_data)
                     es_folder.append(placemark)
 
                 # Line or Bouyant Line
@@ -174,18 +189,28 @@ class KMLWriter():
                     ls_style = Style(ns=self.ns, id='linesrc',
                                 styles = 
                                 [LineStyle(ns=self.ns, width=group.iloc[0]['line_width'], color="7c8080ff")])
+ 
+                    # line string style...
+                    document.append(ls_style)
                     
                     lineString = LineString([(group.iloc[0]['lon'], group.iloc[0]['lat']), (group.iloc[0]['lon_x2'],
                                             group.iloc[0]['lat_y2'])])
+                    kml_geometry = create_kml_geometry(
+                            geometry=lineString,
+                            altitude_mode=AltitudeMode.clamp_to_ground,
+                        )
+                    style_url_ref = StyleUrl(url="#Linesrc")
+
                     placemark = kml.Placemark(ns=self.ns, name=sname,
                                               description=("<div align='center'>" + sname + "</div>"),
-                                              styleUrl="#Linesrc", geometry=lineString)
-                    placemark.altitude_mode = "clampToGround"
+                                              style_url=style_url_ref, 
+                                              kml_geometry=kml_geometry)
                     es_folder.append(placemark)
 
             # Append emission source folder for this facility
             document.append(es_folder)
         
+
         # Finished
         kml_source_loc.append(document)
         # Write the KML file
@@ -195,6 +220,7 @@ class KMLWriter():
         kmztype = 'allsources'
         allkmz_fname = allkml_fname.replace('.kml', '.kmz')
         self.createKMZ(kmztype, allkml_fname, allkmz_fname)
+
 
     def write_facility_kml(self, facid, faccen_lat, faccen_lon, outdir, model):
         """
@@ -264,12 +290,17 @@ class KMLWriter():
             # Emission sources  Point, Capped, Horizontal
             if stype == 'P' or stype == 'C' or stype == 'H':
 
-                point = geometry.Point()
-                point.coordinates = (group.iloc[0]['lon'], group.iloc[0]['lat'], 0.0)
-                point.altitude_mode = "relativeToGround"
+                point = geometry.Point(group.iloc[0]['lon'], group.iloc[0]['lat'], 0.0)
+                kml_geometry = create_kml_geometry(
+                        geometry=point,
+                        altitude_mode=AltitudeMode.relative_to_ground,
+                    )
+                style_url_ref = StyleUrl(url="#Ptsrc")
+                
                 placemark = kml.Placemark(ns=self.ns, name=sname,
                                           description=("<div align='center'>" + sname + "</div>"),
-                                          styleUrl="#Ptsrc", geometry=point)
+                                          style_url=style_url_ref, 
+                                          kml_geometry=kml_geometry)
 
                 es_folder.append(placemark)
 
@@ -280,7 +311,7 @@ class KMLWriter():
                 data = [simpleData]
                 schemaData = SchemaData(ns=self.ns, schema_url="#Source_map_schema", data=data)
                 elements = [schemaData]
-                placemark.extended_data = ExtendedData(ns=self.ns, elements=elements)
+                extended_data = ExtendedData(ns=self.ns, elements=elements)
 
                 latlons = []
                 for index, row in group.iterrows():
@@ -289,10 +320,17 @@ class KMLWriter():
                     
                 linearRing = LinearRing(coordinates=latlons)                               
                 polygon = geometry.Polygon(shell=linearRing.coords)
-                polygon.altitude_mode = "clampToGround"
+                kml_geometry = create_kml_geometry(
+                        geometry=polygon,
+                        altitude_mode=AltitudeMode.clamp_to_ground,
+                    )
+                style_url_ref = StyleUrl(url="#Areasrc")
+
                 placemark = kml.Placemark(ns=self.ns, name=sname,
                                           description=("<div align='center'>" + sname + "</div>"),
-                                          styleUrl="#Areasrc", geometry=polygon)
+                                          style_url=style_url_ref, 
+                                          kml_geometry=kml_geometry,
+                                          extended_data=extended_data)
 
                 es_folder.append(placemark)
 
@@ -304,15 +342,21 @@ class KMLWriter():
                             styles = 
                             [LineStyle(ns=self.ns, width=group.iloc[0]['line_width'], color="7c8080ff")])
 
-                ls_coords = [(group.iloc[0]['lon'], group.iloc[0]['lat'], 0), (group.iloc[0]['lon_x2'],
-                                        group.iloc[0]['lat_y2'], 0)]
-                ls_geom = LineString(ls_coords)
+                # line string style...
+                docWithHeader.append(ls_style)
+                
+                lineString = LineString([(group.iloc[0]['lon'], group.iloc[0]['lat'], 0), (group.iloc[0]['lon_x2'],
+                                        group.iloc[0]['lat_y2'], 0)])
+                kml_geometry = create_kml_geometry(
+                        geometry=lineString,
+                        altitude_mode=AltitudeMode.clamp_to_ground,
+                    )
+                style_url_ref = StyleUrl(url="#Linesrc")
 
-                placemark = Placemark(ns=self.ns, name=sname,
-                                      description=("<div align='center'>" + sname + "</div>"),
-                                      geometry = ls_geom,
-                                      altitude_mode = AltitudeMode.clamp_to_ground,
-                                      styleUrl = f'#{style_id}')
+                placemark = kml.Placemark(ns=self.ns, name=sname,
+                                          description=("<div align='center'>" + sname + "</div>"),
+                                          style_url=style_url_ref, 
+                                          kml_geometry=kml_geometry)
 
                 es_folder.append(placemark)
 
@@ -322,12 +366,17 @@ class KMLWriter():
         cen_folder = kml.Folder(ns=self.ns, name="Domain center")
         cen_folder.isopen = 0
 
-        point = geometry.Point()
-        point.coordinates = (faccen_lon, faccen_lat, 0.0)
-        point.altitude_mode = "relativeToGround"
+        point = geometry.Point(faccen_lon, faccen_lat, 0.0)
+        kml_geometry = create_kml_geometry(
+                geometry=point,
+                altitude_mode=AltitudeMode.relative_to_ground,
+            )
+        style_url_ref = StyleUrl(url="#center")
+
         placemark = kml.Placemark(ns=self.ns, name="Domain center",
                                   description=("<div align='center'>Plant center</div>"),
-                                  styleUrl="#center", geometry=point)
+                                  style_url=style_url_ref, 
+                                  kml_geometry=kml_geometry)
         cen_folder.append(placemark)
         docWithHeader.append(cen_folder)
 
@@ -344,21 +393,26 @@ class KMLWriter():
         if mirrnd > 0:
             mir_folder = kml.Folder(ns=self.ns, name="MIR")
             mir_folder.isopen = 0
+            # placemark = kml.Placemark(ns=self.ns, name="MIR",
+            #                           description=("<div align='center'><B>MIR Receptor</B><br />" + \
+            #                           "<B>Receptor type: "+mirtype+"</B><br />" + \
+            #                           "<B>Distance from facility (m): "+str(mirdist)+"</B><br /><br />" + \
+            #                           "MIR (in a million) = " +str(mirrnd)+"<br /></div>"),
+            #                           styleUrl="#mir")
+            point = geometry.Point(mirlon, mirlat, 0.0)
+            kml_geometry = create_kml_geometry(
+                    geometry=point,
+                    altitude_mode=AltitudeMode.relative_to_ground,
+                )
+            style_url_ref = StyleUrl(url="#mir")
+
             placemark = kml.Placemark(ns=self.ns, name="MIR",
                                       description=("<div align='center'><B>MIR Receptor</B><br />" + \
                                       "<B>Receptor type: "+mirtype+"</B><br />" + \
                                       "<B>Distance from facility (m): "+str(mirdist)+"</B><br /><br />" + \
                                       "MIR (in a million) = " +str(mirrnd)+"<br /></div>"),
-                                      styleUrl="#mir")
-            point = geometry.Point()
-            point.coordinates = (mirlon, mirlat, 0.0)
-            point.altitude_mode = "relativeToGround"
-            placemark = kml.Placemark(ns=self.ns, name="MIR",
-                                      description=("<div align='center'><B>MIR Receptor</B><br />" + \
-                                      "<B>Receptor type: "+mirtype+"</B><br />" + \
-                                      "<B>Distance from facility (m): "+str(mirdist)+"</B><br /><br />" + \
-                                      "MIR (in a million) = " +str(mirrnd)+"<br /></div>"),
-                                      styleUrl="#mir", geometry=point)
+                                      style_url=style_url_ref, 
+                                      kml_geometry=kml_geometry)
             mir_folder.append(placemark)
             docWithHeader.append(mir_folder)
 
@@ -421,13 +475,18 @@ class KMLWriter():
                         styletag = "#u20to100"
                     else:
                         styletag = "#u100"
-                    
-                    point = geometry.Point()
-                    point.coordinates = (ulon, ulat, 0.000)
-                    point.altitude_mode = "clampToGround"
+ 
+                    point = geometry.Point(ulon, ulat, 0.0)
+                    kml_geometry = create_kml_geometry(
+                            geometry=point,
+                            altitude_mode=AltitudeMode.clamp_to_ground,
+                        )
+                    style_url_ref = StyleUrl(url=styletag)
+
                     ur_placemark = kml.Placemark(ns=self.ns, name="User Receptor: " + ublock,
                                                  description=description,
-                                                 styleUrl=styletag, geometry=point)
+                                                 style_url=style_url_ref, 
+                                                 kml_geometry=kml_geometry)
                     urcr_folder.append(ur_placemark)
     
                 docWithHeader.append(urcr_folder)
@@ -493,13 +552,18 @@ class KMLWriter():
                         styletag = "#u20to100"
                     else:
                         styletag = "#u100"
-                    
-                    point = geometry.Point()
-                    point.coordinates = (ulon, ulat, 0.000)
-                    point.altitude_mode = "clampToGround"
+
+                    point = geometry.Point(ulon, ulat, 0.0)
+                    kml_geometry = create_kml_geometry(
+                            geometry=point,
+                            altitude_mode=AltitudeMode.clamp_to_ground,
+                        )
+                    style_url_ref = StyleUrl(url=styletag)
+
                     ur_placemark = kml.Placemark(ns=self.ns, name="User Receptor: " + ublock,
                                                  description=description,
-                                                 styleUrl=styletag, geometry=point)
+                                                 style_url=style_url_ref, 
+                                                 kml_geometry=kml_geometry)
                     ur_placemark.visibility = 0
                     urt_folder.append(ur_placemark)
     
@@ -563,13 +627,18 @@ class KMLWriter():
                     styletag = "#b20to100"
                 else:
                     styletag = "#b100"
-                    
-                point = geometry.Point()
-                point.coordinates = (slon, slat, 0.0000)
-                point.altitude_mode = "clampToGround"
+
+                point = geometry.Point(slon, slat, 0.0)
+                kml_geometry = create_kml_geometry(
+                        geometry=point,
+                        altitude_mode=AltitudeMode.clamp_to_ground,
+                    )
+                style_url_ref = StyleUrl(url=styletag)
+
                 placemark = kml.Placemark(ns=self.ns, name="Block Receptor " + str(sBlock),
                                           description=description,
-                                          styleUrl=styletag, geometry=point)
+                                          style_url=style_url_ref, 
+                                          kml_geometry=kml_geometry)
                 ir_folder.append(placemark)
     
             docWithHeader.append(ir_folder)
@@ -638,13 +707,18 @@ class KMLWriter():
                     styletag = "#b20to100"
                 else:
                     styletag = "#b100"
-    
-                point = geometry.Point()
-                point.coordinates = (slon, slat, 0.0000)
-                point.altitude_mode = "clampToGround"
+ 
+                point = geometry.Point(slon, slat, 0.0)
+                kml_geometry = create_kml_geometry(
+                        geometry=point,
+                        altitude_mode=AltitudeMode.clamp_to_ground,
+                    )
+                style_url_ref = StyleUrl(url=styletag)
+
                 placemark = kml.Placemark(ns=self.ns, name="Block Receptor " + str(sBlock),
                                           description=description,
-                                          styleUrl=styletag, geometry=point)
+                                          style_url=style_url_ref, 
+                                          kml_geometry=kml_geometry)
                 placemark.visibility = 0
                 irt_folder.append(placemark)
     
@@ -702,12 +776,18 @@ class KMLWriter():
             else:
                 styletag = "#s100"
 
-            point = geometry.Point()
-            point.coordinates = (slon, slat, 0.0000)
-            point.altitude_mode = "clampToGround"
+
+            point = geometry.Point(slon, slat, 0.0000)
+            kml_geometry = create_kml_geometry(
+                    geometry=point,
+                    altitude_mode=AltitudeMode.clamp_to_ground,
+                )
+            style_url_ref = StyleUrl(url=styletag)
+
             placemark = kml.Placemark(ns=self.ns, name="Polar Receptor Distance: " + pg_dist + " Angle: " + str(group.iloc[0]['angle']),
                                       description=description,
-                                      styleUrl=styletag, geometry=point)
+                                      style_url=style_url_ref, 
+                                      kml_geometry=kml_geometry)
             placemark.visibility = 0
             pr_folder.append(placemark)
 
@@ -773,12 +853,17 @@ class KMLWriter():
             else:
                 styletag = "#s100"
 
-            point = geometry.Point()
-            point.coordinates = (slon, slat, 0.0000)
-            point.altitude_mode = "clampToGround"
+            point = geometry.Point(slon, slat, 0.0)
+            kml_geometry = create_kml_geometry(
+                    geometry=point,
+                    altitude_mode=AltitudeMode.clamp_to_ground,
+                )
+            style_url_ref = StyleUrl(url=styletag)
+
             placemark = kml.Placemark(ns=self.ns, name="Polar Receptor Distance: " + pg_dist + " Angle: " + pg_angle,
                                       description=description,
-                                      styleUrl=styletag, geometry=point)
+                                      style_url=style_url_ref, 
+                                      kml_geometry=kml_geometry)
             placemark.visibility = 0
             prt_folder.append(placemark)
 
@@ -863,12 +948,17 @@ class KMLWriter():
             # Emission sources  Point, Capped, Horizontal
             if stype == 'P' or stype == 'C' or stype == 'H':
 
-                point = geometry.Point()
-                point.coordinates = (group.iloc[0]['lon'], group.iloc[0]['lat'], 0.0)
-                point.altitude_mode = "relativeToGround"
+                point = geometry.Point(group.iloc[0]['lon'], group.iloc[0]['lat'], 0.0)
+                kml_geometry = create_kml_geometry(
+                        geometry=point,
+                        altitude_mode=AltitudeMode.relative_to_ground,
+                    )
+                style_url_ref = StyleUrl(url="#Ptsrc")
+
                 placemark = kml.Placemark(ns=self.ns, name=sname,
                                           description=("<div align='center'>" + sname + "</div>"),
-                                          styleUrl="#Ptsrc", geometry=point)
+                                          style_url=style_url_ref, 
+                                          kml_geometry=kml_geometry)
 
                 es_folder.append(placemark)
 
@@ -887,11 +977,17 @@ class KMLWriter():
                     latlons.append(coord)
                     
                 linearRing = LinearRing(coordinates=latlons)                               
-                polygon = geometry.Polygon(shell=linearRing.coords)
-                polygon.altitude_mode = "clampToGround"
+                polygon = geometry.Polygon(shell=linearRing.coords)               
+                kml_geometry = create_kml_geometry(
+                        geometry=polygon,
+                        altitude_mode=AltitudeMode.clamp_to_ground,
+                    )
+                style_url_ref = StyleUrl(url="#Areasrc")
+
                 placemark = kml.Placemark(ns=self.ns, name=sname,
                                           description=("<div align='center'>" + sname + "</div>"),
-                                          styleUrl="#Areasrc", geometry=polygon)
+                                          style_url=style_url_ref, 
+                                          kml_geometry=kml_geometry)
 
                 es_folder.append(placemark)
 
@@ -902,12 +998,21 @@ class KMLWriter():
                             styles = 
                             [LineStyle(ns=self.ns, width=group.iloc[0]['line_width'], color="7c8080ff")])
 
+                # line string style...
+                docWithHeader.append(ls_style)
+
                 lineString = LineString([(group.iloc[0]['lon'], group.iloc[0]['lat']), (group.iloc[0]['lon_x2'],
                                         group.iloc[0]['lat_y2'])])
-                lineString.altitude_mode = "clampToGround"
+                kml_geometry = create_kml_geometry(
+                        geometry=lineString,
+                        altitude_mode=AltitudeMode.clamp_to_ground,
+                    )
+                style_url_ref = StyleUrl(url="#Linesrc")
+
                 placemark = kml.Placemark(ns=self.ns, name=sname,
                                           description=("<div align='center'>" + sname + "</div>"),
-                                          styleUrl="#Linesrc", geometry=lineString)
+                                          style_url=style_url_ref, 
+                                          kml_geometry=kml_geometry)
 
                 es_folder.append(placemark)
 
@@ -920,9 +1025,18 @@ class KMLWriter():
         point = geometry.Point()
         point.coordinates = (faccen_lon, faccen_lat, 0.0)
         point.altitude_mode = "relativeToGround"
+        
+        point = geometry.Point(faccen_lon, faccen_lat, 0.0)
+        kml_geometry = create_kml_geometry(
+                geometry=point,
+                altitude_mode=AltitudeMode.relative_to_ground,
+            )
+        style_url_ref = StyleUrl(url="#center")
+
         placemark = kml.Placemark(ns=self.ns, name="Domain center",
                                   description=("<div align='center'>Plant center</div>"),
-                                  styleUrl="#center", geometry=point)
+                                  style_url=style_url_ref, 
+                                  kml_geometry=kml_geometry)
 
         cen_folder.append(placemark)
         docWithHeader.append(cen_folder)
@@ -940,15 +1054,21 @@ class KMLWriter():
         if mirrnd > 0:
             mir_folder = kml.Folder(ns=self.ns, name="MIR")
             mir_folder.isopen = 0
-            point = geometry.Point()
-            point.coordinates = (mirlon, mirlat, 0.0)
-            point.altitude_mode = "relativeToGround"
+            
+            point = geometry.Point(mirlon, mirlat, 0.0)
+            kml_geometry = create_kml_geometry(
+                    geometry=point,
+                    altitude_mode=AltitudeMode.relative_to_ground,
+                )
+            style_url_ref = StyleUrl(url="#mir")
+
             placemark = kml.Placemark(ns=self.ns, name="MIR",
                                       description=("<div align='center'><B>MIR Receptor</B><br />" + \
                                       "<B>Receptor type: "+mirtype+"</B><br />" + \
                                       "<B>Distance from facility (m): "+str(mirdist)+"</B><br /><br />" + \
                                       "MIR (in a million) = " +str(mirrnd)+"<br /></div>"),
-                                      styleUrl="#mir", geometry=point)
+                                      style_url=style_url_ref, 
+                                      kml_geometry=kml_geometry)
             mir_folder.append(placemark)
             docWithHeader.append(mir_folder)
         
@@ -1005,12 +1125,17 @@ class KMLWriter():
                     else:
                         styletag = "#u100"
                     
-                    point = geometry.Point()
-                    point.coordinates = (ulon, ulat, 0.000)
-                    point.altitude_mode = "clampToGround"
+                    point = geometry.Point(ulon, ulat, 0.0)
+                    kml_geometry = create_kml_geometry(
+                            geometry=point,
+                            altitude_mode=AltitudeMode.clamp_to_ground,
+                        ) 
+                    style_url_ref = StyleUrl(url=styletag)
+
                     ur_placemark = kml.Placemark(ns=self.ns, name="User Receptor: " + uid,
                                                  description=(description),
-                                                 styleUrl=styletag, geometry=point)
+                                                 style_url=style_url_ref, 
+                                                 kml_geometry=kml_geometry)
                     urcr_folder.append(ur_placemark)
     
                 docWithHeader.append(urcr_folder)
@@ -1071,13 +1196,18 @@ class KMLWriter():
                         styletag = "#u20to100"
                     else:
                         styletag = "#u100"
-                    
-                    point = geometry.Point()
-                    point.coordinates = (ulon, ulat, 0.000)
-                    point.altitude_mode = "clampToGround"
+                                        
+                    point = geometry.Point(ulon, ulat, 0.0)
+                    kml_geometry = create_kml_geometry(
+                            geometry=point,
+                            altitude_mode=AltitudeMode.clamp_to_ground,
+                        )
+                    style_url_ref = StyleUrl(url=styletag)
+
                     ur_placemark = kml.Placemark(ns=self.ns, name="User Receptor: " + uid,
                                                  description=(description),
-                                                 styleUrl=styletag, geometry=point)
+                                                 style_url=style_url_ref, 
+                                                 kml_geometry=kml_geometry)
                     ur_placemark.visibility = 0
                     urt_folder.append(ur_placemark)
     
@@ -1139,12 +1269,17 @@ class KMLWriter():
                 else:
                     styletag = "#b100"
                     
-                point = geometry.Point()
-                point.coordinates = (slon, slat, 0.0000)
-                point.altitude_mode = "clampToGround"
+                point = geometry.Point(slon, slat, 0.0)
+                kml_geometry = create_kml_geometry(
+                        geometry=point,
+                        altitude_mode=AltitudeMode.clamp_to_ground,
+                    )
+                style_url_ref = StyleUrl(url=styletag)
+
                 placemark = kml.Placemark(ns=self.ns, name="Inner Receptor " + str(srecid),
                                           description=(description),
-                                          styleUrl=styletag, geometry=point)
+                                          style_url=style_url_ref, 
+                                          kml_geometry=kml_geometry)
                 ir_folder.append(placemark)
     
             docWithHeader.append(ir_folder)
@@ -1210,12 +1345,17 @@ class KMLWriter():
                 else:
                     styletag = "#b100"
     
-                point = geometry.Point()
-                point.coordinates = (slon, slat, 0.0000)
-                point.altitude_mode = "clampToGround"
+                point = geometry.Point(slon, slat, 0.0)
+                kml_geometry = create_kml_geometry(
+                        geometry=point,
+                        altitude_mode=AltitudeMode.clamp_to_ground,
+                    )
+                style_url_ref = StyleUrl(url=styletag)
+
                 placemark = kml.Placemark(ns=self.ns, name="Inner Receptor " + str(srecid),
                                           description=(description),
-                                          styleUrl=styletag, geometry=point)
+                                          style_url=style_url_ref, 
+                                          kml_geometry=kml_geometry)
                 placemark.visibility = 0
                 irt_folder.append(placemark)
     
@@ -1273,12 +1413,17 @@ class KMLWriter():
             else:
                 styletag = "#s100"
 
-            point = geometry.Point()
-            point.coordinates = (slon, slat, 0.0000)
-            point.altitude_mode = "clampToGround"
+            point = geometry.Point(slon, slat, 0.0)
+            kml_geometry = create_kml_geometry(
+                    geometry=point,
+                    altitude_mode=AltitudeMode.clamp_to_ground,
+                )
+            style_url_ref = StyleUrl(url=styletag)
+
             placemark = kml.Placemark(ns=self.ns, name="Polar Receptor Distance: " + pg_dist + " Angle: " + str(group.iloc[0]['angle']),
                                       description=description,
-                                      styleUrl=styletag, geometry=point)
+                                      styleUrl=style_url_ref, 
+                                      kml_geometry=kml_geometry)
             placemark.visibility = 0
             pr_folder.append(placemark)
 
@@ -1344,12 +1489,17 @@ class KMLWriter():
             else:
                 styletag = "#s100"
 
-            point = geometry.Point()
-            point.coordinates = (slon, slat, 0.0000)
-            point.altitude_mode = "clampToGround"
+            point = geometry.Point(slon, slat, 0.0)
+            kml_geometry = create_kml_geometry(
+                    geometry=point,
+                    altitude_mode=AltitudeMode.clamp_to_ground,
+                )
+            style_url_ref = StyleUrl(url=styletag)
+
             placemark = kml.Placemark(ns=self.ns, name="Polar Receptor Distance: " + pg_dist + " Angle: " + pg_angle,
                                       description=description,
-                                      styleUrl=styletag, geometry=point)
+                                      style_url=style_url_ref, 
+                                      kml_geometry=kml_geometry)
             placemark.visibility = 0
             prt_folder.append(placemark)
 
@@ -1378,7 +1528,7 @@ class KMLWriter():
         :param kml: a fastKml KML instance
         """
         file = open(filename, "w")
-
+        
         pretty = kml.to_string(prettyprint=True)
         usingPhysicalWidth = self.usePhysicalWidth(pretty)
         file.write(unescape(usingPhysicalWidth))
@@ -1706,63 +1856,68 @@ class KMLWriter():
         document.styles.append(self.getPtSrcStyle())
 
         # center style...
-        center_style = self.getBaseStyle(id="center")
-        iconstyle = IconStyle(ns=self.ns, color="ff0000ff", icon_href="drawCenter.png")
-        center_style.iconstyle = iconstyle
-        document.styles.append(center_style)
+        document.styles.append(self.getCenterStyle())
 
         # s20 style...
         document.styles.append(self.getS20Style())
 
         # s20to100 style...
-        s20to100_style = self.getBaseStyle(id="s20to100")
+        label_style, balloon_style = self.getBaseStyle(id="s20to100")
         iconstyle = IconStyle(ns=self.ns, color="ff00ffff", icon_href="drawCircle.png")
-        s20to100_style.iconstyle = iconstyle
+        s20to100_style = fastkml.styles.Style(ns=self.ns, id="s20to100",
+                            styles=[label_style, balloon_style, iconstyle])        
         document.styles.append(s20to100_style)
 
         # s100 style...
-        s100_style = self.getBaseStyle(id="s100")
+        label_style, balloon_style = self.getBaseStyle(id="s100")
         iconstyle = IconStyle(ns=self.ns, color="ff0000ff", icon_href="drawCircle.png")
-        s100_style.iconstyle = iconstyle
+        s100_style = fastkml.styles.Style(ns=self.ns, id="s100",
+                            styles=[label_style, balloon_style, iconstyle])        
         document.styles.append(s100_style)
 
         # b20 style...
         document.styles.append(self.getB20Style())
 
         # b20to100 style...
-        b20to100_style = self.getBaseStyle(id="b20to100")
+        label_style, balloon_style = self.getBaseStyle(id="b20to100")
         iconstyle = IconStyle(ns=self.ns, color="ff00ffff", icon_href="drawRectangle.png")
-        b20to100_style.iconstyle = iconstyle
+        b20to100_style = fastkml.styles.Style(ns=self.ns, id="b20to100",
+                            styles=[label_style, balloon_style, iconstyle])        
         document.styles.append(b20to100_style)
 
         # b100 style...
-        b100_style = self.getBaseStyle(id="b100")
+        label_style, balloon_style = self.getBaseStyle(id="b100")
         iconstyle = IconStyle(ns=self.ns, color="ff0000ff", icon_href="drawRectangle.png")
-        b100_style.iconstyle = iconstyle
+        b100_style = fastkml.styles.Style(ns=self.ns, id="b100",
+                            styles=[label_style, balloon_style, iconstyle])        
         document.styles.append(b100_style)
 
         # u20 style...
-        u20_style = self.getBaseStyle(id="u20")
+        label_style, balloon_style = self.getBaseStyle(id="u20")
         iconstyle = IconStyle(ns=self.ns, color="ff00ff00", icon_href="drawRectangle_ur.png")
-        u20_style.iconstyle = iconstyle
+        u20_style = fastkml.styles.Style(ns=self.ns, id="u20",
+                            styles=[label_style, balloon_style, iconstyle])        
         document.styles.append(u20_style)
 
         # u20to100 style...
-        u20to100_style = self.getBaseStyle(id="u20to100")
+        label_style, balloon_style = self.getBaseStyle(id="u20to100")
         iconstyle = IconStyle(ns=self.ns, color="ff00ffff", icon_href="drawRectangle_ur.png")
-        u20to100_style.iconstyle = iconstyle
+        u20to100_style = fastkml.styles.Style(ns=self.ns, id="u20to100",
+                            styles=[label_style, balloon_style, iconstyle])        
         document.styles.append(u20to100_style)
 
-        # b100 style...
-        u100_style = self.getBaseStyle(id="u100")
+        # u100 style...
+        label_style, balloon_style = self.getBaseStyle(id="u100")
         iconstyle = IconStyle(ns=self.ns, color="ff0000ff", icon_href="drawRectangle_ur.png")
-        u100_style.iconstyle = iconstyle
+        u100_style = fastkml.styles.Style(ns=self.ns, id="u100",
+                            styles=[label_style, balloon_style, iconstyle])        
         document.styles.append(u100_style)
 
         # mir style...
-        mir_style = self.getBaseStyle(id="mir")
+        label_style, balloon_style = self.getBaseStyle(id="mir")
         iconstyle = IconStyle(ns=self.ns, icon_href="drawCross.png")
-        mir_style.iconstyle = iconstyle
+        mir_style = fastkml.styles.Style(ns=self.ns, id="mir",
+                            styles=[label_style, balloon_style, iconstyle])        
         document.styles.append(mir_style)
 
         return document
@@ -1770,45 +1925,46 @@ class KMLWriter():
     def copyUTMColumns(self, utmn, utme):
         return [utmn, utme]
 
-    def getAreaSrcStyle(self):
-        as_style = fastkml.styles.Style(ns=self.ns, id="Areasrc")
-        
+    def getAreaSrcStyle(self):        
         # as_style.append_style(LineStyle(ns=self.ns, color="ff000000"))
         linestyle = LineStyle(ns=self.ns, color="ff000000")
         polystyle = PolyStyle(ns=self.ns, color="7c8080ff")
         balloonstyle = BalloonStyle(ns=self.ns, bgColor="ffffffff", text="$[description]")
-       
-        as_style.linestyle = linestyle
-        as_style.polystyle = polystyle
-        as_style.balloonstyle = balloonstyle
-       
-        # as_style.append_style(PolyStyle(ns=self.ns, color="7c8080ff"))
-        # as_style.append_style(BalloonStyle(ns=self.ns, bgColor="ffffffff", text="$[description]"))
+
+        as_style = fastkml.styles.Style(ns=self.ns, id="Areasrc",
+                                        styles=[linestyle, polystyle, balloonstyle])
+
         return as_style
 
     def getPtSrcStyle(self):
-        ps_style = self.getBaseStyle(id="Ptsrc")       
-        iconstyle = IconStyle(ns=self.ns, color="ff8080ff", icon_href="drawCircle.png")
-        ps_style.iconstyle = iconstyle
+        label_style, balloon_style = self.getBaseStyle(id="Ptsrc")
+        ps_style = fastkml.styles.Style(ns=self.ns, id="Ptsrc",
+                            styles=[label_style, balloon_style,
+                                IconStyle(ns=self.ns, color="ff8080ff", icon_href="drawCircle.png")])
 
         return ps_style
 
     def getCenterStyle(self):
-        center_style = self.getBaseStyle(id="center")
-        iconstyle = IconStyle(ns=self.ns, color="ff0000ff", icon_href="drawCenter.png")
-        center_style.iconstyle = iconstyle
+        label_style, balloon_style = self.getBaseStyle(id="center")
+        
+        center_style = fastkml.styles.Style(ns=self.ns, id="center",
+                                styles=[label_style, balloon_style,
+                                        IconStyle(ns=self.ns, color="ff0000ff", icon_href="drawCenter.png")])
+
         return center_style
 
     def getS20Style(self):
-        s20_style = self.getBaseStyle(id="s20")
+        label_style, balloon_style = self.getBaseStyle(id="s20")
         iconstyle = IconStyle(ns=self.ns, color="ff00ff00", icon_href="drawCircle.png")
-        s20_style.iconstyle = iconstyle
+        s20_style = fastkml.styles.Style(ns=self.ns, id="s20",
+                                         styles=[label_style, balloon_style, iconstyle])
         return s20_style
 
     def getB20Style(self):
-        b20_style = self.getBaseStyle(id="b20")
+        label_style, balloon_style = self.getBaseStyle(id="b20")
         iconstyle = IconStyle(ns=self.ns, color="ff00ff00", icon_href="drawRectangle.png")
-        b20_style.iconstyle = iconstyle
+        b20_style = fastkml.styles.Style(ns=self.ns, id="b20",
+                                         styles=[label_style, balloon_style, iconstyle])
         return b20_style
 
     def getBaseStyle(self, id):
@@ -1820,4 +1976,4 @@ class KMLWriter():
         base_style.labelstyle = labelstyle
         base_style.balloonstyle = balloonstyle 
         
-        return base_style
+        return labelstyle, balloonstyle
