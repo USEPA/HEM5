@@ -6,7 +6,7 @@ window.HEM_leaflet_functions = Object.assign({}, window.HEM_leaflet_functions, {
 						max,
 						colorscale,
 						circleOptions,
-						colorProp} = context.props.hideout;
+						colorProp} = context.hideout;
                 const csc = chroma.scale(colorscale).domain([min, max]);  // chroma lib to construct colorscale
                 circleOptions.fillColor = csc(feature.properties[colorProp]);  // set color based on color prop.
                 return L.circleMarker(latlng, circleOptions);  // sender a simple circle marker
@@ -55,7 +55,7 @@ window.HEM_leaflet_functions = Object.assign({}, window.HEM_leaflet_functions, {
         draw_cluster: function(feature, latlng, index, context)
             {
         
-                const {min, max, colorscale, circleOptions, colorProp} = context.props.hideout;
+                const {min, max, colorscale, circleOptions, colorProp} = context.hideout;
                 const csc = chroma.scale(colorscale).domain([min, max]);
                 // Set color based on maximum value of leaves.
                 const leaves = index.getLeaves(feature.properties.cluster_id);
@@ -80,7 +80,7 @@ window.HEM_leaflet_functions = Object.assign({}, window.HEM_leaflet_functions, {
 		
 		draw_contours: function(feature, context)
 			{
-				const {classes, colorscale, style, colorProp} = context.props.hideout;  // get props from hideout
+				const {classes, colorscale, style, colorProp} = context.hideout;  // get props from hideout
 				const value = feature.properties[colorProp];  // get value the determines the color
 				
 				for (let i = 0; i < classes.length; ++i) {

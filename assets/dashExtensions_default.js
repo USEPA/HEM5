@@ -1,45 +1,15 @@
 window.dashExtensions = Object.assign({}, window.dashExtensions, {
     default: {
-        function0: function(feature, latlng) {
-            const square = L.icon({
-                iconUrl: `/assets/greensquare.png`,
-                iconSize: [10, 10]
-            });
-
-            return L.marker(latlng, {
-                icon: square
-            });
-        },
-        function1: function(feature, layer, context) {
-                const map = context.myRef.current.leafletElement._map;
-                L.polylineDecorator(layer, {
-                    patterns: [{
-                        symbol: L.Symbol.arrowHead({
-                            pixelSize: 15,
-                            pathOptions: {
-                                fillOpacity: 1,
-                                weight: 2
-                            }
-                        })
-                    }]
-                }).addTo(map);
-            }
-
-            ,
-        function2: function(feature, context) {
-            const {
-                classes,
-                colorscale,
-                style,
-                colorProp
-            } = context.props.hideout; // get props from hideout
-            const value = feature.properties[colorProp]; // get value the determines the color
-            for (let i = 0; i < classes.length; ++i) {
-                if (value > classes[i]) {
-                    style.fillColor = colorscale[i]; // set the fill color according to the class
-                }
-            }
-            return style;
+        function0: {
+            'classes': [0.0011416280310000194, 0.004183462113152194, 0.015330173030920888, 0.05617696510723111, 0.20585882509569364],
+            'colorscale': ['#472e7c', '#31678e', '#1f978b', '#52c569', '#d2e21b'],
+            'style': {
+                'weight': 1,
+                'opacity': 1,
+                'color': 'white',
+                'fillOpacity': 0.8
+            },
+            'colorProp': 'midpts'
         }
     }
 });

@@ -382,8 +382,7 @@ class contours():
                    Output('ctab-metric-alert-div', 'children'),
                    Output('ctab-themap', 'children'),
                    Output('ctab-map-title', 'children'),
-                   Output('ctab-themap', 'zoom'),
-                   Output('ctab-themap', 'center'),
+                   Output('ctab-themap', 'viewport'),
                    Output('ctab-store-cont-json', 'data'),
               
                   Input('ctab-store-metricdata', 'data'),
@@ -403,13 +402,13 @@ class contours():
             
             if rawdata is None:
                 maptitle = html.H4('Select files to create contours')
-                return no_update, no_update, maptitle, no_update, no_update, no_update
+                return no_update, no_update, maptitle, no_update, no_update
             elif metric is None:
                 maptitle = html.H4('Select a risk metric')
-                return no_update, no_update, maptitle, no_update, no_update, no_update
+                return no_update, no_update, maptitle, no_update, no_update
                 
             elif metdata is None:
-                return no_update, no_update, no_update, no_update, no_update, no_update
+                return no_update, no_update, no_update, no_update, no_update
             else:
                 ctx = callback_context
                 comp_id = ctx.triggered[0]['prop_id'].split('.')[0]
@@ -418,7 +417,7 @@ class contours():
                         
                 if dfpl[metric].max() == 0:
                     alert = self.make_alert('There are no nonzero values for this metric')
-                    return alert, no_update, no_update, no_update, no_update, no_update
+                    return alert, no_update, no_update, no_update, no_update
                 else:
                     gdf = gp.GeoDataFrame(
                         dfpl, geometry=gp.points_from_xy(dfpl.Longitude, dfpl.Latitude), crs="EPSG:4326")
@@ -679,67 +678,11 @@ class contours():
                     draw_blocks = Namespace('HEM_leaflet_functions', 'contour')('draw_block_receptors2')
                     draw_polars = Namespace('HEM_leaflet_functions', 'contour')('draw_polar_receptors2')
                     # draw_cluster = Namespace('HEM_leaflet_functions', 'contour')('draw_cluster')
+
                     
                     cont_hideout=dict(colorscale=colorscale, classes=classes, style=style, colorProp='midpts')
                     
-                    # if blockbuf == None and polarbuf != None:
-                    #     blocks_or_polars = [dl.Overlay(
-                              
-                    #             dl.LayerGroup(
-                    #             dl.GeoJSON(id = 'ctab-polars', format="geobuf",
-                    #                        data=polarbuf,
-                    #                        options = dict(pointToLayer=draw_polars),
-                    #                        # options = dict(pointToLayer=draw_recepts, onEachFeature=draw_arrow),
-                    #                       ),
-                    #             ),
-                    #             name = 'Polar Receptors', checked = False
-                              
-                    #       )]
-                    # elif polarbuf == None and blockbuf != None:
-                    #     blocks_or_polars = [dl.Overlay(
-                              
-                    #            dl.LayerGroup(
-                    #            dl.GeoJSON(id = 'ctab-blocks', format="geobuf",
-                    #                       data=blockbuf,
-                    #                       # cluster=True, 
-                    #                       # superClusterOptions = dict(radius=100),                                                                    
-                    #                       options = dict(pointToLayer=draw_blocks),
-                    #                       # options = dict(pointToLayer=draw_recepts, onEachFeature=draw_arrow),
-                    #                      ),
-                    #            ),
-                    #            name = 'Block/User Receptors', checked = False
-                              
-                    #       )]
-                    # else:
-                    #     blocks_or_polars = [dl.Overlay(
-                              
-                    #            dl.LayerGroup(
-                    #            dl.GeoJSON(id = 'ctab-blocks', format="geobuf",
-                    #                       data=blockbuf,
-                    #                       # cluster=True, 
-                    #                       # superClusterOptions = dict(radius=100),                                                                    
-                    #                       options = dict(pointToLayer=draw_blocks),
-                    #                       # options = dict(pointToLayer=draw_recepts, onEachFeature=draw_arrow),
-                    #                      ),
-                    #            ),
-                    #            name = 'Block/User Receptors', checked = False
-                              
-                    #       ),
-                       
-                    #     dl.Overlay(
-                              
-                    #            dl.LayerGroup(
-                    #            dl.GeoJSON(id = 'ctab-polars', format="geobuf",
-                    #                       data=polarbuf,
-                    #                       options = dict(pointToLayer=draw_polars),
-                    #                       # options = dict(pointToLayer=draw_recepts, onEachFeature=draw_arrow),
-                    #                      ),
-                    #            ),
-                    #            name = 'Polar Receptors', checked = False
-                              
-                    #       )]
-                    
-                                    
+
                     contmap = [
                         
                             dl.MeasureControl(position="topleft", primaryLengthUnit="meters", primaryAreaUnit="hectares",
@@ -749,7 +692,6 @@ class contours():
                                              
                                               [ct_roads, ct_places,
                                                
-                                               # *blocks_or_polars,
                                                                                                         
                                                    dl.Overlay(
                                                         
@@ -793,9 +735,7 @@ class contours():
                                                         name = 'Contours', checked = True
                                                         
                                                     ),
-                                                 
-                                                 # ct_roads, ct_places
-                                                                                 
+                                                                                                                                  
                                              ]
                                              
                                              ),
@@ -808,16 +748,18 @@ class contours():
                     
                     
                     if comp_id in ['ctab-opacdrop','ctab-rampdrop', 'ctab-sigfigdrop', 'ctab-classinput']:
-                        center = no_update
-                        zoom = no_update
+                        viewport_return = no_update
                     else:
-                        center = [avglat,avglon]
-                        zoom = 14
+                        avglat_float = avglat.item()
+                        avglon_float = avglon.item()
+                        center = [avglat_float, avglon_float]
+                        zoom = 11
+                        viewport_return = {'center':center, 'zoom':zoom}
                     
                     # Close the matplotlib figure
                     plt.close()
                     # return no_update, contmap, maptitle, zoom, center, gdfJSON
-                    return no_update, contmap, maptitle, zoom, center, cont_json
+                    return no_update, contmap, maptitle, viewport_return, cont_json
 
 
         # This callback takes the csv file(s) loaded by user and creates a dataframe
