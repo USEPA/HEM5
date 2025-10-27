@@ -479,13 +479,13 @@ class FacilityPrep():
                 dist_cen = math.sqrt((vertx_a[i] - cenx)**2 + (verty_a[i] - ceny)**2)
                 maxsrcd = max(maxsrcd, dist_cen)
 
-            # If user first ring is > 100m, then use it, else first ring is maxsrcd + overlap.
-            if self.model.facops[ring1].iloc[0] <= 100:
-                ring1a = max(maxsrcd+op_overlap, 100)
-                ring1b = min(ring1a, op_maxdist)
-                firstring = normal_round(max(ring1b, 100))
-            else:
+            # If user first ring is > 0, then use it, else first ring is maxsrcd + overlap.
+            if self.model.facops[ring1].iloc[0] > 0:
                 firstring = self.model.facops[ring1].iloc[0]
+            else:
+                ring1a = maxsrcd + op_overlap
+                ring1b = min(ring1a, op_maxdist)
+                firstring = normal_round(ring1b)
 
             # Store first ring in computedValues
             self.model.computedValues['firstring'] = firstring
@@ -541,6 +541,8 @@ class FacilityPrep():
 
             # set computed polar distances to integers
             polar_dist = [int(item) for item in polar_dist]
+
+            Logger.logMessage("Computed polar ring distances: " + str(polar_dist)[1:-1] + "\n" )
 
         
         # setup list of polar angles

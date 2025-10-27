@@ -83,7 +83,7 @@ class Census(Page):
 
     def update_census(self, event):
         """
-        Function creates thread for running HEM4 concurrently with tkinter GUI
+        Function creates thread for running CensusUpdater concurrently with tkinter GUI
         """
 
         # Make sure census change file has been uploaded
@@ -120,7 +120,7 @@ class Census(Page):
             self.lift_page(self.home.liLabel, self.home.logLabel, self.home.log, self.home.current_button)
 
             # Instantiate the updater which loads the Census data
-            self.censusupdater = CensusUpdater(self.changeset_df)
+            self.censusupdater = CensusUpdater(self.changeset_df, self.censusUpdatePath)
             # Was the Census data uploaded?
             if self.censusupdater.census_df.empty:
                 self.reset()
@@ -186,10 +186,13 @@ class Census(Page):
         else:
             # try to load the file
             self.censusUpdatePath = fullpath
-            Logger.logMessage("/nLoading the census change file...")
+            Logger.logMessage("Loading the census change file...\n")
             censuschanges = CensusChanges(self.censusUpdatePath)
             self.changeset_df = censuschanges.dataframe
             if self.changeset_df.empty:
+                # problem with the census change file, start over
+                if hasattr(self, 'censusUpdatePath'):
+                    del self.censusUpdatePath
                 return
             else:
                 self.folder_select['text'] = fullpath.split("\\")[-1]        
