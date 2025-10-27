@@ -79,7 +79,7 @@ class FacilityList(InputFile):
         # acute multiplier is defaulted to 10, and emission variation is defaulted to N
 
         cleaned = df.fillna({radial:16, circles:13, overlap_dist:30, hours:1, multiplier:10, max_dist: 50000, model_dist: 3000,
-                                                      ring1:100, urban_pop:0, hivalu:1})
+                                                      ring1:0, urban_pop:0, hivalu:1})
 
         cleaned.replace(to_replace={rural_urban:{"nan":""}, elev:{"nan":"Y"}, met_station:{"nan":""},
                                       dep:{"nan":"N"}, depl:{"nan":"N"}, phase:{"nan":""}, pdep:{"nan":"NO"},
@@ -222,11 +222,6 @@ class FacilityList(InputFile):
                                   " out of range. Defaulting to 30.")
                 row[overlap_dist] = 30
 
-            # ring1
-            if row[ring1] < 100 or row[ring1] > row[max_dist]:
-                Logger.logMessage("Facility " + facility + ": ring1 value " + str(row[ring1]) +
-                                  " out of range. The first ring will be assigned a distance that is off plant property but not less than 100m.")
-                row[ring1] = 100
 
             # Facility center...comma separated list that should start with either "U" (meaning UTM coords) or "L"
             # (meaning lat/lon) and contain two values if lat/lon (lat,lon) or three values if UTM
@@ -281,6 +276,13 @@ class FacilityList(InputFile):
                 if float(distlist[-1]) != row[max_dist]:
                     maxdist_str = "," + str(row[max_dist])
                     row['ring_distances'] += maxdist_str
+
+            # ring1; only check if ring_distances are empty because they get priority
+            if row['ring_distances'] == "":
+                if row[ring1] < 0 or row[ring1] > row[max_dist]:
+                    Logger.logMessage("Facility " + facility + ": ring1 value " + str(row[ring1]) +
+                                      " out of range. The first ring will be assigned a distance that is off plant property.")
+                    row[ring1] = 0
 
             # Acute
             valid = ['Y', 'N']

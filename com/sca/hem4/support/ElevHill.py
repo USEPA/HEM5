@@ -461,4 +461,81 @@ class ElevHill:
             return False
         except requests.Timeout:
             return False
+ 
+
+    @staticmethod
+    def getHill_onerec(rec_lon, rec_lat, rec_elev):
+        """
+        Purpose
+        -------
+        This function is used to compute the hill height of a single point. The
+        py3dep API is used to acquire elevations.
         
+        Parameters
+        ----------
+        rec_lon : Longitude of point
+        rec_lat : Latitude of point
+        rec_elev : Elevation (m) of point
+
+        Returns
+        -------
+        Hill height (m) of point
+        """
+        
+        # Query the 30m DEM server for all elevations within a geo box where the radius is
+        # based on the max HEM modeling distance plus 62km to potentially account for Denali
+        # at a 10% slope.
+        initial_radius = 45
+        r_earth = 6371 # radius of earth in km
+        lat2 = rec_lat  + (initial_radius / r_earth) * (180 / pi)
+        lon2 = rec_lon + (initial_radius / r_earth) * (180 / pi) / cos(np.deg2rad(rec_lat))
+        lat1 = rec_lat  - (initial_radius / r_earth) * (180 / pi)
+        lon1 = rec_lon - (initial_radius / r_earth) * (180 / pi) / cos(np.deg2rad(rec_lat))
+        geo_box = (lon1, lat1, lon2, lat2)
+                    
+        try:
+            #-------------- Use py3dep method ---------------------------
+                            
+            xarray = py3dep.get_dem(geo_box, 30, crs='epsg:4269')
+            grid30_df = xarray.to_dataframe()
+            grid30_df.reset_index(inplace=True)
+            grid30_df.rename(columns={'x':'longitude', 'y':'latitude'}, inplace=True)
+        
+        except BaseException as e:
+            #--------- py3dep method failed ---------------------------
+                                
+            return None
+                     
+        # Create a numpy elevation array from the 30m dataframe
+        grid30_lat = grid30_df['latitude'].to_numpy()
+        grid30_lon = grid30_df['longitude'].to_numpy()
+        grid30_elev = grid30_df['elevation'].to_numpy()
+        grid30_arr = np.column_stack((grid30_lat, grid30_lon, grid30_elev))
+                        
+        # Use the max of the 30m grid elevations and the receptor elevation
+        # to compute the horizontal distance (km) needed for a 10% slope to get hill height.
+        maxelev = grid30_elev.max()
+        maxelev_radius = ((maxelev - rec_elev) * 0.001 * 10) + 1
+            
+        # Now shrink the elev array using a real radius
+        real_radius = maxelev_radius
+        lat2 = rec_lat  + (real_radius / r_earth) * (180 / pi)
+        lon2 = rec_lon + (real_radius / r_earth) * (180 / pi) / cos(np.deg2rad(rec_lat))
+        lat1 = rec_lat  - (real_radius / r_earth) * (180 / pi)
+        lon1 = rec_lon - (real_radius / r_earth) * (180 / pi) / cos(np.deg2rad(rec_lat))
+        latcon = ((grid30_arr[:, 0] >= lat1) &  (grid30_arr[:, 0] <= lat2))
+        loncon = ((grid30_arr[:, 1] >= lon1) &  (grid30_arr[:, 1] <= lon2))
+        elevcon = (grid30_arr[:, 2] > rec_elev)
+        grid_arr = grid30_arr[latcon & loncon & elevcon]                       
+        elev_lat = grid_arr[:,0]
+        elev_lon = grid_arr[:,1]
+        elev_elev = grid_arr[:,2]
+    
+        rec_elev_arr = np.full((elev_elev.size,), rec_elev)
+        rec_lat_arr = np.full((elev_lat.size,), rec_lat)
+        rec_lon_arr = np.full((elev_lon.size,), rec_lon)
+        
+        Hillht = ElevHill.getMax(rec_lat_arr, rec_lon_arr, rec_elev_arr, elev_lat, elev_lon, elev_elev)
+        hill_height = max(Hillht, rec_elev)
+        
+        return hill_height
