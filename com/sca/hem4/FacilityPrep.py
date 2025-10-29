@@ -49,11 +49,8 @@ class FacilityPrep():
         #%%---------- Emissions Locations --------------------------------------
         
         # If this is an Aermod lead run, only use lead emission sources
-        if aermodleadYN == 'N':
-            # not a lead run
-            emislocs = self.model.emisloc.dataframe.loc[self.model.emisloc.dataframe[fac_id] == facid].copy()
-        
-        else:
+        if aermodleadYN == 'Y':
+            
             # this is a lead run
             leademis_df = (self.model.hapemis.dataframe.loc
                            [(self.model.hapemis.dataframe[fac_id] == facid) & 
@@ -65,9 +62,7 @@ class FacilityPrep():
                 
                 # There are lead emissions
                 lead_sources_list = leademis_df[source_id].tolist()
-                emislocs = (self.model.emisloc.dataframe.loc
-                            [(self.model.emisloc.dataframe[fac_id] == facid) & 
-                        (self.model.emisloc.dataframe[source_id].isin(lead_sources_list))]).copy()
+
             else:
                 
                 # No lead emissions
@@ -81,6 +76,9 @@ class FacilityPrep():
             
                 # emislocs = self.model.emisloc.dataframe.loc[self.model.emisloc.dataframe[fac_id] == facid].copy()
                 # aermodleadYN = 'N'
+
+        # All source locations are needed for the center and Census even if this is a lead run
+        emislocs = self.model.emisloc.dataframe.loc[self.model.emisloc.dataframe[fac_id] == facid].copy()
             
         
         # If there is a bouyant line source with other sources, then it has to come last because of an Aermod v19191 bug.
@@ -721,17 +719,28 @@ class FacilityPrep():
         self.model.polargrid = polar_df
 
          
-        #%% this is where runstream file will be compiled
-
-        runstream = Runstream(self.model.facops, emislocs, hapemis, buoyant_df,
-                              polyver_df, bldgdw_df, partdia_df, landuse_df,
-                              seasons_df, emisvar_df, self.model)
+        #%% Compile the runstream file
         
         if aermodleadYN == 'N':
-            # not a lead run
+
+            # Not a lead run
+            runstream = Runstream(self.model.facops, emislocs, hapemis, buoyant_df,
+                                  polyver_df, bldgdw_df, partdia_df, landuse_df,
+                                  seasons_df, emisvar_df, self.model)
+
             runstream.build_co(runPhase, self.innerblks, self.outerblks)
+
         else:
-            # this is a lead run
+
+            # This is a lead run, get the lead sources
+
+            lead_emislocs = emislocs[emislocs[source_id].isin(lead_sources_list)].copy()
+
+
+            runstream = Runstream(self.model.facops, lead_emislocs, hapemis, buoyant_df,
+                                  polyver_df, bldgdw_df, partdia_df, landuse_df,
+                                  seasons_df, emisvar_df, self.model)
+            
             runstream.build_co_lead(self.innerblks, self.outerblks)
             
         runstream.build_so(runPhase, aermodleadYN)
@@ -741,10 +750,10 @@ class FacilityPrep():
         self.model.computedValues['distance'] = distanceToMet
 
         if aermodleadYN == 'N':
-            # not a lead run
+            # Not a lead run
             runstream.build_ou()
         else:
-            # this is a lead run
+            # This is a lead run
             runstream.build_ou_lead()
 
         return runstream
