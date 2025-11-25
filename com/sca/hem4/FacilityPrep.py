@@ -491,10 +491,11 @@ class FacilityPrep():
             polar_dist = []
             polar_dist.append(firstring)
 
-
             # Make sure modeling distance is not less than first ring distance
             if self.model.facops[model_dist].iloc[0] < firstring:
-                emessage = "Error! Modeling distance is less than first ring."
+                emessage = ("Error! Modeling distance is less than first ring.\n"
+                            +"Modeling distance = " + str(self.model.facops[model_dist].iloc[0])
+                            + "\nFirst ring distance = " + str(firstring) + "\n")
                 Logger.logMessage(emessage)
                 raise Exception("Modeling distance is less than first ring")
 

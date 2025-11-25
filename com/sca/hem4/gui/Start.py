@@ -36,16 +36,17 @@ class Start(Page):
 
         #title in first grid space
         title1 = tk.Label(self.s1, text="HEM", font=TITLE_FONT, bg=self.tab_color)
-        title1.grid(row=0, column=2, pady=20)
+        title1.grid(row=0, column=2, pady=(20,10))
 
-        title2 = tk.Label(self.s1, text="Version 5.0 ", font=TEXT_FONT, bg=self.tab_color)
-        title2.grid(row=1, column=2, pady=20)
+        title2 = tk.Label(self.s1, text="Version 5.1 ", font=TEXT_FONT, bg=self.tab_color)
+        title2.grid(row=1, column=2, pady=10, sticky='N')
 
         #some information
-        prepared_for = tk.Label(self.s4, text="Prepared for: \nAir Toxics" +
-                                              " Assessment Group \nU.S. EPA \nResearch Triangle Park, NC 27711",
+        prepared_for = tk.Label(self.s4, text="Prepared for: \nRisk and Exposure" +
+                                              " Assessment Branch \nOffice of Air & Radiation"+
+                                              "\nU.S. EPA \nResearch Triangle Park, NC 27711",
                                 font=TEXT_FONT, bg=self.tab_color)
-        prepared_for.grid(row=1, column=0, padx=60)
+        prepared_for.grid(row=1, column=0, padx=30)
 
 
         image1 = ImageTk.PhotoImage(PIL.Image.open('images\smokestack.jpg').resize((220,200)))
@@ -54,9 +55,10 @@ class Start(Page):
         ione.grid(row=1, column=1, padx=70, sticky='W', pady=20)
 
         prepared_by = tk.Label(self.s4, text="Prepared by: \nSC&A Incorporated\n" +
-                                             "1414 Raleigh Rd, Suite 450\nChapel Hill, NC 27517",
+                                             "2200 Wilson Boulevard, Suite 300\nArlington, VA 22201\n" +
+                                             "With Offices near Research Triangle Park, NC",
                                font=TEXT_FONT, bg=self.tab_color)
-        prepared_by.grid(row=1, column=2, padx=10, sticky='E')
+        prepared_by.grid(row=1, column=2, padx=10, sticky='W')
 
 
         img = PIL.Image.open('images\\usersguides.jpg')
@@ -64,4 +66,4 @@ class Start(Page):
         image2 = ImageTk.PhotoImage(img)
         itwo = tk.Label(self.s3, image=image2)
         itwo.image = image2 # keep a reference!
-        itwo.grid(row=1, column=2, padx=10, sticky='E', pady=20)
+        itwo.grid(row=1, column=2, padx=10, sticky='W', pady=20)

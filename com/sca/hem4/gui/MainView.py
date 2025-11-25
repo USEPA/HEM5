@@ -11,6 +11,7 @@ from com.sca.hem4.gui.Hem import Hem
 from com.sca.hem4.gui.Log import Log
 from com.sca.hem4.gui.Start import Start
 from com.sca.hem4.gui.Summary import Summary
+from com.sca.hem4.gui.Merge import Merge
 from com.sca.hem4.gui.EJ import EJ
 
 from com.sca.hem4.log.Logger import Logger
@@ -42,6 +43,11 @@ class MainView(tk.Frame):
         self.hem.place(in_=self.container, relx=0.3, relwidth=0.7, relheight=1)
         self.hem.lower()
 
+        # instantiate merge page
+        self.merge = Merge(self)
+        self.merge.place(in_=self.container, relx=0.3, relwidth=0.7, relheight=1)
+        self.merge.lower()
+
         # instantiate summary tab
         self.summary = Summary(self)
         self.summary.place(in_=self.container, relx=0.3, relwidth=0.7, relheight=1)
@@ -52,11 +58,12 @@ class MainView(tk.Frame):
         self.analyze.place(in_=self.container, relx=0.3, relwidth=0.7, relheight=1)
         self.analyze.lower()
 
-        # instantiate analyze outputs
+        # instantiate EJ outputs
         self.ej = EJ(self)
         self.ej.place(in_=self.container, relx=0.3, relwidth=0.7, relheight=1)
         self.ej.lower()
 
+        # instantiate Census Updater
         self.options = Census(self)
         self.options.place(in_=self.container, relx=0.3, relwidth=0.7, relheight=1)
         self.options.lower()
@@ -94,10 +101,33 @@ class MainView(tk.Frame):
         self.iconLabel.bind("<Button-1>", partial(self.lift_page, self.iconLabel, self.newrunLabel, self.hem, self.current_button))
 
 
+        #----------- Merge HEM Runs nav button --------------------------------------
+        
+        self.updateLabel= tk.Label(self, text="MERGE HEM RUNS", font=TAB_FONT, bg=MAIN_COLOR, height=2, pady=2, anchor="w")
+        self.updateLabel.place(in_=self.container, relwidth=0.2, rely=0.14, relx=0.1)
+
+        # add run icon with margin for highlight
+        self.si = PIL.Image.open('images\icons8-merge-documents-64-cropped.png').resize((30,30))
+
+        update_new = self.add_margin(self.si, 3, 0, 3, 0)
+
+        self.updateIcon = ImageTk.PhotoImage(update_new)
+
+        self.xchangeLabel = tk.Label(self, image=self.updateIcon, bg=MAIN_COLOR)
+        self.xchangeLabel.image = self.updateIcon # keep a reference!
+        self.xchangeLabel.place(in_=self.container, relwidth=0.1, rely=0.14)
+        # self.xchangeLabel.place(in_=self.container, relwidth=0.1, rely=0.14, relx=0.02)
+
+        # bind icon and label events
+        self.updateLabel.bind("<Enter>", partial(self.color_config, self.updateLabel, self.xchangeLabel, HIGHLIGHT_COLOR))
+        self.updateLabel.bind("<Leave>", partial(self.color_config, self.updateLabel, self.xchangeLabel, MAIN_COLOR))
+        self.updateLabel.bind("<Button-1>", partial(self.lift_page, self.updateLabel, self.xchangeLabel, self.merge, self.current_button))
+
+
         #----------- Risk Summary nav button --------------------------------------
         
         self.riskLabel= tk.Label(self, text="SUMMARIZE RISKS", font=TAB_FONT, bg=MAIN_COLOR, height=2, pady=2, anchor="w")
-        self.riskLabel.place(in_=self.container, relwidth=0.2, rely=0.14, relx=0.1)
+        self.riskLabel.place(in_=self.container, relwidth=0.2, rely=0.21, relx=0.1)
 
         # add run icon with margin for highlight
         self.si = PIL.Image.open('images\icons8-edit-graph-report-48.png').resize((30,30))
@@ -108,7 +138,7 @@ class MainView(tk.Frame):
 
         self.summaryLabel = tk.Label(self, image=self.summaryIcon, bg=MAIN_COLOR)
         self.summaryLabel.image = self.summaryIcon # keep a reference!
-        self.summaryLabel.place(in_=self.container, relwidth=0.1, rely=0.14)
+        self.summaryLabel.place(in_=self.container, relwidth=0.1, rely=0.21)
 
         # bind icon and label events
         self.riskLabel.bind("<Enter>", partial(self.color_config, self.riskLabel, self.summaryLabel, HIGHLIGHT_COLOR))
@@ -119,7 +149,7 @@ class MainView(tk.Frame):
         #------------------------  EJ nav button --------------------------------------
         
         self.ejLabel = tk.Label(self, text="DEMOGRAPHIC ASSESSMENT", font=TAB_FONT, bg=MAIN_COLOR, height=2, pady=2, anchor="w")
-        self.ejLabel.place(in_=self.container, relwidth=0.2, rely=0.21, relx=0.1)
+        self.ejLabel.place(in_=self.container, relwidth=0.2, rely=0.28, relx=0.1)
 
         # add run icon with margin for highlight
         eji = PIL.Image.open('images\\icons8-people-48.png').resize((30,30))
@@ -128,7 +158,7 @@ class MainView(tk.Frame):
         self.ejIcon = ImageTk.PhotoImage(ejnew)
         self.peopleLabel = tk.Label(self, image=self.ejIcon, bg=MAIN_COLOR)
         self.peopleLabel.image = self.ejIcon # keep a reference!
-        self.peopleLabel.place(in_=self.container, relwidth=0.1, rely=0.21)
+        self.peopleLabel.place(in_=self.container, relwidth=0.1, rely=0.28)
 
         # bind icon and label events
         self.ejLabel.bind("<Enter>", partial(self.color_config, self.ejLabel, self.peopleLabel, HIGHLIGHT_COLOR))
@@ -143,7 +173,7 @@ class MainView(tk.Frame):
         #---------------- Analyze Outputs nav button -----------------------------------
         
         self.analyzeLabel= tk.Label(self, text="ANALYZE OUTPUTS", font=TAB_FONT, bg=MAIN_COLOR, height=2, pady=2, anchor="w")
-        self.analyzeLabel.place(in_=self.container, relwidth=0.2, rely=0.28, relx=0.1)
+        self.analyzeLabel.place(in_=self.container, relwidth=0.2, rely=0.35, relx=0.1)
 
         # add run icon with margin for highlight
         ai = PIL.Image.open('images\icons8-graph-48.png').resize((30,30))
@@ -152,7 +182,7 @@ class MainView(tk.Frame):
         analyzeIcon = ImageTk.PhotoImage(analyzenew)
         self.outputLabel = tk.Label(self, image=analyzeIcon, bg=MAIN_COLOR)
         self.outputLabel.image = analyzeIcon # keep a reference!
-        self.outputLabel.place(in_=self.container, relwidth=0.1, rely=0.28)
+        self.outputLabel.place(in_=self.container, relwidth=0.1, rely=0.35)
 
         # bind icon and label events
         self.analyzeLabel.bind("<Enter>", partial(self.color_config, self.analyzeLabel, self.outputLabel, HIGHLIGHT_COLOR))
@@ -167,7 +197,7 @@ class MainView(tk.Frame):
         #-------------------- Log nav button -------------------------------------------
         
         self.logLabel= tk.Label(self, text="LOG", font=TAB_FONT, bg=MAIN_COLOR, height=2, anchor="w")
-        self.logLabel.place(in_=self.container, relwidth=0.2, rely=0.35, relx=0.1)
+        self.logLabel.place(in_=self.container, relwidth=0.2, rely=0.42, relx=0.1)
 
         # add run icon with margin for highlight
         self.li = PIL.Image.open('images\icons8-console-48.png').resize((30,30))
@@ -176,7 +206,7 @@ class MainView(tk.Frame):
         logIcon = ImageTk.PhotoImage(linew)
         self.liLabel = tk.Label(self, image=logIcon, bg=MAIN_COLOR)
         self.liLabel.image = logIcon # keep a reference!
-        self.liLabel.place(in_=self.container, relwidth=0.1, rely=0.35)
+        self.liLabel.place(in_=self.container, relwidth=0.1, rely=0.42)
 
         # bind icon and label events
         self.logLabel.bind("<Enter>", partial(self.color_config, self.logLabel, self.liLabel, HIGHLIGHT_COLOR))
@@ -225,7 +255,7 @@ class MainView(tk.Frame):
         #------------------------ HEM Users Guide nav button ----------------------------
         
         ugLabel= tk.Label(self, text="HEM USER GUIDE", font=TAB_FONT, bg=MAIN_COLOR, height=2, anchor="w")
-        ugLabel.place(in_=self.container, relwidth=0.2, rely=0.63, relx=0.1)
+        ugLabel.place(in_=self.container, relwidth=0.2, rely=0.56, relx=0.1)
 
         # add run icon with margin for highlight
         ug = PIL.Image.open('images\icons8-user-manual-48.png').resize((30,30))
@@ -234,7 +264,7 @@ class MainView(tk.Frame):
         ugIcon = ImageTk.PhotoImage(ugnew)
         bookLabel = tk.Label(self, image=ugIcon, bg=MAIN_COLOR)
         bookLabel.image = ugIcon # keep a reference!
-        bookLabel.place(in_=self.container, relwidth=0.1, rely=0.63)
+        bookLabel.place(in_=self.container, relwidth=0.1, rely=0.56)
 
         # bind icon and label events
         ugLabel.bind("<Enter>", partial(self.color_config, ugLabel, bookLabel, HIGHLIGHT_COLOR))
@@ -248,7 +278,7 @@ class MainView(tk.Frame):
         #------------------ aermod user nav button --------------------------------
         
         agLabel= tk.Label(self, text="AERMOD USER GUIDE", font=TAB_FONT, bg=MAIN_COLOR, height=2, anchor="w")
-        agLabel.place(in_=self.container, relwidth=0.2, rely=0.7, relx=0.1)
+        agLabel.place(in_=self.container, relwidth=0.2, rely=0.63, relx=0.1)
 
         # add run icon with margin for highlight
         ag = PIL.Image.open('images\icons8-user-manual-48.png').resize((30,30))
@@ -257,7 +287,7 @@ class MainView(tk.Frame):
         agIcon = ImageTk.PhotoImage(agnew)
         bookLabel2 = tk.Label(self, image=agIcon, bg=MAIN_COLOR)
         bookLabel2.image = agIcon # keep a reference!
-        bookLabel2.place(in_=self.container, relwidth=0.1, rely=0.7)
+        bookLabel2.place(in_=self.container, relwidth=0.1, rely=0.63)
 
         # bind icon and label events
         agLabel.bind("<Enter>", partial(self.color_config, agLabel, bookLabel2, HIGHLIGHT_COLOR))
@@ -270,7 +300,7 @@ class MainView(tk.Frame):
         #------------------- Exit nav button ------------------------------------
         
         closeLabel= tk.Label(self, text="EXIT", font=TAB_FONT, bg=MAIN_COLOR, height=2, anchor="w")
-        closeLabel.place(in_=self.container, relwidth=0.2, rely=0.77, relx=0.1)
+        closeLabel.place(in_=self.container, relwidth=0.2, rely=0.7, relx=0.1)
 
         # add run icon with margin for highlight
         clo = PIL.Image.open('images\icons8-close-window-48.png').resize((30,30))
@@ -279,7 +309,7 @@ class MainView(tk.Frame):
         closeIcon = ImageTk.PhotoImage(clonew)
         closeLabel2 = tk.Label(self, image=closeIcon, bg=MAIN_COLOR)
         closeLabel2.image = closeIcon # keep a reference!
-        closeLabel2.place(in_=self.container, relwidth=0.1, rely=0.77)
+        closeLabel2.place(in_=self.container, relwidth=0.1, rely=0.7)
 
         # bind icon and label events
         closeLabel.bind("<Enter>", partial(self.color_config, closeLabel, closeLabel2, HIGHLIGHT_COLOR))
