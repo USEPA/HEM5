@@ -1276,54 +1276,55 @@ class Hem(Page):
 
         self.next.destroy()
 
+        self.button_file.unbind("<Button-1>")
+        self.fileLabel.unbind("<Button-1>")
 
-        self.button_file.unbind('<Button1>')
-        self.fileLabel.unbind('<Button1>')
+        self.hap_file.unbind('<Button-1>')
+        self.hapLabel.unbind('<Button-1>')
 
-        self.hap_file.unbind('<Button1>')
-        self.hapLabel.unbind('<Button1>')
-
-        self.emis_file.unbind('<Button1>')
-        self.emisLabel.unbind('<Button1>')
+        self.emis_file.unbind('<Button-1>')
+        self.emisLabel.unbind('<Button-1>')
 
         self.group_label.config(state="disabled")
         self.group_list_man.config(state="disabled")
         self.defaultrec_sel.config(state="disabled")
         self.altrec_sel.config(state="disabled")
         
+        self.defaultUserConc_sel.config(state="disabled")
+        
         if 'user_rcpt' in self.model.dependencies:
-            self.ur_file.unbind('<Button1>')
-            self.urLabel.unbind('<Button1>')
+            self.ur_file.unbind('<Button-1>')
+            self.urLabel.unbind('<Button-1>')
 
         #emis var
         if 'emis_var' in self.model.dependencies:
-            self.emisvar_file.unbind('<Button1>')
-            self.emisvarLabel.unbind('<Button1>')
+            self.emisvar_file.unbind('<Button-1>')
+            self.emisvarLabel.unbind('<Button-1>')
 
         if 'buoyant' in self.model.dependencies:
-            self.buoy_file.unbind('<Button1>')
-            self.buoyLabel.unbind('<Button1>')
+            self.buoy_file.unbind('<Button-1>')
+            self.buoyLabel.unbind('<Button-1>')
 
         if 'poly' in self.model.dependencies:
-            self.poly_file.unbind('<Button1>')
-            self.polyLabel.unbind('<Button1>')
+            self.poly_file.unbind('<Button-1>')
+            self.polyLabel.unbind('<Button-1>')
 
 
         if 'bldg_dw' in self.model.dependencies:
-            self.bldgdw_file.unbind('<Button1>')
-            self.bldgdwLabel.unbind('<Button1>')
+            self.bldgdw_file.unbind('<Button-1>')
+            self.bldgdwLabel.unbind('<Button-1>')
 
         if 'particle size' in self.model.dependencies:
-            self.particle_file.unbind('<Button1>')
-            self.particleLabel.unbind('<Button1>')
+            self.particle_file.unbind('<Button-1>')
+            self.particleLabel.unbind('<Button-1>')
 
         if 'land use' in self.model.dependencies:
-            self.land_file.unbind('<Button1>')
-            self.landLabel.unbind('<Button1>')
+            self.land_file.unbind('<Button-1>')
+            self.landLabel.unbind('<Button-1>')
 
         if 'seasons' in self.model.dependencies:
-            self.seasons_file.unbind('<Button1>')
-            self.seasonsLabel.unbind('<Button1>')
+            self.seasons_file.unbind('<Button-1>')
+            self.seasonsLabel.unbind('<Button-1>')
             
         if 'userconcs' in self.model.dependencies:
             self.defaultUserConc_sel.config(state="disabled")
@@ -1350,18 +1351,18 @@ class Hem(Page):
 
         self.faclbl.set('')
         self.faclbl.set("1. Please select a Facilities List Options file:")
-        self.button_file.unbind('<Button1>')
-        self.fileLabel.unbind('<Button1>')
+        self.button_file.bind("<Button-1>", lambda x: self.uploadFacilitiesList(self.s5, self.button_file, x))
+        self.fileLabel.bind("<Button-1>",  lambda x: self.uploadFacilitiesList(self.s5, self.button_file, x))
 
         self.haplbl.set('')
         self.haplbl.set("2. Please select a HAP Emissions file:")
-        self.hap_file.unbind('<Button1>')
-        self.hapLabel.unbind('<Button1>')
+        self.hap_file.bind("<Button-1>", lambda x: self.uploadHAPEmissions(self.s6, self.hap_file, x))
+        self.hapLabel.bind("<Button-1>",  lambda x: self.uploadHAPEmissions(self.s6, self.hap_file, x))
 
         self.emislbl.set('')
         self.emislbl.set("3. Please select an Emissions Location file:")
-        self.emis_file.unbind('<Button1>')
-        self.emisLabel.unbind('<Button1>')
+        self.emis_file.bind("<Button-1>", lambda x: self.uploadEmissionLocations(self.s7, self.emis_file, x))
+        self.emisLabel.bind("<Button-1>", lambda x: self.uploadEmissionLocations(self.s7, self.emis_file, x))
 
         self.group_list.set('')
 
@@ -1457,13 +1458,13 @@ class Hem(Page):
 
             self.haplbl.set('')
             self.haplbl.set("2. Please select a HAP Emissions file:")
-            self.hap_file.unbind('<Button1>')
-            self.hapLabel.unbind('<Button1>')
+            self.hap_file.bind('<Button-1>')
+            self.hapLabel.bind('<Button-1>')
 
             self.emislbl.set('')
             self.emislbl.set("3. Please select an Emissions Location file:")
-            self.emis_file.unbind('<Button1>')
-            self.emisLabel.unbind('<Button1>')
+            self.emis_file.bind('<Button-1>')
+            self.emisLabel.bind('<Button-1>')
 
             # user receptor
             self.optional.urlbl = tk.StringVar()

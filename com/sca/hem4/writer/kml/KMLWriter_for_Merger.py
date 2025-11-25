@@ -87,8 +87,8 @@ class KMLWriter_for_Merger():
     
                 # Determine the center of the facility. If provided by the user, use it. Otherwise compute an
                 # average from the emission source locations (lat/lons)
-                fcenter = self.faclist_df[self.faclist_df['fac_id']==facid]['fac_center'].iloc[0]
-                if fcenter != "" and not math.isnan(fcenter):
+                fcenter = str(self.faclist_df[self.faclist_df['fac_id']==facid]['fac_center'].iloc[0])
+                if fcenter != "" and fcenter != "nan":
                                         
                     # User supplied
                     components = fcenter.split(',')
@@ -375,7 +375,7 @@ class KMLWriter_for_Merger():
 
             # If facility has a buoyant line source, get the line width
             if any(emislocs.source_type == "B") == True:
-                buoy_linwid = self.buoyant.loc[self.buoyant['fac_id'] == row][['fac_id','avglin_wid']]
+                buoy_linwid = self.buoyant_df.loc[self.buoyant_df['fac_id'] == row][['fac_id','avglin_wid']]
             else:
                 buoy_linwid = pd.DataFrame()
 

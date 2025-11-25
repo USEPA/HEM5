@@ -24,6 +24,22 @@ class MergeHemRuns():
 
         self.orig_rundir = orig_rundir
         self.new_rundir = new_rundir
+        self.orig_rungroup_name = os.path.basename(self.orig_rundir)
+        self.new_rungroup_name = os.path.basename(self.new_rundir)
+
+        # Get the list of facilities used in the original and rerun. These will be used to filter the inputs.
+        orig_faclist_file = os.path.join(self.orig_rundir, "Inputs", "faclist.xlsx")
+        rerun_faclist_file = os.path.join(self.new_rundir, "Inputs", "faclist.xlsx")
+        if os.path.exists(orig_faclist_file):
+            orig_facs_df = pd.read_excel(orig_faclist_file, usecols=[0])
+            self.orig_facs_list = orig_facs_df.iloc[:, 0].tolist()
+        else:
+            raise ValueError("File "+orig_faclist_file+" does not exist")
+        if os.path.exists(rerun_faclist_file):
+            rerun_facs_df = pd.read_excel(rerun_faclist_file, usecols=[0])
+            self.rerun_facs_list = rerun_facs_df.iloc[:, 0].tolist()
+        else:
+            raise ValueError("File "+rerun_faclist_file+" does not exist")
         
         
     def PerformMerge(self):
@@ -38,6 +54,17 @@ class MergeHemRuns():
                 Logger.logMessage("pop subdirectory deleted from the original HEM rungroup folder.\n")
             except OSError as e:
                 Logger.logMessage("Error while trying to delete the pop subdirectory. Error message:\n"
+                                  + e.strerror)
+                raise ValueError(e.strerror)
+
+        # delete Acute Maps dir if it exists
+        ejdir = os.path.join(self.orig_rundir, 'Acute Maps')        
+        if os.path.exists(ejdir):
+            try:
+                shutil.rmtree(ejdir)
+                Logger.logMessage("Acute Maps subdirectory deleted from the original HEM rungroup folder.\n")
+            except OSError as e:
+                Logger.logMessage("Error while trying to delete the Acute Maps subdirectory. Error message:\n"
                                   + e.strerror)
                 raise ValueError(e.strerror)
         
@@ -77,9 +104,40 @@ class MergeHemRuns():
                               + e.strerror)
             raise ValueError(e.strerror)
         
-                
+  
+
+        # 2. Update the original "facility" summary files
+
+        # update one file at a time
+        search_strings = ['facility_cancer_risk_exp', 'facility_max_risk_and_hi'
+                            , 'facility_toshi_exp']
         
-        # 2. Identify all common facilities in the two rungroups, delete them from the original,
+        for fstring in search_strings:
+            orig_summary = os.path.join(self.orig_rundir, self.orig_rungroup_name+'_'+fstring+'.xlsx')
+            new_summary = os.path.join(self.new_rundir, self.new_rungroup_name+'_'+fstring+'.xlsx')
+            
+            if os.path.exists(orig_summary):
+                if os.path.exists(new_summary):
+                    df = self.update_input(orig_summary, new_summary, 'A', 0)
+                    os.remove(orig_summary)
+                    df.to_excel(orig_summary, index=False)
+                    self.copy_top_rows_with_formatting(new_summary, orig_summary, 0)
+                    Logger.logMessage('Updated facility summary file \n' 
+                                      + orig_summary + '\n')                   
+                else:
+                    Logger.logMessage("Error! Trying to update facility summary file\n"
+                                      +new_summary+"\n"
+                                      +"but file does not exist.\n")
+                    raise ValueError("Error trying to update a facility summary file that does not exist.")
+            else:
+                Logger.logMessage("Error! Trying to update facility summary file\n"
+                                  +orig_summary+"\n"
+                                  +"but file does not exist.\n")
+                raise ValueError("Error trying to update a facility summary file that does not exist.")
+                    
+                    
+        
+        # 3. Identify all common facilities in the two rungroups, delete them from the original,
         #    and copy the rerun facility folders to the original rungroup
         common_facs = self.find_common_subfolders(self.orig_rundir, self.new_rundir)
                 
@@ -117,7 +175,7 @@ class MergeHemRuns():
                     raise ValueError(e.strerror)
         
         
-        # 3. Copy all facility folders from the rerun group that are not in the original rungroup
+        # 4. Copy all facility folders from the rerun group that are not in the original rungroup
                 
         new_folders = self.find_unique_subfolders(self.new_rundir, self.orig_rundir)
         
@@ -137,7 +195,7 @@ class MergeHemRuns():
                         raise ValueError(e.strerror)
 
         
-        # 4. Update the files in the Inputs folder
+        # 5. Update the files in the Inputs folder
         
         input_files = ['building_dimension.xlsx'
                        ,'buoyant_line_parameters.xlsx'
@@ -196,14 +254,6 @@ class MergeHemRuns():
             emisloc_df = None
             polygon_df = None
             
-            # Get the list of facilities used in the rerun. This will be used to filter the rerun inputs.
-            rerun_faclist_file = os.path.join(self.new_rundir, "Inputs", "faclist.xlsx")
-            if os.path.exists(rerun_faclist_file):
-                rerun_facs_df = pd.read_excel(rerun_faclist_file, usecols=[0])
-                self.rerun_facs_list = rerun_facs_df.iloc[:, 0].tolist()
-            else:
-                raise ValueError("File "+rerun_faclist_file+" does not exist")
-                
             
             for ifile, ikey, iheader, isheet in zip(input_files, input_keys, header_rows, sheet_names):
                 orig_file = os.path.join(self.orig_rundir, "Inputs", ifile)
@@ -257,22 +307,21 @@ class MergeHemRuns():
             raise ValueError(formatted_exception[0])            
 
 
-        # 5. Copy the rerun run log into the original rungroup and change the name of the log
+        # 6. Copy the rerun run log into the original rungroup and change the name of the log
         
         # rungroup = os.path.basename(self.orig_rundir)
         # old_name = os.path.join(self.orig_rundir, "hem.log")
         # new_name = os.path.join(self.orig_rundir, "hem-"+rungroup+".log")
         # os.rename(old_name, new_name)
 
-        new_rungroup = os.path.basename(self.new_rundir)
         old_name = os.path.join(self.new_rundir, "hem.log")
-        new_name = os.path.join(self.orig_rundir, "hem-"+new_rungroup+".log")
+        new_name = os.path.join(self.orig_rundir, "hem-"+self.new_rungroup_name+".log")
         shutil.copy(old_name, new_name)
 
         Logger.logMessage('Copied log file\n')
         
 
-        # 6. Recreate the emission source KMZ
+        # 7. Recreate the emission source KMZ
                 
         kmlwriter = KMLWriter_for_Merger(self.orig_rundir, faclist_df, buoyant_df, emisloc_df, polygon_df)
         kmlwriter.write_kml_emis_loc()
@@ -299,10 +348,16 @@ class MergeHemRuns():
         
     def update_input(self, orig_file, new_file, keycols, headerrow):
         
+        # new is updating original
+        
         df_source = pd.read_excel(new_file, skiprows=headerrow, dtype=str)
+        # filter to modeled facilities
+        df_source = df_source[df_source.iloc[:,0].isin(self.rerun_facs_list)]
         df_source = df_source.rename(columns=lambda y: self.conv(df_source.columns.get_loc(y)))
         
         df_target = pd.read_excel(orig_file, skiprows=headerrow, dtype=str)
+        # filter to modeled facilities
+        df_target = df_target[df_target.iloc[:,0].isin(self.orig_facs_list)]
         df_target = df_target.rename(columns=lambda y: self.conv(df_target.columns.get_loc(y)))
         
         # find common rows
@@ -318,6 +373,7 @@ class MergeHemRuns():
         
         # Append source DF to filtered target.This will bring in any updated rows and new rows.
         target_final = pd.concat([target_filtered, df_source], ignore_index=True)
+        target_final = target_final.sort_values(by=keycols, ignore_index=True)
         
         return target_final
         
