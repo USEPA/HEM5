@@ -169,10 +169,10 @@ class Summary(Page):
         self.add_report_checkbox("Source Type Risk Histogram", self.r9, self.set_sourcetype)
         self.add_report_checkbox("Max Risk and HI by Source\nand Pollutant", self.l11, self.set_max_risk_sourcetype)
 
-        run_button = tk.Label(self.meta_two, text="Run Reports", bg='lightgrey', relief='solid',
+        self.run_button = tk.Label(self.meta_two, text="Run Reports", bg='lightgrey', relief='solid',
                               font=TEXT_FONT, borderwidth=2)
-        run_button.grid(row=10, column=2, sticky='E', padx=20, pady=20)
-        run_button.bind("<Button-1>", self.run_reports)
+        self.run_button.grid(row=10, column=2, sticky='E', padx=20, pady=20)
+        self.run_button.bind("<Button-1>", self.run_reports)
 
     def add_report_checkbox(self, name, container, callback):
         # Create a new frame to hold both inputs
@@ -317,11 +317,13 @@ class Summary(Page):
         future = executor.submit(self.createReports)
 
         if self.reports_ready:
+            # enable the Run Reports button
+            self.run_button.bind("<Button-1>", self.run_reports)
             self.lift_page(self.nav.liLabel, self.nav.logLabel, self.nav.log, self.nav.current_button)
 
 
     def createReports(self,  arguments=None):
-
+        
         self.reports_ready = False
 
         # set log file to append to in folder
@@ -457,6 +459,10 @@ class Summary(Page):
         if self.reports_ready:
             running_message = "\nRunning report(s) on facilities: " + ', '.join(faclist)
 
+            # disable the Run Reports button
+            self.run_button.unbind("<Button-1>")
+            self.run_button.config(state="disabled")
+
             # write to log
             self.logfile.write(str(datetime.now()) + ":    " + running_message + "\n")
             self.nav.log.scr.configure(state='normal')
@@ -524,10 +530,9 @@ class Summary(Page):
 
             for icon in self.checked_icons:
                 icon.configure(image=self.uncheckedIcon)
-
-            self.folder_select['text'] = "Select output folder"
-            self.nav.summaryLabel.configure(image=self.nav.summaryIcon)
-            self.logfile.close()
+            
+            self.reset()
+            
 
     def lift_page(self, widget1, widget2, page, previous):
         """
@@ -580,7 +585,15 @@ class Summary(Page):
 
         for icon in self.checked_icons:
             icon.configure(image=self.uncheckedIcon)
+        
+        self.checked = []
+        self.checked_icons = []
+        self.fullpath = None
 
         self.folder_select['text'] = "Select output folder"
         self.nav.summaryLabel.configure(image=self.nav.summaryIcon)
         self.logfile.close()
+        self.run_button.bind("<Button-1>", self.run_reports)
+        self.run_button.config(state="normal")
+        
+        

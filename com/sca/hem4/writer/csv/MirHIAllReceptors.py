@@ -14,12 +14,13 @@ class MirHIAllReceptors(CsvWriter, InputFile):
                  filenameOverride=None, createDataframe=False):
 
         self.output_dir = targetDir
+        self.rungroup_name = os.path.basename(self.output_dir)
 
         # The radius is hard-coded to the maximum, but we're including the distance for each block
         # in the result so we can filter down to other radius values if needed.
         self.radius = 50000
 
-        filename = "MIR_HI_allreceptors.csv" if filenameOverride is None else filenameOverride
+        filename = self.rungroup_name+"_MIR_HI_allreceptors.csv" if filenameOverride is None else filenameOverride
         path = os.path.join(self.output_dir, filename)
 
         CsvWriter.__init__(self, model, plot_df)

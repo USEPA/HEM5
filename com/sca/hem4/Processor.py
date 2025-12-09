@@ -202,10 +202,10 @@ class Processor():
                                         
                     # Check for USGS elevation server error which aborts the HEM run
                     if str(ex) == "USGS elevation server unavailable":
-                        messagebox.showinfo("Cannot obtain elevation data", "Your computer was unable to obtain elevation data for this model run." \
-                                            " This HEM run will stop. This problem may be due to your internet connection or the elevation data not being available from the USGS." \
-                                            " Your options are to run this run group with no elevation or to use the off-line elevation method." \
-                                            " More detail about this error is available in the log.")
+                        messagebox.showinfo("Cannot obtain elevation data", "Failed to connect to the USGS elevation server." \
+                                            " This HEM run will stop. There is Internet but the USGS server is not available." \
+                                            " Your options are to run this run group with no elevation, use the off-line elevation method," \
+                                            " or wait and try the run later. More detail about this error is available in the log.")
                         fullStackInfo = traceback.format_exc()
                         Logger.logMessage("Cannot obtain elevation data.\n" \
                                           " Aborting this HEM run.\n" \
