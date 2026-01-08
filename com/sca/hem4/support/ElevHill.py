@@ -249,10 +249,7 @@ class ElevHill:
                 lat1 = center_lat  - (maxelev_radius / r_earth) * (180 / pi)
                 lon1 = center_lon - (maxelev_radius / r_earth) * (180 / pi) / cos(np.deg2rad(center_lat))
                 df2 = df.loc[df['latitude'].between(lat1, lat2) & df['longitude'].between(lon1, lon2)].copy()
-                
-                #debug
-                Logger.logMessage("Finished getTIF \n")
-                
+                                
                 return df2
         
 
@@ -386,9 +383,6 @@ class ElevHill:
             
             # 30m elev grid DF already exists
             grid30_df = model.model_optns['elev30m']
-
-        #debug
-        Logger.logMessage("Made it to end of getHill \n")
                 
         # Create a numpy elevation array from the 30m dataframe
         grid30_lat = grid30_df['latitude'].to_numpy()

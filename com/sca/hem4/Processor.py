@@ -298,8 +298,9 @@ class Processor():
                 success = True
                 
 
-                #reset model options aftr facility
+                #reset model options and runstreasm values after facility
                 self.model.model_optns = defaultdict()
+                self.model.runstream_reset()
                 
 #                try:  
 #                    self.model.save.remove_folder()

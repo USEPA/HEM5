@@ -262,7 +262,7 @@ class Analyze(Page):
             appobj = dashapp.buildApp()
             if appobj != None:
                 Timer(1, self.open_browser).start()
-                appobj.run(debug= False, port=self.hemdashport)
+                appobj.run(debug= True, port=self.hemdashport)
 
                 # Reset stdout to original state
             sys.stdout = orig_stdout
