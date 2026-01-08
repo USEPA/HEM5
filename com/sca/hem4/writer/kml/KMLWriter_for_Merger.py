@@ -358,14 +358,14 @@ class KMLWriter_for_Merger():
         for row in faclist:
 
             # Emission location info for one facility. Keep certain columns.
-            emislocs = self.emisloc_df.loc[self.emisloc_df['fac_id'] == row].copy()
+            emislocs = self.emisloc_df.loc[self.emisloc_df['fac_id'] == row]
             [["fac_id","source_id","source_type","lon","lat","utmzone","x2","y2",
-              "location_type","lengthx","lengthy","angle"]]
+              "location_type","lengthx","lengthy","angle"]].copy()
             
             # If facility has a polygon source, get the vertices for this facility and append to emislocs
             if any(emislocs.source_type == "I") == True:
                 polyver = self.polygon_df.loc[self.polygon_df['fac_id'] == row]
-                [["fac_id","source_id","lon","lat","utmzone","location_type"]]
+                [["fac_id","source_id","lon","lat","utmzone","location_type"]].copy()
                 # Assign source_type
                 polyver["source_type"] = "I"
                 # remove the I source_type rows from emislocs before appending polyver to avoid duplicate rows
