@@ -43,8 +43,6 @@ import sys
 from com.sca.hem4.upload.DoseResponse import DoseResponse
 from com.sca.hem4.log.Logger import Logger
 
-from dash_extensions.javascript import assign
-
 class HEMdash():
     
     def __init__(self, dirtouse):
@@ -477,7 +475,6 @@ class HEMdash():
                 # for column in cols2format_E  +  cols2format_f:
                 #     df_dashtable[column] = df_dashtable[column].map(lambda x: '{:.6f}'.format(x))
                 
- 
                 
                 blue_scale = ['#bce6f9', '#74bbed', '#4d96ce', '#48799d', '#404d54']
                 # blue_scale = ['aliceblue', 'darkblue']
@@ -491,40 +488,27 @@ class HEMdash():
                 purple_to_yellow = ['purple', 'yellow']
                 yellow_to_purple = ['yellow', 'purple']
     
-                #Tegan facramps = {'Purple to Yellow': purple_to_yellow, 'Yellow to Purple': yellow_to_purple,
-                #             'Blue to Yellow': blue_to_yellow, 'Yellow to Blue': yellow_to_blue,
-                #             'Blue to Red': blue_to_red, 'Red to Blue': red_to_blue,  
-                #             'Green Scale': green_scale, 'Orange Scale': orange_scale,'Red Scale': red_scale,
-                #             'Blue Scale' : blue_scale}
-    
-                # List of available color scales
-                facramps = ['viridis', 'magma', 'cividis', 'rainbow', 'gist_earth','terrain','jet', 'turbo',
-                              'ocean', 'tab10',
-                              'Blues', 'Greens', 'Oranges', 'Reds',
-                              'viridis_r', 'magma_r', 'cividis_r', 'rainbow_r', 'gist_earth_r','terrain_r','jet_r', 'turbo_r',
-                              'ocean_r', 'tab10_r',
-                              'Blues_r', 'Greens_r', 'Oranges_r', 'Reds_r']
-
-
+                facramps = {'Purple to Yellow': purple_to_yellow, 'Yellow to Purple': yellow_to_purple,
+                            'Blue to Yellow': blue_to_yellow, 'Yellow to Blue': yellow_to_blue,
+                            'Blue to Red': blue_to_red, 'Red to Blue': red_to_blue,  
+                            'Green Scale': green_scale, 'Orange Scale': orange_scale,'Red Scale': red_scale,
+                            'Blue Scale' : blue_scale}
+                
                 # Create geobuf of state boundaries for facility map
                 with open('assets/states_lines.geojson') as f:
                     statejson = json.load(f)
                 statebuf = dlx.geojson_to_geobuf(statejson)
                         
-                # Define the clientside callback function for styling
-                # This function assigns color based on a 'value' property in the GeoJSON features
-                style_handle = assign("""function(feature, context){
-                    const {colorscale, vmin, vmax, value_property} = context.props.hideout;
-                    const value = feature.properties[value_property];
-                    if (value === undefined) { return {fillColor: '#dddddd', color: 'black', weight: 1, fillOpacity: 0.7}; }
-                    // use chroma.js to get color from value
-                    const color = chroma.scale(colorscale).domain([vmin, vmax])(value);
-                    return {fillColor: color.hex(), color: 'black', weight: 1, fillOpacity: 0.7};
-                }""")
                 
-                    
                 app.layout = html.Div([
-                        
+    
+    #                    dcc.Interval(id='interval1', interval=5 * 1000, n_intervals=0),
+    #                    html.H1(id='label1', children=''),
+    
+    # Mark commented these out
+    #                dcc.Input(id="input1", type="hidden", value="shutdown"),
+    #                dcc.Input(id="input2", type="hidden"),
+                    
                     html.Div([
                             # html.Hr(),    
                             html.H2("HEM Summary Results for " + self.SCname + " Model Run", style={'text-align':'center', 'font-weight': 'bold'}),
@@ -569,11 +553,10 @@ class HEMdash():
                                 html.H6("Color ramp"),  
                                   dcc.Dropdown(id='facs_rampdrop',
                                                
-                                              #Tegan options=[{"label": key, "value": key} for (key,value) in facramps.items()],
-                                              options=[{'label': i, 'value': i} for i in facramps],
+                                              options=[{"label": key, "value": key} for (key,value) in facramps.items()],
                                               multi=False,
                                               clearable=False,
-                                              value = 'Blues',
+                                              value = 'Purple to Yellow',
                                               placeholder="Select a Color Ramp",
                                               ),
                                 
@@ -606,37 +589,18 @@ class HEMdash():
                                                     dl.Overlay(
                                                     dl.GeoJSON(                                                                                              
                                                         id='facs_layer',
-                                                        format='geobuf',
-                                                        style=style_handle,
+                                                        format='geobuf',                                           
                                                         # hoverStyle=arrow_function(dict(weight=5, color='#666'))
                                                         ),
                                                     name = 'Facilities', checked = True
                                                     ),
                                                     
-                                                   #  dl.Overlay(
-                                                   #      dl.GeoJSON(id = 'statesid', format="geobuf",
-                                                   #                     data=statebuf,
-                                                   #                     # hoverStyle=arrow_function(dict(weight=1.5, fillColor = 'rgb(0,0,0,0)')),
-                                                   #                     zoomToBoundsOnClick=False,
-                                                   #                    options = dict(weight = .4, fillColor = 'rgb(0,0,0,0)', color = 'beige'),
-                                                   #                     zoomToBounds = False
-                                                   #                     ),
-                                                   # name = 'US States', checked = True
-                                                   # ),
                                                     dl.Overlay(
                                                         dl.GeoJSON(id = 'statesid', format="geobuf",
                                                                        data=statebuf,
                                                                        # hoverStyle=arrow_function(dict(weight=1.5, fillColor = 'rgb(0,0,0,0)')),
                                                                        zoomToBoundsOnClick=False,
-                                                                      options={
-                                                                                "style": {
-                                                                                    "color": "black",    # Outline color
-                                                                                    "weight": 2,         # Outline width
-                                                                                    "fillColor": "beige", # Fill color (change as needed)
-                                                                                    "opacity": 0.8,
-                                                                                    "fillOpacity": 0.5
-                                                                                }
-                                                                            },
+                                                                      options = dict(weight = .4, fillColor = 'rgb(0,0,0,0)', color = 'beige'),
                                                                        zoomToBounds = False
                                                                        ),
                                                    name = 'US States', checked = True
@@ -648,7 +612,7 @@ class HEMdash():
                                                     
                                              ),
                                                                                             
-                                                     dl.Colorbar(id='facs_colorbar', position="bottomleft", colorscale='Blues', width=20, height=150, nTicks=3, style=dict(background='white')),
+                                                     dl.Colorbar(id='facs_colorbar', position="bottomleft", width=20, height=150, nTicks=3, style=dict(background='white')),
                                                     
                                                      dl.MeasureControl(position="topleft", primaryLengthUnit="kilometers", primaryAreaUnit="hectares", activeColor="#214097", completedColor="#972158"),
                                         ],                                                                                                           
@@ -810,8 +774,9 @@ class HEMdash():
                     #'<br><b>Cancer Risk (in a million): </b>' + facs_gdf['MIR (in a million)'].apply(lambda x: f'{self.riskfig(x, 1)}').astype(str) + \
                 facs_geojson = json.loads(facs_gdf.to_json())
                 facs_buf = dlx.geojson_to_geobuf(facs_geojson)
-                                
-                colorscale = ramp
+                
+                
+                colorscale = facramps[ramp]
                                 
                 if (facs_gdf[metric].max() >= 100 * facs_gdf[metric].median()):
                     color_prop = f'Log {metric}'
