@@ -9,6 +9,7 @@ import pandas as pd
 from com.sca.hem4.log.Logger import Logger
 import os
 import shutil
+import stat
 import glob
 from com.sca.hem4.writer.kml.KMLWriter_for_Merger import KMLWriter_for_Merger
 import traceback
@@ -40,6 +41,25 @@ class MergeHemRuns():
             self.rerun_facs_list = rerun_facs_df.iloc[:, 0].tolist()
         else:
             raise ValueError("File "+rerun_faclist_file+" does not exist")
+
+    def make_writable_and_retry(self, func, path, exc_info):
+        """
+        Error handler for shutil.rmtree.
+        If the error is access-related, attempts to change the file
+        permissions to allow writing, then retries the removal operation.
+        """
+        # Check if the error is an Access Denied error
+        if issubclass(exc_info[0], PermissionError):
+            try:
+                # Change the file attribute to be writable by the owner
+                os.chmod(path, stat.S_IWUSR)
+                # Retry the removal function
+                func(path)
+            except Exception as e:
+                print(f"Failed to change permissions and delete {path}: {e}")
+        else:
+            raise
+
         
         
     def PerformMerge(self):
@@ -50,18 +70,18 @@ class MergeHemRuns():
         ejdir = os.path.join(self.orig_rundir, 'pop')        
         if os.path.exists(ejdir):
             try:
-                shutil.rmtree(ejdir)
+                shutil.rmtree(ejdir, onerror=self.make_writable_and_retry)
                 Logger.logMessage("pop subdirectory deleted from the original HEM rungroup folder.\n")
             except OSError as e:
                 Logger.logMessage("Error while trying to delete the pop subdirectory. Error message:\n"
                                   + e.strerror)
                 raise ValueError(e.strerror)
-
-        # delete Acute Maps dir if it exists
+        
+        # delete Acute Maps dir if it exists        
         ejdir = os.path.join(self.orig_rundir, 'Acute Maps')        
         if os.path.exists(ejdir):
             try:
-                shutil.rmtree(ejdir)
+                shutil.rmtree(ejdir, onerror=self.make_writable_and_retry)
                 Logger.logMessage("Acute Maps subdirectory deleted from the original HEM rungroup folder.\n")
             except OSError as e:
                 Logger.logMessage("Error while trying to delete the Acute Maps subdirectory. Error message:\n"
@@ -150,7 +170,7 @@ class MergeHemRuns():
                 # delete original facility folder that was rerun
                 if os.path.exists(origdir):
                     try:
-                        shutil.rmtree(origdir)
+                        shutil.rmtree(origdir, onerror=self.make_writable_and_retry)
                         Logger.logMessage(f"Directory '{origdir}' and its contents deleted successfully.\n")
                     except OSError as e:
                         Logger.logMessage(f"Error trying to delete directory {origdir}\nError is:\n"
