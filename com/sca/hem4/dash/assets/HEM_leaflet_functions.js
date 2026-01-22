@@ -8,16 +8,10 @@ window.HEM_leaflet_functions = Object.assign({}, window.HEM_leaflet_functions, {
 						classes,
 						circleOptions,
 						colorProp} = context.hideout;
+				
                 const csc = chroma.scale(colorscale).domain([min, max]);  // chroma lib to construct colorscale
 
-/* 			let color = '#000000';
-			for (let i = 0; i < classes.length; i++) {
-				if (value > classes[i]) {
-					color = colorscale[i];
-				}
-			}
-			circleOptions.fillColor = color;
- */				circleOptions.fillColor = csc(feature.properties[colorProp]);  // set color based on color prop.
+				circleOptions.fillColor = csc(feature.properties[colorProp]);  // set color based on color prop.
                 return L.circleMarker(latlng, circleOptions);  // sender a simple circle marker
 			}
 		},

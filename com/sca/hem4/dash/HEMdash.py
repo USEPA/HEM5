@@ -493,6 +493,7 @@ class HEMdash():
                             'Blue to Red': blue_to_red, 'Red to Blue': red_to_blue,  
                             'Green Scale': green_scale, 'Orange Scale': orange_scale,'Red Scale': red_scale,
                             'Blue Scale' : blue_scale}
+
                 
                 # Create geobuf of state boundaries for facility map
                 with open('assets/states_lines.geojson') as f:
@@ -548,7 +549,45 @@ class HEMdash():
                                              'borderRadius': '4px'},
                                       class_name="fw-bold"
                                   ),
-                                
+
+                                html.Hr(),
+                                html.H6(["Number of classes"]),
+                                                    
+                                dcc.Slider(2, 10, 1,
+                                            value=5,
+                                            id='facs-classesdrop'
+                                            ),
+
+                                dbc.Tooltip(                        
+                                    [html.P('This will use the low and high values of your data, with this number of classes')],
+                                    target='facs-classesdrop',
+                                    style={'backgroundColor': '#FFFFFF',
+                                           'opacity': '1.0',
+                                           'borderRadius': '4px'},
+                                    class_name="fw-bold"
+                                ),
+
+                                html.H6('OR', style={'textAlign': 'center', 'color': 'indigo', 'font-weight' : 'bold'}),
+                                html.H6(["Input list of class breaks"]),
+                                html.Datalist(id="ctab-userlist", children=[
+                                    html.Option(value= '100, 200, 300, 400, 500, 600, 700, 800, 900, 1000'),
+                                    html.Option(value='10, 20, 40, 60, 80, 100'),
+                                    html.Option(value='100, 200, 500, 1300, 3000'),
+                                    html.Option(value='.1, .2, .5, 1, 2, 5, 10'),
+                                    html.Option(value='.1, .3, 1, 3, 10'),
+                                    ]),
+                                dcc.Input(id='facs-classinput', type = 'text', list = 'ctab-userlist', debounce = True),                    
+                                dbc.Tooltip(                        
+                                    [html.P('If you input your own class breaks (comma-separated list),\
+                                            the number of classes above will be ignored'),
+                                      html.P('Press enter after you input', style={'font-weight':'bold', 'font-style':'italic', 'color':'red'})],
+                                    target='facs-classinput',
+                                    style={'backgroundColor': '#FFFFFF',
+                                           'opacity': '1.0',
+                                           'borderRadius': '4px'},
+                                    class_name="fw-bold"
+                                ),
+                                                                                    
                                 html.Hr(),
                                 html.H6("Color ramp"),  
                                   dcc.Dropdown(id='facs_rampdrop',
@@ -559,8 +598,22 @@ class HEMdash():
                                               value = 'Purple to Yellow',
                                               placeholder="Select a Color Ramp",
                                               ),
-                                
+
                                 html.Hr(),
+                                html.H6("Opacity"),
+                                    dcc.Slider(.1, 1, .1,
+                                                value=.8,
+                                                marks={
+                                                        0: {'label': '0%', 'style': {'color': '#000000'}},
+                                                        0.25: {'label': '25%', 'style': {'color': '#000000'}},
+                                                        0.5: {'label': '50%', 'style': {'color': '#000000'}},
+                                                        0.75: {'label': '75%', 'style': {'color': '#000000'}},
+                                                        1: {'label': '100%', 'style': {'color': '#000000'}}
+                                                    },
+
+                                                id='facs_opacdrop'
+                                                ),
+                                
                                 html.H6("Dot size"),  
                                   dcc.Dropdown(id='facs_sizedrop',
                                                
@@ -570,6 +623,19 @@ class HEMdash():
                                               value = 5,
                                               placeholder="Select a Dot Size",
                                               ),
+
+                                html.Hr(),
+                                html.H6("Dot border width"),  
+                                  dcc.Slider(id='facs_circlewidth',
+                                               
+                                              min=1,
+                                              max=8,
+                                              step=1,
+                                              value=2,
+                                              marks={i: str(i) for i in range(1, 9)},
+                                              ),
+
+                                  
                             ], width = 2),
                             
                             
@@ -600,7 +666,15 @@ class HEMdash():
                                                                        data=statebuf,
                                                                        # hoverStyle=arrow_function(dict(weight=1.5, fillColor = 'rgb(0,0,0,0)')),
                                                                        zoomToBoundsOnClick=False,
-                                                                      options = dict(weight = .4, fillColor = 'rgb(0,0,0,0)', color = 'beige'),
+                                                                      options={
+                                                                                "style": {
+                                                                                    "color": "black",    # Outline color
+                                                                                    "weight": 2,         # Outline width
+                                                                                    "fillColor": "beige", # Fill color (change as needed)
+                                                                                    "opacity": 0.8,
+                                                                                    "fillOpacity": 0.5
+                                                                                }
+                                                                            },
                                                                        zoomToBounds = False
                                                                        ),
                                                    name = 'US States', checked = True
@@ -611,8 +685,10 @@ class HEMdash():
                                                     ]
                                                     
                                              ),
-                                                                                            
-                                                     dl.Colorbar(id='facs_colorbar', position="bottomleft", width=20, height=150, nTicks=3, style=dict(background='white')),
+                                               
+                                                     html.Div(id="colorbar-container", children=[]),
+                                                     
+                                                     # dl.Colorbar(id='facs_colorbar', position="bottomleft", nTicks=3, classes = [0,1,2,3,4,5], style=dict(background='white', width=30, height=150)),
                                                     
                                                      dl.MeasureControl(position="topleft", primaryLengthUnit="kilometers", primaryAreaUnit="hectares", activeColor="#214097", completedColor="#972158"),
                                         ],                                                                                                           
@@ -750,20 +826,33 @@ class HEMdash():
             @app.callback(Output('facs_layer', 'data'),
                           Output('facs_layer', 'hideout'),
                           Output('facs_layer', 'options'),
+                          
+                          Output('colorbar-container', 'children'),
                                                     
-                          Output('facs_colorbar', 'colorscale'),
-                          Output('facs_colorbar', 'min'),
-                          Output('facs_colorbar', 'max'),
-                          Output('facs_colorbar', 'tickText'),
+                          # Output('facs_colorbar', 'colorscale'),
+                          # Output('facs_colorbar', 'classes'),
+                          # Output('facs_colorbar', 'min'),
+                          # Output('facs_colorbar', 'max'),
+                          # Output('facs_colorbar', 'nTick'),
+                          # Output('facs_colorbar', 'tickText'),
+                          # Output('facs_colorbar', 'tickValues'),
+                          # Output('facs_colorbar', 'style'),
                                                 
                           Output('facs-map-title', 'children'),
                                                                                        
                           Input('facs_metdrop', 'value'),
                           Input('facs_rampdrop', 'value'),
                           Input('facs_sizedrop', 'value'),
+                          Input('facs_opacdrop', 'value'),                       
+                          Input('facs-classesdrop', 'value'),
+                          Input('facs-classinput', 'value'),
+                          Input('facs_circlewidth', 'value')
                           )
                       
-            def make_fac_map (metric, ramp, size):
+            def make_fac_map (metric, ramp, size, opac, numclass, userclass, cirwidth):
+
+                #debug
+                print("width = ", cirwidth)
                 
                 facs_gdf = gp.GeoDataFrame(df_max_can, geometry=gp.points_from_xy(df_max_can['Facility Center Lon'], df_max_can['Facility Center Lat']))
                 facs_gdf[f'Log {metric}'] = np.log10(facs_gdf[metric].replace(0, np.nan)) 
@@ -775,9 +864,11 @@ class HEMdash():
                 facs_geojson = json.loads(facs_gdf.to_json())
                 facs_buf = dlx.geojson_to_geobuf(facs_geojson)
                 
+                ctx = callback_context
+                comp_id = ctx.triggered[0]['prop_id'].split('.')[0]
                 
                 colorscale = facramps[ramp]
-                                
+
                 if (facs_gdf[metric].max() >= 100 * facs_gdf[metric].median()):
                     color_prop = f'Log {metric}'
                     vmin = facs_gdf[color_prop].min()
@@ -785,8 +876,7 @@ class HEMdash():
                     vmax = facs_gdf[color_prop].max()
                     vmid = (vmax+vmin)/2
                     vmax_lin = 10**vmax            
-                    vmid_lin = 10**vmid 
-                    
+                    vmid_lin = 10**vmid                     
                 else:
                     color_prop = metric
                     vmin = facs_gdf[color_prop].min()
@@ -794,19 +884,94 @@ class HEMdash():
                     vmax = facs_gdf[color_prop].max()
                     vmid = (vmax+vmin)/2
                     vmax_lin = vmax            
-                    vmid_lin = vmid                  
+                    vmid_lin = vmid
+
+                # Go thru user class break list, accept only numbers and values within data range
+                finuserlist = []
+                if userclass is None:
+                    
+                    # User used the class count selector
+                    
+                    if (facs_gdf[metric].max() >= 100 * facs_gdf[metric].median()):
+                        levels = np.logspace(np.log10(vmin), np.log10(vmax), numclass+1).tolist()                        
+                    else:
+                        levels = np.linspace(vmin, vmax, numclass+1).tolist()
+
+                    cb_text=[]
+                    cb_values=[]                              
+                    for i, val in enumerate(levels[1:]):
+                        
+                        if i == 0:
+                            cb_text.append(f'<b>{self.riskfig(vmin, 2)} - {self.riskfig(val, 2)}</b>')
+                            cb_midpt = (self.riskfig(val, 2) + self.riskfig(vmin, 2)) / 2
+                            cb_values.append(cb_midpt)
+                        else:
+                            levbot = levels[i]
+                            cb_text.append(f'<b>{self.riskfig(levbot, 2)} - {self.riskfig(val, 2)}</b>')
+                            cb_midpt = (self.riskfig(val, 2) + self.riskfig(levbot, 2)) / 2
+                            cb_values.append(cb_midpt)
                                     
-                tick1 = int(self.riskfig(vmin_lin,1)) if vmin_lin >= 1 else self.riskfig(vmin_lin,1)
-                tick2 = int(self.riskfig(vmid_lin,1)) if vmid_lin >= 1 else self.riskfig(vmid_lin,1)
-                tick3 = int(self.riskfig(vmax_lin,1)) if vmax_lin >= 1 else self.riskfig(vmax_lin,1)
-                tickText=[str(tick1), str(tick2), str(tick3)]
-                                                    
+                else:
+ 
+                    # User supplied class list
+                                        
+                    templist = userclass.split(sep=',')
+                    for item in templist:
+                        try:
+                            if float(item) >= 0:
+                                finuserlist.append(float(item))
+                        except:
+                            pass
+                    
+                    for i, item in enumerate(finuserlist):
+                        if item > vmax:
+                            finuserlist[i] = vmax
+                        if item < vmin:
+                            finuserlist[i] = vmin
+                            
+                    finuserlist = sorted(list(set(finuserlist)))
+                                  
+                
+                    if len(finuserlist) <= 1 or finuserlist[0] > vmax or finuserlist[-1] < vmin:
+                        lowend = vmin
+                        highend = vmax
+                        levels = np.linspace(lowend, highend, numclass+1).tolist()
+                        # levels = np.logspace(np.log10(lowend), np.log10(highend), numclass+1).tolist()
+                    else:
+                        if finuserlist[0] < vmin:
+                            lowend = vmin
+                            finuserlist[0] = lowend
+                        else:
+                            lowend = finuserlist[0]
+                            
+                        if finuserlist[-1] > vmax:
+                            highend = vmax
+                            finuserlist[-1] = highend
+                        else:
+                            highend = finuserlist[-1]
+                        
+                        levels = finuserlist
+
+                    cb_text=[]
+                    cb_values=[]                              
+                    for i in range(1, len(levels)):
+                        num1 = int(levels[i-1])
+                        num2 = int(levels[i])
+                        midpoint = (num1 + num2) / 2
+                        cb_text.append(f'<b>{num1} - {num2}</b>')
+                        cb_values.append(midpoint)
+                                                                                                                
                 maptitle = f'Facility Map ({numFacs} facilities) - {metric}'
                 draw_facs = Namespace('HEM_leaflet_functions', 'facs')('draw_facilities') 
-                fac_hideout=dict(min=vmin, max=vmax, colorscale=colorscale, circleOptions=dict(fillOpacity=1, stroke=False, radius=size), colorProp=color_prop)
+                fac_hideout=dict(min=vmin, max=vmax, colorscale=colorscale, circleOptions=dict(fillOpacity=opac, stroke=True, radius=size, color='#000', weight=cirwidth), colorProp=color_prop)
                 fac_options = dict(pointToLayer=draw_facs)               
-                
-                return facs_buf, fac_hideout, fac_options, colorscale, vmin, vmax, tickText, maptitle
+ 
+                # new_colorbar = dl.Colorbar(id='facs_colorbar', position="bottomleft", colorscale=colorscale, min=vmin, max=vmax, classes=levels, tickValues=cb_values, tickText=cb_text, width=30, height=cb_height, style=dict(background='white'))
+                new_colorbar = dl.express.categorical_colorbar(id='facs_colorbar', categories=cb_text, colorscale= colorscale, width=30,  height = 30*len(levels), opacity = opac,
+                                                                                position="bottomleft", style = dict(title = metric, title_color= 'black',
+                                                                                                                    background = 'white', opacity = .9))
+
+                return facs_buf, fac_hideout, fac_options, new_colorbar, maptitle
 
 # Mark commented these out
 #            @app.callback(
