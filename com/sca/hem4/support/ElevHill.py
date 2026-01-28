@@ -35,6 +35,8 @@ from datetime import datetime
 import requests
 import glob, os
 
+import time
+
 
 class ElevHill:
     """
@@ -217,7 +219,7 @@ class ElevHill:
                 else:
                     # There is Internet, the py3dep server must be down.
                     raise ValueError("USGS elevation server unavailable")
-       
+        
         # Read the TIFF file into memory
         with MemoryFile(response.content) as memfile:
             with memfile.open() as dataset:
@@ -334,7 +336,7 @@ class ElevHill:
                 # Use ThreadPoolExecutor to multithread the function
                 workers = multiprocessing.cpu_count()
                 elevframes = []
-
+                 
                 with ThreadPoolExecutor(max_workers=workers) as executor:
                     for df in executor.map(ElevHill.getTIF, urls, max_mod_dist_list, cenlon_list, cenlat_list, min_rec_elev_list):
                         if df is not None and not df.empty:
@@ -417,7 +419,7 @@ class ElevHill:
             lat = row[0]
             lon = row[1]
             elev = row[2]
-            
+             
             # Limit elevation data near the receptor of interest (km)
             lat2 = lat  + (maxelev_radius / r_earth) * (180 / pi)
             lon2 = lon + (maxelev_radius / r_earth) * (180 / pi) / cos(np.deg2rad(lat))

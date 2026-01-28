@@ -755,7 +755,7 @@ class FacilityRunner():
             if 'Calculating maximum concentrations' in message:
                 success = True
                 self.model.leadpost = True          
-                Logger.logMessage("LEADPOST ran successfully. Ended at time " + current_time)
+                Logger.logMessage("LEADPOST ran successfully. Ended at time " + current_time + '\n')
             else:
                 success = False
                 self.model.leadpost = False
@@ -1013,7 +1013,7 @@ class FacilityRunner():
                         
             # multiply conc by lead emissions (tpy)
             srcid = postf_df.iloc[0,7]
-            leademis_tpy = (self.model.leademis_df[self.model.leademis_df['source_id']                                                   ==srcid]['emis_tpy'].iloc[0])
+            leademis_tpy = (self.model.leademis_df[self.model.leademis_df['source_id']==srcid]['emis_tpy'].iloc[0])
             postf_df['avgconc'] = postf_df['avgconc'] * leademis_tpy * cf
             
             # sum to create ALL concs

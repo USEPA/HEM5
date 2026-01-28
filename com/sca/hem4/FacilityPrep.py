@@ -17,6 +17,8 @@ import traceback
 import numpy as np
 import textwrap
 
+from line_profiler import LineProfiler
+
 
 distance = 'distance';
 angle = 'angle';
@@ -405,6 +407,15 @@ class FacilityPrep():
                                 message = ("Using USGS method to get hill heights for user receptors... \n")
                                 Logger.logMessage(message)
                                 usercoords_4hill = missing_hill_df.loc[:, [lat, lon, elev]].to_numpy()
+
+                                #debug
+                                # lp = LineProfiler()
+                                # lp_wrapper = lp(ElevHill.getHill)
+                                # test = lp_wrapper(usercoords_4hill, op_maxdistkm, cenlon, 
+                                #                                   cenlat, self.model)
+                                # lp.print_stats()
+
+
                                 missing_hill_df[hill] = ElevHill.getHill(usercoords_4hill, op_maxdistkm, cenlon, 
                                                               cenlat, self.model)
                             else:
@@ -693,6 +704,7 @@ class FacilityPrep():
                     message = ("Using USGS method to get hill heights for polar receptors... \n")
                     Logger.logMessage(message)
                     polarcoords_4hill = polar_df.loc[:, [lat, lon, elev]].to_numpy()
+                                        
                     polar_df[hill] = ElevHill.getHill(polarcoords_4hill, op_maxdistkm, cenlon, 
                                                       cenlat, self.model)
                 else:
