@@ -1,0 +1,10 @@
+/* Targets a specific slider with id="my-opacity-slider" */
+#facs_opacdrop .rc-slider-track {
+    background-color: indigo;
+}
+#facs-classesdrop .rc-slider-track {
+    background-color: indigo;
+}
+#facs_circlewidth .rc-slider-track {
+    background-color: indigo;
+}

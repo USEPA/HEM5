@@ -31,8 +31,11 @@ from scipy.interpolate import griddata
 from scipy.spatial import KDTree
 
 import socket
-import datetime
+from datetime import datetime
 import requests
+import glob, os
+
+import time
 
 
 class ElevHill:
@@ -60,35 +63,63 @@ class ElevHill:
                           + "Current time is: " + currtime + "\n"
                 Logger.logMessage(message)
                 time.sleep(60)
-        
-        # Get elevations for batches of 100 coordinates
-        elevation_data = []
-        batch_size = 100
-        for i in range(0, len(coords), batch_size):
-            batch = coords[i:i+batch_size]
-            
-            try:
-                # first try to use 10m elevation data
-                batch_elev = py3dep.elevation_bycoords(batch, source='tep')
-            except BaseException as e:
-                # 10m did not work. Now try 30m.
+ 
+        outer_loop_condition = True
+        while outer_loop_condition:
+
+            # Get elevations for batches of 100 coordinates
+            intloop = False
+            elevation_data = []
+            batch_size = 100
+            for i in range(0, len(coords), batch_size):
+                batch = coords[i:i+batch_size]
+                
                 try:
-                    batch_elev = py3dep.elevation_bycoords(batch, source='airmap')
+                    # first try to use 10m elevation data
+                    batch_elev = py3dep.elevation_bycoords(batch, source='tep')
                 except BaseException as e:
-                    # 30m failed too
-                    raise ValueError("USGS elevation server unavailable")
-            else:
-                # make sure all elevs are not -999999. That means elevs not available.
-                if len(coords) > 1:
-                    if all(x == -999999 for x in batch_elev):
-                        raise ValueError("USGS elevation server unavailable")
-                    else:
-                        elevation_data.extend(batch_elev)
+                    # tep did not work. Now try tnm.
+                    try:
+                        batch_elev = py3dep.elevation_bycoords(batch, source='tnm')
+                    except BaseException as e:
+                        # tnm failed too. See if there is Internet.
+                        gotInternet = ElevHill.isInternet()
+                        if gotInternet == False:
+                            # No Internet. Keep checking until there is.
+                            while not gotInternet:
+                                gotInternet = ElevHill.isInternet()
+                                if gotInternet == False:
+                                    currtime = datetime.now().strftime("%H:%M:%S")
+                                    message = "No Internet connection to retrieve elevations. Will try again in 1 minute. \n" \
+                                              + "Click Exit to stop this loop. \n" \
+                                              + "Current time is: " + currtime + "\n"
+                                    Logger.logMessage(message)
+                                    time.sleep(60)
+                            # Internet has returned. Clear cache, break for loop, and start over.
+                            Logger.logMessage("Internet connection has returned. Will retrieve elevations.\n")
+                            intloop = True
+                            files = glob.glob('./cache/*')
+                            for f in files:
+                                os.remove(f) 
+                            break
+                        else:
+                            # There is Internet, the py3dep server must be down.
+                            raise ValueError("USGS elevation server unavailable")
                 else:
-                    if batch_elev == -999999:
-                        raise ValueError("USGS elevation server unavailable")
+                    # make sure all elevs are not -999999. That means elevs not available.
+                    if len(coords) > 1:
+                        if all(x == -999999 for x in batch_elev):
+                            raise ValueError("USGS elevation data not available")
+                        else:
+                            elevation_data.extend(batch_elev)
                     else:
-                        elevation_data.append(batch_elev)
+                        if batch_elev == -999999:
+                            raise ValueError("USGS elevation data not available")
+                        else:
+                            elevation_data.append(batch_elev)
+            
+            if intloop == False:
+                outer_loop_condition = False  # successfully got elevations
 
         elev_rounded = [round(e) for e in elevation_data]
         
@@ -159,21 +190,35 @@ class ElevHill:
     @staticmethod
     def getTIF(url, max_model_dist, center_lon, center_lat, min_rec_elev):
         
-        # Confirm that an Internet connection is available. If there is not, then keep
-        # checking every minute indefinitely. Report progress to the log.
-        gotInternet = False
-        while not gotInternet:
-            gotInternet = ElevHill.isInternet()
-            if gotInternet == False:
-                currtime = datetime.now().strftime("%H:%M:%S")
-                message = "No Internet connection to retrieve elevations. Will try again in 1 minute. \n" \
-                          + "Click Exit to stop this loop. \n" \
-                          + "Current time is: " + currtime + "\n"
-                Logger.logMessage(message)
-                time.sleep(60)
-
         # Make a GET request to download the TIFF file
-        response = requests.get(url)
+        outer_loop_condition = True
+        while outer_loop_condition:
+          
+            try:
+                                
+                response = requests.get(url)
+                outer_loop_condition = False  # success
+                
+            except BaseException as e:
+                
+                gotInternet = ElevHill.isInternet()
+                if gotInternet == False:
+                    # No Internet. Keep checking until there is.
+                    while not gotInternet:
+                        gotInternet = ElevHill.isInternet()
+                        if gotInternet == False:
+                            currtime = datetime.now().strftime("%H:%M:%S")
+                            message = "No Internet connection to retrieve elevations. Will try again in 1 minute. \n" \
+                                      + "Click Exit to stop this loop. \n" \
+                                      + "Current time is: " + currtime + "\n"
+                            Logger.logMessage(message)
+                            time.sleep(60)
+                    # Internet has returned. Start over.
+                    Logger.logMessage("Internet connection has returned. Will retrieve elevations.\n")
+                    outer_loop_condition = True
+                else:
+                    # There is Internet, the py3dep server must be down.
+                    raise ValueError("USGS elevation server unavailable")
         
         # Read the TIFF file into memory
         with MemoryFile(response.content) as memfile:
@@ -206,7 +251,7 @@ class ElevHill:
                 lat1 = center_lat  - (maxelev_radius / r_earth) * (180 / pi)
                 lon1 = center_lon - (maxelev_radius / r_earth) * (180 / pi) / cos(np.deg2rad(center_lat))
                 df2 = df.loc[df['latitude'].between(lat1, lat2) & df['longitude'].between(lon1, lon2)].copy()
-                                   
+                                
                 return df2
         
 
@@ -291,33 +336,51 @@ class ElevHill:
                 # Use ThreadPoolExecutor to multithread the function
                 workers = multiprocessing.cpu_count()
                 elevframes = []
+                 
                 with ThreadPoolExecutor(max_workers=workers) as executor:
                     for df in executor.map(ElevHill.getTIF, urls, max_mod_dist_list, cenlon_list, cenlat_list, min_rec_elev_list):
                         if df is not None and not df.empty:
                             elevframes.append(df)
-                            
                     grid30_df = pd.concat(elevframes)
-
+                    
             except BaseException as e:
                 
-                try:
-                    #-------------- Use py3dep method ---------------------------
-                    
-                    print("Trying py3dep method for hill heights")
-                    
-                    xarray = py3dep.get_dem(geo_box, 30, crs='epsg:4269')
-                    grid30_df = xarray.to_dataframe()
-                    grid30_df.reset_index(inplace=True)
-                    grid30_df.rename(columns={'x':'longitude', 'y':'latitude'}, inplace=True)
-                
-                except BaseException as e:
-                    #--------- py3dep method failed ---------------------------
-                                        
-                    raise ValueError("USGS elevation server unavailable")
+                outer_loop_condition = True
+                while outer_loop_condition:
+
+                    try:
+                        #-------------- Use py3dep method ---------------------------
+                                                
+                        xarray = py3dep.get_dem(geo_box, 30, crs='epsg:4269')
+                        grid30_df = xarray.to_dataframe()
+                        grid30_df.reset_index(inplace=True)
+                        grid30_df.rename(columns={'x':'longitude', 'y':'latitude'}, inplace=True)
+                        outer_loop_condition = False  # Success
+                        
+                    except BaseException as e:
     
-            # Store the 30m elevation dataframe into the model_optns dictionary
-            model.model_optns['elev30m'] = grid30_df
-            
+                        gotInternet = ElevHill.isInternet()
+                        if gotInternet == False:
+                            # No Internet. Keep checking until there is.
+                            while not gotInternet:
+                                gotInternet = ElevHill.isInternet()
+                                if gotInternet == False:
+                                    currtime = datetime.now().strftime("%H:%M:%S")
+                                    message = "No Internet connection to retrieve elevations. Will try again in 1 minute. \n" \
+                                              + "Click Exit to stop this loop. \n" \
+                                              + "Current time is: " + currtime + "\n"
+                                    Logger.logMessage(message)
+                                    time.sleep(60)
+                            # Internet has returned. Start over.
+                            Logger.logMessage("Internet connection has returned. Will retrieve elevations.\n")
+                            outer_loop_condition = True
+                        else:
+                            # There is Internet, the py3dep server must be down.
+                            raise ValueError("USGS elevation server unavailable")
+        
+                # Store the 30m elevation dataframe into the model_optns dictionary
+                model.model_optns['elev30m'] = grid30_df
+                
         else:
             
             # 30m elev grid DF already exists
@@ -356,7 +419,7 @@ class ElevHill:
             lat = row[0]
             lon = row[1]
             elev = row[2]
-            
+             
             # Limit elevation data near the receptor of interest (km)
             lat2 = lat  + (maxelev_radius / r_earth) * (180 / pi)
             lon2 = lon + (maxelev_radius / r_earth) * (180 / pi) / cos(np.deg2rad(lat))

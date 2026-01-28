@@ -71,6 +71,7 @@ class Model():
         max_indiv_risk_df - 
         facops - facility specific options from faclist
         acute_names - acute benchmark names to be used in acute outputs
+        runstream_emislocs - emission locations ready for the runstream
         """
         self.faclist = None
         self.emisloc = None
@@ -120,6 +121,14 @@ class Model():
         self.acuteplot_df = None
         self.leadpost = None
         self.leademis_df = None
+        self.runstream_emislocs = None
+        self.runstream_innerblks = None
+        self.runstream_outerblks = None
+        self.runstream_polar = None
+        self.runstream_cenx = None
+        self.runstream_ceny = None
+        self.runstream_cenlon = None
+        self.runstream_cenlat = None
 
         # Initialize model options
         self.initializeAltRecOptions()
@@ -174,6 +183,17 @@ class Model():
         # Initialize model options
         self.initializeAltRecOptions()
 
+    # reset values used in the creation of the runstream
+    def runstream_reset(self):
+        self.runstream_emislocs = None
+        self.runstream_innerblks = None
+        self.runstream_outerblks = None
+        self.runstream_polar = None
+        self.runstream_cenx = None
+        self.runstream_ceny = None
+        self.runstream_cenlon = None
+        self.runstream_cenlat = None
+        
 
     def initializeAltRecOptions(self):
         self.altRec_optns = defaultdict()

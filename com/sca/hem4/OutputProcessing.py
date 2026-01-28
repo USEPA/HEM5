@@ -49,8 +49,8 @@ class Process_outputs():
         self.plot_df = plot_df
         self.model.numsectors = self.model.polargrid[sector].max()
         self.model.numrings = self.model.polargrid[ring].max()
-        self.model.innerblks_df = prep.innerblks
-        self.model.outerblks_df = prep.outerblks
+        self.model.innerblks_df = self.model.runstream_innerblks
+        self.model.outerblks_df = self.model.runstream_outerblks
         self.model.runstream_hapemis = runstream.hapemis
         self.facops = self.model.facops.loc[self.model.facops.fac_id == facid]
         self.generateOnly = False
