@@ -17,8 +17,6 @@ import traceback
 import numpy as np
 import textwrap
 
-from line_profiler import LineProfiler
-
 
 distance = 'distance';
 angle = 'angle';
