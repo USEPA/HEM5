@@ -354,12 +354,12 @@ class CensusUpdater():
                 existing_df = pd.read_excel(log_file)
                 startrow = len(existing_df) + 1  # Start writing after the last row of existing data
                 changes_df.to_excel(writer, startrow=startrow, index=False, header=False)
-            Logger.logMessage('\nAppended changes to the "User-Census-Update.xlsx" file.')
+            Logger.logMessage('\nAppended changes to the "User-Census-Change.xlsx" file.')
         else:
             # If the file does not exist, create a new one
             with pd.ExcelWriter(log_file, engine='xlsxwriter') as writer:
                 changes_df.to_excel(writer, index=False)
-            Logger.logMessage('\nCreated the "User-Census-Update.xlsx" file and added the changes.')
+            Logger.logMessage('\nCreated the "User-Census-Change.xlsx" file and added the changes.')
         return
                 
 

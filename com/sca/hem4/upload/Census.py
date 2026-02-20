@@ -51,6 +51,8 @@ class Census(InputFile):
         
         # Identify rows with missing values
         rows_with_missing = p_df[p_df.isnull().any(axis=1)]
+
+        qafile = os.path.join(self.fac_rootname, 'census_file_problem_values.xlsx')
                 
         if len(rows_with_missing) > 0:
 
@@ -60,9 +62,8 @@ class Census(InputFile):
                            + '"census_file_missing_and_outOfRange_values.xlsx" located in the output root foler.\n'
                            + 'Valid elevations/hill heigts are between -86m and 6190m.\n\n'
                            + 'Please correct the Census file and retry the HEM run. '
-                           + 'Missing or out of range elevations or hill heights can be corrected by using the Revive Census utility. \n')
+                           + 'Missing or out of range elevations or hill heights can be corrected by using the Revise Census utility. \n')
                 Logger.logMessage(message)
-                qafile = os.path.join(self.fac_rootname, 'census_file_missing_and_outOfRange_values.xlsx')
                 # Highlight missing values
                 problem_rows = pd.concat([out_of_range, rows_with_missing])
                 problem_rows.drop_duplicates(inplace=True)
@@ -77,9 +78,8 @@ class Census(InputFile):
                            + 'The row number and column of the missing values are reported in the file\n'
                            + '"census_file_missing_values.xlsx" located in the output root foler.\n\n'
                            + 'Please correct the Census file and retry the HEM run. '
-                           + 'Missing elevations or hill heights can be filled in by using the Revive Census utility. \n')
+                           + 'Missing elevations or hill heights can be filled in by using the Revise Census utility. \n')
                 Logger.logMessage(message)
-                qafile = os.path.join(self.fac_rootname, 'census_file_missing_values.xlsx')
                 styled_df = rows_with_missing.style.applymap(self.highlight_null_or_negative)
                 # styled_df = rows_with_missing.style.highlight_null(color='yellow')
                 styled_df.to_excel(qafile, engine='openpyxl', index=False)
@@ -92,9 +92,8 @@ class Census(InputFile):
                            + '"census_file_outOfRange_values.xlsx" located in the output root foler.\n'
                            + 'Valid elevations/hill heigts are between -86m and 6190m.\n\n'
                            + 'Please correct the Census file and retry the HEM run. '
-                           + 'Out of range elevations or hill heights can be corrected in by using the Revive Census utility. \n')
+                           + 'Out of range elevations or hill heights can be corrected in by using the Revise Census utility. \n')
                 Logger.logMessage(message)
-                qafile = os.path.join(self.fac_rootname, 'census_file_outOfRange_values.xlsx')
                 styled_df = out_of_range.style.applymap(self.highlight_null_or_negative)
                 # styled_df = out_of_range.style.highlight_null(color='yellow')
                 styled_df.to_excel(qafile, engine='openpyxl', index=False)
