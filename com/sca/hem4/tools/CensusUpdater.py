@@ -95,7 +95,7 @@ class CensusUpdater():
                     replaced = self.mutate(census_row, operation, row)
                     self.census_df.loc[census_idx] = replaced
                     
-            changes_df['status'] = changesStatus
+                changes_df['status'] = changesStatus
 
 
             #----------- Additions ---------------------------------------------------
