@@ -41,6 +41,7 @@ class Merge(Page):
         self.blankrow2_frame = tk.Frame(self.container, height=20, bg=self.tab_color)
         self.folder2_title_frame = tk.Frame(self.container, height=120, pady=1, padx=5, bg=self.tab_color)
         self.folder2_frame = tk.Frame(self.container, height=120, pady=1, padx=5, bg=self.tab_color)
+        self.info_frame = tk.Frame(self.container, height=120, pady=1, padx=5, bg=self.tab_color)
         self.run_frame = tk.Frame(self.container, height=100, pady=1, padx=5, bg=self.tab_color)
 
         self.title_frame.grid(row=1, columnspan=2, sticky="nsew")
@@ -50,7 +51,8 @@ class Merge(Page):
         self.blankrow2_frame.grid(row=5, columnspan=2, sticky="ew")
         self.folder2_title_frame.grid(row=6, columnspan=2, sticky="nsew")
         self.folder2_frame.grid(row=7, columnspan=2, sticky="nsew")
-        self.run_frame.grid(row=8, columnspan=2, sticky="ew")
+        self.info_frame.grid(row=8, columnspan=2, sticky="nsew")
+        self.run_frame.grid(row=9, columnspan=2, sticky="ew")
 
         # Create title
         self.title_image = PIL.Image.open('images\icons8-merge-documents-64-white.png').resize((36,36))
@@ -85,9 +87,14 @@ class Merge(Page):
         self.step1_instructions.bind("<Button-1>", partial(self.origBrowse, self.step1_instructions))
 
         # Secojnd step - choose the rerun rungroup folder
-        self.folder2_title = tk.Label(self.folder2_title_frame, text="Rerun HEM rungroup folder:", font=TEXT_FONT,
+        self.folder2_title = tk.Label(self.folder2_title_frame, text="New/Rerun HEM rungroup folder:", font=TEXT_FONT,
                          bg=self.tab_color, anchor="w")
         self.folder2_title.grid(row=0, column=0, pady=2, padx=10)
+
+        self.info_text = 'Note: These new results will be merged into the Original HEM rungroup folder. Any facilities with the same name in the Original folder will be replaced by facilities from the New/Rerun folder. Any additional facilities in the New/Rerun folder (not already in the Original folder) will be added to the Original folder.'
+        self.info_title = tk.Message(self.info_frame, text=self.info_text, font=TEXT_FONT,
+                         bg=self.tab_color, anchor="w", width=450, padx=100)
+        self.info_title.grid(row=0, column=0, pady=2, padx=10)
 
         fu2 = PIL.Image.open('images\icons8-folder-48.png').resize((30,30))
         ficon2 = self.add_margin(fu2, 5, 0, 5, 0)
@@ -97,7 +104,7 @@ class Merge(Page):
         self.fileLabel2.grid(row=0, column=0, padx=10)
 
         self.step2_instructions = tk.Label(self.folder2_frame,
-                                      text="Select folder containing the rerun HEM run results", font=TITLE_FONT, bg=self.tab_color, anchor="w")
+                                      text="Select folder containing the new HEM run results", font=TITLE_FONT, bg=self.tab_color, anchor="w")
         self.step2_instructions.grid(row=0, column=1, pady=10, padx=10)
         self.fileLabel2.bind("<Button-1>", partial(self.newBrowse, self.step2_instructions))
 
@@ -159,7 +166,7 @@ class Merge(Page):
         # Confirm this app should be run
         result = messagebox.askokcancel("Warning", ("The Merge HEM Runs application will "
                     + "delete from the original rungroup folder any summary files, "
-                    + "Demographic Assessment results, and KMZ files. Select Ok to continue or Cancel "
+                    + "Demographic Assessment results, and KMZ files, and place all merged files in that original folder. Select Ok to continue or Cancel "
                     + "to stop this operation.")) 
         if result:
             

@@ -368,10 +368,18 @@ class MainView(tk.Frame):
 
         if hem.running == True:
 
-            hem.quit_app()
-            if hem.aborted == True:
-                Logger.close(True)
+            override = tk.messagebox.askokcancel("Confirm Exit", "Are you "+
+                                              "sure? HEM is currently running. Clicking 'OK' will stop HEM and close the entire GUI.")            
+
+            if override:
+                hem.exit_gui()
+                Logger.archiveLog
                 self.home.destroy()
+
+            # hem.quit_app()
+            # if hem.aborted == True:
+            #     Logger.close(True)
+            #     self.home.destroy()
 
         else:
             Logger.close(True)

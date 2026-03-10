@@ -17,6 +17,10 @@ import traceback
 import numpy as np
 import textwrap
 
+import time
+
+# import line_profiler
+
 
 distance = 'distance';
 angle = 'angle';
@@ -406,16 +410,16 @@ class FacilityPrep():
                                 Logger.logMessage(message)
                                 usercoords_4hill = missing_hill_df.loc[:, [lat, lon, elev]].to_numpy()
 
-                                #debug
-                                # lp = LineProfiler()
+                                # # debug
+                                # lp = line_profiler.LineProfiler()
                                 # lp_wrapper = lp(ElevHill.getHill)
                                 # test = lp_wrapper(usercoords_4hill, op_maxdistkm, cenlon, 
                                 #                                   cenlat, self.model)
                                 # lp.print_stats()
 
-
                                 missing_hill_df[hill] = ElevHill.getHill(usercoords_4hill, op_maxdistkm, cenlon, 
                                                               cenlat, self.model)
+
                             else:
                                 # Hill heights are computed using offline method
                                 message = ("Using off-line method to get hill heights for user receptors... \n")
@@ -493,10 +497,14 @@ class FacilityPrep():
                     maxsrcd = max(maxsrcd, dist_cen)
     
                 # If user first ring is > 0, then use it, else first ring is maxsrcd + overlap.
+                # Unless maxsrcd and overlap are both 0, then set first ring to 10m.
                 if self.model.facops[ring1].iloc[0] > 0:
                     firstring = self.model.facops[ring1].iloc[0]
                 else:
-                    ring1a = maxsrcd + op_overlap
+                    if maxsrcd == 0 and op_overlap == 0:
+                        ring1a = 10
+                    else:
+                        ring1a = maxsrcd + op_overlap
                     ring1b = min(ring1a, op_maxdist)
                     firstring = normal_round(ring1b)
     
@@ -705,6 +713,7 @@ class FacilityPrep():
                                         
                     polar_df[hill] = ElevHill.getHill(polarcoords_4hill, op_maxdistkm, cenlon, 
                                                       cenlat, self.model)
+                    
                 else:
                     # Hill heights are computed using offline method
                     message = ("Using off-line method to get hill heights for polar receptors... \n")
