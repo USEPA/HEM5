@@ -59,7 +59,7 @@ class Census(InputFile):
             if len(out_of_range.index) > 0:
                 message = ('\nThere are missing values and out of range elevations/hill heights in the Census file. This model run will stop. '
                            + 'The row number and column of the missing values and out of range elevations/hill heights are reported in the file\n' 
-                           + '"census_file_missing_and_outOfRange_values.xlsx" located in the output root foler.\n'
+                           + '"census_file_problem_values.xlsx" located in the output root folder.\n'
                            + 'Valid elevations/hill heigts are between -86m and 6190m.\n\n'
                            + 'Please correct the Census file and retry the HEM run. '
                            + 'Missing or out of range elevations or hill heights can be corrected by using the Revise Census utility. \n')
@@ -76,12 +76,11 @@ class Census(InputFile):
             else:
                 message = ('\nThere are missing values in the Census file. This model run will stop. '
                            + 'The row number and column of the missing values are reported in the file\n'
-                           + '"census_file_missing_values.xlsx" located in the output root foler.\n\n'
+                           + '"census_file_problem_values.xlsx" located in the output root folder.\n\n'
                            + 'Please correct the Census file and retry the HEM run. '
                            + 'Missing elevations or hill heights can be filled in by using the Revise Census utility. \n')
                 Logger.logMessage(message)
-                styled_df = rows_with_missing.style.applymap(self.highlight_null_or_negative)
-                # styled_df = rows_with_missing.style.highlight_null(color='yellow')
+                styled_df = rows_with_missing.style.highlight_null(color='yellow')
                 styled_df.to_excel(qafile, engine='openpyxl', index=False)
                 return None
                 
@@ -89,13 +88,13 @@ class Census(InputFile):
             if len(out_of_range.index) > 0:
                 message = ('\nThere are out of range elevations/hill heights in the Census file. This model run will stop. '
                            + 'The row number and column of the out of range values are reported in the file\n'
-                           + '"census_file_outOfRange_values.xlsx" located in the output root foler.\n'
+                           + '"census_file_problem_values.xlsx" located in the output root folder.\n'
                            + 'Valid elevations/hill heigts are between -86m and 6190m.\n\n'
                            + 'Please correct the Census file and retry the HEM run. '
-                           + 'Out of range elevations or hill heights can be corrected in by using the Revise Census utility. \n')
+                           + 'Out of range elevations or hill heights can be corrected by using the Revise Census utility. \n')
                 Logger.logMessage(message)
-                styled_df = out_of_range.style.applymap(self.highlight_null_or_negative)
-                # styled_df = out_of_range.style.highlight_null(color='yellow')
+                styled_df = out_of_range.style.apply(self.highlight_out_of_range, lower_bound=-86 \
+                                                     , upper_bound=6190, subset=['elev','hill'])
                 styled_df.to_excel(qafile, engine='openpyxl', index=False)
                 return None
                         
