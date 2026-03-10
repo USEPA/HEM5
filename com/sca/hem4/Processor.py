@@ -152,22 +152,20 @@ class Processor():
                     # This facility will use elevations.
                     # Confirm that an Internet connection is available. If there is not, then keep
                     # checking every minute indefinitely. Report progress to the log.
-                    inLoop = False
-                    gotInternet = False
-                    while not gotInternet:
-                        gotInternet = ElevHill.isInternet()
-                        if gotInternet == False:
-                            inLoop = True
-                            currtime = datetime.now().strftime("%H:%M:%S")
-                            message = "\nThis facility needs elevation data but there is no Internet connection to retrieve elevations. Will try again in 1 minute. \n" \
-                                      + "Click Exit to stop this loop. \n" \
-                                      + "Current time is: " + currtime
-                            Logger.logMessage(message)
-                            time.sleep(60)
-                        else:
-                            if inLoop == True:
-                                message = '\nInternet connection is restored. Will continue processing this facility.\n'
+                    gotInternet = ElevHill.isInternet()
+                    if gotInternet == False:
+                        # No Internet. Keep checking until there is.
+                        while not gotInternet:
+                            gotInternet = ElevHill.isInternet()
+                            if gotInternet == False:
+                                currtime = datetime.now().strftime("%H:%M:%S")
+                                message = "No Internet connection to retrieve elevations. Will try again in 1 minute. \n" \
+                                          + "Click Exit to stop this loop. \n" \
+                                          + "Current time is: " + currtime + "\n"
                                 Logger.logMessage(message)
+                                time.sleep(60)
+                        # Internet has returned. Start over.
+                        Logger.logMessage("Internet connection has returned. Will retrieve elevations.\n")
                 
                 success = False
                                 
@@ -183,37 +181,8 @@ class Processor():
                         runner.setupLead()
                         runner.setup()
 
-                except BaseException as ex:
-
-                    # Check for bad Internet connection which aborts the HEM run
-                    if 'There is no Internet connection' in str(ex):
-                        messagebox.showinfo("No Internet connection", "Your computer is not connected to the Internet and this run needs elevation data from the USGS server." \
-                                            " This HEM run will stop." \
-                                            " One option is to re-run this Run Group with elevation turned off." \
-                                            " More detail about this error is available in the log.")
-                        fullStackInfo = traceback.format_exc()
-                        Logger.logMessage("No Internet connection.\n" \
-                                          " Aborting this HEM run.\n" \
-                                          " Detailed error message: \n\n" + fullStackInfo)                
-
-                        self.abortProcessing()
-                        break
-                        
-                                        
-                    # Check for USGS elevation server error which aborts the HEM run
-                    if str(ex) == "USGS elevation server unavailable":
-                        messagebox.showinfo("Cannot obtain elevation data", "Failed to connect to the USGS elevation server." \
-                                            " This HEM run will stop. There is Internet but the USGS server is not available." \
-                                            " Your options are to run this run group with no elevation, use the off-line elevation method," \
-                                            " or wait and try the run later. More detail about this error is available in the log.")
-                        fullStackInfo = traceback.format_exc()
-                        Logger.logMessage("Cannot obtain elevation data.\n" \
-                                          " Aborting this HEM run.\n" \
-                                          " Detailed error message: \n\n" + fullStackInfo)                
-
-                        self.abortProcessing()
-                        break
-                        
+                except BaseException as ex:                        
+                                                                
                     self.exception = ex
                     fullStackInfo=traceback.format_exc()   
                     message = "An error occurred while running a facility and facility was skipped:\n" + fullStackInfo

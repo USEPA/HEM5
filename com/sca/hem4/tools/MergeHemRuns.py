@@ -56,7 +56,7 @@ class MergeHemRuns():
                 # Retry the removal function
                 func(path)
             except Exception as e:
-                print(f"Failed to change permissions and delete {path}: {e}")
+                raise ValueError(f"Failed to change permissions and delete {path}: {e}")
         else:
             raise
 
@@ -217,7 +217,7 @@ class MergeHemRuns():
         
         # 5. Update the files in the Inputs folder
         
-        input_files = ['building_dimension.xlsx'
+        input_files = ['building_dimensions.xlsx'
                        ,'buoyant_line_parameters.xlsx'
                        ,'emisloc.xlsx'
                        ,'emisvar.xlsx'
@@ -227,7 +227,9 @@ class MergeHemRuns():
                        ,'month-to-seasons.xlsx'
                        ,'particle_data.xlsx'
                        ,'polygon_vertex.xlsx'
-                       ,'user_receptors.xlsx']
+                       ,'user_receptors.xlsx'
+                       ,'haplib.xlsx'
+                       ,'target_organs.xlsx']
         
         input_keys = [['A', 'B', 'C', 'D']
                       ,['A', 'B', 'C']
@@ -239,6 +241,8 @@ class MergeHemRuns():
                       ,['A']
                       ,['A', 'B']
                       ,['A', 'B']
+                      ,['A']
+                      ,['A']
                       ,['A']]
         
         header_rows = [0
@@ -246,6 +250,8 @@ class MergeHemRuns():
                        ,1
                        ,0
                        ,1
+                       ,0
+                       ,0
                        ,0
                        ,0
                        ,0

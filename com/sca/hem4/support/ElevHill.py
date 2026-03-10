@@ -25,7 +25,6 @@ import polars as pl
 import requests
 from rasterio.io import MemoryFile
 import multiprocessing
-from concurrent.futures import ThreadPoolExecutor
 
 from scipy.interpolate import griddata
 from scipy.spatial import KDTree
@@ -36,6 +35,8 @@ import requests
 import glob, os
 
 import time
+import concurrent.futures
+import threading
 
 
 class ElevHill:
@@ -53,16 +54,17 @@ class ElevHill:
 
         # Confirm that an Internet connection is available. If there is not, then keep
         # checking every minute indefinitely. Report progress to the log.
-        gotInternet = False
-        while not gotInternet:
-            gotInternet = ElevHill.isInternet()
-            if gotInternet == False:
+        gotInternet = ElevHill.isInternet()
+        if gotInternet == False:
+            while not gotInternet:
                 currtime = datetime.now().strftime("%H:%M:%S")
                 message = "No Internet connection to retrieve elevations. Will try again in 1 minute. \n" \
                           + "Click Exit to stop this loop. \n" \
                           + "Current time is: " + currtime + "\n"
                 Logger.logMessage(message)
                 time.sleep(60)
+                gotInternet = ElevHill.isInternet()
+            Logger.logMessage("Internet connection has returned. Will retrieve elevations.\n")
  
         outer_loop_condition = True
         while outer_loop_condition:
@@ -186,40 +188,36 @@ class ElevHill:
 
         return boxes
     
+    
     # Takes a usgs url, gets a tif file, and creates and returns a dataframe of lat, lon, and elevations
     @staticmethod
-    def getTIF(url, max_model_dist, center_lon, center_lat, min_rec_elev):
-        
-        # Make a GET request to download the TIFF file
-        outer_loop_condition = True
-        while outer_loop_condition:
-          
-            try:
-                                
-                response = requests.get(url)
-                outer_loop_condition = False  # success
-                
-            except BaseException as e:
-                
-                gotInternet = ElevHill.isInternet()
-                if gotInternet == False:
-                    # No Internet. Keep checking until there is.
-                    while not gotInternet:
-                        gotInternet = ElevHill.isInternet()
-                        if gotInternet == False:
-                            currtime = datetime.now().strftime("%H:%M:%S")
-                            message = "No Internet connection to retrieve elevations. Will try again in 1 minute. \n" \
-                                      + "Click Exit to stop this loop. \n" \
-                                      + "Current time is: " + currtime + "\n"
-                            Logger.logMessage(message)
-                            time.sleep(60)
-                    # Internet has returned. Start over.
-                    Logger.logMessage("Internet connection has returned. Will retrieve elevations.\n")
-                    outer_loop_condition = True
-                else:
-                    # There is Internet, the py3dep server must be down.
-                    raise ValueError("USGS elevation server unavailable")
-        
+    def getTIF(filenum, stop_event, url, max_model_dist, center_lon, center_lat, min_rec_elev):
+
+        if stop_event.is_set():
+            # Stop this thread
+             return
+                        
+        # Make a GET request to download the TIFF file              
+        try:
+                            
+            response = requests.get(url, timeout=8)
+                        
+        except requests.exceptions.ConnectionError as e:
+            
+            # Signal that a failure occurred
+            stop_event.set()
+
+            gotInternet = ElevHill.isInternet()
+            if gotInternet == False:
+                raise ValueError("No Internet")
+            else:
+                # There is Internet, the py3dep server must be down.
+                raise ValueError("USGS elevation server unavailable")
+
+        # Has the calling program stopped all threads?
+        if stop_event.is_set():
+            return
+            
         # Read the TIFF file into memory
         with MemoryFile(response.content) as memfile:
             with memfile.open() as dataset:
@@ -241,8 +239,13 @@ class ElevHill:
                 }
                 df = pd.DataFrame(data)
                 df.dropna(inplace=True)
-                                    
-                # Filter the dataframe based on the max elev in the tif
+                
+                # Compute a hill height horizontal distance (run) using the max elev 
+                # in this Tiff and the minimum receptor elevation. Add 50km to this distance
+                # to compute a hill height radius for this Tiff. Construct a lat/lon box
+                # from this radius and filter the Tiff based on the box. This will potentially
+                # remove Tiffs that are too far away or do not contain any elevations that meet
+                # the requirement of being a hill height.
                 r_earth = 6371 # radius of earth in km
                 maxelev = df['elevation'].max()
                 maxelev_radius = 50 + ((maxelev - min_rec_elev) * 0.001 * 10)                
@@ -252,7 +255,8 @@ class ElevHill:
                 lon1 = center_lon - (maxelev_radius / r_earth) * (180 / pi) / cos(np.deg2rad(center_lat))
                 df2 = df.loc[df['latitude'].between(lat1, lat2) & df['longitude'].between(lon1, lon2)].copy()
                                 
-                return df2
+                return df
+                                
         
 
     # Takes a receptor coordinate array and returns an array of calculated hill height scales
@@ -308,84 +312,89 @@ class ElevHill:
         min_rec_elev = np.min(rec_arr[:, 2])
         
                
-        # Check to see if 30m elevation data already exists in a dataframe
-        if 'elev30m' not in model.model_optns:
-
-            try:                
-                # ---------- Use TIF files ----------------------------------
-                                
-                # Use the overall bounding box to determine which 1-degree tifs to request
-                lats = np.arange(np.ceil(lat1), np.ceil(lat2) + 1).tolist()
-                lons = np.arange(np.floor(lon1), np.ceil(lon2)).tolist()
-                lats = [str(int(num)) for num in lats]
-                lons = [f'{abs(int(num)):03}' for num in lons]
-                urls = [] 
-                
-                # Generate the urls needed to request tifs
-                for y in lats:
-                    for x in lons:
-                        url = f'https://prd-tnm.s3.amazonaws.com/StagedProducts/Elevation/1/TIFF/current/n{y}w{x}/USGS_1_n{y}w{x}.tif'
-                        urls.append(url)
-                
-                # Generate the arguments for the threads
-                max_mod_dist_list = [max_model_dist] * len(urls)
-                cenlon_list = [center_lon] * len(urls)
-                cenlat_list = [center_lat] * len(urls)
-                min_rec_elev_list = [min_rec_elev] * len(urls)
-                                
-                # Use ThreadPoolExecutor to multithread the function
-                workers = multiprocessing.cpu_count()
-                elevframes = []
-                 
-                with ThreadPoolExecutor(max_workers=workers) as executor:
-                    for df in executor.map(ElevHill.getTIF, urls, max_mod_dist_list, cenlon_list, cenlat_list, min_rec_elev_list):
-                        if df is not None and not df.empty:
-                            elevframes.append(df)
-                    grid30_df = pd.concat(elevframes)
-                    
-            except BaseException as e:
-                
-                outer_loop_condition = True
-                while outer_loop_condition:
-
-                    try:
-                        #-------------- Use py3dep method ---------------------------
-                                                
-                        xarray = py3dep.get_dem(geo_box, 30, crs='epsg:4269')
-                        grid30_df = xarray.to_dataframe()
-                        grid30_df.reset_index(inplace=True)
-                        grid30_df.rename(columns={'x':'longitude', 'y':'latitude'}, inplace=True)
-                        outer_loop_condition = False  # Success
-                        
-                    except BaseException as e:
-    
-                        gotInternet = ElevHill.isInternet()
-                        if gotInternet == False:
-                            # No Internet. Keep checking until there is.
-                            while not gotInternet:
-                                gotInternet = ElevHill.isInternet()
-                                if gotInternet == False:
-                                    currtime = datetime.now().strftime("%H:%M:%S")
-                                    message = "No Internet connection to retrieve elevations. Will try again in 1 minute. \n" \
-                                              + "Click Exit to stop this loop. \n" \
-                                              + "Current time is: " + currtime + "\n"
-                                    Logger.logMessage(message)
-                                    time.sleep(60)
-                            # Internet has returned. Start over.
-                            Logger.logMessage("Internet connection has returned. Will retrieve elevations.\n")
-                            outer_loop_condition = True
-                        else:
-                            # There is Internet, the py3dep server must be down.
-                            raise ValueError("USGS elevation server unavailable")
-        
-                # Store the 30m elevation dataframe into the model_optns dictionary
-                model.model_optns['elev30m'] = grid30_df
-                
-        else:
+        try:                
+            # ---------- Use TIF files ----------------------------------
+                            
+            # Use the overall bounding box to determine which 1-degree tifs to request
+            lats = np.arange(np.ceil(lat1), np.ceil(lat2) + 1).tolist()
+            lons = np.arange(np.floor(lon1), np.ceil(lon2)).tolist()
+            lats = [str(int(num)) for num in lats]
+            lons = [f'{abs(int(num)):03}' for num in lons]
+            urls = [] 
             
-            # 30m elev grid DF already exists
-            grid30_df = model.model_optns['elev30m']
+            # Generate the urls needed to request tifs
+            for y in lats:
+                for x in lons:
+                    url = f'https://prd-tnm.s3.amazonaws.com/StagedProducts/Elevation/1/TIFF/current/n{y}w{x}/USGS_1_n{y}w{x}.tif'
+                    urls.append(url)
+            
+            # Generate the arguments for the threads
+            max_mod_dist_list = [max_model_dist] * len(urls)
+            cenlon_list = [center_lon] * len(urls)
+            cenlat_list = [center_lat] * len(urls)
+            min_rec_elev_list = [min_rec_elev] * len(urls)
+                           
+            # Use ThreadPoolExecutor to multithread the function
+            workers = multiprocessing.cpu_count()
+            elevframes = []
+
+            #------ New way of calling getTIF ----------------
+            # Create an event used to stop running tasks
+            event = threading.Event()
+            elevframes = ElevHill.run_executor(event, ElevHill.getTIF, workers, urls, max_mod_dist_list, cenlon_list, cenlat_list, min_rec_elev_list)
+                    
+            grid30_df = pd.concat(elevframes)
+
+            
+            # # Original code for calling getTIF
+            # with ThreadPoolExecutor(max_workers=workers) as executor:
+            #     for df in executor.map(ElevHill.getTIF, urls, max_mod_dist_list, cenlon_list, cenlat_list, min_rec_elev_list):
+            #         if df is not None and not df.empty:
+            #             elevframes.append(df)
+            #     grid30_df = pd.concat(elevframes)
+
                 
+        except BaseException as e:
+
+            message = "Unable to get TIFF files from the USGS that are needed to compute hill heights.\n" \
+                      + "Will attempt to get elevations from the USGS API. This will be a slower process. \n" 
+            Logger.logMessage(message)
+            
+            outer_loop_condition = True
+            while outer_loop_condition:
+
+                try:
+                    #-------------- Use py3dep method ---------------------------
+                                            
+                    xarray = py3dep.get_dem(geo_box, 30, crs='epsg:4269')
+                    grid30_df = xarray.to_dataframe()
+                    grid30_df.reset_index(inplace=True)
+                    grid30_df.rename(columns={'x':'longitude', 'y':'latitude'}, inplace=True)
+                    outer_loop_condition = False  # Success
+                    
+                except BaseException as e:
+
+                    gotInternet = ElevHill.isInternet()
+                    if gotInternet == False:
+                        # No Internet. Keep checking until there is.
+                        while not gotInternet:
+                            gotInternet = ElevHill.isInternet()
+                            if gotInternet == False:
+                                currtime = datetime.now().strftime("%H:%M:%S")
+                                message = "No Internet connection to retrieve elevations. Will try again in 1 minute. \n" \
+                                          + "Click Exit to stop this loop. \n" \
+                                          + "Current time is: " + currtime + "\n"
+                                Logger.logMessage(message)
+                                time.sleep(60)
+                        # Internet has returned. Start over.
+                        Logger.logMessage("Internet connection has returned. Will retrieve elevations.\n")
+                        outer_loop_condition = True
+                    else:
+                        # There is Internet, the py3dep server must be down.
+                        raise ValueError("USGS elevation server unavailable")
+    
+                
+                 
         # Create a numpy elevation array from the 30m dataframe
         grid30_lat = grid30_df['latitude'].to_numpy()
         grid30_lon = grid30_df['longitude'].to_numpy()
@@ -407,11 +416,17 @@ class ElevHill:
         lon2 = center_lon + (real_radius / r_earth) * (180 / pi) / cos(np.deg2rad(center_lat))
         lat1 = center_lat  - (real_radius / r_earth) * (180 / pi)
         lon1 = center_lon - (real_radius / r_earth) * (180 / pi) / cos(np.deg2rad(center_lat))
-        latcon = ((grid30_arr[:, 0] >= lat1) &  (grid30_arr[:, 0] <= lat2))
-        loncon = ((grid30_arr[:, 1] >= lon1) &  (grid30_arr[:, 1] <= lon2))
-        elevcon = (grid30_arr[:, 2] > min_rec_elev)
+        # Old way ----------------------------------------------------------
+        # latcon = ((grid30_arr[:, 0] >= lat1) &  (grid30_arr[:, 0] <= lat2))
+        # loncon = ((grid30_arr[:, 1] >= lon1) &  (grid30_arr[:, 1] <= lon2))
+        # elevcon = (grid30_arr[:, 2] > min_rec_elev)
+        # new way ----------------------------------------------------------
+        latcon = np.logical_and(grid30_arr[:, 0] >= lat1, grid30_arr[:, 0] <= lat2)
+        loncon = np.logical_and(grid30_arr[:, 1] >= lon1, grid30_arr[:, 1] <= lon2)
+        elevcon = (grid30_arr[:, 2] >= min_rec_elev)
+
         grid_arr = grid30_arr[latcon & loncon & elevcon]
-                                   
+                
         # Process each receptor
         hill_arr = np.empty((rec_arr.shape[0],))  # Create an empty NumPy array
         for i in range(rec_arr.shape[0]):
@@ -425,9 +440,17 @@ class ElevHill:
             lon2 = lon + (maxelev_radius / r_earth) * (180 / pi) / cos(np.deg2rad(lat))
             lat1 = lat  - (maxelev_radius / r_earth) * (180 / pi)
             lon1 = lon - (maxelev_radius / r_earth) * (180 / pi) / cos(np.deg2rad(lat))
-            latcon = ((grid_arr[:, 0] >= lat1) &  (grid_arr[:, 0] <= lat2))
-            loncon = ((grid_arr[:, 1] >= lon1) &  (grid_arr[:, 1] <= lon2))
-            elevcon = (grid_arr[:, 2] > elev)
+
+            # old way ----------------------------------------------------------
+            # latcon = ((grid_arr[:, 0] >= lat1) &  (grid_arr[:, 0] <= lat2))
+            # loncon = ((grid_arr[:, 1] >= lon1) &  (grid_arr[:, 1] <= lon2))
+            # elevcon = (grid_arr[:, 2] > elev)
+
+            # new way ----------------------------------------------------------
+            latcon = np.logical_and(grid_arr[:, 0] >= lat1, grid_arr[:, 0] <= lat2)
+            loncon = np.logical_and(grid_arr[:, 1] >= lon1, grid_arr[:, 1] <= lon2)
+            elevcon = (grid_arr[:, 2] >= elev)
+
             elev_filter = grid_arr[latcon & loncon & elevcon]
             elev_lat = elev_filter[:,0]
             elev_lon = elev_filter[:,1]
@@ -602,3 +625,97 @@ class ElevHill:
         hill_height = max(Hillht, rec_elev)
         
         return hill_height
+    
+
+    @staticmethod
+    def run_executor(event, target, workers, *args):
+        
+        event.clear() # Clear the event for the new run
+        
+        try:
+        
+            with concurrent.futures.ThreadPoolExecutor(max_workers=workers) as executor:
+                # args is a tuple of lists. The target can only accept one element from each list.
+                zipped_elements = zip(*args)
+                # for item in zipped_elements:
+                futures = [executor.submit(target, index, event, *item) for index,item in enumerate(zipped_elements)]
+                
+                result_list = []
+    
+                # Iterate over completed futures
+                for future in concurrent.futures.as_completed(futures):
+                    # print([f._state for f in futures])
+    
+                    try:
+                        # Retrieving the result here will re-raise the exception from the task.
+                        result = future.result()
+                        result_list.append(result)
+                        
+                    except Exception as e:
+                        # Signal other tasks to stop. Task should have already set this, but in case...
+                        event.set()
+                        # Manually shut down the executor, cancelling pending futures in the queue.
+                        # Note: this will not stop already running tasks.
+                        executor.shutdown(wait=False, cancel_futures=True) 
+    
+                        if ElevHill.isInternet() == False:
+                            # start loop checking for internet every minute on the minute
+                            ElevHill.keep_trying()
+                            
+                            # Internet has returned. Start the executor again.
+                            event.clear()
+                            raise ValueError('Restart') # Exits loop and 'with' block
+                        else:
+                            # The internet is up. This is a different problem. Raise it.
+                            raise(e)
+    
+           
+            return result_list
+        
+        except BaseException as e:
+            
+            if str(e) == 'Restart':
+                # Call this function again recursively
+                return ElevHill.run_executor(event, target, workers, *args)
+            else:
+                raise(e)
+                                                
+
+
+    @staticmethod
+    def keep_trying():
+        # No Internet. Keep checking until there is.
+        gotInternet = False
+        while not gotInternet:
+            gotInternet = ElevHill.isInternet()
+            if gotInternet == False:
+                currtime = datetime.now().strftime("%H:%M:%S")
+                message = "No Internet connection to retrieve elevations. Will try again in 1 minute. \n" \
+                          + "Click Exit to stop this loop. \n" \
+                          + "Current time is: " + currtime + "\n"
+                Logger.logMessage(message)
+                time.sleep(60)
+        # Internet has returned. Start over.
+        Logger.logMessage("Internet connection has returned. Will retrieve elevations.\n")
+        return None
+
+    
+    @staticmethod
+    def haversineDistance(lon1, lat1, lon2, lat2):
+        """
+        Calculate the great circle distance in kilometers between two points 
+        on the earth (specified in decimal degrees)
+        """
+        # convert decimal degrees to radians 
+        lon1, lat1, lon2, lat2 = map(np.deg2rad, [lon1, lat1, lon2, lat2])
+        
+        # haversine formula 
+        dlon = lon2 - lon1 
+        dlat = lat2 - lat1 
+        a = np.sin(dlat/2)**2 + np.cos(lat1) * np.cos(lat2) * np.sin(dlon/2)**2
+        c = 2 * np.arcsin(np.sqrt(a)) 
+        r = 6371 # Radius of earth in kilometers. Use 3956 for miles. Determines return value units.
+        return c * r        
+  
+
+

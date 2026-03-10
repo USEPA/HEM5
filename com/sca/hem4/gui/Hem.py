@@ -296,7 +296,7 @@ class Hem(Page):
         
         self.caution2 = tk.Label(self.s11, font=(TEXT_FONT), bg=self.tab_color, justify="left"
                                  , wraplength=500
-                                  , text="If you chose the default USGS elevation modeling option in the Facility List Options file, a continuous internet connection is required. Any break in the internet connection will end the HEM run.")
+                                  , text="If you chose the default USGS elevation modeling option in the Facility List Options file, an internet connection is required. Any break in the internet connection will cause HEM to attempt to connect every 60 seconds.")
         self.caution2.grid(row=4, column=0, sticky='W')
 
 
@@ -1246,7 +1246,19 @@ class Hem(Page):
             self.nav.log.scr.insert(tk.END, "\n")
             self.nav.log.scr.configure(state='disabled')
             self.nav.log.after(25, self.after_callback)
-
+            
+    def exit_gui(self):
+        
+        # Abort the thread and wait for it to stop...once it has
+        # completed, it will signal this class to kill the GUI
+        self.nav.iconLabel.configure(image=self.nav.cancelIcon)
+        Logger.logMessage("Stopping HEM and exiting the GUI...")
+        self.processor.abortProcessing()
+        self.abortLabel.unbind('<Button-1>')
+        self.abortLabel['text'] = "ABORTING..."
+        self.aborted = True
+                
+                
     def quit_app(self):
         """
 
@@ -1254,9 +1266,10 @@ class Hem(Page):
         the GUI and exiting all background processes & threads
         """
         if self.running:
-            override = messagebox.askokcancel("Confirm HEM Quit", "Are you "+
-                                              "sure? HEM is currently running. Clicking 'OK' will stop HEM.")
 
+            override = messagebox.askokcancel("Confirm HEM Quit", "Are you "+
+                                              "sure? HEM is currently running. Clicking 'OK' will stop HEM.")            
+            
             if override:
                 # Abort the thread and wait for it to stop...once it has
                 # completed, it will signal this class to kill the GUI

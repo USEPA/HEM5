@@ -41,7 +41,7 @@ class Logger:
     @staticmethod
     def appendLog(runDir):
         Logger.close(True)
-
+        
         fileDir = os.path.dirname(os.path.realpath('__file__'))
         current_filename = os.path.join(fileDir, 'output/hem.log')
         rundir_filename = os.path.join(fileDir, runDir + '/hem.log')

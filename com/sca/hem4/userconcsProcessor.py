@@ -47,7 +47,36 @@ class userconcsProcessor():
             else:
                 messagebox.showinfo('Error', "Invalid Census file. Check log for details.")
                 return success
-      
+
+        # ----------------------------------------------------------------------------------
+        # The acute benchmark column names will be used in acute outputs.
+        # The user can change them in the dose reponse file, so record them and 
+        # compare to the default names to let the user know if they have been changed.
+        # ----------------------------------------------------------------------------------
+        haplib_acute_names_default = ["AEGL-1  (1-hr)\n(mg/m3)",
+                                           "AEGL-2  (1-hr)\n(mg/m3)",
+                                           "ERPG-1\n(mg/m3)",
+                                           "ERPG-2\n(mg/m3)",
+                                           "Acute REL\n(mg/m3)"]
+        
+        haplib_header = pd.read_excel("resources/Dose_Response_Library.xlsx", nrows=1)
+        haplib_acute_names_real = haplib_header.columns.tolist()[-5:]
+
+        # Let the user know if the acute benchmark column names have been changed in the
+        # dose reponse file        
+        if not haplib_acute_names_default == haplib_acute_names_real:
+            messagebox.showinfo('Warning', 'The acute benchmark column names have been'
+                              + ' changed in the "Dose_Response_Library.xlsx" file. These names'
+                              + ' will be used in the acute outputs.')
+            
+            Logger.logMessage('\nWarning: The acute benchmark column names have been'
+                              + ' changed in the "Dose_Response_Library.xlsx" file. These names'
+                              + ' will be used in the acute outputs.\n')
+        
+        # Store the acute names in the model class
+        self.model.acute_names = haplib_acute_names_real
+
+        
         Logger.logMessage("RUN GROUP: " + self.model.group_name)
         
         threadLocal.abort = False
