@@ -196,7 +196,7 @@ class MergeHemRuns():
         
         
         # 4. Copy all facility folders from the rerun group that are not in the original rungroup
-                
+            
         new_folders = self.find_unique_subfolders(self.new_rundir, self.orig_rundir)
         
         if len(new_folders) > 0:
@@ -227,9 +227,7 @@ class MergeHemRuns():
                        ,'month-to-seasons.xlsx'
                        ,'particle_data.xlsx'
                        ,'polygon_vertex.xlsx'
-                       ,'user_receptors.xlsx'
-                       ,'haplib.xlsx'
-                       ,'target_organs.xlsx']
+                       ,'user_receptors.xlsx']
         
         input_keys = [['A', 'B', 'C', 'D']
                       ,['A', 'B', 'C']
@@ -241,8 +239,6 @@ class MergeHemRuns():
                       ,['A']
                       ,['A', 'B']
                       ,['A', 'B']
-                      ,['A']
-                      ,['A']
                       ,['A']]
         
         header_rows = [0
@@ -255,10 +251,8 @@ class MergeHemRuns():
                        ,0
                        ,0
                        ,0
-                       ,0
-                       ,0
                        ,0]
-        
+                
         sheet_names = ['building dimensions'
                        ,'buoyant line'
                        ,'Emissions_Location'
@@ -273,18 +267,27 @@ class MergeHemRuns():
                        ]
         
         try:
-
+            
             # Initialize some dataframes needed for the KMZ
             faclist_df = None
             buoyant_df = None
             emisloc_df = None
             polygon_df = None
             
+
+            # Copy the haplib and target organ files from the rerun inputs folder and rename them.
+            old_name = os.path.join(self.new_rundir, "inputs", "haplib.xlsx")
+            new_name = os.path.join(self.orig_rundir, "inputs", "haplib-"+self.new_rungroup_name+".xlsx")
+            shutil.copy(old_name, new_name)
+            old_name = os.path.join(self.new_rundir, "inputs", "target_organs.xlsx")
+            new_name = os.path.join(self.orig_rundir, "inputs", "target_organs-"+self.new_rungroup_name+".xlsx")
+            shutil.copy(old_name, new_name)
+
             
             for ifile, ikey, iheader, isheet in zip(input_files, input_keys, header_rows, sheet_names):
                 orig_file = os.path.join(self.orig_rundir, "Inputs", ifile)
                 new_file = os.path.join(self.new_rundir, "Inputs", ifile)
-                                    
+                                
                 # If input is only in rerun folder, filter to modeled facs, and copy to original folder
                 if not os.path.exists(orig_file):
                     if os.path.exists(new_file):
@@ -376,12 +379,12 @@ class MergeHemRuns():
         
         # new is updating original
         
-        df_source = pd.read_excel(new_file, skiprows=headerrow, dtype=str)
+        df_source = pd.read_excel(new_file, skiprows=headerrow)
         # filter to modeled facilities
         df_source = df_source[df_source.iloc[:,0].isin(self.rerun_facs_list)]
         df_source = df_source.rename(columns=lambda y: self.conv(df_source.columns.get_loc(y)))
         
-        df_target = pd.read_excel(orig_file, skiprows=headerrow, dtype=str)
+        df_target = pd.read_excel(orig_file, skiprows=headerrow)
         # filter to modeled facilities
         df_target = df_target[df_target.iloc[:,0].isin(self.orig_facs_list)]
         df_target = df_target.rename(columns=lambda y: self.conv(df_target.columns.get_loc(y)))
@@ -398,9 +401,10 @@ class MergeHemRuns():
         target_filtered = target_filtered.drop(cols_to_drop, axis=1)
         
         # Append source DF to filtered target.This will bring in any updated rows and new rows.
+        # And then sort.
         target_final = pd.concat([target_filtered, df_source], ignore_index=True)
         target_final = target_final.sort_values(by=keycols, ignore_index=True)
-        
+                
         return target_final
         
 

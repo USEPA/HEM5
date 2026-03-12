@@ -76,13 +76,9 @@ class Processor():
         # Let the user know if the acute benchmark column names have been changed in the
         # dose reponse file        
         if not haplib_acute_names_default == haplib_acute_names_real:
-            messagebox.showinfo('Warning', 'The acute benchmark column names have been'
-                              + ' changed in the "Dose_Response_Library.xlsx" file. These names'
-                              + ' will be used in the acute outputs.')
+            messagebox.showinfo('Warning',"You have changed acute benchmark column header(s) in the 'Dose_Response_Library.xlsx' file. These benchmark names will be used to label the acute outputs for every facility in your run group, for which you chose to model acute impacts. HEM uses a one-hour acute averaging period by default. If your acute benchmark of interest for this run is based on a different averaging period, you should change the modeling options to that acute averaging period (in the 'hours' field of the 'Facility_List_Options.xlsx' file). Note that the averaging period you choose will be used to compute acute concentrations that will be compared to every acute benchmark for that facility, so you may wish to perform multiple HEM runs with different averaging periods.")
             
-            Logger.logMessage('\nWarning: The acute benchmark column names have been'
-                              + ' changed in the "Dose_Response_Library.xlsx" file. These names'
-                              + ' will be used in the acute outputs.\n')
+            Logger.logMessage('\nWarning: You have changed acute benchmark column header(s) in the "Dose_Response_Library.xlsx" file. These benchmark names will be used to label the acute outputs for every facility in your run group, for which you chose to model acute impacts. HEM uses a one-hour acute averaging period by default. If your acute benchmark of interest for this run is based on a different averaging period, you should change the modeling options to that acute averaging period (in the “hours” field of the “Facility_List_Options.xlsx” file). Note that the averaging period you choose will be used to compute acute concentrations that will be compared to every acute benchmark for that facility, so you may wish to perform multiple HEM runs with different averaging periods.\n')
         
         # Store the acute names in the model class
         self.model.acute_names = haplib_acute_names_real
