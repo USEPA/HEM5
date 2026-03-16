@@ -406,7 +406,7 @@ class FacilityPrep():
     
                             if self.model.facops[elev].iloc[0].upper() == "Y":
                                 # Hill heights are to be acquired from USGS
-                                message = ("Using USGS method to get hill heights for user receptors... \n")
+                                message = ("Using USGS method to get hill heights for user receptors...")
                                 Logger.logMessage(message)
                                 usercoords_4hill = missing_hill_df.loc[:, [lat, lon, elev]].to_numpy()
 
@@ -422,7 +422,7 @@ class FacilityPrep():
 
                             else:
                                 # Hill heights are computed using offline method
-                                message = ("Using off-line method to get hill heights for user receptors... \n")
+                                message = ("Using off-line method to get hill heights for user receptors...")
                                 Logger.logMessage(message)
                                 user_coords = missing_hill_df.loc[:, [lon, lat]].to_numpy()
                                 hill_coords = np.concatenate((self.innerblks[[lon,lat]].to_numpy()
@@ -707,7 +707,7 @@ class FacilityPrep():
     
                 if self.model.facops[elev].iloc[0].upper() == "Y":
                     # Hill heights are to be acquired from USGS
-                    message = ("Using USGS method to get hill heights for polar receptors... \n")
+                    message = ("Using USGS method to get hill heights for polar receptors...")
                     Logger.logMessage(message)
                     polarcoords_4hill = polar_df.loc[:, [lat, lon, elev]].to_numpy()
                                         

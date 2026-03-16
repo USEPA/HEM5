@@ -365,15 +365,12 @@ class MainView(tk.Frame):
         webbrowser.open_new(r"https://gaftp.epa.gov/Air/aqmg/SCRAM/models/preferred/aermod/aermod_userguide.pdf")
 
     def on_closing(self, hem, event):
-
+        
         if hem.running == True:
 
-            override = tk.messagebox.askokcancel("Confirm Exit", "Are you "+
-                                              "sure? HEM is currently running. Clicking 'OK' will stop HEM and close the entire GUI.")            
-
-            if override:
-                hem.exit_gui()
-                Logger.archiveLog
+            shutdown = hem.quit_app()
+            
+            if shutdown:
                 self.home.destroy()
 
             # hem.quit_app()

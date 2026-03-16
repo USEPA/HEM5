@@ -669,6 +669,7 @@ class Hem(Page):
     def set_userconc(self):
         
         if self.check_userconc.get() == 1:
+            # User Conc checkbox is checked
 
             self.fileLabel.grid_remove()
             self.button_file.grid_remove()
@@ -676,6 +677,8 @@ class Hem(Page):
             self.hap_file.grid_remove()
             self.emisLabel.grid_remove()
             self.emis_file.grid_remove()
+            self.caution1.grid_remove()
+            self.caution2.grid_remove()
             self.check_userconc.set(1)
             
             if 'userconcs' not in self.model.dependencies:
@@ -683,6 +686,7 @@ class Hem(Page):
                 self.add_userconc()
             
         elif self.check_userconc.get() == 0:
+            # User Conc checkbox is unchecked
 
             self.uconcLabel.destroy()
             self.uconc_file.destroy()
@@ -692,6 +696,8 @@ class Hem(Page):
             self.hap_file.grid(row=3, column=1, sticky='W')
             self.emisLabel.grid(row=2, column=0, padx=10)
             self.emis_file.grid(row=2, column=1, sticky='W')
+            self.caution1.grid(row=3, column=0, sticky='W')
+            self.caution2.grid(row=4, column=0, sticky='W')
 
             if 'userconcs' in self.model.dependencies:
                 self.model.dependencies.remove('userconcs')
@@ -1279,11 +1285,16 @@ class Hem(Page):
                 self.abortLabel.unbind('<Button-1>')
                 self.abortLabel['text'] = "ABORTING..."
                 self.aborted = True
+                # move the log file to the run dir
+                Logger.archiveLog(self.model.rootoutput)
+            
+            return override
 
         else:
             # If we're not running, the only thing to do is reset the GUI...
 
             Logger.logMessage("HEM stopped")
+            return True
 
     def disable_buttons(self):
 

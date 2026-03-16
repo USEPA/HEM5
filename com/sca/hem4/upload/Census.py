@@ -60,7 +60,7 @@ class Census(InputFile):
                 message = ('\nThere are missing values and out of range elevations/hill heights in the Census file. This model run will stop. '
                            + 'The row number and column of the missing values and out of range elevations/hill heights are reported in the file\n' 
                            + '"census_file_problem_values.xlsx" located in the output root folder.\n'
-                           + 'Valid elevations/hill heigts are between -86m and 6190m.\n\n'
+                           + 'Valid elevations/hill heights are between -86m and 6190m.\n\n'
                            + 'Please correct the Census file and retry the HEM run. '
                            + 'Missing or out of range elevations or hill heights can be corrected by using the Revise Census utility. \n')
                 Logger.logMessage(message)
@@ -89,7 +89,7 @@ class Census(InputFile):
                 message = ('\nThere are out of range elevations/hill heights in the Census file. This model run will stop. '
                            + 'The row number and column of the out of range values are reported in the file\n'
                            + '"census_file_problem_values.xlsx" located in the output root folder.\n'
-                           + 'Valid elevations/hill heigts are between -86m and 6190m.\n\n'
+                           + 'Valid elevations/hill heights are between -86m and 6190m.\n\n'
                            + 'Please correct the Census file and retry the HEM run. '
                            + 'Out of range elevations or hill heights can be corrected by using the Revise Census utility. \n')
                 Logger.logMessage(message)

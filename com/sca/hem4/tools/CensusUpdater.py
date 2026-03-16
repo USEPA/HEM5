@@ -37,9 +37,6 @@ class CensusUpdater():
         """
         Function to Move, Delete, Zero, or Update a census block or Add a new block
         """
-
-        #debug
-        import pdb; pdb.set_trace() 
         
         try:
             
