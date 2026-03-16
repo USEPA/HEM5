@@ -32,12 +32,12 @@ class MergeHemRuns():
         orig_faclist_file = os.path.join(self.orig_rundir, "Inputs", "faclist.xlsx")
         rerun_faclist_file = os.path.join(self.new_rundir, "Inputs", "faclist.xlsx")
         if os.path.exists(orig_faclist_file):
-            orig_facs_df = pd.read_excel(orig_faclist_file, usecols=[0])
+            orig_facs_df = pd.read_excel(orig_faclist_file, usecols=[0], dtype=str)
             self.orig_facs_list = orig_facs_df.iloc[:, 0].tolist()
         else:
             raise ValueError("File "+orig_faclist_file+" does not exist")
         if os.path.exists(rerun_faclist_file):
-            rerun_facs_df = pd.read_excel(rerun_faclist_file, usecols=[0])
+            rerun_facs_df = pd.read_excel(rerun_faclist_file, usecols=[0], dtype=str)
             self.rerun_facs_list = rerun_facs_df.iloc[:, 0].tolist()
         else:
             raise ValueError("File "+rerun_faclist_file+" does not exist")
@@ -133,12 +133,19 @@ class MergeHemRuns():
                             , 'facility_toshi_exp']
         
         for fstring in search_strings:
+            if fstring == 'facility_cancer_risk_exp':
+                strcols = [0]
+            if fstring == 'facility_max_risk_and_hi':
+                strcols = [0,6,12,16,22,26,30,34,38,42,46,50,54,58,62,66]
+            if fstring == 'facility_toshi_exp':
+                strcols = [0]
+                
             orig_summary = os.path.join(self.orig_rundir, self.orig_rungroup_name+'_'+fstring+'.xlsx')
             new_summary = os.path.join(self.new_rundir, self.new_rungroup_name+'_'+fstring+'.xlsx')
             
             if os.path.exists(orig_summary):
                 if os.path.exists(new_summary):
-                    df = self.update_input(orig_summary, new_summary, 'A', 0)
+                    df = self.update_input(orig_summary, new_summary, 'A', 0, strcols)
                     os.remove(orig_summary)
                     df.to_excel(orig_summary, index=False)
                     self.copy_top_rows_with_formatting(new_summary, orig_summary, 0)
@@ -266,6 +273,18 @@ class MergeHemRuns():
                        ,'user receptors'
                        ]
         
+        string_cols = [[0,1,2,3]
+                       ,[0,1,2]
+                       ,[0,1,2,5,6]
+                       ,[0,1,2]
+                       ,[0]
+                       ,[0,1,2]
+                       ,[0]
+                       ,[0]
+                       ,[0,1]
+                       ,[0,1,2]
+                       ,[0]]
+        
         try:
             
             # Initialize some dataframes needed for the KMZ
@@ -284,7 +303,7 @@ class MergeHemRuns():
             shutil.copy(old_name, new_name)
 
             
-            for ifile, ikey, iheader, isheet in zip(input_files, input_keys, header_rows, sheet_names):
+            for ifile, ikey, iheader, isheet, istr in zip(input_files, input_keys, header_rows, sheet_names, string_cols):
                 orig_file = os.path.join(self.orig_rundir, "Inputs", ifile)
                 new_file = os.path.join(self.new_rundir, "Inputs", ifile)
                                 
@@ -293,10 +312,11 @@ class MergeHemRuns():
                     if os.path.exists(new_file):
                         self.copy_rerun_input(orig_file, new_file, iheader)
                         Logger.logMessage('Copied input file ' + ifile + ' to the original rungroup Inputs folder\n')
+
                     
                 # Update if in both original and new. Also retain original header and sheetname.
                 if os.path.exists(orig_file) and os.path.exists(new_file):
-                    df = self.update_input(orig_file, new_file, ikey, iheader)
+                    df = self.update_input(orig_file, new_file, ikey, iheader, istr)
                     os.remove(orig_file)
                     df.to_excel(orig_file, index=False)
                     self.copy_top_rows_with_formatting(new_file, orig_file, iheader)
@@ -375,16 +395,26 @@ class MergeHemRuns():
         
         
         
-    def update_input(self, orig_file, new_file, keycols, headerrow):
+    def update_input(self, orig_file, new_file, keycols, headerrow, strcols=None):
         
         # new is updating original
-        
-        df_source = pd.read_excel(new_file, skiprows=headerrow)
+                
+        if strcols is None:
+            df_source = pd.read_excel(new_file, skiprows=headerrow)
+        else:
+            # Converter function to be used in dtype of read_excel (if needed)
+            converter_dict = {col_index: str for col_index in strcols}
+            df_source = pd.read_excel(new_file, skiprows=headerrow, converters=converter_dict)
         # filter to modeled facilities
         df_source = df_source[df_source.iloc[:,0].isin(self.rerun_facs_list)]
         df_source = df_source.rename(columns=lambda y: self.conv(df_source.columns.get_loc(y)))
         
-        df_target = pd.read_excel(orig_file, skiprows=headerrow)
+        if strcols is None:
+            df_target = pd.read_excel(orig_file, skiprows=headerrow)
+        else:
+            # Converter function to be use in dtype of read_excel (if needed)
+            converter_dict = {col_index: str for col_index in strcols}
+            df_target = pd.read_excel(orig_file, skiprows=headerrow, converters=converter_dict)
         # filter to modeled facilities
         df_target = df_target[df_target.iloc[:,0].isin(self.orig_facs_list)]
         df_target = df_target.rename(columns=lambda y: self.conv(df_target.columns.get_loc(y)))

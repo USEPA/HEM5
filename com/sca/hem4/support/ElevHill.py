@@ -31,12 +31,12 @@ from scipy.spatial import KDTree
 
 import socket
 from datetime import datetime
-import requests
 import glob, os
 
 import time
 import concurrent.futures
 import threading
+import rasterio
 
 
 class ElevHill:
@@ -217,10 +217,15 @@ class ElevHill:
         # Has the calling program stopped all threads?
         if stop_event.is_set():
             return
+        
+        # If the HTML return status code is not 200, return None
+        if response.status_code != 200:
+            return None
             
         # Read the TIFF file into memory
         with MemoryFile(response.content) as memfile:
             with memfile.open() as dataset:
+                
                 # Read the elevation data
                 elevation_data = dataset.read(1)
                 
@@ -255,9 +260,9 @@ class ElevHill:
                 lon1 = center_lon - (maxelev_radius / r_earth) * (180 / pi) / cos(np.deg2rad(center_lat))
                 df2 = df.loc[df['latitude'].between(lat1, lat2) & df['longitude'].between(lon1, lon2)].copy()
                                 
-                return df
-                                
-        
+                return df2
+                
+                                   
 
     # Takes a receptor coordinate array and returns an array of calculated hill height scales
     @staticmethod
@@ -327,7 +332,7 @@ class ElevHill:
                 for x in lons:
                     url = f'https://prd-tnm.s3.amazonaws.com/StagedProducts/Elevation/1/TIFF/current/n{y}w{x}/USGS_1_n{y}w{x}.tif'
                     urls.append(url)
-            
+                        
             # Generate the arguments for the threads
             max_mod_dist_list = [max_model_dist] * len(urls)
             cenlon_list = [center_lon] * len(urls)
@@ -338,6 +343,8 @@ class ElevHill:
             workers = multiprocessing.cpu_count()
             elevframes = []
 
+            start_tiff = time.perf_counter()
+            
             #------ New way of calling getTIF ----------------
             # Create an event used to stop running tasks
             event = threading.Event()
@@ -345,19 +352,15 @@ class ElevHill:
                     
             grid30_df = pd.concat(elevframes)
 
-            
-            # # Original code for calling getTIF
-            # with ThreadPoolExecutor(max_workers=workers) as executor:
-            #     for df in executor.map(ElevHill.getTIF, urls, max_mod_dist_list, cenlon_list, cenlat_list, min_rec_elev_list):
-            #         if df is not None and not df.empty:
-            #             elevframes.append(df)
-            #     grid30_df = pd.concat(elevframes)
-
+            end_tiff = time.perf_counter()
+            message = "   --- Took " + str(round(end_tiff - start_tiff, 2)) + " seconds to download TIFFs \n"
+            Logger.logMessage(message)
                 
         except BaseException as e:
 
             message = "Unable to get TIFF files from the USGS that are needed to compute hill heights.\n" \
-                      + "Will attempt to get elevations from the USGS API. This will be a slower process. \n" 
+                      + "Will attempt to get elevations from the USGS API. This will be a slower process. \n" \
+                      + "The TIFF error message is:\n" + str(e)
             Logger.logMessage(message)
             
             outer_loop_condition = True
@@ -649,7 +652,8 @@ class ElevHill:
                     try:
                         # Retrieving the result here will re-raise the exception from the task.
                         result = future.result()
-                        result_list.append(result)
+                        if result is not None:
+                            result_list.append(result)
                         
                     except Exception as e:
                         # Signal other tasks to stop. Task should have already set this, but in case...

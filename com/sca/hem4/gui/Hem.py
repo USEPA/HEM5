@@ -1285,11 +1285,16 @@ class Hem(Page):
                 self.abortLabel.unbind('<Button-1>')
                 self.abortLabel['text'] = "ABORTING..."
                 self.aborted = True
+                # move the log file to the run dir
+                Logger.archiveLog(self.model.rootoutput)
+            
+            return override
 
         else:
             # If we're not running, the only thing to do is reset the GUI...
 
             Logger.logMessage("HEM stopped")
+            return True
 
     def disable_buttons(self):
 
