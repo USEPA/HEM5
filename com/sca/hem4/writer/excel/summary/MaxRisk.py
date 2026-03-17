@@ -175,7 +175,7 @@ class MaxRisk(ExcelWriter, AltRecAwareSummary):
         else:
 
             # Alternate receptors
-                                    
+                                  
             aggs = {lat:'first', lon:'first', overlap:'first', elev:'first', utme:'first', blk_type:'first',
                     rec_type:'first',
                     utmn:'first', hill:'first', rec_id: 'first', population:'first',
@@ -263,7 +263,7 @@ class MaxRisk(ExcelWriter, AltRecAwareSummary):
                 whol_notes = 'Overlapped receptor'
                 
             risks = [
-                ['mir', mir_row.loc[4], mir_row.iloc[8], mir_row.iloc[9], mir_notes] if mir_row.iloc[9] > 0
+                ['mir', mir_row.iloc[4], mir_row.iloc[8], mir_row.iloc[9], mir_notes] if mir_row.iloc[9] > 0
                     else ['mir', '', 0, 0, ''],
                 ['respiratory', hi_resp_row.iloc[4], hi_resp_row.iloc[8], hi_resp_row.iloc[10], resp_notes] if hi_resp_row.iloc[10] > 0
                     else ['respiratory', '', 0, 0, ''],

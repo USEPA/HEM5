@@ -1021,10 +1021,6 @@ class KMLWriter():
         # Facility center folder
         cen_folder = kml.Folder(ns=self.ns, name="Domain center")
         cen_folder.isopen = 0
-
-        point = geometry.Point()
-        point.coordinates = (faccen_lon, faccen_lat, 0.0)
-        point.altitude_mode = "relativeToGround"
         
         point = geometry.Point(faccen_lon, faccen_lat, 0.0)
         kml_geometry = create_kml_geometry(
